@@ -1,0 +1,187 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  id-token: write   # 用于 AWS OIDC 认证 (推荐)
+  contents: read
+  pull-requests: write # 允许机器人把 diff 结果写到 PR 评论里
+
+jobs:
+  quality-check:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for better diff
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install project dependencies with uv
+        run: |
+          uv sync --frozen
+
+      - name: Run pre-commit hooks
+        run: |
+          uv run pre-commit run --all-files
+
+      # - name: Run Unit Tests
+      #   run: |
+      #     Run tests (when tests are added)
+      #     uv run pytest
+      #     echo "Tests will run here when implemented"
+
+  infra-preview:
+    needs: quality-check
+    name: Infrastructure Changes Preview
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for better diff
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install AWS CDK CLI
+        run: |
+          npm install -g aws-cdk
+
+      - name: Install project dependencies with uv
+        run: |
+          uv sync --frozen
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      - name: CDK Synth (Verify Compilation)
+        working-directory: ./infra
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+        run: |
+          uv run cdk synth -c env=dev
+
+      - name: CDK Diff (Preview Changes)
+        id: cdk-diff
+        working-directory: ./infra
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+        run: |
+          # Run cdk diff and capture output
+          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
+
+          # Parse diff and generate report
+          echo "## 📊 Infrastructure Changes Preview (Serverless Telegram Bot Starter)" > /tmp/diff-report.md
+          echo "" >> /tmp/diff-report.md
+          echo "This PR will modify the following AWS resources:" >> /tmp/diff-report.md
+          echo "" >> /tmp/diff-report.md
+
+          # Check if there are any changes
+          if ! grep -q "Stack TelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
+            echo "### ℹ️ No infrastructure changes detected" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+            echo "This PR only contains code changes (Lambda functions, etc.)" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+          else
+            # Extract resources to be created (green +)
+            echo "### ✅ Resources to be Created:" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+            grep -E "^\s*\+.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*+/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+
+            # Extract resources to be deleted (red -)
+            echo "### ❌ Resources to be Deleted:" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+            grep -E "^\s*\-.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*-/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+
+            # Extract resources to be modified (yellow ~)
+            echo "### ⚠️ Resources to be Modified:" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+            grep -E "^\s*~.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*~/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+
+            # Extract property changes
+            echo "### 🔧 Property Changes:" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+            grep -E "^\s*[+\-~].*:" /tmp/cdk-diff.txt | grep -v "AWS::" | head -30 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
+            echo "" >> /tmp/diff-report.md
+          fi
+
+          # Add full diff as collapsible section
+          echo "<details>" >> /tmp/diff-report.md
+          echo "<summary>📋 Full CDK Diff Output</summary>" >> /tmp/diff-report.md
+          echo "" >> /tmp/diff-report.md
+          echo '```diff' >> /tmp/diff-report.md
+          cat /tmp/cdk-diff.txt >> /tmp/diff-report.md
+          echo '```' >> /tmp/diff-report.md
+          echo "</details>" >> /tmp/diff-report.md
+
+          # Save report for next step
+          cat /tmp/diff-report.md
+
+      - name: Comment PR with Infrastructure Diff
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('/tmp/diff-report.md', 'utf8');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Infrastructure Changes Preview')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: report
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
