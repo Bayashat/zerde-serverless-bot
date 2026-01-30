@@ -101,13 +101,13 @@ jobs:
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
 
           # Parse diff and generate report
-          echo "## 📊 Infrastructure Changes Preview (Serverless Telegram Bot Starter)" > /tmp/diff-report.md
+          echo "## 📊 Infrastructure Changes Preview (Zerde Telegram Bot)" > /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
           echo "This PR will modify the following AWS resources:" >> /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
 
           # Check if there are any changes
-          if ! grep -q "Stack TelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
+          if ! grep -q "Stack ZerdeTelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
             echo "### ℹ️ No infrastructure changes detected" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             echo "This PR only contains code changes (Lambda functions, etc.)" >> /tmp/diff-report.md

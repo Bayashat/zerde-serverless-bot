@@ -8,8 +8,7 @@ from typing import Any, Callable
 from aws_lambda_powertools import Logger
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
-
-from worker.services.message_formatter import get_translated_text
+from services.message_formatter import get_translated_text
 
 from .context import Context
 

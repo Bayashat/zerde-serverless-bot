@@ -30,7 +30,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     Returns:
         API Gateway HTTP API response
     """
-    logger.info("Received event", extra={"event": event})
+    logger.info("Received new webhook event")
     try:
         if not verify_webhook_secret_token(event):
             return create_response(200, {"ok": False, "error": "Unauthorized"})

@@ -48,4 +48,4 @@ class SQSClient:
             )
         except Exception as e:
             logger.exception("Failed to send timeout task to SQS", extra={"error": e})
-            raise e
+            raise
