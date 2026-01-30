@@ -16,22 +16,19 @@ from constructs import Construct
 from dotenv import load_dotenv
 
 
-class TelegramBotStack(Stack):
+class ZerdeTelegramBotStack(Stack):
     """CDK stack defining the Telegram bot serverless architecture."""
 
     def __init__(self, scope: Construct, construct_id: str, env_name: str = "dev", **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Environment configuration
         is_prod = env_name == "prod"
 
-        # Get project root directory (parent of infrastructure/)
+        # Get project root directory (parent of infra/)
         project_root = Path(__file__).parent.parent
 
-        # Load environment variables from .env file
         load_dotenv(dotenv_path=project_root / ".env")
 
-        # Telegram Bot Token and Webhook Secret Token
         telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
         telegram_webhook_secret_token = os.environ.get("TELEGRAM_WEBHOOK_SECRET_TOKEN")
 
@@ -46,7 +43,6 @@ class TelegramBotStack(Stack):
         # ============================================================================
         # Common Environment Variables
         # ============================================================================
-        # Log level: INFO for prod, DEBUG for dev
         log_level = "INFO" if is_prod else "DEBUG"
 
         self.common_env_vars = {
@@ -58,7 +54,6 @@ class TelegramBotStack(Stack):
         # DynamoDB Tables
         # ============================================================================
 
-        # DynamoDB configuration based on environment
         if is_prod:
             removal_policy = RemovalPolicy.RETAIN
             deletion_protection = True
@@ -122,7 +117,6 @@ class TelegramBotStack(Stack):
         # Lambda Functions
         # ============================================================================
 
-        # Common Lambda configuration
         lambda_runtime = _lambda.Runtime.PYTHON_3_13
 
         # Receiver Lambda - HTTP API entrypoint from Telegram webhook
@@ -191,23 +185,18 @@ class TelegramBotStack(Stack):
             environment={
                 **self.common_env_vars,
                 "QUEUE_URL": self.updates_queue.queue_url,
-                "DEFAULT_LANG": "en",
-                "TELEGRAM_API_BASE": "https://api.telegram.org/bot",
+                "DEFAULT_LANG": "kk",
                 "BOT_TOKEN": telegram_bot_token,
                 "WEBHOOK_SECRET_TOKEN": telegram_webhook_secret_token,
+                "TELEGRAM_API_BASE": "https://api.telegram.org/bot",
                 "STATS_TABLE_NAME": self.bot_stats_table.table_name,
-                "BOT_NAME": "Zerde Bot",
-                "BOT_DESCRIPTION": "Zerde Bot Description",
-                "BOT_INSTRUCTIONS": "Zerde Bot Instructions",
             },
         )
 
-        # Grant least-privilege access to the worker lambda
         self.updates_queue.grant_consume_messages(self.worker_lambda)
         self.updates_queue.grant_send_messages(self.worker_lambda)  # For CHECK_TIMEOUT events
         self.bot_stats_table.grant_read_write_data(self.worker_lambda)
 
-        # Add SQS event source with max concurrency of 2
         self.worker_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 self.updates_queue,

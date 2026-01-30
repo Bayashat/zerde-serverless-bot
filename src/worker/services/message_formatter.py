@@ -5,32 +5,44 @@ Service for formatting Telegram messages.
 from typing import Any
 
 from aws_lambda_powertools import Logger
-from services import BOT_DESCRIPTION, BOT_INSTRUCTIONS, BOT_NAME, DEFAULT_LANG
+from services import DEFAULT_LANG
 
 logger = Logger()
-
 
 TRANSLATIONS = {
     "en": {
         "start_message": (
-            "👋 Welcome to {BOT_NAME}!\n\n"
-            "I can help you with {BOT_DESCRIPTION}\n"
-            "Use the /help command to view available commands."
+            "👋 <b>Hello! I am Zerde — a smart assistant for IT communities.</b> 🤖\n\n"
+            "My main task is to protect chats from spam bots and gather useful statistics.\n\n"
+            "🚀 <b>How to get started?</b>\n"
+            "1. Add me to your group.\n"
+            "2. Promote me to <b>Admin</b>.\n\n"
+            "<i>For full information, click /help.</i>\n"
+            "🐍 <i>Powered by Python & AWS Serverless</i>"
         ),
         "help_message": (
-            "🤖 <b>Zerde Bot Instructions</b>:\n\n"
-            "This bot works automatically.\n\n"
-            "🔹 <b>For new members:</b>\n"
-            "You need to click the 'I am human' button when joining the group, "
-            "otherwise you will not be able to send messages.\n\n"
-            "🔹 <b>For administrators:</b>\n"
-            "/stats - View statistics of the group\n\n"
-            "/support - Ask for technical support"
+            "🤖 <b>Zerde Bot: Usage Guide</b>\n\n"
+            "This bot operates automatically within groups.\n\n"
+            "🛡️ <b>For New Members (Anti-Spam):</b>\n"
+            "Upon joining, you must click the <b>'I am human'</b> button.\n"
+            "⚠️ <i>Warning: If the button is not clicked within 60 seconds, you will be automatically removed.</i>\n\n"
+            "📊 <b>For Admins:</b>\n"
+            "• /stats — View group statistics and activity levels.\n"
+            "• /start — Restart the bot (if unresponsive).\n\n"
+            "⚙️ <b>Setup:</b>\n"
+            "For proper functionality, the bot must be granted <i>'Delete Messages'</i> "
+            "and <i>'Ban Users'</i> permissions.\n\n"
+            "👨‍💻 <b>Support:</b>\n"
+            "/support — Report a bug or suggest a feature."
         ),
-        "echo_message": "❌ Unknown command. Use /help to view available commands.",
-        "error_occurred": "❌ An error occurred. Please try again later.",
-        "unknown_action": "❌ Unknown action.",
-        "invalid_data": "❌ Invalid data.",
+        "stats_message": (
+            "📊 <b>Chat statistics</b>\n"
+            "⏰ Since {start_date}\n\n"
+            "👥 <b>Total Joins:</b> {total} users\n"
+            "✅ <b>Verified captchas:</b> {verified} items\n\n"
+            "📈 <b>Overall activity:</b> {activity_level}"
+        ),
+        "support_message": "👨‍💻 Technical support\nFor questions: @bayashat",
         "welcome_verification": (
             "👋 Welcome {MENTION}!\n\n"
             "To ensure quality, please verify you are human.\n\n"
@@ -39,40 +51,49 @@ TRANSLATIONS = {
         ),
         "welcome_verified": ("Hello {MENTION}! Welcome to Kazakh IT community!"),
         "verification_successful": "✅ Verified!",
-        "stats_admin_only": "Only administrators can view /stats.",
-        "stats_error": "Failed to load stats.",
-        "only_user_may_verify": "Only the user who joined may verify.",
         "activity_low": "🌱 Low",
         "activity_medium": "🌿 Medium",
         "activity_high": "🔥 High",
-        "stats_message": (
-            "📊 <b>Chat statistics</b>\n"
-            "⏰ Since {start_date}\n\n"
-            "👥 <b>Joined members:</b> {total} users\n"
-            "✅ <b>Passed captchas:</b> {verified} items\n\n"
-            "📈 <b>Overall activity:</b> {activity_level}"
-        ),
-        "support_message": "👨‍💻 Technical support\nFor questions: @bayashat",
+        "error_occurred": "❌ An error occurred. Please try again later.",
+        "unknown_action": "❌ Unknown action.",
+        "invalid_data": "❌ Invalid data.",
+        "stats_admin_only": "❌ Only administrators can view /stats.",
+        "stats_error": "❌ Failed to load stats.",
+        "only_user_may_verify": "❌ Only the user who joined may verify.",
     },
     "kk": {
         "start_message": (
-            "👋 {BOT_NAME} ботқа қош келдіңіз!\n\n"
-            "Мен сізге {BOT_DESCRIPTION} бойынша көмектесе аламын.\n"
-            "/help командасын қолданып, қолжетімді командаларды көруге болады."
+            "👋 <b>Сәлем! Мен Zerde — IT қауымдастықтардың ақылды көмекшісімін.</b> 🤖\n\n"
+            "Менің негізгі міндетім — чатты спам-боттардан қорғау және пайдалы статистика жинау.\n\n"
+            "🚀 <b>Мені қалай іске қосуға болады?</b>\n"
+            "1. Мені өз тобыңызға қосыңыз (Add to Group).\n"
+            "2. Маған <b>Админ (Admin)</b> құқығын беріңіз.\n\n"
+            "<i>Толық ақпарат алу үшін /help командасын басыңыз.</i>\n"
+            "🐍 <i>Powered by Python & AWS Serverless</i>"
         ),
         "help_message": (
-            "🤖 <b>Zerde Bot Нұсқаулығы</b>:\n\n"
-            "Бұл бот автоматты түрде жұмыс істейді.\n\n"
-            "🔹 <b>Жаңа мүшелер үшін:</b>\n"
-            "Топқа қосылған кезде 'Мен адаммын' түймесін басу қажет, әйтпесе хабарлама жаза алмайды.\n\n"
-            "🔹 <b>Админдер үшін:</b>\n"
-            "/stats - Топтағы статикалық ақпаратты көру\n\n"
-            "/support - Техникалық қолдау сұрау"
+            "🤖 <b>Zerde Bot: Пайдалану нұсқаулығы</b>\n\n"
+            "Бұл бот топтарда автоматты түрде жұмыс істейді.\n\n"
+            "🛡️ <b>Жаңа мүшелер үшін (Anti-Spam):</b>\n"
+            "Топқа қосылған кезде арнайы <b>«Мен адаммын»</b> түймесін басу қажет.\n"
+            "⚠️ <i>Ескерту: Түйме 60 секунд ішінде басылмаса, сіз топтан автоматты түрде шығарыласыз.</i>\n\n"
+            "📊 <b>Админдер үшін:</b>\n"
+            "• /stats — Топтың статистикасын және белсенділігін көру.\n"
+            "• /start — Ботты қайта іске қосу (егер қатып қалса).\n\n"
+            "⚙️ <b>Орнату:</b>\n"
+            "Бот дұрыс жұмыс істеуі үшін, оған <i>«Delete Messages»</i> "
+            "және <i>«Ban Users»</i> құқықтары берілуі керек.\n\n"
+            "👨‍💻 <b>Қолдау қызметі:</b>\n"
+            "/support — Қате туралы хабарлау немесе ұсыныс айту."
         ),
-        "echo_message": "❌ Белгісіз команда. Қолжетімді командаларды көру үшін /help командасын қолданыңыз.",
-        "error_occurred": "❌ Қате орын алды. Кейінірек қайталап көріңіз.",
-        "unknown_action": "❌ Белгісіз әрекет.",
-        "invalid_data": "❌ Белгісіз мәлімет.",
+        "stats_message": (
+            "📊 <b>Топ статистикасы</b>\n"
+            "⏰ {start_date} бастап\n\n"
+            "👥 <b>Жалпы қосылған мүшелер:</b> {total} қолданушы\n"
+            "✅ <b>Расталған капчалар:</b> {verified} дана\n\n"
+            "📈 <b>Жалпы белсенділік:</b> {activity_level}"
+        ),
+        "support_message": "👨‍💻 Техникалық қолдау\nСұрақтар бойынша: @bayashat",
         "welcome_verification": (
             "👋 Welcome {MENTION}!\n\n"
             "Топ сапасын сақтау үшін, бот емес екеніңізді растаңыз.\n\n"
@@ -83,20 +104,15 @@ TRANSLATIONS = {
             "{MENTION} 👋\n\nҚазақша IT қауымдастыққа қош келдіңіз! Жаңа идеялар мен жетістіктерге бірге жетейік. 🌟"
         ),
         "verification_successful": "✅ Расталды",
-        "stats_admin_only": "Тек әкімшілер үшін қолжетімді.",
-        "stats_error": "Статистиканы жүктеу кезінде қате орын алды.",
-        "only_user_may_verify": "Тек жаңадан қосылған қолданушы үшін қолжетімді.",
         "activity_low": "🌱 Төмен",
         "activity_medium": "🌿 Орташа",
         "activity_high": "🔥 Жоғары",
-        "stats_message": (
-            "📊 <b>Топ статистикасы</b>\n"
-            "⏰ {start_date} бастап\n\n"
-            "👥 <b>Қосылған мүшелер:</b> {total} қолданушы\n"
-            "✅ <b>Өткен капчалар:</b> {verified} дана\n\n"
-            "📈 <b>Жалпы белсенділік:</b> {activity_level}"
-        ),
-        "support_message": "👨‍💻 Техникалық қолдау\nСұрақтар бойынша: @bayashat",
+        "error_occurred": "❌ Қате орын алды. Кейінірек қайталап көріңіз.",
+        "unknown_action": "❌ Белгісіз әрекет.",
+        "invalid_data": "❌ Белгісіз мәлімет.",
+        "stats_admin_only": "❌ Тек әкімшілер үшін қолжетімді.",
+        "stats_error": "❌ Статистиканы жүктеу кезінде қате орын алды.",
+        "only_user_may_verify": "❌ Тек жаңадан қосылған қолданушы үшін қолжетімді.",
     },
 }
 
@@ -112,9 +128,6 @@ def get_translated_text(key: str, lang_code: str = "kk", **kwargs: Any) -> str:
 
     try:
         text = text.format(
-            BOT_NAME=BOT_NAME,
-            BOT_DESCRIPTION=BOT_DESCRIPTION,
-            BOT_INSTRUCTIONS=BOT_INSTRUCTIONS,
             **kwargs,
         )
     except KeyError as e:

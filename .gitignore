@@ -1,16 +1,59 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+*.py[cod]
+*.so
 build/
 dist/
 wheels/
 *.egg-info
+*$py.class
+.Python
 
 # Virtual environments
 .venv
+env/
+venv/
+ENV/
+
+# Environment variables
+.env
 
 # Python version
 .python-version
 
+# IDEs
+.vscode
+.idea
+.cursor
+.cursorrules
+.cursorrules.md
+.cursorrules.txt
+.cursorrules.yml
+.cursorrules.yaml
+*.swp
+*.swo
+*~
+
+# Chart.js library (optional, download separately)
+extension/lib/chart.js
+
+# OS files
+.DS_Store
+**/.DS_Store
+**/.Thumbs.db
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
 # CDK
-cdk.out/
+*.template.yaml
+template.yaml
+
+# Docker local data
+docker/dynamodb/*
+!docker/dynamodb/.gitkeep
+
+# Archive files
+*.zip

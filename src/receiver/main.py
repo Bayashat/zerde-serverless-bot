@@ -30,31 +30,26 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     Returns:
         API Gateway HTTP API response
     """
-    logger.info("Received event", event=event)
+    logger.info("Received event", extra={"event": event})
     try:
-        # Verify webhook secret token (security check)
         if not verify_webhook_secret_token(event):
-            logger.warning("Webhook secret token verification failed")
             return create_response(200, {"ok": False, "error": "Unauthorized"})
 
-        # Parse API Gateway event body
         try:
             body = parse_api_gateway_event(event)
-            logger.debug("Parsed API Gateway event")
+            logger.info("API Gateway event parsed successfully")
         except ValueError as e:
-            logger.warning(f"Failed to parse API Gateway event: {e}")
+            logger.error("Failed to parse API Gateway event", extra={"error": e})
             return create_response(200, {"message": "Invalid request"})
 
-        # Check if the event is relevant to the bot
         if not is_event_relevant_to_bot(body):
-            logger.warning("Event is not relevant to the bot")
+            logger.error("Event is not relevant to the bot", extra={"body": body})
             return create_response(200, {"message": "Event is not relevant to the bot"})
 
-        # Send event body to SQS
         sqs_client.send_telegram_update(body)
+        logger.info("Telegram update queued successfully")
 
     except Exception as e:
-        logger.error(f"Unexpected error in handler: {str(e)}", exc_info=True)
+        logger.exception("Unexpected error in handler", extra={"error": e})
 
-    # Always return 200 to prevent Telegram retries
     return create_response(200, {"message": "Webhook received"})

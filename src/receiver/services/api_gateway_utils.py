@@ -16,20 +16,19 @@ def verify_webhook_secret_token(event: dict[str, Any]) -> bool:
     Telegram sends a secret token with each webhook request to verify authenticity.
     This prevents spoofed requests from reaching the bot.
     """
-    # Get headers from API Gateway event
     headers = event.get("headers", {})
     received_token = headers.get("x-telegram-bot-api-secret-token") or headers.get("X-Telegram-Bot-Api-Secret-Token")
 
     if not received_token:
-        logger.warning("Missing X-Telegram-Bot-Api-Secret-Token header")
+        logger.critical("Missing X-Telegram-Bot-Api-Secret-Token header")
         return False
 
     # Use constant-time comparison to prevent timing attacks
     if not hmac.compare_digest(received_token, WEBHOOK_SECRET_TOKEN):
-        logger.warning("Webhook secret token mismatch")
+        logger.critical("Webhook secret token mismatch")
         return False
 
-    logger.debug("Webhook secret token verified successfully")
+    logger.info("Webhook secret token verified successfully")
     return True
 
 
