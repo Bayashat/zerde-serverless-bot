@@ -1,9 +1,22 @@
 [project]
-name = "ZerdeTelegramBot"
+name = "zerde-bot"
 version = "0.1.0"
-description = "Zerde Telegram Bot"
+description = "A Serverless Telegram Bot for IT Community Management, built with Python and AWS CDK."
 readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Bayashat", email = "bayashat.tokmukamet@gmail.com" }
+]
+
+keywords = [
+    "telegram-bot",
+    "aws-cdk",
+    "serverless",
+    "lambda",
+    "community-management",
+    "python3.13"
+]
 dependencies = [
     "aws-cdk-lib>=2.236.0",
     "python-dotenv>=1.2.1",
