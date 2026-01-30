@@ -1,5 +1,6 @@
 """Telegram Bot API client."""
 
+import time
 from typing import Any
 
 import requests
@@ -13,11 +14,10 @@ class TelegramClient:
     """Client for Telegram Bot API operations."""
 
     def __init__(self) -> None:
-        """Initialize Telegram client."""
         self.bot_token = BOT_TOKEN
         self.api_base = f"{TELEGRAM_API_BASE}{self.bot_token}"
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "AWS-Serverless-Telegram-Bot/1.0"})
+        self.session.headers.update({"User-Agent": "Zerde Telegram Bot/1.0"})
 
     def send_message(
         self,
@@ -44,8 +44,8 @@ class TelegramClient:
             return response.json().get("result", {})
         except requests.exceptions.RequestException as e:
             logger.error(
-                f"Failed to send message to {chat_id}: {e}",
-                extra={"response": e.response.text if e.response else "No response"},
+                "Failed to send message",
+                extra={"chat_id": chat_id, "error": e, "response": e.response.text if e.response else "No response"},
             )
             raise
 
@@ -67,7 +67,7 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to answer callback query: {e}")
+            logger.error("Failed to answer callback query", extra={"error": e})
             raise
 
     def restrict_chat_member(
@@ -94,61 +94,20 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to restrict chat member {user_id}: {e}")
+            logger.error("Failed to restrict chat member", extra={"user_id": user_id, "error": e})
             raise
 
-    def edit_message_text(
-        self,
-        chat_id: int | str,
-        message_id: int,
-        text: str,
-        reply_markup: dict[str, Any] | None = None,
-    ) -> None:
-        """Edit a bot's message text (and optional reply_markup)."""
-        url = f"{self.api_base}/editMessageText"
-        payload: dict[str, Any] = {
-            "chat_id": chat_id,
-            "message_id": message_id,
-            "text": text,
-            "parse_mode": "Markdown",
-        }
-        if reply_markup is not None:
-            payload["reply_markup"] = reply_markup
-        try:
-            response = self.session.post(url, json=payload, timeout=10)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to edit message {message_id}: {e}")
-            raise
-
-    def ban_chat_member(self, chat_id: int | str, user_id: int) -> None:
-        """Ban (kick) a chat member. Use to remove users who did not verify in time."""
+    def kick_chat_member(self, chat_id: int | str, user_id: int) -> None:
+        """Kick a chat member. Use to remove users who did not verify in time."""
         url = f"{self.api_base}/banChatMember"
-        payload = {"chat_id": chat_id, "user_id": user_id}
+        until_date = int(time.time()) + 31
+        payload = {"chat_id": chat_id, "user_id": user_id, "until_date": until_date}
         try:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to ban chat member {user_id}: {e}")
+            logger.error("Failed to kick chat member", extra={"user_id": user_id, "error": e})
             raise
-
-    def unban_chat_member(self, chat_id: int | str, user_id: int) -> None:
-        """
-        Unban a user. Used immediately after banning to achieve a 'kick' effect
-        (remove from group but allow re-joining).
-        """
-        url = f"{self.api_base}/unbanChatMember"
-        payload = {
-            "chat_id": chat_id,
-            "user_id": user_id,
-            "only_if_banned": True,  # 或者 False，通常 True 就够了，因为刚 Ban 完
-        }
-        try:
-            response = self.session.post(url, json=payload, timeout=10)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            # Unban 失败不应该阻断流程，记录日志即可
-            logger.warning(f"Failed to unban chat member {user_id} (soft kick might remain as ban): {e}")
 
     def get_chat_member(self, chat_id: int | str, user_id: int) -> dict[str, Any]:
         """Get chat member info; use result['status'] for admin check (creator/administrator)."""
@@ -159,7 +118,7 @@ class TelegramClient:
             response.raise_for_status()
             return response.json().get("result", {})
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to get chat member {user_id}: {e}")
+            logger.error("Failed to get chat member", extra={"user_id": user_id, "error": e})
             raise
 
     def delete_message(self, chat_id: int | str, message_id: int) -> None:
@@ -175,5 +134,5 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to delete message {message_id}: {e}")
+            logger.error("Failed to delete message", extra={"message_id": message_id, "error": e})
             raise

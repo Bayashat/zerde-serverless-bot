@@ -34,11 +34,9 @@ class StatsRepository:
         logger.debug(f"StatsRepository initialized with table: {STATS_TABLE_NAME}")
 
     def increment_total_joins(self, chat_id: int | str) -> None:
-        """Increment total_joins counter for the given chat."""
         self._increment(str(chat_id), "total_joins")
 
     def increment_verified_users(self, chat_id: int | str) -> None:
-        """Increment verified_users counter for the given chat."""
         self._increment(str(chat_id), "verified_users")
 
     def _increment(self, stat_key: str, attr: str) -> None:

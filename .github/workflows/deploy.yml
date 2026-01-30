@@ -54,6 +54,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Install AWS CDK CLI
         run: |
@@ -92,13 +93,13 @@ jobs:
         if: success()
         working-directory: ./infra
         run: |
-          echo "## 🚀 Deployment Successful (Serverless Telegram Bot Starter)" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Deployment Successful (Zerde Telegram Bot)" >> $GITHUB_STEP_SUMMARY
           echo "Deployed to: **${{ env.TARGET_ENV }}**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Stack Outputs:" >> $GITHUB_STEP_SUMMARY
 
-          # Get the stack name based on the environment (TelegramBotStack-dev or TelegramBotStack-prod)
-          STACK_NAME="TelegramBotStack-${{ env.TARGET_ENV }}"
+          # Get the stack name based on the environment (ZerdeTelegramBotStack-dev or ZerdeTelegramBotStack-prod)
+          STACK_NAME="ZerdeTelegramBotStack-${{ env.TARGET_ENV }}"
 
           aws cloudformation describe-stacks \
             --stack-name $STACK_NAME \

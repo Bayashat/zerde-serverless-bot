@@ -8,6 +8,7 @@ from typing import Any, Callable
 from aws_lambda_powertools import Logger
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
+from services.message_formatter import get_translated_text
 
 from .context import Context
 
@@ -80,7 +81,7 @@ class Dispatcher:
             try:
                 self.callback_query_handler(ctx)
             except Exception as e:
-                logger.exception(f"Error in callback_query handler: {e}")
+                logger.exception("Error in callback_query handler", extra={"error": e})
             return
 
         # 2. New chat members (join verification)
@@ -90,7 +91,7 @@ class Dispatcher:
             try:
                 self.new_chat_members_handler(ctx)
             except Exception as e:
-                logger.exception(f"Error in new_chat_members handler: {e}")
+                logger.exception("Error in new_chat_members handler", extra={"error": e})
             return
 
         # 3. Command (e.g. /stats, /start)
@@ -103,8 +104,8 @@ class Dispatcher:
                 try:
                     handler(ctx)
                 except Exception as e:
-                    logger.exception(f"Error in command handler {command_key}: {e}")
-                    ctx.reply("❌ An error occurred while processing your command.")
+                    logger.exception(f"Error in command handler {command_key}", extra={"error": e})
+                    ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
                 return
 
         # 4. Default handler

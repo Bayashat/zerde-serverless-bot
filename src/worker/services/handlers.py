@@ -1,6 +1,5 @@
 """
-User Logic Handlers.
-This is where developers add their custom business logic.
+Custom logic handlers.
 """
 
 from typing import Any
@@ -36,12 +35,7 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
 
         if status == "restricted" or not can_send:
             logger.info("User %s timed out. Kicking.", user_id)
-            bot.ban_chat_member(chat_id, user_id)
-
-            # 2. 立刻解封 (Unban) -> 这样就变成了“踢出”而不是“拉黑”
-            # 给一点点微小的延迟确保 Telegram 处理完 Ban 并不是必须的，
-            # 但为了保险，直接调用即可，API 顺序通常是有保证的。
-            bot.unban_chat_member(chat_id, user_id)
+            bot.kick_chat_member(chat_id, user_id)
             try:
                 bot.delete_message(chat_id, message_id)
             except Exception as e:
@@ -56,7 +50,7 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
 
 def register_handlers(dp: Dispatcher):
     """
-    Register all your handlers here.
+    Register all the handlers here.
     """
 
     @dp.on_new_chat_members
@@ -65,15 +59,11 @@ def register_handlers(dp: Dispatcher):
         try:
             members = ctx.message.get("new_chat_members", [])
             chat_id = ctx.chat_id
-            if not chat_id:
-                return
             bot = ctx._bot
             for member in members:
                 if member.get("is_bot"):
                     continue
                 user_id = member.get("id")
-                if not user_id:
-                    continue
                 # Mute immediately
                 bot.restrict_chat_member(
                     chat_id,
@@ -142,16 +132,7 @@ def register_handlers(dp: Dispatcher):
             bot.restrict_chat_member(
                 chat_id,
                 target_user_id,
-                {
-                    "can_send_messages": True,
-                    "can_send_audios": True,
-                    "can_send_documents": True,
-                    "can_send_photos": True,
-                    "can_send_videos": True,
-                    "can_send_voice_notes": True,
-                    "can_send_polls": True,
-                    "can_invite_users": True,
-                },
+                {"can_send_messages": True},
             )
             bot.answer_callback_query(
                 ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
@@ -181,20 +162,17 @@ def register_handlers(dp: Dispatcher):
             chat_id = ctx.chat_id
             user_id = ctx.user_id
             if not chat_id or user_id is None:
-                ctx.reply(get_translated_text("stats_error"))
+                ctx.reply(get_translated_text("stats_error", lang_code=ctx.lang_code))
                 return
             member = ctx._bot.get_chat_member(chat_id, user_id)
             status = (member.get("status") or "").lower()
             if status not in ("creator", "administrator"):
-                ctx.reply(get_translated_text("stats_admin_only"))
-                return
-            if not ctx.stats_repo:
-                ctx.reply(get_translated_text("stats_error"))
+                ctx.reply(get_translated_text("stats_admin_only", lang_code=ctx.lang_code))
                 return
             stats = ctx.stats_repo.get_stats(chat_id)
             total = stats["total_joins"]
             verified = stats["verified_users"]
-            start_date = stats.get("started_at", "N/A")
+            start_date = stats.get("started_at")
             if total < 10:
                 level_key = "activity_low"
             elif total < 100:
@@ -213,23 +191,19 @@ def register_handlers(dp: Dispatcher):
             ctx.reply(msg)
         except Exception as e:
             logger.exception(f"handle_stats error: {e}")
-            ctx.reply(get_translated_text("stats_error"))
+            ctx.reply(get_translated_text("stats_error", lang_code=ctx.lang_code))
 
     @dp.command("start")
     def handle_start(ctx: Context):
-        # Using our multi-language helper
-        msg = get_translated_text("start_message", lang_code=ctx.lang_code)
-        ctx.reply(msg)
+        ctx.reply(get_translated_text("start_message", lang_code=ctx.lang_code))
 
     @dp.command("help")
     def handle_help(ctx: Context):
-        msg = get_translated_text("help_message", lang_code=ctx.lang_code)
-        ctx.reply(msg)
+        ctx.reply(get_translated_text("help_message", lang_code=ctx.lang_code))
 
     @dp.command("support")
     def handle_support(ctx: Context):
-        msg = get_translated_text("support_message", lang_code=ctx.lang_code)
-        ctx.reply(msg)
+        ctx.reply(get_translated_text("support_message", lang_code=ctx.lang_code))
 
     # Example of a custom command logic
     @dp.command("ping")

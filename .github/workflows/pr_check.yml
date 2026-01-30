@@ -7,9 +7,9 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  id-token: write   # 用于 AWS OIDC 认证 (推荐)
+  id-token: write   # OIDC authentication required
   contents: read
-  pull-requests: write # 允许机器人把 diff 结果写到 PR 评论里
+  pull-requests: write # Allow robot to write diff results to PR comments
 
 jobs:
   quality-check:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for better diff
+          fetch-depth: 0  # Fetch full history for better diff preview
 
       - name: Set up Python 3.13
         uses: actions/setup-python@v5
@@ -30,6 +30,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Install project dependencies with uv
         run: |
@@ -65,6 +66,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Install AWS CDK CLI
         run: |
@@ -99,13 +101,13 @@ jobs:
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
 
           # Parse diff and generate report
-          echo "## 📊 Infrastructure Changes Preview (Serverless Telegram Bot Starter)" > /tmp/diff-report.md
+          echo "## 📊 Infrastructure Changes Preview (Zerde Telegram Bot)" > /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
           echo "This PR will modify the following AWS resources:" >> /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
 
           # Check if there are any changes
-          if ! grep -q "Stack TelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
+          if ! grep -q "Stack ZerdeTelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
             echo "### ℹ️ No infrastructure changes detected" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             echo "This PR only contains code changes (Lambda functions, etc.)" >> /tmp/diff-report.md
