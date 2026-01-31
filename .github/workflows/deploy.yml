@@ -76,6 +76,9 @@ jobs:
 
       - name: CDK Bootstrap (usually only needs to run once, but kept here as a safeguard)
         working-directory: ./infra
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
         run: |
           uv run cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/eu-central-1 || echo "Bootstrap may already be done"
         continue-on-error: true

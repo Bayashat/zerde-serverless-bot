@@ -59,7 +59,7 @@ def create_response(status_code: int, body: dict[str, Any]) -> dict[str, Any]:
     """
     Create API Gateway response format.
     """
-    logger.debug(f"Creating response: {body}")
+    logger.debug("Creating response", extra={"body": body})
     return {
         "statusCode": status_code,
         "headers": {

@@ -29,21 +29,16 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
         status = (member.get("status") or "").lower()
         can_send = member.get("can_send_messages", True)
 
-        if status in ("member", "administrator", "creator"):
+        if status in ("member", "administrator", "creator") or can_send:
             logger.info("User %s already verified. Ignoring timeout.", user_id)
             return
-
-        if status == "restricted" or not can_send:
-            logger.info("User %s timed out. Kicking.", user_id)
-            bot.kick_chat_member(chat_id, user_id)
-            try:
-                bot.delete_message(chat_id, message_id)
-            except Exception as e:
-                logger.warning("Failed to delete verification message %s: %s", message_id, e)
-            return
-
-        # left / kicked / unknown: do nothing
-        logger.debug("User %s status=%s, no action.", user_id, status)
+        logger.info("User %s timed out. Kicking.", user_id)
+        bot.kick_chat_member(chat_id, user_id)
+        try:
+            bot.delete_message(chat_id, message_id)
+        except Exception as e:
+            logger.warning("Failed to delete verification message %s: %s", message_id, e)
+        return
     except Exception as e:
         logger.exception("Timeout task error (user may have left or message deleted): %s", e)
 
@@ -88,6 +83,7 @@ def register_handlers(dp: Dispatcher):
                 msg_id = sent_message.get("message_id") if sent_message else None
                 if msg_id is not None and ctx.sqs_repo:
                     ctx.sqs_repo.send_timeout_task(chat_id, user_id, msg_id, delay_seconds=60)
+                    logger.info("Sent delayed timeout task", extra={"user_id": user_id})
                 if ctx.stats_repo:
                     ctx.stats_repo.increment_total_joins(chat_id)
         except Exception as e:
@@ -129,10 +125,25 @@ def register_handlers(dp: Dispatcher):
                 return
             bot = ctx._bot
             # Unmute: grant standard permissions
+            full_permissions = {
+                "can_send_messages": True,
+                "can_send_media_messages": True,
+                "can_send_audios": True,
+                "can_send_documents": True,
+                "can_send_photos": True,
+                "can_send_videos": True,
+                "can_send_video_notes": True,
+                "can_send_voice_notes": True,
+                "can_send_polls": True,
+                "can_send_other_messages": True,
+                "can_add_web_page_previews": True,
+                "can_invite_users": True,
+                "can_change_info": True,
+            }
             bot.restrict_chat_member(
                 chat_id,
                 target_user_id,
-                {"can_send_messages": True},
+                full_permissions,
             )
             bot.answer_callback_query(
                 ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
@@ -147,6 +158,7 @@ def register_handlers(dp: Dispatcher):
             if ctx.stats_repo:
                 ctx.stats_repo.increment_verified_users(chat_id)
 
+            logger.info("User %s verified.", target_user_id)
         except Exception as e:
             logger.exception(f"handle_verification error: {e}")
             if ctx.callback_query_id:
