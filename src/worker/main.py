@@ -25,7 +25,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> None:
     """
     SQS Event Handler. Routes by task_type: timeout vs standard Telegram update.
     """
-    logger.info("Received batch", count=len(event.get("Records", [])))
+    logger.debug("Received batch", extra={"event": event})
 
     for record in event["Records"]:
         try:
@@ -38,7 +38,8 @@ def lambda_handler(event: dict[str, Any], context: Any) -> None:
 
         except Exception as e:
             logger.error(
-                f"Critical error processing record {record.get('messageId')}: {e}",
+                "Critical error processing record",
+                extra={"message_id": record.get("messageId"), "error": e},
                 exc_info=True,
             )
 

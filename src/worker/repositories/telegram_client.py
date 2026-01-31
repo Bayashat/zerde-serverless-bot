@@ -46,6 +46,7 @@ class TelegramClient:
             logger.error(
                 "Failed to send message",
                 extra={"chat_id": chat_id, "error": e, "response": e.response.text if e.response else "No response"},
+                exc_info=True,
             )
             raise
 
@@ -67,7 +68,7 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to answer callback query", extra={"error": e})
+            logger.error("Failed to answer callback query", extra={"error": e}, exc_info=True)
             raise
 
     def restrict_chat_member(
@@ -94,7 +95,7 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to restrict chat member", extra={"user_id": user_id, "error": e})
+            logger.error("Failed to restrict chat member", extra={"user_id": user_id, "error": e}, exc_info=True)
             raise
 
     def kick_chat_member(self, chat_id: int | str, user_id: int) -> None:
@@ -106,7 +107,7 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to kick chat member", extra={"user_id": user_id, "error": e})
+            logger.error("Failed to kick chat member", extra={"user_id": user_id, "error": e}, exc_info=True)
             raise
 
     def get_chat_member(self, chat_id: int | str, user_id: int) -> dict[str, Any]:
@@ -116,9 +117,10 @@ class TelegramClient:
         try:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
+            logger.debug("Chat member info", extra={"user_id": user_id, "response": response.json()})
             return response.json().get("result", {})
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to get chat member", extra={"user_id": user_id, "error": e})
+            logger.error("Failed to get chat member", extra={"user_id": user_id, "error": e}, exc_info=True)
             raise
 
     def delete_message(self, chat_id: int | str, message_id: int) -> None:
@@ -134,5 +136,5 @@ class TelegramClient:
             response = self.session.post(url, json=payload, timeout=10)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error("Failed to delete message", extra={"message_id": message_id, "error": e})
+            logger.error("Failed to delete message", extra={"message_id": message_id, "error": e}, exc_info=True)
             raise
