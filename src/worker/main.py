@@ -8,7 +8,7 @@ from core.dispatcher import Dispatcher
 from repositories.sqs_repo import SQSClient
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
-from services.handlers import process_timeout_task, register_handlers
+from services.handlers import process_timeout_task, register_handlers, send_private_msg
 
 logger = Logger()
 
@@ -30,6 +30,12 @@ def lambda_handler(event: dict[str, Any], context: Any) -> None:
     for record in event["Records"]:
         try:
             body = json.loads(record["body"])
+
+            chat_type = body.get("message", {}).get("chat", {}).get("type")
+            if chat_type == "private":
+                chat_id = body.get("message", {}).get("chat", {}).get("id")
+                send_private_msg(_bot, chat_id)
+                return
 
             if body.get("task_type") == "CHECK_TIMEOUT":
                 process_timeout_task(_bot, body)

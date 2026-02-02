@@ -42,7 +42,14 @@ TRANSLATIONS = {
             "✅ <b>Verified captchas:</b> {verified} items\n\n"
             "📈 <b>Overall activity:</b> {activity_level}"
         ),
-        "support_message": "👨‍💻 Technical support\nFor questions: @bayashat",
+        "private_message": (
+            "👋 <b>Hello! I am Zerde — a smart assistant for IT communities.</b> 🤖\n\n"
+            "My main task is to protect chats from spam bots and gather useful statistics.\n\n"
+            "⚠️ <b>This bot only works in chats/groups. "
+            "If you want to add me to your private chat, contact <i>@bayashat</i>!</b>\n\n"
+            "🐍 <i>Powered by Python & AWS Serverless</i>"
+        ),
+        "support_message": "👨‍💻 Technical support\nFor questions: <i>@bayashat</i>",
         "welcome_verification": (
             "👋 Welcome {MENTION}!\n\n"
             "To ensure quality, please verify you are human.\n\n"
@@ -93,7 +100,14 @@ TRANSLATIONS = {
             "✅ <b>Расталған капчалар:</b> {verified} дана\n\n"
             "📈 <b>Жалпы белсенділік:</b> {activity_level}"
         ),
-        "support_message": "👨‍💻 Техникалық қолдау\nСұрақтар бойынша: @bayashat",
+        "private_message": (
+            "🤖 <b>Сәлем! Мен Zerde — IT қауымдастықтардың ақылды көмекшісімін.</b>\n\n"
+            "Менің негізгі міндетім — чатты спам-боттардан қорғау және пайдалы статистика жинау.\n\n"
+            "⚠️ <b>Бұл бот тек чаттарда/топтарда қызмет көрсетеді,"
+            "егер өз тобыңызға қосқыңыз келсе <i>@bayashat</i> хабарласыңыз!</b>\n\n"
+            "🐍 <i>Powered by Python & AWS Serverless</i>"
+        ),
+        "support_message": "👨‍💻 Техникалық қолдау\nСұрақтар бойынша: <i>@bayashat</i>",
         "welcome_verification": (
             "👋 Welcome {MENTION}!\n\n"
             "Топ сапасын сақтау үшін, бот емес екеніңізді растаңыз.\n\n"

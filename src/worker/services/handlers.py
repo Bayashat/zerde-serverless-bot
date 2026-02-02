@@ -14,6 +14,11 @@ from services.message_formatter import get_translated_text
 logger = Logger()
 
 
+def send_private_msg(bot: TelegramClient, chat_id: str):
+    text = get_translated_text("private_message")
+    bot.send_message(chat_id, text)
+
+
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
     """
     Process CHECK_TIMEOUT task: if user still restricted, kick and delete verification msg.
