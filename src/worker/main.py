@@ -31,11 +31,13 @@ def lambda_handler(event: dict[str, Any], context: Any) -> None:
         try:
             body = json.loads(record["body"])
 
-            chat_type = body.get("message", {}).get("chat", {}).get("type")
-            if chat_type == "private":
-                chat_id = body.get("message", {}).get("chat", {}).get("id")
-                send_private_msg(_bot, chat_id)
-                return
+            message = body.get("message", {})
+            if message is not None:
+                chat_type = message.get("chat", {}).get("type")
+                if chat_type == "private":
+                    chat_id = message.get("chat", {}).get("id")
+                    send_private_msg(_bot, chat_id)
+                    continue
 
             if body.get("task_type") == "CHECK_TIMEOUT":
                 process_timeout_task(_bot, body)

@@ -14,7 +14,13 @@ from services.message_formatter import get_translated_text
 logger = Logger()
 
 
-def send_private_msg(bot: TelegramClient, chat_id: str):
+def send_private_msg(bot: TelegramClient, chat_id: str | int) -> None:
+    """
+    Send private message to the user.
+    """
+    if not chat_id:
+        logger.exception("Chat ID is required")
+        return
     text = get_translated_text("private_message")
     bot.send_message(chat_id, text)
 
