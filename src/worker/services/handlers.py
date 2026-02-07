@@ -386,11 +386,11 @@ def register_handlers(dp: Dispatcher):
             )
 
             # We need to create the vote session first to get the vote_key
-            # Use a temporary message to get message_id
-            temp_msg = ctx._bot.send_message(
+            # Create initial vote message
+            initial_vote_msg = ctx._bot.send_message(
                 ctx.chat_id, text, reply_to_message_id=ctx.reply_to_message.get("message_id")
             )
-            message_id = temp_msg.get("message_id")
+            message_id = initial_vote_msg.get("message_id")
 
             if not message_id or not ctx.vote_repo:
                 ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))

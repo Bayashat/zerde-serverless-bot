@@ -17,6 +17,8 @@ dynamodb = boto3.resource("dynamodb")
 
 # Minimum votes required to ban
 VOTES_THRESHOLD = 15
+# Vote session TTL in seconds (24 hours)
+VOTE_SESSION_TTL_SECONDS = 86400
 
 
 class VoteRepository:
@@ -37,7 +39,7 @@ class VoteRepository:
         TTL is set to 24 hours from now.
         """
         vote_key = f"chat:{chat_id}:target:{target_user_id}:initiator:{initiator_user_id}"
-        ttl = int(time.time()) + 86400  # 24 hours from now
+        ttl = int(time.time()) + VOTE_SESSION_TTL_SECONDS
 
         try:
             self._table.put_item(
@@ -73,17 +75,10 @@ class VoteRepository:
         other_list = "forgive_votes" if vote_type == "ban" else "ban_votes"
 
         try:
-            # First, remove user from the other list if they voted there
-            self._table.update_item(
-                Key={"vote_key": vote_key},
-                UpdateExpression=f"DELETE {other_list} :user_set",
-                ExpressionAttributeValues={":user_set": {user_id}},
-            )
-
-            # Then add user to the correct list
+            # Combine both operations into a single atomic update
             response = self._table.update_item(
                 Key={"vote_key": vote_key},
-                UpdateExpression=f"ADD {vote_list} :user_set",
+                UpdateExpression=f"DELETE {other_list} :user_set ADD {vote_list} :user_set",
                 ExpressionAttributeValues={":user_set": {user_id}},
                 ReturnValues="ALL_NEW",
             )
