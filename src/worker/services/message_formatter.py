@@ -67,6 +67,28 @@ TRANSLATIONS = {
         "stats_admin_only": "❌ Only administrators can view /stats.",
         "stats_error": "❌ Failed to load stats.",
         "only_user_may_verify": "❌ Only the user who joined may verify.",
+        "vote_ban_initiated": (
+            "🗳️ <b>Vote to Ban</b>\n\n"
+            "👤 <b>Initiator:</b> {INITIATOR}\n"
+            "🎯 <b>Target:</b> {TARGET}\n\n"
+            "📊 <b>Current votes:</b>\n"
+            "🚫 Ban: {BAN_COUNT}\n"
+            "💚 Forgive: {FORGIVE_COUNT}\n\n"
+            "⚠️ <b>Threshold:</b> {THRESHOLD} votes needed to ban\n\n"
+            "Vote below 👇"
+        ),
+        "vote_ban_updated": (
+            "📊 <b>Vote Status Updated</b>\n\n"
+            "🚫 Ban: {BAN_COUNT}\n"
+            "💚 Forgive: {FORGIVE_COUNT}\n\n"
+            "⚠️ <b>Threshold:</b> {THRESHOLD} votes needed"
+        ),
+        "vote_ban_success": "✅ User has been banned! The ban threshold was reached.",
+        "vote_recorded": "✅ Your vote has been recorded!",
+        "vote_ban_reply_required": "❌ Please reply to a user's message to initiate vote-to-ban.",
+        "vote_ban_cannot_ban_admin": "❌ Cannot initiate ban vote against administrators.",
+        "vote_ban_cannot_ban_self": "❌ You cannot initiate a ban vote against yourself.",
+        "vote_ban_session_not_found": "❌ Vote session not found or expired.",
     },
     "kk": {
         "start_message": (
@@ -127,6 +149,28 @@ TRANSLATIONS = {
         "stats_admin_only": "❌ Тек әкімшілер үшін қолжетімді.",
         "stats_error": "❌ Статистиканы жүктеу кезінде қате орын алды.",
         "only_user_may_verify": "❌ Тек жаңадан қосылған қолданушы үшін қолжетімді.",
+        "vote_ban_initiated": (
+            "🗳️ <b>Дауыс беру арқылы бан</b>\n\n"
+            "👤 <b>Бастаушы:</b> {INITIATOR}\n"
+            "🎯 <b>Мақсат:</b> {TARGET}\n\n"
+            "📊 <b>Ағымдағы дауыстар:</b>\n"
+            "🚫 Бан: {BAN_COUNT}\n"
+            "💚 Кешіру: {FORGIVE_COUNT}\n\n"
+            "⚠️ <b>Шегі:</b> Банға {THRESHOLD} дауыс қажет\n\n"
+            "Төменде дауыс беріңіз 👇"
+        ),
+        "vote_ban_updated": (
+            "📊 <b>Дауыс берілу жағдайы жаңартылды</b>\n\n"
+            "🚫 Бан: {BAN_COUNT}\n"
+            "💚 Кешіру: {FORGIVE_COUNT}\n\n"
+            "⚠️ <b>Шегі:</b> {THRESHOLD} дауыс қажет"
+        ),
+        "vote_ban_success": "✅ Қолданушы бандалды! Бан шегіне жетілді.",
+        "vote_recorded": "✅ Сіздің дауысыңыз тіркелді!",
+        "vote_ban_reply_required": "❌ Дауыс беру арқылы банды бастау үшін қолданушының хабарламасына жауап беріңіз.",
+        "vote_ban_cannot_ban_admin": "❌ Әкімшілерге қарсы дауыс беруге болмайды.",
+        "vote_ban_cannot_ban_self": "❌ Өзіңізге қарсы дауыс бере алмайсыз.",
+        "vote_ban_session_not_found": "❌ Дауыс беру сессиясы табылмады немесе мерзімі өтті.",
     },
 }
 

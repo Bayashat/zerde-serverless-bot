@@ -11,3 +11,5 @@ if not BOT_TOKEN or not WEBHOOK_SECRET_TOKEN:
     raise ValueError("BOT_TOKEN, WEBHOOK_SECRET_TOKEN must be set")
 
 VERIFY_PREFIX = "verify_"
+VOTE_BAN_PREFIX = "vote_ban_"
+VOTE_FORGIVE_PREFIX = "vote_forgive_"

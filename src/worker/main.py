@@ -8,6 +8,7 @@ from core.dispatcher import Dispatcher
 from repositories.sqs_repo import SQSClient
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
+from repositories.vote_repository import VoteRepository
 from services.handlers import process_timeout_task, register_handlers, send_private_msg
 
 logger = Logger()
@@ -15,7 +16,8 @@ logger = Logger()
 _bot = TelegramClient()
 _stats_repo = StatsRepository()
 _sqs_repo = SQSClient()
-_dispatcher = Dispatcher(_bot, _stats_repo, _sqs_repo)
+_vote_repo = VoteRepository()
+_dispatcher = Dispatcher(_bot, _stats_repo, _sqs_repo, _vote_repo)
 
 register_handlers(_dispatcher)
 logger.info("Dispatcher initialized and handlers registered")

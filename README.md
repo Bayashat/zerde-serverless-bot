@@ -14,6 +14,7 @@ Built with **Python** and **AWS CDK**, it leverages an event-driven architecture
 ## ✨ Features
 
 * **🛡️ Smart Verification (Captcha):** Interactive "I am human" verification with a strict **60-second auto-kick** mechanism (powered by SQS Delay Queues).
+* **🗳️ Vote-to-Ban:** Community-driven moderation allowing users to vote to ban problematic members. Requires 15 votes to ban, with vote sessions expiring after 24 hours.
 * **📊 Community Analytics:** Tracks joins, verification rates, and calculates group activity levels.
 * **⚡ High Concurrency:** Buffers traffic via Amazon SQS to prevent data loss during spikes (e.g., raiding).
 * **☁️ Infrastructure as Code:** Fully reproducible deployments using AWS CDK.
@@ -100,10 +101,11 @@ The script in `scripts/setup_webhook.sh` can generate a new secret. If you use i
 ## 🤖 Bot Commands
 
 | Command   | Description                                                |
-|-----------|------------------------------------------------------------|
+|-----------|---------------------------------------------------------------
 | `/start`  | Restart the bot and view instructions.                     |
 | `/help`   | Show usage guide and rules.                                |
 | `/stats`  | (Admin) View community statistics and activity levels.     |
+| `/voteban`| Start a vote-to-ban session (reply to target user's message). Requires 15 votes to ban. |
 | `/support`| Get developer contact info.                                |
 
 ---
