@@ -8,7 +8,8 @@ from aws_lambda_powertools import Logger
 from core.context import Context
 from core.dispatcher import Dispatcher
 from repositories.telegram_client import TelegramClient
-from services import VERIFY_PREFIX
+from repositories.vote_repository import VOTES_THRESHOLD
+from services import VERIFY_PREFIX, VOTE_BAN_PREFIX, VOTE_FORGIVE_PREFIX
 from services.message_formatter import get_translated_text
 
 logger = Logger()
@@ -23,6 +24,95 @@ def send_private_msg(bot: TelegramClient, chat_id: str | int) -> None:
         return
     text = get_translated_text("private_message")
     bot.send_message(chat_id, text)
+
+
+def handle_vote_callback(ctx: Context, vote_type: str) -> None:
+    """
+    Handle vote button callbacks (ban or forgive).
+    """
+    try:
+        # Extract vote_key from callback_data
+        prefix = VOTE_BAN_PREFIX if vote_type == "ban" else VOTE_FORGIVE_PREFIX
+        vote_key = ctx.callback_data[len(prefix) :].strip()
+
+        if not ctx.vote_repo:
+            ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+            return
+
+        # Check if vote session exists
+        vote_session = ctx.vote_repo.get_vote_session(vote_key)
+        if not vote_session:
+            ctx._bot.answer_callback_query(
+                ctx.callback_query_id, text=get_translated_text("vote_ban_session_not_found"), show_alert=True
+            )
+            return
+
+        # Add the vote
+        result = ctx.vote_repo.add_vote(vote_key, ctx.user_id, vote_type)
+
+        # Answer the callback
+        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("vote_recorded"))
+
+        # Update the message with new vote counts
+        initiator_user_id = vote_session["initiator_user_id"]
+        target_user_id = vote_session["target_user_id"]
+
+        # Get initiator info
+        initiator_info = ctx._bot.get_chat_member(ctx.chat_id, initiator_user_id)
+        initiator_first_name = initiator_info.get("user", {}).get("first_name", "User")
+        initiator_mention = f'<a href="tg://user?id={initiator_user_id}">{initiator_first_name}</a>'
+
+        # Get target info
+        target_info = ctx._bot.get_chat_member(ctx.chat_id, target_user_id)
+        target_first_name = target_info.get("user", {}).get("first_name", "User")
+        target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
+        ban_count = result["ban_votes"]
+        forgive_count = result["forgive_votes"]
+
+        # Check if ban threshold is reached
+        if ban_count >= VOTES_THRESHOLD:
+            # Ban the user
+            try:
+                ctx._bot.kick_chat_member(ctx.chat_id, target_user_id)
+                # Delete the vote session
+                ctx.vote_repo.delete_vote_session(vote_key)
+                # Update message to show success
+                ctx._bot.edit_message_text(
+                    ctx.chat_id,
+                    ctx.message_id,
+                    get_translated_text("vote_ban_success", lang_code=ctx.lang_code),
+                )
+                logger.info(f"User {target_user_id} banned by vote in chat {ctx.chat_id}")
+            except Exception as e:
+                logger.exception(f"Failed to ban user: {e}")
+        else:
+            # Update vote counts in the message
+            updated_text = get_translated_text(
+                "vote_ban_initiated",
+                lang_code=ctx.lang_code,
+                INITIATOR=initiator_mention,
+                TARGET=target_mention,
+                BAN_COUNT=ban_count,
+                FORGIVE_COUNT=forgive_count,
+                THRESHOLD=VOTES_THRESHOLD,
+            )
+            reply_markup = {
+                "inline_keyboard": [
+                    [
+                        {"text": "🚫 Ban", "callback_data": f"{VOTE_BAN_PREFIX}{vote_key}"},
+                        {"text": "💚 Forgive / Кешіру", "callback_data": f"{VOTE_FORGIVE_PREFIX}{vote_key}"},
+                    ]
+                ]
+            }
+            ctx._bot.edit_message_text(ctx.chat_id, ctx.message_id, updated_text, reply_markup=reply_markup)
+    except Exception as e:
+        logger.exception(f"handle_vote_callback error: {e}")
+        if ctx.callback_query_id:
+            try:
+                ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+            except Exception:
+                pass
 
 
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
@@ -107,9 +197,19 @@ def register_handlers(dp: Dispatcher):
         """
         Verify user from button click:
         unmute, answer callback, delete verification msg, send welcome, increment verified.
+        Also handle vote-to-ban callbacks.
         """
         mention = f'<a href="tg://user?id={ctx.user_id}">{ctx.user_data.get("first_name", "User")}</a>'
         try:
+            # Handle vote-to-ban callbacks
+            if ctx.callback_data.startswith(VOTE_BAN_PREFIX):
+                handle_vote_callback(ctx, "ban")
+                return
+            elif ctx.callback_data.startswith(VOTE_FORGIVE_PREFIX):
+                handle_vote_callback(ctx, "forgive")
+                return
+
+            # Handle verification callbacks
             if not ctx.callback_data.startswith(VERIFY_PREFIX):
                 if ctx.callback_query_id:
                     ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("unknown_action"))
@@ -229,3 +329,90 @@ def register_handlers(dp: Dispatcher):
     @dp.command("ping")
     def handle_ping(ctx: Context):
         ctx.reply("🏓 Pong! Serverless is fast.")
+
+    @dp.command("voteban")
+    def handle_voteban(ctx: Context):
+        """
+        Initiate a vote-to-ban session.
+        User must reply to another user's message.
+        """
+        try:
+            # Check if this is a reply to another message
+            if not ctx.reply_to_message:
+                ctx.reply(get_translated_text("vote_ban_reply_required", lang_code=ctx.lang_code))
+                return
+
+            target_user = ctx.reply_to_message.get("from", {})
+            target_user_id = target_user.get("id")
+            target_first_name = target_user.get("first_name", "User")
+
+            if not target_user_id:
+                ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
+                return
+
+            # Cannot ban yourself
+            if target_user_id == ctx.user_id:
+                ctx.reply(get_translated_text("vote_ban_cannot_ban_self", lang_code=ctx.lang_code))
+                return
+
+            # Cannot ban admins or bots
+            if target_user.get("is_bot"):
+                ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
+                return
+
+            # Check if target is admin
+            try:
+                member = ctx._bot.get_chat_member(ctx.chat_id, target_user_id)
+                status = (member.get("status") or "").lower()
+                if status in ("creator", "administrator"):
+                    ctx.reply(get_translated_text("vote_ban_cannot_ban_admin", lang_code=ctx.lang_code))
+                    return
+            except Exception as e:
+                logger.warning(f"Failed to check target user status: {e}")
+
+            # Create mention strings
+            initiator_mention = f'<a href="tg://user?id={ctx.user_id}">{ctx.user_data.get("first_name", "User")}</a>'
+            target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
+            # Send vote message
+            text = get_translated_text(
+                "vote_ban_initiated",
+                lang_code=ctx.lang_code,
+                INITIATOR=initiator_mention,
+                TARGET=target_mention,
+                BAN_COUNT=0,
+                FORGIVE_COUNT=0,
+                THRESHOLD=VOTES_THRESHOLD,
+            )
+
+            # We need to create the vote session first to get the vote_key
+            # Use a temporary message to get message_id
+            temp_msg = ctx._bot.send_message(
+                ctx.chat_id, text, reply_to_message_id=ctx.reply_to_message.get("message_id")
+            )
+            message_id = temp_msg.get("message_id")
+
+            if not message_id or not ctx.vote_repo:
+                ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
+                return
+
+            # Create vote session
+            vote_key = ctx.vote_repo.create_vote_session(ctx.chat_id, target_user_id, ctx.user_id, message_id)
+
+            # Update the message with buttons
+            reply_markup = {
+                "inline_keyboard": [
+                    [
+                        {"text": "🚫 Ban", "callback_data": f"{VOTE_BAN_PREFIX}{vote_key}"},
+                        {"text": "💚 Forgive / Кешіру", "callback_data": f"{VOTE_FORGIVE_PREFIX}{vote_key}"},
+                    ]
+                ]
+            }
+
+            ctx._bot.edit_message_text(ctx.chat_id, message_id, text, reply_markup=reply_markup)
+
+            logger.info(f"Vote-to-ban session created: {vote_key}")
+
+        except Exception as e:
+            logger.exception(f"handle_voteban error: {e}")
+            ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))

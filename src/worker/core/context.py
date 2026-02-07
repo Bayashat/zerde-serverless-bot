@@ -7,6 +7,7 @@ from typing import Any
 from repositories.sqs_repo import SQSClient
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
+from repositories.vote_repository import VoteRepository
 
 
 class Context:
@@ -21,11 +22,13 @@ class Context:
         bot: TelegramClient,
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
+        vote_repo: VoteRepository | None = None,
     ):
         self._update = update
         self._bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
+        self.vote_repo = vote_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -43,6 +46,9 @@ class Context:
 
         # Handle text safely
         self.text = self.message.get("text", "").strip()
+
+        # Check if this is a reply to another message
+        self.reply_to_message = self.message.get("reply_to_message")
 
     @property
     def user_id(self) -> int | None:

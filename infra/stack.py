@@ -83,6 +83,26 @@ class ZerdeTelegramBotStack(Stack):
 
         self.bot_stats_table = dynamodb.Table(self, **bot_stats_table_kwargs)
 
+        # Vote Ban Table
+        vote_ban_table_kwargs = {
+            "id": f"{project_name_prefix}VoteBanTable",
+            "table_name": f"{stack_name_prefix}-vote-ban",
+            "partition_key": dynamodb.Attribute(
+                name="vote_key",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            "billing_mode": dynamodb.BillingMode.PAY_PER_REQUEST,
+            "removal_policy": removal_policy,
+            "deletion_protection": deletion_protection,
+            "time_to_live_attribute": "ttl",
+        }
+        if is_prod:
+            vote_ban_table_kwargs["point_in_time_recovery_specification"] = dynamodb.PointInTimeRecoverySpecification(
+                point_in_time_recovery_enabled=pitr_enabled
+            )
+
+        self.vote_ban_table = dynamodb.Table(self, **vote_ban_table_kwargs)
+
         # ============================================================================
         # SQS Queues
         # ============================================================================
@@ -190,12 +210,14 @@ class ZerdeTelegramBotStack(Stack):
                 "WEBHOOK_SECRET_TOKEN": telegram_webhook_secret_token,
                 "TELEGRAM_API_BASE": "https://api.telegram.org/bot",
                 "STATS_TABLE_NAME": self.bot_stats_table.table_name,
+                "VOTE_BAN_TABLE_NAME": self.vote_ban_table.table_name,
             },
         )
 
         self.updates_queue.grant_consume_messages(self.worker_lambda)
         self.updates_queue.grant_send_messages(self.worker_lambda)  # For CHECK_TIMEOUT events
         self.bot_stats_table.grant_read_write_data(self.worker_lambda)
+        self.vote_ban_table.grant_read_write_data(self.worker_lambda)
 
         self.worker_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
