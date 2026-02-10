@@ -192,14 +192,14 @@ def register_handlers(dp: Dispatcher):
             stats = ctx.stats_repo.get_stats(chat_id)
             total = stats["total_joins"]
             verified = stats["verified_users"]
-            if total == 0:
-                activity_level = 0
-            else:
-                activity_level = 100 * (verified / total)
             start_date = stats.get("started_at")
-            if activity_level < 30:
+            if total == 0:
+                activity_level_percentage = 0
+            else:
+                activity_level_percentage = 100 * (verified / total)
+            if activity_level_percentage < 30:
                 level_key = "activity_low"
-            elif activity_level < 70:
+            elif activity_level_percentage < 70:
                 level_key = "activity_medium"
             else:
                 level_key = "activity_high"
