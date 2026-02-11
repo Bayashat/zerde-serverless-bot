@@ -89,22 +89,14 @@ class VoteRepository:
         Add a vote to the session using atomic DynamoDB operations.
         Returns updated vote counts: {"votes_for": int, "votes_against": int, "already_voted": bool}
 
-        Uses DynamoDB's SET ADD operation to atomically add votes, preventing race conditions.
+        Uses DynamoDB's UpdateItem with conditional expressions to atomically add votes,
+        preventing race conditions and duplicate votes.
         """
         key = f"voteban_{chat_id}_{target_user_id}"
         attribute_name = "votes_for" if vote_for else "votes_against"
 
         try:
-            # First check if user already voted (in either list)
-            session = self.get_vote_session(chat_id, target_user_id)
-            if voter_id in session["votes_for"] or voter_id in session["votes_against"]:
-                return {
-                    "votes_for": len(session["votes_for"]),
-                    "votes_against": len(session["votes_against"]),
-                    "already_voted": True,
-                }
-
-            # Use UpdateItem with condition to atomically add vote
+            # Atomically add vote with condition to prevent duplicates
             # Condition: voter_id must not exist in either votes_for or votes_against
             update_expr = (
                 f"SET {attribute_name} = list_append(if_not_exists({attribute_name}, :empty_list), :voter_list)"

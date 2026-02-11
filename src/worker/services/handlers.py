@@ -113,7 +113,6 @@ def register_handlers(dp: Dispatcher):
         1. Verification button (verify_{user_id})
         2. Vote-to-ban buttons (voteban_for_{user_id}, voteban_against_{user_id})
         """
-        mention = f'<a href="tg://user?id={ctx.user_id}">{ctx.user_data.get("first_name", "User")}</a>'
         try:
             # Handle verification callback
             if ctx.callback_data.startswith(VERIFY_PREFIX):
@@ -158,6 +157,8 @@ def register_handlers(dp: Dispatcher):
                     target_user_id,
                     full_permissions,
                 )
+                # Create mention for this verified user
+                mention = f'<a href="tg://user?id={ctx.user_id}">{ctx.user_data.get("first_name", "User")}</a>'
                 bot.answer_callback_query(
                     ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
                 )
