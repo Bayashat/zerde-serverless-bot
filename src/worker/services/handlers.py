@@ -131,7 +131,9 @@ def register_handlers(dp: Dispatcher):
                 msg_id = ctx.message_id
                 if not chat_id or msg_id is None:
                     if ctx.callback_query_id:
-                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+                        ctx._bot.answer_callback_query(
+                            ctx.callback_query_id, text=get_translated_text("error_occurred")
+                        )
                     return
                 bot = ctx._bot
                 # Unmute: grant standard permissions
@@ -183,7 +185,9 @@ def register_handlers(dp: Dispatcher):
                 chat_id = ctx.chat_id
                 if not chat_id or not ctx.vote_repo:
                     if ctx.callback_query_id:
-                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+                        ctx._bot.answer_callback_query(
+                            ctx.callback_query_id, text=get_translated_text("error_occurred")
+                        )
                     return
 
                 # Add vote
@@ -212,9 +216,7 @@ def register_handlers(dp: Dispatcher):
                     # Ban the user
                     try:
                         ctx._bot.kick_chat_member(chat_id, target_user_id)
-                        # Get target user info for message
-                        session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
-                        # Format target mention (we need to get user info from the vote message)
+                        # Format target mention
                         target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
 
                         # Send ban notification
@@ -269,9 +271,6 @@ def register_handlers(dp: Dispatcher):
                     return
 
                 # Update vote message with new counts
-                # Get vote session to retrieve target info from original message
-                session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
-
                 # We can't easily get the original initiator and target mentions from stored data,
                 # so we'll just update with generic mentions or parse from the message
                 # For simplicity, we'll just update the vote counts in the message

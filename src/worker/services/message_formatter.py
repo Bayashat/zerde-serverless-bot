@@ -80,12 +80,10 @@ TRANSLATIONS = {
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
         "voteban_banned": (
-            "⚖️ <b>User Banned by Vote</b>\n\n"
-            "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes."
+            "⚖️ <b>User Banned by Vote</b>\n\n" "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes."
         ),
         "voteban_forgiven": (
-            "💚 <b>Vote to Ban Cancelled</b>\n\n"
-            "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes."
+            "💚 <b>Vote to Ban Cancelled</b>\n\n" "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes."
         ),
     },
     "kk": {
@@ -160,12 +158,10 @@ TRANSLATIONS = {
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз есепке алынды.",
         "voteban_already_voted": "⚠️ Сіз бұл банға қатысты дауыс бердіңіз.",
         "voteban_banned": (
-            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n"
-            "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды."
+            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n" "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды."
         ),
         "voteban_forgiven": (
-            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n"
-            "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді."
+            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n" "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді."
         ),
     },
 }

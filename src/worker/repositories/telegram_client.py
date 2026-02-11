@@ -181,7 +181,11 @@ class TelegramClient:
         except requests.exceptions.RequestException as e:
             logger.error(
                 "Failed to edit message text",
-                extra={"message_id": message_id, "error": e, "response": e.response.text if e.response else "No response"},
+                extra={
+                    "message_id": message_id,
+                    "error": e,
+                    "response": e.response.text if e.response else "No response",
+                },
                 exc_info=True,
             )
             raise
