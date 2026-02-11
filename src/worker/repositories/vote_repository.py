@@ -27,7 +27,11 @@ class VoteRepository:
         logger.info("VoteRepository initialized", extra={"table_name": STATS_TABLE_NAME})
 
     def get_vote_session(self, chat_id: int | str, target_user_id: int) -> dict[str, Any]:
-        """Get vote session data for a specific target user in a chat."""
+        """Get vote session data for a specific target user in a chat.
+
+        Note: votes_for and votes_against are stored as lists in DynamoDB but
+        returned as sets for easier duplicate checking and counting.
+        """
         key = f"voteban_{chat_id}_{target_user_id}"
         try:
             resp = self._table.get_item(Key={"stat_key": key}, ConsistentRead=False)
@@ -37,23 +41,36 @@ class VoteRepository:
                 "votes_against": set(item.get("votes_against", [])),
                 "message_id": item.get("message_id"),
                 "target_user_id": item.get("target_user_id"),
+                "initiator_user_id": item.get("initiator_user_id"),
+                "target_username": item.get("target_username"),
+                "target_first_name": item.get("target_first_name"),
             }
         except ClientError as e:
             logger.exception(f"Failed to get vote session: {e}")
             raise
 
     def create_vote_session(
-        self, chat_id: int | str, target_user_id: int, message_id: int, initiator_user_id: int
+        self,
+        chat_id: int | str,
+        target_user_id: int,
+        message_id: int,
+        initiator_user_id: int,
+        target_username: str | None = None,
+        target_first_name: str = "User",
     ) -> None:
-        """Create a new vote session with the initiator's vote."""
+        """Create a new vote session with the initiator's vote and target user info."""
         key = f"voteban_{chat_id}_{target_user_id}"
         try:
+            # Store votes as lists in DynamoDB for compatibility
             self._table.put_item(
                 Item={
                     "stat_key": key,
                     "target_user_id": target_user_id,
                     "message_id": message_id,
-                    "votes_for": [initiator_user_id],
+                    "initiator_user_id": initiator_user_id,
+                    "target_username": target_username,
+                    "target_first_name": target_first_name,
+                    "votes_for": [initiator_user_id],  # Stored as list, converted to set on read
                     "votes_against": [],
                 }
             )
@@ -65,6 +82,9 @@ class VoteRepository:
         """
         Add a vote to the session.
         Returns updated vote counts: {"votes_for": int, "votes_against": int, "already_voted": bool}
+
+        Note: votes are stored as lists in DynamoDB but handled as sets in memory
+        to prevent duplicates and make counting easier.
         """
         key = f"voteban_{chat_id}_{target_user_id}"
         try:
@@ -87,12 +107,15 @@ class VoteRepository:
             else:
                 votes_against.add(voter_id)
 
-            # Update database
+            # Update database (preserve all fields from original session)
             self._table.put_item(
                 Item={
                     "stat_key": key,
                     "target_user_id": target_user_id,
                     "message_id": session["message_id"],
+                    "initiator_user_id": session.get("initiator_user_id"),
+                    "target_username": session.get("target_username"),
+                    "target_first_name": session.get("target_first_name", "User"),
                     "votes_for": list(votes_for),
                     "votes_against": list(votes_against),
                 }

@@ -13,6 +13,10 @@ from services.message_formatter import get_translated_text
 
 logger = Logger()
 
+# Vote-to-ban thresholds
+VOTEBAN_THRESHOLD = 15  # Number of votes needed to ban a user
+VOTEBAN_FORGIVE_THRESHOLD = 20  # Number of votes needed to cancel a ban
+
 
 def send_private_msg(bot: TelegramClient, chat_id: str | int) -> None:
     """
@@ -209,15 +213,23 @@ def register_handlers(dp: Dispatcher):
 
                 votes_for = result["votes_for"]
                 votes_against = result["votes_against"]
-                threshold = 15
 
                 # Check if threshold is reached
-                if votes_for >= threshold:
+                if votes_for >= VOTEBAN_THRESHOLD:
                     # Ban the user
                     try:
-                        ctx._bot.kick_chat_member(chat_id, target_user_id)
+                        # Get session to retrieve target info
+                        session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
+                        target_username = session.get("target_username")
+                        target_first_name = session.get("target_first_name", "User")
+
                         # Format target mention
-                        target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
+                        if target_username:
+                            target_mention = f"@{target_username}"
+                        else:
+                            target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
+                        ctx._bot.kick_chat_member(chat_id, target_user_id)
 
                         # Send ban notification
                         ctx._bot.send_message(
@@ -244,10 +256,19 @@ def register_handlers(dp: Dispatcher):
                         logger.exception(f"Failed to ban user: {e}")
                     return
 
-                # Check if forgiven (20 forgive votes)
-                if votes_against >= 20:
-                    # Cancel the vote
-                    target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
+                # Check if forgiven
+                if votes_against >= VOTEBAN_FORGIVE_THRESHOLD:
+                    # Cancel the vote - get session to retrieve target info
+                    session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
+                    target_username = session.get("target_username")
+                    target_first_name = session.get("target_first_name", "User")
+
+                    # Format target mention
+                    if target_username:
+                        target_mention = f"@{target_username}"
+                    else:
+                        target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
                     ctx._bot.send_message(
                         chat_id,
                         get_translated_text(
@@ -271,23 +292,33 @@ def register_handlers(dp: Dispatcher):
                     return
 
                 # Update vote message with new counts
-                # We can't easily get the original initiator and target mentions from stored data,
-                # so we'll just update with generic mentions or parse from the message
-                # For simplicity, we'll just update the vote counts in the message
                 msg_id = ctx.message_id
                 if msg_id:
                     try:
-                        # Get current message text to extract mentions
-                        # For now, just update with user IDs
-                        target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
-                        initiator_mention = "Someone"  # We don't store initiator info
+                        # Get session to retrieve stored user info
+                        session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
+                        target_username = session.get("target_username")
+                        target_first_name = session.get("target_first_name", "User")
+                        initiator_user_id = session.get("initiator_user_id")
+
+                        # Format target mention
+                        if target_username:
+                            target_mention = f"@{target_username}"
+                        else:
+                            target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
+                        # Format initiator mention (best effort)
+                        if initiator_user_id:
+                            initiator_mention = f'<a href="tg://user?id={initiator_user_id}">User</a>'
+                        else:
+                            initiator_mention = "Someone"
 
                         updated_text = get_translated_text(
                             "voteban_initiated",
                             lang_code=ctx.lang_code,
                             INITIATOR=initiator_mention,
                             TARGET=target_mention,
-                            THRESHOLD=threshold,
+                            THRESHOLD=VOTEBAN_THRESHOLD,
                             VOTES_FOR=votes_for,
                             VOTES_AGAINST=votes_against,
                         )
@@ -452,14 +483,12 @@ def register_handlers(dp: Dispatcher):
                 ]
             }
 
-            # Threshold: 15-20 votes (using 15 as minimum)
-            threshold = 15
             text = get_translated_text(
                 "voteban_initiated",
                 lang_code=ctx.lang_code,
                 INITIATOR=initiator_mention,
                 TARGET=target_mention,
-                THRESHOLD=threshold,
+                THRESHOLD=VOTEBAN_THRESHOLD,
                 VOTES_FOR=1,  # Initiator's vote
                 VOTES_AGAINST=0,
             )
@@ -480,6 +509,8 @@ def register_handlers(dp: Dispatcher):
                         target_user_id,
                         message_id,
                         ctx.user_id,
+                        target_username=target_username,
+                        target_first_name=target_first_name,
                     )
                     logger.info(
                         "Vote session created",
