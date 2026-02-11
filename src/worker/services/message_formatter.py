@@ -67,6 +67,24 @@ TRANSLATIONS = {
         "stats_admin_only": "❌ Only administrators can view /stats.",
         "stats_error": "❌ Failed to load stats.",
         "only_user_may_verify": "❌ Only the user who joined may verify.",
+        "voteban_usage": "❌ Usage: Reply to a message with /voteban to start voting to ban that user.",
+        "voteban_self": "❌ You cannot vote to ban yourself.",
+        "voteban_admin": "❌ You cannot vote to ban administrators.",
+        "voteban_initiated": (
+            "🗳️ <b>Vote to Ban</b>\n\n"
+            "👤 Initiated by: {INITIATOR}\n"
+            "🎯 Target: {TARGET}\n\n"
+            "Votes needed: {THRESHOLD}\n"
+            "Current votes: {VOTES_FOR} 👍 | {VOTES_AGAINST} 👎"
+        ),
+        "voteban_vote_recorded": "✅ Your vote has been recorded.",
+        "voteban_already_voted": "⚠️ You have already voted on this ban.",
+        "voteban_banned": (
+            "⚖️ <b>User Banned by Vote</b>\n\n" "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes."
+        ),
+        "voteban_forgiven": (
+            "💚 <b>Vote to Ban Cancelled</b>\n\n" "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes."
+        ),
     },
     "kk": {
         "start_message": (
@@ -127,6 +145,24 @@ TRANSLATIONS = {
         "stats_admin_only": "❌ Тек әкімшілер үшін қолжетімді.",
         "stats_error": "❌ Статистиканы жүктеу кезінде қате орын алды.",
         "only_user_may_verify": "❌ Тек жаңадан қосылған қолданушы үшін қолжетімді.",
+        "voteban_usage": "❌ Қолдану: Қолданушыны банға дауыс беру үшін хабарламаға жауап ретінде /voteban жіберіңіз.",
+        "voteban_self": "❌ Өзіңізді банға дауыс бере алмайсыз.",
+        "voteban_admin": "❌ Әкімшілерді банға дауыс бере алмайсыз.",
+        "voteban_initiated": (
+            "🗳️ <b>Банға дауыс беру</b>\n\n"
+            "👤 Бастаған: {INITIATOR}\n"
+            "🎯 Мақсат: {TARGET}\n\n"
+            "Қажетті дауыстар: {THRESHOLD}\n"
+            "Ағымдағы дауыстар: {VOTES_FOR} 👍 | {VOTES_AGAINST} 👎"
+        ),
+        "voteban_vote_recorded": "✅ Сіздің дауысыңыз есепке алынды.",
+        "voteban_already_voted": "⚠️ Сіз бұл банға қатысты дауыс бердіңіз.",
+        "voteban_banned": (
+            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n" "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды."
+        ),
+        "voteban_forgiven": (
+            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n" "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді."
+        ),
     },
 }
 

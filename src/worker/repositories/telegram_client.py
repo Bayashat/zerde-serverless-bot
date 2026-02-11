@@ -25,6 +25,7 @@ class TelegramClient:
         text: str,
         parse_mode: str = "HTML",
         reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None,
     ) -> dict[str, Any]:
         """Send message to Telegram. Returns the sent Message object from API."""
         url = f"{self.api_base}/sendMessage"
@@ -37,6 +38,9 @@ class TelegramClient:
 
         if reply_markup:
             payload["reply_markup"] = reply_markup
+
+        if reply_to_message_id:
+            payload["reply_to_message_id"] = reply_to_message_id
 
         try:
             response = self.session.post(url, json=payload, timeout=10)
@@ -137,4 +141,51 @@ class TelegramClient:
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             logger.error("Failed to delete message", extra={"message_id": message_id, "error": e}, exc_info=True)
+            raise
+
+    def edit_message_text(
+        self,
+        chat_id: int | str,
+        message_id: int,
+        text: str,
+        parse_mode: str = "HTML",
+        reply_markup: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Edit text of an existing message.
+
+        Args:
+            chat_id: Telegram chat ID (int or str).
+            message_id: Message ID to edit.
+            text: New text of the message.
+            parse_mode: Parsing mode (HTML or Markdown).
+            reply_markup: Optional inline keyboard markup.
+
+        Returns:
+            Edited message object from API.
+        """
+        url = f"{self.api_base}/editMessageText"
+        payload = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": text,
+            "parse_mode": parse_mode,
+        }
+
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
+
+        try:
+            response = self.session.post(url, json=payload, timeout=10)
+            response.raise_for_status()
+            return response.json().get("result", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(
+                "Failed to edit message text",
+                extra={
+                    "message_id": message_id,
+                    "error": e,
+                    "response": e.response.text if e.response else "No response",
+                },
+                exc_info=True,
+            )
             raise

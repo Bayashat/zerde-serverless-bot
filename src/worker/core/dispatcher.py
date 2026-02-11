@@ -8,6 +8,7 @@ from typing import Any, Callable
 from aws_lambda_powertools import Logger
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
+from repositories.vote_repository import VoteRepository
 from services.message_formatter import get_translated_text
 
 from .context import Context
@@ -29,10 +30,12 @@ class Dispatcher:
         bot: TelegramClient,
         stats_repo: StatsRepository | None = None,
         sqs_repo: Any = None,
+        vote_repo: VoteRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
+        self.vote_repo = vote_repo
 
         # Registry for handlers
         self.command_handlers: dict[str, HandlerFunc] = {}
@@ -72,7 +75,7 @@ class Dispatcher:
         """
         Main entry point to process a single Telegram update.
         """
-        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo)
+        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
 
         # --- Routing Logic ---
         # 1. Callback query (e.g. inline button "verify")

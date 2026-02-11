@@ -7,6 +7,7 @@ from typing import Any
 from repositories.sqs_repo import SQSClient
 from repositories.stats_repository import StatsRepository
 from repositories.telegram_client import TelegramClient
+from repositories.vote_repository import VoteRepository
 
 
 class Context:
@@ -21,11 +22,13 @@ class Context:
         bot: TelegramClient,
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
+        vote_repo: VoteRepository | None = None,
     ):
         self._update = update
         self._bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
+        self.vote_repo = vote_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -43,6 +46,9 @@ class Context:
 
         # Handle text safely
         self.text = self.message.get("text", "").strip()
+
+        # Handle reply_to_message
+        self.reply_to_message = self.message.get("reply_to_message")
 
     @property
     def user_id(self) -> int | None:
@@ -68,10 +74,26 @@ class Context:
     def reply(
         self,
         text: str,
-    ) -> None:
+        reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Shorthand to reply to the current message.
-        Example: ctx.reply("Hello!")
+
+        Args:
+            text: The message text to send.
+            reply_markup: Optional inline keyboard markup.
+            reply_to_message_id: Optional message ID to reply to (quote).
+
+        Returns:
+            The sent Message object from Telegram API, or empty dict on failure.
+
+        Example:
+            ctx.reply("Hello!")
+            sent_msg = ctx.reply("Vote now!", reply_markup=buttons, reply_to_message_id=123)
         """
         if self.chat_id:
-            self._bot.send_message(self.chat_id, text)
+            return self._bot.send_message(
+                self.chat_id, text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id
+            )
+        return {}
