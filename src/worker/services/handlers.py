@@ -8,7 +8,7 @@ from aws_lambda_powertools import Logger
 from core.context import Context
 from core.dispatcher import Dispatcher
 from repositories.telegram_client import TelegramClient
-from services import VERIFY_PREFIX
+from services import VERIFY_PREFIX, VOTEBAN_AGAINST_PREFIX, VOTEBAN_FOR_PREFIX
 from services.message_formatter import get_translated_text
 
 logger = Logger()
@@ -105,68 +105,223 @@ def register_handlers(dp: Dispatcher):
     @dp.on_callback_query
     def handle_verification(ctx: Context) -> None:
         """
-        Verify user from button click:
-        unmute, answer callback, delete verification msg, send welcome, increment verified.
+        Handle callback queries:
+        1. Verification button (verify_{user_id})
+        2. Vote-to-ban buttons (voteban_for_{user_id}, voteban_against_{user_id})
         """
         mention = f'<a href="tg://user?id={ctx.user_id}">{ctx.user_data.get("first_name", "User")}</a>'
         try:
-            if not ctx.callback_data.startswith(VERIFY_PREFIX):
-                if ctx.callback_query_id:
-                    ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("unknown_action"))
+            # Handle verification callback
+            if ctx.callback_data.startswith(VERIFY_PREFIX):
+                payload_user_id = ctx.callback_data[len(VERIFY_PREFIX) :].strip()
+                if not payload_user_id.isdigit():
+                    if ctx.callback_query_id:
+                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("invalid_data"))
+                    return
+                target_user_id = int(payload_user_id)
+                if ctx.user_id != target_user_id:
+                    if ctx.callback_query_id:
+                        ctx._bot.answer_callback_query(
+                            ctx.callback_query_id,
+                            text=get_translated_text("only_user_may_verify"),
+                            show_alert=True,
+                        )
+                    return
+                chat_id = ctx.chat_id
+                msg_id = ctx.message_id
+                if not chat_id or msg_id is None:
+                    if ctx.callback_query_id:
+                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+                    return
+                bot = ctx._bot
+                # Unmute: grant standard permissions
+                full_permissions = {
+                    "can_send_messages": True,
+                    "can_send_audios": True,
+                    "can_send_documents": True,
+                    "can_send_photos": True,
+                    "can_send_videos": True,
+                    "can_send_video_notes": True,
+                    "can_send_voice_notes": True,
+                    "can_send_polls": True,
+                    "can_send_other_messages": True,
+                    "can_add_web_page_previews": True,
+                }
+                bot.restrict_chat_member(
+                    chat_id,
+                    target_user_id,
+                    full_permissions,
+                )
+                bot.answer_callback_query(
+                    ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
+                )
+                try:
+                    bot.delete_message(chat_id, msg_id)
+                except Exception:
+                    logger.exception(f"Failed to delete verification message: {msg_id}")
+
+                bot.send_message(chat_id, get_translated_text("welcome_verified", MENTION=mention))
+
+                if ctx.stats_repo:
+                    ctx.stats_repo.increment_verified_users(chat_id)
+
+                logger.info("User %s verified.", target_user_id)
                 return
-            payload_user_id = ctx.callback_data[len(VERIFY_PREFIX) :].strip()
-            if not payload_user_id.isdigit():
-                if ctx.callback_query_id:
-                    ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("invalid_data"))
-                return
-            target_user_id = int(payload_user_id)
-            if ctx.user_id != target_user_id:
-                if ctx.callback_query_id:
+
+            # Handle vote-to-ban callbacks
+            if ctx.callback_data.startswith(VOTEBAN_FOR_PREFIX) or ctx.callback_data.startswith(VOTEBAN_AGAINST_PREFIX):
+                vote_for = ctx.callback_data.startswith(VOTEBAN_FOR_PREFIX)
+                prefix = VOTEBAN_FOR_PREFIX if vote_for else VOTEBAN_AGAINST_PREFIX
+                target_user_id_str = ctx.callback_data[len(prefix) :].strip()
+
+                if not target_user_id_str.isdigit():
+                    if ctx.callback_query_id:
+                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("invalid_data"))
+                    return
+
+                target_user_id = int(target_user_id_str)
+                chat_id = ctx.chat_id
+                if not chat_id or not ctx.vote_repo:
+                    if ctx.callback_query_id:
+                        ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
+                    return
+
+                # Add vote
+                result = ctx.vote_repo.add_vote(chat_id, target_user_id, ctx.user_id, vote_for)
+
+                if result["already_voted"]:
                     ctx._bot.answer_callback_query(
                         ctx.callback_query_id,
-                        text=get_translated_text("only_user_may_verify"),
+                        text=get_translated_text("voteban_already_voted", lang_code=ctx.lang_code),
                         show_alert=True,
                     )
+                    return
+
+                # Answer callback
+                ctx._bot.answer_callback_query(
+                    ctx.callback_query_id,
+                    text=get_translated_text("voteban_vote_recorded", lang_code=ctx.lang_code),
+                )
+
+                votes_for = result["votes_for"]
+                votes_against = result["votes_against"]
+                threshold = 15
+
+                # Check if threshold is reached
+                if votes_for >= threshold:
+                    # Ban the user
+                    try:
+                        ctx._bot.kick_chat_member(chat_id, target_user_id)
+                        # Get target user info for message
+                        session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
+                        # Format target mention (we need to get user info from the vote message)
+                        target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
+
+                        # Send ban notification
+                        ctx._bot.send_message(
+                            chat_id,
+                            get_translated_text(
+                                "voteban_banned",
+                                lang_code=ctx.lang_code,
+                                TARGET=target_mention,
+                                VOTES_FOR=votes_for,
+                            ),
+                        )
+
+                        # Delete vote message and session
+                        msg_id = ctx.message_id
+                        if msg_id:
+                            try:
+                                ctx._bot.delete_message(chat_id, msg_id)
+                            except Exception:
+                                logger.exception(f"Failed to delete vote message: {msg_id}")
+
+                        ctx.vote_repo.delete_vote_session(chat_id, target_user_id)
+                        logger.info("User %s banned by vote.", target_user_id)
+                    except Exception as e:
+                        logger.exception(f"Failed to ban user: {e}")
+                    return
+
+                # Check if forgiven (20 forgive votes)
+                if votes_against >= 20:
+                    # Cancel the vote
+                    target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
+                    ctx._bot.send_message(
+                        chat_id,
+                        get_translated_text(
+                            "voteban_forgiven",
+                            lang_code=ctx.lang_code,
+                            TARGET=target_mention,
+                            VOTES_AGAINST=votes_against,
+                        ),
+                    )
+
+                    # Delete vote message and session
+                    msg_id = ctx.message_id
+                    if msg_id:
+                        try:
+                            ctx._bot.delete_message(chat_id, msg_id)
+                        except Exception:
+                            logger.exception(f"Failed to delete vote message: {msg_id}")
+
+                    ctx.vote_repo.delete_vote_session(chat_id, target_user_id)
+                    logger.info("User %s forgiven by vote.", target_user_id)
+                    return
+
+                # Update vote message with new counts
+                # Get vote session to retrieve target info from original message
+                session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
+
+                # We can't easily get the original initiator and target mentions from stored data,
+                # so we'll just update with generic mentions or parse from the message
+                # For simplicity, we'll just update the vote counts in the message
+                msg_id = ctx.message_id
+                if msg_id:
+                    try:
+                        # Get current message text to extract mentions
+                        # For now, just update with user IDs
+                        target_mention = f'<a href="tg://user?id={target_user_id}">User</a>'
+                        initiator_mention = "Someone"  # We don't store initiator info
+
+                        updated_text = get_translated_text(
+                            "voteban_initiated",
+                            lang_code=ctx.lang_code,
+                            INITIATOR=initiator_mention,
+                            TARGET=target_mention,
+                            THRESHOLD=threshold,
+                            VOTES_FOR=votes_for,
+                            VOTES_AGAINST=votes_against,
+                        )
+
+                        # Update message
+                        ctx._bot.edit_message_text(
+                            chat_id,
+                            msg_id,
+                            updated_text,
+                            reply_markup={
+                                "inline_keyboard": [
+                                    [
+                                        {
+                                            "text": "👍 Ban",
+                                            "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
+                                        },
+                                        {
+                                            "text": "👎 Forgive",
+                                            "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
+                                        },
+                                    ]
+                                ]
+                            },
+                        )
+                    except Exception as e:
+                        logger.exception(f"Failed to update vote message: {e}")
+
                 return
-            chat_id = ctx.chat_id
-            msg_id = ctx.message_id
-            if not chat_id or msg_id is None:
-                if ctx.callback_query_id:
-                    ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("error_occurred"))
-                return
-            bot = ctx._bot
-            # Unmute: grant standard permissions
-            full_permissions = {
-                "can_send_messages": True,
-                "can_send_audios": True,
-                "can_send_documents": True,
-                "can_send_photos": True,
-                "can_send_videos": True,
-                "can_send_video_notes": True,
-                "can_send_voice_notes": True,
-                "can_send_polls": True,
-                "can_send_other_messages": True,
-                "can_add_web_page_previews": True,
-            }
-            bot.restrict_chat_member(
-                chat_id,
-                target_user_id,
-                full_permissions,
-            )
-            bot.answer_callback_query(
-                ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
-            )
-            try:
-                bot.delete_message(chat_id, msg_id)
-            except Exception:
-                logger.exception(f"Failed to delete verification message: {msg_id}")
 
-            bot.send_message(chat_id, get_translated_text("welcome_verified", MENTION=mention))
+            # Unknown callback
+            if ctx.callback_query_id:
+                ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("unknown_action"))
 
-            if ctx.stats_repo:
-                ctx.stats_repo.increment_verified_users(chat_id)
-
-            logger.info("User %s verified.", target_user_id)
         except Exception as e:
             logger.exception(f"handle_verification error: {e}")
             if ctx.callback_query_id:
@@ -233,3 +388,108 @@ def register_handlers(dp: Dispatcher):
     @dp.command("ping")
     def handle_ping(ctx: Context):
         ctx.reply("🏓 Pong! Serverless is fast.")
+
+    @dp.command("voteban")
+    def handle_voteban(ctx: Context) -> None:
+        """Start a vote to ban a user (reply to their message)."""
+        try:
+            # Check if this is a reply to a message
+            if not ctx.reply_to_message:
+                ctx.reply(get_translated_text("voteban_usage", lang_code=ctx.lang_code))
+                return
+
+            # Get target user from replied message
+            target_user = ctx.reply_to_message.get("from", {})
+            target_user_id = target_user.get("id")
+            target_username = target_user.get("username")
+            target_first_name = target_user.get("first_name", "User")
+
+            if not target_user_id:
+                ctx.reply(get_translated_text("voteban_usage", lang_code=ctx.lang_code))
+                return
+
+            # Check if user is trying to ban themselves
+            if target_user_id == ctx.user_id:
+                ctx.reply(get_translated_text("voteban_self", lang_code=ctx.lang_code))
+                return
+
+            # Check if target is an admin
+            chat_id = ctx.chat_id
+            if not chat_id:
+                return
+            member = ctx._bot.get_chat_member(chat_id, target_user_id)
+            status = (member.get("status") or "").lower()
+            if status in ("creator", "administrator"):
+                ctx.reply(get_translated_text("voteban_admin", lang_code=ctx.lang_code))
+                return
+
+            # Format target mention
+            if target_username:
+                target_mention = f"@{target_username}"
+            else:
+                target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
+
+            # Format initiator mention
+            initiator_username = ctx.username
+            initiator_first_name = ctx.first_name or "User"
+            if initiator_username:
+                initiator_mention = f"@{initiator_username}"
+            else:
+                initiator_mention = f'<a href="tg://user?id={ctx.user_id}">{initiator_first_name}</a>'
+
+            # Create inline keyboard with vote buttons
+            reply_markup = {
+                "inline_keyboard": [
+                    [
+                        {
+                            "text": "👍 Ban",
+                            "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
+                        },
+                        {
+                            "text": "👎 Forgive",
+                            "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
+                        },
+                    ]
+                ]
+            }
+
+            # Threshold: 15-20 votes (using 15 as minimum)
+            threshold = 15
+            text = get_translated_text(
+                "voteban_initiated",
+                lang_code=ctx.lang_code,
+                INITIATOR=initiator_mention,
+                TARGET=target_mention,
+                THRESHOLD=threshold,
+                VOTES_FOR=1,  # Initiator's vote
+                VOTES_AGAINST=0,
+            )
+
+            # Send vote message as reply to target's message
+            sent_message = ctx.reply(
+                text,
+                reply_markup=reply_markup,
+                reply_to_message_id=ctx.reply_to_message.get("message_id"),
+            )
+
+            # Create vote session with initiator's vote
+            if ctx.vote_repo and sent_message:
+                message_id = sent_message.get("message_id")
+                if message_id:
+                    ctx.vote_repo.create_vote_session(
+                        chat_id,
+                        target_user_id,
+                        message_id,
+                        ctx.user_id,
+                    )
+                    logger.info(
+                        "Vote session created",
+                        extra={
+                            "chat_id": chat_id,
+                            "target_user_id": target_user_id,
+                            "initiator_user_id": ctx.user_id,
+                        },
+                    )
+        except Exception as e:
+            logger.exception(f"handle_voteban error: {e}")
+            ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
