@@ -14,3 +14,7 @@ VERIFY_PREFIX = "verify_"
 VOTEBAN_PREFIX = "voteban_"
 VOTEBAN_FOR_PREFIX = "voteban_for_"
 VOTEBAN_AGAINST_PREFIX = "voteban_against_"
+
+# Vote-to-ban thresholds
+VOTEBAN_THRESHOLD = 15  # Number of votes needed to ban a user
+VOTEBAN_FORGIVE_THRESHOLD = 15  # Number of votes needed to cancel a ban

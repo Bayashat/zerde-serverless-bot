@@ -8,14 +8,16 @@ from aws_lambda_powertools import Logger
 from core.context import Context
 from core.dispatcher import Dispatcher
 from repositories.telegram_client import TelegramClient
-from services import VERIFY_PREFIX, VOTEBAN_AGAINST_PREFIX, VOTEBAN_FOR_PREFIX
+from services import (
+    VERIFY_PREFIX,
+    VOTEBAN_AGAINST_PREFIX,
+    VOTEBAN_FOR_PREFIX,
+    VOTEBAN_FORGIVE_THRESHOLD,
+    VOTEBAN_THRESHOLD,
+)
 from services.message_formatter import get_translated_text
 
 logger = Logger()
-
-# Vote-to-ban thresholds
-VOTEBAN_THRESHOLD = 15  # Number of votes needed to ban a user
-VOTEBAN_FORGIVE_THRESHOLD = 20  # Number of votes needed to cancel a ban
 
 
 def send_private_msg(bot: TelegramClient, chat_id: str | int) -> None:
