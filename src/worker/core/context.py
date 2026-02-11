@@ -79,7 +79,18 @@ class Context:
     ) -> dict[str, Any]:
         """
         Shorthand to reply to the current message.
-        Example: ctx.reply("Hello!")
+
+        Args:
+            text: The message text to send.
+            reply_markup: Optional inline keyboard markup.
+            reply_to_message_id: Optional message ID to reply to (quote).
+
+        Returns:
+            The sent Message object from Telegram API, or empty dict on failure.
+
+        Example:
+            ctx.reply("Hello!")
+            sent_msg = ctx.reply("Vote now!", reply_markup=buttons, reply_to_message_id=123)
         """
         if self.chat_id:
             return self._bot.send_message(

@@ -42,6 +42,8 @@ class VoteRepository:
                 "message_id": item.get("message_id"),
                 "target_user_id": item.get("target_user_id"),
                 "initiator_user_id": item.get("initiator_user_id"),
+                "initiator_username": item.get("initiator_username"),
+                "initiator_first_name": item.get("initiator_first_name"),
                 "target_username": item.get("target_username"),
                 "target_first_name": item.get("target_first_name"),
             }
@@ -55,10 +57,12 @@ class VoteRepository:
         target_user_id: int,
         message_id: int,
         initiator_user_id: int,
+        initiator_username: str | None = None,
+        initiator_first_name: str = "User",
         target_username: str | None = None,
         target_first_name: str = "User",
     ) -> None:
-        """Create a new vote session with the initiator's vote and target user info."""
+        """Create a new vote session with the initiator's vote and user info."""
         key = f"voteban_{chat_id}_{target_user_id}"
         try:
             # Store votes as lists in DynamoDB for compatibility
@@ -68,6 +72,8 @@ class VoteRepository:
                     "target_user_id": target_user_id,
                     "message_id": message_id,
                     "initiator_user_id": initiator_user_id,
+                    "initiator_username": initiator_username,
+                    "initiator_first_name": initiator_first_name,
                     "target_username": target_username,
                     "target_first_name": target_first_name,
                     "votes_for": [initiator_user_id],  # Stored as list, converted to set on read
@@ -80,53 +86,62 @@ class VoteRepository:
 
     def add_vote(self, chat_id: int | str, target_user_id: int, voter_id: int, vote_for: bool) -> dict[str, Any]:
         """
-        Add a vote to the session.
+        Add a vote to the session using atomic DynamoDB operations.
         Returns updated vote counts: {"votes_for": int, "votes_against": int, "already_voted": bool}
 
-        Note: votes are stored as lists in DynamoDB but handled as sets in memory
-        to prevent duplicates and make counting easier.
+        Uses DynamoDB's SET ADD operation to atomically add votes, preventing race conditions.
         """
         key = f"voteban_{chat_id}_{target_user_id}"
-        try:
-            # Get current session
-            session = self.get_vote_session(chat_id, target_user_id)
-            votes_for = session["votes_for"]
-            votes_against = session["votes_against"]
+        attribute_name = "votes_for" if vote_for else "votes_against"
 
-            # Check if user already voted
-            if voter_id in votes_for or voter_id in votes_against:
+        try:
+            # First check if user already voted (in either list)
+            session = self.get_vote_session(chat_id, target_user_id)
+            if voter_id in session["votes_for"] or voter_id in session["votes_against"]:
                 return {
-                    "votes_for": len(votes_for),
-                    "votes_against": len(votes_against),
+                    "votes_for": len(session["votes_for"]),
+                    "votes_against": len(session["votes_against"]),
                     "already_voted": True,
                 }
 
-            # Add vote
-            if vote_for:
-                votes_for.add(voter_id)
-            else:
-                votes_against.add(voter_id)
-
-            # Update database (preserve all fields from original session)
-            self._table.put_item(
-                Item={
-                    "stat_key": key,
-                    "target_user_id": target_user_id,
-                    "message_id": session["message_id"],
-                    "initiator_user_id": session.get("initiator_user_id"),
-                    "target_username": session.get("target_username"),
-                    "target_first_name": session.get("target_first_name", "User"),
-                    "votes_for": list(votes_for),
-                    "votes_against": list(votes_against),
-                }
+            # Use UpdateItem with condition to atomically add vote
+            # Condition: voter_id must not exist in either votes_for or votes_against
+            update_expr = (
+                f"SET {attribute_name} = list_append(if_not_exists({attribute_name}, :empty_list), :voter_list)"
+            )
+            condition_expr = "(NOT contains(#votes_for, :voter_id)) AND (NOT contains(#votes_against, :voter_id))"
+            response = self._table.update_item(
+                Key={"stat_key": key},
+                UpdateExpression=update_expr,
+                ConditionExpression=condition_expr,
+                ExpressionAttributeNames={
+                    "#votes_for": "votes_for",
+                    "#votes_against": "votes_against",
+                },
+                ExpressionAttributeValues={
+                    ":voter_list": [voter_id],
+                    ":voter_id": voter_id,
+                    ":empty_list": [],
+                },
+                ReturnValues="ALL_NEW",
             )
 
+            # Get updated item and return vote counts
+            updated_item = response.get("Attributes", {})
             return {
-                "votes_for": len(votes_for),
-                "votes_against": len(votes_against),
+                "votes_for": len(updated_item.get("votes_for", [])),
+                "votes_against": len(updated_item.get("votes_against", [])),
                 "already_voted": False,
             }
         except ClientError as e:
+            # If condition fails (user already voted), return current counts
+            if e.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+                session = self.get_vote_session(chat_id, target_user_id)
+                return {
+                    "votes_for": len(session["votes_for"]),
+                    "votes_against": len(session["votes_against"]),
+                    "already_voted": True,
+                }
             logger.exception(f"Failed to add vote: {e}")
             raise
 

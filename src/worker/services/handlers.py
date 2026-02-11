@@ -307,9 +307,13 @@ def register_handlers(dp: Dispatcher):
                         else:
                             target_mention = f'<a href="tg://user?id={target_user_id}">{target_first_name}</a>'
 
-                        # Format initiator mention (best effort)
-                        if initiator_user_id:
-                            initiator_mention = f'<a href="tg://user?id={initiator_user_id}">User</a>'
+                        # Format initiator mention using stored info
+                        initiator_username = session.get("initiator_username")
+                        initiator_first_name = session.get("initiator_first_name", "User")
+                        if initiator_username:
+                            initiator_mention = f"@{initiator_username}"
+                        elif initiator_user_id:
+                            initiator_mention = f'<a href="tg://user?id={initiator_user_id}">{initiator_first_name}</a>'
                         else:
                             initiator_mention = "Someone"
 
@@ -509,6 +513,8 @@ def register_handlers(dp: Dispatcher):
                         target_user_id,
                         message_id,
                         ctx.user_id,
+                        initiator_username=initiator_username,
+                        initiator_first_name=initiator_first_name,
                         target_username=target_username,
                         target_first_name=target_first_name,
                     )
