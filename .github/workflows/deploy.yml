@@ -79,6 +79,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+          NEWS_CHAT_ID: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_ID || secrets.DEV_NEWS_CHAT_ID }}
+          AI_PROVIDER: groq
         run: |
           uv run cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/eu-central-1 || echo "Bootstrap may already be done"
         continue-on-error: true
@@ -88,6 +90,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+          NEWS_CHAT_ID: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_ID || secrets.DEV_NEWS_CHAT_ID }}
+          AI_PROVIDER: groq
         run: |
           echo "🚀 Deploying to ${{ env.TARGET_ENV }} environment..."
           uv run cdk deploy -c env=${{ env.TARGET_ENV }} --require-approval never --all

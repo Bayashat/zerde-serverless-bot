@@ -96,7 +96,9 @@ def register_handlers(dp: Dispatcher):
                         ]
                     ]
                 }
-                sent_message = bot.send_message(chat_id, text, reply_markup=reply_markup)
+                sent_message = bot.send_message(
+                    chat_id, text, reply_markup=reply_markup, reply_to_message_id=ctx.message_id
+                )
                 msg_id = sent_message.get("message_id") if sent_message else None
                 if msg_id is not None and ctx.sqs_repo:
                     ctx.sqs_repo.send_timeout_task(chat_id, user_id, msg_id, delay_seconds=60)
@@ -106,7 +108,7 @@ def register_handlers(dp: Dispatcher):
         except Exception as e:
             logger.exception(f"handle_new_member error: {e}")
             if ctx.chat_id:
-                ctx.reply(get_translated_text("error_occurred"))
+                ctx.reply(get_translated_text("error_occurred"), ctx.message_id)
 
     @dp.on_callback_query
     def handle_verification(ctx: Context) -> None:
@@ -203,7 +205,7 @@ def register_handlers(dp: Dispatcher):
                 if result["already_voted"]:
                     ctx._bot.answer_callback_query(
                         ctx.callback_query_id,
-                        text=get_translated_text("voteban_already_voted", lang_code=ctx.lang_code),
+                        text=get_translated_text("voteban_already_voted", ctx.lang_code),
                         show_alert=True,
                     )
                     return
@@ -211,7 +213,7 @@ def register_handlers(dp: Dispatcher):
                 # Answer callback
                 ctx._bot.answer_callback_query(
                     ctx.callback_query_id,
-                    text=get_translated_text("voteban_vote_recorded", lang_code=ctx.lang_code),
+                    text=get_translated_text("voteban_vote_recorded", ctx.lang_code),
                 )
 
                 votes_for = result["votes_for"]
@@ -239,7 +241,7 @@ def register_handlers(dp: Dispatcher):
                             chat_id,
                             get_translated_text(
                                 "voteban_banned",
-                                lang_code=ctx.lang_code,
+                                ctx.lang_code,
                                 TARGET=target_mention,
                                 VOTES_FOR=votes_for,
                             ),
@@ -276,7 +278,7 @@ def register_handlers(dp: Dispatcher):
                         chat_id,
                         get_translated_text(
                             "voteban_forgiven",
-                            lang_code=ctx.lang_code,
+                            ctx.lang_code,
                             TARGET=target_mention,
                             VOTES_AGAINST=votes_against,
                         ),
@@ -322,7 +324,7 @@ def register_handlers(dp: Dispatcher):
 
                         updated_text = get_translated_text(
                             "voteban_initiated",
-                            lang_code=ctx.lang_code,
+                            ctx.lang_code,
                             INITIATOR=initiator_mention,
                             TARGET=target_mention,
                             THRESHOLD=VOTEBAN_THRESHOLD,
@@ -369,22 +371,22 @@ def register_handlers(dp: Dispatcher):
 
     @dp.command("stats")
     def handle_stats(ctx: Context) -> None:
-        """Admin-only: reply with top stats (total joins, verified, activity level) in Kazakh."""
+        """Admin-only: reply with top stats (total joins, verified, activity level)"""
         try:
             chat_id = ctx.chat_id
             user_id = ctx.user_id
             if not chat_id or user_id is None:
-                ctx.reply(get_translated_text("stats_error", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("stats_error", ctx.lang_code), ctx.message_id)
                 return
             member = ctx._bot.get_chat_member(chat_id, user_id)
             status = (member.get("status") or "").lower()
             if status not in ("creator", "administrator"):
-                ctx.reply(get_translated_text("stats_admin_only", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("stats_admin_only", ctx.lang_code), ctx.message_id)
                 return
-            stats = ctx.stats_repo.get_stats(chat_id)
+            stats: dict = ctx.stats_repo.get_stats(chat_id)
             total = stats["total_joins"]
             verified = stats["verified_users"]
-            start_date = stats.get("started_at")
+            start_date = stats["started_at"]
             if total == 0:
                 activity_level_percentage = 0
             else:
@@ -395,36 +397,36 @@ def register_handlers(dp: Dispatcher):
                 level_key = "activity_medium"
             else:
                 level_key = "activity_high"
-            activity_level = get_translated_text(level_key, lang_code=ctx.lang_code)
+            activity_level = get_translated_text(level_key, ctx.lang_code)
             msg = get_translated_text(
                 "stats_message",
-                lang_code=ctx.lang_code,
+                ctx.lang_code,
                 start_date=start_date,
                 total=total,
                 verified=verified,
                 activity_level=activity_level,
             )
-            ctx.reply(msg)
+            ctx.reply(msg, ctx.message_id)
         except Exception as e:
             logger.exception(f"handle_stats error: {e}")
-            ctx.reply(get_translated_text("stats_error", lang_code=ctx.lang_code))
+            ctx.reply(get_translated_text("stats_error", ctx.lang_code), ctx.message_id)
 
     @dp.command("start")
     def handle_start(ctx: Context):
-        ctx.reply(get_translated_text("start_message", lang_code=ctx.lang_code))
+        ctx.reply(get_translated_text("start_message", ctx.lang_code), ctx.message_id)
 
     @dp.command("help")
     def handle_help(ctx: Context):
-        ctx.reply(get_translated_text("help_message", lang_code=ctx.lang_code))
+        ctx.reply(get_translated_text("help_message", ctx.lang_code), ctx.message_id)
 
     @dp.command("support")
     def handle_support(ctx: Context):
-        ctx.reply(get_translated_text("support_message", lang_code=ctx.lang_code))
+        ctx.reply(get_translated_text("support_message", ctx.lang_code), ctx.message_id)
 
     # Example of a custom command logic
     @dp.command("ping")
     def handle_ping(ctx: Context):
-        ctx.reply("🏓 Pong! Serverless is fast.")
+        ctx.reply("🏓 Pong! Serverless is fast.", ctx.message_id)
 
     @dp.command("voteban")
     def handle_voteban(ctx: Context) -> None:
@@ -432,7 +434,7 @@ def register_handlers(dp: Dispatcher):
         try:
             # Check if this is a reply to a message
             if not ctx.reply_to_message:
-                ctx.reply(get_translated_text("voteban_usage", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("voteban_usage", ctx.lang_code), ctx.message_id)
                 return
 
             # Get target user from replied message
@@ -442,12 +444,12 @@ def register_handlers(dp: Dispatcher):
             target_first_name = target_user.get("first_name", "User")
 
             if not target_user_id:
-                ctx.reply(get_translated_text("voteban_usage", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("voteban_usage", ctx.lang_code), ctx.message_id)
                 return
 
             # Check if user is trying to ban themselves
             if target_user_id == ctx.user_id:
-                ctx.reply(get_translated_text("voteban_self", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("voteban_self", ctx.lang_code), ctx.message_id)
                 return
 
             # Check if target is an admin
@@ -457,7 +459,7 @@ def register_handlers(dp: Dispatcher):
             member = ctx._bot.get_chat_member(chat_id, target_user_id)
             status = (member.get("status") or "").lower()
             if status in ("creator", "administrator"):
-                ctx.reply(get_translated_text("voteban_admin", lang_code=ctx.lang_code))
+                ctx.reply(get_translated_text("voteban_admin", ctx.lang_code), ctx.message_id)
                 return
 
             # Format target mention
@@ -492,7 +494,7 @@ def register_handlers(dp: Dispatcher):
 
             text = get_translated_text(
                 "voteban_initiated",
-                lang_code=ctx.lang_code,
+                ctx.lang_code,
                 INITIATOR=initiator_mention,
                 TARGET=target_mention,
                 THRESHOLD=VOTEBAN_THRESHOLD,
@@ -502,9 +504,7 @@ def register_handlers(dp: Dispatcher):
 
             # Send vote message as reply to target's message
             sent_message = ctx.reply(
-                text,
-                reply_markup=reply_markup,
-                reply_to_message_id=ctx.reply_to_message.get("message_id"),
+                text, reply_markup=reply_markup, reply_to_message_id=ctx.reply_to_message.get("message_id")
             )
 
             # Create vote session with initiator's vote
@@ -531,4 +531,4 @@ def register_handlers(dp: Dispatcher):
                     )
         except Exception as e:
             logger.exception(f"handle_voteban error: {e}")
-            ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
+            ctx.reply(get_translated_text("error_occurred", ctx.lang_code), ctx.message_id)
