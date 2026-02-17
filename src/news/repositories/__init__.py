@@ -1,0 +1,1 @@
+"""Repositories for news lambda."""

@@ -1,0 +1,1 @@
+"""Services for news lambda."""
