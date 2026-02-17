@@ -1,20 +1,21 @@
-"""NewsRanker: Fetch and rank IT news by impact score using AI."""
+"""NewsFetcher: Fetch IT news from RSS feeds with TTL filtering."""
 
 import concurrent.futures
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import feedparser
+from aws_lambda_powertools import Logger
+
+logger = Logger()
 
 
-class NewsRanker:
+class NewsFetcher:
     """
-    News aggregator with parallel fetching and AI-powered impact scoring.
+    RSS news aggregator with parallel fetching and TTL filtering.
     
-    1. Harvester: Parallel RSS fetching with TTL filtering.
-    2. Batcher: Groups news for processing.
-    3. Scoring: External AI evaluates market impact.
-    4. Selector: Returns top-ranked news.
+    Fetches news items from multiple RSS feeds concurrently and filters
+    by publish date (max_age_hours) to ensure only fresh content.
     """
 
     RSS_FEEDS = [
@@ -56,10 +57,10 @@ class NewsRanker:
                         "summary": entry.get("summary", "")[:250],
                         "link": entry.get("link", ""),
                         "published": pub_date,
-                        "source": feed.title if hasattr(feed, 'title') else "Unknown"
+                        "source": feed.feed.get("title", "Unknown") if hasattr(feed, 'feed') else "Unknown"
                     })
             except Exception as e:
-                print(f"Failed to fetch {feed_url}: {e}")
+                logger.warning(f"Failed to fetch {feed_url}", exc_info=True)
                 
             return local_news
 
@@ -86,4 +87,5 @@ class NewsRanker:
                 dt = dt.replace(tzinfo=timezone.utc)
             return dt
         except Exception:
-            return datetime.now(timezone.utc)
+            # On parse failure, return None so malformed/unknown dates are filtered out by TTL logic
+            return None

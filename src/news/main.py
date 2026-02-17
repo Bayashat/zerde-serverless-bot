@@ -8,7 +8,7 @@ import requests
 from aws_lambda_powertools import Logger
 
 from repositories.ai_client import create_ai_client
-from services.news_fetcher import NewsRanker
+from services.news_fetcher import NewsFetcher
 
 
 logger = Logger()
@@ -51,8 +51,8 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             return {"statusCode": 500, "body": "Configuration error"}
 
         # 1. Fetch raw news (24h TTL)
-        ranker = NewsRanker()
-        raw_news = ranker.fetch_raw_news(items_per_feed=15, max_age_hours=24)
+        fetcher = NewsFetcher()
+        raw_news = fetcher.fetch_raw_news(items_per_feed=15, max_age_hours=24)
 
         if not raw_news:
             logger.info("No news found")
@@ -92,9 +92,9 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             logger.error("Failed to send message to Telegram even with fallback")
             return {"statusCode": 500, "body": "Failed to send message"}
 
-    except Exception as e:
-        logger.exception(f"Error in news lambda: {e}")
-        return {"statusCode": 500, "body": str(e)}
+    except Exception:
+        logger.exception("Error in news lambda")
+        return {"statusCode": 500, "body": "Internal server error"}
 
 
 def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: Optional[str] = "HTML") -> bool:

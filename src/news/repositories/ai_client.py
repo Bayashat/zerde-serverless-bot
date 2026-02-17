@@ -101,11 +101,18 @@ class GroqAIClient(AIClient):
             self.logger.error(f"LLM returned invalid JSON: {content}")
             scores = []
         
-        # Merge scores back to chunk
+        # Merge scores back to chunk with validation
         for news in chunk:
             score_data = next((item for item in scores if item.get("id") == news.get("id")), None)
             if score_data:
-                news["impact_score"] = score_data.get("impact_score", 0)
+                # Validate and cast impact_score to int with bounds checking (1-10)
+                raw_score = score_data.get("impact_score", 5)
+                try:
+                    impact_score = int(raw_score)
+                    impact_score = max(1, min(10, impact_score))  # Clamp to 1-10
+                except (ValueError, TypeError):
+                    impact_score = 5
+                news["impact_score"] = impact_score
                 news["reason"] = score_data.get("reason", "No reason")
             else:
                 news["impact_score"] = 5
@@ -114,7 +121,10 @@ class GroqAIClient(AIClient):
         return chunk
 
     def generate_news_summary(self, news_items: list[dict], language: str = "kk") -> str:
-        """Generate formatted news summary."""
+        """Generate formatted news summary in Kazakh only."""
+        if language != "kk":
+            raise ValueError(f"Only Kazakh (kk) language is supported, got: {language}")
+        
         if not news_items:
             return self._get_no_news_message(language)
 
