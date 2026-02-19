@@ -6,10 +6,8 @@ from typing import Any, Optional
 
 import requests
 from aws_lambda_powertools import Logger
-
 from repositories.ai_client import create_ai_client
 from services.news_fetcher import NewsFetcher
-
 
 logger = Logger()
 
@@ -21,19 +19,19 @@ def sanitize_html(text: str) -> str:
     """
     if not text:
         return ""
-        
+
     # Escape basic HTML
     text = text.replace("&", "&amp;")
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
-    
+
     # Restore allowed tags
     allowed_tags = ["b", "/b", "blockquote", "/blockquote"]
     for tag in allowed_tags:
         escaped_tag = f"&lt;{tag}&gt;"
         real_tag = f"<{tag}>"
         text = text.replace(escaped_tag, real_tag)
-        
+
     return text
 
 
@@ -62,24 +60,24 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         # 2. Evaluate impact
         ai_provider = os.environ.get("AI_PROVIDER", "groq")
         ai_client = create_ai_client(provider=ai_provider, api_key=groq_api_key)
-        
+
         scored_news = ai_client.evaluate_impact(raw_news)
         logger.info(f"Scored {len(scored_news)} news items")
-        
+
         # 3. Select top 3
         scored_news.sort(key=lambda x: x.get("impact_score", 0), reverse=True)
         top_news = scored_news[:3]
         logger.info(f"Top 3 news scores: {[n.get('impact_score', 0) for n in top_news]}")
-        
+
         # 4. Generate summary
         summary = ai_client.generate_news_summary(top_news, language="kk")
 
         # 5. Sanitize and Send
         safe_summary = sanitize_html(summary)
-        
+
         # Primary: Send with HTML
         success = send_telegram_message(bot_token, chat_id, safe_summary)
-        
+
         # Fallback: Send as plain text
         if not success:
             logger.warning("HTML send failed. Attempting plain text fallback...")
@@ -100,13 +98,9 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
 def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: Optional[str] = "HTML") -> bool:
     """Send message to Telegram chat."""
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    
-    payload = {
-        "chat_id": chat_id,
-        "text": text,
-        "disable_web_page_preview": True
-    }
-    
+
+    payload = {"chat_id": chat_id, "text": text, "disable_web_page_preview": True}
+
     if parse_mode:
         payload["parse_mode"] = parse_mode
 
@@ -124,5 +118,5 @@ def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: O
                 logger.error(f"Failed to send Telegram message after {max_retries} attempts")
                 return False
             time.sleep(2 ** (attempt + 1))
-    
+
     return False

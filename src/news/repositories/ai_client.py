@@ -25,11 +25,7 @@ class AIClient(ABC):
 
     def _get_no_news_message(self, language: str) -> str:
         """Get 'no news' fallback message."""
-        messages = {
-            "kk": "📭 Бүгін жаңалық жоқ.",
-            "ru": "📭 Сегодня новостей нет.",
-            "en": "📭 No news today."
-        }
+        messages = {"kk": "📭 Бүгін жаңалық жоқ.", "ru": "📭 Сегодня новостей нет.", "en": "📭 No news today."}
         return messages.get(language, messages["en"])
 
 
@@ -51,9 +47,9 @@ class GroqAIClient(AIClient):
 
         chunk_size = 20
         all_processed_news = []
-        
+
         for i in range(0, len(news_batch), chunk_size):
-            chunk = news_batch[i:i + chunk_size]
+            chunk = news_batch[i : i + chunk_size]
             try:
                 processed_chunk = self._process_scoring_chunk(chunk)
                 all_processed_news.extend(processed_chunk)
@@ -63,13 +59,13 @@ class GroqAIClient(AIClient):
                     item["impact_score"] = 5
                     item["reason"] = f"Scoring error: {str(e)}"
                 all_processed_news.extend(chunk)
-                
+
         return all_processed_news
 
     def _process_scoring_chunk(self, chunk: list[dict]) -> list[dict]:
         """Send a single chunk to LLM and parse the JSON array response."""
         payload = [{"id": n["id"], "title": n["title"]} for n in chunk]
-        
+
         prompt = (
             "Rate global IT market impact (1-10):\n"
             "- 10: Massive investments ($100B+), AI breakthroughs, critical security\n"
@@ -86,21 +82,21 @@ class GroqAIClient(AIClient):
             temperature=0.1,
             max_tokens=2000,
         )
-        
+
         content = response.choices[0].message.content.strip()
-        
+
         # Extract JSON using Regex
-        json_match = re.search(r'\[.*\]', content, re.DOTALL)
+        json_match = re.search(r"\[.*\]", content, re.DOTALL)
         if json_match:
             content = json_match.group(0)
-        
+
         # Safely parse JSON
         try:
             scores = json.loads(content)
         except json.JSONDecodeError:
             self.logger.error(f"LLM returned invalid JSON: {content}")
             scores = []
-        
+
         # Merge scores back to chunk with validation
         for news in chunk:
             score_data = next((item for item in scores if item.get("id") == news.get("id")), None)
@@ -117,36 +113,33 @@ class GroqAIClient(AIClient):
             else:
                 news["impact_score"] = 5
                 news["reason"] = "Not returned by AI"
-                
+
         return chunk
 
     def generate_news_summary(self, news_items: list[dict], language: str = "kk") -> str:
         """Generate formatted news summary in Kazakh only."""
         if language != "kk":
             raise ValueError(f"Only Kazakh (kk) language is supported, got: {language}")
-        
+
         if not news_items:
             return self._get_no_news_message(language)
 
-        news_text = "\n\n".join([
-            f"Тақырып: {item['title']}\nСипаттама: {item.get('summary', 'Жоқ')}"
-            for item in news_items[:3]
-        ])
+        news_text = "\n\n".join(
+            [f"Тақырып: {item['title']}\nСипаттама: {item.get('summary', 'Жоқ')}" for item in news_items[:3]]
+        )
 
         prompt = self._build_prompt(news_text, language)
 
         try:
+            system_prompt = (
+                "Сіз IT және developer жаңалықтарын қазақ тілінде жазатын техникалық журналистсіз. "
+                "Тек өте маңызды және актуалды жаңалықтарды таңдаңыз."
+            )
             response = self.client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
-                    {
-                        "role": "system",
-                        "content": "Сіз IT және developer жаңалықтарын қазақ тілінде жазатын техникалық журналистсіз. Тек өте маңызды және актуалды жаңалықтарды таңдаңыз."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
                 max_tokens=1200,
@@ -161,13 +154,14 @@ class GroqAIClient(AIClient):
     def _build_prompt(self, news_text: str, language: str) -> str:
         """Construct the prompt template based on language."""
         if language == "kk":
-            return f"""Мына IT жаңалықтарын қазақ тілінде қысқаша мазмұндаңыз. 
-            
+            return f"""Мына IT жаңалықтарын қазақ тілінде қысқаша мазмұндаңыз.
+
             МАҢЫЗДЫ ФОРМАТТАУ ЕРЕЖЕЛЕРІ:
             1. Тек 3 ең маңызды және қызықты жаңалықты таңдаңыз
             2. Developer және IT-қа қатысты мазмұнға басымдық беріңіз
             3. Сілтемелерді ҚОСПАҢЫЗ (оларды жібермеңіз)
-            4. Цитата (blockquote) форматын пайдаланыңыз: <blockquote>Сипаттама</blockquote> - сипаттаманы HTML тегтерімен орап қойыңыз
+            4. Цитата (blockquote) форматын пайдаланыңыз: <blockquote>Сипаттама</blockquote>
+               (сипаттаманы HTML тегтерімен орап қойыңыз)
 
             Форматы:
             🔥<b>Күннің IT жаңалықтары</b>
@@ -178,7 +172,7 @@ class GroqAIClient(AIClient):
             <b>[Bold тақырып]</b>
             <blockquote>Қысқаша сипаттама</blockquote>
 
-            <b>[Bold тақырып]</b>  
+            <b>[Bold тақырып]</b>
             <blockquote>Қысқаша сипаттама</blockquote>
 
             Жаңалықтар:
