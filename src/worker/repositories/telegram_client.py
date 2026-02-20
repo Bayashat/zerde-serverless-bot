@@ -25,6 +25,7 @@ class TelegramClient:
         text: str,
         parse_mode: str = "HTML",
         reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None
     ) -> dict[str, Any]:
         """Send message to Telegram. Returns the sent Message object from API."""
         url = f"{self.api_base}/sendMessage"
@@ -37,6 +38,9 @@ class TelegramClient:
 
         if reply_markup:
             payload["reply_markup"] = reply_markup
+
+        if reply_to_message_id is not None:
+            payload["reply_to_message_id"] = reply_to_message_id
 
         try:
             response = self.session.post(url, json=payload, timeout=10)

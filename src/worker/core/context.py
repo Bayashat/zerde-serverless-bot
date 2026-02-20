@@ -68,10 +68,11 @@ class Context:
     def reply(
         self,
         text: str,
+        reply_to_message_id: int | None = None,
     ) -> None:
         """
         Shorthand to reply to the current message.
         Example: ctx.reply("Hello!")
         """
         if self.chat_id:
-            self._bot.send_message(self.chat_id, text)
+            self._bot.send_message(self.chat_id, text, reply_to_message_id=reply_to_message_id or self.message_id)
