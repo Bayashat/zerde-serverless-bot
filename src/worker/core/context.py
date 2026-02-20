@@ -94,6 +94,9 @@ class Context:
         """
         if self.chat_id:
             return self._bot.send_message(
-                self.chat_id, text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id or self.message_id
+                self.chat_id,
+                text,
+                reply_markup=reply_markup,
+                reply_to_message_id=reply_to_message_id or self.message_id,
             )
         return {}
