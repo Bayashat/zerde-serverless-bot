@@ -509,7 +509,9 @@ def register_handlers(dp: Dispatcher):
             )
 
             # Send vote message as reply to target's message
-            sent_message = ctx.reply(text, reply_markup=reply_markup, reply_to_message_id=ctx.message_id)
+            sent_message = ctx.reply(
+                text, reply_markup=reply_markup, reply_to_message_id=ctx.reply_to_message.get("message_id")
+            )
 
             # Create vote session with initiator's vote
             if ctx.vote_repo and sent_message:
