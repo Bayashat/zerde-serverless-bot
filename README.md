@@ -32,8 +32,8 @@ Built with **Python** and **AWS CDK**, it leverages an event-driven architecture
 ### 1. Installation
 
 ```bash
-git clone https://github.com/Bayashat/zerde-bot.git
-cd zerde-bot
+git clone https://github.com/Bayashat/zerde-serverless-bot.git
+cd zerde-serverless-bot
 
 # Install dependencies (Production + Dev)
 uv sync --frozen
@@ -117,7 +117,7 @@ We provide a setup script to automate this:
 ```bash
 # Usage: ./scripts/setup_oidc.sh <GITHUB_ORG/REPO>
 # Example:
-./scripts/setup_oidc.sh Bayashat/zerde-bot
+./scripts/setup_oidc.sh Bayashat/zerde-serverless-bot
 ```
 
 **What this script does:**
@@ -130,7 +130,7 @@ We provide a setup script to automate this:
 
 ## 🛠️ Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to set up your local development environment, run tests, and submit PRs.
+We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup (clone, uv, CDK, pre-commit) and PR process. For local testing from scratch (AWS account, new bot, token), see [Local Testing](docs/LOCAL_TESTING.md).
 
 ---
 
