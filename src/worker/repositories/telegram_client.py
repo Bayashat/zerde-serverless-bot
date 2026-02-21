@@ -40,7 +40,10 @@ class TelegramClient:
             payload["reply_markup"] = reply_markup
 
         if reply_to_message_id:
-            payload["reply_to_message_id"] = reply_to_message_id
+            reply_parameters = {
+                "message_id": reply_to_message_id,
+            }
+            payload["reply_parameters"] = reply_parameters
 
         try:
             response = self.session.post(url, json=payload, timeout=10)
