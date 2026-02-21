@@ -245,7 +245,6 @@ def register_handlers(dp: Dispatcher):
                                 TARGET=target_mention,
                                 VOTES_FOR=votes_for,
                             ),
-                            reply_to_message_id=ctx.message_id,
                         )
 
                         # Delete vote message and session
@@ -283,7 +282,6 @@ def register_handlers(dp: Dispatcher):
                             TARGET=target_mention,
                             VOTES_AGAINST=votes_against,
                         ),
-                        reply_to_message_id=ctx.message_id,
                     )
 
                     # Delete vote message and session
