@@ -171,11 +171,7 @@ def register_handlers(dp: Dispatcher):
                 except Exception:
                     logger.exception(f"Failed to delete verification message: {msg_id}")
 
-                bot.send_message(
-                    chat_id,
-                    get_translated_text("welcome_verified", MENTION=mention),
-                    reply_to_message_id=ctx.message_id,
-                )
+                bot.send_message(chat_id, get_translated_text("welcome_verified", MENTION=mention))
 
                 if ctx.stats_repo:
                     ctx.stats_repo.increment_verified_users(chat_id)
