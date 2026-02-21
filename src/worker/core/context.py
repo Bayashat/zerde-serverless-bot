@@ -44,10 +44,7 @@ class Context:
             self.chat_id = self.message.get("chat", {}).get("id")
             self.user_data = self.message.get("from", {})
 
-        # Handle text safely
         self.text = self.message.get("text", "").strip()
-
-        # Handle reply_to_message
         self.reply_to_message = self.message.get("reply_to_message")
 
     @property
@@ -74,8 +71,8 @@ class Context:
     def reply(
         self,
         text: str,
-        reply_markup: dict[str, Any] | None = None,
         reply_to_message_id: int | None = None,
+        reply_markup: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Shorthand to reply to the current message.
