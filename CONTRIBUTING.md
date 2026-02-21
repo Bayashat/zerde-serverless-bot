@@ -1,49 +1,108 @@
 # Contributing to Zerde Bot
 
-First off, thanks for taking the time to contribute! 🎉
-
-The following is a set of guidelines for contributing to Zerde Bot.
+Thank you for contributing to Zerde Bot. This guide covers development setup from scratch.
 
 ---
 
-## 🛠️ Development Setup
+## Development Setup
 
-### 1. Environment Setup
-
-We use `uv` for ultra-fast package management.
+### 1. Clone the Repository
 
 ```bash
-# Install dependencies
-uv sync --frozen
-
-# Activate virtual environment
-source .venv/bin/activate
+git clone https://github.com/Bayashat/zerde-serverless-bot.git
+cd zerde-serverless-bot
 ```
 
-### 2. Pre-commit Hooks
+### 2. Install uv
 
-We use [pre-commit](https://pre-commit.com/) to ensure high code quality (Linting, Formatting, Type Checking) before every commit.
+We use [uv](https://github.com/astral-sh/uv) for fast, reliable dependency management.
+
+**macOS / Linux:**
 
 ```bash
-# Install hooks
-uv run pre-commit install
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
-# Run manually on all files
+**Windows (PowerShell):**
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Or via pip (if you prefer):**
+
+```bash
+pip install uv
+```
+
+Verify:
+
+```bash
+uv --version
+```
+
+### 3. Install Python Dependencies
+
+From the project root:
+
+```bash
+uv sync --frozen
+```
+
+This creates a virtual environment (e.g. `.venv`) and installs all dependencies from the lock file. Activate it when you need to run Python in a shell:
+
+```bash
+source .venv/bin/activate   # macOS / Linux
+# or: .venv\Scripts\activate  on Windows
+```
+
+### 4. Install Node.js and AWS CDK CLI (Optional)
+
+The project uses **AWS CDK** for infrastructure. The CDK app is written in Python, but the **CDK CLI** is a Node.js tool and must be installed separately.
+
+1. **Install Node.js (LTS)**
+   Use [nodejs.org](https://nodejs.org/) or your system package manager (e.g. `brew install node` on macOS).
+
+2. **Install the AWS CDK CLI globally:**
+
+```bash
+npm install -g aws-cdk
+```
+
+Verify:
+
+```bash
+cdk --version
+```
+
+All CDK commands in this project are run via `uv run cdk` so that they use the project’s Python environment and app code (e.g. `uv run cdk synth`, `uv run cdk deploy`).
+
+### 5. Pre-commit Hooks
+
+We use [pre-commit](https://pre-commit.com/) for linting, formatting, and type checking before each commit.
+
+```bash
+uv run pre-commit install
+```
+
+Run on all files (optional):
+
+```bash
 uv run pre-commit run --all-files
 ```
 
-**What is checked?**
+**What runs:**
 
-* **Black:** Formats Python code.
-* **Isort:** Sorts imports.
-* **Flake8:** Lints Python code.
-* **Trailing Whitespace / End of File Fixer.**
+| Hook / Tool | Purpose |
+|-------------|---------|
+| Black       | Python formatting |
+| Isort       | Import sorting |
+| Flake8      | Linting |
+| Trailing whitespace / EOF | Basic hygiene |
 
-### 3. Local Testing
+### 6. Validate Infrastructure Locally
 
-Currently, unit tests are under development.
-
-You can run the CDK synthesis locally to ensure your infrastructure code is valid:
+To check that the CDK app and stacks are valid (no need to deploy):
 
 ```bash
 uv run cdk synth -c env=dev
@@ -51,28 +110,36 @@ uv run cdk synth -c env=dev
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 | Path | Description |
 |------|-------------|
-| `infra/` | AWS CDK Stacks. Defines API Gateway, DynamoDB, SQS, and Lambdas. |
-| `src/receiver/` | Receiver Lambda. Entry point. Validates Webhook secret and pushes to SQS. |
-| `src/worker/` | Worker Lambda. Processes logic (Captcha, Stats) and calls Telegram API. |
-| `src/worker/repositories/` | Data Access Layer. Shared code for DynamoDB and SQS interactions. |
-| `src/worker/services/` | Business Logic Layer. Shared code for message formatting and handler logic. |
-| `scripts/` | DevOps Tools. Scripts for OIDC setup and Webhook management. |
+| `infra/` | AWS CDK stacks (API Gateway, DynamoDB, SQS, Lambdas). |
+| `src/receiver/` | Receiver Lambda: webhook entry, validates secret, enqueues to SQS. |
+| `src/worker/` | Worker Lambda: business logic (captcha, stats), calls Telegram API. |
+| `src/worker/repositories/` | Data access (DynamoDB, SQS, Telegram client). |
+| `src/worker/services/` | Business logic and message handling. |
+| `scripts/` | DevOps: OIDC setup, webhook registration. |
 
 ---
 
-## 📦 Pull Request Process
+## Pull Request Process
 
-1. **Fork** the repository and create your branch from `main`.
-2. Make sure your code passes **pre-commit** checks.
-3. If you've changed infrastructure (`infra/`), please include the output of `cdk diff` in your PR description (our CI will also auto-comment this).
-4. Issue that pull request!
+1. **Fork** the repo and create a branch from `main`.
+2. Ensure **pre-commit** passes (run `uv run pre-commit run --all-files` if needed).
+3. If you changed **infrastructure** (`infra/`), include the output of `cdk diff -c env=dev` in the PR description (CI may also comment it).
+4. Open the pull request.
+
+Branch and commit format should follow the project’s Git conventions (see repository rules or root docs).
 
 ---
 
-## 🔐 Security
+## Security
 
-If you discover a potential security vulnerability (e.g., in the token handling logic), please **do not** open a public issue. Contact the maintainer directly.
+If you find a security issue (e.g. token handling, webhook validation), do **not** open a public issue. Contact the maintainers privately.
+
+---
+
+## Local Testing and Full Run-through
+
+For setting up an AWS account, creating a Telegram bot, configuring the token, and running a full local/deploy test, see **[Local Testing](docs/LOCAL_TESTING.md)**.
