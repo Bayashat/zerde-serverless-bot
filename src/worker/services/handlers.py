@@ -357,7 +357,6 @@ def register_handlers(dp: Dispatcher):
                                     ]
                                 ]
                             },
-                            reply_to_message_id=ctx.message_id,
                         )
                     except Exception as e:
                         logger.exception(f"Failed to update vote message: {e}")
