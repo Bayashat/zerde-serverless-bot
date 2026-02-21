@@ -6,6 +6,7 @@ Thank you for contributing to Zerde Bot. This guide covers development setup fro
 
 ## Development Setup
 
+
 ### 1. Clone the Repository
 
 ```bash

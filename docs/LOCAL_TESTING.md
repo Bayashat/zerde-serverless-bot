@@ -6,6 +6,10 @@ This guide walks you through running Zerde Bot end-to-end: creating an AWS accou
 
 ## 1. Create an AWS Account (If You Don’t Have One)
 
+### Option 1: Watch this video: [Creating an AWS Account](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
+### Option 2: Follow the steps below:
+
 1. Go to [aws.amazon.com](https://aws.amazon.com) and choose **Create an AWS Account**.
 2. Complete sign-up (email, password, account type, payment method, identity verification).
    **Note:** Free tier is enough for this bot; you will not be charged if you stay within Lambda/API Gateway free tier limits.
