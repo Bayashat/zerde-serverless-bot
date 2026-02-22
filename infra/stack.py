@@ -8,6 +8,8 @@ from aws_cdk import BundlingOptions, CfnOutput, Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
 from aws_cdk import aws_dynamodb as dynamodb
+from aws_cdk import aws_events as events
+from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
@@ -205,6 +207,71 @@ class ZerdeTelegramBotStack(Stack):
                 max_concurrency=10,  # Maximum concurrent invocations from SQS
             ),
         )
+
+        # ============================================================================
+        # News Lambda (Daily IT News)
+        # ============================================================================
+
+        # Get optional news configuration from environment
+        groq_api_key = os.environ.get("GROQ_API_KEY", "")
+        news_chat_id = os.environ.get("NEWS_CHAT_ID", "")
+
+        # Only create news lambda if configuration is provided
+        if groq_api_key and news_chat_id:
+            self.news_lambda = _lambda.Function(
+                self,
+                f"{project_name_prefix}NewsLambda",
+                function_name=f"{stack_name_prefix}-news-lambda",
+                runtime=lambda_runtime,
+                handler="main.lambda_handler",
+                timeout=Duration.minutes(3),
+                log_retention=logs.RetentionDays.ONE_WEEK,
+                code=_lambda.Code.from_asset(
+                    str(project_root / "src" / "news"),
+                    exclude=exclude_files,
+                    bundling=BundlingOptions(
+                        image=lambda_runtime.bundling_image,
+                        command=[
+                            "bash",
+                            "-c",
+                            "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
+                        ],
+                    ),
+                ),
+                environment={
+                    **self.common_env_vars,
+                    "BOT_TOKEN": telegram_bot_token,
+                    "GROQ_API_KEY": groq_api_key,
+                    "NEWS_CHAT_ID": news_chat_id,
+                },
+            )
+
+            # EventBridge Rule: Daily at 15:00 Asia/Almaty time (UTC+5 = 10:00 UTC)
+            # Cron format: minute hour day month day-of-week year
+            daily_news_rule = events.Rule(
+                self,
+                f"{project_name_prefix}DailyNewsRule",
+                rule_name=f"{stack_name_prefix}-daily-news-rule",
+                description="Trigger news lambda daily at 15:00 Asia/Almaty time",
+                schedule=events.Schedule.cron(
+                    minute="0",
+                    hour="10",  # 10:00 UTC = 15:00 Asia/Almaty (UTC+5)
+                    month="*",
+                    week_day="*",
+                    year="*",
+                ),
+            )
+
+            # Add Lambda as target
+            daily_news_rule.add_target(events_targets.LambdaFunction(self.news_lambda))
+
+            # Output
+            CfnOutput(
+                self,
+                f"{project_name_prefix}NewsLambdaName",
+                description="News Lambda function name",
+                value=self.news_lambda.function_name,
+            )
 
         # ============================================================================
         # API Gateway (HTTP API)
