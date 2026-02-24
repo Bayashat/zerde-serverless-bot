@@ -6,6 +6,7 @@ from typing import Optional
 
 import requests
 from aws_lambda_powertools import Logger
+from services import BOT_TOKEN, NEWS_CHAT_IDS
 
 logger = Logger()
 
@@ -103,19 +104,19 @@ def send_telegram_message(
     return False, None
 
 
-def broadcast_messages(bot_token: str, chat_ids: list[str], messages: list[str]) -> bool:
+def broadcast_messages(messages: list[str]) -> bool:
     any_success = False
     for raw_message in messages:
         safe_message = sanitize_html(raw_message)
-        for chat_id in chat_ids:
-            success, status_code = send_telegram_message(bot_token, chat_id, safe_message)
+        for chat_id in NEWS_CHAT_IDS:
+            success, status_code = send_telegram_message(BOT_TOKEN, chat_id, safe_message)
             if success:
                 any_success = True
             elif status_code == 400:
                 logger.warning(f"HTML send failed for {chat_id} (400), retrying as plain text")
                 plain_message = re.sub(r"</?(b|blockquote)>", "", safe_message)
                 retry_success, _ = send_telegram_message(
-                    bot_token,
+                    BOT_TOKEN,
                     chat_id,
                     plain_message,
                     parse_mode=None,

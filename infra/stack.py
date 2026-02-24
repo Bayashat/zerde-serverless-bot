@@ -13,7 +13,6 @@ from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
-from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_cdk import aws_sqs as sqs
 from constructs import Construct
 from dotenv import load_dotenv
@@ -212,25 +211,19 @@ class ZerdeTelegramBotStack(Stack):
         # ============================================================================
         # News Lambda (Daily IT News)
         # ============================================================================
-        news_chat_id = os.environ.get("NEWS_CHAT_ID")
-        if not news_chat_id:
-            raise ValueError(
-                "Environment variable NEWS_CHAT_ID must be set for the News Lambda. "
-                "Set NEWS_CHAT_ID in your environment (e.g. .env) before deploying the stack."
-            )
+        news_chat_ids = os.environ.get("NEWS_CHAT_IDS")
         ai_provider = os.environ.get("AI_PROVIDER", "groq")
+        groq_api_key = os.environ.get("GROQ_API_KEY")
 
-        groq_secret = secretsmanager.Secret.from_secret_name_v2(
-            self,
-            f"{project_name_prefix}GroqApiKey",
-            secret_name=f"{stack_name_prefix}-groq-api-key",
-        )
+        if not news_chat_ids or not groq_api_key:
+            raise ValueError("NEWS_CHAT_IDS and GROQ_API_KEY must be set")
 
         self.news_lambda = _lambda.Function(
             self,
             f"{project_name_prefix}NewsLambda",
             function_name=f"{stack_name_prefix}-news",
             runtime=lambda_runtime,
+            architecture=_lambda.Architecture.ARM_64,
             handler="main.lambda_handler",
             timeout=Duration.minutes(3),
             memory_size=512,
@@ -243,21 +236,18 @@ class ZerdeTelegramBotStack(Stack):
                     command=[
                         "bash",
                         "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
+                        ("pip install -r requirements.txt -t /asset-output && cp -au . /asset-output"),
                     ],
                 ),
             ),
             environment={
                 **self.common_env_vars,
                 "BOT_TOKEN": telegram_bot_token,
-                "GROQ_API_KEY_SECRET_NAME": groq_secret.secret_name,
-                "NEWS_CHAT_ID": news_chat_id,
+                "GROQ_API_KEY": groq_api_key,
+                "NEWS_CHAT_IDS": news_chat_ids,
                 "AI_PROVIDER": ai_provider,
             },
         )
-
-        # Grant news lambda read access to the Groq secret
-        groq_secret.grant_read(self.news_lambda)
 
         # EventBridge Rule: Daily at 15:00 Asia/Almaty time (UTC+5 = 10:00 UTC)
         daily_news_rule = events.Rule(
@@ -270,7 +260,6 @@ class ZerdeTelegramBotStack(Stack):
                 hour="10",  # 10:00 UTC = 15:00 Asia/Almaty (UTC+5)
                 day="*",
                 month="*",
-                week_day="?",
                 year="*",
             ),
         )

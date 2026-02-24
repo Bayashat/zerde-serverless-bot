@@ -2,7 +2,6 @@
 
 from typing import Any
 
-import config
 from aws_lambda_powertools import Logger
 from repositories.ai_client import create_ai_client
 from services.news_fetcher import NewsFetcher
@@ -22,27 +21,27 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
 
         if not raw_news:
             logger.info("No news found")
-            broadcast_messages(config.BOT_TOKEN, config.NEWS_CHAT_IDS, ["Бүгін жаңалық жоқ."])
+            broadcast_messages(["Бүгін жаңалық жоқ."])
             return {"statusCode": 200, "body": "No news today"}
 
         # 2. Score with AI
-        ai_client = create_ai_client(provider=config.AI_PROVIDER, api_key=config.get_groq_api_key())
+        ai_client = create_ai_client()
         scored_news = ai_client.evaluate_impact(raw_news)
         logger.info(f"Scored {len(scored_news)} news items")
 
         # 3. Select top 1
         scored_news.sort(key=lambda x: x.get("impact_score", 0), reverse=True)
-        top_news = scored_news[:1]
+        top_news = scored_news[:3]
         logger.info(f"Top 1 score: {[n.get('impact_score') for n in top_news]}")
 
         # 4. Generate one Telegram message per news item
         messages = ai_client.generate_item_summaries(top_news)
 
         # 5. Broadcast each message to all configured chat IDs
-        success = broadcast_messages(config.BOT_TOKEN, config.NEWS_CHAT_IDS, messages)
+        success = broadcast_messages(messages)
 
         if success:
-            logger.info(f"Sent {len(messages)} messages to {len(config.NEWS_CHAT_IDS)} chat(s)")
+            logger.info(f"Sent {len(messages)} messages")
             return {"statusCode": 200, "body": "News sent successfully"}
         else:
             logger.error("Failed to send any messages")

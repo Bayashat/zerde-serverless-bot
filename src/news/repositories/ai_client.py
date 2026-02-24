@@ -4,10 +4,11 @@ import json
 import re
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from aws_lambda_powertools import Logger
 from groq import Groq
+from repositories import AI_PROVIDER, GROQ_API_KEY
 
 
 class AIClient(ABC):
@@ -164,14 +165,21 @@ class GroqAIClient(AIClient):
     def _generate_single_summary(self, item: dict) -> str:
         """Call the LLM to produce a formatted Telegram message for one article."""
         prompt = (
-            "Write a short IT news update in Kazakh for this article:\n\n"
+            "You are an energetic, tech-savvy news anchor for a vibrant Kazakh IT community. "
+            "Write a highly engaging and short IT news update in modern Kazakh based on this article:\n\n"
             f"Title: {item['title']}\n"
             f"Summary: {item.get('summary', '')}\n\n"
-            "Format (HTML only, no links):\n"
-            "\U0001f525<b>[Short bold title]</b>\n"
-            "<blockquote>[2-3 sentences. Why important? What impact?]</blockquote>\n"
-            "Rules: use emoji, bold title with <b>, description in <blockquote>, NO links.\n\n"
-            "CRITICAL: Use ONLY Cyrillic alphabet (Kazakh/Russian). NO other scripts!"
+            "RULES FOR GENERATION:\n"
+            "1. EMOJIS: Do NOT just use 🔥. "
+            "Choose 1-2 emojis that perfectly match the topic "
+            "(e.g., 🤖 for AI, 💰 for investments, 🛡️ for cybersecurity, 🚀 for startups, 🍎 for Apple).\n"
+            "2. TONE: Professional yet conversational and engaging. "
+            "Don't just translate; explain the impact like you are talking to fellow software engineers.\n"
+            "3. FORMAT (Strict HTML, no links):\n"
+            "[Contextual Emoji] <b>[Catchy and punchy title]</b>\n"
+            "<blockquote>[2-3 sentences explaining what happened and WHY it "
+            "matters to the tech world.]</blockquote>\n\n"
+            "CRITICAL: Use ONLY Cyrillic alphabet (Kazakh). Translate tech terms naturally without sounding robotic."
         )
         system = (
             "Сіз IT және developer жаңалықтарын қазақ тілінде "
@@ -195,9 +203,9 @@ class GroqAIClient(AIClient):
             return f"<b>{title}</b>\n<blockquote>{summary}</blockquote>"
 
 
-def create_ai_client(provider: str = "groq", api_key: Optional[str] = None) -> AIClient:
+def create_ai_client() -> AIClient:
     """Factory function to create AI client based on provider."""
-    if provider.lower() == "groq":
-        return GroqAIClient(api_key=api_key)
+    if AI_PROVIDER.lower() == "groq":
+        return GroqAIClient(api_key=GROQ_API_KEY)
     else:
-        raise ValueError(f"Unsupported AI provider: {provider}. Available: 'groq'")
+        raise ValueError(f"Unsupported AI provider: {AI_PROVIDER}. Available: 'groq'")
