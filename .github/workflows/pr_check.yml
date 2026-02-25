@@ -88,6 +88,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+          NEWS_CHAT_IDS: ${{ secrets.DEV_NEWS_CHAT_IDS }}
+          AI_PROVIDER: groq
+          GROQ_API_KEY: ${{ secrets.DEV_GROQ_API_KEY }}
         run: |
           uv run cdk synth -c env=dev
 
@@ -97,6 +100,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+          NEWS_CHAT_IDS: ${{ secrets.DEV_NEWS_CHAT_IDS }}
+          AI_PROVIDER: groq
+          GROQ_API_KEY: ${{ secrets.DEV_GROQ_API_KEY }}
         run: |
           # Run cdk diff and capture output
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true

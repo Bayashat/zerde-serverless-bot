@@ -15,7 +15,6 @@ from .context import Context
 
 logger = Logger()
 
-# Type alias for handler functions
 HandlerFunc = Callable[[Context], None]
 
 
