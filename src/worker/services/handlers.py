@@ -387,10 +387,7 @@ def register_handlers(dp: Dispatcher):
             total = stats["total_joins"]
             verified = stats["verified_users"]
             start_date = stats["started_at"]
-            if total == 0:
-                activity_level_percentage = 0
-            else:
-                activity_level_percentage = 100 * (verified / total)
+            activity_level_percentage = int(min(100, 100 * verified / max(1, total)))
             if activity_level_percentage < 30:
                 level_key = "activity_low"
             elif activity_level_percentage < 70:
