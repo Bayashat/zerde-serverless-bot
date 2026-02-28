@@ -4,7 +4,7 @@ import json
 from abc import ABC, abstractmethod
 
 from aws_lambda_powertools import Logger
-from repositories import AI_PROVIDER, GEMINI_API_KEY
+from repositories import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
 
 
 class AIClient(ABC):
@@ -55,7 +55,7 @@ class GeminiAIClient(AIClient):
             from google.genai import types
 
             response = self._get_client().models.generate_content(
-                model="gemini-2.5-flash",
+                model=LLM_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.1,
@@ -102,7 +102,7 @@ class GeminiAIClient(AIClient):
             from google.genai import types
 
             response = self._get_client().models.generate_content(
-                model="gemini-2.5-flash",
+                model=LLM_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.4,

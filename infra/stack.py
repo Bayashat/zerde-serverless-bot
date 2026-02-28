@@ -214,6 +214,7 @@ class ZerdeTelegramBotStack(Stack):
         news_chat_ids = os.environ.get("NEWS_CHAT_IDS")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
         gemini_api_key = os.environ.get("GEMINI_API_KEY")
+        llm_model = os.environ.get("LLM_MODEL", "gemini-3-flash-preview")
 
         if not news_chat_ids or not gemini_api_key:
             raise ValueError("NEWS_CHAT_IDS and GEMINI_API_KEY must be set")
@@ -225,7 +226,7 @@ class ZerdeTelegramBotStack(Stack):
             runtime=lambda_runtime,
             architecture=_lambda.Architecture.X86_64,
             handler="main.lambda_handler",
-            timeout=Duration.minutes(4),
+            timeout=Duration.minutes(5),
             memory_size=256,
             log_retention=logs.RetentionDays.ONE_WEEK,
             code=_lambda.Code.from_asset(
@@ -247,6 +248,7 @@ class ZerdeTelegramBotStack(Stack):
                 "GEMINI_API_KEY": gemini_api_key,
                 "NEWS_CHAT_IDS": news_chat_ids,
                 "AI_PROVIDER": ai_provider,
+                "LLM_MODEL": llm_model,
             },
         )
 
