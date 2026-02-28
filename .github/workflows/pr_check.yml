@@ -88,7 +88,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ vars.NEWS_CHAT_IDS }}
+          NEWS_CHAT_IDS: ${{ vars.DEV_NEWS_CHAT_IDS }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
         run: |
@@ -100,7 +100,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ vars.NEWS_CHAT_IDS }}
+          NEWS_CHAT_IDS: ${{ vars.DEV_NEWS_CHAT_IDS }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
         run: |
