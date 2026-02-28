@@ -153,6 +153,10 @@ class ZerdeTelegramBotStack(Stack):
         self.updates_queue.grant_send_messages(self.receiver_lambda)
 
         # Worker Lambda - processes queue messages and talks to DynamoDB / Telegram API
+
+        default_lang = os.environ.get("DEFAULT_LANG", "kk")
+        telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
+
         self.worker_lambda = _lambda.Function(
             self,
             f"{project_name_prefix}WorkerLambda",
@@ -187,10 +191,10 @@ class ZerdeTelegramBotStack(Stack):
             environment={
                 **self.common_env_vars,
                 "QUEUE_URL": self.updates_queue.queue_url,
-                "DEFAULT_LANG": "kk",
+                "DEFAULT_LANG": default_lang,
                 "BOT_TOKEN": telegram_bot_token,
                 "WEBHOOK_SECRET_TOKEN": telegram_webhook_secret_token,
-                "TELEGRAM_API_BASE": "https://api.telegram.org/bot",
+                "TELEGRAM_API_BASE": telegram_api_base,
                 "STATS_TABLE_NAME": self.bot_stats_table.table_name,
             },
         )
@@ -208,13 +212,11 @@ class ZerdeTelegramBotStack(Stack):
             ),
         )
 
-        # ============================================================================
         # News Lambda (Daily IT News)
-        # ============================================================================
         news_chat_ids = os.environ.get("NEWS_CHAT_IDS")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
         gemini_api_key = os.environ.get("GEMINI_API_KEY")
-        llm_model = os.environ.get("LLM_MODEL", "gemini-3-flash-preview")
+        llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
 
         if not news_chat_ids or not gemini_api_key:
             raise ValueError("NEWS_CHAT_IDS and GEMINI_API_KEY must be set")
