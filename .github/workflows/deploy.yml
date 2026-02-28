@@ -79,7 +79,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_ID || secrets.DEV_NEWS_CHAT_ID }}
+          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_IDS || secrets.DEV_NEWS_CHAT_IDS }}
           AI_PROVIDER: gemini
           GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
         run: |
@@ -91,7 +91,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_ID || secrets.DEV_NEWS_CHAT_ID }}
+          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_NEWS_CHAT_IDS || secrets.DEV_NEWS_CHAT_IDS }}
           AI_PROVIDER: gemini
           GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
         run: |
