@@ -1,51 +1,58 @@
-"""News Lambda: Daily IT news digest entry point."""
+"""News Lambda: Daily IT news digest entry point (Morning / Noon / Evening)."""
 
 from typing import Any
 
 from aws_lambda_powertools import Logger
+from helper import get_greeting
 from repositories.ai_client import create_ai_client
+from services import BOT_TOKEN, NEWS_CHAT_IDS
 from services.news_fetcher import NewsFetcher
-from services.telegram import broadcast_messages
+from services.telegram import send_media_group, send_telegram_message
 
 logger = Logger()
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
-    """EventBridge scheduled handler. Fetches IT news and sends to Telegram."""
-    logger.info("Starting daily news job")
+    """EventBridge scheduled handler. Fetches IT news, generates digest, sends media group or text to Telegram."""
+    logger.info("Starting daily news digest job")
 
     try:
-        # 1. Fetch raw news (24h TTL)
+        greeting = get_greeting()
+        logger.info(f"Greeting: {greeting}")
+
         fetcher = NewsFetcher()
-        raw_news = fetcher.fetch_raw_news(items_per_feed=15, max_age_hours=24)
-
-        if not raw_news:
-            logger.info("No news found")
-            broadcast_messages(["Бүгін жаңалық жоқ."])
-            return {"statusCode": 200, "body": "No news today"}
-
-        # 2. Score with AI
         ai_client = create_ai_client()
-        scored_news = ai_client.evaluate_impact(raw_news)
-        logger.info(f"Scored {len(scored_news)} news items")
 
-        # 3. Select top 1
-        scored_news.sort(key=lambda x: x.get("impact_score", 0), reverse=True)
-        top_news = scored_news[:3]
-        logger.info(f"Top 1 score: {[n.get('impact_score') for n in top_news]}")
+        raw_news = fetcher.fetch_raw_news(items_per_feed=5, max_age_hours=24)
+        if not raw_news:
+            logger.info("No news items found within TTL; skipping digest")
+            return {"statusCode": 200, "body": "No news"}
 
-        # 4. Generate one Telegram message per news item
-        messages = ai_client.generate_item_summaries(top_news)
+        top_indices = ai_client.select_top_news(raw_news)
+        logger.info("Top indices selected", extra={"indices": top_indices, "count": len(top_indices)})
 
-        # 5. Broadcast each message to all configured chat IDs
-        success = broadcast_messages(messages)
+        deep_news = []
+        image_urls = []
+        for idx in top_indices:
+            article = raw_news[idx]
+            logger.debug("Fetching deep article data", extra={"index": idx, "link": article.get("link")})
+            deep_data = fetcher.fetch_deep_article_data(article["link"])
+            article.update(deep_data)
+            deep_news.append(article)
+            if "unsplash" not in deep_data["image_url"]:
+                image_urls.append(deep_data["image_url"])
 
-        if success:
-            logger.info(f"Sent {len(messages)} messages")
-            return {"statusCode": 200, "body": "News sent successfully"}
-        else:
-            logger.error("Failed to send any messages")
-            return {"statusCode": 500, "body": "Failed to send messages"}
+        logger.info("Deep scrape complete", extra={"articles": len(deep_news), "images": len(image_urls)})
+
+        final_text = ai_client.generate_final_digest(deep_news, greeting)
+
+        for chat_id in NEWS_CHAT_IDS:
+            if image_urls:
+                send_media_group(BOT_TOKEN, chat_id, image_urls, caption="")
+            send_telegram_message(BOT_TOKEN, chat_id, final_text)
+
+        logger.info("Digest sent successfully", extra={"chat_count": len(NEWS_CHAT_IDS)})
+        return {"statusCode": 200, "body": "Agentic Digest Sent"}
 
     except Exception:
         logger.exception("Error in news lambda")

@@ -1,14 +1,18 @@
 """NewsFetcher: Fetch IT news from RSS feeds with TTL filtering."""
 
 import concurrent.futures
+import re
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
 
 import feedparser
+import requests
 from aws_lambda_powertools import Logger
 
 logger = Logger()
+
+DEFAULT_IMAGE_URL = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800"
 
 
 class NewsFetcher:
@@ -22,7 +26,6 @@ class NewsFetcher:
     RSS_FEEDS = [
         # --- TIER 1: Macro-economy, Big Tech, Investments ---
         "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
         "https://techcrunch.com/feed/",
         "https://venturebeat.com/feed/",
         # --- TIER 2: Global trends and hardware ---
@@ -35,8 +38,8 @@ class NewsFetcher:
         "https://www.bleepingcomputer.com/feed/",
     ]
 
-    def fetch_raw_news(self, items_per_feed: int = 15, max_age_hours: int = 24) -> list[dict]:
-        """Fetch raw news pool within TTL using ThreadPoolExecutor."""
+    def fetch_raw_news(self, items_per_feed: int = 5, max_age_hours: int = 24) -> list[dict]:
+        """Fetch raw news pool from RSS."""
         raw_news = []
         cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
 
@@ -44,45 +47,75 @@ class NewsFetcher:
             local_news = []
             try:
                 feed = feedparser.parse(feed_url)
-
                 for entry in feed.entries[:items_per_feed]:
                     pub_date_str = entry.get("published") or entry.get("updated")
                     pub_date = self._parse_date(pub_date_str)
-
                     if pub_date is None or pub_date < cutoff_time:
                         continue
-
                     local_news.append(
                         {
                             "title": entry.get("title", "No title"),
-                            "summary": entry.get("summary", "")[:250],
                             "link": entry.get("link", ""),
-                            "published": pub_date,
-                            "source": feed.feed.get("title", "Unknown") if hasattr(feed, "feed") else "Unknown",
+                            "summary": entry.get("summary", "")[:250],
                         }
                     )
-            except Exception:
-                logger.warning(f"Failed to fetch {feed_url}", exc_info=True)
-
+            except Exception as e:
+                logger.warning("Feed fetch failed", extra={"feed_url": feed_url, "error": str(e)})
             return local_news
 
-        max_workers = min(5, len(self.RSS_FEEDS))
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             results = executor.map(fetch_single_feed, self.RSS_FEEDS)
 
         for res in results:
             raw_news.extend(res)
 
         for i, news in enumerate(raw_news):
-            news["id"] = i
-
+            news["index"] = i
+        logger.info("Raw news pool fetched", extra={"count": len(raw_news), "feeds": len(self.RSS_FEEDS)})
         return raw_news
 
+    def fetch_deep_article_data(self, url: str) -> dict:
+        """Scrape the article page for og:image (or first img) and main paragraph text."""
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+        }
+        try:
+            resp = requests.get(url, headers=headers, timeout=8)
+            resp.raise_for_status()
+            html = resp.text
+            image_url = DEFAULT_IMAGE_URL
+
+            # Prefer og:image / twitter:image, then first content img
+            patterns = [
+                r'<meta\s+property=["\']og:image["\']\s+content=["\']([^"\']+)["\']',
+                r'<meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:image["\']',
+                r'<meta\s+name=["\']twitter:image["\']\s+content=["\']([^"\']+)["\']',
+                r'<img[^>]+src=["\'](https?://[^"\']+(?:jpg|jpeg|png|webp))["\']',
+            ]
+            for pattern in patterns:
+                match = re.search(pattern, html, re.IGNORECASE)
+                if match:
+                    extracted_url = match.group(1).strip()
+                    if extracted_url.startswith("http"):
+                        image_url = extracted_url
+                        break
+
+            p_tags = re.findall(r"<p[^>]*>(.*?)</p>", html, re.IGNORECASE | re.DOTALL)
+            clean_text = " ".join([re.sub(r"<[^>]+>", "", p).strip() for p in p_tags if len(p) > 50])
+            full_text = clean_text[:3000]
+            logger.debug("Deep scrape success", extra={"url": url, "image_found": image_url != DEFAULT_IMAGE_URL})
+            return {"image_url": image_url, "full_text": full_text}
+        except Exception as e:
+            logger.warning("Deep scrape failed", extra={"url": url, "error": str(e)})
+            return {"image_url": DEFAULT_IMAGE_URL, "full_text": ""}
+
     def _parse_date(self, date_string: Optional[str]) -> Optional[datetime]:
-        """Parse RSS date string to timezone-aware datetime."""
+        """Parse RSS date string to timezone-aware UTC datetime."""
         if not date_string:
             return None
-
         try:
             dt = parsedate_to_datetime(date_string)
             if dt.tzinfo is None:

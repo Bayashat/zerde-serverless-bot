@@ -212,11 +212,11 @@ class ZerdeTelegramBotStack(Stack):
         # News Lambda (Daily IT News)
         # ============================================================================
         news_chat_ids = os.environ.get("NEWS_CHAT_IDS")
-        ai_provider = os.environ.get("AI_PROVIDER", "groq")
-        groq_api_key = os.environ.get("GROQ_API_KEY")
+        ai_provider = os.environ.get("AI_PROVIDER", "gemini")
+        gemini_api_key = os.environ.get("GEMINI_API_KEY")
 
-        if not news_chat_ids or not groq_api_key:
-            raise ValueError("NEWS_CHAT_IDS and GROQ_API_KEY must be set")
+        if not news_chat_ids or not gemini_api_key:
+            raise ValueError("NEWS_CHAT_IDS and GEMINI_API_KEY must be set")
 
         self.news_lambda = _lambda.Function(
             self,
@@ -225,7 +225,7 @@ class ZerdeTelegramBotStack(Stack):
             runtime=lambda_runtime,
             architecture=_lambda.Architecture.X86_64,
             handler="main.lambda_handler",
-            timeout=Duration.minutes(1),
+            timeout=Duration.minutes(4),
             memory_size=256,
             log_retention=logs.RetentionDays.ONE_WEEK,
             code=_lambda.Code.from_asset(
@@ -244,28 +244,28 @@ class ZerdeTelegramBotStack(Stack):
             environment={
                 **self.common_env_vars,
                 "BOT_TOKEN": telegram_bot_token,
-                "GROQ_API_KEY": groq_api_key,
+                "GEMINI_API_KEY": gemini_api_key,
                 "NEWS_CHAT_IDS": news_chat_ids,
                 "AI_PROVIDER": ai_provider,
             },
         )
 
-        # EventBridge Rule: Daily at 15:00 Asia/Almaty time (UTC+5 = 10:00 UTC)
-        daily_news_rule = events.Rule(
-            self,
-            f"{project_name_prefix}DailyNewsRule",
-            rule_name=f"{stack_name_prefix}-daily-news-rule",
-            description="Trigger news lambda daily at 15:00 Asia/Almaty time",
-            schedule=events.Schedule.cron(
-                minute="0",
-                hour="10",  # 10:00 UTC = 15:00 Asia/Almaty (UTC+5)
-                day="*",
-                month="*",
-                year="*",
-            ),
-        )
-
-        daily_news_rule.add_target(events_targets.LambdaFunction(self.news_lambda))
+        # EventBridge Rules: 3x daily digest at 04:00, 08:00, 14:00 UTC (09:00, 13:00, 19:00 Almaty UTC+5)
+        for hour_utc, slot in [(4, "morning"), (8, "noon"), (14, "evening")]:
+            rule = events.Rule(
+                self,
+                f"{project_name_prefix}NewsRule{slot.capitalize()}",
+                rule_name=f"{stack_name_prefix}-news-{slot}",
+                description=f"Trigger news lambda at {hour_utc:02d}:00 UTC (daily digest {slot})",
+                schedule=events.Schedule.cron(
+                    minute="0",
+                    hour=str(hour_utc),
+                    day="*",
+                    month="*",
+                    year="*",
+                ),
+            )
+            rule.add_target(events_targets.LambdaFunction(self.news_lambda))
 
         CfnOutput(
             self,
