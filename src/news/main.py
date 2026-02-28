@@ -48,7 +48,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
 
         for chat_id in NEWS_CHAT_IDS:
             if image_urls:
-                send_media_group(BOT_TOKEN, chat_id, image_urls, caption="")
+                send_media_group(BOT_TOKEN, chat_id, image_urls)
             send_telegram_message(BOT_TOKEN, chat_id, final_text)
 
         logger.info("Digest sent successfully", extra={"chat_count": len(NEWS_CHAT_IDS)})

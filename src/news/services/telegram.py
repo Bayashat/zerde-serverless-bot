@@ -106,22 +106,16 @@ def send_telegram_message(
     return False, None
 
 
-def send_media_group(bot_token: str, chat_id: str, image_urls: list[str], caption: str) -> bool:
+def send_media_group(bot_token: str, chat_id: str, image_urls: list[str]) -> bool:
     """Send multiple images as an album with a single caption (max 3 photos, caption on first)."""
 
     valid_images = [url for url in image_urls if url and url.startswith("http")]
-    if not valid_images:
-        success, _ = send_telegram_message(bot_token, chat_id, caption)
-        return success
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMediaGroup"
     media = []
 
-    for i, img_url in enumerate(valid_images[:3]):
+    for img_url in valid_images[:3]:
         item = {"type": "photo", "media": img_url}
-        if i == 0:
-            item["caption"] = caption
-            item["parse_mode"] = "HTML"
         media.append(item)
 
     try:
