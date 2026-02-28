@@ -6,11 +6,11 @@ from typing import Optional
 
 import requests
 from aws_lambda_powertools import Logger
-from services import BOT_TOKEN, NEWS_CHAT_IDS
 
 logger = Logger()
 
 TELEGRAM_MAX_LENGTH = 4096
+TELEGRAM_CAPTION_MAX_LENGTH = 1024
 
 
 def sanitize_html(text: str) -> str:
@@ -23,6 +23,8 @@ def sanitize_html(text: str) -> str:
 
     for tag in ["b", "/b", "blockquote", "/blockquote"]:
         text = text.replace(f"&lt;{tag}&gt;", f"<{tag}>")
+    text = re.sub(r"&lt;a\s+href=\"([^\"]*)\"&gt;", r'<a href="\1">', text)
+    text = text.replace("&lt;/a&gt;", "</a>")
     return text
 
 
@@ -104,23 +106,25 @@ def send_telegram_message(
     return False, None
 
 
-def broadcast_messages(messages: list[str]) -> bool:
-    any_success = False
-    for raw_message in messages:
-        safe_message = sanitize_html(raw_message)
-        for chat_id in NEWS_CHAT_IDS:
-            success, status_code = send_telegram_message(BOT_TOKEN, chat_id, safe_message)
-            if success:
-                any_success = True
-            elif status_code == 400:
-                logger.warning(f"HTML send failed for {chat_id} (400), retrying as plain text")
-                plain_message = re.sub(r"</?(b|blockquote)>", "", safe_message)
-                retry_success, _ = send_telegram_message(
-                    BOT_TOKEN,
-                    chat_id,
-                    plain_message,
-                    parse_mode=None,
-                )
-                if retry_success:
-                    any_success = True
-    return any_success
+def send_media_group(bot_token: str, chat_id: str, image_urls: list[str]) -> bool:
+    """Send multiple images as an album with a single caption (max 3 photos, caption on first)."""
+
+    valid_images = [url for url in image_urls if url and url.startswith("http")]
+
+    url = f"https://api.telegram.org/bot{bot_token}/sendMediaGroup"
+    media = []
+
+    for img_url in valid_images[:3]:
+        item = {"type": "photo", "media": img_url}
+        media.append(item)
+
+    try:
+        resp = requests.post(url, json={"chat_id": chat_id, "media": media})
+        if resp.status_code != 200:
+            logger.error("Media group send failed", extra={"status": resp.status_code, "body": resp.text})
+            return False
+        logger.info("Media group sent", extra={"chat_id": chat_id, "photo_count": len(media)})
+        return True
+    except Exception as e:
+        logger.error("Failed to send media group", extra={"chat_id": chat_id, "error": str(e)})
+        return False

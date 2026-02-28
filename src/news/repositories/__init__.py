@@ -2,13 +2,6 @@
 
 import os
 
-
-def _require_env(name: str) -> str:
-    value = os.environ.get(name, "").strip()
-    if not value:
-        raise EnvironmentError(f"Required environment variable '{name}' is not set")
-    return value
-
-
-AI_PROVIDER: str = os.environ.get("AI_PROVIDER", "groq")
-GROQ_API_KEY: str = _require_env("GROQ_API_KEY")
+AI_PROVIDER: str = os.environ.get("AI_PROVIDER", "gemini")
+GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY").strip()
+LLM_MODEL: str = os.environ.get("LLM_MODEL", "gemini-3-flash-preview")
