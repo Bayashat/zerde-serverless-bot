@@ -4,6 +4,8 @@ import json
 from abc import ABC, abstractmethod
 
 from aws_lambda_powertools import Logger
+from google import genai
+from google.genai import types
 from repositories import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
 
 
@@ -20,6 +22,11 @@ class AIClient(ABC):
         """Generate final digest text from deep-scraped articles and greeting."""
         pass
 
+    @abstractmethod
+    def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
+        """Generate one digest text per article (no greeting; for pairing with each image)."""
+        pass
+
 
 class GeminiAIClient(AIClient):
     """Google Gemini AI provider via google-genai: single-step digest generation."""
@@ -28,15 +35,7 @@ class GeminiAIClient(AIClient):
         """Initialize Gemini client (google-genai)."""
         self.api_key = api_key
         self.logger = Logger()
-        self._client = None
-
-    def _get_client(self):
-        """Lazy-init Gemini client to defer import at module load."""
-        if self._client is None:
-            from google import genai
-
-            self._client = genai.Client(api_key=self.api_key)
-        return self._client
+        self._client = genai.Client(api_key=self.api_key)
 
     def select_top_news(self, news_items: list[dict]) -> list[int]:
         """Ask the model to pick the top 3 unique news indices."""
@@ -52,9 +51,7 @@ class GeminiAIClient(AIClient):
         )
 
         try:
-            from google.genai import types
-
-            response = self._get_client().models.generate_content(
+            response = self._client.models.generate_content(
                 model=LLM_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
@@ -99,9 +96,7 @@ class GeminiAIClient(AIClient):
         )
 
         try:
-            from google.genai import types
-
-            response = self._get_client().models.generate_content(
+            response = self._client.models.generate_content(
                 model=LLM_MODEL,
                 contents=prompt,
                 config=types.GenerateContentConfig(
@@ -116,6 +111,63 @@ class GeminiAIClient(AIClient):
         except Exception:
             self.logger.error("Failed to generate digest", exc_info=True)
             return f"<b>{deep_news_items[0]['title']}</b>\n{deep_news_items[0]['link']}"
+
+    def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
+        """Generate one Kazakh digest block per article for pairing with images."""
+        if not deep_news_items:
+            return []
+
+        payload = [
+            {"title": n["title"], "link": n["link"], "full_text": n.get("full_text", n["summary"])}
+            for n in deep_news_items
+        ]
+        community_name = "Chinese developer community" if chat_lang == "zh" else "Kazakh developer community"
+        language = "Chinese (Simplified)" if chat_lang == "zh" else "Kazakh (Cyrillic)"
+
+        prompt = (
+            f"You are an expert IT journalist for a {community_name}.\n"
+            "I will give you the FULL text of several IT news articles.\n"
+            f"For EACH article, write ONE digest block in modern {language}.\n\n"
+            "FORMAT RULES per block:\n"
+            "1. One Emoji, then <b>Bold Title</b>, then add two new lines after the title."
+            "then 3-4 sentences of deep analysis based on the full text.\n"
+            '2. End with the HTML link: <a href="URL">Толығырақ оқу</a>.\n'
+            "3. NO raw URLs. Use \\n\\n between blocks.\n"
+            "4. Each block max ~800 characters. Return exactly one block per article.\n\n"
+            "Respond ONLY with a JSON object:\n"
+            '{"digests": ["block1 html string", "block2 ...", "block3 ..."]}\n\n'
+            f"DATA:\n{json.dumps(payload, ensure_ascii=False)}"
+        )
+
+        try:
+            response = self._client.models.generate_content(
+                model=LLM_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.4,
+                    response_mime_type="application/json",
+                ),
+            )
+            data = json.loads(response.text)
+            digests = data.get("digests", [])
+            if len(digests) != len(deep_news_items):
+                self.logger.warning(
+                    "Digest count mismatch, padding or trimming",
+                    extra={"got": len(digests), "expected": len(deep_news_items)},
+                )
+            result = [
+                (
+                    digests[i]
+                    if i < len(digests)
+                    else f"<b>{deep_news_items[i]['title']}</b>\n{deep_news_items[i]['link']}"
+                )
+                for i in range(len(deep_news_items))
+            ]
+            self.logger.info("Per-article digests generated", extra={"count": len(result)})
+            return result
+        except Exception:
+            self.logger.error("Failed to generate per-article digests", exc_info=True)
+            return [f"<b>{n['title']}</b>\n{n['link']}" for n in deep_news_items]
 
 
 def create_ai_client() -> AIClient:

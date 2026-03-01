@@ -1,6 +1,7 @@
 """NewsFetcher: Fetch IT news from RSS feeds with TTL filtering."""
 
 import concurrent.futures
+import html
 import re
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
@@ -85,7 +86,7 @@ class NewsFetcher:
         try:
             resp = requests.get(url, headers=headers, timeout=8)
             resp.raise_for_status()
-            html = resp.text
+            html_content = resp.text
             image_url = DEFAULT_IMAGE_URL
 
             # Prefer og:image / twitter:image, then first content img
@@ -96,14 +97,16 @@ class NewsFetcher:
                 r'<img[^>]+src=["\'](https?://[^"\']+(?:jpg|jpeg|png|webp))["\']',
             ]
             for pattern in patterns:
-                match = re.search(pattern, html, re.IGNORECASE)
+                match = re.search(pattern, html_content, re.IGNORECASE)
                 if match:
                     extracted_url = match.group(1).strip()
+                    extracted_url = html.unescape(extracted_url)
+
                     if extracted_url.startswith("http"):
                         image_url = extracted_url
                         break
 
-            p_tags = re.findall(r"<p[^>]*>(.*?)</p>", html, re.IGNORECASE | re.DOTALL)
+            p_tags = re.findall(r"<p[^>]*>(.*?)</p>", html_content, re.IGNORECASE | re.DOTALL)
             clean_text = " ".join([re.sub(r"<[^>]+>", "", p).strip() for p in p_tags if len(p) > 50])
             full_text = clean_text[:3000]
             logger.debug("Deep scrape success", extra={"url": url, "image_found": image_url != DEFAULT_IMAGE_URL})

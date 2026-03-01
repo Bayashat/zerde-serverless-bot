@@ -221,6 +221,9 @@ class ZerdeTelegramBotStack(Stack):
         if not news_chat_ids or not gemini_api_key:
             raise ValueError("NEWS_CHAT_IDS and GEMINI_API_KEY must be set")
 
+        if not llm_model or not ai_provider:
+            raise ValueError("LLM_MODEL and AI_PROVIDER must be set")
+
         self.news_lambda = _lambda.Function(
             self,
             f"{project_name_prefix}NewsLambda",
@@ -228,7 +231,7 @@ class ZerdeTelegramBotStack(Stack):
             runtime=lambda_runtime,
             architecture=_lambda.Architecture.X86_64,
             handler="main.lambda_handler",
-            timeout=Duration.minutes(5),
+            timeout=Duration.minutes(2),
             memory_size=256,
             log_retention=logs.RetentionDays.ONE_WEEK,
             code=_lambda.Code.from_asset(
@@ -254,22 +257,23 @@ class ZerdeTelegramBotStack(Stack):
             },
         )
 
-        # EventBridge Rules: 3x daily digest at 04:00, 08:00, 14:00 UTC (09:00, 13:00, 19:00 Almaty UTC+5)
-        for hour_utc, slot in [(4, "morning"), (8, "noon"), (14, "evening")]:
-            rule = events.Rule(
-                self,
-                f"{project_name_prefix}NewsRule{slot.capitalize()}",
-                rule_name=f"{stack_name_prefix}-news-{slot}",
-                description=f"Trigger news lambda at {hour_utc:02d}:00 UTC (daily digest {slot})",
-                schedule=events.Schedule.cron(
-                    minute="0",
-                    hour=str(hour_utc),
-                    day="*",
-                    month="*",
-                    year="*",
-                ),
-            )
-            rule.add_target(events_targets.LambdaFunction(self.news_lambda))
+        if is_prod:
+            # EventBridge Rules: 3x daily digest at 04:00, 08:00, 14:00 UTC (09:00, 13:00, 19:00 Almaty UTC+5)
+            for hour_utc, slot in [(4, "morning"), (14, "evening")]:
+                rule = events.Rule(
+                    self,
+                    f"{project_name_prefix}NewsRule{slot.capitalize()}",
+                    rule_name=f"{stack_name_prefix}-news-{slot}",
+                    description=f"Trigger news lambda at {hour_utc:02d}:00 UTC (daily digest {slot})",
+                    schedule=events.Schedule.cron(
+                        minute="0",
+                        hour=str(hour_utc),
+                        day="*",
+                        month="*",
+                        year="*",
+                    ),
+                )
+                rule.add_target(events_targets.LambdaFunction(self.news_lambda))
 
         CfnOutput(
             self,
