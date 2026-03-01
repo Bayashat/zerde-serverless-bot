@@ -106,25 +106,29 @@ def send_telegram_message(
     return False, None
 
 
-def send_media_group(bot_token: str, chat_id: str, image_urls: list[str]) -> bool:
-    """Send multiple images as an album with a single caption (max 3 photos, caption on first)."""
+def send_message_with_photo(bot_token: str, chat_id: str, message: str, image_url: str | None = None) -> bool:
+    """Send a message with a single photo (sendPhoto) or text-only fallback. Caption truncated to 1024 chars."""
+    if not image_url or "unsplash" in image_url:
+        return send_telegram_message(bot_token, chat_id, message)[0]
 
-    valid_images = [url for url in image_urls if url and url.startswith("http")]
-
-    url = f"https://api.telegram.org/bot{bot_token}/sendMediaGroup"
-    media = []
-
-    for img_url in valid_images[:3]:
-        item = {"type": "photo", "media": img_url}
-        media.append(item)
+    base_url = f"https://api.telegram.org/bot{bot_token}"
+    url = f"{base_url}/sendPhoto"
+    caption = truncate_message(message, TELEGRAM_CAPTION_MAX_LENGTH)
+    payload: dict = {
+        "chat_id": chat_id,
+        "photo": image_url,
+        "caption": caption,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
 
     try:
-        resp = requests.post(url, json={"chat_id": chat_id, "media": media})
+        resp = requests.post(url, json=payload, timeout=10)
         if resp.status_code != 200:
-            logger.error("Media group send failed", extra={"status": resp.status_code, "body": resp.text})
+            logger.error("Send photo failed", extra={"status": resp.status_code, "body": resp.text})
             return False
-        logger.info("Media group sent", extra={"chat_id": chat_id, "photo_count": len(media)})
+        logger.info("Photo sent", extra={"chat_id": chat_id})
         return True
     except Exception as e:
-        logger.error("Failed to send media group", extra={"chat_id": chat_id, "error": str(e)})
+        logger.error("Failed to send photo", extra={"chat_id": chat_id, "error": str(e)})
         return False
