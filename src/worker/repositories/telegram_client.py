@@ -26,6 +26,7 @@ class TelegramClient:
         parse_mode: str = "HTML",
         reply_markup: dict[str, Any] | None = None,
         reply_to_message_id: int | None = None,
+        link_preview_disable: bool | None = None,
     ) -> dict[str, Any]:
         """Send message to Telegram. Returns the sent Message object from API."""
         url = f"{self.api_base}/sendMessage"
@@ -44,6 +45,9 @@ class TelegramClient:
                 "message_id": reply_to_message_id,
             }
             payload["reply_parameters"] = reply_parameters
+
+        if link_preview_disable:
+            payload["link_preview_options"] = {"is_disabled": True}
 
         try:
             response = self.session.post(url, json=payload, timeout=10)
