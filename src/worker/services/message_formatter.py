@@ -76,7 +76,7 @@ TRANSLATIONS = {
             "👤 Initiated by: {INITIATOR}\n"
             "🎯 Target: {TARGET}\n\n"
             "Votes needed: {THRESHOLD}\n"
-            "Current votes: {VOTES_FOR} 👍 | {VOTES_AGAINST} 👎"
+            "Current votes: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
         ),
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
@@ -155,7 +155,7 @@ TRANSLATIONS = {
             "👤 Бастаған: {INITIATOR}\n"
             "🎯 Мақсат: {TARGET}\n\n"
             "Қажетті дауыстар: {THRESHOLD}\n"
-            "Ағымдағы дауыстар: {VOTES_FOR} 👍 | {VOTES_AGAINST} 👎"
+            "Ағымдағы дауыстар: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
         ),
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз есепке алынды.",
         "voteban_already_voted": "⚠️ Сіз бұл банға қатысты дауыс бердіңіз.",
