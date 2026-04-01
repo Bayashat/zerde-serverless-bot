@@ -44,9 +44,24 @@ class GeminiAIClient(AIClient):
 
         payload = [{"index": n["index"], "title": n["title"], "summary": n["summary"]} for n in news_items]
         prompt = (
-            "Analyze these IT news items. Cluster duplicates. Select exactly 3 of the most important UNIQUE topics.\n"
+            "You are an expert IT Editor curating a daily news digest for a hardcore community of Software Engineers (primarily backend, cloud, and AI developers).\n"  # noqa: E501
+            "Analyze the provided JSON list of news items and cluster duplicate or similar stories.\n"
+            "Your task is to select EXACTLY 3 of the most IMPACTFUL, HIGH-SIGNAL, and UNIQUE news items.\n\n"
+            "**DEFINITION OF 'IMPACTFUL' FOR THIS AUDIENCE:**\n"
+            "✅ YES (High Priority): Major framework/tool updates (e.g., AWS, Python, AI models), deep architectural insights, high-profile open-source releases, tech startup funding, or paradigm shifts in software engineering.\n"  # noqa: E501
+            "❌ NO (DO NOT SELECT): Boring technical standards (like raw RFC protocol texts), generic e-government/municipal updates (e.g., citizen portals, public services), pure consumer gadget reviews, or corporate PR fluff.\n\n"  # noqa: E501
+            "To ensure content diversity, select one article from each of the following 3 categories:\n"
+            "1. Global Tech & AI: Game-changing tech news, major AI model releases, or massive industry shifts that affect how developers build software.\n"  # noqa: E501
+            "2. Hardcore Engineering: Practical cloud infrastructure (Serverless, AWS), backend architecture, or DevOps tools.\n"  # noqa: E501
+            "3. Kazakhstan IT & Community: Local tech startups, IT business in KZ, Almaty/Astana developer community events, or Kazakhstani tech industry news.\n\n"  # noqa: E501
+            "🛡️ STRICT DIVERSITY & GEOGRAPHY QUOTAS (CRITICAL):\n"
+            "- EXACTLY ONE KAZAKHSTAN ARTICLE: You MUST select exactly 1 article from Kazakhstani sources (often in Russian or Kazakh). This belongs strictly to Category 3.\n"  # noqa: E501
+            "- GLOBAL DOMINANCE: Categories 1 and 2 MUST be fulfilled by international, English-language tech media.\n"
+            "- DOMAIN UNIQUENESS: Do not select multiple articles from the same website domain.\n\n"
+            "⚠️ FALLBACK RULE: If the news pool lacks quality articles in one of these categories, "
+            "substitute it with another highly engaging article, but NEVER violate the 'EXACTLY ONE KAZAKHSTAN ARTICLE' quota unless the pool has absolutely zero KZ news.\n\n"  # noqa: E501
             "Respond ONLY with a JSON object in this exact format:\n"
-            '{"top_indices": [1, 5, 8]}\n\n'
+            '{"top_indices": [idx1, idx2, idx3]}\n\n'
             f"DATA:\n{json.dumps(payload, ensure_ascii=False)}"
         )
 
@@ -121,17 +136,30 @@ class GeminiAIClient(AIClient):
             {"title": n["title"], "link": n["link"], "full_text": n.get("full_text", n["summary"])}
             for n in deep_news_items
         ]
-        community_name = "Chinese developer community" if chat_lang == "zh" else "Kazakh developer community"
-        language = "Chinese (Simplified)" if chat_lang == "zh" else "Kazakh (Cyrillic)"
+        if chat_lang == "zh":
+            community_name = "Chinese developer community"
+            language = "Chinese (Simplified)"
+            read_full_text = "阅读全文"
+        elif chat_lang == "kk":
+            community_name = "Kazakh developer community"
+            language = "Kazakh (Cyrillic)"
+            read_full_text = "Толығырақ оқу"
+        elif chat_lang == "ru":
+            community_name = "Russian developer community"
+            language = "Russian"
+            read_full_text = "Читать полностью"
+        else:
+            raise ValueError(f"Unsupported chat language: {chat_lang}")
 
         prompt = (
             f"You are an expert IT journalist for a {community_name}.\n"
             "I will give you the FULL text of several IT news articles.\n"
-            f"For EACH article, write ONE digest block in modern {language}.\n\n"
+            f"For EACH article, write ONE digest block in modern {language}."
+            f"CRITICAL: The ENTIRE block, INCLUDING the TITLE, MUST be completely translated and written in {language}.\n\n"  # noqa: E501
             "FORMAT RULES per block:\n"
-            "1. One Emoji, then <b>Bold Title</b>, then add two new lines after the title."
-            "then 3-4 sentences of deep analysis based on the full text.\n"
-            '2. End with the HTML link: <a href="URL">Толығырақ оқу</a>.\n'
+            f"1. One relevant Emoji, then a <b>Catchy Title TRANSLATED INTO {language}</b>.\n"
+            "2. Add two new lines (\\n\\n) after the title, then write 3-4 sentences of deep analysis based on the full text.\n"  # noqa: E501
+            f'2. End with the HTML link: <a href="URL">{read_full_text}</a>.\n'
             "3. NO raw URLs. Use \\n\\n between blocks.\n"
             "4. Each block max ~800 characters. Return exactly one block per article.\n\n"
             "Respond ONLY with a JSON object:\n"
