@@ -341,11 +341,11 @@ def register_handlers(dp: Dispatcher):
                                 "inline_keyboard": [
                                     [
                                         {
-                                            "text": "👍 Ban",
+                                            "text": "🔫 Ban",
                                             "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
                                         },
                                         {
-                                            "text": "👎 Forgive",
+                                            "text": "👼 Forgive",
                                             "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
                                         },
                                     ]
@@ -478,11 +478,11 @@ def register_handlers(dp: Dispatcher):
                 "inline_keyboard": [
                     [
                         {
-                            "text": "👍 Ban",
+                            "text": "🔫 Ban",
                             "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
                         },
                         {
-                            "text": "👎 Forgive",
+                            "text": "👼 Forgive",
                             "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
                         },
                     ]
