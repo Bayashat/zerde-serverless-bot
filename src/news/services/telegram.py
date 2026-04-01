@@ -108,7 +108,7 @@ def send_telegram_message(
 
 def send_message_with_photo(bot_token: str, chat_id: str, message: str, image_url: str | None = None) -> bool:
     """Send a message with a single photo (sendPhoto) or text-only fallback. Caption truncated to 1024 chars."""
-    if not image_url or "unsplash" in image_url:
+    if not image_url:
         return send_telegram_message(bot_token, chat_id, message)[0]
 
     base_url = f"https://api.telegram.org/bot{bot_token}"
