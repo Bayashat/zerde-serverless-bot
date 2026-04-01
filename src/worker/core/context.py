@@ -33,7 +33,6 @@ class Context:
         self.callback_query = update.get("callback_query")
         if self.callback_query:
             self.message = self.callback_query.get("message", {})
-            self.chat_id = self.message.get("chat", {}).get("id")
             self.user_data = self.callback_query.get("from", {})
             self.callback_query_id = self.callback_query.get("id")
             self.callback_data = (self.callback_query.get("data") or "").strip()
@@ -41,9 +40,9 @@ class Context:
             self.callback_query_id = None
             self.callback_data = ""
             self.message = update.get("message", {})
-            self.chat_id = self.message.get("chat", {}).get("id")
             self.user_data = self.message.get("from", {})
 
+        self.chat_id = self.message.get("chat", {}).get("id")
         self.text = self.message.get("text", "").strip()
         self.reply_to_message = self.message.get("reply_to_message")
 
