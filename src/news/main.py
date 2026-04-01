@@ -17,7 +17,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     logger.info("Starting daily news digest job")
     chat_id, chat_lang = extract_event(event)
     try:
-        max_age_hours, hour = get_greeting_and_max_age_hours()
+        max_age_hours, hour = get_greeting_and_max_age_hours(chat_lang)
         logger.info(f"Max age hours: {max_age_hours}, Hour: {hour}")
 
         fetcher = NewsFetcher()

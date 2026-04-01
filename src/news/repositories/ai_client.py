@@ -136,9 +136,20 @@ class GeminiAIClient(AIClient):
             {"title": n["title"], "link": n["link"], "full_text": n.get("full_text", n["summary"])}
             for n in deep_news_items
         ]
-        community_name = "Chinese developer community" if chat_lang == "zh" else "Kazakh developer community"
-        language = "Chinese (Simplified)" if chat_lang == "zh" else "Kazakh (Cyrillic)"
-        read_full_text = "阅读全文" if chat_lang == "zh" else "Толығырақ оқу"
+        if chat_lang == "zh":
+            community_name = "Chinese developer community"
+            language = "Chinese (Simplified)"
+            read_full_text = "阅读全文"
+        elif chat_lang == "kk":
+            community_name = "Kazakh developer community"
+            language = "Kazakh (Cyrillic)"
+            read_full_text = "Толығырақ оқу"
+        elif chat_lang == "ru":
+            community_name = "Russian developer community"
+            language = "Russian"
+            read_full_text = "Читать полностью"
+        else:
+            raise ValueError(f"Unsupported chat language: {chat_lang}")
 
         prompt = (
             f"You are an expert IT journalist for a {community_name}.\n"

@@ -41,7 +41,6 @@ class NewsFetcher:
         "https://aws.amazon.com/about-aws/whats-new/recent/feed/",
         "https://blog.cloudflare.com/rss/",
         # --- TIER 5: Regional & Developer Communities ---
-        "https://habr.com/en/rss/articles/",
         "https://profit.kz/rss/news/",
         "https://digitalbusiness.kz/feed/",
         "https://tproger.ru/feed/",

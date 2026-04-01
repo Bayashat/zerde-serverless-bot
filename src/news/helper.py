@@ -9,15 +9,19 @@ MORNING_HOUR_THRESHOLD = 7  # hour < 7 → morning slot for intro
 _INTRO_TEXTS: dict[tuple[str, str], str] = {
     ("zh", "morning"): "🌞早上好\n\n这里是现在的重要IT新闻：",
     ("zh", "evening"): "🌙 晚上好\n\n这里是现在的重要IT新闻：",
-    ("kk", "morning"): "🌞 Қайырлы таң!\n\n Қазіргі басты IT жаңалықтар:",
-    ("kk", "evening"): "🌙 Қайырлы кеш!\n\n Қазіргі басты IT жаңалықтар:",
+    ("kk", "morning"): "🌞 Қайырлы таң!\n\nҚазіргі басты IT жаңалықтар:",
+    ("kk", "evening"): "🌙 Қайырлы кеш!\n\nҚазіргі басты IT жаңалықтар:",
+    ("ru", "morning"): "🌞 Доброе утро\n\nГлавные IT-новости за прошедшие сутки:",
+    ("ru", "evening"): "🌙 Добрый вечер\n\nГлавные IT-новости за прошедшие сутки:",
 }
 DEFAULT_INTRO_LANG = "kk"
 
 
-def get_greeting_and_max_age_hours() -> tuple[float, str]:
+def get_greeting_and_max_age_hours(chat_lang: str) -> tuple[float, str]:
     """Return (max_age_hours, greeting) for current UTC hour. Never returns None."""
     hour = datetime.now(timezone.utc).hour
+    if chat_lang == "ru":
+        return 24, hour
     if hour in EVENING_HOURS:
         return 10.5, hour  # 09:00–19:00 Almaty: 10.5h buffer
     return 14.5, hour  # 19:00–09:00 Almaty: 14.5h buffer
