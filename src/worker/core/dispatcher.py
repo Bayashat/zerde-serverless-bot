@@ -82,14 +82,14 @@ class Dispatcher:
         member = self.bot.get_chat_member(ctx.chat_id, ctx.user_id)
         logger.info("Member info", extra={"member": member})
         if member.get("status") not in ("member", "restricted", "administrator", "creator"):
-            logger.info("Member is not in the group. Ignoring update.")
-            self.bot.answer_callback_query(
-                ctx.callback_query_id, text=get_translated_text("not_in_group"), show_alert=True
-            )
+            if ctx.callback_query_id:
+                self.bot.answer_callback_query(
+                    ctx.callback_query_id, text=get_translated_text("not_in_group"), show_alert=True
+                )
             return
 
         # 1. Callback query (e.g. inline button "verify")
-        if "callback_query" in update and self.callback_query_handler:
+        if ctx.callback_query and self.callback_query_handler:
             logger.info("Dispatching to callback_query handler")
             try:
                 self.callback_query_handler(ctx)

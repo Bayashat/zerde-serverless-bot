@@ -27,7 +27,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> None:
     """
     SQS Event Handler. Routes by task_type: timeout vs standard Telegram update.
     """
-    logger.info("Received batch of messages", extra={"event": event})
+    logger.debug("Received batch of messages", extra={"event": event})
 
     for record in event["Records"]:
         try:
