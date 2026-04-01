@@ -73,6 +73,7 @@ class Context:
         text: str,
         reply_to_message_id: int | None = None,
         reply_markup: dict[str, Any] | None = None,
+        link_preview_disable: bool | None = None,
     ) -> dict[str, Any]:
         """
         Shorthand to reply to the current message.
@@ -91,6 +92,10 @@ class Context:
         """
         if self.chat_id:
             return self._bot.send_message(
-                self.chat_id, text, reply_markup=reply_markup, reply_to_message_id=reply_to_message_id
+                self.chat_id,
+                text,
+                reply_markup=reply_markup,
+                reply_to_message_id=reply_to_message_id,
+                link_preview_disable=link_preview_disable,
             )
         return {}
