@@ -77,8 +77,19 @@ class Dispatcher:
         ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
 
         # --- Routing Logic ---
+
+        # 0. Check for members outside the group
+        member = self.bot.get_chat_member(ctx.chat_id, ctx.user_id)
+        logger.info("Member info", extra={"member": member})
+        if member.get("status") not in ("member", "restricted", "administrator", "creator"):
+            if ctx.callback_query_id:
+                self.bot.answer_callback_query(
+                    ctx.callback_query_id, text=get_translated_text("not_in_group"), show_alert=True
+                )
+            return
+
         # 1. Callback query (e.g. inline button "verify")
-        if "callback_query" in update and self.callback_query_handler:
+        if ctx.callback_query and self.callback_query_handler:
             logger.info("Dispatching to callback_query handler")
             try:
                 self.callback_query_handler(ctx)
@@ -87,8 +98,7 @@ class Dispatcher:
             return
 
         # 2. New chat members (join verification)
-        message = update.get("message", {})
-        if message.get("new_chat_members") and self.new_chat_members_handler:
+        if ctx.message.get("new_chat_members") and self.new_chat_members_handler:
             logger.info("Dispatching to new_chat_members handler")
             try:
                 self.new_chat_members_handler(ctx)

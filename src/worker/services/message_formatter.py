@@ -70,6 +70,7 @@ TRANSLATIONS = {
         "voteban_usage": "❌ Usage: Reply to a message with /voteban to start voting to ban that user.",
         "voteban_self": "❌ You cannot vote to ban yourself.",
         "voteban_admin": "❌ You cannot vote to ban administrators.",
+        "not_in_group": "❌ You are not in the group. This bot does not work outside of groups.",
         "voteban_initiated": (
             "🗳️ <b>Vote to Ban</b>\n\n"
             "👤 Initiated by: {INITIATOR}\n"
@@ -148,6 +149,7 @@ TRANSLATIONS = {
         "voteban_usage": "❌ Қолдану: Қолданушыны банға дауыс беру үшін хабарламаға жауап ретінде /voteban жіберіңіз.",
         "voteban_self": "❌ Өзіңізді банға дауыс бере алмайсыз.",
         "voteban_admin": "❌ Әкімшілерді банға дауыс бере алмайсыз.",
+        "not_in_group": "❌ Сіз топ қосылған жоқсыз. Бұл бот топтан тыс мүшелер үшін қызмет көрсетпейді.",
         "voteban_initiated": (
             "🗳️ <b>Банға дауыс беру</b>\n\n"
             "👤 Бастаған: {INITIATOR}\n"
