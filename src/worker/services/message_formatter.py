@@ -2,12 +2,51 @@
 Service for formatting Telegram messages.
 """
 
+import html
+import re
 from typing import Any
 
 from aws_lambda_powertools import Logger
 from services import DEFAULT_LANG
 
 logger = Logger()
+
+# Plain label from ``format_voteban_voter_display``: "FirstName (123456789)"
+_VOTEBAN_PLAIN_NAME_ID = re.compile(r"^(.+) \((\d+)\)$")
+
+
+def _format_single_voteban_voter_html(label: str) -> str:
+    """Turn stored plain labels into Telegram HTML; escape only text nodes."""
+    s = str(label).strip()
+    if s.startswith("@"):
+        return s
+    m = _VOTEBAN_PLAIN_NAME_ID.match(s)
+    if m:
+        display_name, uid = m.group(1), m.group(2)
+        safe_name = html.escape(display_name, quote=False)
+        return f'<a href="tg://user?id={uid}">{safe_name}</a>'
+    return html.escape(s, quote=False)
+
+
+def format_voteban_voters_for_message(voters: set[Any]) -> str:
+    """
+    Render stored vote labels for Telegram HTML: comma-separated, sorted.
+
+    ``@username`` and ``<a href=...>`` from legacy rows are left unescaped so tags work.
+    Plain ``Name (user_id)`` rows become clickable ``tg://user`` links.
+    """
+    if not voters:
+        return "—"
+    items = sorted(str(v) for v in voters)
+    parts: list[str] = []
+    for v in items:
+        t = v.strip()
+        if t.startswith("<a ") and "</a>" in t:
+            parts.append(t)
+        else:
+            parts.append(_format_single_voteban_voter_html(t))
+    return ", ".join(parts)
+
 
 TRANSLATIONS = {
     "en": {
@@ -71,20 +110,18 @@ TRANSLATIONS = {
         "voteban_self": "❌ You cannot vote to ban yourself.",
         "voteban_admin": "❌ You cannot vote to ban administrators.",
         "not_in_group": "❌ You are not in the group. This bot does not work outside of groups.",
-        "voteban_initiated": (
-            "🗳️ <b>Vote to Ban</b>\n\n"
-            "👤 Initiated by: {INITIATOR}\n"
-            "🎯 Target: {TARGET}\n\n"
-            "Votes needed: {THRESHOLD}\n"
-            "Current votes: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
-        ),
+        "voteban_initiated": ("🗳️ <b>Vote to Ban</b>\n\n" "👤 Initiated by: {INITIATOR}\n" "🎯 Target: {TARGET}\n\n"),
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
         "voteban_banned": (
-            "⚖️ <b>User Banned by Vote</b>\n\n" "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes."
+            "⚖️ <b>User Banned by Vote</b>\n\n"
+            "🎯 {TARGET} has been banned after receiving {VOTES_FOR_COUNT} votes.\n\n"
+            "🔫 Users who voted to ban: {VOTE_MSG}"
         ),
         "voteban_forgiven": (
-            "💚 <b>Vote to Ban Cancelled</b>\n\n" "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes."
+            "💚 <b>Vote to Ban Cancelled</b>\n\n"
+            "🎯 {TARGET} has been forgiven with {VOTES_AGAINST_COUNT} forgive votes.\n\n"
+            "👼 Users who voted to forgive: {VOTE_MSG}"
         ),
     },
     "kk": {
@@ -150,20 +187,18 @@ TRANSLATIONS = {
         "voteban_self": "❌ Өзіңізді банға дауыс бере алмайсыз.",
         "voteban_admin": "❌ Әкімшілерді банға дауыс бере алмайсыз.",
         "not_in_group": "❌ Сіз топ қосылған жоқсыз. Бұл бот топтан тыс мүшелер үшін қызмет көрсетпейді.",
-        "voteban_initiated": (
-            "🗳️ <b>Банға дауыс беру</b>\n\n"
-            "👤 Бастаған: {INITIATOR}\n"
-            "🎯 Мақсат: {TARGET}\n\n"
-            "Қажетті дауыстар: {THRESHOLD}\n"
-            "Ағымдағы дауыстар: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
-        ),
+        "voteban_initiated": ("🗳️ <b>Банға дауыс беру</b>\n\n" "👤 Бастаған: {INITIATOR}\n" "🎯 Мақсат: {TARGET}\n\n"),
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз есепке алынды.",
         "voteban_already_voted": "⚠️ Сіз бұл банға қатысты дауыс бердіңіз.",
         "voteban_banned": (
-            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n" "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды."
+            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n"
+            "🎯 {TARGET} {VOTES_FOR_COUNT} дауыс алғаннан кейін бандалды.\n\n"
+            "🔫 Банға дауыс бергендер: {VOTE_MSG}"
         ),
         "voteban_forgiven": (
-            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n" "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді."
+            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n"
+            "🎯 {TARGET} {VOTES_AGAINST_COUNT} кешіру дауысымен кешірілді.\n\n"
+            "👼 Кешіруге дауыс бергендер: {VOTE_MSG}"
         ),
     },
 }
@@ -179,6 +214,11 @@ def get_translated_text(key: str, lang_code: str = "kk", **kwargs: Any) -> str:
     text = TRANSLATIONS[target_lang].get(key, key)
 
     try:
+        if key == "voteban_banned":
+            kwargs["VOTE_MSG"] = format_voteban_voters_for_message(kwargs.pop("VOTES_FOR_SET", None) or set())
+        elif key == "voteban_forgiven":
+            kwargs["VOTE_MSG"] = format_voteban_voters_for_message(kwargs.pop("VOTES_AGAINST_SET", None) or set())
+
         text = text.format(
             **kwargs,
         )
