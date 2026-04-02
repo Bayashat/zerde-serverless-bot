@@ -19,7 +19,7 @@ class VoteRepository:
     """
     Repository for vote-to-ban sessions.
     PK: stat_key = "voteban_{chat_id}_{target_user_id}"
-    Stores: votes_for (set), votes_against (set), message_id, target_user_id
+    Stores: votes_for / votes_against as display strings (@username or "Name (id)"), plus message ids.
     """
 
     def __init__(self) -> None:
@@ -59,6 +59,7 @@ class VoteRepository:
         reply_message_id: int,
         sent_message_id: int,
         initiator_user_id: int,
+        initiator_vote_display: str,
         initiator_username: str | None = None,
         initiator_first_name: str = "User",
         target_username: str | None = None,
@@ -79,7 +80,7 @@ class VoteRepository:
                     "initiator_first_name": initiator_first_name,
                     "target_username": target_username,
                     "target_first_name": target_first_name,
-                    "votes_for": [initiator_user_id],  # Stored as list, converted to set on read
+                    "votes_for": [initiator_vote_display],  # Stored as list, converted to set on read
                     "votes_against": [],
                 }
             )
@@ -87,10 +88,12 @@ class VoteRepository:
             logger.exception(f"Failed to create vote session: {e}")
             raise
 
-    def add_vote(self, chat_id: int | str, target_user_id: int, voter_id: int, vote_for: bool) -> dict[str, Any]:
+    def add_vote(self, chat_id: int | str, target_user_id: int, voter_display: str, vote_for: bool) -> dict[str, Any]:
         """
         Add a vote to the session using atomic DynamoDB operations.
         Returns updated vote counts: {"votes_for": int, "votes_against": int, "already_voted": bool}
+
+        ``voter_display`` must match the same format used at session creation (e.g. @name or "Name (id)").
 
         Uses DynamoDB's UpdateItem with conditional expressions to atomically add votes,
         preventing race conditions and duplicate votes.
@@ -100,7 +103,7 @@ class VoteRepository:
 
         try:
             # Atomically add vote with condition to prevent duplicates
-            # Condition: voter_id must not exist in either votes_for or votes_against
+            # Condition: voter_display must not exist in either votes_for or votes_against
             update_expr = (
                 f"SET {attribute_name} = list_append(if_not_exists({attribute_name}, :empty_list), :voter_list)"
             )
@@ -114,8 +117,8 @@ class VoteRepository:
                     "#votes_against": "votes_against",
                 },
                 ExpressionAttributeValues={
-                    ":voter_list": [voter_id],
-                    ":voter_id": voter_id,
+                    ":voter_list": [voter_display],
+                    ":voter_id": voter_display,
                     ":empty_list": [],
                 },
                 ReturnValues="ALL_NEW",

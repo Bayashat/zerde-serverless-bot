@@ -20,6 +20,25 @@ from services.message_formatter import get_translated_text
 logger = Logger()
 
 
+def format_voteban_voter_display(
+    user_id: int | None,
+    username: str | None,
+    first_name: str | None,
+) -> str:
+    """
+    Build a stable plain-text label for vote-ban storage and duplicate checks.
+
+    Prefer @username when present; otherwise ``FirstName (user_id)``.
+    HTML mentions for non-username voters are applied in ``format_voteban_voters_for_message``.
+    """
+    if username and str(username).strip():
+        clean = str(username).strip().lstrip("@")
+        return f"@{clean}"
+    name = (first_name or "User").strip() or "User"
+    uid = user_id if user_id is not None else 0
+    return f"{name} ({uid})"
+
+
 def send_private_msg(bot: TelegramClient, chat_id: str | int) -> None:
     """
     Send private message to the user.
@@ -218,8 +237,8 @@ def register_handlers(dp: Dispatcher):
                         )
                     return
 
-                # Add vote
-                result = ctx.vote_repo.add_vote(chat_id, target_user_id, ctx.user_id, vote_for)
+                voter_display = format_voteban_voter_display(ctx.user_id, ctx.username, ctx.first_name)
+                result = ctx.vote_repo.add_vote(chat_id, target_user_id, voter_display, vote_for)
 
                 if result["already_voted"]:
                     ctx._bot.answer_callback_query(
@@ -235,17 +254,18 @@ def register_handlers(dp: Dispatcher):
                     text=get_translated_text("voteban_vote_recorded", ctx.lang_code),
                 )
 
-                votes_for = result["votes_for"]
-                votes_against = result["votes_against"]
+                votes_for_count = result["votes_for"]
+                votes_against_count = result["votes_against"]
 
                 # Check if threshold is reached
-                if votes_for >= VOTEBAN_THRESHOLD:
+                if votes_for_count >= VOTEBAN_THRESHOLD:
                     # Ban the user
                     try:
                         # Get session to retrieve target info
                         session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
                         target_username = session.get("target_username")
                         target_first_name = session.get("target_first_name", "User")
+                        votes_for_set: set = session.get("votes_for")
 
                         # Format target mention
                         if target_username:
@@ -262,7 +282,8 @@ def register_handlers(dp: Dispatcher):
                                 "voteban_banned",
                                 ctx.lang_code,
                                 TARGET=target_mention,
-                                VOTES_FOR=votes_for,
+                                VOTES_FOR_COUNT=votes_for_count,
+                                VOTES_FOR_SET=votes_for_set,
                             ),
                         )
 
@@ -288,11 +309,12 @@ def register_handlers(dp: Dispatcher):
                     return
 
                 # Check if forgiven
-                if votes_against >= VOTEBAN_FORGIVE_THRESHOLD:
+                if votes_against_count >= VOTEBAN_FORGIVE_THRESHOLD:
                     # Cancel the vote - get session to retrieve target info
                     session = ctx.vote_repo.get_vote_session(chat_id, target_user_id)
                     target_username = session.get("target_username")
                     target_first_name = session.get("target_first_name", "User")
+                    votes_against_set: set = session.get("votes_against")
 
                     # Format target mention
                     if target_username:
@@ -306,7 +328,8 @@ def register_handlers(dp: Dispatcher):
                             "voteban_forgiven",
                             ctx.lang_code,
                             TARGET=target_mention,
-                            VOTES_AGAINST=votes_against,
+                            VOTES_AGAINST_COUNT=votes_against_count,
+                            VOTES_AGAINST_SET=votes_against_set,
                         ),
                     )
 
@@ -351,13 +374,7 @@ def register_handlers(dp: Dispatcher):
                             initiator_mention = "Someone"
 
                         updated_text = get_translated_text(
-                            "voteban_initiated",
-                            ctx.lang_code,
-                            INITIATOR=initiator_mention,
-                            TARGET=target_mention,
-                            THRESHOLD=VOTEBAN_THRESHOLD,
-                            VOTES_FOR=votes_for,
-                            VOTES_AGAINST=votes_against,
+                            "voteban_initiated", INITIATOR=initiator_mention, TARGET=target_mention
                         )
 
                         # Update message
@@ -369,11 +386,11 @@ def register_handlers(dp: Dispatcher):
                                 "inline_keyboard": [
                                     [
                                         {
-                                            "text": "🔫 Ban",
+                                            "text": f"🔫 БАН ({votes_for_count}/{VOTEBAN_THRESHOLD})",
                                             "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
                                         },
                                         {
-                                            "text": "👼 Forgive",
+                                            "text": f"👼 КЕШІРУ ({votes_against_count}/{VOTEBAN_FORGIVE_THRESHOLD})",
                                             "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
                                         },
                                     ]
@@ -506,11 +523,11 @@ def register_handlers(dp: Dispatcher):
                 "inline_keyboard": [
                     [
                         {
-                            "text": "🔫 Ban",
+                            "text": f"🔫 БАН (1/{VOTEBAN_THRESHOLD})",
                             "callback_data": f"{VOTEBAN_FOR_PREFIX}{target_user_id}",
                         },
                         {
-                            "text": "👼 Forgive",
+                            "text": f"👼 КЕШІРУ (0/{VOTEBAN_FORGIVE_THRESHOLD})",
                             "callback_data": f"{VOTEBAN_AGAINST_PREFIX}{target_user_id}",
                         },
                     ]
@@ -519,12 +536,8 @@ def register_handlers(dp: Dispatcher):
 
             text = get_translated_text(
                 "voteban_initiated",
-                ctx.lang_code,
                 INITIATOR=initiator_mention,
                 TARGET=target_mention,
-                THRESHOLD=VOTEBAN_THRESHOLD,
-                VOTES_FOR=1,  # Initiator's vote
-                VOTES_AGAINST=0,
             )
 
             # Send vote message as reply to target's message
@@ -539,12 +552,16 @@ def register_handlers(dp: Dispatcher):
                     "Context reply to message id", extra={"reply_to_message_id": ctx.reply_to_message.get("message_id")}
                 )
                 if message_id:
+                    initiator_vote_display = format_voteban_voter_display(
+                        ctx.user_id, initiator_username, initiator_first_name
+                    )
                     ctx.vote_repo.create_vote_session(
                         chat_id=chat_id,
                         target_user_id=target_user_id,
                         reply_message_id=ctx.reply_to_message.get("message_id"),
                         sent_message_id=message_id,
                         initiator_user_id=ctx.user_id,
+                        initiator_vote_display=initiator_vote_display,
                         initiator_username=initiator_username,
                         initiator_first_name=initiator_first_name,
                         target_username=target_username,
