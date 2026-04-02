@@ -81,7 +81,10 @@ class Dispatcher:
         # 0. Check for members outside the group
         member = self.bot.get_chat_member(ctx.chat_id, ctx.user_id)
         logger.info("Member info", extra={"member": member})
-        if member.get("status") not in ("member", "restricted", "administrator", "creator"):
+        if (
+            member.get("status") not in ("member", "restricted", "administrator", "creator")
+            or member.get("is_member") is False
+        ):
             if ctx.callback_query_id:
                 self.bot.answer_callback_query(
                     ctx.callback_query_id, text=get_translated_text("not_in_group"), show_alert=True

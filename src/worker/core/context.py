@@ -42,7 +42,6 @@ class Context:
             self.message = update.get("message", {})
             self.user_data = self.message.get("from", {})
 
-        self.chat_id = self.message.get("chat", {}).get("id")
         self.text = self.message.get("text", "").strip()
         self.reply_to_message = self.message.get("reply_to_message")
 
@@ -66,6 +65,10 @@ class Context:
     @property
     def message_id(self) -> int | None:
         return self.message.get("message_id")
+
+    @property
+    def chat_id(self) -> int | None:
+        return self.message.get("chat", {}).get("id")
 
     def reply(
         self,
