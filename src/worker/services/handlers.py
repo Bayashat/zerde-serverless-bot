@@ -37,9 +37,12 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
     """
     chat_id = task_data.get("chat_id")
     user_id = task_data.get("user_id")
-    message_id = task_data.get("message_id")
-    if chat_id is None or user_id is None or message_id is None:
-        logger.warning("Timeout task missing chat_id/user_id/message_id", task_data=task_data)
+    join_message_id = task_data.get("join_message_id")
+    verification_message_id = task_data.get("verification_message_id")
+    if not all([chat_id, user_id, join_message_id, verification_message_id]):
+        logger.warning(
+            "Timeout task missing chat_id/user_id/join_message_id/verification_message_id", task_data=task_data
+        )
         return
     try:
         member = bot.get_chat_member(chat_id, user_id)
@@ -52,9 +55,15 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
         logger.info("User %s timed out. Kicking.", user_id)
         bot.kick_chat_member(chat_id, user_id)
         try:
-            bot.delete_message(chat_id, message_id)
+            bot.delete_message(chat_id, join_message_id)
+            bot.delete_message(chat_id, verification_message_id)
         except Exception as e:
-            logger.warning("Failed to delete verification message %s: %s", message_id, e)
+            logger.warning(
+                "Failed to delete join message %s or verification message %s: %s",
+                join_message_id,
+                verification_message_id,
+                e,
+            )
         return
     except Exception as e:
         logger.exception("Timeout task error (user may have left or message deleted): %s", e)
@@ -91,7 +100,7 @@ def register_handlers(dp: Dispatcher):
                         [
                             {
                                 "text": "Мен адаммын / I am human",
-                                "callback_data": f"{VERIFY_PREFIX}{user_id}",
+                                "callback_data": f"{VERIFY_PREFIX}{user_id}-{ctx.message_id}",
                             }
                         ]
                     ]
@@ -101,7 +110,13 @@ def register_handlers(dp: Dispatcher):
                 )
                 msg_id = sent_message.get("message_id") if sent_message else None
                 if msg_id is not None and ctx.sqs_repo:
-                    ctx.sqs_repo.send_timeout_task(chat_id, user_id, msg_id, delay_seconds=60)
+                    ctx.sqs_repo.send_timeout_task(
+                        chat_id,
+                        user_id,
+                        join_message_id=ctx.message_id,
+                        verification_message_id=msg_id,
+                        delay_seconds=60,
+                    )
                     logger.info("Sent delayed timeout task", extra={"user_id": user_id})
                 if ctx.stats_repo:
                     ctx.stats_repo.increment_total_joins(chat_id)
@@ -118,9 +133,11 @@ def register_handlers(dp: Dispatcher):
         2. Vote-to-ban buttons (voteban_for_{user_id}, voteban_against_{user_id})
         """
         try:
-            # Handle verification callback
+            # 1. Handle verification callback
             if ctx.callback_data.startswith(VERIFY_PREFIX):
-                payload_user_id = ctx.callback_data[len(VERIFY_PREFIX) :].strip()
+                payload = ctx.callback_data[len(VERIFY_PREFIX) :].split("-")
+                payload_user_id = payload[0].strip()
+                join_message_id = payload[1].strip()
                 if not payload_user_id.isdigit():
                     if ctx.callback_query_id:
                         ctx._bot.answer_callback_query(ctx.callback_query_id, text=get_translated_text("invalid_data"))
@@ -166,7 +183,9 @@ def register_handlers(dp: Dispatcher):
                 bot.answer_callback_query(
                     ctx.callback_query_id, text=get_translated_text("verification_successful", MENTION=mention)
                 )
+                # delete verification message and user's join message
                 try:
+                    bot.delete_message(chat_id, join_message_id)
                     bot.delete_message(chat_id, msg_id)
                 except Exception:
                     logger.exception(f"Failed to delete verification message: {msg_id}")
@@ -179,7 +198,7 @@ def register_handlers(dp: Dispatcher):
                 logger.info("User %s verified.", target_user_id)
                 return
 
-            # Handle vote-to-ban callbacks
+            # 2. Handle vote-to-ban callbacks
             if ctx.callback_data.startswith(VOTEBAN_FOR_PREFIX) or ctx.callback_data.startswith(VOTEBAN_AGAINST_PREFIX):
                 vote_for = ctx.callback_data.startswith(VOTEBAN_FOR_PREFIX)
                 prefix = VOTEBAN_FOR_PREFIX if vote_for else VOTEBAN_AGAINST_PREFIX
@@ -247,11 +266,18 @@ def register_handlers(dp: Dispatcher):
                             ),
                         )
 
-                        # Delete vote message and session
+                        # Delete vote message and user's reply message, then delete vote session
                         msg_id = ctx.message_id
-                        if msg_id:
+                        sent_message_id = session.get("reply_message_id")
+                        logger.info("Vote session", extra={"session": session})
+                        logger.info(
+                            "Deleting vote message and user's reply message",
+                            extra={"msg_id": msg_id, "sent_message_id": sent_message_id},
+                        )
+                        if msg_id and sent_message_id:
                             try:
                                 ctx._bot.delete_message(chat_id, msg_id)
+                                ctx._bot.delete_message(chat_id, sent_message_id)
                             except Exception:
                                 logger.exception(f"Failed to delete vote message: {msg_id}")
 
@@ -286,9 +312,11 @@ def register_handlers(dp: Dispatcher):
 
                     # Delete vote message and session
                     msg_id = ctx.message_id
-                    if msg_id:
+                    sent_message_id = int(session.get("sent_message_id"))
+                    if msg_id and sent_message_id:
                         try:
                             ctx._bot.delete_message(chat_id, msg_id)
+                            ctx._bot.delete_message(chat_id, sent_message_id)
                         except Exception:
                             logger.exception(f"Failed to delete vote message: {msg_id}")
 
@@ -507,12 +535,16 @@ def register_handlers(dp: Dispatcher):
             # Create vote session with initiator's vote
             if ctx.vote_repo and sent_message:
                 message_id = sent_message.get("message_id")
+                logger.info(
+                    "Context reply to message id", extra={"reply_to_message_id": ctx.reply_to_message.get("message_id")}
+                )
                 if message_id:
                     ctx.vote_repo.create_vote_session(
-                        chat_id,
-                        target_user_id,
-                        message_id,
-                        ctx.user_id,
+                        chat_id=chat_id,
+                        target_user_id=target_user_id,
+                        reply_message_id=ctx.reply_to_message.get("message_id"),
+                        sent_message_id=message_id,
+                        initiator_user_id=ctx.user_id,
                         initiator_username=initiator_username,
                         initiator_first_name=initiator_first_name,
                         target_username=target_username,

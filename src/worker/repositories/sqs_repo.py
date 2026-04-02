@@ -24,7 +24,8 @@ class SQSClient:
         self,
         chat_id: int,
         user_id: int,
-        message_id: int,
+        join_message_id: int,
+        verification_message_id: int,
         delay_seconds: int = 60,
     ) -> None:
         """
@@ -34,7 +35,8 @@ class SQSClient:
             "task_type": "CHECK_TIMEOUT",
             "chat_id": chat_id,
             "user_id": user_id,
-            "message_id": message_id,
+            "join_message_id": join_message_id,
+            "verification_message_id": verification_message_id,
         }
         try:
             self.sqs_client.send_message(
@@ -44,7 +46,13 @@ class SQSClient:
             )
             logger.debug(
                 "Queued timeout task",
-                extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id, "delay": delay_seconds},
+                extra={
+                    "chat_id": chat_id,
+                    "user_id": user_id,
+                    "join_message_id": join_message_id,
+                    "verification_message_id": verification_message_id,
+                    "delay": delay_seconds,
+                },
             )
         except Exception as e:
             logger.exception("Failed to send timeout task to SQS", extra={"error": e})

@@ -1,3 +1,37 @@
+voteban_command_update = {
+    "update_id": 86439812,
+    "message": {
+        "message_id": 853,
+        "from": {
+            "id": 920706887,
+            "is_bot": False,
+            "first_name": "Баяшат",
+            "username": "bayashat",
+            "language_code": "zh-hans",
+            "is_premium": True,
+        },
+        "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+        "date": 1775119386,
+        "message_thread_id": 536,
+        "reply_to_message": {
+            "message_id": 536,
+            "from": {
+                "id": 6204077458,
+                "is_bot": False,
+                "first_name": "X Ray",
+                "username": "header_payload_signature",
+                "language_code": "zh-hans",
+            },
+            "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+            "date": 1773256950,
+            "edit_date": 1773490598,
+            "text": "test]",
+        },
+        "text": "/voteban",
+        "entities": [{"offset": 0, "length": 8, "type": "bot_command"}],
+    },
+}
+
 voteban_callback_query_update = {
     "update_id": 86439796,
     "callback_query": {
