@@ -70,7 +70,7 @@ voteban_callback_query_update = {
                 "edit_date": 1773490598,
                 "text": "test]",
             },
-            "text": "🗳️ Банға дауыс беру\n\n👤 Бастаған: @ johndoe\n🎯 Мақсат: @janedoe\n\nҚажетті дауыстар: 10\nАғымдағы дауыстар: 1 👍 | 0 👎",  # noqa: E501
+            "text": "🗳️ Банға дауыс беру\n\n👤 Бастаған: @johndoe\n🎯 Мақсат: @janedoe\n\n",  # noqa: E501
             "entities": [
                 {"offset": 4, "length": 16, "type": "bold"},
                 {"offset": 35, "length": 9, "type": "mention"},
@@ -79,8 +79,8 @@ voteban_callback_query_update = {
             "reply_markup": {
                 "inline_keyboard": [
                     [
-                        {"text": "👍 Ban", "callback_data": "voteban_for_6204077458"},
-                        {"text": "👎 Forgive", "callback_data": "voteban_against_6204077458"},
+                        {"text": "🔫 БАН (1/10)", "callback_data": "voteban_for_6204077458"},
+                        {"text": "👼 КЕШІРУ (0/10)", "callback_data": "voteban_against_6204077458"},
                     ]
                 ]
             },
