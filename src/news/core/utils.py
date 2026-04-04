@@ -42,4 +42,6 @@ def extract_event(event: dict[str, Any]) -> tuple[list[str], str]:
         raise ValueError("chat_ids and lang are required in event payload")
     if isinstance(chat_ids, str):
         chat_ids = [chat_ids]
+    elif isinstance(chat_ids, int):
+        chat_ids = [str(chat_ids)]
     return chat_ids, lang

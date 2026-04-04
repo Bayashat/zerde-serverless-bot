@@ -46,9 +46,9 @@ class NewsConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
-            architecture=_lambda.Architecture.X86_64,
+            architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.minutes(2),
-            memory_size=256,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}NewsLogGroup",

@@ -62,10 +62,9 @@ class BotConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
-            architecture=_lambda.Architecture.X86_64,
+            architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.seconds(30),
-            memory_size=256,
-            snap_start=_lambda.SnapStartConf.ON_PUBLISHED_VERSIONS,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}BotLogGroup",
@@ -89,15 +88,7 @@ class BotConstruct(Construct):
         queue.grant_send_messages(handler_lambda)
         stats_table.grant_read_write_data(handler_lambda)
 
-        # SnapStart requires invocation via a published version alias (not $LATEST).
-        live_alias = _lambda.Alias(
-            self,
-            f"{CONSTRUCT_PREFIX}LiveAlias",
-            alias_name="live",
-            version=handler_lambda.current_version,
-        )
-
-        live_alias.add_event_source(
+        handler_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
                 batch_size=1,
@@ -117,6 +108,6 @@ class BotConstruct(Construct):
             methods=[apigwv2.HttpMethod.POST],
             integration=apigwv2_integrations.HttpLambdaIntegration(
                 f"{CONSTRUCT_PREFIX}WebhookIntegration",
-                handler=live_alias,
+                handler=handler_lambda,
             ),
         )

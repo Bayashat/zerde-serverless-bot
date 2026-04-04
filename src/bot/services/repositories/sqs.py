@@ -3,10 +3,10 @@
 import json
 
 import boto3
-from aws_lambda_powertools import Logger
 from core.config import QUEUE_URL
+from core.logger import LoggerAdapter, get_logger
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 _SQS_CLIENT = boto3.client("sqs")
 

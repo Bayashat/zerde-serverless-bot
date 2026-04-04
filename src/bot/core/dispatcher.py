@@ -2,12 +2,12 @@
 
 from typing import Any, Callable
 
-from aws_lambda_powertools import Logger
-from core.translations import get_translated_text
+from core.logger import LoggerAdapter, get_logger
+from core.utils import check_membership
 from services.repositories import SQSClient, StatsRepository, VoteRepository
 from services.telegram import TelegramClient
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 HandlerFunc = Callable[["Context"], None]
 
@@ -142,49 +142,22 @@ class Dispatcher:
         """Route a single Telegram update to the appropriate handler."""
         ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
 
-        member = ctx.bot.get_chat_member(ctx.chat_id, ctx.user_id)
-        logger.info("Member info", extra={"member": member})
-        if (
-            member.get("status") not in ("member", "restricted", "administrator", "creator")
-            or member.get("is_member") is False
-        ):
-            if ctx.callback_query_id:
-                ctx.bot.answer_callback_query(
-                    ctx.callback_query_id,
-                    text=get_translated_text("not_in_group"),
-                    show_alert=True,
-                )
-            return
-
         if ctx.callback_query and self.callback_query_handler:
             logger.info("Dispatching to callback_query handler")
-            try:
-                self.callback_query_handler(ctx)
-            except Exception as e:
-                logger.exception("Error in callback_query handler", extra={"error": e})
+
+            if not check_membership(ctx):
+                return
+            self.callback_query_handler(ctx)
             return
 
         if ctx.message.get("new_chat_members") and self.new_chat_members_handler:
             logger.info("Dispatching to new_chat_members handler")
-            try:
-                self.new_chat_members_handler(ctx)
-            except Exception as e:
-                logger.exception("Error in new_chat_members handler", extra={"error": e})
+            self.new_chat_members_handler(ctx)
             return
 
         if ctx.text and ctx.text.startswith("/"):
             command_key = ctx.text.split()[0].split("@")[0]
             if command_key in self.command_handlers:
-                handler = self.command_handlers[command_key]
+                self.command_handlers[command_key](ctx)
                 logger.info(f"Dispatching to command handler: {command_key}")
-                try:
-                    handler(ctx)
-                except Exception as e:
-                    logger.exception(
-                        f"Error in command handler {command_key}",
-                        extra={"error": e},
-                    )
-                    ctx.reply(get_translated_text("error_occurred", lang_code=ctx.lang_code))
                 return
-
-        return

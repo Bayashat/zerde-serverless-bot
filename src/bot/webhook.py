@@ -5,14 +5,14 @@ import hmac
 import json
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.config import WEBHOOK_SECRET_TOKEN
 from core.dispatcher import Dispatcher
+from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.handlers import process_timeout_task
 from services.telegram import TelegramClient
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 # ── Public entry point (called by main.lambda_handler) ──────────────────────

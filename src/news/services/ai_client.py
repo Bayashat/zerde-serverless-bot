@@ -3,12 +3,12 @@
 import json
 from abc import ABC, abstractmethod
 
-from aws_lambda_powertools import Logger
 from core.config import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
+from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import types
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 class AIClient(ABC):
