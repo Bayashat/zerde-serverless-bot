@@ -2,7 +2,7 @@
 
 # Usage:
 # chmod +x scripts/setup_webhook.sh
-# ./scripts/setup_webhook.sh [dev|prod] [bot_token] [webhook_url]
+# ./scripts/setup_webhook.sh [bot_token] [secret_token] [webhook_url]
 
 # NOTE: webhook_url should be the API Gateway URL with the /webhook path
 

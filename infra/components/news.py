@@ -9,11 +9,11 @@ from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
-# Language → (hour_utc, minute_utc) for the daily digest trigger
-_LANG_SCHEDULE: dict[str, tuple[int, int]] = {
-    "kk": (4, 0),  # 04:00 UTC
-    "zh": (4, 2),  # 04:02 UTC
-    "ru": (4, 4),  # 04:04 UTC
+# Language → list of (hour_utc, minute_utc) trigger times
+_LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
+    "kk": [(4, 0), (14, 0)],  # 04:00 and 14:00 UTC
+    "zh": [(4, 2), (14, 2)],  # 04:02 and 14:02 UTC
+    "ru": [(4, 4)],  # 04:04 UTC only
 }
 
 
@@ -67,31 +67,33 @@ class NewsConstruct(Construct):
         )
 
         if is_prod:
-            for lang, (hour_utc, minute_utc) in _LANG_SCHEDULE.items():
+            for lang, schedules in _LANG_SCHEDULE.items():
                 chat_ids = news_chats.get(lang, [])
                 if not chat_ids:
                     continue
-                rule = events.Rule(
-                    self,
-                    f"{CONSTRUCT_PREFIX}NewsRule{lang.upper()}",
-                    rule_name=f"{RESOURCE_PREFIX}-news-{lang}-{env_name}",
-                    description=f"Trigger news lambda at {hour_utc:02d}:{minute_utc:02d} UTC for {lang} chats",
-                    schedule=events.Schedule.cron(
-                        minute=str(minute_utc),
-                        hour=str(hour_utc),
-                        day="*",
-                        month="*",
-                        year="*",
-                    ),
-                )
-                rule.add_target(
-                    events_targets.LambdaFunction(
-                        news_lambda,
-                        event=events.RuleTargetInput.from_object(
-                            {
-                                "chat_ids": chat_ids,
-                                "lang": lang,
-                            }
+                for hour_utc, minute_utc in schedules:
+                    slot = f"{hour_utc:02d}{minute_utc:02d}"
+                    rule = events.Rule(
+                        self,
+                        f"{CONSTRUCT_PREFIX}NewsRule{lang.upper()}{slot}",
+                        rule_name=f"{RESOURCE_PREFIX}-news-{lang}-{slot}-{env_name}",
+                        description=f"Trigger news lambda at {hour_utc:02d}:{minute_utc:02d} UTC for {lang} chats",
+                        schedule=events.Schedule.cron(
+                            minute=str(minute_utc),
+                            hour=str(hour_utc),
+                            day="*",
+                            month="*",
+                            year="*",
                         ),
                     )
-                )
+                    rule.add_target(
+                        events_targets.LambdaFunction(
+                            news_lambda,
+                            event=events.RuleTargetInput.from_object(
+                                {
+                                    "chat_ids": chat_ids,
+                                    "lang": lang,
+                                }
+                            ),
+                        )
+                    )
