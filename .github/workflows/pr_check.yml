@@ -88,9 +88,12 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ vars.DEV_NEWS_CHAT_IDS }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
+          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
         run: |
           uv run cdk synth -c env=dev
 
@@ -100,9 +103,12 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ vars.DEV_NEWS_CHAT_IDS }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
+          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
         run: |
           # Run cdk diff and capture output
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true

@@ -29,10 +29,18 @@ class ZerdeTelegramBotStack(Stack):
                 raise ValueError(f"{key} must be set in environment")
             return value
 
+        def _parse_chat_ids(key: str) -> list[str]:
+            value = os.environ.get(key, "")
+            return [cid.strip() for cid in value.split(",") if cid.strip()]
+
         bot_token = _require("TELEGRAM_BOT_TOKEN")
         webhook_secret_token = _require("TELEGRAM_WEBHOOK_SECRET_TOKEN")
-        news_chat_ids = _require("NEWS_CHAT_IDS")
         gemini_api_key = _require("GEMINI_API_KEY")
+        news_chats: dict[str, list[str]] = {
+            "kk": _parse_chat_ids("NEWS_CHATS_KK"),
+            "zh": _parse_chat_ids("NEWS_CHATS_ZH"),
+            "ru": _parse_chat_ids("NEWS_CHATS_RU"),
+        }
 
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
@@ -67,7 +75,7 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             bot_token=bot_token,
             gemini_api_key=gemini_api_key,
-            news_chat_ids=news_chat_ids,
+            news_chats=news_chats,
             ai_provider=ai_provider,
             llm_model=llm_model,
             log_level=log_level,

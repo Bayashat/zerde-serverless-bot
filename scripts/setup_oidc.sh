@@ -3,25 +3,14 @@
 # ==============================================================================
 # AWS OIDC Setup Script for GitHub Actions
 # ==============================================================================
-# Usage: ./scripts/setup_oidc.sh <GITHUB_ORG/REPO_NAME>
-# Example: ./scripts/setup_oidc.sh myuser/my-bot-repo
-# ==============================================================================
 
 set -e
-
-GITHUB_REPO=$1
-
-if [ -z "$GITHUB_REPO" ]; then
-    echo "❌ Error: Please provide your GitHub repository in format 'org/repo'"
-    echo "Usage: ./scripts/setup_oidc.sh <github_username>/<repo_name>"
-    exit 1
-fi
 
 ROLE_NAME="GitHubAction-Deploy-TelegramBot"
 REGION=$(aws configure get region)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-echo "🚀 Setting up OIDC for repo: $GITHUB_REPO in region: $REGION"
+echo "🚀 Setting up OIDC in region: $REGION"
 
 # 1. Create OIDC Provider (if it doesn't exist)
 # GitHub's OIDC URL is standard
@@ -56,7 +45,7 @@ cat > /tmp/trust_policy.json <<EOF
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringLike": {
-                    "token.actions.githubusercontent.com:sub": "repo:${GITHUB_REPO}:*"
+                    "token.actions.githubusercontent.com:sub": "repo:Bayashat/*"
                 },
                 "StringEquals": {
                     "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
