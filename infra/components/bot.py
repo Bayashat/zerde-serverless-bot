@@ -97,7 +97,7 @@ class BotConstruct(Construct):
             version=handler_lambda.current_version,
         )
 
-        handler_lambda.add_event_source(
+        live_alias.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
                 batch_size=1,

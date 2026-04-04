@@ -11,11 +11,7 @@ from constructs import Construct
 
 
 class NewsConstruct(Construct):
-    """Daily IT news digest: News Lambda + EventBridge schedules (prod-only).
-
-    Exposes:
-        function_name (str): used by stack for CfnOutput.
-    """
+    """Daily IT news digest: News Lambda + EventBridge schedules (prod-only)."""
 
     def __init__(
         self,

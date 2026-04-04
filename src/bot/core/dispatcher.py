@@ -60,7 +60,7 @@ class Context:
 
     @property
     def first_name(self) -> str | None:
-        return self.user_data.get("first_name")
+        return self.user_data.get("first_name") or "User"
 
     @property
     def lang_code(self) -> str:

@@ -111,7 +111,7 @@ def handle_verify_callback(ctx: Context) -> None:
     """Handle captcha verification callback query."""
     payload = ctx.callback_data[len(VERIFY_PREFIX) :].split("-")
     payload_user_id = int(payload[0].strip())
-    join_message_id = payload[1].strip()
+    join_message_id = int(payload[1].strip())
 
     if ctx.user_id != payload_user_id:
         if ctx.callback_query_id:

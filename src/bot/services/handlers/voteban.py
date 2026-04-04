@@ -86,7 +86,7 @@ def handle_voteban_command(ctx: Context) -> None:
             return
 
         target_mention = format_mention(target_user_id, target_username, target_first_name)
-        initiator_mention = format_mention(ctx.user_id, ctx.username, ctx.first_name or "User")
+        initiator_mention = format_mention(ctx.user_id, ctx.username, ctx.first_name)
 
         reply_markup = _vote_keyboard(target_user_id, votes_for=1, votes_against=0)
 
@@ -116,7 +116,7 @@ def handle_voteban_command(ctx: Context) -> None:
                     sent_message_id=sent_message_id,
                     initiator_user_id=ctx.user_id,
                     initiator_username=ctx.username,
-                    initiator_first_name=ctx.first_name or "User",
+                    initiator_first_name=ctx.first_name,
                     target_username=target_username,
                     target_first_name=target_first_name,
                 )
@@ -149,7 +149,7 @@ def handle_vote_callback(ctx: Context) -> None:
         ctx.user_id,
         vote_for,
         voter_username=ctx.username,
-        voter_first_name=ctx.first_name or "User",
+        voter_first_name=ctx.first_name,
     )
 
     if result["already_voted"]:
