@@ -12,7 +12,6 @@ def _require(name: str) -> str:
 
 # ── Required ────────────────────────────────────────────────────────────────
 BOT_TOKEN: str = _require("BOT_TOKEN")
-NEWS_CHAT_IDS: list[str] = [cid.strip() for cid in _require("NEWS_CHAT_IDS").split(",") if cid.strip()]
 GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
 
 # ── Optional (have defaults) ─────────────────────────────────────────────────

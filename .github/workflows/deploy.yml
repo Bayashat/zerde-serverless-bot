@@ -79,9 +79,14 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && vars.PROD_NEWS_CHAT_IDS || vars.DEV_NEWS_CHAT_IDS }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
+          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          DEFAULT_LANG: ${{ vars.DEFAULT_LANG }}
+          TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE }}
         run: |
           uv run cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/eu-central-1 || echo "Bootstrap may already be done"
         continue-on-error: true
@@ -92,11 +97,13 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
           GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
-          NEWS_CHAT_IDS: ${{ env.TARGET_ENV == 'prod' && vars.PROD_NEWS_CHAT_IDS || vars.DEV_NEWS_CHAT_IDS }}
+          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
           DEFAULT_LANG: ${{ vars.DEFAULT_LANG }}
           TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
         run: |
           echo "🚀 Deploying to ${{ env.TARGET_ENV }} environment..."
           uv run cdk deploy -c env=${{ env.TARGET_ENV }} --require-approval never --all
@@ -110,8 +117,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Stack Outputs:" >> $GITHUB_STEP_SUMMARY
 
-          # Get the stack name based on the environment (ZerdeTelegramBotStack-dev or ZerdeTelegramBotStack-prod)
-          STACK_NAME="ZerdeTelegramBotStack-${{ env.TARGET_ENV }}"
+          # Get the stack name based on the environment (zerde-serverless-telegram-bot-{env})
+          STACK_NAME="zerde-serverless-telegram-bot-${{ env.TARGET_ENV }}"
 
           aws cloudformation describe-stacks \
             --stack-name $STACK_NAME \

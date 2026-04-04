@@ -9,6 +9,13 @@ from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
+# Language → (hour_utc, minute_utc) for the daily digest trigger
+_LANG_SCHEDULE: dict[str, tuple[int, int]] = {
+    "kk": (4, 0),  # 04:00 UTC
+    "zh": (4, 2),  # 04:02 UTC
+    "ru": (4, 4),  # 04:04 UTC
+}
+
 
 class NewsConstruct(Construct):
     """Daily IT news digest: News Lambda + EventBridge schedules (prod-only)."""
@@ -22,7 +29,7 @@ class NewsConstruct(Construct):
         is_prod: bool,
         bot_token: str,
         gemini_api_key: str,
-        news_chat_ids: str,
+        news_chats: dict[str, list[str]],
         ai_provider: str,
         llm_model: str,
         log_level: str,
@@ -54,25 +61,37 @@ class NewsConstruct(Construct):
                 "ENV_NAME": env_name,
                 "BOT_TOKEN": bot_token,
                 "GEMINI_API_KEY": gemini_api_key,
-                "NEWS_CHAT_IDS": news_chat_ids,
                 "AI_PROVIDER": ai_provider,
                 "LLM_MODEL": llm_model,
             },
         )
 
         if is_prod:
-            for hour_utc, slot in [(4, "morning"), (14, "evening")]:
+            for lang, (hour_utc, minute_utc) in _LANG_SCHEDULE.items():
+                chat_ids = news_chats.get(lang, [])
+                if not chat_ids:
+                    continue
                 rule = events.Rule(
                     self,
-                    f"{CONSTRUCT_PREFIX}NewsRule{slot.capitalize()}",
-                    rule_name=f"{RESOURCE_PREFIX}-news-{slot}-{env_name}",
-                    description=f"Trigger news lambda at {hour_utc:02d}:00 UTC (daily digest {slot})",
+                    f"{CONSTRUCT_PREFIX}NewsRule{lang.upper()}",
+                    rule_name=f"{RESOURCE_PREFIX}-news-{lang}-{env_name}",
+                    description=f"Trigger news lambda at {hour_utc:02d}:{minute_utc:02d} UTC for {lang} chats",
                     schedule=events.Schedule.cron(
-                        minute="0",
+                        minute=str(minute_utc),
                         hour=str(hour_utc),
                         day="*",
                         month="*",
                         year="*",
                     ),
                 )
-                rule.add_target(events_targets.LambdaFunction(news_lambda))
+                rule.add_target(
+                    events_targets.LambdaFunction(
+                        news_lambda,
+                        event=events.RuleTargetInput.from_object(
+                            {
+                                "chat_ids": chat_ids,
+                                "lang": lang,
+                            }
+                        ),
+                    )
+                )

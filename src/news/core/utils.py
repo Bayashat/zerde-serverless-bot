@@ -34,10 +34,12 @@ def get_intro_text(chat_lang: str, current_hour: int) -> str:
     return _INTRO_TEXTS.get((chat_lang, slot), _INTRO_TEXTS[(DEFAULT_INTRO_LANG, slot)])
 
 
-def extract_event(event: dict[str, Any]) -> tuple[str, str]:
-    """Extract and validate chat_id and chat_lang from the EventBridge event."""
-    chat_id = event.get("chat_id")
-    chat_lang = event.get("chat_lang")
-    if not chat_id or not chat_lang:
-        raise ValueError("chat_id and chat_lang are required in event payload")
-    return chat_id, chat_lang
+def extract_event(event: dict[str, Any]) -> tuple[list[str], str]:
+    """Extract and validate chat_ids and lang from the EventBridge event."""
+    chat_ids = event.get("chat_ids")
+    lang = event.get("lang")
+    if not chat_ids or not lang:
+        raise ValueError("chat_ids and lang are required in event payload")
+    if isinstance(chat_ids, str):
+        chat_ids = [chat_ids]
+    return chat_ids, lang

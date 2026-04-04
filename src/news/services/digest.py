@@ -25,14 +25,15 @@ class DigestService:
         self._sender = sender
 
     def run(self, event: dict[str, Any]) -> dict[str, Any]:
-        """Execute the digest pipeline for a single chat.
+        """Execute the digest pipeline for a language group.
 
-        Expects event keys: chat_id (str), chat_lang (str).
+        Expects event keys: chat_ids (list[str]), lang (str).
+        Generates the digest once and sends it to all chat_ids.
         Returns an API-Gateway-style response dict.
         """
         logger.info("Starting daily news digest job")
-        chat_id, chat_lang = extract_event(event)
-        max_age_hours, hour = get_greeting_and_max_age_hours(chat_lang)
+        chat_ids, lang = extract_event(event)
+        max_age_hours, hour = get_greeting_and_max_age_hours(lang)
         logger.info(f"Max age hours: {max_age_hours}, Hour: {hour}")
         try:
             raw_news = self._fetcher.fetch_raw_news(max_age_hours=max_age_hours)
@@ -59,20 +60,22 @@ class DigestService:
 
             logger.info("Deep scrape complete", extra={"articles": len(deep_news)})
 
-            intro = get_intro_text(chat_lang, hour)
-            digests = self._ai.generate_digests_per_article(deep_news, chat_lang)
+            intro = get_intro_text(lang, hour)
+            digests = self._ai.generate_digests_per_article(deep_news, lang)
 
-            self._sender.send_message(chat_id, intro)
-            for i, article in enumerate(deep_news):
-                image_url = article.get("image_url") or ""
-                digest_text = digests[i] if i < len(digests) else f"<b>{article['title']}</b>\n{article['link']}"
-                logger.info(
-                    "Sending message with photo",
-                    extra={"chat_id": chat_id, "image_url": image_url},
-                )
-                self._sender.send_message_with_photo(chat_id, digest_text, image_url)
+            for chat_id in chat_ids:
+                logger.info("Sending digest to chat", extra={"chat_id": chat_id})
+                self._sender.send_message(chat_id, intro)
+                for i, article in enumerate(deep_news):
+                    image_url = article.get("image_url") or ""
+                    digest_text = digests[i] if i < len(digests) else f"<b>{article['title']}</b>\n{article['link']}"
+                    logger.info(
+                        "Sending message with photo",
+                        extra={"chat_id": chat_id, "image_url": image_url},
+                    )
+                    self._sender.send_message_with_photo(chat_id, digest_text, image_url)
+                logger.info("Digest sent successfully", extra={"chat_id": chat_id})
 
-            logger.info("Digest sent successfully", extra={"chat_id": chat_id})
             return {"statusCode": 200, "body": "Agentic Digest Sent"}
 
         except Exception:
