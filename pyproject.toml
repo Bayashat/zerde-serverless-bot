@@ -18,6 +18,7 @@ keywords = [
     "python3.13"
 ]
 dependencies = [
+    "aws-cdk-aws-lambda-python-alpha>=2.248.0a0",
     "aws-cdk-lib>=2.236.0",
     "python-dotenv>=1.2.1",
 ]

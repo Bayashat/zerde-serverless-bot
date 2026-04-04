@@ -116,10 +116,7 @@ uv run cdk synth -c env=dev
 | Path | Description |
 |------|-------------|
 | `infra/` | AWS CDK stacks (API Gateway, DynamoDB, SQS, Lambdas). |
-| `src/receiver/` | Receiver Lambda: webhook entry, validates secret, enqueues to SQS. |
-| `src/worker/` | Worker Lambda: business logic (captcha, stats), calls Telegram API. |
-| `src/worker/repositories/` | Data access (DynamoDB, SQS, Telegram client). |
-| `src/worker/services/` | Business logic and message handling. |
+| `src/bot/` | Bot Lambda: webhook handler, business logic (captcha, stats, voteban), calls Telegram API. |
 | `scripts/` | DevOps: OIDC setup, webhook registration. |
 
 ---

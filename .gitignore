@@ -57,3 +57,6 @@ docker/dynamodb/*
 
 # Archive files
 *.zip
+
+# Documentation
+CLAUDE.md
