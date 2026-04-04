@@ -30,7 +30,7 @@ def get_logger(name: str = "bot") -> logging.Logger:
         handler = logging.StreamHandler()
         handler.setFormatter(JSONFormatter())
         logger.addHandler(handler)
-        level = os.environ.get("POWERTOOLS_LOG_LEVEL", "INFO").upper()
+        level = os.environ.get("LOG_LEVEL", "INFO").upper()
         logger.setLevel(getattr(logging, level, logging.INFO))
         logger.propagate = False
     return logger

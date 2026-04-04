@@ -8,7 +8,6 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_sqs as sqs
-from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
@@ -54,13 +53,12 @@ class BotConstruct(Construct):
             ),
         )
 
-        handler_lambda = PythonFunction(
+        handler_lambda = _lambda.Function(
             self,
             f"{CONSTRUCT_PREFIX}BotLambda",
             function_name=f"{RESOURCE_PREFIX}-bot-{env_name}",
-            entry=str(PROJECT_ROOT / "src" / "bot"),
-            index="main.py",
             handler="lambda_handler",
+            code=_lambda.Code.from_asset(str(PROJECT_ROOT / "src" / "bot")),
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.seconds(30),
@@ -73,14 +71,13 @@ class BotConstruct(Construct):
                 removal_policy=removal_policy,
             ),
             environment={
-                "POWERTOOLS_LOG_LEVEL": log_level,
-                "ENV_NAME": env_name,
-                "QUEUE_URL": queue.queue_url,
-                "DEFAULT_LANG": default_lang,
+                "LOG_LEVEL": log_level,
                 "BOT_TOKEN": bot_token,
                 "WEBHOOK_SECRET_TOKEN": webhook_secret_token,
-                "TELEGRAM_API_BASE": telegram_api_base,
+                "QUEUE_URL": queue.queue_url,
                 "STATS_TABLE_NAME": stats_table.table_name,
+                "DEFAULT_LANG": default_lang,
+                "TELEGRAM_API_BASE": telegram_api_base,
             },
         )
 
