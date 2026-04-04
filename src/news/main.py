@@ -11,7 +11,6 @@ from services.telegram import TelegramSender
 
 logger = Logger()
 
-# Module-level initialization: warm across Lambda invocations.
 _fetcher = NewsFetcher()
 _ai_client = create_ai_client()
 _sender = TelegramSender(BOT_TOKEN)

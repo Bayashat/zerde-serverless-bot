@@ -1,11 +1,9 @@
-"""
-Service for formatting Telegram messages.
-"""
+"""Localised UI strings for the Telegram bot."""
 
 from typing import Any
 
 from aws_lambda_powertools import Logger
-from services import DEFAULT_LANG
+from core.config import DEFAULT_LANG
 
 logger = Logger()
 
@@ -56,7 +54,7 @@ TRANSLATIONS = {
             "⏳ <b>Time limit: 60 seconds</b>\n\n"
             "(Auto-kick if timed out)"
         ),
-        "welcome_verified": ("Hello {MENTION}! Welcome to Kazakh IT community!"),
+        "welcome_verified": "Hello {MENTION}! Welcome to Kazakh IT community!",
         "verification_successful": "✅ Verified!",
         "activity_low": "🌱 Low",
         "activity_medium": "🌿 Medium",
@@ -71,20 +69,18 @@ TRANSLATIONS = {
         "voteban_self": "❌ You cannot vote to ban yourself.",
         "voteban_admin": "❌ You cannot vote to ban administrators.",
         "not_in_group": "❌ You are not in the group. This bot does not work outside of groups.",
-        "voteban_initiated": (
-            "🗳️ <b>Vote to Ban</b>\n\n"
-            "👤 Initiated by: {INITIATOR}\n"
-            "🎯 Target: {TARGET}\n\n"
-            "Votes needed: {THRESHOLD}\n"
-            "Current votes: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
-        ),
+        "voteban_initiated": ("🗳️ <b>Vote to Ban</b>\n\n" "👤 Initiated by: {INITIATOR}\n" "🎯 Target: {TARGET}"),
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
         "voteban_banned": (
-            "⚖️ <b>User Banned by Vote</b>\n\n" "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes."
+            "⚖️ <b>User Banned by Vote</b>\n\n"
+            "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes.\n\n"
+            "🔫 Voted to ban: {VOTERS_FOR}"
         ),
         "voteban_forgiven": (
-            "💚 <b>Vote to Ban Cancelled</b>\n\n" "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes."
+            "💚 <b>Vote to Ban Cancelled</b>\n\n"
+            "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes.\n\n"
+            "👼 Voted to forgive: {VOTERS_AGAINST}"
         ),
     },
     "kk": {
@@ -134,7 +130,9 @@ TRANSLATIONS = {
             "(Уақыт өтсе, автоматты түрде шығарыласыз)"
         ),
         "welcome_verified": (
-            "{MENTION} 👋\n\nҚазақша IT қауымдастыққа қош келдіңіз! Жаңа идеялар мен жетістіктерге бірге жетейік. 🌟"
+            "{MENTION} 👋\n\n"
+            "Қазақша IT қауымдастыққа қош келдіңіз! "
+            "Жаңа идеялар мен жетістіктерге бірге жетейік. 🌟"
         ),
         "verification_successful": "✅ Расталды",
         "activity_low": "🌱 Төмен",
@@ -150,38 +148,30 @@ TRANSLATIONS = {
         "voteban_self": "❌ Өзіңізді банға дауыс бере алмайсыз.",
         "voteban_admin": "❌ Әкімшілерді банға дауыс бере алмайсыз.",
         "not_in_group": "❌ Сіз топ қосылған жоқсыз. Бұл бот топтан тыс мүшелер үшін қызмет көрсетпейді.",
-        "voteban_initiated": (
-            "🗳️ <b>Банға дауыс беру</b>\n\n"
-            "👤 Бастаған: {INITIATOR}\n"
-            "🎯 Мақсат: {TARGET}\n\n"
-            "Қажетті дауыстар: {THRESHOLD}\n"
-            "Ағымдағы дауыстар: {VOTES_FOR} 🔫 | {VOTES_AGAINST} 👼"
-        ),
+        "voteban_initiated": ("🗳️ <b>Банға дауыс беру</b>\n\n" "👤 Бастаған: {INITIATOR}\n" "🎯 Мақсат: {TARGET}"),
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз есепке алынды.",
         "voteban_already_voted": "⚠️ Сіз бұл банға қатысты дауыс бердіңіз.",
         "voteban_banned": (
-            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n" "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды."
+            "⚖️ <b>Дауыс беру арқылы бан</b>\n\n"
+            "🎯 {TARGET} {VOTES_FOR} дауыс алғаннан кейін бандалды.\n\n"
+            "🔫 Банға дауыс бергендер: {VOTERS_FOR}"
         ),
         "voteban_forgiven": (
-            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n" "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді."
+            "💚 <b>Банға дауыс беру тоқтатылды</b>\n\n"
+            "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді.\n\n"
+            "👼 Кешіруге дауыс бергендер: {VOTERS_AGAINST}"
         ),
     },
 }
 
 
 def get_translated_text(key: str, lang_code: str = "kk", **kwargs: Any) -> str:
-    """
-    Get text translation for a given key and language code.
-    Falls back to English if language not supported.
-    """
+    """Get translated text for *key*, falling back to DEFAULT_LANG."""
     target_lang = lang_code if lang_code in TRANSLATIONS else DEFAULT_LANG
-
     text = TRANSLATIONS[target_lang].get(key, key)
 
     try:
-        text = text.format(
-            **kwargs,
-        )
+        text = text.format(**kwargs)
     except KeyError as e:
         logger.warning(f"Missing format key in translation: {e}")
 

@@ -1,2 +1,3 @@
 aws-cdk-lib>=2.236.0
-python-dotenv>=1.0.0
+aws-cdk.aws-lambda-python-alpha>=2.248.0a0
+python-dotenv>=1.1.1

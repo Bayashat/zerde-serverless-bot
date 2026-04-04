@@ -1,10 +1,10 @@
-"""SQS message client."""
+"""SQS client for deferred timeout tasks."""
 
 import json
 
 import boto3
 from aws_lambda_powertools import Logger
-from repositories import QUEUE_URL
+from core.config import QUEUE_URL
 
 logger = Logger()
 
@@ -12,12 +12,11 @@ _SQS_CLIENT = boto3.client("sqs")
 
 
 class SQSClient:
-    """Client for sending raw updates to SQS."""
+    """Sends delayed CHECK_TIMEOUT tasks to SQS."""
 
     def __init__(self) -> None:
         self.queue_url = QUEUE_URL
         self.sqs_client = _SQS_CLIENT
-
         logger.debug(f"SQS client initialized with queue URL: {self.queue_url}")
 
     def send_timeout_task(
@@ -28,9 +27,7 @@ class SQSClient:
         verification_message_id: int,
         delay_seconds: int = 60,
     ) -> None:
-        """
-        Send a delayed message to SQS to check verification timeout.
-        """
+        """Send a delayed message to SQS to check verification timeout."""
         payload = {
             "task_type": "CHECK_TIMEOUT",
             "chat_id": chat_id,

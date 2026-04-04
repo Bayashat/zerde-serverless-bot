@@ -1,0 +1,91 @@
+voteban_command_update = {
+    "update_id": 86439812,
+    "message": {
+        "message_id": 853,
+        "from": {
+            "id": 920706887,
+            "is_bot": False,
+            "first_name": "Баяшат",
+            "username": "bayashat",
+            "language_code": "zh-hans",
+            "is_premium": True,
+        },
+        "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+        "date": 1775119386,
+        "message_thread_id": 536,
+        "reply_to_message": {
+            "message_id": 536,
+            "from": {
+                "id": 6204077458,
+                "is_bot": False,
+                "first_name": "X Ray",
+                "username": "header_payload_signature",
+                "language_code": "zh-hans",
+            },
+            "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+            "date": 1773256950,
+            "edit_date": 1773490598,
+            "text": "test]",
+        },
+        "text": "/voteban",
+        "entities": [{"offset": 0, "length": 8, "type": "bot_command"}],
+    },
+}
+
+voteban_callback_query_update = {
+    "update_id": 86439796,
+    "callback_query": {
+        "id": "3954405970320296258",
+        "from": {
+            "id": 1234567890,
+            "is_bot": False,
+            "first_name": "John Doe",
+            "username": "johndoe",
+            "language_code": "en",
+            "is_premium": True,
+        },
+        "message": {
+            "message_id": 845,
+            "from": {
+                "id": 6204077458,
+                "is_bot": False,
+                "first_name": "John Doe",
+                "username": "johndoe",
+                "language_code": "en",
+            },
+            "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+            "date": 1775075712,
+            "message_thread_id": 536,
+            "reply_to_message": {
+                "message_id": 536,
+                "from": {
+                    "id": 6204077458,
+                    "is_bot": False,
+                    "first_name": "Jane Doe",
+                    "username": "janedoe",
+                    "language_code": "en",
+                },
+                "chat": {"id": -1003765868758, "title": "Test bots", "username": "testBot11223", "type": "supergroup"},
+                "date": 1773256950,
+                "edit_date": 1773490598,
+                "text": "test]",
+            },
+            "text": "🗳️ Банға дауыс беру\n\n👤 Бастаған: @johndoe\n🎯 Мақсат: @janedoe\n\n",  # noqa: E501
+            "entities": [
+                {"offset": 4, "length": 16, "type": "bold"},
+                {"offset": 35, "length": 9, "type": "mention"},
+                {"offset": 56, "length": 25, "type": "mention"},
+            ],
+            "reply_markup": {
+                "inline_keyboard": [
+                    [
+                        {"text": "🔫 БАН (1/10)", "callback_data": "voteban_for_6204077458"},
+                        {"text": "👼 КЕШІРУ (0/10)", "callback_data": "voteban_against_6204077458"},
+                    ]
+                ]
+            },
+        },
+        "chat_instance": "4848765629685820695",
+        "data": "voteban_for_1234567890",
+    },
+}

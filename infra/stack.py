@@ -4,316 +4,80 @@ import os
 from pathlib import Path
 from typing import Any
 
-from aws_cdk import BundlingOptions, CfnOutput, Duration, RemovalPolicy, Stack
-from aws_cdk import aws_apigatewayv2 as apigwv2
-from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
-from aws_cdk import aws_dynamodb as dynamodb
-from aws_cdk import aws_events as events
-from aws_cdk import aws_events_targets as events_targets
-from aws_cdk import aws_lambda as _lambda
-from aws_cdk import aws_lambda_event_sources as lambda_event_sources
-from aws_cdk import aws_logs as logs
-from aws_cdk import aws_sqs as sqs
+from aws_cdk import CfnOutput, Stack
+from components import BotConstruct, MessagingConstruct, NewsConstruct
+from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from constructs import Construct
 from dotenv import load_dotenv
 
 
 class ZerdeTelegramBotStack(Stack):
-    """CDK stack defining the Telegram bot serverless architecture."""
+    """CDK stack: wires together Messaging, Bot, and News constructs."""
 
     def __init__(self, scope: Construct, construct_id: str, env_name: str = "dev", **kwargs: Any) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         is_prod = env_name == "prod"
-
-        # Get project root directory (parent of infra/)
-        project_root = Path(__file__).parent.parent
-
-        load_dotenv(dotenv_path=project_root / ".env")
-
-        telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
-        telegram_webhook_secret_token = os.environ.get("TELEGRAM_WEBHOOK_SECRET_TOKEN")
-
-        if not telegram_bot_token or not telegram_webhook_secret_token:
-            raise ValueError("TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET_TOKEN must be set")
-
-        project_name_prefix = f"Zerde{env_name.capitalize()}"
-        stack_name_prefix = f"zerde-{env_name}"
-
-        exclude_files = [".venv", ".venv/**", "__pycache__", "__pycache__/**", ".pyc", ".DS_Store", ".git", "tests"]
-
-        # ============================================================================
-        # Common Environment Variables
-        # ============================================================================
         log_level = "INFO" if is_prod else "DEBUG"
 
-        self.common_env_vars = {
-            "POWERTOOLS_LOG_LEVEL": log_level,
-            "ENV_NAME": env_name,
-        }
+        project_root = Path(__file__).parent.parent
+        load_dotenv(dotenv_path=project_root / ".env")
 
-        # ============================================================================
-        # DynamoDB Tables
-        # ============================================================================
+        def _require(key: str) -> str:
+            value = os.environ.get(key)
+            if not value:
+                raise ValueError(f"{key} must be set in environment")
+            return value
 
-        if is_prod:
-            removal_policy = RemovalPolicy.RETAIN
-            deletion_protection = True
-            pitr_enabled = True
-        else:
-            # Development: DESTROY policy, no PITR
-            removal_policy = RemovalPolicy.DESTROY
-            deletion_protection = False
-            pitr_enabled = False
-
-        # Bot Statistics Table
-        bot_stats_table_kwargs = {
-            "id": f"{project_name_prefix}BotStatsTable",
-            "table_name": f"{stack_name_prefix}-bot-stats",
-            "partition_key": dynamodb.Attribute(
-                name="stat_key",
-                type=dynamodb.AttributeType.STRING,
-            ),
-            "billing_mode": dynamodb.BillingMode.PAY_PER_REQUEST,
-            "removal_policy": removal_policy,
-            "deletion_protection": deletion_protection,
-        }
-        if is_prod:
-            bot_stats_table_kwargs["point_in_time_recovery_specification"] = dynamodb.PointInTimeRecoverySpecification(
-                point_in_time_recovery_enabled=pitr_enabled
-            )
-
-        self.bot_stats_table = dynamodb.Table(self, **bot_stats_table_kwargs)
-
-        # ============================================================================
-        # SQS Queues
-        # ============================================================================
-
-        # Removal policy: RETAIN for prod, DESTROY for dev
-        queue_removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
-
-        # SQS dead-letter queue
-        self.dlq = sqs.Queue(
-            self,
-            f"{project_name_prefix}UpdatesDlq",
-            queue_name=f"{stack_name_prefix}-updates-dlq",
-            retention_period=Duration.days(7),
-            removal_policy=queue_removal_policy,
-        )
-
-        # Main updates Queue
-        self.updates_queue = sqs.Queue(
-            self,
-            f"{project_name_prefix}UpdatesQueue",
-            queue_name=f"{stack_name_prefix}-updates-queue",
-            retention_period=Duration.hours(1),
-            visibility_timeout=Duration.seconds(90),
-            receive_message_wait_time=Duration.seconds(20),
-            removal_policy=queue_removal_policy,
-            dead_letter_queue=sqs.DeadLetterQueue(
-                max_receive_count=3,
-                queue=self.dlq,
-            ),
-        )
-        # ============================================================================
-        # Lambda Functions
-        # ============================================================================
-
-        lambda_runtime = _lambda.Runtime.PYTHON_3_13
-
-        # Receiver Lambda - HTTP API entrypoint from Telegram webhook
-        self.receiver_lambda = _lambda.Function(
-            self,
-            f"{project_name_prefix}ReceiverLambda",
-            function_name=f"{stack_name_prefix}-receiver",
-            runtime=lambda_runtime,
-            handler="main.lambda_handler",
-            timeout=Duration.seconds(30),
-            log_retention=logs.RetentionDays.ONE_WEEK,
-            code=_lambda.Code.from_asset(
-                str(project_root / "src" / "receiver"),
-                exclude=exclude_files,
-                bundling=BundlingOptions(
-                    image=lambda_runtime.bundling_image,
-                    command=[
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
-                    ],
-                ),
-            ),
-            environment={
-                **self.common_env_vars,
-                "QUEUE_URL": self.updates_queue.queue_url,
-                "WEBHOOK_SECRET_TOKEN": telegram_webhook_secret_token,
-            },
-        )
-
-        # Least-privilege grants
-        self.updates_queue.grant_send_messages(self.receiver_lambda)
-
-        # Worker Lambda - processes queue messages and talks to DynamoDB / Telegram API
+        bot_token = _require("TELEGRAM_BOT_TOKEN")
+        webhook_secret_token = _require("TELEGRAM_WEBHOOK_SECRET_TOKEN")
+        news_chat_ids = _require("NEWS_CHAT_IDS")
+        gemini_api_key = _require("GEMINI_API_KEY")
 
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
-
-        self.worker_lambda = _lambda.Function(
-            self,
-            f"{project_name_prefix}WorkerLambda",
-            function_name=f"{stack_name_prefix}-worker",
-            runtime=lambda_runtime,
-            architecture=_lambda.Architecture.ARM_64,
-            handler="main.lambda_handler",
-            timeout=Duration.seconds(60),
-            log_retention=logs.RetentionDays.ONE_WEEK,
-            code=_lambda.Code.from_asset(
-                str(project_root / "src" / "worker"),
-                exclude=exclude_files,
-                bundling=BundlingOptions(
-                    image=lambda_runtime.bundling_image,
-                    command=[
-                        "bash",
-                        "-c",
-                        (
-                            "pip install --no-cache-dir "
-                            "--platform manylinux2014_aarch64 "
-                            "--implementation cp "
-                            "--python-version 3.13 "
-                            "--only-binary=:all: "
-                            "--upgrade "
-                            "-r requirements.txt "
-                            "-t /asset-output "
-                            "&& cp -au . /asset-output"
-                        ),
-                    ],
-                ),
-            ),
-            environment={
-                **self.common_env_vars,
-                "QUEUE_URL": self.updates_queue.queue_url,
-                "DEFAULT_LANG": default_lang,
-                "BOT_TOKEN": telegram_bot_token,
-                "WEBHOOK_SECRET_TOKEN": telegram_webhook_secret_token,
-                "TELEGRAM_API_BASE": telegram_api_base,
-                "STATS_TABLE_NAME": self.bot_stats_table.table_name,
-            },
-        )
-
-        self.updates_queue.grant_consume_messages(self.worker_lambda)
-        self.updates_queue.grant_send_messages(self.worker_lambda)  # For CHECK_TIMEOUT events
-        self.bot_stats_table.grant_read_write_data(self.worker_lambda)
-
-        self.worker_lambda.add_event_source(
-            lambda_event_sources.SqsEventSource(
-                self.updates_queue,
-                batch_size=1,  # Process one message at a time
-                max_batching_window=Duration.seconds(0),
-                max_concurrency=10,  # Maximum concurrent invocations from SQS
-            ),
-        )
-
-        # News Lambda (Daily IT News)
-        news_chat_ids = os.environ.get("NEWS_CHAT_IDS")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
-        gemini_api_key = os.environ.get("GEMINI_API_KEY")
         llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
 
-        if not news_chat_ids or not gemini_api_key:
-            raise ValueError("NEWS_CHAT_IDS and GEMINI_API_KEY must be set")
-
-        if not llm_model or not ai_provider:
-            raise ValueError("LLM_MODEL and AI_PROVIDER must be set")
-
-        self.news_lambda = _lambda.Function(
+        # ── Constructs ─────────────────────────────────────────────────────────
+        messaging = MessagingConstruct(
             self,
-            f"{project_name_prefix}NewsLambda",
-            function_name=f"{stack_name_prefix}-news",
-            runtime=lambda_runtime,
-            architecture=_lambda.Architecture.X86_64,
-            handler="main.lambda_handler",
-            timeout=Duration.minutes(2),
-            memory_size=256,
-            log_retention=logs.RetentionDays.ONE_WEEK,
-            code=_lambda.Code.from_asset(
-                str(project_root / "src" / "news"),
-                exclude=exclude_files,
-                bundling=BundlingOptions(
-                    image=lambda_runtime.bundling_image,
-                    platform="linux/amd64",
-                    command=[
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output",
-                    ],
-                ),
-            ),
-            environment={
-                **self.common_env_vars,
-                "BOT_TOKEN": telegram_bot_token,
-                "GEMINI_API_KEY": gemini_api_key,
-                "NEWS_CHAT_IDS": news_chat_ids,
-                "AI_PROVIDER": ai_provider,
-                "LLM_MODEL": llm_model,
-            },
+            f"{CONSTRUCT_PREFIX}Messaging",
+            env_name=env_name,
+            is_prod=is_prod,
         )
 
-        if is_prod:
-            # EventBridge Rules: 3x daily digest at 04:00, 08:00, 14:00 UTC (09:00, 13:00, 19:00 Almaty UTC+5)
-            for hour_utc, slot in [(4, "morning"), (14, "evening")]:
-                rule = events.Rule(
-                    self,
-                    f"{project_name_prefix}NewsRule{slot.capitalize()}",
-                    rule_name=f"{stack_name_prefix}-news-{slot}",
-                    description=f"Trigger news lambda at {hour_utc:02d}:00 UTC (daily digest {slot})",
-                    schedule=events.Schedule.cron(
-                        minute="0",
-                        hour=str(hour_utc),
-                        day="*",
-                        month="*",
-                        year="*",
-                    ),
-                )
-                rule.add_target(events_targets.LambdaFunction(self.news_lambda))
+        bot = BotConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}Bot",
+            env_name=env_name,
+            is_prod=is_prod,
+            queue=messaging.queue,
+            bot_token=bot_token,
+            webhook_secret_token=webhook_secret_token,
+            telegram_api_base=telegram_api_base,
+            default_lang=default_lang,
+            log_level=log_level,
+        )
 
+        NewsConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}News",
+            env_name=env_name,
+            is_prod=is_prod,
+            bot_token=bot_token,
+            gemini_api_key=gemini_api_key,
+            news_chat_ids=news_chat_ids,
+            ai_provider=ai_provider,
+            llm_model=llm_model,
+            log_level=log_level,
+        )
+
+        # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(
             self,
-            f"{project_name_prefix}NewsLambdaName",
-            description="News Lambda function name",
-            value=self.news_lambda.function_name,
-        )
-
-        # ============================================================================
-        # API Gateway (HTTP API)
-        # ============================================================================
-
-        # API Gateway integrating with the receiver lambda
-        self.webhook_api = apigwv2.HttpApi(
-            self,
-            f"{project_name_prefix}WebhookApi",
-            api_name=f"{stack_name_prefix}-webhook-api",
-        )
-
-        webhook_integration = apigwv2_integrations.HttpLambdaIntegration(
-            f"{project_name_prefix}WebhookIntegration",
-            handler=self.receiver_lambda,
-        )
-
-        # Add POST /webhook route
-        self.webhook_api.add_routes(
-            path="/webhook",
-            methods=[apigwv2.HttpMethod.POST],
-            integration=webhook_integration,
-        )
-
-        # ============================================================================
-        # Outputs
-        # ============================================================================
-
-        # Export the API endpoint so it can be used for Telegram webhook configuration
-        CfnOutput(
-            self,
-            f"{project_name_prefix}WebhookApiUrl",
+            f"{CONSTRUCT_PREFIX}WebhookApiUrl",
             description="API Gateway URL for the Telegram webhook",
-            export_name=f"{stack_name_prefix}-webhook-api-url",
-            value=self.webhook_api.url,
+            export_name=f"{RESOURCE_PREFIX}-webhook-api-url-{env_name}",
+            value=bot.api.url,
         )

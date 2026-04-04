@@ -151,5 +151,6 @@ def create_ai_client() -> AIClient:
     """Factory: returns the configured AI client."""
     provider = AI_PROVIDER.lower()
     if provider == "gemini":
+        logger.info("GeminiAIClient initialized", extra={"api_key": GEMINI_API_KEY})
         return GeminiAIClient(api_key=GEMINI_API_KEY)
     raise ValueError(f"Unsupported AI provider: {AI_PROVIDER!r}. Available: 'gemini'")
