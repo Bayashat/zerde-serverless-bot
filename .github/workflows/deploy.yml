@@ -59,10 +59,11 @@ jobs:
       - name: Install AWS CDK CLI
         run: |
           npm install -g aws-cdk
+          uv run cdk --version
 
       - name: Install project dependencies with uv
         run: |
-          uv sync --frozen
+          uv sync --frozen --no-dev
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -70,26 +71,22 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
 
-      - name: Verify CDK installation
-        run: |
-          uv run cdk --version
-
-      - name: CDK Bootstrap (usually only needs to run once, but kept here as a safeguard)
-        working-directory: ./infra
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
-          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
-          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
-          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
-          DEFAULT_LANG: ${{ vars.DEFAULT_LANG }}
-          TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE }}
-        run: |
-          uv run cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/eu-central-1 || echo "Bootstrap may already be done"
-        continue-on-error: true
+      # - name: CDK Bootstrap (usually only needs to run once, but kept here as a safeguard)
+      #   working-directory: ./infra
+      #   env:
+      #     TELEGRAM_BOT_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_BOT_TOKEN || secrets.DEV_TELEGRAM_BOT_TOKEN }}
+      #     TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_TELEGRAM_WEBHOOK_SECRET_TOKEN || secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+      #     GEMINI_API_KEY: ${{ env.TARGET_ENV == 'prod' && secrets.PROD_GEMINI_API_KEY || secrets.DEV_GEMINI_API_KEY }}
+      #     NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+      #     NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+      #     NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+      #     AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+      #     LLM_MODEL: ${{ vars.LLM_MODEL }}
+      #     DEFAULT_LANG: ${{ vars.DEFAULT_LANG }}
+      #     TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE }}
+      #   run: |
+      #     uv run cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/eu-central-1 || echo "Bootstrap may already be done"
+      #   continue-on-error: true
 
       - name: CDK Deploy
         working-directory: ./infra

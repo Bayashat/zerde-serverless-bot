@@ -57,7 +57,7 @@ class BotConstruct(Construct):
             self,
             f"{CONSTRUCT_PREFIX}BotLambda",
             function_name=f"{RESOURCE_PREFIX}-bot-{env_name}",
-            handler="lambda_handler",
+            handler="main.lambda_handler",
             code=_lambda.Code.from_asset(str(PROJECT_ROOT / "src" / "bot")),
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,

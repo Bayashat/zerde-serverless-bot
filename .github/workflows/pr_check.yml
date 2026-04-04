@@ -75,7 +75,7 @@ jobs:
 
       - name: Install project dependencies with uv
         run: |
-          uv sync --frozen
+          uv sync --frozen --no-dev
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
