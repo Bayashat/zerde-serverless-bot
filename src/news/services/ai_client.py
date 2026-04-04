@@ -8,6 +8,8 @@ from core.config import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
 from google import genai
 from google.genai import types
 
+logger = Logger()
+
 
 class AIClient(ABC):
     """Abstract base class for AI providers."""
@@ -26,7 +28,6 @@ class GeminiAIClient(AIClient):
 
     def __init__(self, api_key: str) -> None:
         self._client = genai.Client(api_key=api_key)
-        self.logger = Logger()
 
     def select_top_news(self, news_items: list[dict]) -> list[int]:
         """Ask the model to pick the top 3 unique news indices."""
@@ -68,10 +69,10 @@ class GeminiAIClient(AIClient):
             data = json.loads(response.text)
             indices = data.get("top_indices", [0, 1, 2])
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
-            self.logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
+            logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
             return result
         except Exception:
-            self.logger.error("Failed to select top news", exc_info=True)
+            logger.error("Failed to select top news", exc_info=True)
             return list(range(min(3, len(news_items))))
 
     def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
@@ -127,7 +128,7 @@ class GeminiAIClient(AIClient):
             data = json.loads(response.text)
             digests = data.get("digests", [])
             if len(digests) != len(deep_news_items):
-                self.logger.warning(
+                logger.warning(
                     "Digest count mismatch, padding or trimming",
                     extra={"got": len(digests), "expected": len(deep_news_items)},
                 )
@@ -139,10 +140,10 @@ class GeminiAIClient(AIClient):
                 )
                 for i in range(len(deep_news_items))
             ]
-            self.logger.info("Per-article digests generated", extra={"count": len(result)})
+            logger.info("Per-article digests generated", extra={"count": len(result)})
             return result
         except Exception:
-            self.logger.error("Failed to generate per-article digests", exc_info=True)
+            logger.error("Failed to generate per-article digests", exc_info=True)
             return [f"<b>{n['title']}</b>\n{n['link']}" for n in deep_news_items]
 
 
