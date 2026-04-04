@@ -38,7 +38,6 @@ class TelegramSender:
     """Thin HTTP wrapper around the Telegram Bot API for the News Lambda."""
 
     def __init__(self, bot_token: str) -> None:
-        self._token = bot_token
         self._base_url = f"https://api.telegram.org/bot{bot_token}"
 
     def send_message(
