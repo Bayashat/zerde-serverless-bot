@@ -11,7 +11,6 @@ from webhook import handle_event
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-# Module-level initialization: captured by SnapStart snapshot after first cold start.
 _bot = TelegramClient()
 _stats_repo = StatsRepository()
 _sqs_repo = SQSClient()
