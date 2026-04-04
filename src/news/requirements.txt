@@ -1,4 +1,2 @@
-aws-lambda-powertools==3.24.0
-requests==2.33.0
 feedparser>=6.0.12
 google-genai>=1.65.0

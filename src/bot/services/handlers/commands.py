@@ -1,10 +1,10 @@
 """Simple bot commands: /start, /help, /support, /ping, /stats."""
 
-from aws_lambda_powertools import Logger
 from core.dispatcher import Context
+from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 def handle_start(ctx: Context) -> None:

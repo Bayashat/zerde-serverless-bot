@@ -1,16 +1,20 @@
 """Telegram message sending utilities for the News Lambda."""
 
+import json
 import re
 import time
 from typing import Optional
 
-import requests
-from aws_lambda_powertools import Logger
+import urllib3
+from core.logger import LoggerAdapter, get_logger
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 TELEGRAM_MAX_LENGTH = 4096
 TELEGRAM_CAPTION_MAX_LENGTH = 1024
+
+_JSON_HEADERS = {"Content-Type": "application/json"}
+http = urllib3.PoolManager(maxsize=4, timeout=urllib3.Timeout(total=10))
 
 
 def sanitize_html(text: str) -> str:
@@ -58,28 +62,30 @@ class TelegramSender:
         if parse_mode:
             payload["parse_mode"] = parse_mode
 
+        body_bytes = json.dumps(payload).encode("utf-8")
+
         for attempt in range(max_retries):
             try:
-                response = requests.post(url, json=payload, timeout=10)
-                response.raise_for_status()
-                logger.info(f"Message sent to {chat_id} on attempt {attempt + 1}")
-                return True, 200
-            except requests.exceptions.HTTPError as e:
-                status_code = e.response.status_code if e.response is not None else None
-                response_text = e.response.text if e.response is not None else None
-                error_type = type(e).__name__
+                resp = http.request("POST", url, body=body_bytes, headers=_JSON_HEADERS)
+                if resp.status < 400:
+                    logger.info(f"Message sent to {chat_id} on attempt {attempt + 1}")
+                    return True, 200
+
+                status_code = resp.status
+                response_text = resp.data.decode("utf-8")
                 logger.warning(
-                    f"Attempt {attempt + 1}/{max_retries} to {chat_id} failed ({error_type}) "
+                    f"Attempt {attempt + 1}/{max_retries} to {chat_id} failed (HTTPError) "
                     f"(status_code={status_code}, response_text={response_text})"
                 )
+
                 if status_code == 429:
                     retry_delay = 2 ** (attempt + 1)
                     try:
-                        resp_json = e.response.json()
+                        resp_json = json.loads(response_text)
                         retry_after = resp_json.get("parameters", {}).get("retry_after")
                         if isinstance(retry_after, (int, float)) and retry_after > 0:
                             retry_delay = retry_after
-                    except ValueError:
+                    except (ValueError, KeyError):
                         pass
                     if attempt == max_retries - 1:
                         logger.error(f"Rate limited (429) for {chat_id}, max retries reached")
@@ -87,14 +93,17 @@ class TelegramSender:
                     logger.warning(f"Rate limited, sleeping for {retry_delay}s")
                     time.sleep(retry_delay)
                     continue
-                if status_code is not None and 400 <= status_code < 500:
+
+                if 400 <= status_code < 500:
                     logger.error(f"Non-retryable HTTP {status_code} for {chat_id}, giving up")
                     return False, status_code
+
                 if attempt == max_retries - 1:
                     logger.error(f"Failed to send to {chat_id} after {max_retries} attempts")
                     return False, status_code
                 time.sleep(2 ** (attempt + 1))
-            except requests.exceptions.RequestException as e:
+
+            except Exception as e:
                 error_type = type(e).__name__
                 logger.warning(f"Attempt {attempt + 1}/{max_retries} to {chat_id} failed (network: {error_type})")
                 if attempt == max_retries - 1:
@@ -123,11 +132,11 @@ class TelegramSender:
             "disable_web_page_preview": True,
         }
         try:
-            resp = requests.post(url, json=payload, timeout=10)
-            if resp.status_code != 200:
+            resp = http.request("POST", url, body=json.dumps(payload), headers=_JSON_HEADERS)
+            if resp.status != 200:
                 logger.error(
                     "Send photo failed",
-                    extra={"status": resp.status_code, "body": resp.text},
+                    extra={"status": resp.status, "body": resp.data.decode("utf-8")},
                 )
                 return False
             logger.info("Photo sent", extra={"chat_id": chat_id})

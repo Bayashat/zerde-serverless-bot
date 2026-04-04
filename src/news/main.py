@@ -2,14 +2,14 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.config import BOT_TOKEN
+from core.logger import LoggerAdapter, get_logger
 from services.ai_client import create_ai_client
 from services.digest import DigestService
 from services.news_fetcher import NewsFetcher
 from services.telegram import TelegramSender
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 _fetcher = NewsFetcher()
 _ai_client = create_ai_client()

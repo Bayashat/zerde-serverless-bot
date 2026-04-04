@@ -48,7 +48,7 @@ class NewsConstruct(Construct):
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.X86_64,
             timeout=Duration.minutes(2),
-            memory_size=256,
+            memory_size=128,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}NewsLogGroup",
@@ -57,8 +57,7 @@ class NewsConstruct(Construct):
                 removal_policy=removal_policy,
             ),
             environment={
-                "POWERTOOLS_LOG_LEVEL": log_level,
-                "ENV_NAME": env_name,
+                "LOG_LEVEL": log_level,
                 "BOT_TOKEN": bot_token,
                 "GEMINI_API_KEY": gemini_api_key,
                 "AI_PROVIDER": ai_provider,

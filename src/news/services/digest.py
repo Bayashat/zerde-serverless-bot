@@ -2,13 +2,13 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
+from core.logger import LoggerAdapter, get_logger
 from core.utils import extract_event, get_greeting_and_max_age_hours, get_intro_text
 from services.ai_client import AIClient
 from services.news_fetcher import NewsFetcher
 from services.telegram import TelegramSender
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 class DigestService:

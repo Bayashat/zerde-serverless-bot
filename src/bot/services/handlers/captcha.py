@@ -2,14 +2,14 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.config import CAPTCHA_TIMEOUT_SECONDS, VERIFY_PREFIX
 from core.dispatcher import Context
+from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from core.utils import format_mention
 from services.telegram import TelegramClient
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 _FULL_PERMISSIONS: dict[str, bool] = {
     "can_send_messages": True,

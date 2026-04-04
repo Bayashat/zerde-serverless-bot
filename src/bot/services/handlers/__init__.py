@@ -1,12 +1,12 @@
 """Handler registration: wires domain handlers to the Dispatcher."""
 
-from aws_lambda_powertools import Logger
 from core.config import (
     VERIFY_PREFIX,
     VOTEBAN_AGAINST_PREFIX,
     VOTEBAN_FOR_PREFIX,
 )
 from core.dispatcher import Context, Dispatcher
+from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.handlers.captcha import (
     handle_new_member,
@@ -24,7 +24,7 @@ from services.handlers.voteban import handle_vote_callback, handle_voteban_comma
 
 __all__ = ["register_handlers", "process_timeout_task"]
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 def register_handlers(dp: Dispatcher) -> None:

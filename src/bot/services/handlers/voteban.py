@@ -2,7 +2,6 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.config import (
     VOTEBAN_AGAINST_PREFIX,
     VOTEBAN_FOR_PREFIX,
@@ -10,10 +9,11 @@ from core.config import (
     VOTEBAN_THRESHOLD,
 )
 from core.dispatcher import Context
+from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from core.utils import format_mention
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 def _format_voter_list(voter_info_list: list[dict[str, Any]]) -> str:

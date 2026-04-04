@@ -8,10 +8,12 @@ from email.utils import parsedate_to_datetime
 from typing import Optional
 
 import feedparser
-import requests
-from aws_lambda_powertools import Logger
+import urllib3
+from core.logger import LoggerAdapter, get_logger
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
+
+http = urllib3.PoolManager(timeout=urllib3.Timeout(total=10))
 
 
 class NewsFetcher:
@@ -54,9 +56,8 @@ class NewsFetcher:
         def fetch_single_feed(feed_url: str) -> list[dict]:
             local_news = []
             try:
-                resp = requests.get(feed_url, timeout=10)
-                resp.raise_for_status()
-                feed = feedparser.parse(resp.content)
+                resp = http.request("GET", feed_url, timeout=10)
+                feed = feedparser.parse(resp.data)
                 logger.debug("Feed parsed", extra={"entries": len(feed.entries)})
                 for entry in feed.entries:
                     pub_date_str = (
@@ -103,9 +104,11 @@ class NewsFetcher:
             "Accept-Language": "en-US,en;q=0.5",
         }
         try:
-            resp = requests.get(url, headers=headers, timeout=8)
-            resp.raise_for_status()
-            html_content = resp.text
+            resp = http.request("GET", url, headers=headers, timeout=8)
+            if resp.status >= 400:
+                logger.warning("Deep scrape HTTP error", extra={"url": url, "status": resp.status})
+                return {"image_url": "", "full_text": ""}
+            html_content = resp.data.decode("utf-8")
             image_url = ""
 
             # Prefer og:image / twitter:image, then first content img

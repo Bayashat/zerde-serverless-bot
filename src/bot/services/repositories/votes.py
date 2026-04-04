@@ -2,12 +2,12 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
 from core.config import STATS_TABLE_NAME
+from core.logger import LoggerAdapter, get_logger
 from services.repositories._common import get_dynamodb
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 
 class VoteRepository:

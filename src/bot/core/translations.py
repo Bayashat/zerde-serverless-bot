@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.config import DEFAULT_LANG
+from core.logger import LoggerAdapter, get_logger
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
 TRANSLATIONS = {
     "en": {

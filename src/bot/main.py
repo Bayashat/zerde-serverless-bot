@@ -2,16 +2,15 @@
 
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from core.dispatcher import Dispatcher
+from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
 from services.repositories import SQSClient, StatsRepository, VoteRepository
 from services.telegram import TelegramClient
 from webhook import handle_event
 
-logger = Logger()
+logger = LoggerAdapter(get_logger(__name__), {})
 
-# Module-level initialization: captured by SnapStart snapshot after first cold start.
 _bot = TelegramClient()
 _stats_repo = StatsRepository()
 _sqs_repo = SQSClient()
