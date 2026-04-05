@@ -46,3 +46,22 @@ def test_get_stats_total_bans_defaults_to_zero(stats_repo, mock_table):
     mock_table.get_item.return_value = {"Item": {"total_joins": 5, "verified_users": 4, "started_at": "2026-01-01"}}
     result = stats_repo.get_stats(chat_id=123)
     assert result["total_bans"] == 0
+
+
+def test_finalize_ban_increments_total_bans():
+    """_finalize_ban should call stats_repo.increment_total_bans."""
+    from services.handlers.voteban import _finalize_ban
+
+    ctx = MagicMock()
+    ctx.chat_id = -100123
+    ctx.message_id = 999
+    ctx.vote_repo.get_vote_session.return_value = {
+        "target_username": "testuser",
+        "target_first_name": "Test",
+        "votes_for_info": [],
+        "reply_message_id": 888,
+    }
+
+    _finalize_ban(ctx, target_user_id=42, votes_for=3)
+
+    ctx.stats_repo.increment_total_bans.assert_called_once_with(ctx.chat_id)
