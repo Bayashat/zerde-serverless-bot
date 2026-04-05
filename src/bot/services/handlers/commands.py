@@ -41,6 +41,7 @@ def handle_stats(ctx: Context) -> None:
         stats: dict = ctx.stats_repo.get_stats(ctx.chat_id)
         total = stats["total_joins"]
         verified = stats["verified_users"]
+        banned = stats["total_bans"]
         start_date = stats["started_at"]
 
         activity_level_percentage = int(min(100, 100 * verified / max(1, total)))
@@ -58,6 +59,7 @@ def handle_stats(ctx: Context) -> None:
             start_date=start_date,
             total=total,
             verified=verified,
+            banned=banned,
             activity_level=activity_level,
         )
         ctx.reply(msg, ctx.message_id)

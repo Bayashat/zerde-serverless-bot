@@ -84,3 +84,27 @@ def test_finalize_ban_handles_missing_stats_repo():
 
     _finalize_ban(ctx, target_user_id=42, votes_for=3)
     # No exception means the guard clause worked
+
+
+def test_handle_stats_includes_banned_count():
+    """handle_stats should pass banned count to the stats_message template."""
+    from services.handlers.commands import handle_stats
+
+    ctx = MagicMock()
+    ctx.chat_id = -100123
+    ctx.lang_code = "en"
+    ctx.bot.get_chat_member.return_value = {"status": "administrator"}
+    ctx.stats_repo.get_stats.return_value = {
+        "total_joins": 20,
+        "verified_users": 15,
+        "total_bans": 5,
+        "started_at": "2026-01-01 00:00:00 UTC+5",
+    }
+
+    with patch("services.handlers.commands.get_translated_text") as mock_t:
+        mock_t.return_value = "stats text"
+        handle_stats(ctx)
+
+    calls = mock_t.call_args_list
+    stats_call = next(c for c in calls if c.args[0] == "stats_message")
+    assert stats_call.kwargs.get("banned") == 5
