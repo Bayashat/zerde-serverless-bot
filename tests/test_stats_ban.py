@@ -1,15 +1,8 @@
 """Tests for ban-related stats in StatsRepository."""
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-# Set required environment variables before importing anything from services
-os.environ["BOT_TOKEN"] = "test_token"
-os.environ["WEBHOOK_SECRET_TOKEN"] = "test_secret"
-os.environ["QUEUE_URL"] = "test_queue"
-os.environ["STATS_TABLE_NAME"] = "test_stats_table"
 
 
 @pytest.fixture
