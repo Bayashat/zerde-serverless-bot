@@ -174,11 +174,11 @@ TRANSLATIONS = {
         "quizstats_response": (
             "<b>Quiz нәтижелерің</b>\n\n"
             "Ұпай: {score}\n"
-            "Қатарынан: {streak} күн\n"
-            "Ең жақсы қатар: {best_streak} күн\n"
+            "Streak: {streak} күн\n"
+            "Best streak: {best_streak} күн\n"
             "Орын: #{rank} / {total_players} ойыншы"
         ),
-        "quizstats_no_data": "Сіз әлі бірде-бір quiz-ге жауап бермедіңіз. Келесі күнделікті quiz-ді күтіңіз!",
+        "quizstats_no_data": "Сіз әлі бірде-бір quiz-ге жауап бермедіңіз. Келесі күнгі quiz-ді күтіңіз!",
     },
 }
 

@@ -35,7 +35,8 @@ class QuizSender:
             "type": "quiz",
             "is_anonymous": False,
             "correct_option_id": correct_option_id,
-            "open_period": 600,
+            "shuffle_options": True,
+            "open_period": 3600 * 5,
         }
         if explanation:
             payload["explanation"] = explanation[:200]  # Telegram limit

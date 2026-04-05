@@ -88,10 +88,10 @@ class QuizConstruct(Construct):
                 self,
                 f"{CONSTRUCT_PREFIX}QuizRule",
                 rule_name=f"{RESOURCE_PREFIX}-quiz-daily-{env_name}",
-                description="Trigger quiz lambda daily at 03:00 UTC (08:00 Almaty)",
+                description="Trigger quiz lambda daily at 08:00 UTC (13:00 Almaty)",
                 schedule=events.Schedule.cron(
                     minute="0",
-                    hour="3",
+                    hour="8",
                     day="*",
                     month="*",
                     year="*",

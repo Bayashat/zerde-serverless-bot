@@ -60,7 +60,7 @@ class QuizFetcher:
         """Return category pool excluding last used category."""
         if last_category and last_category in CATEGORY_POOL:
             return [c for c in CATEGORY_POOL if c != last_category]
-        return list(CATEGORY_POOL)
+        return CATEGORY_POOL
 
     def fetch_question(self, last_category: str | None) -> tuple[dict[str, Any], str] | None:
         """Fetch a valid question from QuizAPI.io with category rotation.

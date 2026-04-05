@@ -51,9 +51,6 @@ def handle_quizstats(ctx: Context) -> None:
         ctx.reply("Quiz feature is not configured.")
         return
 
-    if not ctx.chat_id or not ctx.user_id:
-        return
-
     chat_id = str(ctx.chat_id)
     user_id = str(ctx.user_id)
     lang = ctx.lang_code

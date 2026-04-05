@@ -4,7 +4,12 @@ from typing import Any, Callable
 
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
-from services.repositories import SQSClient, StatsRepository, VoteRepository
+from services.repositories import (
+    QuizRepository,
+    SQSClient,
+    StatsRepository,
+    VoteRepository,
+)
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -35,7 +40,7 @@ class Context:
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
-        self.quiz_repo = quiz_repo
+        self.quiz_repo: QuizRepository = quiz_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -113,7 +118,7 @@ class Dispatcher:
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
-        self.quiz_repo = quiz_repo
+        self.quiz_repo: QuizRepository = quiz_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
@@ -153,7 +158,7 @@ class Dispatcher:
         """Route a single Telegram update to the appropriate handler."""
         ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo)
 
-        poll_answer = update.get("poll_answer")
+        poll_answer = ctx._update.get("poll_answer")
         if poll_answer and self.poll_answer_handler:
             logger.info("Dispatching to poll_answer handler")
             self.poll_answer_handler(ctx)
