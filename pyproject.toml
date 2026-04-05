@@ -29,4 +29,10 @@ dev = [
     "feedparser>=6.0.12",
     "google-genai>=1.65.0",
     "pre-commit>=4.5.1",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.14.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src/bot"]
