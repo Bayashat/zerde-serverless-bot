@@ -37,6 +37,9 @@ class StatsRepository:
     def increment_verified_users(self, chat_id: int | str) -> None:
         self._increment(str(chat_id), "verified_users")
 
+    def increment_total_bans(self, chat_id: int | str) -> None:
+        self._increment(str(chat_id), "total_bans")
+
     def _increment(self, stat_key: str, attr: str) -> None:
         try:
             self._table.update_item(
@@ -54,7 +57,7 @@ class StatsRepository:
             raise
 
     def get_stats(self, chat_id: int | str) -> dict[str, Any]:
-        """Return total_joins, verified_users, and started_at for a chat."""
+        """Return total_joins, verified_users, total_bans, and started_at for a chat."""
         key = str(chat_id)
         try:
             resp = self._table.get_item(Key={"stat_key": key}, ConsistentRead=False)
@@ -62,6 +65,7 @@ class StatsRepository:
             return {
                 "total_joins": int(item.get("total_joins", 0)),
                 "verified_users": int(item.get("verified_users", 0)),
+                "total_bans": int(item.get("total_bans", 0)),
                 "started_at": item.get("started_at", "N/A"),
             }
         except ClientError as e:
