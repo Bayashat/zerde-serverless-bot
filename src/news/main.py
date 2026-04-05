@@ -20,5 +20,7 @@ logger.info("News Lambda initialized")
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     """EventBridge scheduled handler — delegates to DigestService."""
+    request_id = getattr(context, "aws_request_id", "unknown")
+    logger.extra["request_id"] = request_id
     logger.info("News Lambda handler called", extra={"event": event})
     return _digest_svc.run(event)

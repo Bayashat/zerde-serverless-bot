@@ -69,17 +69,18 @@ def _handle_api_gateway(
             logger.error("Failed to parse API Gateway event", extra={"error": e})
             return create_response(200, {"message": "Invalid request"})
 
-        if not is_event_relevant_to_bot(body):
-            logger.info("Event not relevant to bot, ignoring")
-            return create_response(200, {"message": "Not relevant"})
-
-        message = body.get("message", {})
-        if message is not None:
+        # Handle private messages first (before relevance filter)
+        message = body.get("message")
+        if message:
             chat_type = message.get("chat", {}).get("type")
             if chat_type == "private":
                 chat_id = message.get("chat", {}).get("id")
                 dispatcher.bot.send_message(chat_id, get_translated_text("private_message"))
                 return create_response(200, {"message": "ok"})
+
+        if not is_event_relevant_to_bot(body):
+            logger.info("Event not relevant to bot, ignoring")
+            return create_response(200, {"message": "Not relevant"})
 
         if body.get("task_type") == "CHECK_TIMEOUT":
             process_timeout_task(bot, body)
@@ -96,7 +97,14 @@ def _handle_api_gateway(
 
 
 def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
-    """Process SQS batch -- only CHECK_TIMEOUT tasks are expected."""
+    """Process SQS batch -- only CHECK_TIMEOUT tasks are expected.
+
+    Error handling strategy: if process_timeout_task raises an exception,
+    the SQS message is NOT deleted. Lambda will retry up to maxReceiveCount (3)
+    times, after which the message goes to the dead-letter queue. This is
+    intentional — timeout tasks are idempotent (kicking an already-left user
+    is a no-op), so retries are safe.
+    """
     logger.debug(
         "Received SQS batch",
         extra={"record_count": len(event.get("Records", []))},

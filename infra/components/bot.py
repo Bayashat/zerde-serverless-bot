@@ -51,6 +51,7 @@ class BotConstruct(Construct):
             point_in_time_recovery_specification=dynamodb.PointInTimeRecoverySpecification(
                 point_in_time_recovery_enabled=is_prod
             ),
+            time_to_live_attribute="ttl",
         )
 
         handler_lambda = _lambda.Function(

@@ -249,7 +249,7 @@ def _finalize_forgive(ctx: Context, target_user_id: int, votes_against: int) -> 
         ),
     )
 
-    sent_message_id = int(session.get("sent_message_id"))
+    sent_message_id = session.get("sent_message_id")
     if ctx.message_id and sent_message_id:
         try:
             ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
