@@ -38,7 +38,7 @@ TRANSLATIONS = {
             "⏰ Since {start_date}\n\n"
             "👥 <b>Total Joins:</b> {total} users\n"
             "✅ <b>Verified captchas:</b> {verified} items\n"
-            "🔨 <b>Banned by vote:</b> {banned} users\n\n"
+            "🔫 <b>Banned by vote:</b> {banned} users\n\n"
             "📈 <b>Overall activity:</b> {activity_level}"
         ),
         "private_message": (
@@ -114,7 +114,7 @@ TRANSLATIONS = {
             "⏰ {start_date} бастап\n\n"
             "👥 <b>Жалпы қосылған мүшелер:</b> {total} қолданушы\n"
             "✅ <b>Расталған капчалар:</b> {verified} дана\n"
-            "🔨 <b>Дауыспен бандалғандар:</b> {banned} қолданушы\n\n"
+            "🔫 <b>Дауыспен бандалғандар:</b> {banned} қолданушы\n\n"
             "📈 <b>Жалпы белсенділік:</b> {activity_level}"
         ),
         "private_message": (

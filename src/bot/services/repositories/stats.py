@@ -63,9 +63,9 @@ class StatsRepository:
             resp = self._table.get_item(Key={"stat_key": key}, ConsistentRead=False)
             item: dict[str, Any] = resp.get("Item") or {}
             return {
-                "total_joins": int(item.get("total_joins", 0)),
-                "verified_users": int(item.get("verified_users", 0)),
-                "total_bans": int(item.get("total_bans", 0)),
+                "total_joins": item.get("total_joins", 0),
+                "verified_users": item.get("verified_users", 0),
+                "total_bans": item.get("total_bans", 0),
                 "started_at": item.get("started_at", "N/A"),
             }
         except ClientError as e:

@@ -35,6 +35,7 @@ ENV/
 *.swo
 *~
 .claude/
+docs/superpowers/
 
 # Chart.js library (optional, download separately)
 extension/lib/chart.js
