@@ -219,7 +219,10 @@ def _finalize_ban(ctx: Context, target_user_id: int, votes_for: int) -> None:
 
         ctx.vote_repo.delete_vote_session(ctx.chat_id, target_user_id)
         if ctx.stats_repo:
-            ctx.stats_repo.increment_total_bans(ctx.chat_id)
+            try:
+                ctx.stats_repo.increment_total_bans(ctx.chat_id)
+            except Exception as e:
+                logger.exception(f"Failed to record ban stat: {e}")
         logger.info("User %s banned by vote.", target_user_id)
     except Exception as e:
         logger.exception(f"Failed to ban user: {e}")

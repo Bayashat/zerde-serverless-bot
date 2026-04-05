@@ -65,3 +65,22 @@ def test_finalize_ban_increments_total_bans():
     _finalize_ban(ctx, target_user_id=42, votes_for=3)
 
     ctx.stats_repo.increment_total_bans.assert_called_once_with(ctx.chat_id)
+
+
+def test_finalize_ban_handles_missing_stats_repo():
+    """_finalize_ban should not raise when stats_repo is None."""
+    from services.handlers.voteban import _finalize_ban
+
+    ctx = MagicMock()
+    ctx.chat_id = -100123
+    ctx.message_id = 999
+    ctx.stats_repo = None
+    ctx.vote_repo.get_vote_session.return_value = {
+        "target_username": "testuser",
+        "target_first_name": "Test",
+        "votes_for_info": [],
+        "reply_message_id": 888,
+    }
+
+    _finalize_ban(ctx, target_user_id=42, votes_for=3)
+    # No exception means the guard clause worked
