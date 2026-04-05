@@ -4,6 +4,7 @@ from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
 from core.utils import extract_event, get_greeting_and_max_age_hours, get_intro_text
+from google.genai import errors as genai_errors
 from services.ai_client import AIClient
 from services.news_fetcher import NewsFetcher
 from services.telegram import TelegramSender
@@ -78,6 +79,15 @@ class DigestService:
 
             return {"statusCode": 200, "body": "Agentic Digest Sent"}
 
+        except genai_errors.APIError as e:
+            logger.error("Gemini API error in digest pipeline", exc_info=True)
+            error_msg = f"⚠️ Gemini API request failed: {e}"
+            for chat_id in chat_ids:
+                try:
+                    self._sender.send_message(chat_id, error_msg)
+                except Exception:
+                    logger.exception("Failed to send Gemini error notification", extra={"chat_id": chat_id})
+            return {"statusCode": 503, "body": "Gemini API error"}
         except Exception:
             logger.exception("Error in news digest pipeline")
             return {"statusCode": 500, "body": "Internal server error"}
