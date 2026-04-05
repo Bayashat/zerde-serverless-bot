@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 # Set required env vars BEFORE importing bot modules
+os.environ.setdefault("AWS_DEFAULT_REGION", "eu-central-1")
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("WEBHOOK_SECRET_TOKEN", "test-webhook-secret")
 os.environ.setdefault("QUEUE_URL", "https://sqs.eu-central-1.amazonaws.com/123456789/test-queue")
