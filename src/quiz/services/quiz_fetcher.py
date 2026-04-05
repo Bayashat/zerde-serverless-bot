@@ -3,6 +3,7 @@
 import json
 import random
 from typing import Any
+from urllib.parse import urlencode
 
 import urllib3
 from core.config import QUIZAPI_KEY
@@ -87,8 +88,7 @@ class QuizFetcher:
             "limit": "5",
             "multiple": "true",
         }
-        query = "&".join(f"{k}={v}" for k, v in params.items())
-        url = f"{QUIZAPI_BASE}?{query}"
+        url = f"{QUIZAPI_BASE}?{urlencode(params)}"
 
         try:
             resp = http.request("GET", url)

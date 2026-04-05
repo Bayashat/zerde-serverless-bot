@@ -33,14 +33,14 @@ class Context:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
-        quiz_repo=None,
+        quiz_repo: QuizRepository | None = None,
     ):
         self._update = update
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
-        self.quiz_repo: QuizRepository = quiz_repo
+        self.quiz_repo = quiz_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -81,6 +81,10 @@ class Context:
     def chat_id(self) -> int | None:
         return self.message.get("chat", {}).get("id")
 
+    @property
+    def poll_answer(self) -> dict[str, Any] | None:
+        return self._update.get("poll_answer")
+
     def reply(
         self,
         text: str,
@@ -112,13 +116,13 @@ class Dispatcher:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
-        quiz_repo=None,
+        quiz_repo: QuizRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
-        self.quiz_repo: QuizRepository = quiz_repo
+        self.quiz_repo = quiz_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None

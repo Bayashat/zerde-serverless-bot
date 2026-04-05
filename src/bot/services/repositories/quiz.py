@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from core.config import QUIZ_TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
@@ -33,8 +34,7 @@ class QuizRepository:
         try:
             resp = self._table.query(
                 IndexName="PollIdIndex",
-                KeyConditionExpression="poll_id = :pid",
-                ExpressionAttributeValues={":pid": str(poll_id)},
+                KeyConditionExpression=Key("poll_id").eq(str(poll_id)),
                 Limit=1,
             )
             items = resp.get("Items", [])
@@ -121,8 +121,7 @@ class QuizRepository:
         """Get all user scores for a chat, sorted by total_score descending."""
         try:
             resp = self._table.query(
-                KeyConditionExpression="PK = :pk",
-                ExpressionAttributeValues={":pk": f"SCORE#{chat_id}"},
+                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
             )
             items = resp.get("Items", [])
             return sorted(items, key=lambda x: x.get("total_score", 0), reverse=True)

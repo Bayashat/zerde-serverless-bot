@@ -9,18 +9,17 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 def handle_poll_answer(ctx: Context) -> None:
     """Process a poll_answer update — look up poll, update score/streak."""
-    poll_answer = ctx._update.get("poll_answer")
-    if not poll_answer:
+    if not ctx.poll_answer:
         return
 
-    poll_id = str(poll_answer.get("poll_id", ""))
-    user = poll_answer.get("user", {})
+    poll_id = str(ctx.poll_answer.get("poll_id", ""))
+    user = ctx.poll_answer.get("user", {})
     user_id = str(user.get("id", ""))
     first_name = user.get("first_name", "User")
-    option_ids = poll_answer.get("option_ids", [])
+    option_ids = ctx.poll_answer.get("option_ids", [])
 
     if not poll_id or not user_id or not option_ids:
-        logger.warning("Incomplete poll_answer data", extra={"poll_answer": poll_answer})
+        logger.warning("Incomplete poll_answer data", extra={"poll_answer": ctx.poll_answer})
         return
 
     if not ctx.quiz_repo:

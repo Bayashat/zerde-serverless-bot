@@ -31,7 +31,7 @@ class QuizSender:
         payload: dict[str, Any] = {
             "chat_id": chat_id,
             "question": question,
-            "options": json.dumps(options),
+            "options": options,
             "type": "quiz",
             "is_anonymous": False,
             "correct_option_id": correct_option_id,
