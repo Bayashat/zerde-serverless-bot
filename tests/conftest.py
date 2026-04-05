@@ -12,7 +12,9 @@ os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("WEBHOOK_SECRET_TOKEN", "test-webhook-secret")
 os.environ.setdefault("QUEUE_URL", "https://sqs.eu-central-1.amazonaws.com/123456789/test-queue")
 os.environ.setdefault("STATS_TABLE_NAME", "test-stats-table")
+os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
+os.environ.setdefault("GEMINI_API_KEY", "test-gemini-api-key")
 os.environ.setdefault("DEFAULT_LANG", "kk")
 os.environ.setdefault("LOG_LEVEL", "DEBUG")
 
@@ -56,3 +58,13 @@ def mock_sqs_repo():
 def mock_vote_repo():
     """Mock VoteRepository."""
     return MagicMock()
+
+
+@pytest.fixture
+def mock_quiz_repo():
+    """Mock QuizRepository."""
+    repo = MagicMock()
+    repo.lookup_poll.return_value = None
+    repo.get_user_score.return_value = None
+    repo.get_leaderboard.return_value = []
+    return repo

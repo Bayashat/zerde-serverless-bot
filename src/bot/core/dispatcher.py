@@ -4,7 +4,12 @@ from typing import Any, Callable
 
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
-from services.repositories import SQSClient, StatsRepository, VoteRepository
+from services.repositories import (
+    QuizRepository,
+    SQSClient,
+    StatsRepository,
+    VoteRepository,
+)
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -28,12 +33,14 @@ class Context:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
+        quiz_repo: QuizRepository | None = None,
     ):
         self._update = update
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
+        self.quiz_repo = quiz_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -74,6 +81,10 @@ class Context:
     def chat_id(self) -> int | None:
         return self.message.get("chat", {}).get("id")
 
+    @property
+    def poll_answer(self) -> dict[str, Any] | None:
+        return self._update.get("poll_answer")
+
     def reply(
         self,
         text: str,
@@ -105,15 +116,18 @@ class Dispatcher:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
+        quiz_repo: QuizRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
+        self.quiz_repo = quiz_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
         self.callback_query_handler: HandlerFunc | None = None
+        self.poll_answer_handler: HandlerFunc | None = None
 
     def command(self, command_name: str):
         """Decorator to register a command handler (e.g. ``@dp.command("start")``)."""
@@ -138,9 +152,21 @@ class Dispatcher:
         logger.info("Registered callback_query handler")
         return func
 
+    def on_poll_answer(self, func: HandlerFunc):
+        """Decorator to register handler for ``poll_answer`` updates."""
+        self.poll_answer_handler = func
+        logger.info("Registered poll_answer handler")
+        return func
+
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
-        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
+        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo)
+
+        poll_answer = ctx._update.get("poll_answer")
+        if poll_answer and self.poll_answer_handler:
+            logger.info("Dispatching to poll_answer handler")
+            self.poll_answer_handler(ctx)
+            return
 
         if ctx.callback_query and self.callback_query_handler:
             logger.info("Dispatching to callback_query handler")

@@ -82,6 +82,8 @@ class BotConstruct(Construct):
             },
         )
 
+        self.handler_lambda = handler_lambda
+
         queue.grant_consume_messages(handler_lambda)
         queue.grant_send_messages(handler_lambda)
         stats_table.grant_read_write_data(handler_lambda)

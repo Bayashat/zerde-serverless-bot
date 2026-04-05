@@ -2,10 +2,11 @@
 
 from typing import Any
 
+from core.config import QUIZ_TABLE_NAME
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
-from services.repositories import SQSClient, StatsRepository, VoteRepository
+from services.repositories import QuizRepository, SQSClient, StatsRepository, VoteRepository
 from services.telegram import TelegramClient
 from webhook import handle_event
 
@@ -15,7 +16,8 @@ _bot = TelegramClient()
 _stats_repo = StatsRepository()
 _sqs_repo = SQSClient()
 _vote_repo = VoteRepository()
-_dispatcher = Dispatcher(_bot, _stats_repo, _sqs_repo, _vote_repo)
+_quiz_repo = QuizRepository() if QUIZ_TABLE_NAME else None
+_dispatcher = Dispatcher(_bot, _stats_repo, _sqs_repo, _vote_repo, _quiz_repo)
 register_handlers(_dispatcher)
 logger.info("Bot Lambda initialized and handlers registered")
 
