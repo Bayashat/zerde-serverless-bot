@@ -27,6 +27,9 @@ class QuizConstruct(Construct):
         is_prod: bool,
         bot_token: str,
         quizapi_key: str,
+        gemini_api_key: str,
+        ai_provider: str,
+        llm_model: str,
         quiz_chats: list[str],
         log_level: str,
     ) -> None:
@@ -63,7 +66,7 @@ class QuizConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
-            timeout=Duration.seconds(30),
+            timeout=Duration.seconds(60),
             memory_size=256,
             log_group=logs.LogGroup(
                 self,
@@ -77,6 +80,9 @@ class QuizConstruct(Construct):
                 "BOT_TOKEN": bot_token,
                 "QUIZAPI_KEY": quizapi_key,
                 "QUIZ_TABLE_NAME": self.quiz_table.table_name,
+                "GEMINI_API_KEY": gemini_api_key,
+                "AI_PROVIDER": ai_provider,
+                "LLM_MODEL": llm_model,
             },
         )
 

@@ -14,6 +14,7 @@ os.environ.setdefault("QUEUE_URL", "https://sqs.eu-central-1.amazonaws.com/12345
 os.environ.setdefault("STATS_TABLE_NAME", "test-stats-table")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
+os.environ.setdefault("GEMINI_API_KEY", "test-gemini-api-key")
 os.environ.setdefault("DEFAULT_LANG", "kk")
 os.environ.setdefault("LOG_LEVEL", "DEBUG")
 

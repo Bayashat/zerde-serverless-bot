@@ -91,6 +91,7 @@ class QuizFetcher:
             logger.info("New category round started", extra={"queue": category_queue})
 
         remaining = list(category_queue)
+        restarted = False
         while remaining:
             category = remaining.pop(0)
             question = self._try_category(category)
@@ -98,7 +99,13 @@ class QuizFetcher:
                 logger.info("Fetched question", extra={"category": category})
                 return question, category, remaining
 
-        logger.error("All categories exhausted, no valid question found")
+            if not remaining and not restarted:
+                restarted = True
+                remaining = list(CATEGORY_POOL)
+                random.shuffle(remaining)
+                logger.warning("Queue exhausted, starting fresh category round")
+
+        logger.error("All categories exhausted after retry, no valid question found")
         return None
 
     def _try_category(self, category: str) -> dict[str, Any] | None:

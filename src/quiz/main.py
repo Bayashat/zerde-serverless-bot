@@ -6,10 +6,12 @@ from core.logger import LoggerAdapter, get_logger
 from services.quiz_fetcher import QuizFetcher
 from services.quiz_sender import QuizSender
 from services.repository import QuizRepository
+from services.translator import QuizTranslator
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _fetcher = QuizFetcher()
+_translator = QuizTranslator()
 _sender = QuizSender()
 _repo = QuizRepository()
 logger.info("Quiz Lambda initialized")
@@ -36,15 +38,19 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     question, category, remaining_queue = result
     logger.info("Question fetched", extra={"category": category, "question": question["question"][:50]})
 
+    # Translate question from English to Kazakh
+    translated = _translator.translate_question(question)
+    logger.info("Question translated", extra={"question_kk": translated["question"][:60]})
+
     # Send quiz poll to each chat
     sent_count = 0
     for chat_id in chat_ids:
         poll_result = _sender.send_quiz_poll(
             chat_id=chat_id,
-            question=question["question"],
-            options=question["options"],
-            correct_option_ids=question["correct_option_ids"],
-            explanation=question.get("explanation"),
+            question=translated["question"],
+            options=translated["options"],
+            correct_option_ids=translated["correct_option_ids"],
+            explanation=translated.get("explanation"),
         )
         if poll_result:
             poll_id = str(poll_result.get("poll", {}).get("id", ""))

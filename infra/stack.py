@@ -90,6 +90,9 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             bot_token=bot_token,
             quizapi_key=quizapi_key,
+            gemini_api_key=gemini_api_key,
+            ai_provider=ai_provider,
+            llm_model=llm_model,
             quiz_chats=quiz_chats,
             log_level=log_level,
         )
