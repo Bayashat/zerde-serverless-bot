@@ -1,5 +1,6 @@
 """Vote-to-ban sessions in DynamoDB."""
 
+import time
 from typing import Any
 
 from botocore.exceptions import ClientError
@@ -8,6 +9,8 @@ from core.logger import LoggerAdapter, get_logger
 from services.repositories._common import get_dynamodb
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+VOTEBAN_TTL_SECONDS = 3 * 60 * 60  # 3 hours
 
 
 class VoteRepository:
@@ -80,6 +83,7 @@ class VoteRepository:
                         }
                     ],
                     "votes_against_info": [],
+                    "ttl": int(time.time()) + VOTEBAN_TTL_SECONDS,
                 }
             )
         except ClientError as e:

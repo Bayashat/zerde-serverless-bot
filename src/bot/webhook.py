@@ -69,17 +69,18 @@ def _handle_api_gateway(
             logger.error("Failed to parse API Gateway event", extra={"error": e})
             return create_response(200, {"message": "Invalid request"})
 
-        if not is_event_relevant_to_bot(body):
-            logger.info("Event not relevant to bot, ignoring")
-            return create_response(200, {"message": "Not relevant"})
-
-        message = body.get("message", {})
-        if message is not None:
+        # Handle private messages first (before relevance filter)
+        message = body.get("message")
+        if message:
             chat_type = message.get("chat", {}).get("type")
             if chat_type == "private":
                 chat_id = message.get("chat", {}).get("id")
                 dispatcher.bot.send_message(chat_id, get_translated_text("private_message"))
                 return create_response(200, {"message": "ok"})
+
+        if not is_event_relevant_to_bot(body):
+            logger.info("Event not relevant to bot, ignoring")
+            return create_response(200, {"message": "Not relevant"})
 
         if body.get("task_type") == "CHECK_TIMEOUT":
             process_timeout_task(bot, body)

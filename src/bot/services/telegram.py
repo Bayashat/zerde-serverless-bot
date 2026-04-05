@@ -76,23 +76,13 @@ class TelegramClient:
         except TelegramAPIError as e:
             logger.error(
                 "Failed to send message",
-                extra={
-                    "chat_id": chat_id,
-                    "error": str(e),
-                    "response": e.body,
-                },
-                exc_info=True,
+                extra={"chat_id": chat_id, "status": e.status, "response": e.body},
             )
             raise
         except Exception as e:
             logger.error(
                 "Failed to send message",
-                extra={
-                    "chat_id": chat_id,
-                    "error": str(e),
-                    "response": "No response",
-                },
-                exc_info=True,
+                extra={"chat_id": chat_id, "error": str(e)},
             )
             raise
 
@@ -112,11 +102,10 @@ class TelegramClient:
             payload["show_alert"] = True
         try:
             self._post("answerCallbackQuery", payload)
-        except (TelegramAPIError, Exception) as e:
+        except Exception as e:
             logger.error(
                 "Failed to answer callback query",
                 extra={"error": str(e)},
-                exc_info=True,
             )
             raise
 
@@ -134,11 +123,10 @@ class TelegramClient:
         }
         try:
             self._post("restrictChatMember", payload)
-        except (TelegramAPIError, Exception) as e:
+        except Exception as e:
             logger.error(
                 "Failed to restrict chat member",
                 extra={"user_id": user_id, "error": str(e)},
-                exc_info=True,
             )
             raise
 
@@ -152,11 +140,10 @@ class TelegramClient:
         }
         try:
             self._post("banChatMember", payload)
-        except (TelegramAPIError, Exception) as e:
+        except Exception as e:
             logger.error(
                 "Failed to kick chat member",
                 extra={"user_id": user_id, "error": str(e)},
-                exc_info=True,
             )
             raise
 
@@ -170,11 +157,10 @@ class TelegramClient:
                 extra={"user_id": user_id, "response": result},
             )
             return result.get("result", {})
-        except (TelegramAPIError, Exception) as e:
+        except Exception as e:
             logger.error(
                 "Failed to get chat member",
                 extra={"user_id": user_id, "error": str(e)},
-                exc_info=True,
             )
             raise
 
@@ -183,11 +169,10 @@ class TelegramClient:
         payload = {"chat_id": chat_id, "message_id": message_id}
         try:
             self._post("deleteMessage", payload)
-        except (TelegramAPIError, Exception) as e:
+        except Exception as e:
             logger.error(
                 "Failed to delete message",
                 extra={"message_id": message_id, "error": str(e)},
-                exc_info=True,
             )
             raise
 
@@ -216,22 +201,12 @@ class TelegramClient:
         except TelegramAPIError as e:
             logger.error(
                 "Failed to edit message text",
-                extra={
-                    "message_id": message_id,
-                    "error": str(e),
-                    "response": e.body,
-                },
-                exc_info=True,
+                extra={"message_id": message_id, "status": e.status, "response": e.body},
             )
             raise
         except Exception as e:
             logger.error(
                 "Failed to edit message text",
-                extra={
-                    "message_id": message_id,
-                    "error": str(e),
-                    "response": "No response",
-                },
-                exc_info=True,
+                extra={"message_id": message_id, "error": str(e)},
             )
             raise

@@ -40,6 +40,6 @@ class LoggerAdapter(logging.LoggerAdapter):
     """Adapter that passes extra kwargs into the log record."""
 
     def process(self, msg, kwargs):
-        extra = kwargs.pop("extra", {})
+        extra = {**self.extra, **kwargs.pop("extra", {})}
         kwargs["extra"] = {"_extra": extra}
         return msg, kwargs

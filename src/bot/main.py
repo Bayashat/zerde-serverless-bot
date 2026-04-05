@@ -22,5 +22,7 @@ logger.info("Bot Lambda initialized and handlers registered")
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None:
     """Unified Lambda handler routing by event source."""
+    request_id = getattr(context, "aws_request_id", "unknown")
+    logger.extra["request_id"] = request_id
     logger.info("Bot Lambda handler called", extra={"event": event})
     return handle_event(event, _dispatcher, _bot)

@@ -40,11 +40,9 @@ jobs:
         run: |
           uv run pre-commit run --all-files
 
-      # - name: Run Unit Tests
-      #   run: |
-      #     Run tests (when tests are added)
-      #     uv run pytest
-      #     echo "Tests will run here when implemented"
+      - name: Run Unit Tests
+        run: |
+          uv run pytest tests/ -v
 
   infra-preview:
     needs: quality-check
