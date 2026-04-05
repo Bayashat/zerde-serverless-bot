@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from aws_cdk import CfnOutput, Stack
-from components import BotConstruct, MessagingConstruct, NewsConstruct
+from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from constructs import Construct
 from dotenv import load_dotenv
@@ -46,6 +46,8 @@ class ZerdeTelegramBotStack(Stack):
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
         llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+        quizapi_key = _require("QUIZAPI_KEY")
+        quiz_chats = _parse_chat_ids("QUIZ_CHATS")
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(
@@ -80,6 +82,21 @@ class ZerdeTelegramBotStack(Stack):
             llm_model=llm_model,
             log_level=log_level,
         )
+
+        quiz = QuizConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}Quiz",
+            env_name=env_name,
+            is_prod=is_prod,
+            bot_token=bot_token,
+            quizapi_key=quizapi_key,
+            quiz_chats=quiz_chats,
+            log_level=log_level,
+        )
+
+        # Grant Bot Lambda access to quiz table and inject env var
+        quiz.quiz_table.grant_read_write_data(bot.handler_lambda)
+        bot.handler_lambda.add_environment("QUIZ_TABLE_NAME", quiz.quiz_table.table_name)
 
         # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(
