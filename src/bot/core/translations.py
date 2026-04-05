@@ -83,6 +83,14 @@ TRANSLATIONS = {
             "🎯 {TARGET} has been forgiven with {VOTES_AGAINST} forgive votes.\n\n"
             "👼 Voted to forgive: {VOTERS_AGAINST}"
         ),
+        "quizstats_response": (
+            "<b>Your Quiz Stats</b>\n\n"
+            "Score: {score} points\n"
+            "Streak: {streak} days\n"
+            "Best streak: {best_streak} days\n"
+            "Rank: #{rank} / {total_players} players"
+        ),
+        "quizstats_no_data": "You haven't answered any quizzes yet. Wait for the next daily quiz!",
     },
     "kk": {
         "start_message": (
@@ -163,6 +171,14 @@ TRANSLATIONS = {
             "🎯 {TARGET} {VOTES_AGAINST} кешіру дауысымен кешірілді.\n\n"
             "👼 Кешіруге дауыс бергендер: {VOTERS_AGAINST}"
         ),
+        "quizstats_response": (
+            "<b>Quiz нәтижелерің</b>\n\n"
+            "Ұпай: {score}\n"
+            "Қатарынан: {streak} күн\n"
+            "Ең жақсы қатар: {best_streak} күн\n"
+            "Орын: #{rank} / {total_players} ойыншы"
+        ),
+        "quizstats_no_data": "Сіз әлі бірде-бір quiz-ге жауап бермедіңіз. Келесі күнделікті quiz-ді күтіңіз!",
     },
 }
 

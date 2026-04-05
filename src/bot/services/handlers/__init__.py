@@ -20,6 +20,7 @@ from services.handlers.commands import (
     handle_stats,
     handle_support,
 )
+from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
 
 __all__ = ["register_handlers", "process_timeout_task"]
@@ -57,3 +58,5 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("ping")(handle_ping)
     dp.command("stats")(handle_stats)
     dp.command("voteban")(handle_voteban_command)
+    dp.on_poll_answer(handle_poll_answer)
+    dp.command("quizstats")(handle_quizstats)
