@@ -1,15 +1,42 @@
-"""Tests for QuizAPI.io fetcher and category rotation."""
+"""Tests for QuizAPI.io fetcher and category rotation.
+
+The quiz_fetcher module lives in src/quiz/ which has its own core.config
+and core.logger packages. Since conftest.py adds src/bot to sys.path
+(which also has core.*), we must temporarily override sys.path ordering
+to load the quiz module cleanly.
+"""
 
 import os
 import sys
 
+# Env vars needed by src/quiz/core/config.py
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("QUIZAPI_KEY", "test-quiz-api-key")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "quiz"))
+# Save and temporarily replace conflicting core.* modules so that
+# src/quiz/core is resolved instead of src/bot/core.
+_quiz_dir = os.path.join(os.path.dirname(__file__), "..", "src", "quiz")
 
-from services.quiz_fetcher import CATEGORY_POOL, QuizFetcher, parse_question  # noqa: E402
+_saved_modules = {}
+for mod_name in list(sys.modules):
+    if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
+        _saved_modules[mod_name] = sys.modules.pop(mod_name)
+
+sys.path.insert(0, _quiz_dir)
+
+from services.quiz_fetcher import (  # noqa: E402
+    CATEGORY_POOL,
+    QuizFetcher,
+    parse_question,
+)
+
+# Restore original modules so bot tests still work
+sys.path.remove(_quiz_dir)
+for mod_name in list(sys.modules):
+    if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
+        del sys.modules[mod_name]
+sys.modules.update(_saved_modules)
 
 
 class TestParseQuestion:
