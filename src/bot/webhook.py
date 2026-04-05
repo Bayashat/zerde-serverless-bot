@@ -97,14 +97,7 @@ def _handle_api_gateway(
 
 
 def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
-    """Process SQS batch -- only CHECK_TIMEOUT tasks are expected.
-
-    Error handling strategy: if process_timeout_task raises an exception,
-    the SQS message is NOT deleted. Lambda will retry up to maxReceiveCount (3)
-    times, after which the message goes to the dead-letter queue. This is
-    intentional — timeout tasks are idempotent (kicking an already-left user
-    is a no-op), so retries are safe.
-    """
+    """Process SQS batch -- only CHECK_TIMEOUT tasks are expected."""
     logger.debug(
         "Received SQS batch",
         extra={"record_count": len(event.get("Records", []))},
