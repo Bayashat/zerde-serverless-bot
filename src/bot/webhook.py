@@ -178,6 +178,9 @@ def create_response(status_code: int, body: dict[str, Any]) -> dict[str, Any]:
 
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
     """Return True if the Telegram update warrants processing."""
+    if "poll_answer" in body:
+        return True
+
     if "callback_query" in body:
         return True
 

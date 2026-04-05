@@ -114,6 +114,7 @@ class Dispatcher:
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
         self.callback_query_handler: HandlerFunc | None = None
+        self.poll_answer_handler: HandlerFunc | None = None
 
     def command(self, command_name: str):
         """Decorator to register a command handler (e.g. ``@dp.command("start")``)."""
@@ -138,9 +139,21 @@ class Dispatcher:
         logger.info("Registered callback_query handler")
         return func
 
+    def on_poll_answer(self, func: HandlerFunc):
+        """Decorator to register handler for ``poll_answer`` updates."""
+        self.poll_answer_handler = func
+        logger.info("Registered poll_answer handler")
+        return func
+
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
         ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
+
+        poll_answer = update.get("poll_answer")
+        if poll_answer and self.poll_answer_handler:
+            logger.info("Dispatching to poll_answer handler")
+            self.poll_answer_handler(ctx)
+            return
 
         if ctx.callback_query and self.callback_query_handler:
             logger.info("Dispatching to callback_query handler")
