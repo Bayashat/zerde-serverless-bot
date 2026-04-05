@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from core.config import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
 from core.logger import LoggerAdapter, get_logger
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -71,6 +72,8 @@ class GeminiAIClient(AIClient):
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
             logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
             return result
+        except genai_errors.APIError:
+            raise
         except Exception:
             logger.error("Failed to select top news", exc_info=True)
             return list(range(min(3, len(news_items))))
@@ -142,6 +145,8 @@ class GeminiAIClient(AIClient):
             ]
             logger.info("Per-article digests generated", extra={"count": len(result)})
             return result
+        except genai_errors.APIError:
+            raise
         except Exception:
             logger.error("Failed to generate per-article digests", exc_info=True)
             return [f"<b>{n['title']}</b>\n{n['link']}" for n in deep_news_items]
