@@ -111,9 +111,9 @@ class TestHandleQuizstats:
 
         ctx.bot.send_message.assert_called_once()
         call_text = ctx.bot.send_message.call_args[0][1]
-        assert "10 points" in call_text
-        assert "3 days" in call_text
-        assert "#2" in call_text
+        assert "10</b> points" in call_text
+        assert "3</b> days" in call_text
+        assert "#2</b>" in call_text
 
     def test_shows_no_data_for_new_user(self):
         quiz_repo = MagicMock()

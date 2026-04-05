@@ -26,14 +26,14 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         logger.warning("No chat_ids in event payload")
         return {"status": "skipped", "reason": "no chat_ids"}
 
-    # Fetch question with category rotation
-    last_category = _repo.get_last_category()
-    result = _fetcher.fetch_question(last_category)
+    # Fetch question with category queue rotation
+    category_queue = _repo.get_category_queue()
+    result = _fetcher.fetch_question(category_queue)
     if not result:
         logger.error("Failed to fetch a valid question")
         return {"status": "error", "reason": "no valid question"}
 
-    question, category = result
+    question, category, remaining_queue = result
     logger.info("Question fetched", extra={"category": category, "question": question["question"][:50]})
 
     # Send quiz poll to each chat
@@ -43,7 +43,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             chat_id=chat_id,
             question=question["question"],
             options=question["options"],
-            correct_option_id=question["correct_option_id"],
+            correct_option_ids=question["correct_option_ids"],
             explanation=question.get("explanation"),
         )
         if poll_result:
@@ -52,9 +52,9 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             _repo.save_quiz_record(chat_id, question, category, poll_id, message_id)
             sent_count += 1
 
-    # Update last category after successful sends
+    # Persist updated category queue after successful sends
     if sent_count > 0:
-        _repo.save_last_category(category)
+        _repo.save_category_queue(remaining_queue, category)
 
     logger.info("Quiz Lambda completed", extra={"sent": sent_count, "total": len(chat_ids)})
     return {"status": "ok", "sent": sent_count, "total": len(chat_ids)}

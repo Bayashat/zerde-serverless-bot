@@ -24,7 +24,7 @@ RESPONSE=$(curl -X POST "https://api.telegram.org/bot$BOT_TOKEN/setWebhook" \
      -d "url=$WEBHOOK_URL" \
      -d "secret_token=$SECRET_TOKEN" \
      -d "drop_pending_updates=true" \
-     -d 'allowed_updates=["message","callback_query"]')
+     -d 'allowed_updates=["message","callback_query","poll_answer"]')
 
 echo "📡 Webhook response:"
 echo "$RESPONSE" | jq '.' 2>/dev/null || echo "$RESPONSE"

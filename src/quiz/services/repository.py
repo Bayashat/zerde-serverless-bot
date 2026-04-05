@@ -21,33 +21,39 @@ class QuizRepository:
         self._table = boto3.resource("dynamodb").Table(QUIZ_TABLE_NAME)
         logger.info("QuizRepository initialized", extra={"table": QUIZ_TABLE_NAME})
 
-    def get_last_category(self) -> str | None:
-        """Read the last used quiz category from metadata."""
+    def get_category_queue(self) -> list[str]:
+        """Read the remaining category queue from metadata.
+
+        Backward compatible: returns [] if item is missing or uses old format.
+        """
         try:
             resp = self._table.get_item(
                 Key={"PK": "META#category", "SK": "LATEST"},
                 ConsistentRead=False,
             )
             item = resp.get("Item")
-            return item.get("category") if item else None
+            if item and "remaining" in item:
+                return list(item["remaining"])
+            return []
         except Exception as e:
-            logger.error("Failed to get last category", extra={"error": str(e)})
-            return None
+            logger.error("Failed to get category queue", extra={"error": str(e)})
+            return []
 
-    def save_last_category(self, category: str) -> None:
-        """Write the current category as the latest."""
+    def save_category_queue(self, remaining: list[str], used_category: str) -> None:
+        """Write the updated category queue and last-used category."""
         today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
         try:
             self._table.put_item(
                 Item={
                     "PK": "META#category",
                     "SK": "LATEST",
-                    "category": category,
+                    "remaining": remaining,
+                    "category": used_category,
                     "date": today,
                 }
             )
         except Exception as e:
-            logger.error("Failed to save last category", extra={"error": str(e)})
+            logger.error("Failed to save category queue", extra={"error": str(e)})
 
     def save_quiz_record(
         self,
@@ -69,7 +75,7 @@ class QuizRepository:
                     "SK": f"DATE#{today}",
                     "question": question["question"],
                     "options": question["options"],
-                    "correct_option_id": question["correct_option_id"],
+                    "correct_option_id": question["correct_option_ids"][0],
                     "poll_id": str(poll_id),
                     "message_id": message_id,
                     "category": category,

@@ -39,106 +39,112 @@ for mod_name in list(sys.modules):
 sys.modules.update(_saved_modules)
 
 
+def _make_raw(
+    text: str = "What does HTML stand for?",
+    answers: list | None = None,
+    explanation: str | None = "HTML is Hyper Text Markup Language.",
+) -> dict:
+    """Build a QuizAPI-style raw question dict for tests."""
+    if answers is None:
+        answers = [
+            {"id": "ans_1", "text": "Hyper Text Markup Language", "isCorrect": True},
+            {"id": "ans_2", "text": "High Tech Modern Language", "isCorrect": False},
+            {"id": "ans_3", "text": "Home Tool Markup Language", "isCorrect": False},
+            {"id": "ans_4", "text": "Hyper Transfer Markup Language", "isCorrect": False},
+        ]
+    raw: dict = {"text": text, "answers": answers}
+    if explanation is not None:
+        raw["explanation"] = explanation
+    return raw
+
+
 class TestParseQuestion:
     """Test QuizAPI response parsing and filtering."""
 
     def test_valid_question_parsed(self):
-        raw = {
-            "question": "What does HTML stand for?",
-            "answers": {
-                "answer_a": "Hyper Text Markup Language",
-                "answer_b": "High Tech Modern Language",
-                "answer_c": "Home Tool Markup Language",
-                "answer_d": "Hyper Transfer Markup Language",
-            },
-            "correct_answers": {
-                "answer_a_correct": "true",
-                "answer_b_correct": "false",
-                "answer_c_correct": "false",
-                "answer_d_correct": "false",
-            },
-            "explanation": "HTML is Hyper Text Markup Language.",
-        }
-        result = parse_question(raw)
+        result = parse_question(_make_raw())
         assert result is not None
         assert result["question"] == "What does HTML stand for?"
         assert len(result["options"]) == 4
-        assert result["correct_option_id"] == 0
+        assert result["correct_option_ids"] == [0]
         assert result["explanation"] == "HTML is Hyper Text Markup Language."
 
     def test_missing_option_filtered_out(self):
-        raw = {
-            "question": "Incomplete question",
-            "answers": {
-                "answer_a": "Option A",
-                "answer_b": None,
-                "answer_c": "Option C",
-                "answer_d": "Option D",
-            },
-            "correct_answers": {
-                "answer_a_correct": "true",
-                "answer_b_correct": "false",
-                "answer_c_correct": "false",
-                "answer_d_correct": "false",
-            },
-        }
-        result = parse_question(raw)
+        answers = [
+            {"id": "ans_1", "text": "Option A", "isCorrect": True},
+            {"id": "ans_2", "text": None, "isCorrect": False},
+            {"id": "ans_3", "text": "Option C", "isCorrect": False},
+            {"id": "ans_4", "text": "Option D", "isCorrect": False},
+        ]
+        result = parse_question(_make_raw(answers=answers))
         assert result is None
 
     def test_no_correct_answer_filtered_out(self):
-        raw = {
-            "question": "No correct answer",
-            "answers": {
-                "answer_a": "A",
-                "answer_b": "B",
-                "answer_c": "C",
-                "answer_d": "D",
-            },
-            "correct_answers": {
-                "answer_a_correct": "false",
-                "answer_b_correct": "false",
-                "answer_c_correct": "false",
-                "answer_d_correct": "false",
-            },
-        }
-        result = parse_question(raw)
+        answers = [
+            {"id": "ans_1", "text": "A", "isCorrect": False},
+            {"id": "ans_2", "text": "B", "isCorrect": False},
+            {"id": "ans_3", "text": "C", "isCorrect": False},
+            {"id": "ans_4", "text": "D", "isCorrect": False},
+        ]
+        result = parse_question(_make_raw(answers=answers))
         assert result is None
 
     def test_empty_question_text_filtered_out(self):
-        raw = {
-            "question": "",
-            "answers": {
-                "answer_a": "A",
-                "answer_b": "B",
-                "answer_c": "C",
-                "answer_d": "D",
-            },
-            "correct_answers": {
-                "answer_a_correct": "true",
-                "answer_b_correct": "false",
-                "answer_c_correct": "false",
-                "answer_d_correct": "false",
-            },
-        }
-        result = parse_question(raw)
+        result = parse_question(_make_raw(text=""))
         assert result is None
 
 
-class TestCategoryRotation:
-    """Test category selection avoids yesterday's category."""
+class TestCategoryQueue:
+    """Test deck-of-cards category queue rotation."""
 
-    def test_excludes_last_category(self):
+    def test_empty_queue_generates_full_shuffled_deck(self):
         fetcher = QuizFetcher.__new__(QuizFetcher)
-        available = fetcher._get_available_categories("Linux")
-        assert "Linux" not in available
-        assert len(available) == len(CATEGORY_POOL) - 1
+        fetcher._try_category = lambda cat: {
+            "question": "Q",
+            "options": [],
+            "correct_option_ids": [0],
+            "explanation": None,
+        }
 
-    def test_all_available_when_no_last_category(self):
-        fetcher = QuizFetcher.__new__(QuizFetcher)
-        available = fetcher._get_available_categories(None)
-        assert len(available) == len(CATEGORY_POOL)
+        result = fetcher.fetch_question([])
+        assert result is not None
+        _, category, remaining = result
+        assert category in CATEGORY_POOL
+        assert len(remaining) == len(CATEGORY_POOL) - 1
+        assert category not in remaining
 
-    def test_excludes_unknown_category_gracefully(self):
+    def test_pops_first_from_queue(self):
         fetcher = QuizFetcher.__new__(QuizFetcher)
-        available = fetcher._get_available_categories("NonExistent")
-        assert len(available) == len(CATEGORY_POOL)
+        fetcher._try_category = lambda cat: {
+            "question": "Q",
+            "options": [],
+            "correct_option_ids": [0],
+            "explanation": None,
+        }
+
+        queue = ["cicd", "cloud", "devops"]
+        result = fetcher.fetch_question(queue)
+        assert result is not None
+        _, category, remaining = result
+        assert category == "cicd"
+        assert remaining == ["cloud", "devops"]
+
+    def test_skips_failed_category_tries_next(self):
+        fetcher = QuizFetcher.__new__(QuizFetcher)
+        fetcher._try_category = lambda cat: (
+            {"question": "Q", "options": [], "correct_option_ids": [0], "explanation": None} if cat == "cloud" else None
+        )
+
+        queue = ["cicd", "cloud", "devops"]
+        result = fetcher.fetch_question(queue)
+        assert result is not None
+        _, category, remaining = result
+        assert category == "cloud"
+        assert remaining == ["devops"]
+
+    def test_all_categories_fail_returns_none(self):
+        fetcher = QuizFetcher.__new__(QuizFetcher)
+        fetcher._try_category = lambda cat: None
+
+        result = fetcher.fetch_question(["cicd", "cloud"])
+        assert result is None
