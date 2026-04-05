@@ -18,6 +18,7 @@ BOT_TOKEN: str = require("BOT_TOKEN")
 WEBHOOK_SECRET_TOKEN: str = require("WEBHOOK_SECRET_TOKEN")
 STATS_TABLE_NAME: str = require("STATS_TABLE_NAME")
 QUEUE_URL: str = require("QUEUE_URL")
+QUIZ_TABLE_NAME: str = os.environ.get("QUIZ_TABLE_NAME", "")
 
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────

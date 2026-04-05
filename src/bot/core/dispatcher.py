@@ -28,12 +28,14 @@ class Context:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
+        quiz_repo=None,
     ):
         self._update = update
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
+        self.quiz_repo = quiz_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -105,11 +107,13 @@ class Dispatcher:
         stats_repo: StatsRepository | None = None,
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
+        quiz_repo=None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
+        self.quiz_repo = quiz_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
@@ -147,7 +151,7 @@ class Dispatcher:
 
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
-        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo)
+        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo)
 
         poll_answer = update.get("poll_answer")
         if poll_answer and self.poll_answer_handler:
