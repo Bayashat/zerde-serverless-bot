@@ -52,8 +52,6 @@ class ZerdeTelegramBotStack(Stack):
             "ru": _parse_chat_ids("QUIZ_CHATS_RU"),
         }
         groq_api_key = os.environ.get("GROQ_API_KEY", "")
-        quizapi_key = _require("QUIZAPI_KEY")
-        quiz_chats = _parse_chat_ids("QUIZ_CHATS")
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(

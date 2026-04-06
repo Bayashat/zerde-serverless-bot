@@ -55,7 +55,7 @@ class QuizRepository:
             logger.error("Failed to get user score", extra={"error": str(e)})
             return None
 
-    def update_score_correct(self, chat_id: str, user_id: str, first_name: str) -> None:
+    def update_score_correct(self, chat_id: str, user_id: str, first_name: str, points: int = 1) -> None:
         """Update user score for a correct answer with streak logic."""
         today = _today_almaty()
         yesterday = _yesterday_almaty()
@@ -73,7 +73,7 @@ class QuizRepository:
             new_streak = 1
 
         best_streak = max(new_streak, (current or {}).get("best_streak", 0))
-        new_score = (current or {}).get("total_score", 0) + 1
+        new_score = (current or {}).get("total_score", 0) + points
 
         try:
             self._table.put_item(

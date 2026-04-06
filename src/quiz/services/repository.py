@@ -2,8 +2,10 @@
 
 import time
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import boto3
+from boto3.dynamodb.conditions import Key
 from core.config import QUIZ_TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 
@@ -54,6 +56,19 @@ class QuizRepository:
         except Exception as e:
             logger.error("Failed to save category queue", extra={"error": str(e)})
 
+    def get_leaderboard(self, chat_id: str, limit: int = 10) -> list[dict[str, Any]]:
+        """Return top N users for a chat sorted by total_score descending."""
+        try:
+            resp = self._table.query(
+                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
+            )
+            items = resp.get("Items", [])
+            sorted_items = sorted(items, key=lambda x: x.get("total_score", 0), reverse=True)
+            return sorted_items[:limit]
+        except Exception as e:
+            logger.error("Failed to get leaderboard", extra={"chat_id": chat_id, "error": str(e)})
+            return []
+
     def save_quiz_record(
         self,
         chat_id: str,
@@ -65,6 +80,8 @@ class QuizRepository:
         lang: str,
         poll_id: str,
         message_id: int,
+        difficulty: str = "easy",
+        points: int = 1,
     ) -> None:
         """Write a daily quiz record for a chat."""
         now = datetime.now(_ALMATY_TZ)
@@ -84,6 +101,8 @@ class QuizRepository:
                     "lang": lang,
                     "poll_id": str(poll_id),
                     "message_id": message_id,
+                    "difficulty": difficulty,
+                    "points": points,
                     "sent_at": now.isoformat(),
                     "ttl": ttl,
                 }

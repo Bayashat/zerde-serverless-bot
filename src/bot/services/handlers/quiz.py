@@ -36,9 +36,11 @@ def handle_poll_answer(ctx: Context) -> None:
     correct_option_id = int(quiz_record["correct_option_id"])
     selected_option = option_ids[0]
 
+    points = int(quiz_record.get("points", 1))
+
     if selected_option == correct_option_id:
-        ctx.quiz_repo.update_score_correct(chat_id, user_id, first_name)
-        logger.info("Correct answer recorded", extra={"user_id": user_id, "chat_id": chat_id})
+        ctx.quiz_repo.update_score_correct(chat_id, user_id, first_name, points=points)
+        logger.info("Correct answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "points": points})
     else:
         ctx.quiz_repo.update_score_wrong(chat_id, user_id, first_name)
         logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id})

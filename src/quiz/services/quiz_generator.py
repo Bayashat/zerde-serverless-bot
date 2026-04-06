@@ -13,6 +13,13 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _OPTION_MAX_LEN = 100
 _QUESTION_MAX_LEN = 300
 
+DIFFICULTY_POINTS: dict[str, int] = {
+    "easy": 1,
+    "medium": 2,
+    "hard": 3,
+    "expert": 5,
+}
+
 CATEGORY_POOL = [
     "programming",
     "ai",
@@ -39,13 +46,15 @@ class QuizGenerator:
         self._client = genai.Client(api_key=GEMINI_API_KEY)
         logger.info("QuizGenerator initialized", extra={"model": LLM_MODEL})
 
-    def generate_question(self, category: str, lang: str) -> dict | None:
-        """Generate a quiz question for the given category in the target language.
+    def generate_question(self, category: str, lang: str, difficulty: str = "easy") -> dict | None:
+        """Generate a quiz question for the given category, language, and difficulty.
 
-        Returns a dict with keys: question, options, correct_option_index, explanation.
+        Returns a dict with keys: question, options, correct_option_index, explanation,
+        difficulty, points.
         Returns None if generation or validation fails.
         """
         lang_name = _LANG_NAMES.get(lang, lang)
+        difficulty_label = difficulty.capitalize()
         prompt = (
             f"You are an IT quiz question writer for a developer community.\n"
             f"Generate exactly 1 multiple-choice IT quiz question about the topic: {category}.\n\n"
@@ -60,7 +69,9 @@ class QuizGenerator:
             "CONTENT RULES:\n"
             "4. Provide exactly 4 answer options.\n"
             "5. Exactly 1 option must be correct.\n"
-            "6. Difficulty: Easy.\n\n"
+            f"6. Difficulty: {difficulty_label}. "
+            "easy=basic recall, medium=applied knowledge, hard=advanced/edge cases, "
+            "expert=deep internals/tricky.\n\n"
             "Respond ONLY with a JSON object in this exact format:\n"
             '{"question": "...", "options": ["opt1", "opt2", "opt3", "opt4"], '
             '"correct_option_index": 0, "explanation": "..."}\n\n'
@@ -77,17 +88,17 @@ class QuizGenerator:
                 ),
             )
             data = json.loads(response.text)
-            return self._validate(data, category, lang)
+            return self._validate(data, category, lang, difficulty)
 
         except Exception:
             logger.error(
                 "Question generation failed",
-                extra={"category": category, "lang": lang},
+                extra={"category": category, "lang": lang, "difficulty": difficulty},
                 exc_info=True,
             )
             return None
 
-    def _validate(self, data: dict, category: str, lang: str) -> dict | None:
+    def _validate(self, data: dict, category: str, lang: str, difficulty: str = "easy") -> dict | None:
         """Validate Gemini response shape and Telegram length limits."""
         question = (data.get("question") or "").strip()
         options = data.get("options", [])
@@ -135,4 +146,6 @@ class QuizGenerator:
             "options": [opt.strip() for opt in options],
             "correct_option_index": correct_index,
             "explanation": explanation,
+            "difficulty": difficulty,
+            "points": DIFFICULTY_POINTS.get(difficulty, 1),
         }

@@ -18,6 +18,39 @@ class QuizSender:
     def __init__(self) -> None:
         self._base_url = f"{TELEGRAM_API_BASE}{BOT_TOKEN}"
 
+    def send_message(
+        self,
+        chat_id: str,
+        text: str,
+        parse_mode: str = "HTML",
+    ) -> dict[str, Any] | None:
+        """Send a text message to a chat. Returns the Telegram response result or None on failure."""
+        url = f"{self._base_url}/sendMessage"
+        payload: dict[str, Any] = {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": parse_mode,
+        }
+        try:
+            resp = http.request(
+                "POST",
+                url,
+                body=json.dumps(payload),
+                headers={"Content-Type": "application/json"},
+            )
+            if resp.status >= 400:
+                body = resp.data.decode("utf-8")
+                logger.error(
+                    "sendMessage failed",
+                    extra={"chat_id": chat_id, "status": resp.status, "body": body},
+                )
+                return None
+            result = json.loads(resp.data.decode("utf-8"))
+            return result.get("result")
+        except Exception as e:
+            logger.error("sendMessage error", extra={"chat_id": chat_id, "error": str(e)})
+            return None
+
     def send_quiz_poll(
         self,
         chat_id: str,
