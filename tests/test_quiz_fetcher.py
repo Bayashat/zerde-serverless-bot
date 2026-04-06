@@ -11,7 +11,6 @@ import sys
 
 # Env vars needed by src/quiz/core/config.py
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
-os.environ.setdefault("QUIZAPI_KEY", "test-quiz-api-key")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 
 # Save and temporarily replace conflicting core.* modules so that

@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
-os.environ.setdefault("QUIZAPI_KEY", "test-quizapi-key")
 
 _quiz_dir = os.path.join(os.path.dirname(__file__), "..", "src", "quiz")
 
