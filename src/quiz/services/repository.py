@@ -2,7 +2,6 @@
 
 import time
 from datetime import datetime, timedelta, timezone
-from typing import Any
 
 import boto3
 from core.config import QUIZ_TABLE_NAME
@@ -58,8 +57,12 @@ class QuizRepository:
     def save_quiz_record(
         self,
         chat_id: str,
-        question: dict[str, Any],
+        question: str,
+        options: list[str],
+        correct_option_id: int,
+        explanation: str | None,
         category: str,
+        lang: str,
         poll_id: str,
         message_id: int,
     ) -> None:
@@ -73,12 +76,14 @@ class QuizRepository:
                 Item={
                     "PK": f"QUIZ#{chat_id}",
                     "SK": f"DATE#{today}",
-                    "question": question["question"],
-                    "options": question["options"],
-                    "correct_option_id": question["correct_option_ids"][0],
+                    "question": question,
+                    "options": options,
+                    "correct_option_id": correct_option_id,
+                    "explanation": explanation,
+                    "category": category,
+                    "lang": lang,
                     "poll_id": str(poll_id),
                     "message_id": message_id,
-                    "category": category,
                     "sent_at": now.isoformat(),
                     "ttl": ttl,
                 }
