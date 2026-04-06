@@ -11,9 +11,9 @@ from constructs import Construct
 
 # Language → list of (hour_utc, minute_utc) trigger times
 _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
-    "kk": [(4, 0), (14, 0)],  # 04:00 and 14:00 UTC
-    "zh": [(4, 2), (14, 2)],  # 04:02 and 14:02 UTC
-    "ru": [(4, 4)],  # 04:04 UTC only
+    "kk": [(4, 0)],  # 04:00 UTC
+    "zh": [(4, 2)],  # 04:02 UTC
+    "ru": [(4, 4)],  # 04:04 UTC
 }
 
 
