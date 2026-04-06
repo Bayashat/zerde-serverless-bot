@@ -104,6 +104,9 @@ jobs:
           QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
           QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
           QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
+          QUIZAPI_KEY: ${{ secrets.QUIZAPI_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          QUIZ_CHATS: ${{ env.TARGET_ENV == 'prod' && vars.PROD_QUIZ_CHATS || vars.DEV_QUIZ_CHATS }}
         run: |
           echo "🚀 Deploying to ${{ env.TARGET_ENV }} environment..."
           uv run cdk deploy -c env=${{ env.TARGET_ENV }} --require-approval never --all

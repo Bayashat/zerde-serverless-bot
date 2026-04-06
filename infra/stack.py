@@ -51,6 +51,9 @@ class ZerdeTelegramBotStack(Stack):
             "zh": _parse_chat_ids("QUIZ_CHATS_ZH"),
             "ru": _parse_chat_ids("QUIZ_CHATS_RU"),
         }
+        groq_api_key = os.environ.get("GROQ_API_KEY", "")
+        quizapi_key = _require("QUIZAPI_KEY")
+        quiz_chats = _parse_chat_ids("QUIZ_CHATS")
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(
@@ -70,6 +73,7 @@ class ZerdeTelegramBotStack(Stack):
             webhook_secret_token=webhook_secret_token,
             telegram_api_base=telegram_api_base,
             default_lang=default_lang,
+            groq_api_key=groq_api_key,
             log_level=log_level,
         )
 

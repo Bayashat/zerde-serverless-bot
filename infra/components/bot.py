@@ -31,6 +31,7 @@ class BotConstruct(Construct):
         webhook_secret_token: str,
         telegram_api_base: str,
         default_lang: str,
+        groq_api_key: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -79,6 +80,7 @@ class BotConstruct(Construct):
                 "STATS_TABLE_NAME": stats_table.table_name,
                 "DEFAULT_LANG": default_lang,
                 "TELEGRAM_API_BASE": telegram_api_base,
+                "GROQ_API_KEY": groq_api_key,
             },
         )
 
