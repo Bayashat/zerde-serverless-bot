@@ -23,4 +23,12 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     if event.get("action") == "leaderboard":
         return _quiz_service.process_leaderboard(chat_ids, lang)
 
+    if event.get("action") == "on_demand":
+        chat_id = event.get("chat_id", "")
+        topic = event.get("topic", "programming")
+        difficulty = event.get("difficulty", "medium")
+        if not chat_id:
+            return {"status": "error", "reason": "missing chat_id"}
+        return _quiz_service.process_on_demand_quiz(chat_id, lang, topic, difficulty)
+
     return _quiz_service.process_daily_quiz(chat_ids, lang)

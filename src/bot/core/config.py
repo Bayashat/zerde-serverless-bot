@@ -19,6 +19,8 @@ WEBHOOK_SECRET_TOKEN: str = require("WEBHOOK_SECRET_TOKEN")
 STATS_TABLE_NAME: str = require("STATS_TABLE_NAME")
 QUEUE_URL: str = require("QUEUE_URL")
 QUIZ_TABLE_NAME: str = os.environ.get("QUIZ_TABLE_NAME", "")
+QUIZ_LAMBDA_NAME: str = os.environ.get("QUIZ_LAMBDA_NAME", "")
+ADMIN_USER_ID: int = int(os.environ.get("ADMIN_USER_ID", "0"))
 
 GROQ_API_KEY: str = os.environ.get("GROQ_API_KEY", "")
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
@@ -38,3 +40,7 @@ KICK_BAN_DURATION_SECONDS = 31
 # ── Vote-to-ban thresholds ──────────────────────────────────────────────────
 VOTEBAN_THRESHOLD = 7
 VOTEBAN_FORGIVE_THRESHOLD = 7
+
+# ── Quiz parameters ─────────────────────────────────────────────────────────
+VALID_LANGS = {"kk", "zh", "ru"}
+VALID_DIFFICULTIES = {"easy", "medium", "hard", "expert"}

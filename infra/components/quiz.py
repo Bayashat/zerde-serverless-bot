@@ -99,6 +99,7 @@ class QuizConstruct(Construct):
             },
         )
 
+        self.quiz_lambda = quiz_lambda
         self.quiz_table.grant_read_write_data(quiz_lambda)
 
         # ── EventBridge (prod-only) ────────────────────────────────────────

@@ -52,6 +52,7 @@ class ZerdeTelegramBotStack(Stack):
             "ru": _parse_chat_ids("QUIZ_CHATS_RU"),
         }
         groq_api_key = os.environ.get("GROQ_API_KEY", "")
+        admin_user_id = os.environ.get("ADMIN_USER_ID", "")
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(
@@ -101,9 +102,13 @@ class ZerdeTelegramBotStack(Stack):
             log_level=log_level,
         )
 
-        # Grant Bot Lambda access to quiz table and inject env var
+        # Grant Bot Lambda access to quiz table and quiz lambda, inject env vars
         quiz.quiz_table.grant_read_write_data(bot.handler_lambda)
         bot.handler_lambda.add_environment("QUIZ_TABLE_NAME", quiz.quiz_table.table_name)
+        quiz.quiz_lambda.grant_invoke(bot.handler_lambda)
+        bot.handler_lambda.add_environment("QUIZ_LAMBDA_NAME", quiz.quiz_lambda.function_name)
+        if admin_user_id:
+            bot.handler_lambda.add_environment("ADMIN_USER_ID", admin_user_id)
 
         # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(

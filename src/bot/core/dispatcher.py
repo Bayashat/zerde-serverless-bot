@@ -5,6 +5,7 @@ from typing import Any, Callable
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
+    LambdaInvoker,
     QuizRepository,
     SQSClient,
     StatsRepository,
@@ -34,6 +35,7 @@ class Context:
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
+        lambda_invoker: LambdaInvoker | None = None,
     ):
         self._update = update
         self.bot = bot
@@ -41,6 +43,7 @@ class Context:
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
+        self.lambda_invoker = lambda_invoker
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -117,12 +120,14 @@ class Dispatcher:
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
+        lambda_invoker: LambdaInvoker | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
+        self.lambda_invoker = lambda_invoker
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
@@ -160,7 +165,9 @@ class Dispatcher:
 
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
-        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo)
+        ctx = Context(
+            update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo, self.lambda_invoker
+        )
 
         poll_answer = ctx._update.get("poll_answer")
         if poll_answer and self.poll_answer_handler:

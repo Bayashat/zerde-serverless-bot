@@ -99,6 +99,11 @@ TRANSLATIONS = {
         "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
         "wtf_api_error": "😵 AI is not responding right now, try again later.",
         "wtf_unexpected_error": "😵 Something went wrong, try again later.",
+        "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
+        "genquiz_usage": "❌ Usage: /genquiz &lt;topic&gt; &lt;lang&gt; &lt;difficulty&gt;",
+        "genquiz_invalid_lang": "❌ Invalid lang. Choose from: {langs}",
+        "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
+        "genquiz_failed": "❌ Failed to generate quiz: {reason}",
     },
     "kk": {
         "start_message": (
@@ -197,6 +202,11 @@ TRANSLATIONS = {
         "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
         "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
         "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
+        "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
+        "genquiz_usage": "❌ Қолданылуы: /genquiz &lt;тақырып&gt; &lt;тіл&gt; &lt;деңгей&gt;",
+        "genquiz_invalid_lang": "❌ Тіл қате. Келесілерді таңдаңыз: {langs}",
+        "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
+        "genquiz_failed": "❌ Quiz жасау мүмкін болмады: {reason}",
     },
 }
 

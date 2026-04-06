@@ -161,3 +161,48 @@ class QuizService:
 
         logger.info("Quiz Lambda completed", extra={"sent": sent_count, "total": len(chat_ids)})
         return {"status": "ok", "sent": sent_count, "total": len(chat_ids)}
+
+    def process_on_demand_quiz(self, chat_id: str, lang: str, topic: str, difficulty: str) -> dict:
+        """Generate and send a single on-demand quiz to one chat."""
+        logger.info(
+            "On-demand quiz requested",
+            extra={"chat_id": chat_id, "topic": topic, "lang": lang, "difficulty": difficulty},
+        )
+
+        question = self._generator.generate_question(topic, lang, difficulty)
+        if not question:
+            logger.error("Failed to generate on-demand question", extra={"topic": topic})
+            return {"status": "error", "reason": "no valid question"}
+
+        announcement = self.build_announcement(lang, difficulty)
+        self._sender.send_message(chat_id, announcement)
+
+        poll_result = self._sender.send_quiz_poll(
+            chat_id=chat_id,
+            question=question["question"],
+            options=question["options"],
+            correct_option_id=question["correct_option_index"],
+            explanation=question.get("explanation"),
+        )
+
+        if poll_result:
+            poll_id = str(poll_result.get("poll", {}).get("id", ""))
+            message_id = poll_result.get("message_id", 0)
+            self._repo.save_quiz_record(
+                chat_id=chat_id,
+                question=question["question"],
+                options=question["options"],
+                correct_option_id=question["correct_option_index"],
+                explanation=question.get("explanation"),
+                category=topic,
+                lang=lang,
+                poll_id=poll_id,
+                message_id=message_id,
+                difficulty=difficulty,
+                points=question["points"],
+            )
+            logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
+            return {"status": "ok", "sent": 1, "total": 1}
+
+        logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
+        return {"status": "error", "reason": "failed to send poll"}

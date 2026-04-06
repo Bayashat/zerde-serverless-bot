@@ -16,6 +16,7 @@ from services.handlers.captcha import (
 from services.handlers.commands import (
     handle_help,
     handle_ping,
+    handle_quiz_generate,
     handle_start,
     handle_stats,
     handle_support,
@@ -62,3 +63,4 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("wtf")(handle_wtf)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
+    dp.command("genquiz")(handle_quiz_generate)
