@@ -11,11 +11,18 @@ from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
-# Language → list of (hour_utc, minute_utc) trigger times
+# Language → list of (hour_utc, minute_utc) trigger times for daily quiz
 _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
     "kk": [(8, 0)],  # 08:00 UTC = 13:00 Almaty
     "zh": [(8, 2)],  # 08:02 UTC
     "ru": [(8, 4)],  # 08:04 UTC
+}
+
+# Language → (hour_utc, minute_utc) for Sunday evening leaderboard
+_LEADERBOARD_SCHEDULE: dict[str, tuple[int, int]] = {
+    "kk": (14, 0),  # 14:00 UTC = 19:00 Almaty
+    "zh": (14, 0),  # 14:00 UTC
+    "ru": (14, 0),  # 14:00 UTC
 }
 
 
@@ -92,6 +99,7 @@ class QuizConstruct(Construct):
             },
         )
 
+        self.quiz_lambda = quiz_lambda
         self.quiz_table.grant_read_write_data(quiz_lambda)
 
         # ── EventBridge (prod-only) ────────────────────────────────────────
@@ -126,3 +134,35 @@ class QuizConstruct(Construct):
                             ),
                         )
                     )
+
+            # Sunday leaderboard (19:00 Almaty = 14:00 UTC, day-of-week=1 in cron = Sunday)
+            for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
+                chat_ids = quiz_chats.get(lang, [])
+                if not chat_ids:
+                    continue
+                slot = f"{hour_utc:02d}{minute_utc:02d}"
+                lb_rule = events.Rule(
+                    self,
+                    f"{CONSTRUCT_PREFIX}LeaderboardRule{lang.upper()}{slot}",
+                    rule_name=f"{RESOURCE_PREFIX}-leaderboard-{lang}-{slot}-{env_name}",
+                    description=f"Send weekly leaderboard at {hour_utc:02d}:{minute_utc:02d} UTC on Sundays for {lang}",
+                    schedule=events.Schedule.cron(
+                        minute=str(minute_utc),
+                        hour=str(hour_utc),
+                        week_day="SUN",
+                        month="*",
+                        year="*",
+                    ),
+                )
+                lb_rule.add_target(
+                    events_targets.LambdaFunction(
+                        quiz_lambda,
+                        event=events.RuleTargetInput.from_object(
+                            {
+                                "chat_ids": chat_ids,
+                                "lang": lang,
+                                "action": "leaderboard",
+                            }
+                        ),
+                    )
+                )
