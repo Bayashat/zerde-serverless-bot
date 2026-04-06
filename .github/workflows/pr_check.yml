@@ -92,8 +92,9 @@ jobs:
           NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
-          QUIZAPI_KEY: ${{ secrets.QUIZAPI_KEY }}
-          QUIZ_CHATS: ${{ vars.DEV_QUIZ_CHATS }}
+          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
         run: |
           uv run cdk synth -c env=dev
 
@@ -109,8 +110,9 @@ jobs:
           NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
-          QUIZAPI_KEY: ${{ secrets.QUIZAPI_KEY }}
-          QUIZ_CHATS: ${{ vars.DEV_QUIZ_CHATS }}
+          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
         run: |
           # Run cdk diff and capture output
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true

@@ -46,6 +46,11 @@ class ZerdeTelegramBotStack(Stack):
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
         llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+        quiz_chats: dict[str, list[str]] = {
+            "kk": _parse_chat_ids("QUIZ_CHATS_KK"),
+            "zh": _parse_chat_ids("QUIZ_CHATS_ZH"),
+            "ru": _parse_chat_ids("QUIZ_CHATS_RU"),
+        }
         groq_api_key = os.environ.get("GROQ_API_KEY", "")
         quizapi_key = _require("QUIZAPI_KEY")
         quiz_chats = _parse_chat_ids("QUIZ_CHATS")
@@ -91,7 +96,6 @@ class ZerdeTelegramBotStack(Stack):
             env_name=env_name,
             is_prod=is_prod,
             bot_token=bot_token,
-            quizapi_key=quizapi_key,
             gemini_api_key=gemini_api_key,
             ai_provider=ai_provider,
             llm_model=llm_model,

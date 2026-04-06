@@ -1,3 +1,4 @@
+# src/quiz/core/config.py
 """Centralised configuration: environment variables for the Quiz Lambda."""
 
 import os
@@ -12,7 +13,6 @@ def _require(name: str) -> str:
 
 # ── Required ────────────────────────────────────────────────────────────────
 BOT_TOKEN: str = _require("BOT_TOKEN")
-QUIZAPI_KEY: str = _require("QUIZAPI_KEY")
 QUIZ_TABLE_NAME: str = _require("QUIZ_TABLE_NAME")
 GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
 

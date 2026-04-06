@@ -23,7 +23,7 @@ class QuizSender:
         chat_id: str,
         question: str,
         options: list[str],
-        correct_option_ids: list[int],
+        correct_option_id: int,
         explanation: str | None = None,
     ) -> dict[str, Any] | None:
         """Send a quiz poll to a chat. Returns the Telegram response result or None on failure."""
@@ -31,10 +31,10 @@ class QuizSender:
         payload: dict[str, Any] = {
             "chat_id": chat_id,
             "question": question,
-            "options": options,
+            "options": [{"text": opt} for opt in options],
             "type": "quiz",
             "is_anonymous": False,
-            "correct_option_ids": correct_option_ids,
+            "correct_option_id": correct_option_id,
             "shuffle_options": True,
             "open_period": 3600 * 5,
         }

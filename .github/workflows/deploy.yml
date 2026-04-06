@@ -101,6 +101,9 @@ jobs:
           LLM_MODEL: ${{ vars.LLM_MODEL }}
           DEFAULT_LANG: ${{ vars.DEFAULT_LANG }}
           TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE }}
+          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
           QUIZAPI_KEY: ${{ secrets.QUIZAPI_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           QUIZ_CHATS: ${{ env.TARGET_ENV == 'prod' && vars.PROD_QUIZ_CHATS || vars.DEV_QUIZ_CHATS }}
