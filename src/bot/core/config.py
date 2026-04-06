@@ -20,6 +20,10 @@ STATS_TABLE_NAME: str = require("STATS_TABLE_NAME")
 QUEUE_URL: str = require("QUEUE_URL")
 QUIZ_TABLE_NAME: str = os.environ.get("QUIZ_TABLE_NAME", "")
 
+GROQ_API_KEY: str = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
+GROQ_MODEL: str = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VERIFY_PREFIX = "verify_"

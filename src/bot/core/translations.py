@@ -91,6 +91,14 @@ TRANSLATIONS = {
             "📊 Rank: <b>#{rank}</b> / {total_players} players"
         ),
         "quizstats_no_data": "🧠 You haven't answered any quizzes yet. Wait for the next daily quiz!",
+        "wtf_usage": (
+            "🤔 Usage:\n"
+            "• <code>/wtf kubernetes</code> — explain a term\n"
+            "• Reply to a message + <code>/wtf</code> — explain the text from that message"
+        ),
+        "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
+        "wtf_api_error": "😵 AI is not responding right now, try again later.",
+        "wtf_unexpected_error": "😵 Something went wrong, try again later.",
     },
     "kk": {
         "start_message": (
@@ -181,6 +189,14 @@ TRANSLATIONS = {
             "📊 Рейтингтегі орныңыз: <b>#{rank}</b> / {total_players} қатысушы"
         ),
         "quizstats_no_data": "🧠 Сіз әлі ешқандай Quiz сұрағына жауап бермепсіз. Келесі сұрақты жіберіп алмаңыз!",
+        "wtf_usage": (
+            "🤔 Қолданылуы:\n"
+            "• <code>/wtf kubernetes</code> — терминді түсіндіру\n"
+            "• Хабарламаға жауап + <code>/wtf</code> — сол хабарламадағы мәтінді түсіндіру"
+        ),
+        "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
+        "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
+        "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
     },
 }
 

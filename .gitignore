@@ -10,6 +10,9 @@ wheels/
 *$py.class
 .Python
 
+# Git worktrees
+.worktrees/
+
 # Virtual environments
 .venv
 env/
