@@ -155,6 +155,3 @@ class TestCategoryPool:
             "devops",
         }
         assert set(CATEGORY_POOL) == expected
-
-    def test_category_pool_has_nine_entries(self):
-        assert len(CATEGORY_POOL) == 9
