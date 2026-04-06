@@ -120,6 +120,15 @@ class TestQuizGeneratorValidation:
         result = gen.generate_question("cicd", "kk")
         assert result is None
 
+    def test_correct_index_boolean_returns_none(self):
+        gen = _make_generator()
+        data = _make_valid_data()
+        data["correct_option_index"] = True  # bool, not int — must be rejected
+        _mock_response(gen, data)
+
+        result = gen.generate_question("programming", "kk")
+        assert result is None
+
     def test_gemini_exception_returns_none(self):
         gen = _make_generator()
         gen._client.models.generate_content.side_effect = Exception("API error")

@@ -116,10 +116,10 @@ class QuizGenerator:
             if not isinstance(opt, str) or not opt.strip():
                 logger.warning("Option is empty or non-string", extra={"index": i, "category": category})
                 return None
-            if len(opt) > _OPTION_MAX_LEN:
+            if len(opt.strip()) > _OPTION_MAX_LEN:
                 logger.warning(
                     "Option exceeds Telegram limit",
-                    extra={"index": i, "length": len(opt), "category": category},
+                    extra={"index": i, "length": len(opt.strip()), "category": category},
                 )
                 return None
 
