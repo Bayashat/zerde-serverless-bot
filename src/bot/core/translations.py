@@ -101,12 +101,13 @@ TRANSLATIONS = {
         "wtf_unexpected_error": "😵 Something went wrong, try again later.",
         "wtf_fallback_notice": (
             "⚠️ <b>Today's Gemini daily quota ({total}) is exhausted.</b> "
-            "Explanations will use Groq until the quota resets (Pacific midnight)."
+            "Explanations will use the backup AI until the quota resets (Pacific midnight)."
         ),
-        "wtf_groq_takeover_intro": "🤕 Gemini is taking a coffee break, so Groq is jumping in! ⚡",
+        "wtf_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
+        "wtf_fallback_rate_limit": "⏳ Backup AI is temporarily rate-limited. Please try again in a minute.",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_groq": (
-            "⚠️ Today's Gemini daily quota is exhausted. Configure Groq as fallback or try again tomorrow."
+        "wtf_gemini_exhausted_no_fallback": (
+            "⚠️ Today's Gemini daily quota is exhausted. Configure a fallback AI or try again tomorrow."
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": "❌ Usage: /genquiz &lt;topic&gt; &lt;lang&gt; &lt;difficulty&gt;",
@@ -213,12 +214,13 @@ TRANSLATIONS = {
         "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
         "wtf_fallback_notice": (
             "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
-            "Лимит қайта толғанға дейін түсіндірулер Groq арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."
+            "Лимит қайта толғанға дейін түсіндірулер резервтік AI арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."  # noqa: E501
         ),
-        "wtf_groq_takeover_intro": "<i>🤕 Gemini шай ішуге кетті, сондықтан кезек <b>Groq-та</b>!</i>",
+        "wtf_fallback_takeover_intro": "<i>🤕 Gemini шай ішуге кетті, сондықтан кезек <b>DeepSeek-те</b>!</i>",
+        "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_groq": (
-            "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Groq резервін баптаңыз немесе ертең қайталап көріңіз."
+        "wtf_gemini_exhausted_no_fallback": (
+            "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Резервтік AI-ды баптаңыз немесе ертең қайталап көріңіз."
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": "❌ Қолданылуы: /genquiz &lt;тақырып&gt; &lt;тіл&gt; &lt;деңгей&gt;",

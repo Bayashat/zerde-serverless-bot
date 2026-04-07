@@ -27,6 +27,17 @@ GROQ_API_KEY: str = os.environ.get("GROQ_API_KEY", "")
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 GROQ_MODEL: str = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
+LLAMA_API_KEY: str = os.environ.get("LLAMA_API_KEY", "")
+LLAMA_API_BASE: str = os.environ.get("LLAMA_API_BASE", "https://api.llama.com/compat/v1")
+LLAMA_MODEL: str = os.environ.get("LLAMA_MODEL", "Llama-4-Maverick-17B-128E-Instruct-FP8")
+
+DEEPSEEK_API_KEY: str = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
+DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+
+# Which provider to use as Gemini fallback: "deepseek" | "llama"
+WTF_FALLBACK_PROVIDER: str = os.environ.get("WTF_FALLBACK_PROVIDER", "deepseek")
+
 GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 GEMINI_RPD_LIMIT: int = int(os.environ.get("GEMINI_RPD_LIMIT", "500"))

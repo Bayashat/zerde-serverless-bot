@@ -1,23 +1,50 @@
-"""/wtf command: explain a tech term via Gemini (primary) with Groq fallback."""
+"""/wtf command: explain a tech term via Gemini (primary) with configurable fallback."""
 
-from core.config import GEMINI_API_KEY, GROQ_API_KEY, get_chat_lang
+from core.config import (
+    DEEPSEEK_API_KEY,
+    GEMINI_API_KEY,
+    LLAMA_API_KEY,
+    WTF_FALLBACK_PROVIDER,
+    get_chat_lang,
+)
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.ai.deepseek_client import DeepSeekAPIError, DeepSeekClient, DeepSeekRateLimitError
 from services.ai.gemini_client import (
     GeminiClient,
     GeminiRPDExhaustedError,
     GeminiUnavailableError,
 )
-from services.ai.groq_client import GroqAPIError, GroqClient
+from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
 from services.telegram import TelegramAPIError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _WTF_PROCESSING_REACTION = "✍️"
 
+_FALLBACK_RATE_LIMIT_ERRORS = (LlamaRateLimitError, DeepSeekRateLimitError)
+_FALLBACK_API_ERRORS = (LlamaAPIError, DeepSeekAPIError)
+
+_FallbackClient = DeepSeekClient | LlamaClient
+
+
+def _make_fallback() -> _FallbackClient | None:
+    """Select fallback client based on WTF_FALLBACK_PROVIDER; auto-detect if key is missing."""
+    if WTF_FALLBACK_PROVIDER == "deepseek" and DEEPSEEK_API_KEY:
+        return DeepSeekClient()
+    if WTF_FALLBACK_PROVIDER == "llama" and LLAMA_API_KEY:
+        return LlamaClient()
+    # Auto-detect: prefer DeepSeek, then Llama
+    if DEEPSEEK_API_KEY:
+        return DeepSeekClient()
+    if LLAMA_API_KEY:
+        return LlamaClient()
+    return None
+
+
 _gemini: GeminiClient | None = GeminiClient() if GEMINI_API_KEY else None
-_groq: GroqClient | None = GroqClient() if GROQ_API_KEY else None
+_fallback: _FallbackClient | None = _make_fallback()
 
 
 def _extract_term(ctx: Context) -> str:
@@ -69,24 +96,19 @@ def _send_typing_once(ctx: Context) -> None:
         ctx.bot.send_chat_action(ctx.chat_id, "typing")
 
 
-def _build_groq_takeover_intro(lang: str) -> str:
-    """Build a playful intro shown when Groq handles the explanation."""
-    return get_translated_text("wtf_groq_takeover_intro", lang)
-
-
-def _groq_explain_and_reply(
+def _fallback_explain_and_reply(
     ctx: Context,
     term: str,
     lang: str,
     *,
     send_daily_quota_notice: bool,
 ) -> None:
-    """Call Groq and send the explanation + RPD footer.
+    """Call the configured fallback client and send the explanation + RPD footer.
 
-    If *send_daily_quota_notice* is True, send ``wtf_fallback_notice`` in a
-    separate message first (Gemini daily RPD exhausted only).
+    If *send_daily_quota_notice* is True, send ``wtf_fallback_notice`` first
+    (Gemini daily RPD exhausted only).
     """
-    assert _groq is not None
+    assert _fallback is not None
 
     if send_daily_quota_notice and _gemini is not None:
         ctx.reply(
@@ -95,21 +117,25 @@ def _groq_explain_and_reply(
         )
 
     try:
-        explanation = _groq.explain_term(term, lang)
-    except (GroqAPIError, Exception):
-        logger.exception("Groq failed for /wtf")
+        explanation = _fallback.explain_term(term, lang)
+    except _FALLBACK_RATE_LIMIT_ERRORS:
+        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        ctx.reply(get_translated_text("wtf_fallback_rate_limit", lang), ctx.message_id)
+        return
+    except (*_FALLBACK_API_ERRORS, Exception):
+        logger.exception("Fallback API failed for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
         ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
         return
 
-    intro = _build_groq_takeover_intro(lang)
+    intro = get_translated_text("wtf_fallback_takeover_intro", lang)
     ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
 
 def handle_wtf(ctx: Context) -> None:
-    """Handle /wtf: peek RPD, then Gemini or Groq with correct fallback messaging."""
+    """Handle /wtf: peek RPD, then Gemini or fallback with correct fallback messaging."""
     lang = get_chat_lang(ctx.chat_id)
 
-    if not _gemini and not _groq:
+    if not _gemini and not _fallback:
         ctx.reply(get_translated_text("wtf_not_configured", lang), ctx.message_id)
         return
 
@@ -121,23 +147,27 @@ def handle_wtf(ctx: Context) -> None:
     _react_processing(ctx)
     _send_typing_once(ctx)
     try:
-        # Groq only (Gemini not configured)
-        if not _gemini and _groq:
+        # Fallback only (Gemini not configured)
+        if not _gemini and _fallback:
             try:
-                explanation = _groq.explain_term(term, lang)
-            except (GroqAPIError, Exception):
-                logger.exception("Groq failed for /wtf (Groq-only mode)")
+                explanation = _fallback.explain_term(term, lang)
+            except _FALLBACK_RATE_LIMIT_ERRORS:
+                logger.warning("Fallback rate limit hit for /wtf (fallback-only mode)")
+                ctx.reply(get_translated_text("wtf_fallback_rate_limit", lang), ctx.message_id)
+                return
+            except (*_FALLBACK_API_ERRORS, Exception):
+                logger.exception("Fallback failed for /wtf (fallback-only mode)")
                 ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
                 return
-            intro = _build_groq_takeover_intro(lang)
+            intro = get_translated_text("wtf_fallback_takeover_intro", lang)
             ctx.reply(f"{intro}\n\n{explanation}" + _build_rpd_footer(lang), ctx.message_id)
             return
 
-        # Gemini only (no Groq fallback)
-        if _gemini and not _groq:
+        # Gemini only (no fallback configured)
+        if _gemini and not _fallback:
             if _gemini.remaining_rpd <= 0:
                 ctx.reply(
-                    get_translated_text("wtf_gemini_exhausted_no_groq", lang),
+                    get_translated_text("wtf_gemini_exhausted_no_fallback", lang),
                     ctx.message_id,
                 )
                 return
@@ -145,7 +175,7 @@ def handle_wtf(ctx: Context) -> None:
                 explanation = _gemini.explain_term(term, lang)
             except GeminiRPDExhaustedError:
                 ctx.reply(
-                    get_translated_text("wtf_gemini_exhausted_no_groq", lang),
+                    get_translated_text("wtf_gemini_exhausted_no_fallback", lang),
                     ctx.message_id,
                 )
                 return
@@ -155,21 +185,21 @@ def handle_wtf(ctx: Context) -> None:
             ctx.reply(explanation + _build_rpd_footer(lang), ctx.message_id)
             return
 
-        # Both Gemini and Groq configured
-        assert _gemini is not None and _groq is not None
+        # Both Gemini and fallback configured
+        assert _gemini is not None and _fallback is not None
 
         if _gemini.remaining_rpd <= 0:
-            _groq_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
+            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
             return
 
         try:
             explanation = _gemini.explain_term(term, lang)
         except GeminiRPDExhaustedError:
-            _groq_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
+            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
             return
         except GeminiUnavailableError:
-            logger.warning("Gemini unavailable for /wtf, using Groq without daily notice")
-            _groq_explain_and_reply(ctx, term, lang, send_daily_quota_notice=False)
+            logger.warning("Gemini unavailable for /wtf, using fallback without daily notice")
+            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=False)
             return
 
         ctx.reply(explanation + _build_rpd_footer(lang), ctx.message_id)
