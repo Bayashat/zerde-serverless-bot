@@ -78,5 +78,6 @@ def handle_quizstats(ctx: Context) -> None:
             best_streak=user_score.get("best_streak", 0),
             rank=rank,
             total_players=len(leaderboard),
-        )
+        ),
+        ctx.message_id,
     )

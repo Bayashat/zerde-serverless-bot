@@ -99,8 +99,15 @@ TRANSLATIONS = {
         "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
         "wtf_api_error": "😵 AI is not responding right now, try again later.",
         "wtf_unexpected_error": "😵 Something went wrong, try again later.",
-        "wtf_fallback_notice": "⚠️ Gemini limit exhausted, switched to Groq.\n\n",
+        "wtf_fallback_notice": (
+            "⚠️ <b>Today's Gemini daily quota ({total}) is exhausted.</b> "
+            "Explanations will use Groq until the quota resets (Pacific midnight)."
+        ),
+        "wtf_groq_takeover_intro": "🤕 Gemini is taking a coffee break, so Groq is jumping in! ⚡",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
+        "wtf_gemini_exhausted_no_groq": (
+            "⚠️ Today's Gemini daily quota is exhausted. Configure Groq as fallback or try again tomorrow."
+        ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": "❌ Usage: /genquiz &lt;topic&gt; &lt;lang&gt; &lt;difficulty&gt;",
         "genquiz_invalid_lang": "❌ Invalid lang. Choose from: {langs}",
@@ -204,8 +211,15 @@ TRANSLATIONS = {
         "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
         "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
         "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
-        "wtf_fallback_notice": "⚠️ Gemini лимиті аяқталды, Groq моделіне ауыстым.\n\n",
+        "wtf_fallback_notice": (
+            "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
+            "Лимит қайта толғанға дейін түсіндірулер Groq арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."
+        ),
+        "wtf_groq_takeover_intro": "🤕 Gemini шай ішуге кетті, сондықтан кезек <b>Groq-та</b>! ⚡",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
+        "wtf_gemini_exhausted_no_groq": (
+            "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Groq резервін баптаңыз немесе ертең қайталап көріңіз."
+        ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": "❌ Қолданылуы: /genquiz &lt;тақырып&gt; &lt;тіл&gt; &lt;деңгей&gt;",
         "genquiz_invalid_lang": "❌ Тіл қате. Келесілерді таңдаңыз: {langs}",

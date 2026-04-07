@@ -86,6 +86,46 @@ class TelegramClient:
             )
             raise
 
+    def set_message_reaction(
+        self,
+        chat_id: int | str,
+        message_id: int,
+        emoji: str,
+    ) -> None:
+        """Set a single emoji reaction on a message (Bot API 7.0+)."""
+        payload: dict[str, Any] = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "reaction": [{"type": "emoji", "emoji": emoji}],
+        }
+        self._post("setMessageReaction", payload)
+
+    def clear_message_reaction(self, chat_id: int | str, message_id: int) -> None:
+        """Remove all reactions the bot set on a message."""
+        payload: dict[str, Any] = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "reaction": [],
+        }
+        self._post("setMessageReaction", payload)
+
+    def send_chat_action(self, chat_id: int | str, action: str = "typing") -> None:
+        """Broadcast a chat action (typing, upload_document, …).
+
+        Clients show the indicator for a few seconds per call; repeat for long tasks.
+        Failures are logged and ignored so optional UX does not break handlers.
+        """
+        payload: dict[str, Any] = {"chat_id": chat_id, "action": action}
+        try:
+            self._post("sendChatAction", payload)
+        except TelegramAPIError as e:
+            logger.debug(
+                "sendChatAction failed",
+                extra={"chat_id": chat_id, "action": action, "status": e.status},
+            )
+        except Exception as e:
+            logger.debug("sendChatAction failed", extra={"error": str(e)})
+
     def answer_callback_query(
         self,
         callback_query_id: str,

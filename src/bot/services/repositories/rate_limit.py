@@ -71,3 +71,16 @@ class RateLimitRepository:
 
         count = int(resp["Attributes"]["request_count"])
         return count, count <= self.rpd_limit
+
+    def get_today_count(self) -> int:
+        """Read today's request count without incrementing (for RPD decisions)."""
+        stat_key = f"{_PK_PREFIX}#{self._today_pt()}"
+        try:
+            resp = self._table.get_item(Key={"stat_key": stat_key}, ConsistentRead=True)
+            item = resp.get("Item") or {}
+            return int(item.get("request_count", 0))
+        except ClientError:
+            logger.exception("Failed to read Gemini RPD counter")
+            return 0
+        except (TypeError, ValueError):
+            return 0
