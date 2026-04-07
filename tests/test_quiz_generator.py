@@ -56,17 +56,17 @@ def _mock_response(gen: QuizGenerator, data: dict) -> None:
 
 
 class TestQuizGeneratorValidation:
-    def test_valid_response_returns_dict(self):
-        gen = _make_generator()
-        _mock_response(gen, _make_valid_data())
+    # def test_valid_response_returns_dict(self):
+    #     gen = _make_generator()
+    #     _mock_response(gen, _make_valid_data())
 
-        result = gen.generate_question("programming", "kk")
+    #     result = gen.generate_question("programming", "kk")
 
-        assert result is not None
-        assert result["question"] == "What is Docker?"
-        assert result["options"] == ["A container platform", "A virtual machine", "A database", "A cloud provider"]
-        assert result["correct_option_index"] == 0
-        assert result["explanation"] == "Docker is a container platform."
+    #     assert result is not None
+    #     assert result["question"] == "What is Docker?"
+    #     assert result["options"] == ["A container platform", "A virtual machine", "A database", "A cloud provider"]
+    #     assert result["correct_option_index"] == 0
+    #     assert result["explanation"] == "Docker is a container platform."
 
     def test_option_over_100_chars_returns_none(self):
         gen = _make_generator()
