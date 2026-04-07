@@ -102,7 +102,7 @@ def _groq_explain_and_reply(
         return
 
     intro = _build_groq_takeover_intro(lang)
-    ctx.reply(f"{intro}\n\n{explanation}" + _build_rpd_footer(lang), ctx.message_id)
+    ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
 
 def handle_wtf(ctx: Context) -> None:

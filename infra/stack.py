@@ -46,9 +46,10 @@ class ZerdeTelegramBotStack(Stack):
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
-        llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+        llm_model = os.environ.get("LLM_MODEL", "gemini-3-flash-preview")
         groq_api_key = os.environ.get("GROQ_API_KEY", "")
         admin_user_id = os.environ.get("ADMIN_USER_ID", "")
+        fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(
@@ -72,8 +73,6 @@ class ZerdeTelegramBotStack(Stack):
             gemini_api_key=gemini_api_key,
             log_level=log_level,
         )
-
-        fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
 
         NewsConstruct(
             self,

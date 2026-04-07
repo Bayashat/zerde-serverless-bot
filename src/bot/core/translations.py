@@ -215,7 +215,7 @@ TRANSLATIONS = {
             "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
             "Лимит қайта толғанға дейін түсіндірулер Groq арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."
         ),
-        "wtf_groq_takeover_intro": "🤕 Gemini шай ішуге кетті, сондықтан кезек <b>Groq-та</b>! ⚡",
+        "wtf_groq_takeover_intro": "<i>🤕 Gemini шай ішуге кетті, сондықтан кезек <b>Groq-та</b>!</i>",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_groq": (
             "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Groq резервін баптаңыз немесе ертең қайталап көріңіз."
