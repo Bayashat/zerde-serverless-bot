@@ -3,7 +3,7 @@
 import json
 from abc import ABC, abstractmethod
 
-from core.config import AI_PROVIDER, GEMINI_API_KEY, LLM_MODEL
+from core.config import AI_PROVIDER, FALLBACK_MODEL, GEMINI_API_KEY, LLM_MODEL
 from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
@@ -25,10 +25,49 @@ class AIClient(ABC):
 
 
 class GeminiAIClient(AIClient):
-    """Google Gemini AI provider via google-genai SDK."""
+    """Google Gemini AI provider with automatic model fallback on 429."""
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, api_key: str, model: str, fallback_model: str) -> None:
         self._client = genai.Client(api_key=api_key)
+        self._model = model
+        self._fallback_model = fallback_model
+        self._use_fallback = True
+        logger.info(
+            "GeminiAIClient initialized",
+            extra={"model": model, "fallback": fallback_model},
+        )
+
+    def _generate(self, prompt: str, temperature: float) -> dict:
+        """Call generate_content with automatic 429 model fallback.
+
+        On the first 429 from the primary model, retries with the fallback model
+        and remembers the switch for subsequent calls in this Lambda invocation.
+        """
+        models = [self._fallback_model] if self._use_fallback else [self._model, self._fallback_model]
+
+        for model in models:
+            try:
+                response = self._client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        response_mime_type="application/json",
+                    ),
+                )
+                logger.info("LLM call succeeded", extra={"model": model})
+                return json.loads(response.text)
+            except genai_errors.APIError as exc:
+                if exc.code == 429 and model != self._fallback_model:
+                    logger.warning(
+                        "Rate limited on primary model, falling back",
+                        extra={"primary": model, "fallback": self._fallback_model},
+                    )
+                    self._use_fallback = True
+                    continue
+                raise
+
+        raise RuntimeError("All models exhausted")  # unreachable
 
     def select_top_news(self, news_items: list[dict]) -> list[int]:
         """Ask the model to pick the top 3 unique news indices."""
@@ -59,15 +98,7 @@ class GeminiAIClient(AIClient):
         )
 
         try:
-            response = self._client.models.generate_content(
-                model=LLM_MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.1,
-                    response_mime_type="application/json",
-                ),
-            )
-            data = json.loads(response.text)
+            data = self._generate(prompt, temperature=0.1)
             indices = data.get("top_indices", [0, 1, 2])
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
             logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
@@ -120,15 +151,7 @@ class GeminiAIClient(AIClient):
         )
 
         try:
-            response = self._client.models.generate_content(
-                model=LLM_MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.4,
-                    response_mime_type="application/json",
-                ),
-            )
-            data = json.loads(response.text)
+            data = self._generate(prompt, temperature=0.4)
             digests = data.get("digests", [])
             if len(digests) != len(deep_news_items):
                 logger.warning(
@@ -156,6 +179,9 @@ def create_ai_client() -> AIClient:
     """Factory: returns the configured AI client."""
     provider = AI_PROVIDER.lower()
     if provider == "gemini":
-        logger.info("GeminiAIClient initialized", extra={"api_key": GEMINI_API_KEY})
-        return GeminiAIClient(api_key=GEMINI_API_KEY)
+        return GeminiAIClient(
+            api_key=GEMINI_API_KEY,
+            model=LLM_MODEL,
+            fallback_model=FALLBACK_MODEL,
+        )
     raise ValueError(f"Unsupported AI provider: {AI_PROVIDER!r}. Available: 'gemini'")

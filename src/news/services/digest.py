@@ -3,7 +3,7 @@
 from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
-from core.utils import extract_event, get_greeting_and_max_age_hours, get_intro_text
+from core.utils import extract_event, get_intro_text
 from google.genai import errors as genai_errors
 from services.ai_client import AIClient
 from services.news_fetcher import NewsFetcher
@@ -34,10 +34,8 @@ class DigestService:
         """
         logger.info("Starting daily news digest job")
         chat_ids, lang = extract_event(event)
-        max_age_hours, hour = get_greeting_and_max_age_hours(lang)
-        logger.info(f"Max age hours: {max_age_hours}, Hour: {hour}")
         try:
-            raw_news = self._fetcher.fetch_raw_news(max_age_hours=max_age_hours)
+            raw_news = self._fetcher.fetch_raw_news()
             if not raw_news:
                 logger.info("No news items found within TTL; skipping digest")
                 return {"statusCode": 200, "body": "No news"}
@@ -61,7 +59,7 @@ class DigestService:
 
             logger.info("Deep scrape complete", extra={"articles": len(deep_news)})
 
-            intro = get_intro_text(lang, hour)
+            intro = get_intro_text(lang)
             digests = self._ai.generate_digests_per_article(deep_news, lang)
 
             for chat_id in chat_ids:

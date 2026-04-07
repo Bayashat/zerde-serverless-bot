@@ -16,4 +16,5 @@ GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
 
 # ── Optional (have defaults) ─────────────────────────────────────────────────
 AI_PROVIDER: str = os.environ.get("AI_PROVIDER", "gemini")
-LLM_MODEL: str = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
+LLM_MODEL: str = os.environ.get("LLM_MODEL", "gemini-3-flash-preview")
+FALLBACK_MODEL: str = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")

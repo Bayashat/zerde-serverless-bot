@@ -44,7 +44,9 @@ class QuizConstruct(Construct):
         gemini_api_key: str,
         ai_provider: str,
         llm_model: str,
-        quiz_chats: dict[str, list[str]],
+        groq_api_key: str,
+        groq_model: str,
+        chats: dict[str, list[str]],
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -96,6 +98,8 @@ class QuizConstruct(Construct):
                 "GEMINI_API_KEY": gemini_api_key,
                 "AI_PROVIDER": ai_provider,
                 "LLM_MODEL": llm_model,
+                "GROQ_API_KEY": groq_api_key,
+                "GROQ_MODEL": groq_model,
             },
         )
 
@@ -105,7 +109,7 @@ class QuizConstruct(Construct):
         # ── EventBridge (prod-only) ────────────────────────────────────────
         if is_prod:
             for lang, schedules in _LANG_SCHEDULE.items():
-                chat_ids = quiz_chats.get(lang, [])
+                chat_ids = chats.get(lang, [])
                 if not chat_ids:
                     continue
                 for hour_utc, minute_utc in schedules:
@@ -137,7 +141,7 @@ class QuizConstruct(Construct):
 
             # Sunday leaderboard (19:00 Almaty = 14:00 UTC, day-of-week=1 in cron = Sunday)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
-                chat_ids = quiz_chats.get(lang, [])
+                chat_ids = chats.get(lang, [])
                 if not chat_ids:
                     continue
                 slot = f"{hour_utc:02d}{minute_utc:02d}"

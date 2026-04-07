@@ -32,6 +32,7 @@ class BotConstruct(Construct):
         telegram_api_base: str,
         default_lang: str,
         groq_api_key: str,
+        gemini_api_key: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -81,6 +82,7 @@ class BotConstruct(Construct):
                 "DEFAULT_LANG": default_lang,
                 "TELEGRAM_API_BASE": telegram_api_base,
                 "GROQ_API_KEY": groq_api_key,
+                "GEMINI_API_KEY": gemini_api_key,
             },
         )
 

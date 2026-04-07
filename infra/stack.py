@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Any
@@ -36,21 +37,16 @@ class ZerdeTelegramBotStack(Stack):
         bot_token = _require("TELEGRAM_BOT_TOKEN")
         webhook_secret_token = _require("TELEGRAM_WEBHOOK_SECRET_TOKEN")
         gemini_api_key = _require("GEMINI_API_KEY")
-        news_chats: dict[str, list[str]] = {
-            "kk": _parse_chat_ids("NEWS_CHATS_KK"),
-            "zh": _parse_chat_ids("NEWS_CHATS_ZH"),
-            "ru": _parse_chat_ids("NEWS_CHATS_RU"),
+        chats: dict[str, list[str]] = {
+            "kk": _parse_chat_ids("CHATS_KK"),
+            "zh": _parse_chat_ids("CHATS_ZH"),
+            "ru": _parse_chat_ids("CHATS_RU"),
         }
 
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
         ai_provider = os.environ.get("AI_PROVIDER", "gemini")
         llm_model = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
-        quiz_chats: dict[str, list[str]] = {
-            "kk": _parse_chat_ids("QUIZ_CHATS_KK"),
-            "zh": _parse_chat_ids("QUIZ_CHATS_ZH"),
-            "ru": _parse_chat_ids("QUIZ_CHATS_RU"),
-        }
         groq_api_key = os.environ.get("GROQ_API_KEY", "")
         admin_user_id = os.environ.get("ADMIN_USER_ID", "")
 
@@ -73,8 +69,11 @@ class ZerdeTelegramBotStack(Stack):
             telegram_api_base=telegram_api_base,
             default_lang=default_lang,
             groq_api_key=groq_api_key,
+            gemini_api_key=gemini_api_key,
             log_level=log_level,
         )
+
+        fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
 
         NewsConstruct(
             self,
@@ -83,11 +82,14 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             bot_token=bot_token,
             gemini_api_key=gemini_api_key,
-            news_chats=news_chats,
+            chats=chats,
             ai_provider=ai_provider,
             llm_model=llm_model,
+            fallback_model=fallback_model,
             log_level=log_level,
         )
+
+        groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
         quiz = QuizConstruct(
             self,
@@ -98,9 +100,15 @@ class ZerdeTelegramBotStack(Stack):
             gemini_api_key=gemini_api_key,
             ai_provider=ai_provider,
             llm_model=llm_model,
-            quiz_chats=quiz_chats,
+            groq_api_key=groq_api_key,
+            groq_model=groq_model,
+            chats=chats,
             log_level=log_level,
         )
+
+        # Build chat_id → lang mapping for the bot lambda
+        chat_lang_map = {cid: lang for lang, cids in chats.items() for cid in cids}
+        bot.handler_lambda.add_environment("CHAT_LANG_MAP", json.dumps(chat_lang_map))
 
         # Grant Bot Lambda access to quiz table and quiz lambda, inject env vars
         quiz.quiz_table.grant_read_write_data(bot.handler_lambda)

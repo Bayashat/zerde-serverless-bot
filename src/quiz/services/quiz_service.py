@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.llm_provider import create_provider
 from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, QuizGenerator
 from services.quiz_sender import QuizSender
 from services.repository import QuizRepository
@@ -30,7 +31,8 @@ class QuizService:
     """Orchestrates quiz operations (daily quiz and leaderboards)."""
 
     def __init__(self) -> None:
-        self._generator = QuizGenerator()
+        provider = create_provider()
+        self._generator = QuizGenerator(provider)
         self._sender = QuizSender()
         self._repo = QuizRepository()
 
@@ -174,9 +176,6 @@ class QuizService:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
             return {"status": "error", "reason": "no valid question"}
 
-        announcement = self.build_announcement(lang, difficulty)
-        self._sender.send_message(chat_id, announcement)
-
         poll_result = self._sender.send_quiz_poll(
             chat_id=chat_id,
             question=question["question"],
@@ -186,21 +185,6 @@ class QuizService:
         )
 
         if poll_result:
-            poll_id = str(poll_result.get("poll", {}).get("id", ""))
-            message_id = poll_result.get("message_id", 0)
-            self._repo.save_quiz_record(
-                chat_id=chat_id,
-                question=question["question"],
-                options=question["options"],
-                correct_option_id=question["correct_option_index"],
-                explanation=question.get("explanation"),
-                category=topic,
-                lang=lang,
-                poll_id=poll_id,
-                message_id=message_id,
-                difficulty=difficulty,
-                points=question["points"],
-            )
             logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
             return {"status": "ok", "sent": 1, "total": 1}
 
