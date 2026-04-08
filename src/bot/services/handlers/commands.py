@@ -1,11 +1,51 @@
 """Simple bot commands: /start, /help, /support, /ping, /stats, /genquiz."""
 
-from core.config import ADMIN_USER_ID, QUIZ_LAMBDA_NAME, VALID_DIFFICULTIES, VALID_LANGS
+from core.config import (
+    ADMIN_USER_ID,
+    QUIZ_LAMBDA_NAME,
+    VALID_DIFFICULTIES,
+    VALID_LANGS,
+    get_chat_lang,
+)
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.handlers.quiz import react_genquiz_processing
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+
+def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
+    """Parse ``/genquiz`` args: ``topic`` [, ``difficulty`` [, ``lang``]].
+
+    Order is fixed: topic (words), then optional difficulty, then optional lang.
+    Defaults: difficulty ``medium``, lang from ``CHAT_LANG_MAP`` / ``DEFAULT_LANG``.
+    """
+    parts = text.split()
+    if len(parts) < 2:
+        return None
+    tokens = parts[1:]
+    if len(tokens) == 1:
+        return (tokens[0], "medium", get_chat_lang(chat_id))
+
+    lang: str | None = None
+    difficulty: str | None = None
+
+    if tokens[-1] in VALID_LANGS:
+        lang = tokens.pop()
+
+    if len(tokens) >= 2 and tokens[-1] in VALID_DIFFICULTIES:
+        difficulty = tokens.pop()
+
+    topic = " ".join(tokens).strip()
+    if not topic:
+        return None
+
+    return (
+        topic,
+        difficulty or "medium",
+        lang or get_chat_lang(chat_id),
+    )
 
 
 def handle_start(ctx: Context) -> None:
@@ -75,8 +115,8 @@ def handle_stats(ctx: Context) -> None:
 def handle_quiz_generate(ctx: Context) -> None:
     """Admin-only: generate and send an on-demand quiz poll to the current chat.
 
-    Usage: /genquiz <topic> <lang> <difficulty>
-    Example: /genquiz backend kk hard
+    Usage: ``/genquiz <topic>`` [, ``<difficulty>`` [, ``<lang>``]] — fixed order;
+    omitted difficulty defaults to ``medium``, omitted lang to this chat's default.
     """
     if ctx.user_id != ADMIN_USER_ID:
         return
@@ -85,12 +125,12 @@ def handle_quiz_generate(ctx: Context) -> None:
         ctx.reply(get_translated_text("genquiz_lambda_not_configured", ctx.lang_code), ctx.message_id)
         return
 
-    parts = ctx.text.split()
-    if len(parts) != 4:
+    parsed = _parse_genquiz_args(ctx.text, ctx.chat_id)
+    if parsed is None:
         ctx.reply(get_translated_text("genquiz_usage", ctx.lang_code), ctx.message_id)
         return
 
-    _, topic, lang, difficulty = parts
+    topic, difficulty, lang = parsed
 
     if lang not in VALID_LANGS:
         langs_str = ", ".join(sorted(VALID_LANGS))
@@ -103,6 +143,8 @@ def handle_quiz_generate(ctx: Context) -> None:
             get_translated_text("genquiz_invalid_difficulty", ctx.lang_code, difficulties=diffs_str), ctx.message_id
         )
         return
+
+    react_genquiz_processing(ctx)
 
     logger.info(
         "Invoking quiz lambda on-demand",

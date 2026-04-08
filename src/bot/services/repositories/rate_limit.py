@@ -1,12 +1,14 @@
 """Atomic daily RPD counter for Gemini API, backed by DynamoDB.
 
 Uses the shared stats table with key pattern ``GEMINI_RPD#<date_pt>``.
-Items auto-expire via TTL after 48 hours.  The counter is atomic
-(single UpdateItem with ADD) so concurrent Lambda invocations never
-double-count or drift.
+*date_pt* is the calendar date in ``America/Los_Angeles`` (US Pacific), matching
+Google's RPD reset at local midnight. Items auto-expire via TTL after 48 hours.
+The counter is atomic (single UpdateItem with ADD) so concurrent Lambda
+invocations never double-count or drift.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from botocore.exceptions import ClientError
 from core.config import GEMINI_RPD_LIMIT, STATS_TABLE_NAME
@@ -15,7 +17,8 @@ from services.repositories._common import get_dynamodb
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_PT = timezone(timedelta(hours=-8))
+# US Pacific calendar day (PST/PDT). Gemini RPD resets at local midnight per Google docs.
+_PT = ZoneInfo("America/Los_Angeles")
 _PK_PREFIX = "GEMINI_RPD"
 _TTL_DELTA = timedelta(hours=48)
 
@@ -37,7 +40,7 @@ class RateLimitRepository:
 
     @staticmethod
     def _today_pt() -> str:
-        """Current date in Pacific Time (Gemini RPD resets at midnight PT)."""
+        """Calendar date in America/Los_Angeles (Gemini RPD daily reset)."""
         return datetime.now(_PT).strftime("%Y-%m-%d")
 
     def increment_and_check(self) -> tuple[int, bool]:

@@ -2,6 +2,7 @@
 
 from typing import Any, Callable
 
+from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
@@ -74,7 +75,8 @@ class Context:
 
     @property
     def lang_code(self) -> str:
-        return self.user_data.get("language_code", "kk")
+        """Chat UI language from ``CHAT_LANG_MAP`` (not Telegram client ``language_code``)."""
+        return get_chat_lang(self.chat_id)
 
     @property
     def message_id(self) -> int | None:
@@ -105,6 +107,14 @@ class Context:
                 link_preview_disable=link_preview_disable,
             )
         return {}
+
+    # send a private msg to the user
+    def send_private_message(self, text: str) -> dict[str, Any]:
+        return self.bot.send_message(self.user_id, text)
+
+    # react to the message
+    def react(self, emoji: str) -> None:
+        return self.bot.set_message_reaction(self.chat_id, self.message_id, emoji)
 
 
 # ── Dispatcher ──────────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from aws_cdk import Duration, RemovalPolicy
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
@@ -26,14 +28,32 @@ class BotConstruct(Construct):
         *,
         env_name: str,
         is_prod: bool,
-        queue: sqs.Queue,
-        bot_token: str,
-        webhook_secret_token: str,
+        log_level: str,
         telegram_api_base: str,
         default_lang: str,
-        groq_api_key: str,
+        bot_token: str,
+        webhook_secret_token: str,
+        queue: sqs.Queue,
+        admin_user_id: str,
+        gemini_api_base: str,
         gemini_api_key: str,
-        log_level: str,
+        wtf_gemini_model: str,
+        gemini_rpd_limit: int,
+        groq_api_base: str,
+        groq_api_key: str,
+        groq_model: str,
+        llama_api_base: str,
+        llama_api_key: str,
+        llama_model: str,
+        deepseek_api_base: str,
+        deepseek_api_key: str,
+        deepseek_model: str,
+        wtf_fallback_provider: str,
+        chat_lang_map: dict[str, str],
+        captcha_timeout_seconds: int,
+        kick_ban_duration_seconds: int,
+        voteban_threshold: int,
+        voteban_forgive_threshold: int,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -75,14 +95,41 @@ class BotConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "TELEGRAM_API_BASE": telegram_api_base,
+                "DEFAULT_LANG": default_lang,
+                # -- Bot parameters ────────────────────────────────────────────────
                 "BOT_TOKEN": bot_token,
                 "WEBHOOK_SECRET_TOKEN": webhook_secret_token,
-                "QUEUE_URL": queue.queue_url,
                 "STATS_TABLE_NAME": stats_table.table_name,
-                "DEFAULT_LANG": default_lang,
-                "TELEGRAM_API_BASE": telegram_api_base,
+                "QUEUE_URL": queue.queue_url,
+                "ADMIN_USER_ID": admin_user_id,
+                # -- Groq parameters ────────────────────────────────────────────────
+                "GROQ_API_BASE": groq_api_base,
                 "GROQ_API_KEY": groq_api_key,
+                "GROQ_MODEL": groq_model,
+                # -- Llama parameters ──────────────────────────────────────────────
+                "LLAMA_API_BASE": llama_api_base,
+                "LLAMA_API_KEY": llama_api_key,
+                "LLAMA_MODEL": llama_model,
+                # -- DeepSeek parameters ────────────────────────────────────────────
+                "DEEPSEEK_API_BASE": deepseek_api_base,
+                "DEEPSEEK_API_KEY": deepseek_api_key,
+                "DEEPSEEK_MODEL": deepseek_model,
+                # -- WTF fallback provider ──────────────────────────────────────────
+                "WTF_FALLBACK_PROVIDER": wtf_fallback_provider,
+                # -- Gemini parameters ───────────────────────────────────────────────
+                "GEMINI_API_BASE": gemini_api_base,
                 "GEMINI_API_KEY": gemini_api_key,
+                "WTF_GEMINI_MODEL": wtf_gemini_model,
+                "GEMINI_RPD_LIMIT": gemini_rpd_limit,
+                # -- Chat → language mapping (JSON string for Lambda env) ─────────────
+                "CHAT_LANG_MAP": json.dumps(chat_lang_map),
+                # -- Timing parameters ────────────────────────────────────────────────
+                "CAPTCHA_TIMEOUT_SECONDS": captcha_timeout_seconds,
+                "KICK_BAN_DURATION_SECONDS": kick_ban_duration_seconds,
+                # -- Vote-to-ban thresholds ──────────────────────────────────────────
+                "VOTEBAN_THRESHOLD": voteban_threshold,
+                "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
             },
         )
 

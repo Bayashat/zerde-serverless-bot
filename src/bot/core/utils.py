@@ -1,5 +1,6 @@
 """Shared utility helpers."""
 
+from core.config import get_chat_lang
 from core.translations import get_translated_text
 
 
@@ -19,7 +20,7 @@ def check_membership(ctx) -> bool:
         if ctx.callback_query_id:
             ctx.bot.answer_callback_query(
                 ctx.callback_query_id,
-                text=get_translated_text("not_in_group"),
+                text=get_translated_text("not_in_group", get_chat_lang(ctx.chat_id)),
                 show_alert=True,
             )
         return False

@@ -1,4 +1,11 @@
-"""/wtf command: explain a tech term via Gemini (primary) with configurable fallback."""
+"""/wtf command: explain a tech term via Gemini (primary) with configurable fallback.
+
+Usage: ``/wtf <term>`` or reply to a message with ``/wtf``. Explanation language comes from
+``CHAT_LANG_MAP`` for the current chat (see ``get_chat_lang``).
+
+Gemini RPD counts and remaining quota use the US Pacific calendar day
+(America/Los_Angeles), aligned with Google's daily RPD reset at midnight PT.
+"""
 
 from core.config import (
     DEEPSEEK_API_KEY,
@@ -60,10 +67,15 @@ def _extract_term(ctx: Context) -> str:
 
 
 def _build_rpd_footer(lang: str) -> str:
-    """Build footer showing Gemini RPD usage from the shared DynamoDB counter."""
+    """Build footer showing Gemini RPD usage (DynamoDB counter; day = Pacific time)."""
     if not _gemini:
         return ""
-    return get_translated_text("wtf_rpd_footer", lang, remaining=_gemini.remaining_rpd, total=_gemini.rpd_limit)
+    return get_translated_text(
+        "wtf_rpd_footer",
+        lang,
+        remaining=_gemini.remaining_rpd,
+        total=_gemini.rpd_limit,
+    )
 
 
 def _react_processing(ctx: Context) -> None:
@@ -73,19 +85,6 @@ def _react_processing(ctx: Context) -> None:
     except TelegramAPIError as e:
         logger.warning(
             "setMessageReaction failed for /wtf",
-            extra={"status": e.status, "body": e.body[:200]},
-        )
-
-
-def _clear_processing_reaction(ctx: Context) -> None:
-    """Remove the processing reaction after the reply is sent or on error."""
-    if ctx.chat_id is None or ctx.message_id is None:
-        return
-    try:
-        ctx.bot.clear_message_reaction(ctx.chat_id, ctx.message_id)
-    except TelegramAPIError as e:
-        logger.warning(
-            "clearMessageReaction failed for /wtf",
             extra={"status": e.status, "body": e.body[:200]},
         )
 
@@ -144,6 +143,8 @@ def handle_wtf(ctx: Context) -> None:
         ctx.reply(get_translated_text("wtf_usage", lang), ctx.message_id)
         return
 
+    logger.info("/wtf", extra={"term": term[:120], "lang": lang, "chat_id": ctx.chat_id})
+
     _react_processing(ctx)
     _send_typing_once(ctx)
     try:
@@ -160,7 +161,7 @@ def handle_wtf(ctx: Context) -> None:
                 ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
                 return
             intro = get_translated_text("wtf_fallback_takeover_intro", lang)
-            ctx.reply(f"{intro}\n\n{explanation}" + _build_rpd_footer(lang), ctx.message_id)
+            ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
             return
 
         # Gemini only (no fallback configured)
@@ -182,7 +183,7 @@ def handle_wtf(ctx: Context) -> None:
             except GeminiUnavailableError:
                 ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
                 return
-            ctx.reply(explanation + _build_rpd_footer(lang), ctx.message_id)
+            ctx.reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
             return
 
         # Both Gemini and fallback configured
@@ -202,11 +203,8 @@ def handle_wtf(ctx: Context) -> None:
             _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=False)
             return
 
-        ctx.reply(explanation + _build_rpd_footer(lang), ctx.message_id)
+        ctx.reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
     except Exception:
         logger.exception("Unexpected error in /wtf handler")
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
-    finally:
-        # _clear_processing_reaction(ctx)
-        pass

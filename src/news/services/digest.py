@@ -4,8 +4,7 @@ from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
 from core.utils import extract_event, get_intro_text
-from google.genai import errors as genai_errors
-from services.ai_client import AIClient
+from services.ai_client import GeminiAIClient
 from services.news_fetcher import NewsFetcher
 from services.telegram import TelegramSender
 
@@ -18,12 +17,23 @@ class DigestService:
     def __init__(
         self,
         fetcher: NewsFetcher,
-        ai: AIClient,
+        ai: GeminiAIClient,
         sender: TelegramSender,
     ) -> None:
         self._fetcher = fetcher
         self._ai = ai
         self._sender = sender
+
+    def _notify_chats_digest_failure(self, chat_ids: list[str], message: str) -> None:
+        """Best-effort alert to every configured chat (errors are logged, not raised)."""
+        for chat_id in chat_ids:
+            try:
+                self._sender.send_message(chat_id, message)
+            except Exception:
+                logger.exception(
+                    "Failed to send digest failure notification",
+                    extra={"chat_id": chat_id},
+                )
 
     def run(self, event: dict[str, Any]) -> dict[str, Any]:
         """Execute the digest pipeline for a language group.
@@ -77,15 +87,11 @@ class DigestService:
 
             return {"statusCode": 200, "body": "Agentic Digest Sent"}
 
-        except genai_errors.APIError as e:
-            logger.error("Gemini API error in digest pipeline", exc_info=True)
-            error_msg = f"⚠️ Gemini API request failed: {e}"
-            for chat_id in chat_ids:
-                try:
-                    self._sender.send_message(chat_id, error_msg)
-                except Exception:
-                    logger.exception("Failed to send Gemini error notification", extra={"chat_id": chat_id})
-            return {"statusCode": 503, "body": "Gemini API error"}
-        except Exception:
+        except Exception as e:
             logger.exception("Error in news digest pipeline")
+            # Avoid putting raw exception text in Telegram (may contain URLs or internal detail).
+            self._notify_chats_digest_failure(
+                chat_ids,
+                f"⚠️ News digest failed ({type(e).__name__}). Check CloudWatch logs for details.",
+            )
             return {"statusCode": 500, "body": "Internal server error"}

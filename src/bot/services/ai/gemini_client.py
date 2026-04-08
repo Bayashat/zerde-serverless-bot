@@ -1,27 +1,26 @@
 """Gemini REST API client for tech-term explanations.
 
 Rate-limit tracking uses an atomic DynamoDB counter (RPD) shared
-across all Lambda invocations and chat groups.
+across all Lambda invocations and chat groups. The "day" matches
+Gemini/Google: calendar date in America/Los_Angeles (midnight PT reset).
 
 Timeout budget: API Gateway HTTP API hard-limits responses to 30 s.
-Gemini (12 s) + possible Groq fallback (12 s) + overhead ≈ 26 s.
+Gemini (12 s) + possible DeepSeek/Llama fallback (15 s) + overhead ≈ 26 s.
 """
 
 import json
 from typing import Any
 
 import urllib3
-from core.config import GEMINI_API_KEY, GEMINI_MODEL
+from core.config import GEMINI_API_BASE, GEMINI_API_KEY, WTF_GEMINI_MODEL
 from core.logger import LoggerAdapter, get_logger
-from services.ai.groq_client import DEFAULT_SYSTEM_PROMPT, SYSTEM_PROMPTS
+from services.ai.wtf_prompts import get_wtf_system_prompt, wtf_explain_user_text
 from services.repositories.rate_limit import RateLimitRepository
 from urllib3.exceptions import HTTPError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=12))
-
-_GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=15))
 
 
 class GeminiRPDExhaustedError(Exception):
@@ -31,7 +30,8 @@ class GeminiRPDExhaustedError(Exception):
 class GeminiUnavailableError(Exception):
     """Transient Gemini failure: HTTP 429/5xx, timeout, network, parse errors.
 
-    Callers should fall back to Groq *without* the daily-quota user notice.
+    Callers should fall back to the configured OpenAI-compatible provider *without*
+    the daily-quota user notice.
     """
 
 
@@ -40,7 +40,7 @@ class GeminiClient:
 
     def __init__(self) -> None:
         self._api_key = GEMINI_API_KEY
-        self._model = GEMINI_MODEL
+        self._model = WTF_GEMINI_MODEL
         self._rate_repo = RateLimitRepository()
         logger.info("GeminiClient initialized", extra={"model": self._model})
 
@@ -70,11 +70,11 @@ class GeminiClient:
             )
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
-        system_prompt = SYSTEM_PROMPTS.get(lang, DEFAULT_SYSTEM_PROMPT)
+        system_prompt = get_wtf_system_prompt(lang)
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [
-                {"role": "user", "parts": [{"text": f"Explain the term: {term}"}]},
+                {"role": "user", "parts": [{"text": wtf_explain_user_text(term)}]},
             ],
             "generationConfig": {
                 "temperature": 0.9,
@@ -82,7 +82,7 @@ class GeminiClient:
             },
         }
 
-        url = f"{_GEMINI_API_URL}/{self._model}:generateContent?key={self._api_key}"
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
 
         try:
             resp = _http.request(

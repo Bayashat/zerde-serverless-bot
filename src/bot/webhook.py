@@ -5,7 +5,7 @@ import hmac
 import json
 from typing import Any
 
-from core.config import WEBHOOK_SECRET_TOKEN
+from core.config import WEBHOOK_SECRET_TOKEN, get_chat_lang
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
@@ -75,7 +75,10 @@ def _handle_api_gateway(
             chat_type = message.get("chat", {}).get("type")
             if chat_type == "private":
                 chat_id = message.get("chat", {}).get("id")
-                dispatcher.bot.send_message(chat_id, get_translated_text("private_message"))
+                dispatcher.bot.send_message(
+                    chat_id,
+                    get_translated_text("private_message", get_chat_lang(chat_id)),
+                )
                 return create_response(200, {"message": "ok"})
 
         if not is_event_relevant_to_bot(body):

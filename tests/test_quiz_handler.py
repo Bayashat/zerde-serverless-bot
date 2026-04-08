@@ -13,8 +13,13 @@ os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "bot"))
 
+from core import config as bot_config  # noqa: E402
 from core.dispatcher import Context  # noqa: E402
 from services.handlers.quiz import handle_poll_answer, handle_quizstats  # noqa: E402
+
+# CHAT_LANG_MAP is read at first ``core.config`` import (often before this module's env runs).
+_QUIZSTATS_TEST_CHAT_KEY = "-100123"
+bot_config.CHAT_LANG_MAP[_QUIZSTATS_TEST_CHAT_KEY] = "en"
 
 
 class TestHandlePollAnswer:
@@ -106,11 +111,20 @@ class TestHandleQuizstats:
             {"SK": "USER#789", "total_score": 5},
         ]
         ctx = self._make_ctx(-100123, 456, quiz_repo)
+        ctx.bot.get_chat.return_value = {
+            "id": -100123,
+            "type": "supergroup",
+            "title": "Test Group",
+            "username": "testgroup",
+        }
 
         handle_quizstats(ctx)
 
         ctx.bot.send_message.assert_called_once()
+        ctx.bot.get_chat.assert_called_once_with(-100123)
         call_text = ctx.bot.send_message.call_args[0][1]
+        assert "Test Group" in call_text
+        assert "@testgroup" in call_text
         assert "10</b> points" in call_text
         assert "3</b> days" in call_text
         assert "#2</b>" in call_text

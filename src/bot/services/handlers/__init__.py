@@ -44,7 +44,7 @@ def register_handlers(dp: Dispatcher) -> None:
             elif ctx.callback_query_id:
                 ctx.bot.answer_callback_query(
                     ctx.callback_query_id,
-                    text=get_translated_text("unknown_action"),
+                    text=get_translated_text("unknown_action", ctx.lang_code),
                 )
         except Exception as e:
             logger.exception(f"Callback handler error: {e}")

@@ -1,7 +1,6 @@
 """AI client for generating daily news digest with provider abstraction."""
 
 import json
-from abc import ABC, abstractmethod
 
 from core.config import AI_PROVIDER, FALLBACK_MODEL, GEMINI_API_KEY, LLM_MODEL
 from core.logger import LoggerAdapter, get_logger
@@ -12,36 +11,25 @@ from google.genai import types
 logger = LoggerAdapter(get_logger(__name__), {})
 
 
-class AIClient(ABC):
-    """Abstract base class for AI providers."""
-
-    @abstractmethod
-    def select_top_news(self, news_items: list[dict]) -> list[int]:
-        """Return indices of the top N news items selected by the model."""
-
-    @abstractmethod
-    def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
-        """Generate one digest text per article (HTML; for pairing with each image)."""
-
-
-class GeminiAIClient(AIClient):
-    """Google Gemini AI provider with automatic model fallback on 429."""
+class GeminiAIClient:
+    """Google Gemini AI provider with automatic model fallback when primary fails."""
 
     def __init__(self, api_key: str, model: str, fallback_model: str) -> None:
         self._client = genai.Client(api_key=api_key)
         self._model = model
         self._fallback_model = fallback_model
-        self._use_fallback = True
+        self._use_fallback = False
         logger.info(
             "GeminiAIClient initialized",
             extra={"model": model, "fallback": fallback_model},
         )
 
     def _generate(self, prompt: str, temperature: float) -> dict:
-        """Call generate_content with automatic 429 model fallback.
+        """Call generate_content with automatic model fallback on retryable errors.
 
-        On the first 429 from the primary model, retries with the fallback model
-        and remembers the switch for subsequent calls in this Lambda invocation.
+        Tries the primary model first. On 429/500/503/504 from the primary,
+        retries with the fallback model and remembers the switch for later
+        calls in this Lambda invocation.
         """
         models = [self._fallback_model] if self._use_fallback else [self._model, self._fallback_model]
 
@@ -58,10 +46,16 @@ class GeminiAIClient(AIClient):
                 logger.info("LLM call succeeded", extra={"model": model})
                 return json.loads(response.text)
             except genai_errors.APIError as exc:
-                if exc.code == 429 and model != self._fallback_model:
+                # Retry with fallback on primary when overloaded / rate-limited / transient server errors.
+                retryable = exc.code in (429, 500, 503, 504)
+                if retryable and model != self._fallback_model:
                     logger.warning(
-                        "Rate limited on primary model, falling back",
-                        extra={"primary": model, "fallback": self._fallback_model},
+                        "Primary model request failed, falling back",
+                        extra={
+                            "primary": model,
+                            "fallback": self._fallback_model,
+                            "code": exc.code,
+                        },
                     )
                     self._use_fallback = True
                     continue
@@ -103,8 +97,6 @@ class GeminiAIClient(AIClient):
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
             logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
             return result
-        except genai_errors.APIError:
-            raise
         except Exception:
             logger.error("Failed to select top news", exc_info=True)
             return list(range(min(3, len(news_items))))
@@ -168,14 +160,12 @@ class GeminiAIClient(AIClient):
             ]
             logger.info("Per-article digests generated", extra={"count": len(result)})
             return result
-        except genai_errors.APIError:
-            raise
         except Exception:
             logger.error("Failed to generate per-article digests", exc_info=True)
             return [f"<b>{n['title']}</b>\n{n['link']}" for n in deep_news_items]
 
 
-def create_ai_client() -> AIClient:
+def create_ai_client() -> GeminiAIClient:
     """Factory: returns the configured AI client."""
     provider = AI_PROVIDER.lower()
     if provider == "gemini":

@@ -187,6 +187,12 @@ class TelegramClient:
             )
             raise
 
+    def get_chat(self, chat_id: int | str) -> dict[str, Any]:
+        """Return chat metadata (``title``, ``type``, ``username``, …) from ``getChat``."""
+        payload: dict[str, Any] = {"chat_id": chat_id}
+        result = self._post("getChat", payload)
+        return result.get("result", {})
+
     def get_chat_member(self, chat_id: int | str, user_id: int) -> dict[str, Any]:
         """Get chat member info (use ``result['status']`` for admin check)."""
         payload = {"chat_id": chat_id, "user_id": user_id}

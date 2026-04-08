@@ -1,30 +1,31 @@
 """Tests for Gemini-based quiz question generator."""
 
-import json
 import os
 import sys
 from unittest.mock import MagicMock
 
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
+os.environ.setdefault("TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
 
 _quiz_dir = os.path.join(os.path.dirname(__file__), "..", "src", "quiz")
+_saved_modules: dict[str, object] = {}
 
-_saved_modules = {}
-for mod_name in list(sys.modules):
-    if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
-        _saved_modules[mod_name] = sys.modules.pop(mod_name)
+try:
+    for mod_name in list(sys.modules):
+        if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
+            _saved_modules[mod_name] = sys.modules.pop(mod_name)
 
-sys.path.insert(0, _quiz_dir)
-
-from services.quiz_generator import CATEGORY_POOL, QuizGenerator  # noqa: E402
-
-sys.path.remove(_quiz_dir)
-for mod_name in list(sys.modules):
-    if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
-        del sys.modules[mod_name]
-sys.modules.update(_saved_modules)
+    sys.path.insert(0, _quiz_dir)
+    from services.quiz_generator import CATEGORY_POOL, QuizGenerator  # noqa: E402
+finally:
+    if _quiz_dir in sys.path:
+        sys.path.remove(_quiz_dir)
+    for mod_name in list(sys.modules):
+        if mod_name in ("core", "services") or mod_name.startswith(("core.", "services.")):
+            sys.modules.pop(mod_name, None)
+    sys.modules.update(_saved_modules)
 
 
 def _make_valid_data(
@@ -45,14 +46,12 @@ def _make_valid_data(
 
 def _make_generator() -> QuizGenerator:
     gen = QuizGenerator.__new__(QuizGenerator)
-    gen._client = MagicMock()
+    gen._provider = MagicMock()
     return gen
 
 
 def _mock_response(gen: QuizGenerator, data: dict) -> None:
-    mock_resp = MagicMock()
-    mock_resp.text = json.dumps(data)
-    gen._client.models.generate_content.return_value = mock_resp
+    gen._provider.generate_json.return_value = data
 
 
 class TestQuizGeneratorValidation:
@@ -84,9 +83,7 @@ class TestQuizGeneratorValidation:
 
     def test_invalid_json_returns_none(self):
         gen = _make_generator()
-        mock_resp = MagicMock()
-        mock_resp.text = "this is not json"
-        gen._client.models.generate_content.return_value = mock_resp
+        gen._provider.generate_json.return_value = "this is not json"
 
         result = gen.generate_question("database", "kk")
         assert result is None
@@ -130,7 +127,7 @@ class TestQuizGeneratorValidation:
 
     def test_gemini_exception_returns_none(self):
         gen = _make_generator()
-        gen._client.models.generate_content.side_effect = Exception("API error")
+        gen._provider.generate_json.side_effect = Exception("API error")
 
         result = gen.generate_question("devops", "zh")
         assert result is None
