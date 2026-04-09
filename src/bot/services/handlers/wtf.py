@@ -8,6 +8,7 @@ Gemini RPD counts and remaining quota use the US Pacific calendar day
 """
 
 from core.config import (
+    ADMIN_USER_ID,
     DEEPSEEK_API_KEY,
     GEMINI_API_KEY,
     LLAMA_API_KEY,
@@ -24,6 +25,7 @@ from services.ai.gemini_client import (
     GeminiUnavailableError,
 )
 from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
+from services.ai.wtf_prompts import get_wtf_prompt_mode, set_wtf_prompt_mode
 from services.telegram import TelegramAPIError
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -208,3 +210,30 @@ def handle_wtf(ctx: Context) -> None:
     except Exception:
         logger.exception("Unexpected error in /wtf handler")
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
+
+
+def handle_wtfmode(ctx: Context) -> None:
+    """Admin-only: switch /wtf system prompt mode between ``angry`` and ``normal``."""
+    if ctx.user_id != ADMIN_USER_ID:
+        ctx.reply("Only ADMIN_USER_ID can change /wtf mode. 🤡", ctx.message_id)
+        return
+
+    parts = ctx.text.split(maxsplit=1)
+    if len(parts) < 2:
+        current_mode = get_wtf_prompt_mode()
+        ctx.reply(
+            f"Usage: /wtfmode <angry|normal>\nCurrent mode: <b>{current_mode}</b>",
+            ctx.message_id,
+        )
+        return
+
+    mode = parts[1].strip().lower()
+    if not set_wtf_prompt_mode(mode):
+        ctx.reply(
+            f"Unsupported mode: {mode}. Use /wtfmode angry or /wtfmode normal.",
+            ctx.message_id,
+        )
+        return
+
+    logger.info("/wtfmode updated", extra={"mode": mode, "changed_by": ctx.user_id, "chat_id": ctx.chat_id})
+    ctx.reply(f"/wtf mode set to: <b>{mode}</b>", ctx.message_id)
