@@ -14,7 +14,7 @@ from typing import Any
 import urllib3
 from core.config import GEMINI_API_BASE, GEMINI_API_KEY, WTF_GEMINI_MODEL
 from core.logger import LoggerAdapter, get_logger
-from services.ai.wtf_prompts import get_wtf_system_prompt, wtf_explain_user_text
+from services.ai.wtf_prompts import WTFPromptStyle, get_wtf_system_prompt, wtf_explain_user_text
 from services.repositories.rate_limit import RateLimitRepository
 from urllib3.exceptions import HTTPError
 
@@ -54,7 +54,7 @@ class GeminiClient:
     def rpd_limit(self) -> int:
         return self._rate_repo.rpd_limit
 
-    def explain_term(self, term: str, lang: str = "kk") -> str:
+    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
         """Call Gemini to explain *term*.
 
         Raises:
@@ -70,7 +70,7 @@ class GeminiClient:
             )
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
-        system_prompt = get_wtf_system_prompt(lang)
+        system_prompt = get_wtf_system_prompt(lang, style)
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [

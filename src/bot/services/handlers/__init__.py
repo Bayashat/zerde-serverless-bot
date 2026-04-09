@@ -23,7 +23,7 @@ from services.handlers.commands import (
 )
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
-from services.handlers.wtf import handle_wtf, handle_wtfmode
+from services.handlers.wtf import handle_explain, handle_wtf
 
 __all__ = ["register_handlers", "process_timeout_task"]
 
@@ -61,7 +61,7 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("stats")(handle_stats)
     dp.command("voteban")(handle_voteban_command)
     dp.command("wtf")(handle_wtf)
-    dp.command("wtfmode")(handle_wtfmode)
+    dp.command("explain")(handle_explain)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
     dp.command("genquiz")(handle_quiz_generate)

@@ -29,9 +29,10 @@ TRANSLATIONS = {
             "• /stats — Group stats (admins).\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /wtf — Explain an IT term.\n"
+            "• /explain — Explain an IT term in neutral style.\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"
-            "• /wtfmode &lt;angry|normal&gt; — Switch /wtf style (ADMIN_USER_ID only).\n\n"
+            "\n"
             "🛡️ <b>For New Members (Anti-Spam):</b>\n"
             "Upon joining, you must click the <b>'I am human'</b> button.\n"
             "⚠️ <i>Warning: If the button is not clicked within 60 seconds, you will be automatically removed.</i>\n\n"
@@ -110,6 +111,11 @@ TRANSLATIONS = {
             "• <code>/wtf &lt;term&gt;</code> — explain a term\n"
             "• Reply to a message + <code>/wtf</code> — explain that text"
         ),
+        "explain_usage": (
+            "💡 <b>/explain</b> — friendly IT term explainer\n\n"
+            "• <code>/explain &lt;term&gt;</code> — explain a term\n"
+            "• Reply to a message + <code>/explain</code> — explain that text"
+        ),
         "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
         "wtf_api_error": "😵 AI is not responding right now, try again later.",
         "wtf_unexpected_error": "😵 Something went wrong, try again later.",
@@ -118,6 +124,7 @@ TRANSLATIONS = {
             "Explanations will use the backup AI until the quota resets (Pacific midnight)."
         ),
         "wtf_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
+        "explain_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
         "wtf_fallback_rate_limit": "⏳ Backup AI is temporarily rate-limited. Please try again in a minute.",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
@@ -155,9 +162,10 @@ TRANSLATIONS = {
             "• /stats — Топ статистикасы (админдер).\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
             "• /wtf — IT терминді түсіндіру.\n"
+            "• /explain — IT терминді бейтарап стильде түсіндіру.\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
             "• /genquiz — Сұраныс бойынша quiz жасау (тек ADMIN_USER_ID).\n"
-            "• /wtfmode &lt;angry|normal&gt; — /wtf стилін ауыстыру (тек ADMIN_USER_ID).\n\n"
+            "\n"
             "🛡️ <b>Жаңа мүшелерге арналған (Анти-спам):</b>\n"
             "Топқа қосылған кезде арнайы <b>«Мен адаммын»</b> түймесін басу қажет.\n"
             "⚠️ <i>Ескерту: Түйме 60 секунд ішінде басылмаса, сіз топтан автоматты түрде шығарыласыз.</i>\n\n"
@@ -241,6 +249,11 @@ TRANSLATIONS = {
             "• <code>/wtf &lt;термин&gt;</code> — түсіндіру\n"
             "• Хабарламаға жауап + <code>/wtf</code> — сол мәтінді түсіндіру"
         ),
+        "explain_usage": (
+            "💡 <b>/explain</b> — IT терминін бейтарап стильде түсіндіру\n\n"
+            "• <code>/explain &lt;термин&gt;</code> — түсіндіру\n"
+            "• Хабарламаға жауап + <code>/explain</code> — сол мәтінді түсіндіру"
+        ),
         "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
         "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
         "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
@@ -249,6 +262,7 @@ TRANSLATIONS = {
             "Лимит қайта толғанға дейін түсіндірулер резервтік AI арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."  # noqa: E501
         ),
         "wtf_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
+        "explain_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
         "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
@@ -286,9 +300,10 @@ TRANSLATIONS = {
             "• /stats — 查看群统计（管理员）。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
             "• /wtf — 解释 IT 术语。\n"
+            "• /explain — 以常规风格解释 IT 术语。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
             "• /genquiz — 按需生成 Quiz（仅 ADMIN_USER_ID）。\n"
-            "• /wtfmode &lt;angry|normal&gt; — 切换 /wtf 风格（仅 ADMIN_USER_ID）。\n\n"
+            "\n"
             "🛡️ <b>新成员（反垃圾）</b>\n"
             "入群后，请点击 <b>“我是人类”</b> 按钮。\n"
             "⚠️ <i>注意：若 60 秒内未点击，将被自动移出群组。</i>\n\n"
@@ -365,6 +380,11 @@ TRANSLATIONS = {
             "• <code>/wtf &lt;术语&gt;</code> — 解释术语\n"
             "• 回复一条消息 + <code>/wtf</code> — 解释该消息全文"
         ),
+        "explain_usage": (
+            "💡 <b>/explain</b> — 常规风格解释 IT 术语\n\n"
+            "• <code>/explain &lt;术语&gt;</code> — 解释术语\n"
+            "• 回复一条消息 + <code>/explain</code> — 解释该消息全文"
+        ),
         "wtf_not_configured": "⚙️ /wtf 当前不可用（API 未配置）。",
         "wtf_api_error": "😵 AI 当前无响应，请稍后重试。",
         "wtf_unexpected_error": "😵 出现未知错误，请稍后重试。",
@@ -372,6 +392,7 @@ TRANSLATIONS = {
             "⚠️ <b>今日 Gemini 配额 ({total}) 已耗尽。</b> " "在配额重置前（太平洋时间午夜），将使用备用 AI。"
         ),
         "wtf_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
+        "explain_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
         "wtf_fallback_rate_limit": "⏳ 备用 AI 触发限流，请 1 分钟后重试。",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD：{remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": "⚠️ 今日 Gemini 配额已耗尽。请配置备用 AI 或明天再试。",
@@ -407,9 +428,10 @@ TRANSLATIONS = {
             "• /stats — статистика группы (для админов).\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
             "• /wtf — объяснить IT-термин.\n"
+            "• /explain — объяснить IT-термин в нейтральном стиле.\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
             "• /genquiz — сгенерировать Quiz по запросу (только ADMIN_USER_ID).\n"
-            "• /wtfmode &lt;angry|normal&gt; — переключить стиль /wtf (только ADMIN_USER_ID).\n\n"
+            "\n"
             "🛡️ <b>Для новых участников (антиспам):</b>\n"
             "После входа нужно нажать кнопку <b>«Я человек»</b>.\n"
             "⚠️ <i>Важно: если не нажать за 60 секунд, пользователь будет удален автоматически.</i>\n\n"
@@ -489,6 +511,11 @@ TRANSLATIONS = {
             "• <code>/wtf &lt;термин&gt;</code> — объяснить\n"
             "• Ответьте на сообщение + <code>/wtf</code> — объяснить текст"
         ),
+        "explain_usage": (
+            "💡 <b>/explain</b> — дружелюбное объяснение IT-термина\n\n"
+            "• <code>/explain &lt;термин&gt;</code> — объяснить\n"
+            "• Ответьте на сообщение + <code>/explain</code> — объяснить текст"
+        ),
         "wtf_not_configured": "⚙️ /wtf сейчас недоступен (API не настроен).",
         "wtf_api_error": "😵 AI сейчас не отвечает, попробуйте позже.",
         "wtf_unexpected_error": "😵 Что-то пошло не так, попробуйте позже.",
@@ -497,6 +524,7 @@ TRANSLATIONS = {
             "До сброса квоты (полночь по Тихоокеанскому времени) будет использоваться резервный AI."
         ),
         "wtf_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
+        "explain_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
         "wtf_fallback_rate_limit": "⏳ Для резервного AI временно сработал лимит. Попробуйте через минуту.",
         "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (

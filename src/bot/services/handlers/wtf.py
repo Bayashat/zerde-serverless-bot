@@ -1,4 +1,4 @@
-"""/wtf command: explain a tech term via Gemini (primary) with configurable fallback.
+"""/wtf and /explain commands: explain tech terms via Gemini with fallback.
 
 Usage: ``/wtf <term>`` or reply to a message with ``/wtf``. Explanation language comes from
 ``CHAT_LANG_MAP`` for the current chat (see ``get_chat_lang``).
@@ -7,14 +7,7 @@ Gemini RPD counts and remaining quota use the US Pacific calendar day
 (America/Los_Angeles), aligned with Google's daily RPD reset at midnight PT.
 """
 
-from core.config import (
-    ADMIN_USER_ID,
-    DEEPSEEK_API_KEY,
-    GEMINI_API_KEY,
-    LLAMA_API_KEY,
-    WTF_FALLBACK_PROVIDER,
-    get_chat_lang,
-)
+from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, LLAMA_API_KEY, WTF_FALLBACK_PROVIDER, get_chat_lang
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
@@ -25,7 +18,7 @@ from services.ai.gemini_client import (
     GeminiUnavailableError,
 )
 from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
-from services.ai.wtf_prompts import get_wtf_prompt_mode, set_wtf_prompt_mode
+from services.ai.wtf_prompts import WTFPromptStyle
 from services.telegram import TelegramAPIError
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -101,6 +94,7 @@ def _fallback_explain_and_reply(
     ctx: Context,
     term: str,
     lang: str,
+    style: WTFPromptStyle,
     *,
     send_daily_quota_notice: bool,
 ) -> None:
@@ -118,7 +112,7 @@ def _fallback_explain_and_reply(
         )
 
     try:
-        explanation = _fallback.explain_term(term, lang)
+        explanation = _fallback.explain_term(term, lang, style=style)
     except _FALLBACK_RATE_LIMIT_ERRORS:
         logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
         ctx.reply(get_translated_text("wtf_fallback_rate_limit", lang), ctx.message_id)
@@ -128,12 +122,13 @@ def _fallback_explain_and_reply(
         ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
         return
 
-    intro = get_translated_text("wtf_fallback_takeover_intro", lang)
+    intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
+    intro = get_translated_text(intro_key, lang)
     ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
 
-def handle_wtf(ctx: Context) -> None:
-    """Handle /wtf: peek RPD, then Gemini or fallback with correct fallback messaging."""
+def _handle_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:
+    """Handle shared term-explainer flow with style-specific prompts."""
     lang = get_chat_lang(ctx.chat_id)
 
     if not _gemini and not _fallback:
@@ -142,10 +137,10 @@ def handle_wtf(ctx: Context) -> None:
 
     term = _extract_term(ctx)
     if not term:
-        ctx.reply(get_translated_text("wtf_usage", lang), ctx.message_id)
+        ctx.reply(get_translated_text(usage_key, lang), ctx.message_id)
         return
 
-    logger.info("/wtf", extra={"term": term[:120], "lang": lang, "chat_id": ctx.chat_id})
+    logger.info(command_name, extra={"term": term[:120], "lang": lang, "chat_id": ctx.chat_id})
 
     _react_processing(ctx)
     _send_typing_once(ctx)
@@ -153,16 +148,17 @@ def handle_wtf(ctx: Context) -> None:
         # Fallback only (Gemini not configured)
         if not _gemini and _fallback:
             try:
-                explanation = _fallback.explain_term(term, lang)
+                explanation = _fallback.explain_term(term, lang, style=style)
             except _FALLBACK_RATE_LIMIT_ERRORS:
-                logger.warning("Fallback rate limit hit for /wtf (fallback-only mode)")
+                logger.warning("Fallback rate limit hit for explainer command (fallback-only mode)")
                 ctx.reply(get_translated_text("wtf_fallback_rate_limit", lang), ctx.message_id)
                 return
             except (*_FALLBACK_API_ERRORS, Exception):
-                logger.exception("Fallback failed for /wtf (fallback-only mode)")
+                logger.exception("Fallback failed for explainer command (fallback-only mode)")
                 ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
                 return
-            intro = get_translated_text("wtf_fallback_takeover_intro", lang)
+            intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
+            intro = get_translated_text(intro_key, lang)
             ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
             return
 
@@ -175,7 +171,7 @@ def handle_wtf(ctx: Context) -> None:
                 )
                 return
             try:
-                explanation = _gemini.explain_term(term, lang)
+                explanation = _gemini.explain_term(term, lang, style=style)
             except GeminiRPDExhaustedError:
                 ctx.reply(
                     get_translated_text("wtf_gemini_exhausted_no_fallback", lang),
@@ -192,48 +188,31 @@ def handle_wtf(ctx: Context) -> None:
         assert _gemini is not None and _fallback is not None
 
         if _gemini.remaining_rpd <= 0:
-            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
+            _fallback_explain_and_reply(ctx, term, lang, style, send_daily_quota_notice=True)
             return
 
         try:
-            explanation = _gemini.explain_term(term, lang)
+            explanation = _gemini.explain_term(term, lang, style=style)
         except GeminiRPDExhaustedError:
-            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=True)
+            _fallback_explain_and_reply(ctx, term, lang, style, send_daily_quota_notice=True)
             return
         except GeminiUnavailableError:
-            logger.warning("Gemini unavailable for /wtf, using fallback without daily notice")
-            _fallback_explain_and_reply(ctx, term, lang, send_daily_quota_notice=False)
+            logger.warning("Gemini unavailable for explainer command, using fallback without daily notice")
+            _fallback_explain_and_reply(ctx, term, lang, style, send_daily_quota_notice=False)
             return
 
         ctx.reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
     except Exception:
-        logger.exception("Unexpected error in /wtf handler")
+        logger.exception("Unexpected error in explainer handler")
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
 
 
-def handle_wtfmode(ctx: Context) -> None:
-    """Admin-only: switch /wtf system prompt mode between ``angry`` and ``normal``."""
-    if ctx.user_id != ADMIN_USER_ID:
-        ctx.reply("Only ADMIN_USER_ID can change /wtf mode. 🤡", ctx.message_id)
-        return
+def handle_wtf(ctx: Context) -> None:
+    """Handle /wtf using the angry prompt style."""
+    _handle_term_explain(ctx, style="angry", command_name="/wtf", usage_key="wtf_usage")
 
-    parts = ctx.text.split(maxsplit=1)
-    if len(parts) < 2:
-        current_mode = get_wtf_prompt_mode()
-        ctx.reply(
-            f"Usage: /wtfmode <angry|normal>\nCurrent mode: <b>{current_mode}</b>",
-            ctx.message_id,
-        )
-        return
 
-    mode = parts[1].strip().lower()
-    if not set_wtf_prompt_mode(mode):
-        ctx.reply(
-            f"Unsupported mode: {mode}. Use /wtfmode angry or /wtfmode normal.",
-            ctx.message_id,
-        )
-        return
-
-    logger.info("/wtfmode updated", extra={"mode": mode, "changed_by": ctx.user_id, "chat_id": ctx.chat_id})
-    ctx.reply(f"/wtf mode set to: <b>{mode}</b>", ctx.message_id)
+def handle_explain(ctx: Context) -> None:
+    """Handle /explain using the normal prompt style."""
+    _handle_term_explain(ctx, style="normal", command_name="/explain", usage_key="explain_usage")

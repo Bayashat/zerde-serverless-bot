@@ -6,7 +6,7 @@ from typing import Any
 import urllib3
 from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL
 from core.logger import LoggerAdapter, get_logger
-from services.ai.wtf_prompts import build_wtf_openai_chat_payload
+from services.ai.wtf_prompts import WTFPromptStyle, build_wtf_openai_chat_payload
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -34,9 +34,9 @@ class DeepSeekClient:
         self.model = DEEPSEEK_MODEL
         self.api_key = DEEPSEEK_API_KEY
 
-    def explain_term(self, term: str, lang: str = "kk") -> str:
+    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
         """Ask the LLM to explain a tech term in the given language."""
-        payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang)
+        payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang, style=style)
 
         url = f"{self.api_base}/chat/completions"
         resp = _http.request(
