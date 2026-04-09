@@ -23,6 +23,7 @@ class QuizSender:
         chat_id: str,
         text: str,
         parse_mode: str = "HTML",
+        reply_to_message_id: int | None = None,
     ) -> dict[str, Any] | None:
         """Send a text message to a chat. Returns the Telegram response result or None on failure."""
         url = f"{self._base_url}/sendMessage"
@@ -31,6 +32,8 @@ class QuizSender:
             "text": text,
             "parse_mode": parse_mode,
         }
+        if reply_to_message_id:
+            payload["reply_to_message_id"] = reply_to_message_id
         try:
             resp = http.request(
                 "POST",

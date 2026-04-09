@@ -197,3 +197,23 @@ class QuizService:
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
         return {"status": "error", "reason": "failed to send poll", **self._rpd_payload()}
+
+    def process_on_demand_quiz_with_feedback(
+        self,
+        chat_id: str,
+        lang: str,
+        topic: str,
+        difficulty: str,
+        *,
+        include_rpd_footer: bool,
+        reply_to_message_id: int | None = None,
+    ) -> dict:
+        """Run on-demand quiz and optionally send RPD footer to chat."""
+        result = self.process_on_demand_quiz(chat_id, lang, topic, difficulty)
+        if include_rpd_footer:
+            remaining = result.get("rpd_remaining")
+            total = result.get("rpd_total")
+            if isinstance(remaining, int) and isinstance(total, int):
+                footer = get_translated_text("genquiz_rpd_footer", lang, remaining=remaining, total=total)
+                self._sender.send_message(chat_id, footer, reply_to_message_id=reply_to_message_id)
+        return result

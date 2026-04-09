@@ -34,3 +34,23 @@ class LambdaInvoker:
                 exc_info=True,
             )
             return {}
+
+    def invoke_async(self, function_name: str, payload: dict) -> bool:
+        """Invoke *function_name* asynchronously with *payload*.
+
+        Returns True when invocation was accepted by Lambda.
+        """
+        try:
+            self._client.invoke(
+                FunctionName=function_name,
+                InvocationType="Event",
+                Payload=json.dumps(payload).encode(),
+            )
+            return True
+        except Exception:
+            logger.error(
+                "Async Lambda invocation failed",
+                extra={"function_name": function_name},
+                exc_info=True,
+            )
+            return False

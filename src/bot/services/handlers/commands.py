@@ -15,15 +15,6 @@ from services.handlers.quiz import react_genquiz_processing
 logger = LoggerAdapter(get_logger(__name__), {})
 
 
-def _build_genquiz_rpd_footer(ctx: Context, result: dict) -> str:
-    """Build the /genquiz RPD footer from Quiz Lambda response."""
-    remaining = result.get("rpd_remaining")
-    total = result.get("rpd_total")
-    if not isinstance(remaining, int) or not isinstance(total, int):
-        return ""
-    return get_translated_text("genquiz_rpd_footer", ctx.lang_code, remaining=remaining, total=total)
-
-
 def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
     """Parse ``/genquiz`` args: ``topic`` [, ``difficulty`` [, ``lang``]].
 
@@ -128,20 +119,24 @@ def handle_quiz_generate(ctx: Context) -> None:
     omitted difficulty defaults to ``medium``, omitted lang to this chat's default.
     """
     if ctx.user_id != ADMIN_USER_ID:
+        react_genquiz_processing(ctx, "🤡")
         return
 
     if not QUIZ_LAMBDA_NAME or not ctx.lambda_invoker:
+        react_genquiz_processing(ctx, "🤡")
         ctx.reply(get_translated_text("genquiz_lambda_not_configured", ctx.lang_code), ctx.message_id)
         return
 
     parsed = _parse_genquiz_args(ctx.text, ctx.chat_id)
     if parsed is None:
+        react_genquiz_processing(ctx, "🤡")
         ctx.reply(get_translated_text("genquiz_usage", ctx.lang_code), ctx.message_id)
         return
 
     topic, difficulty, lang = parsed
 
     if lang not in VALID_LANGS:
+        react_genquiz_processing(ctx, "🤡")
         langs_str = ", ".join(sorted(VALID_LANGS))
         ctx.reply(get_translated_text("genquiz_invalid_lang", ctx.lang_code, langs=langs_str), ctx.message_id)
         return
@@ -160,7 +155,7 @@ def handle_quiz_generate(ctx: Context) -> None:
         extra={"topic": topic, "lang": lang, "difficulty": difficulty, "chat_id": ctx.chat_id},
     )
 
-    result = ctx.lambda_invoker.invoke(
+    accepted = ctx.lambda_invoker.invoke_async(
         QUIZ_LAMBDA_NAME,
         {
             "action": "on_demand",
@@ -168,18 +163,11 @@ def handle_quiz_generate(ctx: Context) -> None:
             "topic": topic,
             "lang": lang,
             "difficulty": difficulty,
+            "include_rpd_footer": True,
+            "reply_to_message_id": ctx.message_id,
         },
     )
-    rpd_footer = _build_genquiz_rpd_footer(ctx, result)
-
-    if result.get("status") != "ok":
-        reason = result.get("reason", "unknown error")
-        msg = get_translated_text("genquiz_failed", ctx.lang_code, reason=reason)
-        if rpd_footer:
-            msg = f"{msg}\n\n{rpd_footer}"
+    if not accepted:
+        msg = get_translated_text("genquiz_failed", ctx.lang_code, reason="failed to start generation")
         ctx.reply(msg, ctx.message_id)
-        logger.error("On-demand quiz failed", extra={"result": result})
         return
-
-    if rpd_footer:
-        ctx.reply(rpd_footer, ctx.message_id)

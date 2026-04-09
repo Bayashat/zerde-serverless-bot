@@ -21,6 +21,7 @@ TRANSLATIONS = {
         "difficulty_expert": "Expert ⚫",
         "leaderboard_header": "🏆 <b>Weekly Leaderboard</b>\n<i>(Points are accumulated)</i>\n\n",
         "leaderboard_empty": "Nobody has answered yet.",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
     "kk": {
         "quiz_announcement": (
@@ -34,6 +35,7 @@ TRANSLATIONS = {
         "difficulty_expert": "Эксперт ⚫",
         "leaderboard_header": "🏆 <b>Апталық рейтинг</b>\n<i>(Ұпайлар жинақталады)</i>\n\n",
         "leaderboard_empty": "Әзірге ешкім жауап берген жоқ.",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
     "ru": {
         "quiz_announcement": (
@@ -47,6 +49,7 @@ TRANSLATIONS = {
         "difficulty_expert": "Эксперт ⚫",
         "leaderboard_header": "🏆 <b>Еженедельный рейтинг</b>\n<i>(Очки накапливаются)</i>\n\n",
         "leaderboard_empty": "Пока никто не отвечал.",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
     "zh": {
         "quiz_announcement": (
@@ -58,6 +61,7 @@ TRANSLATIONS = {
         "difficulty_expert": "专家 ⚫",
         "leaderboard_header": "🏆 <b>每周排行榜</b>\n<i>（积分累计计算）</i>\n\n",
         "leaderboard_empty": "还没有人答题。",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
     },
 }
 

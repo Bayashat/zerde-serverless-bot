@@ -27,8 +27,17 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         chat_id = event.get("chat_id", "")
         topic = event.get("topic", "programming")
         difficulty = event.get("difficulty", "medium")
+        include_rpd_footer = bool(event.get("include_rpd_footer", False))
+        reply_to_message_id = event.get("reply_to_message_id")
         if not chat_id:
             return {"status": "error", "reason": "missing chat_id"}
-        return _quiz_service.process_on_demand_quiz(chat_id, lang, topic, difficulty)
+        return _quiz_service.process_on_demand_quiz_with_feedback(
+            chat_id,
+            lang,
+            topic,
+            difficulty,
+            include_rpd_footer=include_rpd_footer,
+            reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
+        )
 
     return _quiz_service.process_daily_quiz(chat_ids, lang)

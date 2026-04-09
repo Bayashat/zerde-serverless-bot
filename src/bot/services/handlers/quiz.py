@@ -12,10 +12,10 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _GENQUIZ_PROCESSING_REACTION = "👌"
 
 
-def react_genquiz_processing(ctx: Context) -> None:
+def react_genquiz_processing(ctx: Context, reaction: str = _GENQUIZ_PROCESSING_REACTION) -> None:
     """React to the /genquiz message before slow work so the webhook is visibly active (same idea as /wtf)."""
     try:
-        ctx.react(_GENQUIZ_PROCESSING_REACTION)
+        ctx.react(reaction)
     except TelegramAPIError as e:
         logger.warning(
             "setMessageReaction failed for /genquiz",
