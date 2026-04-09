@@ -124,7 +124,7 @@ def _fallback_explain_and_reply(
 
     intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
     intro = get_translated_text(intro_key, lang)
-    ctx.reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
+    ctx.reply(f"{intro}\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang), ctx.message_id)
 
 
 def _handle_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:

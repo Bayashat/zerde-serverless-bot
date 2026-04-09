@@ -126,7 +126,7 @@ TRANSLATIONS = {
         "wtf_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
         "explain_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
         "wtf_fallback_rate_limit": "⏳ Backup AI is temporarily rate-limited. Please try again in a minute.",
-        "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
+        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
             "⚠️ Today's Gemini daily quota is exhausted. Configure a fallback AI or try again tomorrow."
         ),
@@ -264,7 +264,7 @@ TRANSLATIONS = {
         "wtf_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
         "explain_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
         "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
-        "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
+        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
             "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Резервтік AI-ды баптаңыз немесе ертең қайталап көріңіз."
         ),
@@ -394,7 +394,7 @@ TRANSLATIONS = {
         "wtf_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
         "explain_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
         "wtf_fallback_rate_limit": "⏳ 备用 AI 触发限流，请 1 分钟后重试。",
-        "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD：{remaining}/{total}",
+        "wtf_rpd_footer": "\n---\n📊 Gemini RPD：{remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": "⚠️ 今日 Gemini 配额已耗尽。请配置备用 AI 或明天再试。",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
         "genquiz_usage": (
