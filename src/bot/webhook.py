@@ -9,7 +9,7 @@ from core.config import CHAT_LANG_MAP, WEBHOOK_SECRET_TOKEN, get_chat_lang
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.handlers import process_timeout_task
+from services.handlers import process_explain_task, process_timeout_task
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -117,12 +117,15 @@ def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
         try:
             body = json.loads(record["body"])
 
-            if body.get("task_type") == "CHECK_TIMEOUT":
+            task_type = body.get("task_type")
+            if task_type == "CHECK_TIMEOUT":
                 process_timeout_task(bot, body)
+            elif task_type == "PROCESS_EXPLAIN":
+                process_explain_task(bot, body)
             else:
                 logger.warning(
-                    "Unexpected SQS record: not a CHECK_TIMEOUT task, ignoring",
-                    extra={"body": body},
+                    "Unexpected SQS record: unsupported task_type, ignoring",
+                    extra={"task_type": task_type, "body": body},
                 )
 
         except Exception as e:

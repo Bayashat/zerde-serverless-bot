@@ -23,9 +23,9 @@ from services.handlers.commands import (
 )
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
-from services.handlers.wtf import handle_explain, handle_wtf
+from services.handlers.wtf import handle_explain, handle_wtf, process_explain_task
 
-__all__ = ["register_handlers", "process_timeout_task"]
+__all__ = ["register_handlers", "process_timeout_task", "process_explain_task"]
 
 logger = LoggerAdapter(get_logger(__name__), {})
 

@@ -90,6 +90,12 @@ class Context:
     def poll_answer(self) -> dict[str, Any] | None:
         return self._update.get("poll_answer")
 
+    @property
+    def update_id(self) -> int | None:
+        """Telegram update identifier for idempotency/dedup use-cases."""
+        raw = self._update.get("update_id")
+        return raw if isinstance(raw, int) else None
+
     def reply(
         self,
         text: str,
