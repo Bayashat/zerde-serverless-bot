@@ -78,7 +78,7 @@ class GeminiClient:
             ],
             "generationConfig": {
                 "temperature": 0.9,
-                "maxOutputTokens": 400,
+                "maxOutputTokens": 500,
             },
         }
 

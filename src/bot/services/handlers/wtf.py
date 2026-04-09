@@ -56,6 +56,7 @@ def _extract_term(ctx: Context) -> str:
 def _build_rpd_footer(lang: str) -> str:
     if not _gemini:
         return ""
+    logger.info("RPD limit", extra={"remaining": _gemini.remaining_rpd, "total": _gemini.rpd_limit})
     return get_translated_text(
         "wtf_rpd_footer",
         lang,
