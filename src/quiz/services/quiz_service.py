@@ -36,6 +36,13 @@ class QuizService:
         self._sender = QuizSender()
         self._repo = QuizRepository()
 
+    def _rpd_payload(self) -> dict[str, int]:
+        """Build a response fragment with quiz Gemini RPD counters."""
+        remaining, total = self._generator.get_rpd_status()
+        if remaining is None or total is None:
+            return {}
+        return {"rpd_remaining": remaining, "rpd_total": total}
+
     def get_difficulty(self) -> str:
         """Return the difficulty level for today (Almaty time)."""
         weekday = datetime.now(_ALMATY_TZ).weekday()
@@ -174,7 +181,7 @@ class QuizService:
         question = self._generator.generate_question(topic, lang, difficulty)
         if not question:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
-            return {"status": "error", "reason": "no valid question"}
+            return {"status": "error", "reason": "no valid question", **self._rpd_payload()}
 
         poll_result = self._sender.send_quiz_poll(
             chat_id=chat_id,
@@ -186,7 +193,7 @@ class QuizService:
 
         if poll_result:
             logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
-            return {"status": "ok", "sent": 1, "total": 1}
+            return {"status": "ok", "sent": 1, "total": 1, **self._rpd_payload()}
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
-        return {"status": "error", "reason": "failed to send poll"}
+        return {"status": "error", "reason": "failed to send poll", **self._rpd_payload()}

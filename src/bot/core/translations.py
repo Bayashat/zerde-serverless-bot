@@ -124,6 +124,7 @@ TRANSLATIONS = {
         "genquiz_invalid_lang": "❌ Invalid lang. Choose from: {langs}",
         "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
         "genquiz_failed": "❌ Failed to generate quiz: {reason}",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
     "kk": {
         "start_message": (
@@ -231,7 +232,7 @@ TRANSLATIONS = {
             "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
             "Лимит қайта толғанға дейін түсіндірулер резервтік AI арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."  # noqa: E501
         ),
-        "wtf_fallback_takeover_intro": "<i>🤕 Gemini шай ішуге кетті, сондықтан кезек <b>DeepSeek-те</b>!</i>",
+        "wtf_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
         "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
         "wtf_rpd_footer": "\n\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
@@ -246,6 +247,7 @@ TRANSLATIONS = {
         "genquiz_invalid_lang": "❌ Тіл қате. Келесілерді таңдаңыз: {langs}",
         "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
         "genquiz_failed": "❌ Quiz жасау мүмкін болмады: {reason}",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
     "zh": {
         "start_message": (
@@ -358,6 +360,7 @@ TRANSLATIONS = {
         "genquiz_invalid_lang": "❌ 语言无效。可选：{langs}",
         "genquiz_invalid_difficulty": "❌ 难度无效。可选：{difficulties}",
         "genquiz_failed": "❌ 生成 Quiz 失败：{reason}",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
     },
     "ru": {
         "start_message": (
@@ -461,7 +464,7 @@ TRANSLATIONS = {
             "⚠️ <b>Дневная квота Gemini ({total}) исчерпана.</b> "
             "До сброса квоты (полночь по Тихоокеанскому времени) будет использоваться резервный AI."
         ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI! ⚡",
+        "wtf_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
         "wtf_fallback_rate_limit": "⏳ Для резервного AI временно сработал лимит. Попробуйте через минуту.",
         "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
         "wtf_gemini_exhausted_no_fallback": (
@@ -476,6 +479,7 @@ TRANSLATIONS = {
         "genquiz_invalid_lang": "❌ Неверный язык. Выберите из: {langs}",
         "genquiz_invalid_difficulty": "❌ Неверная сложность. Выберите из: {difficulties}",
         "genquiz_failed": "❌ Не удалось сгенерировать Quiz: {reason}",
+        "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
     },
 }
 

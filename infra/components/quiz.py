@@ -49,6 +49,7 @@ class QuizConstruct(Construct):
         groq_api_base: str,
         groq_api_key: str,
         groq_model: str,
+        quiz_llm_rpd: str,
         chats: dict[str, list[str]],
     ) -> None:
         super().__init__(scope, construct_id)
@@ -101,6 +102,7 @@ class QuizConstruct(Construct):
                 "BOT_TOKEN": bot_token,
                 "TABLE_NAME": self.quiz_table.table_name,
                 "GEMINI_API_KEY": gemini_api_key,
+                "QUIZ_LLM_RPD": quiz_llm_rpd,
                 "GROQ_API_BASE": groq_api_base,
                 "GROQ_API_KEY": groq_api_key,
                 "GROQ_MODEL": groq_model,

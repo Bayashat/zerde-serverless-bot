@@ -15,6 +15,15 @@ from services.handlers.quiz import react_genquiz_processing
 logger = LoggerAdapter(get_logger(__name__), {})
 
 
+def _build_genquiz_rpd_footer(ctx: Context, result: dict) -> str:
+    """Build the /genquiz RPD footer from Quiz Lambda response."""
+    remaining = result.get("rpd_remaining")
+    total = result.get("rpd_total")
+    if not isinstance(remaining, int) or not isinstance(total, int):
+        return ""
+    return get_translated_text("genquiz_rpd_footer", ctx.lang_code, remaining=remaining, total=total)
+
+
 def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
     """Parse ``/genquiz`` args: ``topic`` [, ``difficulty`` [, ``lang``]].
 
@@ -161,8 +170,16 @@ def handle_quiz_generate(ctx: Context) -> None:
             "difficulty": difficulty,
         },
     )
+    rpd_footer = _build_genquiz_rpd_footer(ctx, result)
 
     if result.get("status") != "ok":
         reason = result.get("reason", "unknown error")
-        ctx.reply(get_translated_text("genquiz_failed", ctx.lang_code, reason=reason), ctx.message_id)
+        msg = get_translated_text("genquiz_failed", ctx.lang_code, reason=reason)
+        if rpd_footer:
+            msg = f"{msg}\n\n{rpd_footer}"
+        ctx.reply(msg, ctx.message_id)
         logger.error("On-demand quiz failed", extra={"result": result})
+        return
+
+    if rpd_footer:
+        ctx.reply(rpd_footer, ctx.message_id)

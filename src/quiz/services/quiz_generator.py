@@ -42,6 +42,10 @@ class QuizGenerator:
         self._provider = provider
         logger.info("QuizGenerator initialized")
 
+    def get_rpd_status(self) -> tuple[int | None, int | None]:
+        """Return provider RPD status when available."""
+        return self._provider.get_rpd_status()
+
     def generate_question(self, category: str, lang: str, difficulty: str = "easy") -> dict | None:
         """Generate a quiz question for the given category, language, and difficulty.
 

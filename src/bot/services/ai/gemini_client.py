@@ -20,7 +20,7 @@ from urllib3.exceptions import HTTPError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=15))
+_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=20))
 
 
 class GeminiRPDExhaustedError(Exception):

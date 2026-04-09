@@ -16,6 +16,7 @@ LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
 AI_PROVIDER: str = os.environ.get("AI_PROVIDER", "gemini")
 GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+QUIZ_LLM_RPD: int = int(os.environ.get("QUIZ_LLM_RPD", "20"))
 
 
 # ── Required ────────────────────────────────────────────────────────────────
