@@ -18,6 +18,7 @@ from services.handlers import process_explain_task, process_timeout_task
 from services.repositories.sqs import SQSClient
 from services.repositories.stats import StatsRepository
 from services.spam import RuleBasedSpamFilter, SpamEnforcer, collect_spam_screen_text, process_spam_check_task
+from services.spam.chat_member import is_chat_admin_or_creator
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -257,6 +258,9 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
             return
         message_id: int = msg["message_id"]
         chat_id: int = msg["chat"]["id"]
+
+        if is_chat_admin_or_creator(bot, chat_id, user_id):
+            return
 
         score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
         if score > 0.8:

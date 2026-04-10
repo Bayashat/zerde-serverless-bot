@@ -79,6 +79,13 @@ def test_api_error_does_not_enforce(mock_detector_cls, mock_enforcer_cls, mock_s
 
 
 @patch("services.spam.processor.GroqSpamDetector")
+@patch("services.spam.processor.is_chat_admin_or_creator", return_value=True)
+def test_skips_chat_admin_before_groq(mock_is_admin, mock_detector_cls, mock_bot):
+    process_spam_check_task(mock_bot, _BODY)
+    mock_detector_cls.assert_not_called()
+
+
+@patch("services.spam.processor.GroqSpamDetector")
 def test_malformed_body_does_not_raise(mock_detector_cls, mock_bot):
     # Missing required keys
     for bad_body in [{}, {"task_type": "SPAM_CHECK"}, None]:
@@ -93,7 +100,7 @@ def test_malformed_body_does_not_raise(mock_detector_cls, mock_bot):
 @patch("services.spam.processor.GroqSpamDetector")
 def test_spam_low_confidence_sends_alert(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
     mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.70)
-    mock_bot.get_chat_member.return_value = {"user": {"username": "suspicious_user"}}
+    mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "suspicious_user"}}
 
     process_spam_check_task(mock_bot, _BODY)
 

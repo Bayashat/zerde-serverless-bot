@@ -4,6 +4,7 @@ from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.stats import StatsRepository
+from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import SpamEnforcer
 from services.spam.groq_detector import GroqSpamDetector
 from services.telegram import TelegramClient
@@ -22,6 +23,13 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
         text: str = body["text"]
     except (KeyError, TypeError) as e:
         logger.error("Malformed SPAM_CHECK body, skipping", extra={"error": e, "body": body})
+        return
+
+    if is_chat_admin_or_creator(bot, chat_id, user_id):
+        logger.info(
+            "Skipping SPAM_CHECK for administrator/creator",
+            extra={"chat_id": chat_id, "user_id": user_id},
+        )
         return
 
     try:

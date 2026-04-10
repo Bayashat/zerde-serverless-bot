@@ -4,6 +4,7 @@ from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.stats import StatsRepository
+from services.spam.chat_member import is_chat_admin_or_creator
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -18,6 +19,13 @@ class SpamEnforcer:
 
     def enforce(self, chat_id: int, user_id: int, message_id: int, reason: str) -> None:
         """Delete message + ban user + notify group. Logs each action; never raises."""
+        if is_chat_admin_or_creator(self.bot, chat_id, user_id):
+            logger.info(
+                "Skipping spam enforcement for administrator/creator",
+                extra={"chat_id": chat_id, "user_id": user_id, "reason": reason},
+            )
+            return
+
         logger.info(
             "Enforcing spam action",
             extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id, "reason": reason},
