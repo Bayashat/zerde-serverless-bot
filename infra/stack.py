@@ -153,7 +153,7 @@ class ZerdeTelegramBotStack(Stack):
             log_level=log_level,
             telegram_api_base=telegram_api_base,
             ai_provider=ai_provider,
-            gemini_model=quiz_gemini_model,
+            quiz_gemini_model=quiz_gemini_model,
             bot_token=bot_token,
             gemini_api_key=gemini_api_key,
             groq_api_base=groq_api_base,
