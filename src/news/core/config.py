@@ -14,7 +14,7 @@ def _require(name: str) -> str:
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 
 AI_PROVIDER: str = os.environ.get("NEWS_AI_PROVIDER", "gemini")
-LLM_MODEL: str = os.environ.get("NEWS_LLM_MODEL", "gemini-3-flash-preview")
+LLM_MODEL: str = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
 FALLBACK_MODEL: str = os.environ.get("NEWS_FALLBACK_MODEL", "gemini-2.5-flash")
 
 

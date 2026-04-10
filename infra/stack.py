@@ -56,7 +56,8 @@ class ZerdeTelegramBotStack(Stack):
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
         wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
-        gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3-flash-preview")
+        news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
+        quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-2.5-flash-lite")
         gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
 
         # ── Groq parameters ──────────────────────────────────────────────────
@@ -75,7 +76,7 @@ class ZerdeTelegramBotStack(Stack):
         deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
 
         # ── Fallback model ────────────────────────────────────────────────────
-        fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
+        news_fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
         wtf_fallback_provider = os.environ.get("WTF_FALLBACK_PROVIDER", "deepseek")
 
         chats: dict[str, list[str]] = {
@@ -139,8 +140,8 @@ class ZerdeTelegramBotStack(Stack):
             gemini_api_key=gemini_api_key,
             chats=chats,
             ai_provider=ai_provider,
-            llm_model=gemini_model,
-            fallback_model=fallback_model,
+            news_gemini_model=news_gemini_model,
+            news_fallback_model=news_fallback_model,
             log_level=log_level,
         )
 
@@ -152,7 +153,7 @@ class ZerdeTelegramBotStack(Stack):
             log_level=log_level,
             telegram_api_base=telegram_api_base,
             ai_provider=ai_provider,
-            gemini_model=gemini_model,
+            gemini_model=quiz_gemini_model,
             bot_token=bot_token,
             gemini_api_key=gemini_api_key,
             groq_api_base=groq_api_base,

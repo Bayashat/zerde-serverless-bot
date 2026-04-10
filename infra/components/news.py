@@ -31,8 +31,8 @@ class NewsConstruct(Construct):
         gemini_api_key: str,
         chats: dict[str, list[str]],
         ai_provider: str,
-        llm_model: str,
-        fallback_model: str,
+        news_gemini_model: str,
+        news_fallback_model: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -60,8 +60,8 @@ class NewsConstruct(Construct):
             environment={
                 "LOG_LEVEL": log_level,
                 "NEWS_AI_PROVIDER": ai_provider,
-                "NEWS_LLM_MODEL": llm_model,
-                "NEWS_FALLBACK_MODEL": fallback_model,
+                "NEWS_GEMINI_MODEL": news_gemini_model,
+                "NEWS_FALLBACK_MODEL": news_fallback_model,
                 "BOT_TOKEN": bot_token,
                 "GEMINI_API_KEY": gemini_api_key,
             },

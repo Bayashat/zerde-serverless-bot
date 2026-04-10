@@ -82,7 +82,8 @@ jobs:
           DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
           TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3-flash-preview' }}
+          NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL || 'gemini-3-flash-preview' }}
+          QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL || 'gemini-2.5-flash-lite' }}
           WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL || 'gemini-3.1-flash-lite-preview' }}
           GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
           GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
