@@ -14,6 +14,8 @@ _RE_JOB = re.compile(r"работа|подработ|удалённо|удале
 _RE_CYRILLIC = re.compile(r"[\u0400-\u04FF]")
 _RE_LATIN = re.compile(r"[a-zA-Z]")
 _RE_WORD = re.compile(r"\S+")
+_RE_URL = re.compile(r"t\.me/|telegram\.me/|https?://", re.IGNORECASE)
+_RE_PROMO = re.compile(r"аренда|продаж|скидк|подписк|аккаунт|гаранти|отзыв|подключени", re.IGNORECASE)
 
 
 class RuleBasedSpamFilter:
@@ -28,28 +30,44 @@ class RuleBasedSpamFilter:
         triggered: list[str] = []
 
         has_mention = bool(_RE_MENTION.search(text))
+        has_money = bool(_RE_MONEY.search(text))
+        has_vpn = bool(_RE_VPN.search(text))
+        has_job = bool(_RE_JOB.search(text))
+        is_mixed_script = _has_mixed_script_word(text)
+        has_url = bool(_RE_URL.search(text))
+        has_promo = bool(_RE_PROMO.search(text))
 
-        if has_mention:
+        # @username alone is normal group chat; only score as "external" with other risk signals
+        risky_mention = has_mention and (has_money or has_vpn or has_job or is_mixed_script or has_url or has_promo)
+        if risky_mention:
             score += 0.35
             triggered.append("external_mention")
 
-        if _RE_MONEY.search(text):
+        if has_url:
+            score += 0.35
+            triggered.append("external_url")
+
+        if has_promo:
+            score += 0.25
+            triggered.append("promo_words")
+
+        if has_money:
             score += 0.30
             triggered.append("money_pattern")
 
-        if _RE_VPN.search(text):
+        if has_vpn:
             score += 0.35
             triggered.append("vpn_pattern")
 
-        if _RE_JOB.search(text):
+        if has_job:
             score += 0.25
             triggered.append("job_offer")
 
-        if _has_mixed_script_word(text):
+        if is_mixed_script:
             score += 0.20
             triggered.append("cis_spam_obfuscation")
 
-        if len(text) < 100 and has_mention:
+        if len(text) < 100 and risky_mention:
             score += 0.15
             triggered.append("short_text_with_contact")
 

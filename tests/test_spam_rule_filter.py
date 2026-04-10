@@ -50,11 +50,12 @@ def test_normal_kazakh_it_question_scores_low(f):
     assert score < 0.3
 
 
-def test_mention_alone_does_not_auto_ban(f):
+def test_plain_mention_without_risk_signals_no_external_mention_score(f):
+    """@username alone (no money/vpn/job/mixed-script) is treated as normal chat."""
     score, rules = f.check("Сұрақ бар, @john_doe ге жаз", _USER_ID, _CHAT_ID)
-    # external_mention (0.35) + short_text_with_contact (0.15) = 0.50 — below 0.8
-    assert score < 0.8
-    assert "external_mention" in rules
+    assert "external_mention" not in rules
+    assert "short_text_with_contact" not in rules
+    assert score < 0.3
 
 
 def test_empty_string_returns_zero_score(f):
@@ -64,7 +65,6 @@ def test_empty_string_returns_zero_score(f):
 
 
 def test_score_capped_at_one(f):
-    # Trigger all rules
     text = "PAБOTA удалённо, доход от 500$, впн @spam_bot хороший"
     score, _ = f.check(text, _USER_ID, _CHAT_ID)
     assert score <= 1.0
@@ -81,3 +81,9 @@ def test_job_offer_without_other_signals(f):
     assert "job_offer" in rules
     # Job offer alone (0.25) should not auto-ban
     assert score < 0.8
+
+
+def test_mention_only_does_not_trigger_external_even_if_short(f):
+    score, rules = f.check("@user", _USER_ID, _CHAT_ID)
+    assert "external_mention" not in rules
+    assert score == 0.0
