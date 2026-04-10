@@ -1,6 +1,8 @@
 """SQS processor for SPAM_CHECK tasks: Layer-2 Groq classification and enforcement."""
 
+from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
+from core.translations import get_translated_text
 from services.repositories.stats import StatsRepository
 from services.spam.enforcer import SpamEnforcer
 from services.spam.groq_detector import GroqSpamDetector
@@ -8,7 +10,6 @@ from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_UNCERTAIN_SPAM_MSG = "⚠️ Suspicious message detected, but confidence is low — admins please check."
 _CONFIDENCE_THRESHOLD = 0.85
 
 
@@ -52,7 +53,10 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
         elif result.label == "SPAM":
             # Low-confidence SPAM: alert admins without taking automated action
             try:
-                bot.send_message(chat_id, _UNCERTAIN_SPAM_MSG)
+                target = _resolve_target(bot, chat_id, user_id)
+                lang = get_chat_lang(chat_id)
+                notice = get_translated_text("spam_uncertain_notice", lang, TARGET=target)
+                bot.send_message(chat_id, notice)
             except Exception as e:
                 logger.warning("Failed to send uncertain spam alert", extra={"error": e})
 
@@ -62,3 +66,19 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
             extra={"chat_id": chat_id, "user_id": user_id, "error": e},
             exc_info=True,
         )
+
+
+def _resolve_target(bot: TelegramClient, chat_id: int, user_id: int) -> str:
+    """Resolve a human-readable target mention for uncertain spam alerts."""
+    try:
+        member = bot.get_chat_member(chat_id, user_id)
+        user = member.get("user", {}) if isinstance(member, dict) else {}
+        username = user.get("username")
+        if username:
+            return f"@{username}"
+    except Exception as e:
+        logger.debug(
+            "Failed to resolve uncertain spam target username",
+            extra={"chat_id": chat_id, "user_id": user_id, "error": e},
+        )
+    return f"ID:{user_id}"

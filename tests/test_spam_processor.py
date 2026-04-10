@@ -93,10 +93,12 @@ def test_malformed_body_does_not_raise(mock_detector_cls, mock_bot):
 @patch("services.spam.processor.GroqSpamDetector")
 def test_spam_low_confidence_sends_alert(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
     mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.70)
+    mock_bot.get_chat_member.return_value = {"user": {"username": "suspicious_user"}}
 
     process_spam_check_task(mock_bot, _BODY)
 
     mock_bot.send_message.assert_called_once()
     args = mock_bot.send_message.call_args[0]
     assert args[0] == _BODY["chat_id"]
-    assert "admins" in args[1].lower() or "suspicious" in args[1].lower()
+    assert isinstance(args[1], str)
+    assert "@suspicious_user" in args[1]
