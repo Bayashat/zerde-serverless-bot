@@ -91,3 +91,33 @@ class SQSClient:
         except Exception as e:
             logger.exception("Failed to send explain task to SQS", extra={"error": e, "update_id": update_id})
             raise
+
+    def send_spam_check_task(
+        self,
+        *,
+        chat_id: int,
+        user_id: int,
+        message_id: int,
+        text: str,
+        triggered_rules: list[str],
+    ) -> None:
+        """Enqueue a SPAM_CHECK task for async Layer-2 Groq classification."""
+        payload = {
+            "task_type": "SPAM_CHECK",
+            "chat_id": chat_id,
+            "user_id": user_id,
+            "message_id": message_id,
+            "text": text,
+            "triggered_rules": triggered_rules,
+        }
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info(
+                "Queued spam check task",
+                extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id},
+            )
+        except Exception as e:
+            logger.exception("Failed to send spam check task to SQS", extra={"error": e})
