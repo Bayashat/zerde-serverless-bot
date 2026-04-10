@@ -5,14 +5,19 @@ import hmac
 import json
 from typing import Any
 
-from core.config import ADMIN_USER_ID, CHAT_LANG_MAP, WEBHOOK_SECRET_TOKEN, get_chat_lang
+from core.config import (
+    ADMIN_USER_ID,
+    CHAT_LANG_MAP,
+    WEBHOOK_SECRET_TOKEN,
+    get_chat_lang,
+)
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.handlers import process_explain_task, process_timeout_task
 from services.repositories.sqs import SQSClient
 from services.repositories.stats import StatsRepository
-from services.spam import RuleBasedSpamFilter, SpamEnforcer, process_spam_check_task
+from services.spam import RuleBasedSpamFilter, SpamEnforcer, collect_spam_screen_text, process_spam_check_task
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -231,8 +236,11 @@ def _should_screen_for_spam(body: dict[str, Any]) -> bool:
         return False
     if msg.get("from", {}).get("is_bot", False):
         return False
-    text = msg.get("text") or msg.get("caption") or ""
-    if text.strip().startswith("/"):
+    primary = msg.get("text") or msg.get("caption") or ""
+    if primary.strip().startswith("/"):
+        return False
+    combined = collect_spam_screen_text(msg)
+    if not combined.strip():
         return False
     return True
 
@@ -241,8 +249,8 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
     """Layer-1 spam screening: score message and enforce or enqueue. Never raises."""
     try:
         msg = body["message"]
-        text = msg.get("text") or msg.get("caption") or ""
-        if not text:
+        combined = collect_spam_screen_text(msg)
+        if not combined.strip():
             return
         user_id: int = msg["from"]["id"]
         if ADMIN_USER_ID and user_id == ADMIN_USER_ID:
@@ -250,7 +258,7 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
         message_id: int = msg["message_id"]
         chat_id: int = msg["chat"]["id"]
 
-        score, triggered_rules = RuleBasedSpamFilter().check(text, user_id, chat_id)
+        score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
         if score > 0.8:
             logger.info(
                 "Rule-based spam detected, enforcing",
@@ -272,7 +280,7 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
                 chat_id=chat_id,
                 user_id=user_id,
                 message_id=message_id,
-                text=text,
+                text=combined,
                 triggered_rules=triggered_rules,
             )
     except Exception as e:
