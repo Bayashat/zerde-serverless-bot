@@ -68,7 +68,7 @@ def handle_new_member(ctx: Context) -> None:
             ctx.bot.restrict_chat_member(ctx.chat_id, user_id, {"can_send_messages": False})
 
             mention = format_mention(user_id, member.get("username"), member.get("first_name", "User"))
-            text = get_translated_text("welcome_verification", MENTION=mention)
+            text = get_translated_text("welcome_verification", ctx.lang_code, MENTION=mention)
 
             reply_markup = {
                 "inline_keyboard": [
@@ -104,7 +104,7 @@ def handle_new_member(ctx: Context) -> None:
     except Exception as e:
         logger.exception(f"handle_new_member error: {e}")
         if ctx.chat_id:
-            ctx.reply(get_translated_text("error_occurred"), ctx.message_id)
+            ctx.reply(get_translated_text("error_occurred", ctx.lang_code), ctx.message_id)
 
 
 def handle_verify_callback(ctx: Context) -> None:
@@ -117,7 +117,7 @@ def handle_verify_callback(ctx: Context) -> None:
         if ctx.callback_query_id:
             ctx.bot.answer_callback_query(
                 ctx.callback_query_id,
-                text=get_translated_text("only_user_may_verify"),
+                text=get_translated_text("only_user_may_verify", ctx.lang_code),
                 show_alert=True,
             )
         return
@@ -127,7 +127,7 @@ def handle_verify_callback(ctx: Context) -> None:
     mention = format_mention(ctx.user_id, ctx.username, ctx.first_name)
     ctx.bot.answer_callback_query(
         ctx.callback_query_id,
-        text=get_translated_text("verification_successful", MENTION=mention),
+        text=get_translated_text("verification_successful", ctx.lang_code, MENTION=mention),
     )
     try:
         ctx.bot.delete_message(ctx.chat_id, join_message_id)
@@ -136,7 +136,7 @@ def handle_verify_callback(ctx: Context) -> None:
         logger.exception(f"Failed to delete verification message: {ctx.message_id}")
 
     ctx.reply(
-        get_translated_text("welcome_verified", MENTION=mention),
+        get_translated_text("welcome_verified", ctx.lang_code, MENTION=mention),
     )
 
     if ctx.stats_repo:

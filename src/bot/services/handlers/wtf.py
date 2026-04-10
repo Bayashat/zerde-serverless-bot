@@ -1,47 +1,304 @@
-"""/wtf command: explain a tech term in humorous Kazakh via Groq API."""
+"""Async /wtf and /explain handlers with SQS offload and dedup."""
 
-from core.config import GROQ_API_KEY
+from __future__ import annotations
+
+import time
+from typing import Callable, cast
+
+from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, LLAMA_API_KEY, WTF_FALLBACK_PROVIDER, get_chat_lang
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.ai.groq_client import GroqAPIError, GroqClient
+from services.ai.deepseek_client import DeepSeekAPIError, DeepSeekClient, DeepSeekRateLimitError
+from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
+from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
+from services.ai.wtf_prompts import WTFPromptStyle
+from services.repositories.explain_tasks import ExplainTaskRepository
+from services.telegram import TelegramAPIError, TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_groq: GroqClient | None = GroqClient() if GROQ_API_KEY else None
+_WTF_PROCESSING_REACTION = "✍️"
+_WTF_ERROR_REACTION = "🤡"
+
+_FALLBACK_RATE_LIMIT_ERRORS = (LlamaRateLimitError, DeepSeekRateLimitError)
+_FALLBACK_API_ERRORS = (LlamaAPIError, DeepSeekAPIError)
+
+_FallbackClient = DeepSeekClient | LlamaClient
+
+
+def _make_fallback() -> _FallbackClient | None:
+    if WTF_FALLBACK_PROVIDER == "deepseek" and DEEPSEEK_API_KEY:
+        return DeepSeekClient()
+    if WTF_FALLBACK_PROVIDER == "llama" and LLAMA_API_KEY:
+        return LlamaClient()
+    if DEEPSEEK_API_KEY:
+        return DeepSeekClient()
+    if LLAMA_API_KEY:
+        return LlamaClient()
+    return None
+
+
+_gemini: GeminiClient | None = GeminiClient() if GEMINI_API_KEY else None
+_fallback: _FallbackClient | None = _make_fallback()
+_task_repo = ExplainTaskRepository()
 
 
 def _extract_term(ctx: Context) -> str:
-    """Extract the term from command args or reply_to_message text."""
     parts = ctx.text.split(maxsplit=1)
     if len(parts) > 1:
         return parts[1].strip()
-
     if ctx.reply_to_message:
         return (ctx.reply_to_message.get("text") or "").strip()
-
     return ""
 
 
-def handle_wtf(ctx: Context) -> None:
-    """Handle /wtf — explain a tech term with humor."""
-    lang = ctx.lang_code
+def _build_rpd_footer(lang: str) -> str:
+    if not _gemini:
+        return ""
+    logger.info("RPD limit", extra={"remaining": _gemini.remaining_rpd, "total": _gemini.rpd_limit})
+    return get_translated_text(
+        "wtf_rpd_footer",
+        lang,
+        remaining=_gemini.remaining_rpd,
+        total=_gemini.rpd_limit,
+    )
 
-    if not _groq:
+
+def _react_processing(ctx: Context, reaction: str = _WTF_PROCESSING_REACTION) -> None:
+    try:
+        ctx.bot.set_message_reaction(ctx.chat_id, ctx.message_id, reaction)
+    except TelegramAPIError as e:
+        logger.warning(
+            "setMessageReaction failed for /wtf",
+            extra={"status": e.status, "body": e.body[:200], "reaction": reaction},
+        )
+
+
+def _send_typing_once(ctx: Context) -> None:
+    if ctx.chat_id is not None:
+        ctx.bot.send_chat_action(ctx.chat_id, "typing")
+
+
+def _send_reply(bot: TelegramClient, chat_id: int, reply_to_message_id: int, text: str) -> None:
+    bot.send_message(chat_id, text, reply_to_message_id=reply_to_message_id)
+
+
+def _fallback_explain_and_reply(
+    *,
+    send_reply: Callable[[str], None],
+    term: str,
+    lang: str,
+    style: WTFPromptStyle,
+    send_daily_quota_notice: bool,
+) -> None:
+    assert _fallback is not None
+
+    if send_daily_quota_notice and _gemini is not None:
+        send_reply(get_translated_text("wtf_fallback_notice", lang, total=_gemini.rpd_limit))
+
+    try:
+        explanation = _fallback.explain_term(term, lang, style=style)
+    except _FALLBACK_RATE_LIMIT_ERRORS:
+        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        send_reply(get_translated_text("wtf_fallback_rate_limit", lang))
+        return
+    except (*_FALLBACK_API_ERRORS, Exception):
+        logger.exception("Fallback API failed for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        send_reply(get_translated_text("wtf_api_error", lang))
+        return
+
+    intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
+    intro = get_translated_text(intro_key, lang)
+    send_reply(f"{intro}\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang))
+
+
+def _execute_explain_and_reply(
+    *,
+    bot: TelegramClient,
+    chat_id: int,
+    reply_to_message_id: int,
+    term: str,
+    lang: str,
+    style: WTFPromptStyle,
+) -> None:
+    def send_reply(text: str) -> None:
+        _send_reply(bot, chat_id, reply_to_message_id, text)
+
+    if not _gemini and not _fallback:
+        send_reply(get_translated_text("wtf_not_configured", lang))
+        return
+
+    if not _gemini and _fallback:
+        try:
+            explanation = _fallback.explain_term(term, lang, style=style)
+        except _FALLBACK_RATE_LIMIT_ERRORS:
+            send_reply(get_translated_text("wtf_fallback_rate_limit", lang))
+            return
+        except (*_FALLBACK_API_ERRORS, Exception):
+            logger.exception("Fallback failed for explainer command (fallback-only mode)")
+            send_reply(get_translated_text("wtf_api_error", lang))
+            return
+        intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
+        intro = get_translated_text(intro_key, lang)
+        send_reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang))
+        return
+
+    if _gemini and not _fallback:
+        if _gemini.remaining_rpd <= 0:
+            send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
+            return
+        try:
+            explanation = _gemini.explain_term(term, lang, style=style)
+        except GeminiRPDExhaustedError:
+            send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
+            return
+        except GeminiUnavailableError:
+            send_reply(get_translated_text("wtf_api_error", lang))
+            return
+        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+        return
+
+    assert _gemini is not None and _fallback is not None
+
+    if _gemini.remaining_rpd <= 0:
+        _fallback_explain_and_reply(
+            send_reply=send_reply,
+            term=term,
+            lang=lang,
+            style=style,
+            send_daily_quota_notice=True,
+        )
+        return
+
+    try:
+        explanation = _gemini.explain_term(term, lang, style=style)
+    except GeminiRPDExhaustedError:
+        _fallback_explain_and_reply(
+            send_reply=send_reply,
+            term=term,
+            lang=lang,
+            style=style,
+            send_daily_quota_notice=True,
+        )
+        return
+    except GeminiUnavailableError:
+        logger.warning("Gemini unavailable for explainer command, using fallback without daily notice")
+        _fallback_explain_and_reply(
+            send_reply=send_reply,
+            term=term,
+            lang=lang,
+            style=style,
+            send_daily_quota_notice=False,
+        )
+        return
+
+    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+
+
+def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:
+    lang = get_chat_lang(ctx.chat_id)
+
+    if not _gemini and not _fallback:
+        _react_processing(ctx, _WTF_ERROR_REACTION)
         ctx.reply(get_translated_text("wtf_not_configured", lang), ctx.message_id)
         return
 
     term = _extract_term(ctx)
     if not term:
-        ctx.reply(get_translated_text("wtf_usage", lang), ctx.message_id)
+        _react_processing(ctx, _WTF_ERROR_REACTION)
+        ctx.reply(get_translated_text(usage_key, lang), ctx.message_id)
+        return
+
+    if ctx.chat_id is None or ctx.message_id is None or ctx.update_id is None or ctx.sqs_repo is None:
+        _react_processing(ctx, _WTF_ERROR_REACTION)
+        logger.error(
+            "Missing context for async explain enqueue",
+            extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id, "update_id": ctx.update_id},
+        )
+        ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
+        return
+
+    logger.info(
+        "Received explain command",
+        extra={
+            "command": command_name,
+            "term": term[:120],
+            "lang": lang,
+            "chat_id": ctx.chat_id,
+            "update_id": ctx.update_id,
+        },
+    )
+
+    if not _task_repo.try_reserve_update(ctx.update_id):
+        _react_processing(ctx, _WTF_ERROR_REACTION)
+        logger.info("Duplicate explain update skipped", extra={"update_id": ctx.update_id, "chat_id": ctx.chat_id})
+        return
+
+    _react_processing(ctx, _WTF_PROCESSING_REACTION)
+    _send_typing_once(ctx)
+
+    try:
+        ctx.sqs_repo.send_explain_task(
+            update_id=ctx.update_id,
+            chat_id=ctx.chat_id,
+            reply_to_message_id=ctx.message_id,
+            term=term,
+            lang=lang,
+            style=style,
+        )
+        _task_repo.mark_enqueued(ctx.update_id)
+    except Exception:
+        logger.exception("Failed to enqueue explain task", extra={"update_id": ctx.update_id})
+        ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
+
+
+def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
+    """Process a previously enqueued async explain task from SQS."""
+    started = time.monotonic()
+
+    try:
+        update_id = int(body["update_id"])
+        chat_id = int(body["chat_id"])
+        reply_to_message_id = int(body["reply_to_message_id"])
+        term = str(body["term"]).strip()
+        lang = str(body["lang"]).strip()
+        style = str(body["style"]).strip()
+    except (KeyError, TypeError, ValueError):
+        logger.exception("Invalid PROCESS_EXPLAIN payload", extra={"body": body})
+        return
+
+    if not term:
+        logger.warning("PROCESS_EXPLAIN received empty term", extra={"update_id": update_id})
+        return
+
+    if style not in {"angry", "normal"}:
+        logger.warning("PROCESS_EXPLAIN received invalid style", extra={"update_id": update_id, "style": style})
         return
 
     try:
-        explanation = _groq.explain_term(term)
-        ctx.reply(explanation, ctx.message_id)
-    except GroqAPIError:
-        logger.exception("Groq API call failed for /wtf")
-        ctx.reply(get_translated_text("wtf_api_error", lang), ctx.message_id)
+        _execute_explain_and_reply(
+            bot=bot,
+            chat_id=chat_id,
+            reply_to_message_id=reply_to_message_id,
+            term=term,
+            lang=lang,
+            style=cast(WTFPromptStyle, style),
+        )
+        _task_repo.mark_completed(update_id)
+        elapsed_ms = int((time.monotonic() - started) * 1000)
+        logger.info(
+            "PROCESS_EXPLAIN completed",
+            extra={"update_id": update_id, "chat_id": chat_id, "provider_latency_ms": elapsed_ms},
+        )
     except Exception:
-        logger.exception("Unexpected error in /wtf handler")
-        ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
+        logger.exception("PROCESS_EXPLAIN failed", extra={"update_id": update_id, "chat_id": chat_id})
+        raise
+
+
+def handle_wtf(ctx: Context) -> None:
+    _enqueue_term_explain(ctx, style="angry", command_name="/wtf", usage_key="wtf_usage")
+
+
+def handle_explain(ctx: Context) -> None:
+    _enqueue_term_explain(ctx, style="normal", command_name="/explain", usage_key="explain_usage")

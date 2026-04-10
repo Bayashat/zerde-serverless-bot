@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.llm_provider import create_provider
 from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, QuizGenerator
 from services.quiz_sender import QuizSender
 from services.repository import QuizRepository
@@ -30,9 +31,17 @@ class QuizService:
     """Orchestrates quiz operations (daily quiz and leaderboards)."""
 
     def __init__(self) -> None:
-        self._generator = QuizGenerator()
+        provider = create_provider()
+        self._generator = QuizGenerator(provider)
         self._sender = QuizSender()
         self._repo = QuizRepository()
+
+    def _rpd_payload(self) -> dict[str, int]:
+        """Build a response fragment with quiz Gemini RPD counters."""
+        remaining, total = self._generator.get_rpd_status()
+        if remaining is None or total is None:
+            return {}
+        return {"rpd_remaining": remaining, "rpd_total": total}
 
     def get_difficulty(self) -> str:
         """Return the difficulty level for today (Almaty time)."""
@@ -172,10 +181,7 @@ class QuizService:
         question = self._generator.generate_question(topic, lang, difficulty)
         if not question:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
-            return {"status": "error", "reason": "no valid question"}
-
-        announcement = self.build_announcement(lang, difficulty)
-        self._sender.send_message(chat_id, announcement)
+            return {"status": "error", "reason": "no valid question", **self._rpd_payload()}
 
         poll_result = self._sender.send_quiz_poll(
             chat_id=chat_id,
@@ -186,23 +192,28 @@ class QuizService:
         )
 
         if poll_result:
-            poll_id = str(poll_result.get("poll", {}).get("id", ""))
-            message_id = poll_result.get("message_id", 0)
-            self._repo.save_quiz_record(
-                chat_id=chat_id,
-                question=question["question"],
-                options=question["options"],
-                correct_option_id=question["correct_option_index"],
-                explanation=question.get("explanation"),
-                category=topic,
-                lang=lang,
-                poll_id=poll_id,
-                message_id=message_id,
-                difficulty=difficulty,
-                points=question["points"],
-            )
             logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
-            return {"status": "ok", "sent": 1, "total": 1}
+            return {"status": "ok", "sent": 1, "total": 1, **self._rpd_payload()}
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
-        return {"status": "error", "reason": "failed to send poll"}
+        return {"status": "error", "reason": "failed to send poll", **self._rpd_payload()}
+
+    def process_on_demand_quiz_with_feedback(
+        self,
+        chat_id: str,
+        lang: str,
+        topic: str,
+        difficulty: str,
+        *,
+        include_rpd_footer: bool,
+        reply_to_message_id: int | None = None,
+    ) -> dict:
+        """Run on-demand quiz and optionally send RPD footer to chat."""
+        result = self.process_on_demand_quiz(chat_id, lang, topic, difficulty)
+        if include_rpd_footer:
+            remaining = result.get("rpd_remaining")
+            total = result.get("rpd_total")
+            if isinstance(remaining, int) and isinstance(total, int):
+                footer = get_translated_text("genquiz_rpd_footer", lang, remaining=remaining, total=total)
+                self._sender.send_message(chat_id, footer, reply_to_message_id=reply_to_message_id)
+        return result

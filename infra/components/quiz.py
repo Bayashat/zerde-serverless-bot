@@ -40,12 +40,17 @@ class QuizConstruct(Construct):
         *,
         env_name: str,
         is_prod: bool,
+        log_level: str,
+        telegram_api_base: str,
+        ai_provider: str,
+        quiz_gemini_model: str,
         bot_token: str,
         gemini_api_key: str,
-        ai_provider: str,
-        llm_model: str,
-        quiz_chats: dict[str, list[str]],
-        log_level: str,
+        groq_api_base: str,
+        groq_api_key: str,
+        groq_model: str,
+        quiz_llm_rpd: str,
+        chats: dict[str, list[str]],
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -91,11 +96,16 @@ class QuizConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
-                "BOT_TOKEN": bot_token,
-                "QUIZ_TABLE_NAME": self.quiz_table.table_name,
-                "GEMINI_API_KEY": gemini_api_key,
+                "TELEGRAM_API_BASE": telegram_api_base,
                 "AI_PROVIDER": ai_provider,
-                "LLM_MODEL": llm_model,
+                "QUIZ_GEMINI_MODEL": quiz_gemini_model,
+                "BOT_TOKEN": bot_token,
+                "TABLE_NAME": self.quiz_table.table_name,
+                "GEMINI_API_KEY": gemini_api_key,
+                "QUIZ_LLM_RPD": quiz_llm_rpd,
+                "GROQ_API_BASE": groq_api_base,
+                "GROQ_API_KEY": groq_api_key,
+                "GROQ_MODEL": groq_model,
             },
         )
 
@@ -105,7 +115,7 @@ class QuizConstruct(Construct):
         # ── EventBridge (prod-only) ────────────────────────────────────────
         if is_prod:
             for lang, schedules in _LANG_SCHEDULE.items():
-                chat_ids = quiz_chats.get(lang, [])
+                chat_ids = chats.get(lang, [])
                 if not chat_ids:
                     continue
                 for hour_utc, minute_utc in schedules:
@@ -137,7 +147,7 @@ class QuizConstruct(Construct):
 
             # Sunday leaderboard (19:00 Almaty = 14:00 UTC, day-of-week=1 in cron = Sunday)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
-                chat_ids = quiz_chats.get(lang, [])
+                chat_ids = chats.get(lang, [])
                 if not chat_ids:
                     continue
                 slot = f"{hour_utc:02d}{minute_utc:02d}"

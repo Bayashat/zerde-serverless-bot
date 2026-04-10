@@ -6,23 +6,11 @@ from typing import Any
 import urllib3
 from core.config import GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL
 from core.logger import LoggerAdapter, get_logger
+from services.ai.wtf_prompts import build_wtf_openai_chat_payload
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=15))
-
-SYSTEM_PROMPT = (
-    "You are a veteran programmer with 20 years of experience — cynical but kind-hearted. "
-    "You explain technical terms in Kazakh language — briefly, with humor and programmer memes. "
-    "Format: 2-4 sentences, max 300 characters. You may use 1-2 emojis. "
-    "No Markdown, no lists, no headings. Just plain chat text. "
-    "CRITICAL: You MUST reply entirely in Kazakh (Cyrillic script).\n\n"
-    "Example Output Style (Reference only, not a strict template):\n"
-    "Term: Microservices\n"
-    "Микросервистер — бұл монолитті бағдарламаңызды кішкентай 50 бөлікке бөліп тастау. "
-    "Енді бір қатені табу үшін сен бір жерді емес, бүкіл желіні шарлап шығасың. "
-    "Есесіне түйіндемеңде 'Microservices architecture' деп мақтанып жаза аласың. 🕸️"
-)
+_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=12))
 
 
 class GroqAPIError(Exception):
@@ -42,17 +30,9 @@ class GroqClient:
         self.model = GROQ_MODEL
         self.api_key = GROQ_API_KEY
 
-    def explain_term(self, term: str) -> str:
-        """Ask the LLM to explain a tech term in humorous Kazakh."""
-        payload: dict[str, Any] = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Explain the term: {term}"},
-            ],
-            "max_tokens": 400,
-            "temperature": 0.9,
-        }
+    def explain_term(self, term: str, lang: str = "kk") -> str:
+        """Ask the LLM to explain a tech term in the given language."""
+        payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang)
 
         url = f"{self.api_base}/chat/completions"
         resp = _http.request(
@@ -63,6 +43,7 @@ class GroqClient:
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}",
             },
+            retries=False,
         )
 
         if resp.status >= 400:

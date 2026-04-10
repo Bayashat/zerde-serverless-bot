@@ -5,11 +5,11 @@ import hmac
 import json
 from typing import Any
 
-from core.config import WEBHOOK_SECRET_TOKEN
+from core.config import CHAT_LANG_MAP, WEBHOOK_SECRET_TOKEN, get_chat_lang
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.handlers import process_timeout_task
+from services.handlers import process_explain_task, process_timeout_task
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -69,14 +69,24 @@ def _handle_api_gateway(
             logger.error("Failed to parse API Gateway event", extra={"error": e})
             return create_response(200, {"message": "Invalid request"})
 
-        # Handle private messages first (before relevance filter)
-        message = body.get("message")
-        if message:
-            chat_type = message.get("chat", {}).get("type")
-            if chat_type == "private":
-                chat_id = message.get("chat", {}).get("id")
-                dispatcher.bot.send_message(chat_id, get_translated_text("private_message"))
-                return create_response(200, {"message": "ok"})
+        chat_id, chat_type = _extract_chat_context(body)
+
+        # Private chats are not supported: always return guidance text.
+        if chat_type == "private":
+            dispatcher.bot.send_message(
+                chat_id,
+                get_translated_text("private_message", get_chat_lang(chat_id)),
+            )
+            return create_response(200, {"message": "ok"})
+
+        # Only allow configured group chats.
+        if chat_type in {"group", "supergroup"} and not _is_chat_whitelisted(chat_id):
+            dispatcher.bot.send_message(
+                chat_id,
+                get_translated_text("private_message", get_chat_lang(chat_id)),
+            )
+            logger.info("Blocked event from non-whitelisted chat", extra={"chat_id": chat_id})
+            return create_response(200, {"message": "ok"})
 
         if not is_event_relevant_to_bot(body):
             logger.info("Event not relevant to bot, ignoring")
@@ -107,12 +117,15 @@ def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
         try:
             body = json.loads(record["body"])
 
-            if body.get("task_type") == "CHECK_TIMEOUT":
+            task_type = body.get("task_type")
+            if task_type == "CHECK_TIMEOUT":
                 process_timeout_task(bot, body)
+            elif task_type == "PROCESS_EXPLAIN":
+                process_explain_task(bot, body)
             else:
                 logger.warning(
-                    "Unexpected SQS record: not a CHECK_TIMEOUT task, ignoring",
-                    extra={"body": body},
+                    "Unexpected SQS record: unsupported task_type, ignoring",
+                    extra={"task_type": task_type, "body": body},
                 )
 
         except Exception as e:
@@ -174,6 +187,29 @@ def create_response(status_code: int, body: dict[str, Any]) -> dict[str, Any]:
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps(body),
     }
+
+
+def _extract_chat_context(body: dict[str, Any]) -> tuple[int | None, str | None]:
+    """Extract (chat_id, chat_type) from common Telegram update shapes."""
+    message = body.get("message") or body.get("edited_message")
+    if isinstance(message, dict):
+        chat = message.get("chat", {})
+        return chat.get("id"), chat.get("type")
+
+    callback_query = body.get("callback_query", {})
+    callback_message = callback_query.get("message", {})
+    if isinstance(callback_message, dict):
+        chat = callback_message.get("chat", {})
+        return chat.get("id"), chat.get("type")
+
+    return None, None
+
+
+def _is_chat_whitelisted(chat_id: int | None) -> bool:
+    """Return whether chat is explicitly configured in CHAT_LANG_MAP."""
+    if chat_id is None:
+        return False
+    return str(chat_id) in CHAT_LANG_MAP
 
 
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:

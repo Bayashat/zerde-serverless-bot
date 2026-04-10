@@ -1,12 +1,8 @@
 # src/quiz/services/quiz_generator.py
-"""Gemini-based IT quiz question generator with multi-language support."""
+"""IT quiz question generator with provider-agnostic LLM backend."""
 
-import json
-
-from core.config import GEMINI_API_KEY, LLM_MODEL
 from core.logger import LoggerAdapter, get_logger
-from google import genai
-from google.genai import types
+from services.llm_provider import QuizLLMProvider
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -40,11 +36,15 @@ _LANG_NAMES = {
 
 
 class QuizGenerator:
-    """Generates IT quiz questions directly in the target language via Gemini."""
+    """Generates IT quiz questions via an injected LLM provider."""
 
-    def __init__(self) -> None:
-        self._client = genai.Client(api_key=GEMINI_API_KEY)
-        logger.info("QuizGenerator initialized", extra={"model": LLM_MODEL})
+    def __init__(self, provider: QuizLLMProvider) -> None:
+        self._provider = provider
+        logger.info("QuizGenerator initialized")
+
+    def get_rpd_status(self) -> tuple[int | None, int | None]:
+        """Return provider RPD status when available."""
+        return self._provider.get_rpd_status()
 
     def generate_question(self, category: str, lang: str, difficulty: str = "easy") -> dict | None:
         """Generate a quiz question for the given category, language, and difficulty.
@@ -79,15 +79,7 @@ class QuizGenerator:
         )
 
         try:
-            response = self._client.models.generate_content(
-                model=LLM_MODEL,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    response_mime_type="application/json",
-                ),
-            )
-            data = json.loads(response.text)
+            data = self._provider.generate_json(prompt, temperature=0.3)
             return self._validate(data, category, lang, difficulty)
 
         except Exception:

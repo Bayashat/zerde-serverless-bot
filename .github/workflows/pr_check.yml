@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  id-token: write   # OIDC authentication required
+  id-token: write # OIDC authentication required
   contents: read
   pull-requests: write # Allow bot to write diff results to PR comments
 
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for better diff preview
+          fetch-depth: 0 # Fetch full history for better diff preview
 
       - name: Set up Python 3.13
         uses: actions/setup-python@v5
@@ -50,11 +50,43 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.full_name == github.repository
 
+    # Same env contract as CDK deploy (infra/stack.py): secrets for keys, vars for open config.
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      LLAMA_API_KEY: ${{ secrets.LLAMA_API_KEY }}
+      DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
+      TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
+      AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3-flash-preview' }}
+      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL || 'gemini-3.1-flash-lite-preview' }}
+      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
+      GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
+      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL || 'gemini-2.5-flash' }}
+      WTF_FALLBACK_PROVIDER: ${{ vars.WTF_FALLBACK_PROVIDER || 'deepseek' }}
+      GROQ_MODEL: ${{ vars.GROQ_MODEL || 'llama-3.3-70b-versatile' }}
+      GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
+      LLAMA_MODEL: ${{ vars.LLAMA_MODEL || 'Llama-4-Scout-17B-16E-Instruct-FP8' }}
+      LLAMA_API_BASE: ${{ vars.LLAMA_API_BASE || 'https://api.llama.com/v1' }}
+      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
+      DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
+      ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
+      CHATS_KK: ${{ vars.CHATS_KK }}
+      CHATS_ZH: ${{ vars.CHATS_ZH }}
+      CHATS_RU: ${{ vars.CHATS_RU }}
+      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS || '60' }}
+      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
+      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
+      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for better diff
+          fetch-depth: 0
 
       - name: Set up Python 3.13
         uses: actions/setup-python@v5
@@ -83,79 +115,47 @@ jobs:
 
       - name: CDK Synth (Verify Compilation)
         working-directory: ./infra
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
-          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
-          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
-          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
-          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
-          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
-          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
         run: |
           uv run cdk synth -c env=dev
 
       - name: CDK Diff (Preview Changes)
         id: cdk-diff
         working-directory: ./infra
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
-          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
-          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
-          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
-          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
-          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
-          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
-          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
         run: |
-          # Run cdk diff and capture output
           uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
 
-          # Parse diff and generate report
           echo "## 📊 Infrastructure Changes Preview (Zerde Telegram Bot)" > /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
           echo "This PR will modify the following AWS resources:" >> /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
 
-          # Check if there are any changes
           if ! grep -q "Stack ZerdeTelegramBotStack-dev" /tmp/cdk-diff.txt && ! grep -q "There were no differences" /tmp/cdk-diff.txt; then
             echo "### ℹ️ No infrastructure changes detected" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             echo "This PR only contains code changes (Lambda functions, etc.)" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
           else
-            # Extract resources to be created (green +)
             echo "### ✅ Resources to be Created:" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             grep -E "^\s*\+.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*+/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
 
-            # Extract resources to be deleted (red -)
             echo "### ❌ Resources to be Deleted:" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             grep -E "^\s*\-.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*-/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
 
-            # Extract resources to be modified (yellow ~)
             echo "### ⚠️ Resources to be Modified:" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             grep -E "^\s*~.*AWS::" /tmp/cdk-diff.txt | sed 's/^[[:space:]]*~/  - /' | sed 's/AWS::/`AWS::/' | sed 's/$/`/' | head -20 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
 
-            # Extract property changes
             echo "### 🔧 Property Changes:" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
             grep -E "^\s*[+\-~].*:" /tmp/cdk-diff.txt | grep -v "AWS::" | head -30 >> /tmp/diff-report.md || echo "  - None" >> /tmp/diff-report.md
             echo "" >> /tmp/diff-report.md
           fi
 
-          # Add full diff as collapsible section
           echo "<details>" >> /tmp/diff-report.md
           echo "<summary>📋 Full CDK Diff Output</summary>" >> /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md
@@ -164,7 +164,6 @@ jobs:
           echo '```' >> /tmp/diff-report.md
           echo "</details>" >> /tmp/diff-report.md
 
-          # Save report for next step
           cat /tmp/diff-report.md
 
       - name: Comment PR with Infrastructure Diff
@@ -175,7 +174,6 @@ jobs:
             const fs = require('fs');
             const report = fs.readFileSync('/tmp/diff-report.md', 'utf8');
 
-            // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -188,7 +186,6 @@ jobs:
             );
 
             if (botComment) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -196,7 +193,6 @@ jobs:
                 body: report
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

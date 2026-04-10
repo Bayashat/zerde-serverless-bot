@@ -1,10 +1,50 @@
-"""Quiz handlers: poll_answer processing and /quizstats command."""
+"""Quiz handlers: poll_answer, /quizstats, and /genquiz processing UX."""
+
+import html
 
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.telegram import TelegramAPIError, TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+_GENQUIZ_PROCESSING_REACTION = "👌"
+
+
+def react_genquiz_processing(ctx: Context, reaction: str = _GENQUIZ_PROCESSING_REACTION) -> None:
+    """React to the /genquiz message before slow work so the webhook is visibly active (same idea as /wtf)."""
+    try:
+        ctx.react(reaction)
+    except TelegramAPIError as e:
+        logger.warning(
+            "setMessageReaction failed for /genquiz",
+            extra={"status": e.status, "body": e.body[:200]},
+        )
+
+
+def _html_chat_title_for_pm(bot: TelegramClient, chat_id: int | str) -> str:
+    """HTML-escaped chat label for private quizstats (group title, @username, or id)."""
+    try:
+        chat = bot.get_chat(chat_id)
+    except Exception as exc:
+        logger.warning("getChat failed for quizstats", extra={"chat_id": chat_id, "error": str(exc)})
+        return html.escape(str(chat_id))
+
+    ctype = (chat.get("type") or "").lower()
+    if ctype in ("group", "supergroup", "channel"):
+        title = (chat.get("title") or "").strip()
+        if chat.get("username"):
+            handle = f"@{chat['username']}"
+            label = f"{title} ({handle})" if title else handle
+        else:
+            label = title or str(chat_id)
+        return html.escape(label)
+    if ctype == "private":
+        name = " ".join(p for p in (chat.get("first_name"), chat.get("last_name")) if p).strip()
+        return html.escape(name or "Private")
+
+    return html.escape(str(chat.get("title") or chat_id))
 
 
 def handle_poll_answer(ctx: Context) -> None:
@@ -49,7 +89,7 @@ def handle_poll_answer(ctx: Context) -> None:
 def handle_quizstats(ctx: Context) -> None:
     """Handle /quizstats — show user's quiz performance in this chat."""
     if not ctx.quiz_repo:
-        ctx.reply("Quiz feature is not configured.")
+        ctx.reply(get_translated_text("quiz_not_configured", ctx.lang_code))
         return
 
     chat_id = str(ctx.chat_id)
@@ -69,14 +109,24 @@ def handle_quizstats(ctx: Context) -> None:
             rank = i + 1
             break
 
-    ctx.reply(
-        get_translated_text(
-            "quizstats_response",
-            lang,
-            score=user_score.get("total_score", 0),
-            streak=user_score.get("current_streak", 0),
-            best_streak=user_score.get("best_streak", 0),
-            rank=rank,
-            total_players=len(leaderboard),
+    chat_title = _html_chat_title_for_pm(ctx.bot, ctx.chat_id)
+
+    try:
+        ctx.send_private_message(
+            get_translated_text(
+                "quizstats_response",
+                lang,
+                chat_title=chat_title,
+                score=user_score.get("total_score", 0),
+                streak=user_score.get("current_streak", 0),
+                best_streak=user_score.get("best_streak", 0),
+                rank=rank,
+                total_players=len(leaderboard),
+            )
         )
-    )
+        ctx.react("👌")
+    except TelegramAPIError as error:
+        if error.status == 403:
+            ctx.reply(get_translated_text("quizstats_open_private_chat", lang), ctx.message_id)
+            return
+        raise

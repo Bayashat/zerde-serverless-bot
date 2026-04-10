@@ -6,7 +6,7 @@ from typing import Any
 
 import boto3
 from boto3.dynamodb.conditions import Key
-from core.config import QUIZ_TABLE_NAME
+from core.config import TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -19,8 +19,8 @@ class QuizRepository:
     """Writes daily quiz records and category metadata to DynamoDB."""
 
     def __init__(self) -> None:
-        self._table = boto3.resource("dynamodb").Table(QUIZ_TABLE_NAME)
-        logger.info("QuizRepository initialized", extra={"table": QUIZ_TABLE_NAME})
+        self._table = boto3.resource("dynamodb").Table(TABLE_NAME)
+        logger.info("QuizRepository initialized", extra={"table": TABLE_NAME})
 
     def get_category_queue(self) -> list[str]:
         """Read the remaining category queue from metadata.
