@@ -33,15 +33,15 @@ NOT_SPAM includes:
 - Tagging other users or admins inside the group (e.g., @username)
 - Bot commands or feature requests
 - Messages in Kazakh (kk), Simplified Chinese (zh) or Russian (ru) languages
-- Sharing general social media, media, or resource links \
-(TikTok, YouTube, GitHub, StackOverflow, etc.) without promotional text
+- Sharing general social media, media, or resource links (TikTok, YouTube, GitHub,
+  StackOverflow, etc.) without promotional text
 - Bare URLs (just a link) without any spammy or commercial context
 
 CRITICAL CONFIDENCE SCORING RULE:
-- ONLY give a SPAM confidence >= 0.85 if you are ABSOLUTELY certain it is a scam, VPN ad, \
-account selling, or illegal job offer.
-- If the message is just an ambiguous link or bare URL (like a TikTok or YouTube video), \
-you MUST output NOT_SPAM, or SPAM with a confidence < 0.80 (so human admins can review it).
+- ONLY give a SPAM confidence >= 0.85 if you are ABSOLUTELY certain
+  it is a scam, VPN ad, account selling, or illegal job offer.
+- If the message is just an ambiguous link or bare URL (like a TikTok or YouTube video),
+  you MUST output NOT_SPAM, or SPAM with a confidence < 0.80 (so human admins can review it).
 
 Respond ONLY with valid JSON. No explanation. No markdown.
 Format: {"label": "SPAM", "confidence": 0.95}

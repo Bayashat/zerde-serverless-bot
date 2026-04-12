@@ -6,7 +6,6 @@ import json
 from typing import Any
 
 from core.config import (
-    ADMIN_USER_ID,
     CHAT_LANG_MAP,
     WEBHOOK_SECRET_TOKEN,
     get_chat_lang,
@@ -254,8 +253,6 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
         if not combined.strip():
             return
         user_id: int = msg["from"]["id"]
-        if ADMIN_USER_ID and user_id == ADMIN_USER_ID:
-            return
         message_id: int = msg["message_id"]
         chat_id: int = msg["chat"]["id"]
 
