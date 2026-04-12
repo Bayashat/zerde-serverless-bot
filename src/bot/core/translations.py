@@ -140,6 +140,10 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
         "genquiz_failed": "❌ Failed to generate quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
+        "spam_enforced_notice": "🧪 [Test mode] Spam was detected and {TARGET} was removed.",
+        "spam_uncertain_notice": (
+            "⚠️ Suspicious message from {TARGET} detected, but confidence is low — admins please check."
+        ),
     },
     "kk": {
         "start_message": (
@@ -278,6 +282,10 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
         "genquiz_failed": "❌ Quiz жасау мүмкін болмады: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
+        "spam_enforced_notice": "🧪 [Тест режимі] Спам анықталды және {TARGET} топтан шығарылды.",
+        "spam_uncertain_notice": (
+            "⚠️ {TARGET} пайдаланушыдан күдікті хабарлама анықтадым, бірақ сәл сенімсіз болып тұрмын — админдердің тексеруіне қалдырамын"  # noqa: E501
+        ),
     },
     "zh": {
         "start_message": (
@@ -406,6 +414,8 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ 难度无效。可选：{difficulties}",
         "genquiz_failed": "❌ 生成 Quiz 失败：{reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
+        "spam_enforced_notice": "🧪 [测试模式] 检测到垃圾信息，{TARGET} 已被移出群组。",
+        "spam_uncertain_notice": "⚠️ 检测到来自 {TARGET} 的可疑消息，但置信度较低——请管理员人工核查。",
     },
     "ru": {
         "start_message": (
@@ -540,6 +550,10 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Неверная сложность. Выберите из: {difficulties}",
         "genquiz_failed": "❌ Не удалось сгенерировать Quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
+        "spam_enforced_notice": "🧪 [Тестовый режим] Обнаружен спам, пользователь {TARGET} удален из группы.",
+        "spam_uncertain_notice": (
+            "⚠️ Обнаружено подозрительное сообщение от {TARGET}, но уверенность низкая — проверьте вручную."
+        ),
     },
 }
 

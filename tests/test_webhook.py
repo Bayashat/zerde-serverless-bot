@@ -56,3 +56,15 @@ def test_create_response():
     resp = create_response(200, {"message": "ok"})
     assert resp["statusCode"] == 200
     assert json.loads(resp["body"])["message"] == "ok"
+
+
+def test_rule_filter_external_mention_requires_risk_signal_with_at():
+    """Layer-1: ``@`` alone does not add ``external_mention``; needs vpn/money/job/mixed-script."""
+    from services.spam.rule_filter import RuleBasedSpamFilter
+
+    f = RuleBasedSpamFilter()
+    _, rules_plain = f.check("hello @someone", 1, -1001)
+    assert "external_mention" not in rules_plain
+
+    _, rules_risky = f.check("впн реклама @bad", 1, -1001)
+    assert "external_mention" in rules_risky
