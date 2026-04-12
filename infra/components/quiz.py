@@ -11,7 +11,7 @@ from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
-# Language → list of (hour_utc, minute_utc) trigger times for daily quiz
+# Language → list of (hour_utc, minute_utc) trigger times for weekday quiz (Mon–Fri UTC)
 _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
     "kk": [(8, 0)],  # 08:00 UTC = 13:00 Almaty
     "zh": [(8, 2)],  # 08:02 UTC
@@ -20,9 +20,9 @@ _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
 
 # Language → (hour_utc, minute_utc) for Sunday evening leaderboard
 _LEADERBOARD_SCHEDULE: dict[str, tuple[int, int]] = {
-    "kk": (14, 0),  # 14:00 UTC = 19:00 Almaty
-    "zh": (14, 0),  # 14:00 UTC
-    "ru": (14, 0),  # 14:00 UTC
+    "kk": (13, 0),  # 13:00 UTC = 18:00 Almaty
+    "zh": (13, 0),  # 13:00 UTC
+    "ru": (13, 0),  # 13:00 UTC
 }
 
 
@@ -124,12 +124,14 @@ class QuizConstruct(Construct):
                         self,
                         f"{CONSTRUCT_PREFIX}QuizRule{lang.upper()}{slot}",
                         rule_name=f"{RESOURCE_PREFIX}-quiz-{lang}-{slot}-{env_name}",
-                        description=f"Trigger quiz lambda at {hour_utc:02d}:{minute_utc:02d} UTC for {lang} chats",
+                        description=(
+                            f"Trigger quiz lambda Mon–Fri at {hour_utc:02d}:{minute_utc:02d} UTC " f"for {lang} chats"
+                        ),
                         schedule=events.Schedule.cron(
                             minute=str(minute_utc),
                             hour=str(hour_utc),
-                            day="*",
                             month="*",
+                            week_day="MON-FRI",
                             year="*",
                         ),
                     )
@@ -145,7 +147,7 @@ class QuizConstruct(Construct):
                         )
                     )
 
-            # Sunday leaderboard (19:00 Almaty = 14:00 UTC, day-of-week=1 in cron = Sunday)
+            # Friday leaderboard (18:00 Almaty = 13:00 UTC, day-of-week=5 in cron = Friday)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
                 chat_ids = chats.get(lang, [])
                 if not chat_ids:
@@ -159,7 +161,7 @@ class QuizConstruct(Construct):
                     schedule=events.Schedule.cron(
                         minute=str(minute_utc),
                         hour=str(hour_utc),
-                        week_day="SUN",
+                        week_day="FRI",
                         month="*",
                         year="*",
                     ),

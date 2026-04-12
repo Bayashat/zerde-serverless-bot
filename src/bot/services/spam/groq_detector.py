@@ -32,7 +32,16 @@ NOT_SPAM includes:
 - Normal conversation, greetings, or jokes
 - Tagging other users or admins inside the group (e.g., @username)
 - Bot commands or feature requests
-- Messages in Kazakh (kk) or Russian (ru) languages
+- Messages in Kazakh (kk), Simplified Chinese (zh) or Russian (ru) languages
+- Sharing general social media, media, or resource links \
+(TikTok, YouTube, GitHub, StackOverflow, etc.) without promotional text
+- Bare URLs (just a link) without any spammy or commercial context
+
+CRITICAL CONFIDENCE SCORING RULE:
+- ONLY give a SPAM confidence >= 0.85 if you are ABSOLUTELY certain it is a scam, VPN ad, \
+account selling, or illegal job offer.
+- If the message is just an ambiguous link or bare URL (like a TikTok or YouTube video), \
+you MUST output NOT_SPAM, or SPAM with a confidence < 0.80 (so human admins can review it).
 
 Respond ONLY with valid JSON. No explanation. No markdown.
 Format: {"label": "SPAM", "confidence": 0.95}
@@ -49,26 +58,31 @@ Message: "OHЛAЙH PAБOTA C DOXOДOM OT 80-230$! @Victoriaa_S7"
 Message: "Отличный ВПН!!! Телеграм с ним просто летает!! Спасибо!!"
 {"label": "SPAM", "confidence": 0.98}
 
-# Medium confidence SPAM (borderline / suspicious promotions)
+# Medium confidence SPAM (borderline / suspicious promotions or ambiguous links)
 Message: "Ребята, нашел интересный канал про крипту, кому интересно заходите @crypto_news_123"
 {"label": "SPAM", "confidence": 0.80}
 
 Message: "Могу помочь с дизайном и фронтендом, пишите в тг @super_designer"
 {"label": "SPAM", "confidence": 0.75}
 
-# High confidence NOT SPAM (normal IT / group chat)
+Message: "http://unknown-domain-earn-money.com/"
+{"label": "SPAM", "confidence": 0.70}
+
+# High confidence NOT SPAM (normal IT / group chat / general links)
 Message: "кто знает как настроить nginx на ubuntu 24?"
 {"label": "NOT_SPAM", "confidence": 0.99}
 
-Message: "Я обычно использую @BotFather для получения токена."
-{"label": "NOT_SPAM", "confidence": 0.98}
-
-# High confidence NOT SPAM (group mentions and bot-related Kazakh)
-Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
+Message: "Смотрите какая жиза 🤣 https://vm.tiktok.com/ZMxxxxxx/"
 {"label": "NOT_SPAM", "confidence": 0.99}
 
-Message: "@admin удалите это пожалуйста, спам"
-{"label": "NOT_SPAM", "confidence": 0.99}\
+Message: "https://youtu.be/dQw4w9WgXcQ"
+{"label": "NOT_SPAM", "confidence": 0.99}
+
+Message: "https://github.com/tiangolo/fastapi"
+{"label": "NOT_SPAM", "confidence": 0.99}
+
+Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
+{"label": "NOT_SPAM", "confidence": 0.99}
 """
 
 

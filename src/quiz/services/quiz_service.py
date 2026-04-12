@@ -20,8 +20,6 @@ _WEEKDAY_DIFFICULTY: dict[int, str] = {
     2: "medium",
     3: "medium",
     4: "hard",
-    5: "hard",
-    6: "expert",
 }
 
 _MEDALS = ["🥇", "🥈", "🥉"]
