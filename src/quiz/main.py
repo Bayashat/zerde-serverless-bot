@@ -3,64 +3,41 @@
 from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
-from services.quiz_fetcher import QuizFetcher
-from services.quiz_sender import QuizSender
-from services.repository import QuizRepository
-from services.translator import QuizTranslator
+from services.quiz_service import QuizService
 
 logger = LoggerAdapter(get_logger(__name__), {})
-
-_fetcher = QuizFetcher()
-_translator = QuizTranslator()
-_sender = QuizSender()
-_repo = QuizRepository()
 logger.info("Quiz Lambda initialized")
+
+_quiz_service = QuizService()
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
-    """EventBridge scheduled handler — fetch question and send quiz polls."""
+    """EventBridge scheduled handler — generate question and send quiz polls."""
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
     logger.info("Quiz Lambda handler called", extra={"event": event})
 
     chat_ids = event.get("chat_ids", [])
-    if not chat_ids:
-        logger.warning("No chat_ids in event payload")
-        return {"status": "skipped", "reason": "no chat_ids"}
+    lang = event.get("lang", "kk")
 
-    # Fetch question with category queue rotation
-    category_queue = _repo.get_category_queue()
-    result = _fetcher.fetch_question(category_queue)
-    if not result:
-        logger.error("Failed to fetch a valid question")
-        return {"status": "error", "reason": "no valid question"}
+    if event.get("action") == "leaderboard":
+        return _quiz_service.process_leaderboard(chat_ids, lang)
 
-    question, category, remaining_queue = result
-    logger.info("Question fetched", extra={"category": category, "question": question["question"][:50]})
-
-    # Translate question from English to Kazakh
-    translated = _translator.translate_question(question)
-    logger.info("Question translated", extra={"question_kk": translated["question"][:60]})
-
-    # Send quiz poll to each chat
-    sent_count = 0
-    for chat_id in chat_ids:
-        poll_result = _sender.send_quiz_poll(
-            chat_id=chat_id,
-            question=translated["question"],
-            options=translated["options"],
-            correct_option_ids=translated["correct_option_ids"],
-            explanation=translated.get("explanation"),
+    if event.get("action") == "on_demand":
+        chat_id = event.get("chat_id", "")
+        topic = event.get("topic", "programming")
+        difficulty = event.get("difficulty", "medium")
+        include_rpd_footer = bool(event.get("include_rpd_footer", False))
+        reply_to_message_id = event.get("reply_to_message_id")
+        if not chat_id:
+            return {"status": "error", "reason": "missing chat_id"}
+        return _quiz_service.process_on_demand_quiz_with_feedback(
+            chat_id,
+            lang,
+            topic,
+            difficulty,
+            include_rpd_footer=include_rpd_footer,
+            reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
         )
-        if poll_result:
-            poll_id = str(poll_result.get("poll", {}).get("id", ""))
-            message_id = poll_result.get("message_id", 0)
-            _repo.save_quiz_record(chat_id, question, category, poll_id, message_id)
-            sent_count += 1
 
-    # Persist updated category queue after successful sends
-    if sent_count > 0:
-        _repo.save_category_queue(remaining_queue, category)
-
-    logger.info("Quiz Lambda completed", extra={"sent": sent_count, "total": len(chat_ids)})
-    return {"status": "ok", "sent": sent_count, "total": len(chat_ids)}
+    return _quiz_service.process_daily_quiz(chat_ids, lang)

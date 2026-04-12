@@ -1,0 +1,158 @@
+"""LLM provider abstraction with Gemini primary and Groq fallback."""
+
+import json
+from abc import ABC, abstractmethod
+from typing import Any
+
+import urllib3
+from core.config import GEMINI_API_KEY, GEMINI_MODEL, GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL
+from core.logger import LoggerAdapter, get_logger
+from google import genai
+from google.genai import errors as genai_errors
+from google.genai import types
+from services.rate_limit_repository import QuizRateLimitRepository
+
+logger = LoggerAdapter(get_logger(__name__), {})
+
+
+class RateLimitError(Exception):
+    """Raised when the upstream LLM returns a 429 / resource-exhausted error."""
+
+
+class QuizLLMProvider(ABC):
+    """Abstract interface for quiz JSON generation."""
+
+    @abstractmethod
+    def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
+        """Send *prompt* and return the parsed JSON dict.
+
+        Raises:
+            RateLimitError: when the provider's rate limit is exceeded.
+            Exception: on any other provider failure.
+        """
+
+    def get_rpd_status(self) -> tuple[int | None, int | None]:
+        """Return remaining/total RPD when provider tracks it, else ``(None, None)``."""
+        return None, None
+
+
+class GeminiQuizProvider(QuizLLMProvider):
+    """Google Gemini provider via google-genai SDK."""
+
+    def __init__(self, api_key: str, model: str) -> None:
+        self._client = genai.Client(api_key=api_key)
+        self._model = model
+        self._rate_repo = QuizRateLimitRepository()
+        logger.info("GeminiQuizProvider initialized", extra={"model": model})
+
+    def get_rpd_status(self) -> tuple[int, int]:
+        used = self._rate_repo.get_today_count()
+        total = self._rate_repo.rpd_limit
+        remaining = max(0, total - used)
+        return remaining, total
+
+    def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning(
+                "Quiz Gemini RPD limit reached",
+                extra={"count": count, "limit": self._rate_repo.rpd_limit, "model": self._model},
+            )
+            raise RateLimitError(f"Quiz Gemini RPD limit reached: {count}/{self._rate_repo.rpd_limit}")
+
+        try:
+            response = self._client.models.generate_content(
+                model=self._model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=temperature,
+                    response_mime_type="application/json",
+                ),
+            )
+            return json.loads(response.text)
+        except genai_errors.APIError as exc:
+            if exc.code == 429:
+                logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
+                raise RateLimitError(str(exc)) from exc
+            raise
+
+
+class GroqQuizProvider(QuizLLMProvider):
+    """Groq provider via OpenAI-compatible chat/completions endpoint."""
+
+    _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=30))
+
+    def __init__(self, api_key: str, api_base: str, model: str) -> None:
+        self._api_key = api_key
+        self._api_base = api_base
+        self._model = model
+        logger.info("GroqQuizProvider initialized", extra={"model": model})
+
+    def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "response_format": {"type": "json_object"},
+        }
+
+        resp = self._http.request(
+            "POST",
+            f"{self._api_base}/chat/completions",
+            body=json.dumps(payload),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self._api_key}",
+            },
+        )
+
+        if resp.status == 429:
+            logger.warning("Groq 429 rate limit hit", extra={"model": self._model})
+            raise RateLimitError(f"Groq rate limited: {resp.status}")
+
+        if resp.status >= 400:
+            body = resp.data.decode("utf-8")
+            logger.error("Groq API error", extra={"status": resp.status, "body": body[:500]})
+            raise RuntimeError(f"Groq API {resp.status}: {body[:200]}")
+
+        data = json.loads(resp.data.decode("utf-8"))
+        content = data["choices"][0]["message"]["content"]
+        return json.loads(content)
+
+
+class FallbackProvider(QuizLLMProvider):
+    """Tries the primary provider; on RateLimitError falls back to the secondary."""
+
+    def __init__(self, primary: QuizLLMProvider, fallback: QuizLLMProvider) -> None:
+        self._primary = primary
+        self._fallback = fallback
+
+    def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
+        try:
+            result = self._primary.generate_json(prompt, temperature)
+            logger.info("Quiz generated by primary provider")
+            return result
+        except Exception as e:
+            logger.warning("Primary provider failed, falling back to secondary provider", extra={"error": str(e)})
+            result = self._fallback.generate_json(prompt, temperature)
+            logger.info("Quiz generated by fallback provider")
+            return result
+
+    def get_rpd_status(self) -> tuple[int | None, int | None]:
+        return self._primary.get_rpd_status()
+
+
+def create_provider() -> QuizLLMProvider:
+    """Build the provider chain: Gemini primary -> Groq fallback (if configured)."""
+    primary: QuizLLMProvider = GeminiQuizProvider(api_key=GEMINI_API_KEY, model=GEMINI_MODEL)
+
+    if GROQ_API_KEY:
+        fallback = GroqQuizProvider(api_key=GROQ_API_KEY, api_base=GROQ_API_BASE, model=GROQ_MODEL)
+        logger.info(
+            "FallbackProvider configured",
+            extra={"primary": GEMINI_MODEL, "fallback": GROQ_MODEL},
+        )
+        return FallbackProvider(primary=primary, fallback=fallback)
+
+    logger.info("Groq fallback not configured (GROQ_API_KEY empty), using Gemini only")
+    return primary

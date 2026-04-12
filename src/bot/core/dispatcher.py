@@ -2,9 +2,11 @@
 
 from typing import Any, Callable
 
+from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
+    LambdaInvoker,
     QuizRepository,
     SQSClient,
     StatsRepository,
@@ -34,6 +36,7 @@ class Context:
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
+        lambda_invoker: LambdaInvoker | None = None,
     ):
         self._update = update
         self.bot = bot
@@ -41,6 +44,7 @@ class Context:
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
+        self.lambda_invoker = lambda_invoker
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -71,7 +75,8 @@ class Context:
 
     @property
     def lang_code(self) -> str:
-        return self.user_data.get("language_code", "kk")
+        """Chat UI language from ``CHAT_LANG_MAP`` (not Telegram client ``language_code``)."""
+        return get_chat_lang(self.chat_id)
 
     @property
     def message_id(self) -> int | None:
@@ -84,6 +89,12 @@ class Context:
     @property
     def poll_answer(self) -> dict[str, Any] | None:
         return self._update.get("poll_answer")
+
+    @property
+    def update_id(self) -> int | None:
+        """Telegram update identifier for idempotency/dedup use-cases."""
+        raw = self._update.get("update_id")
+        return raw if isinstance(raw, int) else None
 
     def reply(
         self,
@@ -103,6 +114,14 @@ class Context:
             )
         return {}
 
+    # send a private msg to the user
+    def send_private_message(self, text: str) -> dict[str, Any]:
+        return self.bot.send_message(self.user_id, text)
+
+    # react to the message
+    def react(self, emoji: str) -> None:
+        return self.bot.set_message_reaction(self.chat_id, self.message_id, emoji)
+
 
 # ── Dispatcher ──────────────────────────────────────────────────────────────
 
@@ -117,12 +136,14 @@ class Dispatcher:
         sqs_repo: SQSClient | None = None,
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
+        lambda_invoker: LambdaInvoker | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
         self.sqs_repo = sqs_repo
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
+        self.lambda_invoker = lambda_invoker
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
@@ -160,7 +181,9 @@ class Dispatcher:
 
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
-        ctx = Context(update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo)
+        ctx = Context(
+            update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo, self.lambda_invoker
+        )
 
         poll_answer = ctx._update.get("poll_answer")
         if poll_answer and self.poll_answer_handler:

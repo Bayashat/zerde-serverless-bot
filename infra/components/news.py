@@ -29,9 +29,10 @@ class NewsConstruct(Construct):
         is_prod: bool,
         bot_token: str,
         gemini_api_key: str,
-        news_chats: dict[str, list[str]],
+        chats: dict[str, list[str]],
         ai_provider: str,
-        llm_model: str,
+        news_gemini_model: str,
+        news_fallback_model: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -58,16 +59,17 @@ class NewsConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "NEWS_AI_PROVIDER": ai_provider,
+                "NEWS_GEMINI_MODEL": news_gemini_model,
+                "NEWS_FALLBACK_MODEL": news_fallback_model,
                 "BOT_TOKEN": bot_token,
                 "GEMINI_API_KEY": gemini_api_key,
-                "AI_PROVIDER": ai_provider,
-                "LLM_MODEL": llm_model,
             },
         )
 
         if is_prod:
             for lang, schedules in _LANG_SCHEDULE.items():
-                chat_ids = news_chats.get(lang, [])
+                chat_ids = chats.get(lang, [])
                 if not chat_ids:
                     continue
                 for hour_utc, minute_utc in schedules:

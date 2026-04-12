@@ -10,10 +10,14 @@ def _require(name: str) -> str:
     return value
 
 
+# ── Optional (have defaults) ─────────────────────────────────────────────────
+LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
+
+AI_PROVIDER: str = os.environ.get("NEWS_AI_PROVIDER", "gemini")
+LLM_MODEL: str = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
+FALLBACK_MODEL: str = os.environ.get("NEWS_FALLBACK_MODEL", "gemini-2.5-flash")
+
+
 # ── Required ────────────────────────────────────────────────────────────────
 BOT_TOKEN: str = _require("BOT_TOKEN")
 GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
-
-# ── Optional (have defaults) ─────────────────────────────────────────────────
-AI_PROVIDER: str = os.environ.get("AI_PROVIDER", "gemini")
-LLM_MODEL: str = os.environ.get("LLM_MODEL", "gemini-2.5-flash")

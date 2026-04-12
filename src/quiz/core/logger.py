@@ -2,7 +2,8 @@
 
 import json
 import logging
-import os
+
+from core.config import LOG_LEVEL
 
 
 class JSONFormatter(logging.Formatter):
@@ -30,7 +31,7 @@ def get_logger(name: str = "quiz") -> logging.Logger:
         handler = logging.StreamHandler()
         handler.setFormatter(JSONFormatter())
         logger.addHandler(handler)
-        level = os.environ.get("LOG_LEVEL", "INFO").upper()
+        level = LOG_LEVEL.upper()
         logger.setLevel(getattr(logging, level, logging.INFO))
         logger.propagate = False
     return logger

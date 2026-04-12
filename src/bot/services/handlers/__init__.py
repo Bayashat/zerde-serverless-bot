@@ -16,14 +16,16 @@ from services.handlers.captcha import (
 from services.handlers.commands import (
     handle_help,
     handle_ping,
+    handle_quiz_generate,
     handle_start,
     handle_stats,
     handle_support,
 )
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
+from services.handlers.wtf import handle_explain, handle_wtf, process_explain_task
 
-__all__ = ["register_handlers", "process_timeout_task"]
+__all__ = ["register_handlers", "process_timeout_task", "process_explain_task"]
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -42,7 +44,7 @@ def register_handlers(dp: Dispatcher) -> None:
             elif ctx.callback_query_id:
                 ctx.bot.answer_callback_query(
                     ctx.callback_query_id,
-                    text=get_translated_text("unknown_action"),
+                    text=get_translated_text("unknown_action", ctx.lang_code),
                 )
         except Exception as e:
             logger.exception(f"Callback handler error: {e}")
@@ -58,5 +60,8 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("ping")(handle_ping)
     dp.command("stats")(handle_stats)
     dp.command("voteban")(handle_voteban_command)
+    dp.command("wtf")(handle_wtf)
+    dp.command("explain")(handle_explain)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
+    dp.command("genquiz")(handle_quiz_generate)
