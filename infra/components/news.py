@@ -12,8 +12,8 @@ from constructs import Construct
 # Language → list of (hour_utc, minute_utc) trigger times
 _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
     "kk": [(4, 0)],  # 04:00 UTC
-    "zh": [(4, 2)],  # 04:02 UTC
-    "ru": [(4, 4)],  # 04:04 UTC
+    "zh": [(4, 5)],  # 04:05 UTC
+    "ru": [(4, 10)],  # 04:10 UTC
 }
 
 
@@ -48,7 +48,7 @@ class NewsConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.X86_64,
-            timeout=Duration.minutes(2),
+            timeout=Duration.minutes(5),
             memory_size=256,
             log_group=logs.LogGroup(
                 self,

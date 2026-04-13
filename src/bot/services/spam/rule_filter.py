@@ -8,7 +8,9 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 # Compiled patterns — module-level for SnapStart warmth
 _RE_MENTION = re.compile(r"@\w{3,}")
-_RE_MONEY = re.compile(r"\$\d+|доход.{0,10}\d+|заработ|выплат|оплат", re.IGNORECASE)
+_RE_MONEY = re.compile(
+    r"\$\d+|\d+\s*(?:р\.|руб|тг|kzt|usd|eur|₸|₽)|доход.{0,10}\d+|заработ|выплат|оплат|дам\s*\d+", re.IGNORECASE
+)
 _RE_VPN = re.compile(r"впн|vpn", re.IGNORECASE)
 _RE_JOB = re.compile(r"работа|подработ|удалённо|удаленно|график|гибкий|гибкая", re.IGNORECASE)
 _RE_CYRILLIC = re.compile(r"[\u0400-\u04FF]")
@@ -16,6 +18,8 @@ _RE_LATIN = re.compile(r"[a-zA-Z]")
 _RE_WORD = re.compile(r"\S+")
 _RE_URL = re.compile(r"t\.me/|telegram\.me/|https?://", re.IGNORECASE)
 _RE_PROMO = re.compile(r"аренда|продаж|скидк|подписк|аккаунт|гаранти|отзыв|подключени", re.IGNORECASE)
+
+_RE_SCAM_HOOK = re.compile(r"срочно|за пару (движений|минут)|быстрые деньги|легкие деньги", re.IGNORECASE)
 
 
 class RuleBasedSpamFilter:
@@ -36,6 +40,7 @@ class RuleBasedSpamFilter:
         is_mixed_script = _has_mixed_script_word(text)
         has_url = bool(_RE_URL.search(text))
         has_promo = bool(_RE_PROMO.search(text))
+        has_scam_hook = bool(_RE_SCAM_HOOK.search(text))
 
         # @username alone is normal group chat; only score as "external" with other risk signals
         risky_mention = has_mention and (has_money or has_vpn or has_job or is_mixed_script or has_url or has_promo)
@@ -66,6 +71,14 @@ class RuleBasedSpamFilter:
         if is_mixed_script:
             score += 0.20
             triggered.append("cis_spam_obfuscation")
+
+        if has_scam_hook:
+            score += 0.25
+            triggered.append("scam_hook")
+
+        if has_money and has_scam_hook:
+            score += 0.20
+            triggered.append("money_and_scam_hook")
 
         if len(text) < 100 and risky_mention:
             score += 0.15

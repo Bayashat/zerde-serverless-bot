@@ -58,6 +58,12 @@ Message: "OHЛAЙH PAБOTA C DOXOДOM OT 80-230$! @Victoriaa_S7"
 Message: "Отличный ВПН!!! Телеграм с ним просто летает!! Спасибо!!"
 {"label": "SPAM", "confidence": 0.98}
 
+Message: "За пару движений дам 12500р. срочно!!!"
+{"label": "SPAM", "confidence": 0.99}
+
+Message: "Аренда 24/7 и подключение: Claude Pro: 8 часов - 800 💰"
+{"label": "SPAM", "confidence": 0.99}
+
 # Medium confidence SPAM (borderline / suspicious promotions or ambiguous links)
 Message: "Ребята, нашел интересный канал про крипту, кому интересно заходите @crypto_news_123"
 {"label": "SPAM", "confidence": 0.80}
