@@ -21,10 +21,15 @@ _BODY = {
 def mock_bot():
     return MagicMock()
 
-def _make_result(label, confidence, error=False, reason=None):
+
+def _make_result(
+    label: str,
+    confidence: float,
+    error: bool = False,
+    reason: str | None = None,
+) -> SpamCheckResult:
     if reason is None:
         reason = "job_offer" if label == "SPAM" else "not_spam"
-def _make_result(label, confidence, error=False, reason="job_offer"):
     return SpamCheckResult(label=label, confidence=confidence, reason=reason, error=error)
 
 

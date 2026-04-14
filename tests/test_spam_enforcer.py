@@ -1,6 +1,6 @@
 """Tests for SpamEnforcer notification target rendering."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID
 from services.spam.enforcer import SpamEnforcer
@@ -73,7 +73,8 @@ def test_enforce_skips_administrator() -> None:
     bot.send_message.assert_not_called()
 
 
-def test_translate_reason_rules_prefix_uses_rules_translation() -> None:
+@patch("services.spam.enforcer.get_chat_lang", return_value="en")
+def test_translate_reason_rules_prefix_uses_rules_translation(_mock_lang: object) -> None:
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -91,7 +92,8 @@ def test_translate_reason_rules_prefix_uses_rules_translation() -> None:
     assert "matched spam rules" in sent_text
 
 
-def test_translate_reason_known_code_uses_specific_translation() -> None:
+@patch("services.spam.enforcer.get_chat_lang", return_value="en")
+def test_translate_reason_known_code_uses_specific_translation(_mock_lang: object) -> None:
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -109,7 +111,8 @@ def test_translate_reason_known_code_uses_specific_translation() -> None:
     assert "job/income offer" in sent_text
 
 
-def test_translate_reason_unknown_code_uses_fallback() -> None:
+@patch("services.spam.enforcer.get_chat_lang", return_value="en")
+def test_translate_reason_unknown_code_uses_fallback(_mock_lang: object) -> None:
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -127,7 +130,8 @@ def test_translate_reason_unknown_code_uses_fallback() -> None:
     assert "unknown reason" in sent_text
 
 
-def test_translate_reason_all_known_codes() -> None:
+@patch("services.spam.enforcer.get_chat_lang", return_value="en")
+def test_translate_reason_all_known_codes(_mock_lang: object) -> None:
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
