@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID
 from services.spam.groq_detector import SpamCheckResult
 from services.spam.processor import process_spam_check_task
 
@@ -82,6 +83,13 @@ def test_api_error_does_not_enforce(mock_detector_cls, mock_enforcer_cls, mock_s
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=True)
 def test_skips_chat_admin_before_groq(mock_is_admin, mock_detector_cls, mock_bot):
     process_spam_check_task(mock_bot, _BODY)
+    mock_detector_cls.assert_not_called()
+
+
+@patch("services.spam.processor.GroqSpamDetector")
+def test_skips_channel_discussion_actor_before_groq(mock_detector_cls, mock_bot):
+    body = {**_BODY, "user_id": TELEGRAM_CHANNEL_POST_ACTOR_USER_ID}
+    process_spam_check_task(mock_bot, body)
     mock_detector_cls.assert_not_called()
 
 

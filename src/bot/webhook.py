@@ -17,6 +17,7 @@ from services.handlers import process_explain_task, process_timeout_task
 from services.repositories.sqs import SQSClient
 from services.repositories.stats import StatsRepository
 from services.spam import RuleBasedSpamFilter, SpamEnforcer, collect_spam_screen_text, process_spam_check_task
+from services.spam.channel_post import should_skip_spam_for_channel_discussion_mirror
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.telegram import TelegramClient
 
@@ -232,6 +233,8 @@ def _should_screen_for_spam(body: dict[str, Any]) -> bool:
     if "message" not in body:
         return False
     msg = body["message"]
+    if should_skip_spam_for_channel_discussion_mirror(msg):
+        return False
     if "new_chat_members" in msg:
         return False
     if msg.get("from", {}).get("is_bot", False):
@@ -249,6 +252,8 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
     """Layer-1 spam screening: score message and enforce or enqueue. Never raises."""
     try:
         msg = body["message"]
+        if should_skip_spam_for_channel_discussion_mirror(msg):
+            return
         combined = collect_spam_screen_text(msg)
         if not combined.strip():
             return
