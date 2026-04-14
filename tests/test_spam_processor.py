@@ -22,15 +22,22 @@ def mock_bot():
     return MagicMock()
 
 
-def _make_result(label, confidence, error=False):
-    return SpamCheckResult(label=label, confidence=confidence, error=error)
+def _make_result(
+    label: str,
+    confidence: float,
+    error: bool = False,
+    reason: str | None = None,
+) -> SpamCheckResult:
+    if reason is None:
+        reason = "job_offer" if label == "SPAM" else "not_spam"
+    return SpamCheckResult(label=label, confidence=confidence, reason=reason, error=error)
 
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.GroqSpamDetector")
 def test_spam_high_confidence_calls_enforce(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.95)
+    mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.95, reason="job_offer")
     mock_enforcer = mock_enforcer_cls.return_value
 
     process_spam_check_task(mock_bot, _BODY)
@@ -39,7 +46,7 @@ def test_spam_high_confidence_calls_enforce(mock_detector_cls, mock_enforcer_cls
         chat_id=_BODY["chat_id"],
         user_id=_BODY["user_id"],
         message_id=_BODY["message_id"],
-        reason="groq_spam:0.95",
+        reason="job_offer",
     )
 
 

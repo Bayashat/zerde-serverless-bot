@@ -65,7 +65,8 @@ class SpamEnforcer:
 
         try:
             lang = get_chat_lang(chat_id)
-            notice = get_translated_text("spam_enforced_notice", lang, TARGET=target)
+            translated_reason = self._translate_reason(reason, lang)
+            notice = get_translated_text("spam_enforced_notice", lang, TARGET=target, REASON=translated_reason)
             self.bot.send_message(chat_id, notice)
         except Exception as e:
             logger.warning(
@@ -87,3 +88,15 @@ class SpamEnforcer:
                 extra={"chat_id": chat_id, "user_id": user_id, "error": e},
             )
         return f"ID:{user_id}"
+
+    def _translate_reason(self, reason: str, lang: str) -> str:
+        if reason.startswith("rules:"):
+            return get_translated_text("spam_reason_rules", lang)
+
+        reason_key = f"spam_reason_{reason}"
+        translated = get_translated_text(reason_key, lang)
+
+        if translated == reason_key:
+            return get_translated_text("spam_reason_unknown", lang)
+
+        return translated

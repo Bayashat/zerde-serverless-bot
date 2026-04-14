@@ -63,7 +63,7 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
                 chat_id=chat_id,
                 user_id=user_id,
                 message_id=message_id,
-                reason=f"groq_spam:{result.confidence:.2f}",
+                reason=result.reason,
             )
         elif result.label == "SPAM":
             # Low-confidence SPAM: alert admins without taking automated action
