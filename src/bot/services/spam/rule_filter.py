@@ -9,7 +9,8 @@ logger = LoggerAdapter(get_logger(__name__), {})
 # Compiled patterns — module-level for SnapStart warmth
 _RE_MENTION = re.compile(r"@\w{3,}")
 _RE_MONEY = re.compile(
-    r"\$\d+|\d+\s*(?:р\.|руб|тг|kzt|usd|eur|₸|₽)|доход.{0,10}\d+|заработ|выплат|оплат|дам\s*\d+", re.IGNORECASE
+    r"\$\d+|\d+р\b|\d+\s*(?:р\.|руб|тг|kzt|usd|eur|₸|₽)|доход.{0,10}\d+|заработ|выплат|оплат|дам\s*\d+",
+    re.IGNORECASE,
 )
 _RE_VPN = re.compile(r"впн|vpn", re.IGNORECASE)
 _RE_JOB = re.compile(r"работа|подработ|удалённо|удаленно|график|гибкий|гибкая", re.IGNORECASE)

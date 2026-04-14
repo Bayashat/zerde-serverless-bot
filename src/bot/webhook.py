@@ -252,8 +252,6 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
     """Layer-1 spam screening: score message and enforce or enqueue. Never raises."""
     try:
         msg = body["message"]
-        if should_skip_spam_for_channel_discussion_mirror(msg):
-            return
         combined = collect_spam_screen_text(msg)
         if not combined.strip():
             return
@@ -262,6 +260,10 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
         chat_id: int = msg["chat"]["id"]
 
         if is_chat_admin_or_creator(bot, chat_id, user_id):
+            logger.info(
+                "Spam screening skipped (sender is administrator or creator)",
+                extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id},
+            )
             return
 
         score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
@@ -288,6 +290,12 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
                 message_id=message_id,
                 text=combined,
                 triggered_rules=triggered_rules,
+            )
+            return
+        if triggered_rules:
+            logger.info(
+                "Spam screening below AI threshold (no automatic action)",
+                extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
             )
     except Exception as e:
         logger.error("Spam screening error, continuing normal flow", extra={"error": e})

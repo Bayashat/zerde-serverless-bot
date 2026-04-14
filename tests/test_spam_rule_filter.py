@@ -83,6 +83,14 @@ def test_job_offer_without_other_signals(f):
     assert score < 0.8
 
 
+def test_cyrillic_ruble_suffix_without_space_triggers_money(f):
+    """Informal 'NNNNр' (no space before Cyrillic р) is common in RU spam."""
+    score, rules = f.check("Есть подработка, ежедневно 6000р, пишите в лс.", _USER_ID, _CHAT_ID)
+    assert "money_pattern" in rules
+    assert "job_offer" in rules
+    assert score > 0.3
+
+
 def test_mention_only_does_not_trigger_external_even_if_short(f):
     score, rules = f.check("@user", _USER_ID, _CHAT_ID)
     assert "external_mention" not in rules
