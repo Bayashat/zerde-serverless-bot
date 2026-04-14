@@ -44,17 +44,18 @@ CRITICAL CONFIDENCE SCORING RULE:
   you MUST output NOT_SPAM, or SPAM with a confidence < 0.80 (so human admins can review it).
 
 Respond ONLY with valid JSON. No explanation. No markdown.
-Format: {"label": "SPAM", "confidence": 0.95, "reason": "reason_code"}
+Output format is always:
+{"label": "SPAM|NOT_SPAM", "confidence": 0.95, "reason": "reason_code"}
 
-Reason codes (use ONLY for SPAM label):
-- "job_offer" - Job/income/earning offers
-- "vpn_ad" - VPN service advertisements
-- "referral_promo" - Referral/promotional links for external services
-- "selling_services" - Selling/renting digital services or accounts
-- "commercial" - General promotional/commercial content
-- "suspicious_link" - Suspicious or unknown links
-
-For NOT_SPAM, use "reason": "not_spam"
+The "reason" field is REQUIRED for every response:
+- If label is "SPAM", reason must be exactly one of:
+  - "job_offer" - Job/income/earning offers
+  - "vpn_ad" - VPN service advertisements
+  - "referral_promo" - Referral/promotional links for external services
+  - "selling_services" - Selling/renting digital services or accounts
+  - "commercial" - General promotional/commercial content
+  - "suspicious_link" - Suspicious or unknown links
+- If label is "NOT_SPAM", reason must be exactly "not_spam"
 
 Few-shot examples (vary confidence: High SPAM, Medium SPAM, NOT SPAM):
 

@@ -151,7 +151,7 @@ TRANSLATIONS = {
         "spam_reason_commercial": "commercial/promotional content",
         "spam_reason_suspicious_link": "suspicious link",
         "spam_reason_rules": "matched spam rules",
-        "spam_reason_unknown": "spam detected",
+        "spam_reason_unknown": "unknown reason",
     },
     "kk": {
         "start_message": (
@@ -301,7 +301,7 @@ TRANSLATIONS = {
         "spam_reason_commercial": "коммерциялық/жарнама мазмұны",
         "spam_reason_suspicious_link": "күдікті сілтеме",
         "spam_reason_rules": "спам ережелеріне сәйкес",
-        "spam_reason_unknown": "спам анықталды",
+        "spam_reason_unknown": "себебі белгісіз",
     },
     "zh": {
         "start_message": (
@@ -439,7 +439,7 @@ TRANSLATIONS = {
         "spam_reason_commercial": "商业/推广内容",
         "spam_reason_suspicious_link": "可疑链接",
         "spam_reason_rules": "匹配垃圾规则",
-        "spam_reason_unknown": "检测到垃圾信息",
+        "spam_reason_unknown": "原因未知",
     },
     "ru": {
         "start_message": (
@@ -585,7 +585,7 @@ TRANSLATIONS = {
         "spam_reason_commercial": "коммерческий/рекламный контент",
         "spam_reason_suspicious_link": "подозрительная ссылка",
         "spam_reason_rules": "соответствие правилам спама",
-        "spam_reason_unknown": "обнаружен спам",
+        "spam_reason_unknown": "неизвестная причина",
     },
 }
 
