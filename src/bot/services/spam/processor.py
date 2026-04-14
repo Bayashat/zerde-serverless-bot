@@ -1,6 +1,6 @@
 """SQS processor for SPAM_CHECK tasks: Layer-2 Groq classification and enforcement."""
 
-from core.config import get_chat_lang
+from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID, get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.stats import StatsRepository
@@ -23,6 +23,13 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
         text: str = body["text"]
     except (KeyError, TypeError) as e:
         logger.error("Malformed SPAM_CHECK body, skipping", extra={"error": e, "body": body})
+        return
+
+    if user_id == TELEGRAM_CHANNEL_POST_ACTOR_USER_ID:
+        logger.info(
+            "Skipping SPAM_CHECK for channel discussion mirror actor",
+            extra={"chat_id": chat_id, "message_id": message_id},
+        )
         return
 
     if is_chat_admin_or_creator(bot, chat_id, user_id):

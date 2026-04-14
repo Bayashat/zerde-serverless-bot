@@ -2,6 +2,7 @@
 
 from unittest.mock import MagicMock
 
+from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID
 from services.spam.enforcer import SpamEnforcer
 
 
@@ -35,6 +36,23 @@ def test_enforce_notice_falls_back_to_user_id_when_username_missing() -> None:
 
     sent_text = bot.send_message.call_args[0][1]
     assert "ID:12345" in sent_text
+
+
+def test_enforce_skips_channel_discussion_actor() -> None:
+    bot = MagicMock()
+    stats_repo = MagicMock()
+
+    SpamEnforcer(bot, stats_repo).enforce(
+        chat_id=-1001234567890,
+        user_id=TELEGRAM_CHANNEL_POST_ACTOR_USER_ID,
+        message_id=42,
+        reason="rules:external_mention",
+    )
+
+    bot.delete_message.assert_not_called()
+    bot.kick_chat_member.assert_not_called()
+    stats_repo.increment_total_bans.assert_not_called()
+    bot.send_message.assert_not_called()
 
 
 def test_enforce_skips_administrator() -> None:

@@ -77,6 +77,10 @@ VOTEBAN_PREFIX = "voteban_"
 VOTEBAN_FOR_PREFIX = "voteban_for_"
 VOTEBAN_AGAINST_PREFIX = "voteban_against_"
 
+# ── Telegram well-known ids ─────────────────────────────────────────────────
+# ``from`` user id for messages posted via a channel into a linked discussion supergroup.
+TELEGRAM_CHANNEL_POST_ACTOR_USER_ID: int = 777000
+
 # ── Quiz parameters ─────────────────────────────────────────────────────────
 VALID_LANGS = {"kk", "zh", "ru"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard", "expert"}

@@ -1,6 +1,6 @@
 """Spam enforcer: deletes the message, bans the user, and notifies the group."""
 
-from core.config import get_chat_lang
+from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID, get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.stats import StatsRepository
@@ -19,6 +19,13 @@ class SpamEnforcer:
 
     def enforce(self, chat_id: int, user_id: int, message_id: int, reason: str) -> None:
         """Delete message + ban user + notify group. Logs each action; never raises."""
+        if user_id == TELEGRAM_CHANNEL_POST_ACTOR_USER_ID:
+            logger.info(
+                "Skipping spam enforcement for channel discussion mirror actor",
+                extra={"chat_id": chat_id, "user_id": user_id, "reason": reason},
+            )
+            return
+
         if is_chat_admin_or_creator(self.bot, chat_id, user_id):
             logger.info(
                 "Skipping spam enforcement for administrator/creator",
