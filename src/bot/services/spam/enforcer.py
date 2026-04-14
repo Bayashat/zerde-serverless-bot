@@ -58,7 +58,8 @@ class SpamEnforcer:
 
         try:
             lang = get_chat_lang(chat_id)
-            notice = get_translated_text("spam_enforced_notice", lang, TARGET=target)
+            translated_reason = self._translate_reason(reason, lang)
+            notice = get_translated_text("spam_enforced_notice", lang, TARGET=target, REASON=translated_reason)
             self.bot.send_message(chat_id, notice)
         except Exception as e:
             logger.warning(
@@ -80,3 +81,20 @@ class SpamEnforcer:
                 extra={"chat_id": chat_id, "user_id": user_id, "error": e},
             )
         return f"ID:{user_id}"
+
+    def _translate_reason(self, reason: str, lang: str) -> str:
+        """Translate spam reason code to human-readable text."""
+        # Handle rule-based spam (format: "rules:rule1,rule2")
+        if reason.startswith("rules:"):
+            return get_translated_text("spam_reason_rules", lang)
+
+        # Handle AI-detected spam with specific reason codes
+        reason_key = f"spam_reason_{reason}"
+        translated = get_translated_text(reason_key, lang)
+
+        # If translation key not found, get_translated_text returns the key itself as fallback
+        # In that case, use the generic "spam_reason_unknown" translation
+        if translated == reason_key:
+            return get_translated_text("spam_reason_unknown", lang)
+
+        return translated

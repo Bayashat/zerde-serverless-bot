@@ -140,10 +140,18 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
         "genquiz_failed": "❌ Failed to generate quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
-        "spam_enforced_notice": "🧪 [Test mode] Spam was detected and {TARGET} was removed.",
+        "spam_enforced_notice": "🧪 [Test mode] Spam detected: {REASON}. {TARGET} was removed.",
         "spam_uncertain_notice": (
             "⚠️ Suspicious message from {TARGET} detected, but confidence is low — admins please check."
         ),
+        "spam_reason_job_offer": "job/income offer",
+        "spam_reason_vpn_ad": "VPN advertisement",
+        "spam_reason_referral_promo": "referral/promotional link",
+        "spam_reason_selling_services": "selling digital services",
+        "spam_reason_commercial": "commercial/promotional content",
+        "spam_reason_suspicious_link": "suspicious link",
+        "spam_reason_rules": "matched spam rules",
+        "spam_reason_unknown": "spam detected",
     },
     "kk": {
         "start_message": (
@@ -282,10 +290,18 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
         "genquiz_failed": "❌ Quiz жасау мүмкін болмады: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
-        "spam_enforced_notice": "🧪 [Тест режимі] Спам анықталды және {TARGET} топтан шығарылды.",
+        "spam_enforced_notice": "🧪 [Тест режимі] Спам анықталды: {REASON}. {TARGET} топтан шығарылды.",
         "spam_uncertain_notice": (
             "⚠️ {TARGET} пайдаланушыдан күдікті хабарлама анықтадым, бірақ сәл сенімсіз болып тұрмын — админдердің тексеруіне қалдырамын"  # noqa: E501
         ),
+        "spam_reason_job_offer": "жұмыс/табыс ұсынысы",
+        "spam_reason_vpn_ad": "VPN жарнамасы",
+        "spam_reason_referral_promo": "реферал/жарнама сілтемесі",
+        "spam_reason_selling_services": "цифрлық қызметтерді сату",
+        "spam_reason_commercial": "коммерциялық/жарнама мазмұны",
+        "spam_reason_suspicious_link": "күдікті сілтеме",
+        "spam_reason_rules": "спам ережелеріне сәйкес",
+        "spam_reason_unknown": "спам анықталды",
     },
     "zh": {
         "start_message": (
@@ -414,8 +430,16 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ 难度无效。可选：{difficulties}",
         "genquiz_failed": "❌ 生成 Quiz 失败：{reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
-        "spam_enforced_notice": "🧪 [测试模式] 检测到垃圾信息，{TARGET} 已被移出群组。",
+        "spam_enforced_notice": "🧪 [测试模式] 检测到垃圾信息：{REASON}。{TARGET} 已被移出群组。",
         "spam_uncertain_notice": "⚠️ 检测到来自 {TARGET} 的可疑消息，但置信度较低——请管理员人工核查。",
+        "spam_reason_job_offer": "工作/收入邀约",
+        "spam_reason_vpn_ad": "VPN 广告",
+        "spam_reason_referral_promo": "推荐/推广链接",
+        "spam_reason_selling_services": "出售数字服务",
+        "spam_reason_commercial": "商业/推广内容",
+        "spam_reason_suspicious_link": "可疑链接",
+        "spam_reason_rules": "匹配垃圾规则",
+        "spam_reason_unknown": "检测到垃圾信息",
     },
     "ru": {
         "start_message": (
@@ -550,10 +574,18 @@ TRANSLATIONS = {
         "genquiz_invalid_difficulty": "❌ Неверная сложность. Выберите из: {difficulties}",
         "genquiz_failed": "❌ Не удалось сгенерировать Quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
-        "spam_enforced_notice": "🧪 [Тестовый режим] Обнаружен спам, пользователь {TARGET} удален из группы.",
+        "spam_enforced_notice": "🧪 [Тестовый режим] Обнаружен спам: {REASON}. Пользователь {TARGET} удален из группы.",
         "spam_uncertain_notice": (
             "⚠️ Обнаружено подозрительное сообщение от {TARGET}, но уверенность низкая — проверьте вручную."
         ),
+        "spam_reason_job_offer": "предложение работы/дохода",
+        "spam_reason_vpn_ad": "реклама VPN",
+        "spam_reason_referral_promo": "реферальная/рекламная ссылка",
+        "spam_reason_selling_services": "продажа цифровых услуг",
+        "spam_reason_commercial": "коммерческий/рекламный контент",
+        "spam_reason_suspicious_link": "подозрительная ссылка",
+        "spam_reason_rules": "соответствие правилам спама",
+        "spam_reason_unknown": "обнаружен спам",
     },
 }
 

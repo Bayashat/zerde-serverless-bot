@@ -44,45 +44,55 @@ CRITICAL CONFIDENCE SCORING RULE:
   you MUST output NOT_SPAM, or SPAM with a confidence < 0.80 (so human admins can review it).
 
 Respond ONLY with valid JSON. No explanation. No markdown.
-Format: {"label": "SPAM", "confidence": 0.95}
+Format: {"label": "SPAM", "confidence": 0.95, "reason": "reason_code"}
+
+Reason codes (use ONLY for SPAM label):
+- "job_offer" - Job/income/earning offers
+- "vpn_ad" - VPN service advertisements
+- "referral_promo" - Referral/promotional links for external services
+- "selling_services" - Selling/renting digital services or accounts
+- "commercial" - General promotional/commercial content
+- "suspicious_link" - Suspicious or unknown links
+
+For NOT_SPAM, use "reason": "not_spam"
 
 Few-shot examples (vary confidence: High SPAM, Medium SPAM, NOT SPAM):
 
 # High confidence SPAM (obvious scam/ads)
 Message: "Аренда 24/7 и подключение: Claude Pro: 8 часов - 800 💰 ChatGPT Plus: 24 часа - 600 💰 Оплата Kaspi Pay"
-{"label": "SPAM", "confidence": 0.99}
+{"label": "SPAM", "confidence": 0.99, "reason": "selling_services"}
 
 Message: "OHЛAЙH PAБOTA C DOXOДOM OT 80-230$! @Victoriaa_S7"
-{"label": "SPAM", "confidence": 0.99}
+{"label": "SPAM", "confidence": 0.99, "reason": "job_offer"}
 
 Message: "Отличный ВПН!!! Телеграм с ним просто летает!! Спасибо!!"
-{"label": "SPAM", "confidence": 0.98}
+{"label": "SPAM", "confidence": 0.98, "reason": "vpn_ad"}
 
 # Medium confidence SPAM (borderline / suspicious promotions or ambiguous links)
 Message: "Ребята, нашел интересный канал про крипту, кому интересно заходите @crypto_news_123"
-{"label": "SPAM", "confidence": 0.80}
+{"label": "SPAM", "confidence": 0.80, "reason": "referral_promo"}
 
 Message: "Могу помочь с дизайном и фронтендом, пишите в тг @super_designer"
-{"label": "SPAM", "confidence": 0.75}
+{"label": "SPAM", "confidence": 0.75, "reason": "commercial"}
 
 Message: "http://unknown-domain-earn-money.com/"
-{"label": "SPAM", "confidence": 0.70}
+{"label": "SPAM", "confidence": 0.70, "reason": "suspicious_link"}
 
 # High confidence NOT SPAM (normal IT / group chat / general links)
 Message: "кто знает как настроить nginx на ubuntu 24?"
-{"label": "NOT_SPAM", "confidence": 0.99}
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 
 Message: "Смотрите какая жиза 🤣 https://vm.tiktok.com/ZMxxxxxx/"
-{"label": "NOT_SPAM", "confidence": 0.99}
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 
 Message: "https://youtu.be/dQw4w9WgXcQ"
-{"label": "NOT_SPAM", "confidence": 0.99}
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 
 Message: "https://github.com/tiangolo/fastapi"
-{"label": "NOT_SPAM", "confidence": 0.99}
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 
 Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
-{"label": "NOT_SPAM", "confidence": 0.99}
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 """
 
 
@@ -90,6 +100,7 @@ Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
 class SpamCheckResult:
     label: str  # "SPAM" | "NOT_SPAM"
     confidence: float  # 0.0–1.0
+    reason: str = field(default="unknown")  # reason code for spam type
     error: bool = field(default=False)
 
 
@@ -141,8 +152,9 @@ class GroqSpamDetector:
         result = json.loads(content)
         label = result["label"]
         confidence = float(result["confidence"])
+        reason = result.get("reason", "unknown")
         logger.info(
             "Groq spam classification result",
-            extra={"label": label, "confidence": confidence},
+            extra={"label": label, "confidence": confidence, "reason": reason},
         )
-        return SpamCheckResult(label=label, confidence=confidence)
+        return SpamCheckResult(label=label, confidence=confidence, reason=reason)
