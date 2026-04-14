@@ -83,17 +83,12 @@ class SpamEnforcer:
         return f"ID:{user_id}"
 
     def _translate_reason(self, reason: str, lang: str) -> str:
-        """Translate spam reason code to human-readable text."""
-        # Handle rule-based spam (format: "rules:rule1,rule2")
         if reason.startswith("rules:"):
             return get_translated_text("spam_reason_rules", lang)
 
-        # Handle AI-detected spam with specific reason codes
         reason_key = f"spam_reason_{reason}"
         translated = get_translated_text(reason_key, lang)
 
-        # If translation key not found, get_translated_text returns the key itself as fallback
-        # In that case, use the generic "spam_reason_unknown" translation
         if translated == reason_key:
             return get_translated_text("spam_reason_unknown", lang)
 

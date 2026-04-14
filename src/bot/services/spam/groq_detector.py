@@ -100,7 +100,7 @@ Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
 class SpamCheckResult:
     label: str  # "SPAM" | "NOT_SPAM"
     confidence: float  # 0.0–1.0
-    reason: str = field(default="unknown")  # reason code for spam type
+    reason: str = field(default="unknown")
     error: bool = field(default=False)
 
 
