@@ -74,7 +74,6 @@ def test_enforce_skips_administrator() -> None:
 
 
 def test_translate_reason_rules_prefix_uses_rules_translation() -> None:
-    """Any reason starting with 'rules:' should map to 'spam_reason_rules'."""
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -93,7 +92,6 @@ def test_translate_reason_rules_prefix_uses_rules_translation() -> None:
 
 
 def test_translate_reason_known_code_uses_specific_translation() -> None:
-    """Known reason codes should map to their specific translations."""
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -112,7 +110,6 @@ def test_translate_reason_known_code_uses_specific_translation() -> None:
 
 
 def test_translate_reason_unknown_code_uses_fallback() -> None:
-    """Unknown reason codes should fall back to 'spam_reason_unknown'."""
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
@@ -131,7 +128,6 @@ def test_translate_reason_unknown_code_uses_fallback() -> None:
 
 
 def test_translate_reason_all_known_codes() -> None:
-    """Test all known reason codes map to their translations."""
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
     stats_repo = MagicMock()
