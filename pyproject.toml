@@ -20,7 +20,7 @@ keywords = [
 dependencies = [
     "aws-cdk-aws-lambda-python-alpha>=2.248.0a0",
     "aws-cdk-lib>=2.236.0",
-    "python-dotenv>=1.2.1",
+    "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]
