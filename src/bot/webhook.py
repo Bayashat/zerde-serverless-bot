@@ -90,13 +90,9 @@ def _handle_api_gateway(
             )
             return create_response(200, {"message": "ok"})
 
-        # Only allow configured group chats.
+        # Silently drop events from group chats not in the configured whitelist.
         if chat_type in {"group", "supergroup"} and not _is_chat_whitelisted(chat_id):
-            dispatcher.bot.send_message(
-                chat_id,
-                get_translated_text("private_message", get_chat_lang(chat_id)),
-            )
-            logger.info("Blocked event from non-whitelisted chat", extra={"chat_id": chat_id})
+            logger.debug("Silently ignoring event from non-whitelisted chat", extra={"chat_id": chat_id})
             return create_response(200, {"message": "ok"})
 
         if _should_screen_for_spam(body):
@@ -130,6 +126,11 @@ def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
     for record in event["Records"]:
         try:
             body = json.loads(record["body"])
+
+            task_chat_id = body.get("chat_id")
+            if task_chat_id is not None and not _is_chat_whitelisted(int(task_chat_id)):
+                logger.debug("Skipping SQS task from non-whitelisted chat", extra={"chat_id": task_chat_id})
+                continue
 
             task_type = body.get("task_type")
             if task_type == "CHECK_TIMEOUT":

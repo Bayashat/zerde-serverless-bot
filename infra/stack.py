@@ -79,16 +79,34 @@ class ZerdeTelegramBotStack(Stack):
         news_fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
         wtf_fallback_provider = os.environ.get("WTF_FALLBACK_PROVIDER", "deepseek")
 
-        chats: dict[str, list[str]] = {
+        # Shared chats used for bot's chat→lang routing (union of all feature chats)
+        bot_chats: dict[str, list[str]] = {
             "kk": _parse_chat_ids("CHATS_KK"),
             "zh": _parse_chat_ids("CHATS_ZH"),
             "ru": _parse_chat_ids("CHATS_RU"),
         }
 
+        # Per-feature chat overrides; fall back to shared bot_chats if not set
+        news_chats: dict[str, list[str]] = {
+            "kk": _parse_chat_ids("NEWS_CHATS_KK") or bot_chats["kk"],
+            "zh": _parse_chat_ids("NEWS_CHATS_ZH") or bot_chats["zh"],
+            "ru": _parse_chat_ids("NEWS_CHATS_RU") or bot_chats["ru"],
+        }
+
+        quiz_chats: dict[str, list[str]] = {
+            "kk": _parse_chat_ids("QUIZ_CHATS_KK") or bot_chats["kk"],
+            "zh": _parse_chat_ids("QUIZ_CHATS_ZH") or bot_chats["zh"],
+            "ru": _parse_chat_ids("QUIZ_CHATS_RU") or bot_chats["ru"],
+        }
+
         admin_user_id = os.environ.get("ADMIN_USER_ID", "")
 
-        # Build chat_id → lang mapping for the bot lambda
-        chat_lang_map = {cid: lang for lang, cids in chats.items() for cid in cids}
+        # Build chat_id → lang mapping for the bot lambda (covers all feature chats)
+        all_chats_union: dict[str, set[str]] = {"kk": set(), "zh": set(), "ru": set()}
+        for feature_chats in (bot_chats, news_chats, quiz_chats):
+            for lang, cids in feature_chats.items():
+                all_chats_union[lang].update(cids)
+        chat_lang_map = {cid: lang for lang, cids in all_chats_union.items() for cid in cids}
 
         # ── Constructs ─────────────────────────────────────────────────────────
         messaging = MessagingConstruct(
@@ -138,7 +156,7 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             bot_token=bot_token,
             gemini_api_key=gemini_api_key,
-            chats=chats,
+            chats=news_chats,
             ai_provider=ai_provider,
             news_gemini_model=news_gemini_model,
             news_fallback_model=news_fallback_model,
@@ -160,7 +178,7 @@ class ZerdeTelegramBotStack(Stack):
             groq_api_key=groq_api_key,
             groq_model=groq_model,
             quiz_llm_rpd=quiz_llm_rpd,
-            chats=chats,
+            chats=quiz_chats,
         )
 
         # Grant Bot Lambda access to quiz table and quiz lambda, inject env vars
