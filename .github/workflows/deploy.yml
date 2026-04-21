@@ -99,6 +99,12 @@ jobs:
           CHATS_KK: ${{ vars.CHATS_KK }}
           CHATS_ZH: ${{ vars.CHATS_ZH }}
           CHATS_RU: ${{ vars.CHATS_RU }}
+          NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+          NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+          NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+          QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+          QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+          QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
           CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS || '60' }}
           KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
           VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
