@@ -25,7 +25,7 @@ class SQSClient:
         user_id: int,
         join_message_id: int,
         verification_message_id: int,
-        delay_seconds: int = 60,
+        delay_seconds: int = 120,
     ) -> None:
         """Send a delayed message to SQS to check verification timeout."""
         payload = {

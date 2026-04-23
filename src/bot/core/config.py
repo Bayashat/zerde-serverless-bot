@@ -62,7 +62,7 @@ def get_chat_lang(chat_id: int | str | None) -> str:
 
 
 # ── Timing parameters ──────────────────────────────────────────────────
-CAPTCHA_TIMEOUT_SECONDS = int(os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "60"))
+CAPTCHA_TIMEOUT_SECONDS = int(os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120"))
 KICK_BAN_DURATION_SECONDS = int(os.environ.get("KICK_BAN_DURATION_SECONDS", "31"))
 
 

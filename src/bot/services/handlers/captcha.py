@@ -156,25 +156,33 @@ def handle_captcha_answer(ctx: Context) -> None:
     if not ctx.captcha_repo or not ctx.user_id or not ctx.chat_id:
         return
 
-    if not re.match(r"^\d{4}$", ctx.text.strip()):
-        return
-
     pending = ctx.captcha_repo.get_pending(ctx.chat_id, ctx.user_id)
     if not pending:
         return  # not a pending captcha user — ignore
 
-    answer = ctx.text.strip()
     expected = pending["expected"]
+    answer = ctx.text.strip()
+
+    # Delete any non-digit message silently (letters, emoji, mixed, etc.)
+    if not re.match(rf"^\d{{{len(expected)}}}$", answer):
+        try:
+            ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
+        except Exception:
+            pass
+        return
 
     if answer == expected:
         # ── Correct ─────────────────────────────────────────────────────────
         ctx.bot.restrict_chat_member(ctx.chat_id, ctx.user_id, _FULL_PERMISSIONS)
         ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
 
-        _delete_all_captcha_messages(ctx, pending, extra_ids=[ctx.message_id])
-
-        mention = format_mention(ctx.user_id, ctx.username, ctx.first_name)
-        ctx.reply(get_translated_text("welcome_verified", ctx.lang_code, MENTION=mention))
+        # Delete captcha image, wrong-answer messages, and user's answer — keep system join message
+        ids_to_delete = [pending["verify_msg_id"], ctx.message_id] + pending.get("wrong_msg_ids", [])
+        for msg_id in ids_to_delete:
+            try:
+                ctx.bot.delete_message(ctx.chat_id, msg_id)
+            except Exception:
+                pass
 
         if ctx.stats_repo:
             ctx.stats_repo.increment_verified_users(ctx.chat_id)
