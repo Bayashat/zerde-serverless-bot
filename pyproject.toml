@@ -29,5 +29,5 @@ dev = [
     "feedparser>=6.0.12",
     "google-genai>=1.65.0",
     "pre-commit>=4.5.1",
-    "pytest>=8.0.0",
+    "pytest>=9.0.3",
 ]
