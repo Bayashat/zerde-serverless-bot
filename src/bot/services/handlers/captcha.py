@@ -1,5 +1,6 @@
 """Captcha verification: grid image challenge, answer checking, timeout kick."""
 
+import re
 from typing import Any
 
 from core.config import CAPTCHA_MAX_ATTEMPTS, CAPTCHA_TIMEOUT_SECONDS
@@ -101,7 +102,11 @@ def handle_new_member(ctx: Context) -> None:
                 TIMEOUT=CAPTCHA_TIMEOUT_SECONDS,
             )
 
-            sent_message = ctx.bot.send_photo(ctx.chat_id, image_bytes, caption=caption)
+            try:
+                sent_message = ctx.bot.send_photo(ctx.chat_id, image_bytes, caption=caption)
+            except Exception:
+                ctx.bot.restrict_chat_member(ctx.chat_id, user_id, _FULL_PERMISSIONS)
+                raise
             msg_id = sent_message.get("message_id") if sent_message else None
 
             if msg_id is not None:
@@ -149,6 +154,9 @@ def _delete_all_captcha_messages(ctx: Context, pending: dict, extra_ids: list[in
 def handle_captcha_answer(ctx: Context) -> None:
     """Check plain-text message from restricted user against their captcha answer."""
     if not ctx.captcha_repo or not ctx.user_id or not ctx.chat_id:
+        return
+
+    if not re.match(r"^\d{4}$", ctx.text.strip()):
         return
 
     pending = ctx.captcha_repo.get_pending(ctx.chat_id, ctx.user_id)

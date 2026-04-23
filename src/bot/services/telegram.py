@@ -108,7 +108,11 @@ class TelegramClient:
             if resp.status >= 400:
                 raise TelegramAPIError(resp.status, body)
             return json.loads(body).get("result", {})
-        except TelegramAPIError:
+        except TelegramAPIError as e:
+            logger.error(
+                "Failed to send photo",
+                extra={"chat_id": chat_id, "status": e.status, "response": e.body},
+            )
             raise
         except Exception as e:
             logger.error("Failed to send photo", extra={"chat_id": chat_id, "error": str(e)})

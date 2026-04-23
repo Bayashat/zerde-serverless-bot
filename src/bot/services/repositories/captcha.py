@@ -87,11 +87,15 @@ class CaptchaRepository:
             resp = self._table.update_item(
                 Key={"stat_key": _key(chat_id, user_id)},
                 UpdateExpression="SET attempts = if_not_exists(attempts, :zero) + :inc",
+                ConditionExpression="attribute_exists(stat_key)",
                 ExpressionAttributeValues={":inc": 1, ":zero": 0},
                 ReturnValues="UPDATED_NEW",
             )
             return int(resp["Attributes"].get("attempts", 1))
         except ClientError as e:
+            if e.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+                logger.warning("increment_attempts: captcha entry no longer exists for user %s", user_id)
+                return 0
             logger.exception("Failed to increment attempts: %s", e)
             return 1
 
