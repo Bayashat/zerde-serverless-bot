@@ -71,8 +71,10 @@ VOTEBAN_THRESHOLD = int(os.environ.get("VOTEBAN_THRESHOLD", "7"))
 VOTEBAN_FORGIVE_THRESHOLD = int(os.environ.get("VOTEBAN_FORGIVE_THRESHOLD", "7"))
 
 
+# ── Captcha settings ────────────────────────────────────────────────────────
+CAPTCHA_MAX_ATTEMPTS: int = int(os.environ.get("CAPTCHA_MAX_ATTEMPTS", "3"))
+
 # ── Callback-data prefixes ──────────────────────────────────────────────────
-VERIFY_PREFIX = "verify_"
 VOTEBAN_PREFIX = "voteban_"
 VOTEBAN_FOR_PREFIX = "voteban_for_"
 VOTEBAN_AGAINST_PREFIX = "voteban_against_"

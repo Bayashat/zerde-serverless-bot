@@ -28,6 +28,7 @@ dev = [
     "boto3>=1.42.38",
     "feedparser>=6.0.12",
     "google-genai>=1.65.0",
+    "Pillow>=11.0.0",
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
 ]

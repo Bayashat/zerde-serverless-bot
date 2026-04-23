@@ -6,6 +6,7 @@ from core.config import get_chat_lang
 from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
+    CaptchaRepository,
     LambdaInvoker,
     QuizRepository,
     SQSClient,
@@ -37,6 +38,7 @@ class Context:
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
+        captcha_repo: CaptchaRepository | None = None,
     ):
         self._update = update
         self.bot = bot
@@ -45,6 +47,7 @@ class Context:
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
         self.lambda_invoker = lambda_invoker
+        self.captcha_repo = captcha_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -137,6 +140,7 @@ class Dispatcher:
         vote_repo: VoteRepository | None = None,
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
+        captcha_repo: CaptchaRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
@@ -144,11 +148,13 @@ class Dispatcher:
         self.vote_repo = vote_repo
         self.quiz_repo = quiz_repo
         self.lambda_invoker = lambda_invoker
+        self.captcha_repo = captcha_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
         self.callback_query_handler: HandlerFunc | None = None
         self.poll_answer_handler: HandlerFunc | None = None
+        self.message_handler: HandlerFunc | None = None
 
     def command(self, command_name: str):
         """Decorator to register a command handler (e.g. ``@dp.command("start")``)."""
@@ -179,10 +185,23 @@ class Dispatcher:
         logger.info("Registered poll_answer handler")
         return func
 
+    def on_message(self, func: HandlerFunc):
+        """Decorator to register handler for plain text messages (non-command)."""
+        self.message_handler = func
+        logger.info("Registered message handler")
+        return func
+
     def process_update(self, update: dict[str, Any]):
         """Route a single Telegram update to the appropriate handler."""
         ctx = Context(
-            update, self.bot, self.stats_repo, self.sqs_repo, self.vote_repo, self.quiz_repo, self.lambda_invoker
+            update,
+            self.bot,
+            self.stats_repo,
+            self.sqs_repo,
+            self.vote_repo,
+            self.quiz_repo,
+            self.lambda_invoker,
+            self.captcha_repo,
         )
 
         poll_answer = ctx._update.get("poll_answer")
@@ -210,3 +229,8 @@ class Dispatcher:
                 self.command_handlers[command_key](ctx)
                 logger.info(f"Dispatching to command handler: {command_key}")
                 return
+
+        if ctx.text and not ctx.text.startswith("/") and self.message_handler:
+            logger.info("Dispatching to message handler")
+            self.message_handler(ctx)
+            return

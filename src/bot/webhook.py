@@ -41,7 +41,7 @@ def handle_event(
     if event_type == "api_gateway":
         return _handle_api_gateway(event, dispatcher, bot)
     elif event_type == "sqs":
-        _handle_sqs(event, bot)
+        _handle_sqs(event, bot, dispatcher)
     else:
         logger.warning("Unknown event type received", extra={"event": event})
 
@@ -103,6 +103,7 @@ def _handle_api_gateway(
             return create_response(200, {"message": "Not relevant"})
 
         if body.get("task_type") == "CHECK_TIMEOUT":
+            body["_captcha_repo"] = dispatcher.captcha_repo
             process_timeout_task(bot, body)
         else:
             dispatcher.process_update(body)
@@ -116,8 +117,8 @@ def _handle_api_gateway(
 # ── SQS handler ────────────────────────────────────────────────────────────
 
 
-def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
-    """Process SQS batch -- only CHECK_TIMEOUT tasks are expected."""
+def _handle_sqs(event: dict[str, Any], bot: TelegramClient, dispatcher: Dispatcher) -> None:
+    """Process SQS batch -- CHECK_TIMEOUT, PROCESS_EXPLAIN, SPAM_CHECK tasks."""
     logger.debug(
         "Received SQS batch",
         extra={"record_count": len(event.get("Records", []))},
@@ -134,6 +135,7 @@ def _handle_sqs(event: dict[str, Any], bot: TelegramClient) -> None:
 
             task_type = body.get("task_type")
             if task_type == "CHECK_TIMEOUT":
+                body["_captcha_repo"] = dispatcher.captcha_repo
                 process_timeout_task(bot, body)
             elif task_type == "PROCESS_EXPLAIN":
                 process_explain_task(bot, body)
@@ -314,8 +316,8 @@ def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
         msg = body["message"]
         if "new_chat_members" in msg:
             return True
-        text_content = msg.get("text") or msg.get("caption") or ""
-        if text_content.strip().startswith("/"):
-            return True
+        text_content = msg.get("text") or ""
+        if text_content.strip():
+            return True  # commands + plain text (captcha answers handled by message_handler)
 
     return False
