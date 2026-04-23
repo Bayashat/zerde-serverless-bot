@@ -160,16 +160,16 @@ def handle_captcha_answer(ctx: Context) -> None:
     if not pending:
         return  # not a pending captcha user — ignore
 
+    expected = pending["expected"]
+    answer = ctx.text.strip()
+
     # Delete any non-digit message silently (letters, emoji, mixed, etc.)
-    if not re.match(r"^\d+$", ctx.text.strip()):
+    if not re.match(rf"^\d{{{len(expected)}}}$", answer):
         try:
             ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
         except Exception:
             pass
         return
-
-    answer = ctx.text.strip()
-    expected = pending["expected"]
 
     if answer == expected:
         # ── Correct ─────────────────────────────────────────────────────────
