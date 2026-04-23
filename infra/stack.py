@@ -40,7 +40,7 @@ class ZerdeTelegramBotStack(Stack):
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
 
         # ── Timing parameters ──────────────────────────────────────────────────
-        captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "60")
+        captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120")
         kick_ban_duration_seconds = os.environ.get("KICK_BAN_DURATION_SECONDS", "31")
 
         # ── Vote-to-ban thresholds ──────────────────────────────────────────
