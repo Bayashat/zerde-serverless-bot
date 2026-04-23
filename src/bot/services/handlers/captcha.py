@@ -25,6 +25,20 @@ _FULL_PERMISSIONS: dict[str, bool] = {
     "can_add_web_page_previews": True,
 }
 
+# Allow typing the captcha answer but block all media to prevent spam
+_TEXT_ONLY_PERMISSIONS: dict[str, bool] = {
+    "can_send_messages": True,
+    "can_send_audios": False,
+    "can_send_documents": False,
+    "can_send_photos": False,
+    "can_send_videos": False,
+    "can_send_video_notes": False,
+    "can_send_voice_notes": False,
+    "can_send_polls": False,
+    "can_send_other_messages": False,
+    "can_add_web_page_previews": False,
+}
+
 
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
     """Process CHECK_TIMEOUT task: kick user if still restricted, clean up captcha state."""
@@ -38,13 +52,17 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
         logger.warning("Timeout task missing required fields", task_data=task_data)
         return
     try:
-        member = bot.get_chat_member(chat_id, user_id)
-        status = (member.get("status") or "").lower()
-        can_send = member.get("can_send_messages", True)
-
-        if status in ("member", "administrator", "creator") or can_send:
-            logger.info("User %s already verified. Ignoring timeout.", user_id)
-            return
+        # Use DynamoDB state as source of truth: if no pending entry, user already verified
+        if captcha_repo:
+            pending = captcha_repo.get_pending(chat_id, user_id)
+            if pending is None:
+                logger.info("User %s already verified. Ignoring timeout.", user_id)
+                return
+        else:
+            member = bot.get_chat_member(chat_id, user_id)
+            status = (member.get("status") or "").lower()
+            if status not in ("restricted", "member"):
+                return
 
         logger.info("User %s timed out. Kicking.", user_id)
         bot.kick_chat_member(chat_id, user_id)
@@ -72,7 +90,7 @@ def handle_new_member(ctx: Context) -> None:
                 continue
 
             user_id = member.get("id")
-            ctx.bot.restrict_chat_member(ctx.chat_id, user_id, {"can_send_messages": False})
+            ctx.bot.restrict_chat_member(ctx.chat_id, user_id, _TEXT_ONLY_PERMISSIONS)
 
             image_bytes, expected = generate_grid_captcha()
             mention = format_mention(user_id, member.get("username"), member.get("first_name", "User"))
