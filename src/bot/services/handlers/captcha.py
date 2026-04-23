@@ -133,6 +133,19 @@ def handle_new_member(ctx: Context) -> None:
             ctx.reply(get_translated_text("error_occurred", ctx.lang_code), ctx.message_id)
 
 
+def _delete_all_captcha_messages(ctx: Context, pending: dict, extra_ids: list[int] | None = None) -> None:
+    """Delete join message, captcha image, all error messages, and any extra IDs."""
+    ids_to_delete = [pending["join_msg_id"], pending["verify_msg_id"]]
+    ids_to_delete += pending.get("wrong_msg_ids", [])
+    if extra_ids:
+        ids_to_delete += extra_ids
+    for msg_id in ids_to_delete:
+        try:
+            ctx.bot.delete_message(ctx.chat_id, msg_id)
+        except Exception:
+            pass
+
+
 def handle_captcha_answer(ctx: Context) -> None:
     """Check plain-text message from restricted user against their captcha answer."""
     if not ctx.captcha_repo or not ctx.user_id or not ctx.chat_id:
@@ -150,12 +163,7 @@ def handle_captcha_answer(ctx: Context) -> None:
         ctx.bot.restrict_chat_member(ctx.chat_id, ctx.user_id, _FULL_PERMISSIONS)
         ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
 
-        try:
-            ctx.bot.delete_message(ctx.chat_id, pending["join_msg_id"])
-            ctx.bot.delete_message(ctx.chat_id, pending["verify_msg_id"])
-            ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
-        except Exception as e:
-            logger.warning("Failed to delete captcha messages: %s", e)
+        _delete_all_captcha_messages(ctx, pending, extra_ids=[ctx.message_id])
 
         mention = format_mention(ctx.user_id, ctx.username, ctx.first_name)
         ctx.reply(get_translated_text("welcome_verified", ctx.lang_code, MENTION=mention))
@@ -170,24 +178,23 @@ def handle_captcha_answer(ctx: Context) -> None:
         new_attempts = ctx.captcha_repo.increment_attempts(ctx.chat_id, ctx.user_id)
         remaining = CAPTCHA_MAX_ATTEMPTS - new_attempts
 
+        # Delete the user's wrong-answer message immediately
         try:
             ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
         except Exception:
             pass
 
         if remaining <= 0:
+            # Kick silently — no notification message (kicked user won't see it anyway)
             ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
-            ctx.reply(get_translated_text("captcha_failed_kicked", ctx.lang_code))
+            _delete_all_captcha_messages(ctx, pending)
             ctx.bot.kick_chat_member(ctx.chat_id, ctx.user_id)
-            try:
-                ctx.bot.delete_message(ctx.chat_id, pending["join_msg_id"])
-                ctx.bot.delete_message(ctx.chat_id, pending["verify_msg_id"])
-            except Exception:
-                pass
             logger.info("User %s kicked after %d wrong captcha attempts.", ctx.user_id, new_attempts)
         else:
-            ctx.reply(
+            error_msg = ctx.reply(
                 get_translated_text("captcha_wrong_answer", ctx.lang_code, ATTEMPTS_LEFT=remaining),
                 reply_to_message_id=pending["verify_msg_id"],
             )
+            if error_msg and error_msg.get("message_id"):
+                ctx.captcha_repo.append_wrong_message(ctx.chat_id, ctx.user_id, error_msg["message_id"])
             logger.info("User %s wrong captcha attempt %d/%d.", ctx.user_id, new_attempts, CAPTCHA_MAX_ATTEMPTS)

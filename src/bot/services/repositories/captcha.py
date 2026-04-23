@@ -64,10 +64,22 @@ class CaptchaRepository:
                 "join_msg_id": int(item["join_msg_id"]),
                 "verify_msg_id": int(item["verify_msg_id"]),
                 "attempts": int(item.get("attempts", 0)),
+                "wrong_msg_ids": [int(m) for m in item.get("wrong_msg_ids", [])],
             }
         except ClientError as e:
             logger.exception("Failed to get pending captcha: %s", e)
             return None
+
+    def append_wrong_message(self, chat_id: int | str, user_id: int | str, msg_id: int) -> None:
+        """Append a wrong-answer message ID to the tracked list for later cleanup."""
+        try:
+            self._table.update_item(
+                Key={"stat_key": _key(chat_id, user_id)},
+                UpdateExpression="SET wrong_msg_ids = list_append(if_not_exists(wrong_msg_ids, :empty), :new_id)",
+                ExpressionAttributeValues={":empty": [], ":new_id": [msg_id]},
+            )
+        except ClientError as e:
+            logger.warning("Failed to append wrong message id: %s", e)
 
     def increment_attempts(self, chat_id: int | str, user_id: int | str) -> int:
         """Increment wrong-attempt counter, return new count."""
