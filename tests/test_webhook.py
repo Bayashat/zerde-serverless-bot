@@ -47,9 +47,10 @@ def test_is_relevant_new_members():
     assert is_event_relevant_to_bot(body) is True
 
 
-def test_not_relevant_plain_text():
+def test_relevant_plain_text():
+    # Plain text is now routed for captcha answer checking
     body = {"message": {"text": "hello world", "chat": {"id": 1}}}
-    assert is_event_relevant_to_bot(body) is False
+    assert is_event_relevant_to_bot(body) is True
 
 
 def test_create_response():

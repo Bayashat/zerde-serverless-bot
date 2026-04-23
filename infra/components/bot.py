@@ -10,6 +10,7 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_sqs as sqs
+from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
@@ -76,12 +77,13 @@ class BotConstruct(Construct):
             time_to_live_attribute="ttl",
         )
 
-        handler_lambda = _lambda.Function(
+        handler_lambda = PythonFunction(
             self,
             f"{CONSTRUCT_PREFIX}BotLambda",
             function_name=f"{RESOURCE_PREFIX}-bot-{env_name}",
-            handler="main.lambda_handler",
-            code=_lambda.Code.from_asset(str(PROJECT_ROOT / "src" / "bot")),
+            entry=str(PROJECT_ROOT / "src" / "bot"),
+            index="main.py",
+            handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.seconds(90),

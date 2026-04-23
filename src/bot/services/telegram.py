@@ -86,6 +86,34 @@ class TelegramClient:
             )
             raise
 
+    def send_photo(
+        self,
+        chat_id: int | str,
+        photo: bytes,
+        caption: str | None = None,
+        parse_mode: str = "HTML",
+    ) -> dict[str, Any]:
+        """Send a photo (as multipart/form-data) to Telegram. Returns Message object."""
+        url = f"{self.api_base}/sendPhoto"
+        fields: dict[str, Any] = {
+            "chat_id": str(chat_id),
+            "photo": ("captcha.png", photo, "image/png"),
+        }
+        if caption:
+            fields["caption"] = caption
+            fields["parse_mode"] = parse_mode
+        try:
+            resp = http.request("POST", url, fields=fields)
+            body = resp.data.decode("utf-8")
+            if resp.status >= 400:
+                raise TelegramAPIError(resp.status, body)
+            return json.loads(body).get("result", {})
+        except TelegramAPIError:
+            raise
+        except Exception as e:
+            logger.error("Failed to send photo", extra={"chat_id": chat_id, "error": str(e)})
+            raise
+
     def set_message_reaction(
         self,
         chat_id: int | str,

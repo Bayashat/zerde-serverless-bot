@@ -152,6 +152,14 @@ TRANSLATIONS = {
         "spam_reason_suspicious_link": "suspicious link",
         "spam_reason_rules": "matched spam rules",
         "spam_reason_unknown": "unknown reason",
+        "captcha_image_challenge": (
+            "👋 Welcome {MENTION}!\n\n"
+            "Look at the image and type the <b>4 highlighted numbers</b> in order ①②③④.\n\n"
+            "⏳ Time limit: {TIMEOUT}s\n"
+            "(Auto-removed if you don't verify)"
+        ),
+        "captcha_wrong_answer": "❌ Wrong code. <b>{ATTEMPTS_LEFT}</b> attempt(s) left.",
+        "captcha_failed_kicked": "🚫 Too many wrong attempts. You have been removed.",
     },
     "kk": {
         "start_message": (
@@ -302,6 +310,14 @@ TRANSLATIONS = {
         "spam_reason_suspicious_link": "күдікті сілтеме",
         "spam_reason_rules": "спам ережелеріне сәйкес",
         "spam_reason_unknown": "себебі белгісіз",
+        "captcha_image_challenge": (
+            "👋 Қош келдіңіз, {MENTION}!\n\n"
+            "Суреттегі <b>①②③④ белгіленген 4 санды</b> кезегімен жазыңыз.\n\n"
+            "⏳ Уақыт: {TIMEOUT} секунд\n"
+            "(Уақыт өтсе, топтан шығарыласыз)"
+        ),
+        "captcha_wrong_answer": "❌ Қате код. <b>{ATTEMPTS_LEFT}</b> мүмкіндік қалды.",
+        "captcha_failed_kicked": "🚫 Тым көп қате енгізілді. Топтан шығарылдыңыз.",
     },
     "zh": {
         "start_message": (
@@ -440,6 +456,14 @@ TRANSLATIONS = {
         "spam_reason_suspicious_link": "可疑链接",
         "spam_reason_rules": "匹配垃圾规则",
         "spam_reason_unknown": "原因未知",
+        "captcha_image_challenge": (
+            "👋 欢迎 {MENTION}！\n\n"
+            "请查看图片，按顺序输入 <b>①②③④ 标记的 4 个数字</b>。\n\n"
+            "⏳ 时限：{TIMEOUT}秒\n"
+            "（超时将自动移出群组）"
+        ),
+        "captcha_wrong_answer": "❌ 验证码错误，还剩 <b>{ATTEMPTS_LEFT}</b> 次机会。",
+        "captcha_failed_kicked": "🚫 错误次数过多，已将您移出群组。",
     },
     "ru": {
         "start_message": (
@@ -586,6 +610,14 @@ TRANSLATIONS = {
         "spam_reason_suspicious_link": "подозрительная ссылка",
         "spam_reason_rules": "соответствие правилам спама",
         "spam_reason_unknown": "неизвестная причина",
+        "captcha_image_challenge": (
+            "👋 Добро пожаловать, {MENTION}!\n\n"
+            "Посмотрите на изображение и введите <b>4 отмеченных числа</b> по порядку ①②③④.\n\n"
+            "⏳ Лимит: {TIMEOUT}с\n"
+            "(При таймауте будете удалены)"
+        ),
+        "captcha_wrong_answer": "❌ Неверный код. Осталось попыток: <b>{ATTEMPTS_LEFT}</b>.",
+        "captcha_failed_kicked": "🚫 Слишком много неверных попыток. Вы удалены.",
     },
 }
 

@@ -1,7 +1,6 @@
 """Handler registration: wires domain handlers to the Dispatcher."""
 
 from core.config import (
-    VERIFY_PREFIX,
     VOTEBAN_AGAINST_PREFIX,
     VOTEBAN_FOR_PREFIX,
 )
@@ -9,8 +8,8 @@ from core.dispatcher import Context, Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.handlers.captcha import (
+    handle_captcha_answer,
     handle_new_member,
-    handle_verify_callback,
     process_timeout_task,
 )
 from services.handlers.commands import (
@@ -31,15 +30,14 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 
 def register_handlers(dp: Dispatcher) -> None:
-    """Register all command, callback-query, and new-member handlers."""
+    """Register all command, callback-query, new-member, and message handlers."""
     dp.on_new_chat_members(handle_new_member)
+    dp.on_message(handle_captcha_answer)
 
     @dp.on_callback_query
     def route_callback(ctx: Context) -> None:
         try:
-            if ctx.callback_data.startswith(VERIFY_PREFIX):
-                handle_verify_callback(ctx)
-            elif ctx.callback_data.startswith((VOTEBAN_FOR_PREFIX, VOTEBAN_AGAINST_PREFIX)):
+            if ctx.callback_data.startswith((VOTEBAN_FOR_PREFIX, VOTEBAN_AGAINST_PREFIX)):
                 handle_vote_callback(ctx)
             elif ctx.callback_query_id:
                 ctx.bot.answer_callback_query(
