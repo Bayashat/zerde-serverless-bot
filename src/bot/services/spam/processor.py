@@ -12,6 +12,7 @@ from services.telegram import TelegramClient
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _CONFIDENCE_THRESHOLD = 0.85
+_detector = GroqSpamDetector()
 
 
 def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
@@ -40,8 +41,7 @@ def process_spam_check_task(bot: TelegramClient, body: dict) -> None:
         return
 
     try:
-        detector = GroqSpamDetector()
-        result = detector.classify(text)
+        result = _detector.classify(text)
 
         logger.info(
             "Groq spam check result",

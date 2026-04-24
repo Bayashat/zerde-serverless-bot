@@ -4,8 +4,8 @@ Rate-limit tracking uses an atomic DynamoDB counter (RPD) shared
 across all Lambda invocations and chat groups. The "day" matches
 Gemini/Google: calendar date in America/Los_Angeles (midnight PT reset).
 
-Timeout budget: API Gateway HTTP API hard-limits responses to 30 s.
-Gemini (12 s) + possible DeepSeek/Llama fallback (15 s) + overhead ≈ 26 s.
+Timeout budget: explain tasks run via SQS Lambda (90 s budget), not API Gateway.
+Read timeout is 25 s; connect timeout is 3 s (fast-fail on DNS/TCP issues).
 """
 
 import json
@@ -22,7 +22,7 @@ from urllib3.exceptions import HTTPError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=20))
+_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=25))
 
 
 class GeminiRPDExhaustedError(Exception):
@@ -56,8 +56,12 @@ class GeminiClient:
     def rpd_limit(self) -> int:
         return self._rate_repo.rpd_limit
 
-    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
+    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> tuple[str, int]:
         """Call Gemini to explain *term*.
+
+        Returns:
+            (explanation_text, used_count_after_increment) so callers can build
+            RPD footer without a second DynamoDB read.
 
         Raises:
             GeminiRPDExhaustedError: daily RPD limit reached after increment.
@@ -79,8 +83,8 @@ class GeminiClient:
                 {"role": "user", "parts": [{"text": wtf_explain_user_text(term)}]},
             ],
             "generationConfig": {
-                "temperature": 0.9,
-                "maxOutputTokens": 500,
+                "temperature": 0.7,
+                "maxOutputTokens": 300,
             },
         }
 
@@ -88,9 +92,9 @@ class GeminiClient:
         body = json.dumps(payload)
         headers = {"Content-Type": "application/json"}
 
-        # Two quick retries before falling back to the secondary provider.
-        # Delays are short because the bot Lambda timeout budget is tight.
-        _retry_delays = (3, 8)
+        # Single retry for transient network/timeout failures. 503 (model globally
+        # overloaded) breaks immediately — retrying in 1s won't help and just delays fallback.
+        _retry_delays = (1,)
         last_exc: Exception | None = None
 
         for attempt, delay in enumerate(_retry_delays):
@@ -117,6 +121,8 @@ class GeminiClient:
                     extra={"status": resp.status, "attempt": attempt + 1, "body": body_text[:200]},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini API {resp.status}: {body_text[:200]}")
+                if resp.status == 503:
+                    break  # globally overloaded — fall back immediately, don't retry
                 if attempt < len(_retry_delays) - 1:
                     time.sleep(delay + random.uniform(0, 2))
                 continue
@@ -128,7 +134,8 @@ class GeminiClient:
 
             try:
                 data = json.loads(resp.data.decode("utf-8"))
-                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                return text, count
             except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
                 logger.exception("Gemini response parse error")
                 raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc

@@ -58,14 +58,17 @@ def _extract_term(ctx: Context) -> str:
     return ""
 
 
-def _build_rpd_footer(lang: str) -> str:
+def _build_rpd_footer(lang: str, used_count: int | None = None) -> str:
     if not _gemini:
         return ""
-    logger.info("RPD limit", extra={"remaining": _gemini.remaining_rpd, "total": _gemini.rpd_limit})
+    # Prefer the count returned by explain_term() to avoid a second DynamoDB read.
+    # Falls back to a live read only on the fallback/error path where count is unavailable.
+    remaining = max(0, _gemini.rpd_limit - used_count) if used_count is not None else _gemini.remaining_rpd
+    logger.info("RPD limit", extra={"remaining": remaining, "total": _gemini.rpd_limit})
     return get_translated_text(
         "wtf_rpd_footer",
         lang,
-        remaining=_gemini.remaining_rpd,
+        remaining=remaining,
         total=_gemini.rpd_limit,
     )
 
@@ -154,14 +157,14 @@ def _execute_explain_and_reply(
             send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
             return
         try:
-            explanation = _gemini.explain_term(term, lang, style=style)
+            explanation, used_count = _gemini.explain_term(term, lang, style=style)
         except GeminiRPDExhaustedError:
             send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
             return
         except GeminiUnavailableError:
             send_reply(get_translated_text("wtf_api_error", lang))
             return
-        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
         return
 
     assert _gemini is not None and _fallback is not None
@@ -177,7 +180,7 @@ def _execute_explain_and_reply(
         return
 
     try:
-        explanation = _gemini.explain_term(term, lang, style=style)
+        explanation, used_count = _gemini.explain_term(term, lang, style=style)
     except GeminiRPDExhaustedError:
         _fallback_explain_and_reply(
             send_reply=send_reply,
@@ -198,7 +201,7 @@ def _execute_explain_and_reply(
         )
         return
 
-    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
 
 
 def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:
