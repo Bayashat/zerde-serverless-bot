@@ -1,6 +1,8 @@
 """AI client for generating daily news digest with provider abstraction."""
 
 import json
+import random
+import time
 
 from core.config import AI_PROVIDER, FALLBACK_MODEL, GEMINI_API_KEY, LLM_MODEL
 from core.logger import LoggerAdapter, get_logger
@@ -14,6 +16,8 @@ logger = LoggerAdapter(get_logger(__name__), {})
 class GeminiAIClient:
     """Google Gemini AI provider with automatic model fallback when primary fails."""
 
+    _RETRY_DELAYS = (5, 15, 30)  # seconds between attempts per model
+
     def __init__(self, api_key: str, model: str, fallback_model: str) -> None:
         self._client = genai.Client(api_key=api_key)
         self._model = model
@@ -24,44 +28,61 @@ class GeminiAIClient:
             extra={"model": model, "fallback": fallback_model},
         )
 
-    def _generate(self, prompt: str, temperature: float) -> dict:
-        """Call generate_content with automatic model fallback on retryable errors.
+    def _generate(self, prompt: str, temperature: float, max_output_tokens: int) -> dict:
+        """Call generate_content with automatic model fallback and exponential backoff.
 
-        Tries the primary model first. On 429/500/503/504 from the primary,
-        retries with the fallback model and remembers the switch for later
-        calls in this Lambda invocation.
+        Tries primary model up to 3 times with backoff before switching to the
+        fallback model (also retried up to 3 times). Handles 503 spikes that
+        occur at the start of the hour when Gemini is under high demand.
         """
         models = [self._fallback_model] if self._use_fallback else [self._model, self._fallback_model]
 
         for model in models:
-            try:
-                response = self._client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        temperature=temperature,
-                        response_mime_type="application/json",
-                    ),
-                )
-                logger.info("LLM call succeeded", extra={"model": model})
-                return json.loads(response.text)
-            except genai_errors.APIError as exc:
-                # Retry with fallback on primary when overloaded / rate-limited / transient server errors.
-                retryable = exc.code in (429, 500, 503, 504)
-                if retryable and model != self._fallback_model:
-                    logger.warning(
-                        "Primary model request failed, falling back",
-                        extra={
-                            "primary": model,
-                            "fallback": self._fallback_model,
-                            "code": exc.code,
-                        },
+            for attempt, delay in enumerate(self._RETRY_DELAYS):
+                try:
+                    response = self._client.models.generate_content(
+                        model=model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            temperature=temperature,
+                            response_mime_type="application/json",
+                            max_output_tokens=max_output_tokens,
+                        ),
                     )
-                    self._use_fallback = True
-                    continue
-                raise
+                    logger.info("LLM call succeeded", extra={"model": model, "attempt": attempt + 1})
+                    text = response.text.strip()
+                    logger.debug("Raw LLM response", extra={"raw": text})
+                    if text.startswith("```"):
+                        text = text.split("```", 2)[1]
+                        if text.startswith("json"):
+                            text = text[4:]
+                        text = text.rsplit("```", 1)[0].strip()
+                    return json.loads(text)
+                except genai_errors.APIError as exc:
+                    retryable = exc.code in (429, 500, 503, 504)
+                    if not retryable:
+                        raise
+                    is_last_attempt = attempt == len(self._RETRY_DELAYS) - 1
+                    if is_last_attempt:
+                        if model != self._fallback_model:
+                            logger.warning(
+                                "Primary model exhausted retries, falling back",
+                                extra={"primary": model, "fallback": self._fallback_model, "code": exc.code},
+                            )
+                            self._use_fallback = True
+                        break  # move to next model or raise
+                    jitter = random.uniform(0, 3)
+                    wait = delay + jitter
+                    logger.warning(
+                        "Model request failed, retrying with backoff",
+                        extra={"model": model, "attempt": attempt + 1, "wait_s": round(wait, 1), "code": exc.code},
+                    )
+                    time.sleep(wait)
+            else:
+                # exhausted all attempts for this model without breaking — shouldn't happen
+                continue
 
-        raise RuntimeError("All models exhausted")  # unreachable
+        raise RuntimeError("All models and retries exhausted")
 
     def select_top_news(self, news_items: list[dict]) -> list[int]:
         """Ask the model to pick the top 3 unique news indices."""
@@ -92,7 +113,7 @@ class GeminiAIClient:
         )
 
         try:
-            data = self._generate(prompt, temperature=0.1)
+            data = self._generate(prompt, temperature=0.1, max_output_tokens=128)
             indices = data.get("top_indices", [0, 1, 2])
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
             logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
@@ -143,7 +164,7 @@ class GeminiAIClient:
         )
 
         try:
-            data = self._generate(prompt, temperature=0.4)
+            data = self._generate(prompt, temperature=0.4, max_output_tokens=3000)
             digests = data.get("digests", [])
             if len(digests) != len(deep_news_items):
                 logger.warning(

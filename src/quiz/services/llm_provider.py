@@ -1,6 +1,8 @@
 """LLM provider abstraction with Gemini primary and Groq fallback."""
 
 import json
+import random
+import time
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -51,6 +53,8 @@ class GeminiQuizProvider(QuizLLMProvider):
         remaining = max(0, total - used)
         return remaining, total
 
+    _RETRY_DELAYS = (5, 15, 30)  # seconds; quiz runs on schedule, has time
+
     def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
         count, within_limit = self._rate_repo.increment_and_check()
         if not within_limit:
@@ -60,21 +64,39 @@ class GeminiQuizProvider(QuizLLMProvider):
             )
             raise RateLimitError(f"Quiz Gemini RPD limit reached: {count}/{self._rate_repo.rpd_limit}")
 
-        try:
-            response = self._client.models.generate_content(
-                model=self._model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=temperature,
-                    response_mime_type="application/json",
-                ),
-            )
-            return json.loads(response.text)
-        except genai_errors.APIError as exc:
-            if exc.code == 429:
-                logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
-                raise RateLimitError(str(exc)) from exc
-            raise
+        for attempt, delay in enumerate(self._RETRY_DELAYS):
+            try:
+                response = self._client.models.generate_content(
+                    model=self._model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        response_mime_type="application/json",
+                        max_output_tokens=2000,
+                    ),
+                )
+                text = response.text.strip()
+                logger.debug("Raw quiz LLM response", extra={"raw": text})
+                if text.startswith("```"):
+                    text = text.split("```", 2)[1]
+                    if text.startswith("json"):
+                        text = text[4:]
+                    text = text.rsplit("```", 1)[0].strip()
+                return json.loads(text)
+            except genai_errors.APIError as exc:
+                if exc.code == 429:
+                    logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
+                    raise RateLimitError(str(exc)) from exc
+                retryable = exc.code in (500, 503, 504)
+                is_last_attempt = attempt == len(self._RETRY_DELAYS) - 1
+                if not retryable or is_last_attempt:
+                    raise
+                wait = delay + random.uniform(0, 3)
+                logger.warning(
+                    "Quiz Gemini request failed, retrying with backoff",
+                    extra={"attempt": attempt + 1, "wait_s": round(wait, 1), "code": exc.code},
+                )
+                time.sleep(wait)
 
 
 class GroqQuizProvider(QuizLLMProvider):
