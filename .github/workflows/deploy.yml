@@ -23,7 +23,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy to AWS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       id-token: write
@@ -68,12 +68,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
-
-      - name: Set up QEMU (ARM64 cross-platform Docker builds)
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       # API keys and tokens are stored in SSM Parameter Store — CDK only needs non-secret config.
       - name: CDK Deploy
