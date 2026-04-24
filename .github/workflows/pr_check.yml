@@ -104,6 +104,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-central-1
 
+      - name: Set up QEMU (ARM64 cross-platform Docker builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: CDK Synth (Verify Compilation)
         working-directory: ./infra
         run: |
