@@ -56,10 +56,10 @@ class SpamEnforcer:
             )
 
         try:
-            self.stats_repo.increment_total_bans(chat_id)
+            self.stats_repo.increment_spam_bans(chat_id)
         except Exception as e:
             logger.warning(
-                "Failed to increment ban counter",
+                "Failed to increment spam ban counter",
                 extra={"chat_id": chat_id, "error": e},
             )
 

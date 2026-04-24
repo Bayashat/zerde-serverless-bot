@@ -47,7 +47,8 @@ TRANSLATIONS = {
             "⏰ Since {start_date}\n\n"
             "👥 <b>Total Joins:</b> {total} users\n"
             "✅ <b>Verified captchas:</b> {verified} items\n"
-            "🔫 <b>Banned by vote:</b> {banned} users\n\n"
+            "🔫 <b>Banned by vote:</b> {banned} users\n"
+            "🤖 <b>Banned by anti-spam:</b> {spam_banned} users\n\n"
             "📈 <b>Overall activity:</b> {activity_level}"
         ),
         "private_message": (
@@ -200,7 +201,8 @@ TRANSLATIONS = {
             "⏰ <b></b> {start_date} бері\n\n"
             "👥 <b>Қосылған қолданушылар:</b> {total} адам\n"
             "✅ <b>Расталғандар:</b> {verified} адам\n"
-            "🔫 <b>Дауыс беру арқылы бұғатталғандар:</b> {banned} адам\n\n"
+            "🔫 <b>Дауыс беру арқылы бұғатталғандар:</b> {banned} адам\n"
+            "🤖 <b>Антиспам арқылы бұғатталғандар:</b> {spam_banned} адам\n\n"
             "📈 <b>Жалпы белсенділік:</b> {activity_level}"
         ),
         "private_message": (
@@ -357,7 +359,8 @@ TRANSLATIONS = {
             "⏰ 自 {start_date} 起\n\n"
             "👥 <b>总入群：</b> {total} 人\n"
             "✅ <b>验证通过：</b> {verified} 次\n"
-            "🔫 <b>投票封禁：</b> {banned} 人\n\n"
+            "🔫 <b>投票封禁：</b> {banned} 人\n"
+            "🤖 <b>反垃圾封禁：</b> {spam_banned} 人\n\n"
             "📈 <b>整体活跃度：</b> {activity_level}"
         ),
         "private_message": (
@@ -503,7 +506,8 @@ TRANSLATIONS = {
             "⏰ С {start_date}\n\n"
             "👥 <b>Новых участников:</b> {total}\n"
             "✅ <b>Пройдено капч:</b> {verified}\n"
-            "🔫 <b>Забанено голосованием:</b> {banned}\n\n"
+            "🔫 <b>Забанено голосованием:</b> {banned}\n"
+            "🤖 <b>Забанено антиспамом:</b> {spam_banned}\n\n"
             "📈 <b>Общая активность:</b> {activity_level}"
         ),
         "private_message": (

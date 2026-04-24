@@ -40,6 +40,9 @@ class StatsRepository:
     def increment_total_bans(self, chat_id: int | str) -> None:
         self._increment(str(chat_id), "total_bans")
 
+    def increment_spam_bans(self, chat_id: int | str) -> None:
+        self._increment(str(chat_id), "spam_bans")
+
     def _increment(self, stat_key: str, attr: str) -> None:
         try:
             self._table.update_item(
@@ -66,6 +69,7 @@ class StatsRepository:
                 "total_joins": item.get("total_joins", 0),
                 "verified_users": item.get("verified_users", 0),
                 "total_bans": item.get("total_bans", 0),
+                "spam_bans": item.get("spam_bans", 0),
                 "started_at": item.get("started_at", "N/A"),
             }
         except ClientError as e:
