@@ -9,6 +9,8 @@ Gemini (12 s) + possible DeepSeek/Llama fallback (15 s) + overhead ≈ 26 s.
 """
 
 import json
+import random
+import time
 from typing import Any
 
 import urllib3
@@ -83,37 +85,52 @@ class GeminiClient:
         }
 
         url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
 
-        try:
-            resp = _http.request(
-                "POST",
-                url,
-                body=json.dumps(payload),
-                headers={"Content-Type": "application/json"},
-                retries=False,
-            )
-        except (HTTPError, OSError) as exc:
-            logger.warning(
-                "Gemini request failed (timeout / network)",
-                extra={"model": self._model, "error": str(exc)},
-            )
-            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
+        # Two quick retries before falling back to the secondary provider.
+        # Delays are short because the bot Lambda timeout budget is tight.
+        _retry_delays = (3, 8)
+        last_exc: Exception | None = None
 
-        if resp.status == 429:
-            logger.warning("Gemini 429 rate limit", extra={"model": self._model})
-            raise GeminiUnavailableError(f"Gemini 429: {resp.data.decode('utf-8')[:200]}")
+        for attempt, delay in enumerate(_retry_delays):
+            try:
+                resp = _http.request("POST", url, body=body, headers=headers, retries=False)
+            except (HTTPError, OSError) as exc:
+                logger.warning(
+                    "Gemini request failed (timeout / network)",
+                    extra={"model": self._model, "attempt": attempt + 1, "error": str(exc)},
+                )
+                last_exc = GeminiUnavailableError(f"Gemini unreachable: {exc}")
+                if attempt < len(_retry_delays) - 1:
+                    time.sleep(delay + random.uniform(0, 2))
+                continue
 
-        if resp.status >= 400:
-            body = resp.data.decode("utf-8")
-            logger.error(
-                "Gemini API error",
-                extra={"status": resp.status, "body": body[:500]},
-            )
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {body[:200]}")
+            if resp.status == 429:
+                logger.warning("Gemini 429 rate limit", extra={"model": self._model})
+                raise GeminiUnavailableError(f"Gemini 429: {resp.data.decode('utf-8')[:200]}")
 
-        try:
-            data = json.loads(resp.data.decode("utf-8"))
-            return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
-            logger.exception("Gemini response parse error")
-            raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
+            if resp.status in (500, 503, 504):
+                body_text = resp.data.decode("utf-8")
+                logger.warning(
+                    "Gemini transient error, retrying",
+                    extra={"status": resp.status, "attempt": attempt + 1, "body": body_text[:200]},
+                )
+                last_exc = GeminiUnavailableError(f"Gemini API {resp.status}: {body_text[:200]}")
+                if attempt < len(_retry_delays) - 1:
+                    time.sleep(delay + random.uniform(0, 2))
+                continue
+
+            if resp.status >= 400:
+                err_body = resp.data.decode("utf-8")
+                logger.error("Gemini API error", extra={"status": resp.status, "body": err_body[:500]})
+                raise GeminiUnavailableError(f"Gemini API {resp.status}: {err_body[:200]}")
+
+            try:
+                data = json.loads(resp.data.decode("utf-8"))
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+                logger.exception("Gemini response parse error")
+                raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
+
+        raise last_exc or GeminiUnavailableError("Gemini unavailable after retries")
