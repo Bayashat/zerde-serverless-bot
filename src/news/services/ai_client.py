@@ -8,13 +8,31 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 import urllib3
-from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL, GEMINI_API_KEY, LLM_MODEL
+from core.config import DEEPSEEK_API_BASE, DEEPSEEK_MODEL, LLM_MODEL, get_deepseek_api_key, get_gemini_api_key
 from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
+from zerde_common.ai_errors import (
+    ProviderRateLimitError,
+    ProviderResponseError,
+    ProviderTransportError,
+    ZerdeProviderError,
+    map_http_status_to_provider_error,
+)
+from zerde_common.logging_utils import llm_text_log_fields
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+
+def _map_gemini_api_error(exc: genai_errors.APIError) -> ZerdeProviderError:
+    if exc.code == 429:
+        return ProviderRateLimitError(str(exc))
+    if exc.code in (500, 503, 504):
+        return ProviderTransportError(str(exc))
+    if exc.code and 400 <= int(exc.code) < 500:
+        return ProviderResponseError(str(exc))
+    return ProviderResponseError(str(exc))
 
 
 _TOP_NEWS_RESPONSE_SCHEMA: dict[str, Any] = {
@@ -94,8 +112,8 @@ class NewsAIClientBase(ABC):
             result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
             logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
             return result
-        except Exception:
-            logger.error("Failed to select top news", exc_info=True)
+        except ZerdeProviderError:
+            logger.exception("AI failed to select top news; falling back to first items")
             return list(range(min(3, len(news_items))))
 
     def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
@@ -169,7 +187,7 @@ class NewsAIClientBase(ABC):
                 index = futures[future]
                 try:
                     result[index] = future.result()
-                except Exception:
+                except ZerdeProviderError:
                     logger.exception("Failed to generate single article digest", extra={"index": index})
 
         logger.info("Per-article digests generated", extra={"count": len(result)})
@@ -229,8 +247,11 @@ class GeminiNewsClient(NewsAIClientBase):
                     extra={"model": self._model, "attempt": attempt + 1, "finish_reason": finish_reason},
                 )
                 text = response.text.strip()
-                logger.debug("Raw Gemini response", extra={"raw": text})
-                data = json.loads(text)
+                logger.debug("Gemini response (preview)", extra=llm_text_log_fields(text))
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError as je:
+                    raise ProviderResponseError(f"Gemini returned invalid JSON: {je}") from je
                 logger.info(
                     "Gemini news response parsed",
                     extra={
@@ -250,22 +271,24 @@ class GeminiNewsClient(NewsAIClientBase):
                         "Gemini exhausted retries or non-retryable error",
                         extra={"model": self._model, "code": exc.code},
                     )
-                    raise
+                    raise _map_gemini_api_error(exc) from exc
                 if exc.code in (429, 503):
                     # Rate limited or globally overloaded — no point retrying, fall through to DeepSeek
                     logger.warning(
                         "Gemini overloaded/rate-limited, skipping retries",
                         extra={"model": self._model, "code": exc.code},
                     )
-                    raise
+                    if exc.code == 429:
+                        raise ProviderRateLimitError(str(exc)) from exc
+                    raise _map_gemini_api_error(exc) from exc
                 wait = delay + random.uniform(0, 3)
                 logger.warning(
                     "Gemini request failed, retrying with backoff",
                     extra={"model": self._model, "attempt": attempt + 1, "wait_s": round(wait, 1), "code": exc.code},
                 )
                 time.sleep(wait)
-
-        raise RuntimeError(f"Gemini retries exhausted for model {self._model}")
+            except ZerdeProviderError:
+                raise
 
     @staticmethod
     def _finish_reason(response: Any) -> str | None:
@@ -341,15 +364,29 @@ class DeepSeekNewsClient(NewsAIClientBase):
             },
         )
 
+        if resp.status == 429:
+            raise ProviderRateLimitError(f"DeepSeek rate limited: {resp.status}")
+
         if resp.status >= 400:
             body = resp.data.decode("utf-8")
             logger.error("DeepSeek API error", extra={"status": resp.status, "body": body[:500]})
-            raise RuntimeError(f"DeepSeek API {resp.status}: {body[:200]}")
+            raise map_http_status_to_provider_error(
+                resp.status,
+                f"DeepSeek API {resp.status}: {body[:200]}",
+            )
 
-        data = json.loads(resp.data.decode("utf-8"))
-        content = data["choices"][0]["message"]["content"]
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            content = data["choices"][0]["message"]["content"]
+        except json.JSONDecodeError as e:
+            raise ProviderResponseError(f"DeepSeek response was not valid JSON: {e}") from e
+        except (KeyError, IndexError, TypeError):
+            raise
         logger.info("DeepSeek call succeeded", extra={"model": self._model})
-        result = json.loads(content)
+        try:
+            result = json.loads(content)
+        except json.JSONDecodeError as e:
+            raise ProviderResponseError(f"DeepSeek content was not valid JSON: {e}") from e
         logger.info(
             "DeepSeek news response parsed",
             extra={"model": self._model, "response_chars": len(content), "response_json_schema": has_schema},
@@ -373,7 +410,7 @@ class FallbackNewsClient(NewsAIClientBase):
     ) -> dict:
         try:
             return self._primary._generate(prompt, temperature, max_output_tokens, response_json_schema)
-        except Exception as e:
+        except ZerdeProviderError as e:
             logger.warning(
                 "Primary news provider failed, falling back to DeepSeek",
                 extra={"error": str(e), "error_type": type(e).__name__},
@@ -383,6 +420,6 @@ class FallbackNewsClient(NewsAIClientBase):
 
 def create_ai_client() -> NewsAIClientBase:
     """Factory: returns Gemini primary → DeepSeek fallback client."""
-    gemini = GeminiNewsClient(api_key=GEMINI_API_KEY, model=LLM_MODEL)
-    deepseek = DeepSeekNewsClient(api_key=DEEPSEEK_API_KEY, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
+    gemini = GeminiNewsClient(api_key=get_gemini_api_key(), model=LLM_MODEL)
+    deepseek = DeepSeekNewsClient(api_key=get_deepseek_api_key(), api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
     return FallbackNewsClient(primary=gemini, fallback=deepseek)

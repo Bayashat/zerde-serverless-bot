@@ -80,3 +80,11 @@ class ExplainTaskRepository:
         except ClientError:
             logger.exception("Failed to mark explain task as completed", extra={"update_id": update_id})
             raise
+
+    def release_reservation(self, update_id: int) -> None:
+        """Remove dedup row so the user can retry after SQS send failed (reservation was written)."""
+        try:
+            self._table.delete_item(Key={"stat_key": self._stat_key(update_id)})
+        except ClientError:
+            logger.exception("Failed to release explain reservation", extra={"update_id": update_id})
+            raise

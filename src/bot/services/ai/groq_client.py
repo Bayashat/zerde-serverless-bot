@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 import urllib3
-from core.config import GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL
+from core.config import GROQ_API_BASE, GROQ_MODEL, get_groq_api_key
 from core.logger import LoggerAdapter, get_logger
 from services.ai.wtf_prompts import build_wtf_openai_chat_payload
 
@@ -28,7 +28,10 @@ class GroqClient:
     def __init__(self) -> None:
         self.api_base = GROQ_API_BASE
         self.model = GROQ_MODEL
-        self.api_key = GROQ_API_KEY
+        api_key = get_groq_api_key()
+        if not api_key:
+            raise ValueError("GROQ_API_KEY must be set to initialize GroqClient")
+        self.api_key = api_key
         logger.info("GroqClient initialized", extra={"model": self.model})
 
     def explain_term(self, term: str, lang: str = "kk") -> str:

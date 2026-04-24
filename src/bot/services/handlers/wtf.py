@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from typing import Callable, cast
 
-from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, get_chat_lang
+from core.config import get_chat_lang, get_deepseek_api_key, get_gemini_api_key
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
@@ -14,6 +14,7 @@ from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, Gem
 from services.ai.wtf_prompts import WTFPromptStyle
 from services.repositories.explain_tasks import ExplainTaskRepository
 from services.telegram import TelegramAPIError, TelegramClient
+from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -33,14 +34,14 @@ _task_repo: ExplainTaskRepository | None = None
 
 def _get_gemini() -> GeminiClient | None:
     global _gemini
-    if GEMINI_API_KEY and _gemini is None:
+    if get_gemini_api_key() and _gemini is None:
         _gemini = GeminiClient()
     return _gemini
 
 
 def _get_fallback() -> _FallbackClient | None:
     global _fallback
-    if DEEPSEEK_API_KEY and _fallback is None:
+    if get_deepseek_api_key() and _fallback is None:
         _fallback = DeepSeekClient()
     return _fallback
 
@@ -88,7 +89,11 @@ def _react_processing(ctx: Context, reaction: str = _WTF_PROCESSING_REACTION) ->
     except TelegramAPIError as e:
         logger.warning(
             "setMessageReaction failed for /wtf",
-            extra={"status": e.status, "body": e.body[:200], "reaction": reaction},
+            extra={
+                "status": e.status,
+                "body_preview": truncate_log_text(e.body, 200),
+                "reaction": reaction,
+            },
         )
 
 
@@ -208,7 +213,7 @@ def _execute_explain_and_reply(
 def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:
     lang = get_chat_lang(ctx.chat_id)
 
-    if not GEMINI_API_KEY and not DEEPSEEK_API_KEY:
+    if not get_gemini_api_key() and not get_deepseek_api_key():
         _react_processing(ctx, _WTF_ERROR_REACTION)
         ctx.reply(get_translated_text("wtf_not_configured", lang), ctx.message_id)
         return
@@ -260,6 +265,13 @@ def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: 
         task_repo.mark_enqueued(ctx.update_id)
     except Exception:
         logger.exception("Failed to enqueue explain task", extra={"update_id": ctx.update_id})
+        try:
+            task_repo.release_reservation(ctx.update_id)
+        except Exception:
+            logger.exception(
+                "Failed to release explain reservation after enqueue error",
+                extra={"update_id": ctx.update_id},
+            )
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
 
 

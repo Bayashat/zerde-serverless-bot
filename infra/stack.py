@@ -7,6 +7,8 @@ from typing import Any
 from aws_cdk import CfnOutput, Stack
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
+from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
+from components.zerde_layer import add_zerde_common_layer
 from constructs import Construct
 from dotenv import load_dotenv
 
@@ -90,6 +92,8 @@ class ZerdeTelegramBotStack(Stack):
         chat_lang_map = {cid: lang for lang, cids in all_chats_union.items() for cid in cids}
 
         # ── Constructs ─────────────────────────────────────────────────────────
+        zerde_layer = add_zerde_common_layer(self, f"{CONSTRUCT_PREFIX}ZerdeCommonLayer")
+
         messaging = MessagingConstruct(
             self,
             f"{CONSTRUCT_PREFIX}Messaging",
@@ -100,6 +104,7 @@ class ZerdeTelegramBotStack(Stack):
         bot = BotConstruct(
             self,
             f"{CONSTRUCT_PREFIX}Bot",
+            shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
             log_level=log_level,
@@ -123,9 +128,10 @@ class ZerdeTelegramBotStack(Stack):
             voteban_forgive_threshold=voteban_forgive_threshold,
         )
 
-        NewsConstruct(
+        news = NewsConstruct(
             self,
             f"{CONSTRUCT_PREFIX}News",
+            shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
             ssm_secret_prefix=ssm_secret_prefix,
@@ -139,6 +145,7 @@ class ZerdeTelegramBotStack(Stack):
         quiz = QuizConstruct(
             self,
             f"{CONSTRUCT_PREFIX}Quiz",
+            shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
             log_level=log_level,
@@ -156,6 +163,42 @@ class ZerdeTelegramBotStack(Stack):
         bot.handler_lambda.add_environment("QUIZ_TABLE_NAME", quiz.quiz_table.table_name)
         quiz.quiz_lambda.grant_invoke(bot.handler_lambda)
         bot.handler_lambda.add_environment("QUIZ_LAMBDA_NAME", quiz.quiz_lambda.function_name)
+
+        # ── CloudWatch alarms (no SNS action — view / subscribe in AWS console) ─
+        add_lambda_operational_alarms(
+            self,
+            env_name=env_name,
+            logical_slug="bot-webhook",
+            fn=bot.handler_lambda,
+            duration_p95_threshold_ms=60_000,
+        )
+        add_lambda_operational_alarms(
+            self,
+            env_name=env_name,
+            logical_slug="bot-task-worker",
+            fn=bot.task_worker_lambda,
+            duration_p95_threshold_ms=80_000,
+        )
+        add_lambda_operational_alarms(
+            self,
+            env_name=env_name,
+            logical_slug="news",
+            fn=news.news_lambda,
+            duration_p95_threshold_ms=240_000,
+        )
+        add_lambda_operational_alarms(
+            self,
+            env_name=env_name,
+            logical_slug="quiz",
+            fn=quiz.quiz_lambda,
+            duration_p95_threshold_ms=48_000,
+        )
+        add_sqs_dlq_visible_alarm(
+            self,
+            env_name=env_name,
+            logical_slug="timeout-tasks",
+            dlq=messaging.dlq,
+        )
 
         # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(

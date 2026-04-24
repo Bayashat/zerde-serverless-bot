@@ -4,10 +4,16 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+_zerde = os.path.join(os.path.dirname(__file__), "..", "src", "shared", "python")
+if _zerde not in sys.path:
+    sys.path.insert(0, _zerde)
+
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("QUIZ_TABLE_NAME", "test-quiz-table")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
+os.environ.setdefault("QUIZ_LLM_RPD", "1000")
+os.environ.setdefault("DEEPSEEK_API_KEY", "test-deepseek-key")
 
 _quiz_dir = os.path.join(os.path.dirname(__file__), "..", "src", "quiz")
 _saved_modules: dict[str, object] = {}

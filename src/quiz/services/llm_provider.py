@@ -7,12 +7,20 @@ from abc import ABC, abstractmethod
 from typing import Any, TypedDict
 
 import urllib3
-from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL, GEMINI_API_KEY, GEMINI_MODEL
+from core.config import DEEPSEEK_API_BASE, DEEPSEEK_MODEL, GEMINI_MODEL, get_deepseek_api_key, get_gemini_api_key
 from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
 from services.rate_limit_repository import QuizRateLimitRepository
+from zerde_common.ai_errors import (
+    ProviderRateLimitError,
+    ProviderResponseError,
+    ProviderTransportError,
+    ZerdeProviderError,
+    map_http_status_to_provider_error,
+)
+from zerde_common.logging_utils import llm_text_log_fields
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -24,8 +32,18 @@ class _QuizQuestionResponse(TypedDict):
     explanation: str
 
 
-class RateLimitError(Exception):
-    """Raised when the upstream LLM returns a 429 / resource-exhausted error."""
+def _map_gemini_api_error(exc: genai_errors.APIError) -> ZerdeProviderError:
+    if exc.code == 429:
+        return ProviderRateLimitError(str(exc))
+    if exc.code in (500, 503, 504):
+        return ProviderTransportError(str(exc))
+    if exc.code and 400 <= int(exc.code) < 500:
+        return ProviderResponseError(str(exc))
+    return ProviderResponseError(str(exc))
+
+
+class RateLimitError(ProviderRateLimitError):
+    """Back-compat: local RPD limit or upstream 429."""
 
 
 class QuizLLMProvider(ABC):
@@ -95,8 +113,11 @@ class GeminiQuizProvider(QuizLLMProvider):
                     ),
                 )
                 text = response.text.strip()
-                logger.debug("Raw quiz LLM response", extra={"raw": text})
-                data = json.loads(text)
+                logger.debug("Quiz LLM response (preview)", extra=llm_text_log_fields(text))
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError as je:
+                    raise ProviderResponseError(f"Gemini returned invalid JSON: {je}") from je
                 logger.info(
                     "Quiz Gemini response parsed",
                     extra={"model": self._model, "attempt": attempt + 1, "response_chars": len(text)},
@@ -105,17 +126,19 @@ class GeminiQuizProvider(QuizLLMProvider):
             except genai_errors.APIError as exc:
                 if exc.code == 429:
                     logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
-                    raise RateLimitError(str(exc)) from exc
+                    raise ProviderRateLimitError(str(exc)) from exc
                 retryable = exc.code in (500, 503, 504)
                 is_last_attempt = attempt == len(self._RETRY_DELAYS) - 1
                 if not retryable or is_last_attempt:
-                    raise
+                    raise _map_gemini_api_error(exc) from exc
                 wait = delay + random.uniform(0, 3)
                 logger.warning(
                     "Quiz Gemini request failed, retrying with backoff",
                     extra={"attempt": attempt + 1, "wait_s": round(wait, 1), "code": exc.code},
                 )
                 time.sleep(wait)
+            except ZerdeProviderError:
+                raise
 
 
 class DeepSeekQuizProvider(QuizLLMProvider):
@@ -153,16 +176,27 @@ class DeepSeekQuizProvider(QuizLLMProvider):
 
         if resp.status == 429:
             logger.warning("DeepSeek 429 rate limit hit", extra={"model": self._model})
-            raise RateLimitError(f"DeepSeek rate limited: {resp.status}")
+            raise ProviderRateLimitError(f"DeepSeek rate limited: {resp.status}")
 
         if resp.status >= 400:
             body = resp.data.decode("utf-8")
             logger.error("DeepSeek API error", extra={"status": resp.status, "body": body[:500]})
-            raise RuntimeError(f"DeepSeek API {resp.status}: {body[:200]}")
+            raise map_http_status_to_provider_error(
+                resp.status,
+                f"DeepSeek API {resp.status}: {body[:200]}",
+            )
 
-        data = json.loads(resp.data.decode("utf-8"))
-        content = data["choices"][0]["message"]["content"]
-        result = json.loads(content)
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            content = data["choices"][0]["message"]["content"]
+        except json.JSONDecodeError as e:
+            raise ProviderResponseError(f"DeepSeek response was not valid JSON: {e}") from e
+        except (KeyError, IndexError, TypeError):
+            raise
+        try:
+            result = json.loads(content)
+        except json.JSONDecodeError as e:
+            raise ProviderResponseError(f"DeepSeek returned invalid content JSON: {e}") from e
         logger.info(
             "Quiz DeepSeek response parsed",
             extra={"model": self._model, "response_chars": len(content)},
@@ -171,7 +205,7 @@ class DeepSeekQuizProvider(QuizLLMProvider):
 
 
 class FallbackProvider(QuizLLMProvider):
-    """Tries the primary provider; on RateLimitError falls back to the secondary."""
+    """Tries the primary provider; on ``ZerdeProviderError`` uses the secondary."""
 
     def __init__(self, primary: QuizLLMProvider, fallback: QuizLLMProvider) -> None:
         self._primary = primary
@@ -182,7 +216,7 @@ class FallbackProvider(QuizLLMProvider):
             result = self._primary.generate_json(prompt, temperature)
             logger.info("Quiz generated by primary provider")
             return result
-        except Exception as e:
+        except ZerdeProviderError as e:
             logger.warning(
                 "Primary provider failed, falling back to secondary provider",
                 extra={"error": str(e), "error_type": type(e).__name__},
@@ -197,10 +231,11 @@ class FallbackProvider(QuizLLMProvider):
 
 def create_provider() -> QuizLLMProvider:
     """Build the provider chain: Gemini primary -> DeepSeek fallback (if configured)."""
-    primary: QuizLLMProvider = GeminiQuizProvider(api_key=GEMINI_API_KEY, model=GEMINI_MODEL)
+    primary: QuizLLMProvider = GeminiQuizProvider(api_key=get_gemini_api_key(), model=GEMINI_MODEL)
 
-    if DEEPSEEK_API_KEY:
-        fallback = DeepSeekQuizProvider(api_key=DEEPSEEK_API_KEY, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
+    deepseek_api_key = get_deepseek_api_key()
+    if deepseek_api_key:
+        fallback = DeepSeekQuizProvider(api_key=deepseek_api_key, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
         logger.info(
             "FallbackProvider configured",
             extra={"primary": GEMINI_MODEL, "fallback": DEEPSEEK_MODEL},

@@ -39,6 +39,7 @@ class QuizConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
+        shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
         log_level: str,
@@ -83,6 +84,7 @@ class QuizConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
             timeout=Duration.seconds(60),
             memory_size=512,
             log_group=logs.LogGroup(
@@ -164,7 +166,7 @@ class QuizConstruct(Construct):
                         )
                     )
 
-            # Friday leaderboard (18:00 Almaty = 13:00 UTC, day-of-week=5 in cron = Friday)
+            # Sunday leaderboard (18:00 Almaty = 13:00 UTC, cron week_day=SUN)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
                 chat_ids = chats.get(lang, [])
                 if not chat_ids:
@@ -178,7 +180,7 @@ class QuizConstruct(Construct):
                     schedule=events.Schedule.cron(
                         minute=str(minute_utc),
                         hour=str(hour_utc),
-                        week_day="FRI",
+                        week_day="SUN",
                         month="*",
                         year="*",
                     ),

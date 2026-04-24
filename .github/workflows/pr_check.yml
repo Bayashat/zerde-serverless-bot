@@ -72,6 +72,16 @@ jobs:
       KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS }}
       VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD }}
       VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD }}
+      CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
+      QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD }}
+      NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL }}
+      QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL }}
+      QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+      QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+      QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
+      NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+      NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+      NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
 
     steps:
       - name: Checkout code
@@ -90,9 +100,9 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Install AWS CDK CLI
+      - name: Install AWS CDK CLI (pinned)
         run: |
-          npm install -g aws-cdk
+          npm install -g aws-cdk@2.102.0
 
       - name: Install project dependencies with uv
         run: |
@@ -113,7 +123,16 @@ jobs:
         id: cdk-diff
         working-directory: ./infra
         run: |
-          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
+          set +e
+          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1
+          diffexit=$?
+          set -e
+          # CDK: 0 = no changes, 1 = differences, other = real failure
+          if [ "$diffexit" -ne 0 ] && [ "$diffexit" -ne 1 ]; then
+            echo "cdk diff failed with exit $diffexit"
+            cat /tmp/cdk-diff.txt
+            exit "$diffexit"
+          fi
 
           echo "## 📊 Infrastructure Changes Preview (Zerde Telegram Bot)" > /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md

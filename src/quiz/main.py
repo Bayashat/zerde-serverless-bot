@@ -4,24 +4,36 @@ from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
 from services.quiz_service import QuizService
+from zerde_common.logging_utils import api_gateway_event_summary
 
 logger = LoggerAdapter(get_logger(__name__), {})
 logger.info("Quiz Lambda initialized")
 
-_quiz_service = QuizService()
+_quiz_service: QuizService | None = None
+
+
+def _get_quiz_service() -> QuizService:
+    """Build QuizService on first invocation; reuse clients across warm invocations."""
+    global _quiz_service
+    if _quiz_service is None:
+        _quiz_service = QuizService()
+    return _quiz_service
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     """EventBridge scheduled handler — generate question and send quiz polls."""
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
-    logger.info("Quiz Lambda handler called", extra={"event": event})
+    ex = api_gateway_event_summary(event) if isinstance(event, dict) else {"event_type": "non_dict"}
+    ex["lambda_request_id"] = request_id
+    logger.info("Quiz Lambda handler called", extra=ex)
 
+    quiz_service = _get_quiz_service()
     chat_ids = event.get("chat_ids", [])
     lang = event.get("lang", "kk")
 
     if event.get("action") == "leaderboard":
-        return _quiz_service.process_leaderboard(chat_ids, lang)
+        return quiz_service.process_leaderboard(chat_ids, lang)
 
     if event.get("action") == "on_demand":
         chat_id = event.get("chat_id", "")
@@ -31,7 +43,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         reply_to_message_id = event.get("reply_to_message_id")
         if not chat_id:
             return {"status": "error", "reason": "missing chat_id"}
-        return _quiz_service.process_on_demand_quiz_with_feedback(
+        return quiz_service.process_on_demand_quiz_with_feedback(
             chat_id,
             lang,
             topic,
@@ -40,4 +52,4 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
         )
 
-    return _quiz_service.process_daily_quiz(chat_ids, lang)
+    return quiz_service.process_daily_quiz(chat_ids, lang)

@@ -14,7 +14,7 @@ import time
 from typing import Any
 
 import urllib3
-from core.config import GEMINI_API_BASE, GEMINI_API_KEY, WTF_GEMINI_MODEL
+from core.config import GEMINI_API_BASE, WTF_GEMINI_MODEL, get_gemini_api_key
 from core.logger import LoggerAdapter, get_logger
 from services.ai.wtf_prompts import WTFPromptStyle, get_wtf_system_prompt, wtf_explain_user_text
 from services.repositories.rate_limit import RateLimitRepository
@@ -50,7 +50,10 @@ class GeminiClient:
     """Thin urllib3 wrapper around the Gemini generateContent REST endpoint."""
 
     def __init__(self) -> None:
-        self._api_key = GEMINI_API_KEY
+        api_key = get_gemini_api_key()
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY must be set to initialize GeminiClient")
+        self._api_key = api_key
         self._model = WTF_GEMINI_MODEL
         self._rate_repo = RateLimitRepository()
         logger.info("GeminiClient initialized", extra={"model": self._model})

@@ -24,6 +24,8 @@ jobs:
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-24.04-arm
+    # Manual prod deploys require a GitHub Environment (e.g. "production") with approvers; dev is ungated.
+    environment: ${{ (github.event_name == 'workflow_dispatch' && inputs.environment == 'prod') && 'production' || 'development' }}
     permissions:
       contents: read
       id-token: write
@@ -54,9 +56,9 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Install AWS CDK CLI
+      - name: Install AWS CDK CLI (pinned)
         run: |
-          npm install -g aws-cdk
+          npm install -g aws-cdk@2.102.0
           uv run cdk --version
 
       - name: Install project dependencies with uv
@@ -100,9 +102,17 @@ jobs:
           KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
           VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
           VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
+          CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
+          QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD }}
         run: |
           echo "🚀 Deploying to ${{ env.TARGET_ENV }} environment..."
-          uv run cdk deploy -c env=${{ env.TARGET_ENV }} --require-approval never --all
+          if [ "${{ env.TARGET_ENV }}" = "prod" ]; then
+            # Human approval is enforced by the GitHub "production" Environment.
+            # Keep CDK non-interactive so the runner never waits for stdin.
+            uv run cdk deploy -c env=prod --require-approval never --all
+          else
+            uv run cdk deploy -c env=dev --require-approval never --all
+          fi
 
       - name: Get Deployment Outputs
         if: success()

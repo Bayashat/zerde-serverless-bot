@@ -26,6 +26,7 @@ class NewsConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
+        shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
         ssm_secret_prefix: str,
@@ -39,7 +40,7 @@ class NewsConstruct(Construct):
 
         removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
 
-        news_lambda = PythonFunction(
+        self.news_lambda = PythonFunction(
             self,
             f"{CONSTRUCT_PREFIX}NewsLambda",
             function_name=f"{RESOURCE_PREFIX}-news-{env_name}",
@@ -48,6 +49,7 @@ class NewsConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
             timeout=Duration.minutes(5),
             memory_size=512,
             log_group=logs.LogGroup(
@@ -67,14 +69,14 @@ class NewsConstruct(Construct):
         )
 
         stack = Stack.of(self)
-        news_lambda.add_to_role_policy(
+        self.news_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 sid="ReadZerdeSSMSecrets",
                 actions=["ssm:GetParameters"],
                 resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
             )
         )
-        news_lambda.add_to_role_policy(
+        self.news_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 sid="DecryptZerdeSSMSecrets",
                 actions=["kms:Decrypt"],
@@ -110,7 +112,7 @@ class NewsConstruct(Construct):
                     )
                     rule.add_target(
                         events_targets.LambdaFunction(
-                            news_lambda,
+                            self.news_lambda,
                             event=events.RuleTargetInput.from_object(
                                 {
                                     "chat_ids": chat_ids,

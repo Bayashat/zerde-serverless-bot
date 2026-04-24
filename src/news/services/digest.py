@@ -72,20 +72,40 @@ class DigestService:
             intro = get_intro_text(lang)
             digests = self._ai.generate_digests_per_article(deep_news, lang)
 
+            sent_chats: list[str] = []
+            failed: list[dict] = []
             for chat_id in chat_ids:
                 logger.info("Sending digest to chat", extra={"chat_id": chat_id})
-                self._sender.send_message(chat_id, intro)
+                ok = True
+                if not self._sender.send_message(chat_id, intro)[0]:
+                    failed.append({"chat_id": str(chat_id), "step": "intro"})
+                    continue
                 for i, article in enumerate(deep_news):
                     image_url = article.get("image_url") or ""
                     digest_text = digests[i] if i < len(digests) else f"<b>{article['title']}</b>\n{article['link']}"
                     logger.info(
                         "Sending message with photo",
-                        extra={"chat_id": chat_id, "image_url": image_url},
+                        extra={"chat_id": chat_id, "has_image": bool(image_url), "index": i},
                     )
-                    self._sender.send_message_with_photo(chat_id, digest_text, image_url)
-                logger.info("Digest sent successfully", extra={"chat_id": chat_id})
+                    if not self._sender.send_message_with_photo(chat_id, digest_text, image_url):
+                        ok = False
+                        failed.append(
+                            {
+                                "chat_id": str(chat_id),
+                                "step": f"article_{i}",
+                                "article_index": i,
+                            },
+                        )
+                if ok:
+                    sent_chats.append(str(chat_id))
+                    logger.info("Digest sent successfully", extra={"chat_id": chat_id})
 
-            return {"statusCode": 200, "body": "Agentic Digest Sent"}
+            return {
+                "statusCode": 200,
+                "body": "Agentic Digest Sent",
+                "sent_chat_ids": sent_chats,
+                "failed": failed,
+            }
 
         except Exception as e:
             logger.exception("Error in news digest pipeline")

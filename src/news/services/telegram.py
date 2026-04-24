@@ -7,6 +7,7 @@ from typing import Optional
 
 import urllib3
 from core.logger import LoggerAdapter, get_logger
+from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -118,7 +119,7 @@ class TelegramSender:
         message: str,
         image_url: Optional[str] = None,
     ) -> bool:
-        """Send a photo with caption, or fall back to text-only if no image."""
+        """Send a photo with caption, retry once, then fall back to text-only if no image or photo fails."""
         if not image_url:
             return self.send_message(chat_id, message)[0]
 
@@ -131,16 +132,32 @@ class TelegramSender:
             "parse_mode": "HTML",
             "disable_web_page_preview": True,
         }
-        try:
-            resp = http.request("POST", url, body=json.dumps(payload), headers=_JSON_HEADERS)
-            if resp.status != 200:
+        for attempt in range(2):
+            try:
+                resp = http.request("POST", url, body=json.dumps(payload), headers=_JSON_HEADERS)
+                if resp.status < 400:
+                    logger.info("Photo sent", extra={"chat_id": chat_id})
+                    return True
+                body = resp.data.decode("utf-8")
                 logger.error(
                     "Send photo failed",
-                    extra={"status": resp.status, "body": resp.data.decode("utf-8")},
+                    extra={
+                        "status": resp.status,
+                        "body_preview": truncate_log_text(body),
+                        "chat_id": chat_id,
+                        "attempt": attempt + 1,
+                    },
                 )
-                return False
-            logger.info("Photo sent", extra={"chat_id": chat_id})
-            return True
-        except Exception as e:
-            logger.error("Failed to send photo", extra={"chat_id": chat_id, "error": str(e)})
-            return False
+                if attempt == 0:
+                    time.sleep(1.5)
+            except Exception as e:
+                logger.error(
+                    "Failed to send photo (network)",
+                    extra={"chat_id": chat_id, "error": str(e), "attempt": attempt + 1},
+                )
+                if attempt == 0:
+                    time.sleep(1.5)
+        text_ok, _ = self.send_message(chat_id, message)
+        if text_ok:
+            logger.warning("Fell back to text-only after photo send failure", extra={"chat_id": chat_id})
+        return text_ok

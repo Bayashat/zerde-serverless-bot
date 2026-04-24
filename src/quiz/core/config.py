@@ -2,47 +2,66 @@
 """Centralised configuration: environment variables for the Quiz Lambda."""
 
 import os
+from typing import Any
 
-# ── SSM Secret Loading ──────────────────────────────────────────────────────
-_SSM_SECRET_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
+from zerde_common.config import require, require_int
+from zerde_common.secrets import load_ssm_secrets_if_needed
 
-if _SSM_SECRET_PREFIX:
-    import boto3 as _boto3
-
-    _ssm_env_map: dict[str, str] = {
-        "bot-token": "BOT_TOKEN",
-        "gemini-api-key": "GEMINI_API_KEY",
-        "deepseek-api-key": "DEEPSEEK_API_KEY",
-    }
-    _ssm_response = _boto3.client("ssm").get_parameters(
-        Names=[f"{_SSM_SECRET_PREFIX}/{k}" for k in _ssm_env_map],
-        WithDecryption=True,
-    )
-    for _p in _ssm_response["Parameters"]:
-        _k = _p["Name"].removeprefix(f"{_SSM_SECRET_PREFIX}/")
-        if _env_key := _ssm_env_map.get(_k):
-            os.environ[_env_key] = _p["Value"]
+_SSM_KEY_MAP: dict[str, str] = {
+    "bot-token": "BOT_TOKEN",
+    "gemini-api-key": "GEMINI_API_KEY",
+    "deepseek-api-key": "DEEPSEEK_API_KEY",
+}
+_SSM_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
+_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"})
 
 
-def _require(name: str) -> str:
-    value = os.environ.get(name, "").strip()
-    if not value:
-        raise EnvironmentError(f"Required environment variable '{name}' is not set")
-    return value
+def _load_secret(ssm_name: str, env_key: str) -> None:
+    load_ssm_secrets_if_needed(_SSM_PREFIX, {ssm_name: env_key})
+
+
+def get_bot_token() -> str:
+    """Return Telegram bot token, loading SSM secrets on first use."""
+    _load_secret("bot-token", "BOT_TOKEN")
+    return require("BOT_TOKEN")
+
+
+def get_gemini_api_key() -> str:
+    """Return Gemini API key, loading SSM secrets on first use."""
+    _load_secret("gemini-api-key", "GEMINI_API_KEY")
+    return require("GEMINI_API_KEY")
+
+
+def get_deepseek_api_key() -> str | None:
+    """Return optional DeepSeek API key, loading SSM secrets on first use."""
+    _load_secret("deepseek-api-key", "DEEPSEEK_API_KEY")
+    return os.environ.get("DEEPSEEK_API_KEY")
 
 
 # ── Optional ────────────────────────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
-GEMINI_MODEL: str = os.environ.get("QUIZ_GEMINI_MODEL")
-QUIZ_LLM_RPD: int = int(os.environ.get("QUIZ_LLM_RPD"))
+GEMINI_MODEL: str | None = os.environ.get("QUIZ_GEMINI_MODEL")
+QUIZ_LLM_RPD: int = require_int("QUIZ_LLM_RPD")
 
-# ── Required ────────────────────────────────────────────────────────────────
-BOT_TOKEN: str = _require("BOT_TOKEN")
-TABLE_NAME: str = _require("TABLE_NAME")
-GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
+# ── Required (non-secret identifiers) ─────────────────────────────────────
+TABLE_NAME: str = require("TABLE_NAME")
 
-# ── DeepSeek fallback ────────────────────────────────────────────────────────
+# ── DeepSeek fallback (non-key) ───────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_API_KEY: str = os.environ.get("DEEPSEEK_API_KEY")
-DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL")
+DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
+
+
+def __getattr__(name: str) -> Any:
+    if name in _LAZY_SECRET_ATTRS:
+        if name == "BOT_TOKEN":
+            return get_bot_token()
+        if name == "GEMINI_API_KEY":
+            return get_gemini_api_key()
+        if name == "DEEPSEEK_API_KEY":
+            return get_deepseek_api_key()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:  # pragma: no cover
+    return sorted({*globals().keys(), *_LAZY_SECRET_ATTRS, "__dir__", "__getattr__"})

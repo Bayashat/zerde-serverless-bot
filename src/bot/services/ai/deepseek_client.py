@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 import urllib3
-from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL
+from core.config import DEEPSEEK_API_BASE, DEEPSEEK_MODEL, get_deepseek_api_key
 from core.logger import LoggerAdapter, get_logger
 from services.ai.wtf_prompts import WTFPromptStyle, build_wtf_openai_chat_payload
 
@@ -32,7 +32,10 @@ class DeepSeekClient:
     def __init__(self) -> None:
         self.api_base = DEEPSEEK_API_BASE
         self.model = DEEPSEEK_MODEL
-        self.api_key = DEEPSEEK_API_KEY
+        api_key = get_deepseek_api_key()
+        if not api_key:
+            raise ValueError("DEEPSEEK_API_KEY must be set to initialize DeepSeekClient")
+        self.api_key = api_key
         logger.info("DeepSeekClient initialized", extra={"model": self.model})
 
     def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:

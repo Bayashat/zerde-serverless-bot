@@ -77,17 +77,28 @@ class QuizService:
     def process_leaderboard(self, chat_ids: list[str], lang: str) -> dict:
         """Send leaderboard to all chats for a given language."""
         sent_count = 0
+        sent_chat_ids: list[str] = []
+        failed: list[dict] = []
         for chat_id in chat_ids:
             entries = self._repo.get_leaderboard(str(chat_id))
             text = self.build_leaderboard_text(lang, entries)
             result = self._sender.send_message(str(chat_id), text)
             if result:
                 sent_count += 1
+                sent_chat_ids.append(str(chat_id))
                 logger.info("Leaderboard sent", extra={"chat_id": chat_id, "lang": lang})
             else:
+                failed.append({"chat_id": str(chat_id), "step": "send_message"})
                 logger.error("Failed to send leaderboard", extra={"chat_id": chat_id})
 
-        return {"status": "ok", "action": "leaderboard", "sent": sent_count, "total": len(chat_ids)}
+        return {
+            "status": "ok",
+            "action": "leaderboard",
+            "sent": sent_count,
+            "total": len(chat_ids),
+            "sent_chat_ids": sent_chat_ids,
+            "failed": failed,
+        }
 
     def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
         """Generate and send the daily quiz to all chats."""
@@ -134,9 +145,13 @@ class QuizService:
         # Send announcement + quiz poll to each chat
         sent_count = 0
         announcement = self.build_announcement(lang, difficulty)
+        sent_chat_ids: list[str] = []
+        failed: list[dict] = []
 
         for chat_id in chat_ids:
-            self._sender.send_message(str(chat_id), announcement)
+            if not self._sender.send_message(str(chat_id), announcement):
+                failed.append({"chat_id": str(chat_id), "step": "announcement"})
+                continue
 
             poll_result = self._sender.send_quiz_poll(
                 chat_id=chat_id,
@@ -162,12 +177,24 @@ class QuizService:
                     points=generated["points"],
                 )
                 sent_count += 1
+                sent_chat_ids.append(str(chat_id))
+            else:
+                failed.append({"chat_id": str(chat_id), "step": "sendPoll"})
 
         if sent_count > 0:
             self._repo.save_category_queue(remaining, used_category)
 
-        logger.info("Quiz Lambda completed", extra={"sent": sent_count, "total": len(chat_ids)})
-        return {"status": "ok", "sent": sent_count, "total": len(chat_ids)}
+        logger.info(
+            "Quiz Lambda completed",
+            extra={"sent": sent_count, "total": len(chat_ids), "failed_count": len(failed)},
+        )
+        return {
+            "status": "ok",
+            "sent": sent_count,
+            "total": len(chat_ids),
+            "sent_chat_ids": sent_chat_ids,
+            "failed": failed,
+        }
 
     def process_on_demand_quiz(self, chat_id: str, lang: str, topic: str, difficulty: str) -> dict:
         """Generate and send a single on-demand quiz to one chat."""

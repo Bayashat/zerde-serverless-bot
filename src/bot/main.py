@@ -1,67 +1,21 @@
-"""Bot Lambda: Unified entrypoint for API Gateway and SQS events."""
+"""Bot webhook Lambda: API Gateway entry point only."""
 
 from typing import Any
 
-from core.config import QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
-from core.dispatcher import Dispatcher
+from app import get_bot, get_dispatcher
 from core.logger import LoggerAdapter, get_logger
-from services.handlers import register_handlers
-from services.repositories import (
-    CaptchaRepository,
-    LambdaInvoker,
-    QuizRepository,
-    SQSClient,
-    StatsRepository,
-    VoteRepository,
-)
-from services.telegram import TelegramClient
 from webhook import handle_event
+from zerde_common.logging_utils import api_gateway_event_summary
 
 logger = LoggerAdapter(get_logger(__name__), {})
-
-_bot = TelegramClient()
-_stats_repo = StatsRepository()
-_sqs_repo = SQSClient()
-_vote_repo = VoteRepository()
-_captcha_repo = CaptchaRepository()
-_quiz_repo = QuizRepository() if QUIZ_TABLE_NAME else None
-_lambda_invoker = LambdaInvoker() if QUIZ_LAMBDA_NAME else None
-_dispatcher = Dispatcher(
-    _bot,
-    _stats_repo,
-    _sqs_repo,
-    _vote_repo,
-    _quiz_repo,
-    _lambda_invoker,
-    captcha_repo=_captcha_repo,
-)
-register_handlers(_dispatcher)
-logger.info("Bot Lambda initialized and handlers registered")
-
-
-def _event_summary(event: dict[str, Any]) -> dict[str, Any]:
-    """Log only routing metadata; never log raw webhook bodies or secret headers."""
-    if "Records" in event:
-        records = event.get("Records") or []
-        return {
-            "event_type": "sqs",
-            "record_count": len(records),
-            "source": records[0].get("eventSource") if records else None,
-        }
-    request_context = event.get("requestContext") or {}
-    http = request_context.get("http") or {}
-    return {
-        "event_type": "api_gateway",
-        "route_key": event.get("routeKey"),
-        "method": http.get("method"),
-        "path": http.get("path") or event.get("rawPath"),
-        "request_id": request_context.get("requestId"),
-    }
+logger.info("Bot webhook Lambda initialized")
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None:
-    """Unified Lambda handler routing by event source."""
+    """Webhook Lambda handler routing API Gateway events into the bot dispatcher."""
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
-    logger.info("Bot Lambda handler called", extra=_event_summary(event))
-    return handle_event(event, _dispatcher, _bot)
+    log_extra: dict = api_gateway_event_summary(event)
+    log_extra["lambda_request_id"] = request_id
+    logger.info("Bot Lambda handler called", extra=log_extra)
+    return handle_event(event, get_dispatcher(), get_bot())

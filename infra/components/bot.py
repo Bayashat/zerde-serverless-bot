@@ -17,7 +17,7 @@ from constructs import Construct
 
 
 class BotConstruct(Construct):
-    """Bot Lambda: API Gateway webhook + SQS timeout tasks.
+    """Bot webhook Lambda + single-purpose SQS task-worker Lambda.
 
     Exposes:
         api (apigwv2.HttpApi): HTTP API used by stack for CfnOutput.
@@ -28,6 +28,7 @@ class BotConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
+        shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
         log_level: str,
@@ -71,7 +72,38 @@ class BotConstruct(Construct):
             time_to_live_attribute="ttl",
         )
 
-        handler_lambda = PythonFunction(
+        bot_environment = {
+            "LOG_LEVEL": log_level,
+            "TELEGRAM_API_BASE": telegram_api_base,
+            "DEFAULT_LANG": default_lang,
+            # -- SSM secret prefix (secrets fetched at runtime, not baked in) ──
+            "SSM_SECRET_PREFIX": ssm_secret_prefix,
+            # -- Non-secret bot parameters ─────────────────────────────────────
+            "STATS_TABLE_NAME": stats_table.table_name,
+            "QUEUE_URL": queue.queue_url,
+            "ADMIN_USER_ID": admin_user_id,
+            # -- Groq parameters (non-secret) ──────────────────────────────────
+            "GROQ_API_BASE": groq_api_base,
+            "GROQ_MODEL": groq_model,
+            # -- DeepSeek parameters (non-secret) ──────────────────────────────
+            "DEEPSEEK_API_BASE": deepseek_api_base,
+            "DEEPSEEK_MODEL": deepseek_model,
+            # -- Gemini parameters (non-secret) ────────────────────────────────
+            "GEMINI_API_BASE": gemini_api_base,
+            "WTF_GEMINI_MODEL": wtf_gemini_model,
+            "GEMINI_RPD_LIMIT": gemini_rpd_limit,
+            # -- Chat → language mapping ───────────────────────────────────────
+            "CHAT_LANG_MAP": json.dumps(chat_lang_map),
+            # -- Timing parameters ─────────────────────────────────────────────
+            "CAPTCHA_TIMEOUT_SECONDS": captcha_timeout_seconds,
+            "CAPTCHA_MAX_ATTEMPTS": captcha_max_attempts,
+            "KICK_BAN_DURATION_SECONDS": kick_ban_duration_seconds,
+            # -- Vote-to-ban thresholds ────────────────────────────────────────
+            "VOTEBAN_THRESHOLD": voteban_threshold,
+            "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
+        }
+
+        webhook_lambda = PythonFunction(
             self,
             f"{CONSTRUCT_PREFIX}BotLambda",
             function_name=f"{RESOURCE_PREFIX}-bot-{env_name}",
@@ -80,6 +112,7 @@ class BotConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
             timeout=Duration.seconds(90),
             memory_size=1024,
             log_group=logs.LogGroup(
@@ -89,68 +122,71 @@ class BotConstruct(Construct):
                 retention=logs.RetentionDays.ONE_WEEK,
                 removal_policy=removal_policy,
             ),
-            environment={
-                "LOG_LEVEL": log_level,
-                "TELEGRAM_API_BASE": telegram_api_base,
-                "DEFAULT_LANG": default_lang,
-                # -- SSM secret prefix (secrets fetched at runtime, not baked in) ──
-                "SSM_SECRET_PREFIX": ssm_secret_prefix,
-                # -- Non-secret bot parameters ─────────────────────────────────────
-                "STATS_TABLE_NAME": stats_table.table_name,
-                "QUEUE_URL": queue.queue_url,
-                "ADMIN_USER_ID": admin_user_id,
-                # -- Groq parameters (non-secret) ──────────────────────────────────
-                "GROQ_API_BASE": groq_api_base,
-                "GROQ_MODEL": groq_model,
-                # -- DeepSeek parameters (non-secret) ──────────────────────────────
-                "DEEPSEEK_API_BASE": deepseek_api_base,
-                "DEEPSEEK_MODEL": deepseek_model,
-                # -- Gemini parameters (non-secret) ────────────────────────────────
-                "GEMINI_API_BASE": gemini_api_base,
-                "WTF_GEMINI_MODEL": wtf_gemini_model,
-                "GEMINI_RPD_LIMIT": gemini_rpd_limit,
-                # -- Chat → language mapping ───────────────────────────────────────
-                "CHAT_LANG_MAP": json.dumps(chat_lang_map),
-                # -- Timing parameters ─────────────────────────────────────────────
-                "CAPTCHA_TIMEOUT_SECONDS": captcha_timeout_seconds,
-                "CAPTCHA_MAX_ATTEMPTS": captcha_max_attempts,
-                "KICK_BAN_DURATION_SECONDS": kick_ban_duration_seconds,
-                # -- Vote-to-ban thresholds ────────────────────────────────────────
-                "VOTEBAN_THRESHOLD": voteban_threshold,
-                "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
-            },
+            environment=bot_environment,
         )
 
-        self.handler_lambda = handler_lambda
+        task_worker_lambda = PythonFunction(
+            self,
+            f"{CONSTRUCT_PREFIX}BotTaskWorkerLambda",
+            function_name=f"{RESOURCE_PREFIX}-bot-task-worker-{env_name}",
+            entry=str(PROJECT_ROOT / "src" / "bot"),
+            index="task_worker.py",
+            handler="lambda_handler",
+            runtime=LAMBDA_RUNTIME,
+            architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
+            timeout=Duration.seconds(90),
+            memory_size=1024,
+            log_group=logs.LogGroup(
+                self,
+                f"{CONSTRUCT_PREFIX}BotTaskWorkerLogGroup",
+                log_group_name=f"/aws/lambda/{RESOURCE_PREFIX}-bot-task-worker-{env_name}",
+                retention=logs.RetentionDays.ONE_WEEK,
+                removal_policy=removal_policy,
+            ),
+            environment=bot_environment,
+        )
+
+        self.handler_lambda = webhook_lambda
+        self.task_worker_lambda = task_worker_lambda
 
         # Grant least-privilege SSM read access for secrets under the env prefix.
         stack = Stack.of(self)
-        handler_lambda.add_to_role_policy(
-            iam.PolicyStatement(
-                sid="ReadZerdeSSMSecrets",
-                actions=["ssm:GetParameters"],
-                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
-            )
-        )
-        handler_lambda.add_to_role_policy(
-            iam.PolicyStatement(
-                sid="DecryptZerdeSSMSecrets",
-                actions=["kms:Decrypt"],
-                resources=["*"],
-                conditions={
-                    "StringEquals": {
-                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
-                        "kms:CallerAccount": stack.account,
-                    }
-                },
-            )
-        )
 
-        queue.grant_consume_messages(handler_lambda)
-        queue.grant_send_messages(handler_lambda)
-        stats_table.grant_read_write_data(handler_lambda)
+        def grant_secret_access(fn: _lambda.IFunction, secret_names: list[str]) -> None:
+            fn.add_to_role_policy(
+                iam.PolicyStatement(
+                    sid="ReadZerdeSSMSecrets",
+                    actions=["ssm:GetParameters"],
+                    resources=[
+                        f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/{name}"
+                        for name in secret_names
+                    ],
+                )
+            )
+            fn.add_to_role_policy(
+                iam.PolicyStatement(
+                    sid="DecryptZerdeSSMSecrets",
+                    actions=["kms:Decrypt"],
+                    resources=["*"],
+                    conditions={
+                        "StringEquals": {
+                            "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                            "kms:CallerAccount": stack.account,
+                        }
+                    },
+                )
+            )
 
-        handler_lambda.add_event_source(
+        grant_secret_access(webhook_lambda, ["bot-token", "webhook-secret-token"])
+        grant_secret_access(task_worker_lambda, ["bot-token", "groq-api-key", "gemini-api-key", "deepseek-api-key"])
+
+        queue.grant_send_messages(webhook_lambda)
+        queue.grant_consume_messages(task_worker_lambda)
+        stats_table.grant_read_write_data(webhook_lambda)
+        stats_table.grant_read_write_data(task_worker_lambda)
+
+        task_worker_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
                 batch_size=1,
@@ -170,6 +206,6 @@ class BotConstruct(Construct):
             methods=[apigwv2.HttpMethod.POST],
             integration=apigwv2_integrations.HttpLambdaIntegration(
                 f"{CONSTRUCT_PREFIX}WebhookIntegration",
-                handler=handler_lambda,
+                handler=webhook_lambda,
             ),
         )

@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass, field
 
 import urllib3
-from core.config import GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL
+from core.config import GROQ_API_BASE, GROQ_MODEL, get_groq_api_key
 from core.logger import LoggerAdapter, get_logger
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -118,7 +118,10 @@ class GroqSpamDetector:
     def __init__(self) -> None:
         self.api_base = GROQ_API_BASE
         self.model = GROQ_MODEL
-        self.api_key = GROQ_API_KEY
+        api_key = get_groq_api_key()
+        if not api_key:
+            raise ValueError("GROQ_API_KEY must be set to initialize GroqSpamDetector")
+        self.api_key = api_key
         logger.info("GroqSpamDetector initialized", extra={"model": self.model})
 
     def classify(self, text: str) -> SpamCheckResult:
