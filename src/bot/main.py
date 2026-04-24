@@ -39,9 +39,29 @@ register_handlers(_dispatcher)
 logger.info("Bot Lambda initialized and handlers registered")
 
 
+def _event_summary(event: dict[str, Any]) -> dict[str, Any]:
+    """Log only routing metadata; never log raw webhook bodies or secret headers."""
+    if "Records" in event:
+        records = event.get("Records") or []
+        return {
+            "event_type": "sqs",
+            "record_count": len(records),
+            "source": records[0].get("eventSource") if records else None,
+        }
+    request_context = event.get("requestContext") or {}
+    http = request_context.get("http") or {}
+    return {
+        "event_type": "api_gateway",
+        "route_key": event.get("routeKey"),
+        "method": http.get("method"),
+        "path": http.get("path") or event.get("rawPath"),
+        "request_id": request_context.get("requestId"),
+    }
+
+
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None:
     """Unified Lambda handler routing by event source."""
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
-    logger.info("Bot Lambda handler called", extra={"event": event})
+    logger.info("Bot Lambda handler called", extra=_event_summary(event))
     return handle_event(event, _dispatcher, _bot)

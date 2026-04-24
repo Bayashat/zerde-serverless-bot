@@ -45,6 +45,7 @@ class BotConstruct(Construct):
         deepseek_model: str,
         chat_lang_map: dict[str, str],
         captcha_timeout_seconds: int,
+        captcha_max_attempts: int,
         kick_ban_duration_seconds: int,
         voteban_threshold: int,
         voteban_forgive_threshold: int,
@@ -112,6 +113,7 @@ class BotConstruct(Construct):
                 "CHAT_LANG_MAP": json.dumps(chat_lang_map),
                 # -- Timing parameters ─────────────────────────────────────────────
                 "CAPTCHA_TIMEOUT_SECONDS": captcha_timeout_seconds,
+                "CAPTCHA_MAX_ATTEMPTS": captcha_max_attempts,
                 "KICK_BAN_DURATION_SECONDS": kick_ban_duration_seconds,
                 # -- Vote-to-ban thresholds ────────────────────────────────────────
                 "VOTEBAN_THRESHOLD": voteban_threshold,

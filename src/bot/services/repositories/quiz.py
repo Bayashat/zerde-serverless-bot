@@ -26,8 +26,11 @@ class QuizRepository:
     """Reads/writes quiz scores, streaks, and poll lookups via DynamoDB."""
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(QUIZ_TABLE_NAME)
         logger.info("QuizRepository initialized", extra={"table": QUIZ_TABLE_NAME})
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(QUIZ_TABLE_NAME)
 
     def lookup_poll(self, poll_id: str) -> dict[str, Any] | None:
         """Look up a quiz record by poll_id using the GSI."""

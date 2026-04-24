@@ -29,13 +29,12 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── Parameters ──────────────────────────────────────────────────────────
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
-        ai_provider = os.environ.get("AI_PROVIDER", "gemini")
-
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
 
         # ── Timing parameters ──────────────────────────────────────────────────
         captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120")
         kick_ban_duration_seconds = os.environ.get("KICK_BAN_DURATION_SECONDS", "31")
+        captcha_max_attempts = os.environ.get("CAPTCHA_MAX_ATTEMPTS", "3")
 
         # ── Vote-to-ban thresholds ──────────────────────────────────────────
         voteban_threshold = os.environ.get("VOTEBAN_THRESHOLD", "7")
@@ -49,20 +48,17 @@ class ZerdeTelegramBotStack(Stack):
         gemini_api_base = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
-        wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
-        news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
-        quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-2.5-flash-lite")
+        wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL")
+        news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL")
+        quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL")
 
         # ── Groq parameters ──────────────────────────────────────────────────
         groq_api_base = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
-        groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+        groq_model = os.environ.get("GROQ_MODEL")
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
-
-        # ── Fallback model ────────────────────────────────────────────────────
-        news_fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
+        deepseek_model = os.environ.get("DEEPSEEK_MODEL")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
@@ -121,6 +117,7 @@ class ZerdeTelegramBotStack(Stack):
             deepseek_model=deepseek_model,
             chat_lang_map=chat_lang_map,
             captcha_timeout_seconds=captcha_timeout_seconds,
+            captcha_max_attempts=captcha_max_attempts,
             kick_ban_duration_seconds=kick_ban_duration_seconds,
             voteban_threshold=voteban_threshold,
             voteban_forgive_threshold=voteban_forgive_threshold,
@@ -133,9 +130,9 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             ssm_secret_prefix=ssm_secret_prefix,
             chats=news_chats,
-            ai_provider=ai_provider,
             news_gemini_model=news_gemini_model,
-            news_fallback_model=news_fallback_model,
+            deepseek_api_base=deepseek_api_base,
+            deepseek_model=deepseek_model,
             log_level=log_level,
         )
 
@@ -146,11 +143,10 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             log_level=log_level,
             telegram_api_base=telegram_api_base,
-            ai_provider=ai_provider,
             quiz_gemini_model=quiz_gemini_model,
             ssm_secret_prefix=ssm_secret_prefix,
-            groq_api_base=groq_api_base,
-            groq_model=groq_model,
+            deepseek_api_base=deepseek_api_base,
+            deepseek_model=deepseek_model,
             quiz_llm_rpd=quiz_llm_rpd,
             chats=quiz_chats,
         )

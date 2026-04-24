@@ -31,12 +31,15 @@ class RateLimitRepository:
     """
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
         self.rpd_limit = GEMINI_RPD_LIMIT
         logger.info(
             "RateLimitRepository initialized",
             extra={"table": STATS_TABLE_NAME, "rpd_limit": self.rpd_limit},
         )
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     @staticmethod
     def _today_pt() -> str:

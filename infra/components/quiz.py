@@ -43,11 +43,10 @@ class QuizConstruct(Construct):
         is_prod: bool,
         log_level: str,
         telegram_api_base: str,
-        ai_provider: str,
         quiz_gemini_model: str,
         ssm_secret_prefix: str,
-        groq_api_base: str,
-        groq_model: str,
+        deepseek_api_base: str,
+        deepseek_model: str,
         quiz_llm_rpd: str,
         chats: dict[str, list[str]],
     ) -> None:
@@ -85,7 +84,7 @@ class QuizConstruct(Construct):
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.seconds(60),
-            memory_size=256,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}QuizLogGroup",
@@ -97,12 +96,11 @@ class QuizConstruct(Construct):
                 "LOG_LEVEL": log_level,
                 "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "TELEGRAM_API_BASE": telegram_api_base,
-                "AI_PROVIDER": ai_provider,
                 "QUIZ_GEMINI_MODEL": quiz_gemini_model,
                 "TABLE_NAME": self.quiz_table.table_name,
                 "QUIZ_LLM_RPD": quiz_llm_rpd,
-                "GROQ_API_BASE": groq_api_base,
-                "GROQ_MODEL": groq_model,
+                "DEEPSEEK_API_BASE": deepseek_api_base,
+                "DEEPSEEK_MODEL": deepseek_model,
             },
         )
 

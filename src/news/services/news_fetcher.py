@@ -76,10 +76,10 @@ class NewsFetcher:
                             "summary": entry.get("summary", "")[:250],
                         }
                     )
-                    logger.debug(
-                        "News item added",
-                        extra={"title": entry.get("title", "No title"), "link": entry.get("link", "")},
-                    )
+                    # logger.debug(
+                    #     "News item added",
+                    #     extra={"title": entry.get("title", "No title"), "link": entry.get("link", "")},
+                    # )
             except Exception as e:
                 logger.warning("Feed fetch failed", extra={"feed_url": feed_url, "error": str(e)})
             return local_news

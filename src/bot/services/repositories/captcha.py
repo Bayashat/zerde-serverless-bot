@@ -21,7 +21,11 @@ class CaptchaRepository:
     """Stores pending captcha challenges keyed by chat+user with TTL auto-expiry."""
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
+        pass
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     def save_pending(
         self,

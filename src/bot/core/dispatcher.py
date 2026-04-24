@@ -162,7 +162,7 @@ class Dispatcher:
         def decorator(func: HandlerFunc):
             clean_name = command_name.lstrip("/")
             self.command_handlers[f"/{clean_name}"] = func
-            logger.info(f"Registered command handler: /{clean_name}")
+            logger.debug(f"Registered command handler: /{clean_name}")
             return func
 
         return decorator
@@ -170,25 +170,25 @@ class Dispatcher:
     def on_new_chat_members(self, func: HandlerFunc):
         """Decorator to register handler for ``message.new_chat_members``."""
         self.new_chat_members_handler = func
-        logger.info("Registered new_chat_members handler")
+        logger.debug("Registered new_chat_members handler")
         return func
 
     def on_callback_query(self, func: HandlerFunc):
         """Decorator to register handler for ``callback_query`` updates."""
         self.callback_query_handler = func
-        logger.info("Registered callback_query handler")
+        logger.debug("Registered callback_query handler")
         return func
 
     def on_poll_answer(self, func: HandlerFunc):
         """Decorator to register handler for ``poll_answer`` updates."""
         self.poll_answer_handler = func
-        logger.info("Registered poll_answer handler")
+        logger.debug("Registered poll_answer handler")
         return func
 
     def on_message(self, func: HandlerFunc):
         """Decorator to register handler for plain text messages (non-command)."""
         self.message_handler = func
-        logger.info("Registered message handler")
+        logger.debug("Registered message handler")
         return func
 
     def process_update(self, update: dict[str, Any]):

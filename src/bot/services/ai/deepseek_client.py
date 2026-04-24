@@ -33,12 +33,17 @@ class DeepSeekClient:
         self.api_base = DEEPSEEK_API_BASE
         self.model = DEEPSEEK_MODEL
         self.api_key = DEEPSEEK_API_KEY
+        logger.info("DeepSeekClient initialized", extra={"model": self.model})
 
     def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
         """Ask the LLM to explain a tech term in the given language."""
         payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang, style=style)
 
         url = f"{self.api_base}/chat/completions"
+        logger.info(
+            "DeepSeek explain request started",
+            extra={"model": self.model, "lang": lang, "style": style, "term_chars": len(term)},
+        )
         resp = _http.request(
             "POST",
             url,
@@ -61,4 +66,6 @@ class DeepSeekClient:
             raise DeepSeekAPIError(resp.status, body)
 
         data = json.loads(body)
-        return data["choices"][0]["message"]["content"].strip()
+        text = data["choices"][0]["message"]["content"].strip()
+        logger.info("DeepSeek explain response parsed", extra={"model": self.model, "response_chars": len(text)})
+        return text

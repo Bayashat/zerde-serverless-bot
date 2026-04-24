@@ -22,7 +22,11 @@ class ExplainTaskRepository:
     """
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
+        pass
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     @staticmethod
     def _stat_key(update_id: int) -> str:

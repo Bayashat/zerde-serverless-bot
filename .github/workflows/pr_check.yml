@@ -55,23 +55,23 @@ jobs:
       DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
       TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
       AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3-flash-preview' }}
-      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL || 'gemini-3.1-flash-lite-preview' }}
-      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL }}
+      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT }}
       GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
-      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL || 'gemini-2.5-flash' }}
-      GROQ_MODEL: ${{ vars.GROQ_MODEL || 'llama-3.3-70b-versatile' }}
+      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
+      GROQ_MODEL: ${{ vars.GROQ_MODEL }}
       GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
-      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
+      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
       DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
       ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
       CHATS_KK: ${{ vars.CHATS_KK }}
       CHATS_ZH: ${{ vars.CHATS_ZH }}
       CHATS_RU: ${{ vars.CHATS_RU }}
-      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS || '120' }}
-      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
-      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
-      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
+      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS }}
+      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS }}
+      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD }}
+      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD }}
 
     steps:
       - name: Checkout code

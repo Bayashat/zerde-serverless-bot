@@ -30,9 +30,9 @@ class NewsConstruct(Construct):
         is_prod: bool,
         ssm_secret_prefix: str,
         chats: dict[str, list[str]],
-        ai_provider: str,
         news_gemini_model: str,
-        news_fallback_model: str,
+        deepseek_api_base: str,
+        deepseek_model: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
@@ -49,7 +49,7 @@ class NewsConstruct(Construct):
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             timeout=Duration.minutes(5),
-            memory_size=256,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}NewsLogGroup",
@@ -60,9 +60,9 @@ class NewsConstruct(Construct):
             environment={
                 "LOG_LEVEL": log_level,
                 "SSM_SECRET_PREFIX": ssm_secret_prefix,
-                "NEWS_AI_PROVIDER": ai_provider,
                 "NEWS_GEMINI_MODEL": news_gemini_model,
-                "NEWS_FALLBACK_MODEL": news_fallback_model,
+                "DEEPSEEK_API_BASE": deepseek_api_base,
+                "DEEPSEEK_MODEL": deepseek_model,
             },
         )
 

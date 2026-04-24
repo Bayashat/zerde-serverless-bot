@@ -12,7 +12,13 @@ class LambdaInvoker:
     """Thin wrapper around boto3 Lambda client for synchronous invocation."""
 
     def __init__(self) -> None:
-        self._client = boto3.client("lambda")
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = boto3.client("lambda")
+        return self._client
 
     def invoke(self, function_name: str, payload: dict) -> dict:
         """Invoke *function_name* synchronously with *payload*.
@@ -20,7 +26,7 @@ class LambdaInvoker:
         Returns the parsed JSON response or an empty dict on failure.
         """
         try:
-            response = self._client.invoke(
+            response = self.client.invoke(
                 FunctionName=function_name,
                 InvocationType="RequestResponse",
                 Payload=json.dumps(payload).encode(),
@@ -41,7 +47,7 @@ class LambdaInvoker:
         Returns True when invocation was accepted by Lambda.
         """
         try:
-            self._client.invoke(
+            self.client.invoke(
                 FunctionName=function_name,
                 InvocationType="Event",
                 Payload=json.dumps(payload).encode(),

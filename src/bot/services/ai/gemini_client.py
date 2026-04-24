@@ -25,6 +25,15 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=25))
 
 
+def _thinking_config_for_model(model: str) -> dict[str, Any] | None:
+    """Minimize Gemini thinking latency for short plain-text explanations."""
+    if model.startswith("gemini-3"):
+        return {"thinkingLevel": "MINIMAL"}
+    if model.startswith("gemini-2.5"):
+        return {"thinkingBudget": 0}
+    return None
+
+
 class GeminiRPDExhaustedError(Exception):
     """Daily RPD quota is exhausted (DynamoDB counter over limit)."""
 
@@ -77,15 +86,20 @@ class GeminiClient:
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
         system_prompt = get_wtf_system_prompt(lang, style)
+        generation_config: dict[str, Any] = {
+            "temperature": 0.7,
+            "maxOutputTokens": 300,
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [
                 {"role": "user", "parts": [{"text": wtf_explain_user_text(term)}]},
             ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 300,
-            },
+            "generationConfig": generation_config,
         }
 
         url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
@@ -97,8 +111,26 @@ class GeminiClient:
         _retry_delays = (1,)
         last_exc: Exception | None = None
 
+        logger.info(
+            "Gemini explain request prepared",
+            extra={
+                "model": self._model,
+                "lang": lang,
+                "style": style,
+                "temperature": generation_config["temperature"],
+                "max_output_tokens": generation_config["maxOutputTokens"],
+                "thinking_config": thinking_config,
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+                "term_chars": len(term),
+            },
+        )
         for attempt, delay in enumerate(_retry_delays):
             try:
+                logger.info(
+                    "Gemini explain request started",
+                    extra={"model": self._model, "attempt": attempt + 1, "lang": lang, "style": style},
+                )
                 resp = _http.request("POST", url, body=body, headers=headers, retries=False)
             except (HTTPError, OSError) as exc:
                 logger.warning(
@@ -134,10 +166,25 @@ class GeminiClient:
 
             try:
                 data = json.loads(resp.data.decode("utf-8"))
-                text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                candidate = data["candidates"][0]
+                text = candidate["content"]["parts"][0]["text"].strip()
+                logger.info(
+                    "Gemini explain response parsed",
+                    extra={
+                        "model": self._model,
+                        "attempt": attempt + 1,
+                        "response_chars": len(text),
+                        "finish_reason": candidate.get("finishReason"),
+                        "rpd_count": count,
+                        "rpd_limit": self.rpd_limit,
+                    },
+                )
                 return text, count
             except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
-                logger.exception("Gemini response parse error")
+                logger.exception(
+                    "Gemini response parse error",
+                    extra={"model": self._model, "attempt": attempt + 1, "status": resp.status},
+                )
                 raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
 
         raise last_exc or GeminiUnavailableError("Gemini unavailable after retries")

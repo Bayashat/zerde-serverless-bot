@@ -25,11 +25,14 @@ class StatsRepository:
     """
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
         logger.info(
             "StatsRepository initialized",
             extra={"table_name": STATS_TABLE_NAME},
         )
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     def increment_total_joins(self, chat_id: int | str) -> None:
         self._increment(str(chat_id), "total_joins")

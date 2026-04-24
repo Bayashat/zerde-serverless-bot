@@ -20,8 +20,11 @@ class VoteRepository:
     """
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
         logger.info("VoteRepository initialized", extra={"table_name": STATS_TABLE_NAME})
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     def get_vote_session(self, chat_id: int | str, target_user_id: int) -> dict[str, Any]:
         """Get vote session data for a target user in a chat."""

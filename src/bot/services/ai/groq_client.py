@@ -29,12 +29,17 @@ class GroqClient:
         self.api_base = GROQ_API_BASE
         self.model = GROQ_MODEL
         self.api_key = GROQ_API_KEY
+        logger.info("GroqClient initialized", extra={"model": self.model})
 
     def explain_term(self, term: str, lang: str = "kk") -> str:
         """Ask the LLM to explain a tech term in the given language."""
         payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang)
 
         url = f"{self.api_base}/chat/completions"
+        logger.info(
+            "Groq explain request started",
+            extra={"model": self.model, "lang": lang, "term_chars": len(term)},
+        )
         resp = _http.request(
             "POST",
             url,
@@ -52,4 +57,6 @@ class GroqClient:
             raise GroqAPIError(resp.status, body)
 
         data = json.loads(resp.data.decode("utf-8"))
-        return data["choices"][0]["message"]["content"].strip()
+        text = data["choices"][0]["message"]["content"].strip()
+        logger.info("Groq explain response parsed", extra={"model": self.model, "response_chars": len(text)})
+        return text

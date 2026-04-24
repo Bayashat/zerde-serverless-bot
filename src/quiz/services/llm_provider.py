@@ -1,13 +1,13 @@
-"""LLM provider abstraction with Gemini primary and Groq fallback."""
+"""LLM provider abstraction with Gemini primary and DeepSeek fallback."""
 
 import json
 import random
 import time
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TypedDict
 
 import urllib3
-from core.config import GEMINI_API_KEY, GEMINI_MODEL, GROQ_API_BASE, GROQ_API_KEY, GROQ_MODEL
+from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL, GEMINI_API_KEY, GEMINI_MODEL
 from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
@@ -15,6 +15,13 @@ from google.genai import types
 from services.rate_limit_repository import QuizRateLimitRepository
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+
+class _QuizQuestionResponse(TypedDict):
+    question: str
+    options: list[str]
+    correct_option_index: int
+    explanation: str
 
 
 class RateLimitError(Exception):
@@ -66,23 +73,35 @@ class GeminiQuizProvider(QuizLLMProvider):
 
         for attempt, delay in enumerate(self._RETRY_DELAYS):
             try:
+                logger.info(
+                    "Quiz Gemini request started",
+                    extra={
+                        "model": self._model,
+                        "attempt": attempt + 1,
+                        "temperature": temperature,
+                        "response_schema": _QuizQuestionResponse.__name__,
+                        "rpd_count": count,
+                        "rpd_limit": self._rate_repo.rpd_limit,
+                    },
+                )
                 response = self._client.models.generate_content(
                     model=self._model,
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         temperature=temperature,
                         response_mime_type="application/json",
+                        response_schema=_QuizQuestionResponse,
                         max_output_tokens=2000,
                     ),
                 )
                 text = response.text.strip()
                 logger.debug("Raw quiz LLM response", extra={"raw": text})
-                if text.startswith("```"):
-                    text = text.split("```", 2)[1]
-                    if text.startswith("json"):
-                        text = text[4:]
-                    text = text.rsplit("```", 1)[0].strip()
-                return json.loads(text)
+                data = json.loads(text)
+                logger.info(
+                    "Quiz Gemini response parsed",
+                    extra={"model": self._model, "attempt": attempt + 1, "response_chars": len(text)},
+                )
+                return data
             except genai_errors.APIError as exc:
                 if exc.code == 429:
                     logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
@@ -99,16 +118,16 @@ class GeminiQuizProvider(QuizLLMProvider):
                 time.sleep(wait)
 
 
-class GroqQuizProvider(QuizLLMProvider):
-    """Groq provider via OpenAI-compatible chat/completions endpoint."""
+class DeepSeekQuizProvider(QuizLLMProvider):
+    """DeepSeek provider via OpenAI-compatible chat/completions endpoint."""
 
-    _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=30))
+    _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=5, read=60))
 
     def __init__(self, api_key: str, api_base: str, model: str) -> None:
         self._api_key = api_key
-        self._api_base = api_base
+        self._api_base = api_base.rstrip("/")
         self._model = model
-        logger.info("GroqQuizProvider initialized", extra={"model": model})
+        logger.info("DeepSeekQuizProvider initialized", extra={"model": model})
 
     def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
         payload: dict[str, Any] = {
@@ -118,6 +137,10 @@ class GroqQuizProvider(QuizLLMProvider):
             "response_format": {"type": "json_object"},
         }
 
+        logger.info(
+            "Quiz DeepSeek request started",
+            extra={"model": self._model, "temperature": temperature, "response_format": "json_object"},
+        )
         resp = self._http.request(
             "POST",
             f"{self._api_base}/chat/completions",
@@ -129,17 +152,22 @@ class GroqQuizProvider(QuizLLMProvider):
         )
 
         if resp.status == 429:
-            logger.warning("Groq 429 rate limit hit", extra={"model": self._model})
-            raise RateLimitError(f"Groq rate limited: {resp.status}")
+            logger.warning("DeepSeek 429 rate limit hit", extra={"model": self._model})
+            raise RateLimitError(f"DeepSeek rate limited: {resp.status}")
 
         if resp.status >= 400:
             body = resp.data.decode("utf-8")
-            logger.error("Groq API error", extra={"status": resp.status, "body": body[:500]})
-            raise RuntimeError(f"Groq API {resp.status}: {body[:200]}")
+            logger.error("DeepSeek API error", extra={"status": resp.status, "body": body[:500]})
+            raise RuntimeError(f"DeepSeek API {resp.status}: {body[:200]}")
 
         data = json.loads(resp.data.decode("utf-8"))
         content = data["choices"][0]["message"]["content"]
-        return json.loads(content)
+        result = json.loads(content)
+        logger.info(
+            "Quiz DeepSeek response parsed",
+            extra={"model": self._model, "response_chars": len(content)},
+        )
+        return result
 
 
 class FallbackProvider(QuizLLMProvider):
@@ -155,7 +183,10 @@ class FallbackProvider(QuizLLMProvider):
             logger.info("Quiz generated by primary provider")
             return result
         except Exception as e:
-            logger.warning("Primary provider failed, falling back to secondary provider", extra={"error": str(e)})
+            logger.warning(
+                "Primary provider failed, falling back to secondary provider",
+                extra={"error": str(e), "error_type": type(e).__name__},
+            )
             result = self._fallback.generate_json(prompt, temperature)
             logger.info("Quiz generated by fallback provider")
             return result
@@ -165,16 +196,16 @@ class FallbackProvider(QuizLLMProvider):
 
 
 def create_provider() -> QuizLLMProvider:
-    """Build the provider chain: Gemini primary -> Groq fallback (if configured)."""
+    """Build the provider chain: Gemini primary -> DeepSeek fallback (if configured)."""
     primary: QuizLLMProvider = GeminiQuizProvider(api_key=GEMINI_API_KEY, model=GEMINI_MODEL)
 
-    if GROQ_API_KEY:
-        fallback = GroqQuizProvider(api_key=GROQ_API_KEY, api_base=GROQ_API_BASE, model=GROQ_MODEL)
+    if DEEPSEEK_API_KEY:
+        fallback = DeepSeekQuizProvider(api_key=DEEPSEEK_API_KEY, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
         logger.info(
             "FallbackProvider configured",
-            extra={"primary": GEMINI_MODEL, "fallback": GROQ_MODEL},
+            extra={"primary": GEMINI_MODEL, "fallback": DEEPSEEK_MODEL},
         )
         return FallbackProvider(primary=primary, fallback=fallback)
 
-    logger.info("Groq fallback not configured (GROQ_API_KEY empty), using Gemini only")
+    logger.info("DeepSeek fallback not configured (DEEPSEEK_API_KEY empty), using Gemini only")
     return primary

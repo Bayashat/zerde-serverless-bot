@@ -4,7 +4,7 @@ from typing import Any
 
 from core.logger import LoggerAdapter, get_logger
 from core.utils import extract_event, get_intro_text
-from services.ai_client import GeminiAIClient
+from services.ai_client import NewsAIClientBase
 from services.news_fetcher import NewsFetcher
 from services.telegram import TelegramSender
 
@@ -17,7 +17,7 @@ class DigestService:
     def __init__(
         self,
         fetcher: NewsFetcher,
-        ai: GeminiAIClient,
+        ai: NewsAIClientBase,
         sender: TelegramSender,
     ) -> None:
         self._fetcher = fetcher
