@@ -50,6 +50,11 @@ def _extract_term(ctx: Context) -> str:
         return parts[1].strip()
     if ctx.reply_to_message:
         return (ctx.reply_to_message.get("text") or "").strip()
+    # External replies (cross-chat forwards) have no reply_to_message;
+    # Telegram instead populates `quote.text` with the selected fragment.
+    quote_text = (ctx.message.get("quote") or {}).get("text") or ""
+    if quote_text:
+        return quote_text.strip()
     return ""
 
 
