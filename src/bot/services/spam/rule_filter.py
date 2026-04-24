@@ -13,7 +13,11 @@ _RE_MONEY = re.compile(
     re.IGNORECASE,
 )
 _RE_VPN = re.compile(r"впн|vpn", re.IGNORECASE)
-_RE_JOB = re.compile(r"работа|подработ|удалённо|удаленно|график|гибкий|гибкая", re.IGNORECASE)
+_RE_JOB = re.compile(r"работа|подработ|удалённо|удаленно|график|гибкий|гибкая|шабашк|шабаш", re.IGNORECASE)
+_RE_DM_REDIRECT = re.compile(
+    r"в\s*лс\b|в\s*личк|в\s*личные|пиши\s*(мне\s*)?в\s*лс|напишите\s*мне|пишите\s*мне",
+    re.IGNORECASE,
+)
 _RE_CYRILLIC = re.compile(r"[\u0400-\u04FF]")
 _RE_LATIN = re.compile(r"[a-zA-Z]")
 _RE_WORD = re.compile(r"\S+")
@@ -38,6 +42,7 @@ class RuleBasedSpamFilter:
         has_money = bool(_RE_MONEY.search(text))
         has_vpn = bool(_RE_VPN.search(text))
         has_job = bool(_RE_JOB.search(text))
+        has_dm_redirect = bool(_RE_DM_REDIRECT.search(text))
         is_mixed_script = _has_mixed_script_word(text)
         has_url = bool(_RE_URL.search(text))
         has_promo = bool(_RE_PROMO.search(text))
@@ -80,6 +85,14 @@ class RuleBasedSpamFilter:
         if has_money and has_scam_hook:
             score += 0.20
             triggered.append("money_and_scam_hook")
+
+        if has_dm_redirect:
+            score += 0.25
+            triggered.append("dm_redirect")
+
+        if has_money and has_dm_redirect:
+            score += 0.20
+            triggered.append("money_and_dm_redirect")
 
         if len(text) < 100 and risky_mention:
             score += 0.15

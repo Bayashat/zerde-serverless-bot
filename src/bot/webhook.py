@@ -282,7 +282,7 @@ def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQS
                 reason=f"rules:{','.join(triggered_rules)}",
             )
             return
-        if score > 0.3:
+        if score > 0.15:
             logger.info(
                 "Ambiguous spam score, queuing for AI check",
                 extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
