@@ -100,9 +100,11 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Install AWS CDK CLI (pinned)
+      # CDK CLI major.minor must stay compatible with aws-cdk-lib in uv.lock (cloud-assembly schema).
+      # Old CLI (e.g. 2.102) fails with: schema 34 max vs app emitting 53+.
+      - name: Install AWS CDK CLI (pinned to lib)
         run: |
-          npm install -g aws-cdk@2.102.0
+          npm install -g aws-cdk@2.248.0
 
       - name: Install project dependencies with uv
         run: |
