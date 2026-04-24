@@ -23,12 +23,6 @@ class ZerdeTelegramBotStack(Stack):
         project_root = Path(__file__).parent.parent
         load_dotenv(dotenv_path=project_root / ".env")
 
-        def _require(key: str) -> str:
-            value = os.environ.get(key)
-            if not value:
-                raise ValueError(f"{key} must be set in environment")
-            return value
-
         def _parse_chat_ids(key: str) -> list[str]:
             value = os.environ.get(key, "")
             return [cid.strip() for cid in value.split(",") if cid.strip()]
@@ -47,9 +41,9 @@ class ZerdeTelegramBotStack(Stack):
         voteban_threshold = os.environ.get("VOTEBAN_THRESHOLD", "7")
         voteban_forgive_threshold = os.environ.get("VOTEBAN_FORGIVE_THRESHOLD", "7")
 
-        # ── Bot parameters ────────────────────────────────────────────────────
-        bot_token = _require("TELEGRAM_BOT_TOKEN")
-        webhook_secret_token = _require("TELEGRAM_WEBHOOK_SECRET_TOKEN")
+        # ── SSM secret prefix (secrets live in Parameter Store, not here) ────
+        # Path: /zerde/{env_name}/<secret-name>  — stored once, read at Lambda runtime.
+        ssm_secret_prefix = f"/zerde/{env_name}"
 
         # ── Gemini parameters ──────────────────────────────────────────────────
         gemini_api_base = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
@@ -58,26 +52,17 @@ class ZerdeTelegramBotStack(Stack):
         wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
         news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
         quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-2.5-flash-lite")
-        gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
 
         # ── Groq parameters ──────────────────────────────────────────────────
         groq_api_base = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
-        groq_api_key = os.environ.get("GROQ_API_KEY", "")
         groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
-
-        # ── Llama parameters ──────────────────────────────────────────────────
-        llama_api_base = os.environ.get("LLAMA_API_BASE", "https://api.llama.com/v1")
-        llama_model = os.environ.get("LLAMA_MODEL", "Llama-4-Scout-17B-16E-Instruct-FP8")
-        llama_api_key = os.environ.get("LLAMA_API_KEY", "")
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
         deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
-        deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
 
         # ── Fallback model ────────────────────────────────────────────────────
         news_fallback_model = os.environ.get("FALLBACK_MODEL", "gemini-2.5-flash")
-        wtf_fallback_provider = os.environ.get("WTF_FALLBACK_PROVIDER", "deepseek")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
@@ -124,24 +109,16 @@ class ZerdeTelegramBotStack(Stack):
             log_level=log_level,
             telegram_api_base=telegram_api_base,
             default_lang=default_lang,
-            bot_token=bot_token,
-            webhook_secret_token=webhook_secret_token,
+            ssm_secret_prefix=ssm_secret_prefix,
             queue=messaging.queue,
             admin_user_id=admin_user_id,
             gemini_api_base=gemini_api_base,
-            gemini_api_key=gemini_api_key,
             wtf_gemini_model=wtf_gemini_model,
             gemini_rpd_limit=gemini_rpd_limit,
             groq_api_base=groq_api_base,
-            groq_api_key=groq_api_key,
             groq_model=groq_model,
-            llama_api_base=llama_api_base,
-            llama_api_key=llama_api_key,
-            llama_model=llama_model,
             deepseek_api_base=deepseek_api_base,
-            deepseek_api_key=deepseek_api_key,
             deepseek_model=deepseek_model,
-            wtf_fallback_provider=wtf_fallback_provider,
             chat_lang_map=chat_lang_map,
             captcha_timeout_seconds=captcha_timeout_seconds,
             kick_ban_duration_seconds=kick_ban_duration_seconds,
@@ -154,8 +131,7 @@ class ZerdeTelegramBotStack(Stack):
             f"{CONSTRUCT_PREFIX}News",
             env_name=env_name,
             is_prod=is_prod,
-            bot_token=bot_token,
-            gemini_api_key=gemini_api_key,
+            ssm_secret_prefix=ssm_secret_prefix,
             chats=news_chats,
             ai_provider=ai_provider,
             news_gemini_model=news_gemini_model,
@@ -172,10 +148,8 @@ class ZerdeTelegramBotStack(Stack):
             telegram_api_base=telegram_api_base,
             ai_provider=ai_provider,
             quiz_gemini_model=quiz_gemini_model,
-            bot_token=bot_token,
-            gemini_api_key=gemini_api_key,
+            ssm_secret_prefix=ssm_secret_prefix,
             groq_api_base=groq_api_base,
-            groq_api_key=groq_api_key,
             groq_model=groq_model,
             quiz_llm_rpd=quiz_llm_rpd,
             chats=quiz_chats,

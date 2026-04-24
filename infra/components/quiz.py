@@ -1,10 +1,11 @@
 # infra/components/quiz.py
 from __future__ import annotations
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
@@ -44,10 +45,8 @@ class QuizConstruct(Construct):
         telegram_api_base: str,
         ai_provider: str,
         quiz_gemini_model: str,
-        bot_token: str,
-        gemini_api_key: str,
+        ssm_secret_prefix: str,
         groq_api_base: str,
-        groq_api_key: str,
         groq_model: str,
         quiz_llm_rpd: str,
         chats: dict[str, list[str]],
@@ -96,17 +95,37 @@ class QuizConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "TELEGRAM_API_BASE": telegram_api_base,
                 "AI_PROVIDER": ai_provider,
                 "QUIZ_GEMINI_MODEL": quiz_gemini_model,
-                "BOT_TOKEN": bot_token,
                 "TABLE_NAME": self.quiz_table.table_name,
-                "GEMINI_API_KEY": gemini_api_key,
                 "QUIZ_LLM_RPD": quiz_llm_rpd,
                 "GROQ_API_BASE": groq_api_base,
-                "GROQ_API_KEY": groq_api_key,
                 "GROQ_MODEL": groq_model,
             },
+        )
+
+        stack = Stack.of(self)
+        quiz_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="ReadZerdeSSMSecrets",
+                actions=["ssm:GetParameters"],
+                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
+            )
+        )
+        quiz_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="DecryptZerdeSSMSecrets",
+                actions=["kms:Decrypt"],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                        "kms:CallerAccount": stack.account,
+                    }
+                },
+            )
         )
 
         self.quiz_lambda = quiz_lambda

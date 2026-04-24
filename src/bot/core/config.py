@@ -3,6 +3,31 @@
 import json
 import os
 
+# ── SSM Secret Loading ──────────────────────────────────────────────────────
+# When SSM_SECRET_PREFIX is set (Lambda), batch-fetch all secrets from
+# Parameter Store and inject them into os.environ before any require() call.
+# Falls back to plain env vars for local development (SSM_SECRET_PREFIX unset).
+_SSM_SECRET_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
+
+if _SSM_SECRET_PREFIX:
+    import boto3 as _boto3
+
+    _ssm_env_map: dict[str, str] = {
+        "bot-token": "BOT_TOKEN",
+        "webhook-secret-token": "WEBHOOK_SECRET_TOKEN",
+        "groq-api-key": "GROQ_API_KEY",
+        "gemini-api-key": "GEMINI_API_KEY",
+        "deepseek-api-key": "DEEPSEEK_API_KEY",
+    }
+    _ssm_response = _boto3.client("ssm").get_parameters(
+        Names=[f"{_SSM_SECRET_PREFIX}/{k}" for k in _ssm_env_map],
+        WithDecryption=True,
+    )
+    for _p in _ssm_response["Parameters"]:
+        _k = _p["Name"].removeprefix(f"{_SSM_SECRET_PREFIX}/")
+        if _env_key := _ssm_env_map.get(_k):
+            os.environ[_env_key] = _p["Value"]
+
 # ── Environment variables ───────────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
@@ -31,18 +56,11 @@ GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/opena
 GROQ_API_KEY: str = os.environ.get("GROQ_API_KEY", "")
 GROQ_MODEL: str = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-# ── Llama parameters ──────────────────────────────────────────────────────────
-LLAMA_API_BASE: str = os.environ.get("LLAMA_API_BASE", "https://api.llama.com/v1")
-LLAMA_API_KEY: str = os.environ.get("LLAMA_API_KEY", "")
-LLAMA_MODEL: str = os.environ.get("LLAMA_MODEL", "Llama-4-Maverick-17B-128E-Instruct-FP8")
-
 # ── DeepSeek parameters ───────────────────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
 DEEPSEEK_API_KEY: str = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
-# Which provider to use as Gemini fallback: "deepseek" | "llama"
-WTF_FALLBACK_PROVIDER: str = os.environ.get("WTF_FALLBACK_PROVIDER", "deepseek")
 
 # ── Gemini parameters ──────────────────────────────────────────────────────────
 GEMINI_API_BASE: str = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")

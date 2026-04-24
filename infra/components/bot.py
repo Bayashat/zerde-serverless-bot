@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
 from aws_cdk import aws_dynamodb as dynamodb
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
@@ -32,24 +33,16 @@ class BotConstruct(Construct):
         log_level: str,
         telegram_api_base: str,
         default_lang: str,
-        bot_token: str,
-        webhook_secret_token: str,
+        ssm_secret_prefix: str,
         queue: sqs.Queue,
         admin_user_id: str,
         gemini_api_base: str,
-        gemini_api_key: str,
         wtf_gemini_model: str,
         gemini_rpd_limit: int,
         groq_api_base: str,
-        groq_api_key: str,
         groq_model: str,
-        llama_api_base: str,
-        llama_api_key: str,
-        llama_model: str,
         deepseek_api_base: str,
-        deepseek_api_key: str,
         deepseek_model: str,
-        wtf_fallback_provider: str,
         chat_lang_map: dict[str, str],
         captcha_timeout_seconds: int,
         kick_ban_duration_seconds: int,
@@ -99,43 +92,57 @@ class BotConstruct(Construct):
                 "LOG_LEVEL": log_level,
                 "TELEGRAM_API_BASE": telegram_api_base,
                 "DEFAULT_LANG": default_lang,
-                # -- Bot parameters ────────────────────────────────────────────────
-                "BOT_TOKEN": bot_token,
-                "WEBHOOK_SECRET_TOKEN": webhook_secret_token,
+                # -- SSM secret prefix (secrets fetched at runtime, not baked in) ──
+                "SSM_SECRET_PREFIX": ssm_secret_prefix,
+                # -- Non-secret bot parameters ─────────────────────────────────────
                 "STATS_TABLE_NAME": stats_table.table_name,
                 "QUEUE_URL": queue.queue_url,
                 "ADMIN_USER_ID": admin_user_id,
-                # -- Groq parameters ────────────────────────────────────────────────
+                # -- Groq parameters (non-secret) ──────────────────────────────────
                 "GROQ_API_BASE": groq_api_base,
-                "GROQ_API_KEY": groq_api_key,
                 "GROQ_MODEL": groq_model,
-                # -- Llama parameters ──────────────────────────────────────────────
-                "LLAMA_API_BASE": llama_api_base,
-                "LLAMA_API_KEY": llama_api_key,
-                "LLAMA_MODEL": llama_model,
-                # -- DeepSeek parameters ────────────────────────────────────────────
+                # -- DeepSeek parameters (non-secret) ──────────────────────────────
                 "DEEPSEEK_API_BASE": deepseek_api_base,
-                "DEEPSEEK_API_KEY": deepseek_api_key,
                 "DEEPSEEK_MODEL": deepseek_model,
-                # -- WTF fallback provider ──────────────────────────────────────────
-                "WTF_FALLBACK_PROVIDER": wtf_fallback_provider,
-                # -- Gemini parameters ───────────────────────────────────────────────
+                # -- Gemini parameters (non-secret) ────────────────────────────────
                 "GEMINI_API_BASE": gemini_api_base,
-                "GEMINI_API_KEY": gemini_api_key,
                 "WTF_GEMINI_MODEL": wtf_gemini_model,
                 "GEMINI_RPD_LIMIT": gemini_rpd_limit,
-                # -- Chat → language mapping (JSON string for Lambda env) ─────────────
+                # -- Chat → language mapping ───────────────────────────────────────
                 "CHAT_LANG_MAP": json.dumps(chat_lang_map),
-                # -- Timing parameters ────────────────────────────────────────────────
+                # -- Timing parameters ─────────────────────────────────────────────
                 "CAPTCHA_TIMEOUT_SECONDS": captcha_timeout_seconds,
                 "KICK_BAN_DURATION_SECONDS": kick_ban_duration_seconds,
-                # -- Vote-to-ban thresholds ──────────────────────────────────────────
+                # -- Vote-to-ban thresholds ────────────────────────────────────────
                 "VOTEBAN_THRESHOLD": voteban_threshold,
                 "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
             },
         )
 
         self.handler_lambda = handler_lambda
+
+        # Grant least-privilege SSM read access for secrets under the env prefix.
+        stack = Stack.of(self)
+        handler_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="ReadZerdeSSMSecrets",
+                actions=["ssm:GetParameters"],
+                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
+            )
+        )
+        handler_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="DecryptZerdeSSMSecrets",
+                actions=["kms:Decrypt"],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                        "kms:CallerAccount": stack.account,
+                    }
+                },
+            )
+        )
 
         queue.grant_consume_messages(handler_lambda)
         queue.grant_send_messages(handler_lambda)

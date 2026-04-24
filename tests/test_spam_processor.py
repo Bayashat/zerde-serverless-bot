@@ -33,11 +33,18 @@ def _make_result(
     return SpamCheckResult(label=label, confidence=confidence, reason=reason, error=error)
 
 
+# ---------------------------------------------------------------------------
+# _detector is a module-level singleton (instantiated at import time).
+# Patch the instance directly via "services.spam.processor._detector" so that
+# the mock is in place regardless of when the module was first imported.
+# ---------------------------------------------------------------------------
+
+
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
-@patch("services.spam.processor.GroqSpamDetector")
-def test_spam_high_confidence_calls_enforce(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.95, reason="job_offer")
+@patch("services.spam.processor._detector")
+def test_spam_high_confidence_calls_enforce(mock_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+    mock_detector.classify.return_value = _make_result("SPAM", 0.95, reason="job_offer")
     mock_enforcer = mock_enforcer_cls.return_value
 
     process_spam_check_task(mock_bot, _BODY)
@@ -52,9 +59,9 @@ def test_spam_high_confidence_calls_enforce(mock_detector_cls, mock_enforcer_cls
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
-@patch("services.spam.processor.GroqSpamDetector")
-def test_not_spam_does_not_call_enforce(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("NOT_SPAM", 0.98)
+@patch("services.spam.processor._detector")
+def test_not_spam_does_not_call_enforce(mock_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+    mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.98)
     mock_enforcer = mock_enforcer_cls.return_value
 
     process_spam_check_task(mock_bot, _BODY)
@@ -64,9 +71,9 @@ def test_not_spam_does_not_call_enforce(mock_detector_cls, mock_enforcer_cls, mo
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
-@patch("services.spam.processor.GroqSpamDetector")
-def test_spam_low_confidence_does_not_enforce(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.70)
+@patch("services.spam.processor._detector")
+def test_spam_low_confidence_does_not_enforce(mock_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+    mock_detector.classify.return_value = _make_result("SPAM", 0.70)
     mock_enforcer = mock_enforcer_cls.return_value
 
     process_spam_check_task(mock_bot, _BODY)
@@ -76,9 +83,9 @@ def test_spam_low_confidence_does_not_enforce(mock_detector_cls, mock_enforcer_c
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
-@patch("services.spam.processor.GroqSpamDetector")
-def test_api_error_does_not_enforce(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("NOT_SPAM", 0.0, error=True)
+@patch("services.spam.processor._detector")
+def test_api_error_does_not_enforce(mock_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+    mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.0, error=True)
     mock_enforcer = mock_enforcer_cls.return_value
 
     process_spam_check_task(mock_bot, _BODY)
@@ -86,22 +93,22 @@ def test_api_error_does_not_enforce(mock_detector_cls, mock_enforcer_cls, mock_s
     mock_enforcer.enforce.assert_not_called()
 
 
-@patch("services.spam.processor.GroqSpamDetector")
+@patch("services.spam.processor._detector")
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=True)
-def test_skips_chat_admin_before_groq(mock_is_admin, mock_detector_cls, mock_bot):
+def test_skips_chat_admin_before_groq(mock_is_admin, mock_detector, mock_bot):
     process_spam_check_task(mock_bot, _BODY)
-    mock_detector_cls.assert_not_called()
+    mock_detector.classify.assert_not_called()
 
 
-@patch("services.spam.processor.GroqSpamDetector")
-def test_skips_channel_discussion_actor_before_groq(mock_detector_cls, mock_bot):
+@patch("services.spam.processor._detector")
+def test_skips_channel_discussion_actor_before_groq(mock_detector, mock_bot):
     body = {**_BODY, "user_id": TELEGRAM_CHANNEL_POST_ACTOR_USER_ID}
     process_spam_check_task(mock_bot, body)
-    mock_detector_cls.assert_not_called()
+    mock_detector.classify.assert_not_called()
 
 
-@patch("services.spam.processor.GroqSpamDetector")
-def test_malformed_body_does_not_raise(mock_detector_cls, mock_bot):
+@patch("services.spam.processor._detector")
+def test_malformed_body_does_not_raise(mock_detector, mock_bot):
     # Missing required keys
     for bad_body in [{}, {"task_type": "SPAM_CHECK"}, None]:
         try:
@@ -112,9 +119,9 @@ def test_malformed_body_does_not_raise(mock_detector_cls, mock_bot):
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
-@patch("services.spam.processor.GroqSpamDetector")
-def test_spam_low_confidence_sends_alert(mock_detector_cls, mock_enforcer_cls, mock_stats_cls, mock_bot):
-    mock_detector_cls.return_value.classify.return_value = _make_result("SPAM", 0.70)
+@patch("services.spam.processor._detector")
+def test_spam_low_confidence_sends_alert(mock_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+    mock_detector.classify.return_value = _make_result("SPAM", 0.70)
     mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "suspicious_user"}}
 
     process_spam_check_task(mock_bot, _BODY)

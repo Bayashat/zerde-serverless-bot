@@ -5,13 +5,12 @@ from __future__ import annotations
 import time
 from typing import Callable, cast
 
-from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, LLAMA_API_KEY, WTF_FALLBACK_PROVIDER, get_chat_lang
+from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, get_chat_lang
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.ai.deepseek_client import DeepSeekAPIError, DeepSeekClient, DeepSeekRateLimitError
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
-from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
 from services.ai.wtf_prompts import WTFPromptStyle
 from services.repositories.explain_tasks import ExplainTaskRepository
 from services.telegram import TelegramAPIError, TelegramClient
@@ -21,22 +20,14 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _WTF_PROCESSING_REACTION = "✍️"
 _WTF_ERROR_REACTION = "🤡"
 
-_FALLBACK_RATE_LIMIT_ERRORS = (LlamaRateLimitError, DeepSeekRateLimitError)
-_FALLBACK_API_ERRORS = (LlamaAPIError, DeepSeekAPIError)
+_FALLBACK_RATE_LIMIT_ERRORS = (DeepSeekRateLimitError,)
+_FALLBACK_API_ERRORS = (DeepSeekAPIError,)
 
-_FallbackClient = DeepSeekClient | LlamaClient
+_FallbackClient = DeepSeekClient
 
 
 def _make_fallback() -> _FallbackClient | None:
-    if WTF_FALLBACK_PROVIDER == "deepseek" and DEEPSEEK_API_KEY:
-        return DeepSeekClient()
-    if WTF_FALLBACK_PROVIDER == "llama" and LLAMA_API_KEY:
-        return LlamaClient()
-    if DEEPSEEK_API_KEY:
-        return DeepSeekClient()
-    if LLAMA_API_KEY:
-        return LlamaClient()
-    return None
+    return DeepSeekClient() if DEEPSEEK_API_KEY else None
 
 
 _gemini: GeminiClient | None = GeminiClient() if GEMINI_API_KEY else None
@@ -108,11 +99,11 @@ def _fallback_explain_and_reply(
     try:
         explanation = _fallback.explain_term(term, lang, style=style)
     except _FALLBACK_RATE_LIMIT_ERRORS:
-        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": "deepseek"})
         send_reply(get_translated_text("wtf_fallback_rate_limit", lang))
         return
     except (*_FALLBACK_API_ERRORS, Exception):
-        logger.exception("Fallback API failed for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        logger.exception("Fallback API failed for /wtf", extra={"provider": "deepseek"})
         send_reply(get_translated_text("wtf_api_error", lang))
         return
 

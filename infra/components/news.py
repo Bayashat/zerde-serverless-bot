@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
@@ -27,8 +28,7 @@ class NewsConstruct(Construct):
         *,
         env_name: str,
         is_prod: bool,
-        bot_token: str,
-        gemini_api_key: str,
+        ssm_secret_prefix: str,
         chats: dict[str, list[str]],
         ai_provider: str,
         news_gemini_model: str,
@@ -59,12 +59,33 @@ class NewsConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "NEWS_AI_PROVIDER": ai_provider,
                 "NEWS_GEMINI_MODEL": news_gemini_model,
                 "NEWS_FALLBACK_MODEL": news_fallback_model,
-                "BOT_TOKEN": bot_token,
-                "GEMINI_API_KEY": gemini_api_key,
             },
+        )
+
+        stack = Stack.of(self)
+        news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="ReadZerdeSSMSecrets",
+                actions=["ssm:GetParameters"],
+                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
+            )
+        )
+        news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="DecryptZerdeSSMSecrets",
+                actions=["kms:Decrypt"],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                        "kms:CallerAccount": stack.account,
+                    }
+                },
+            )
         )
 
         if is_prod:
