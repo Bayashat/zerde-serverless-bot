@@ -17,7 +17,7 @@ from constructs import Construct
 
 
 class BotConstruct(Construct):
-    """Bot webhook Lambda + single-purpose SQS task-worker Lambda.
+    """One bot Lambda: API Gateway webhook and SQS consumer (shared warm container, lower /wtf latency).
 
     Exposes:
         api (apigwv2.HttpApi): HTTP API used by stack for CfnOutput.
@@ -125,33 +125,19 @@ class BotConstruct(Construct):
             environment=bot_environment,
         )
 
-        task_worker_lambda = PythonFunction(
-            self,
-            f"{CONSTRUCT_PREFIX}BotTaskWorkerLambda",
-            function_name=f"{RESOURCE_PREFIX}-bot-task-worker-{env_name}",
-            entry=str(PROJECT_ROOT / "src" / "bot"),
-            index="task_worker.py",
-            handler="lambda_handler",
-            runtime=LAMBDA_RUNTIME,
-            architecture=_lambda.Architecture.ARM_64,
-            layers=[shared_layer],
-            timeout=Duration.seconds(90),
-            memory_size=1024,
-            log_group=logs.LogGroup(
-                self,
-                f"{CONSTRUCT_PREFIX}BotTaskWorkerLogGroup",
-                log_group_name=f"/aws/lambda/{RESOURCE_PREFIX}-bot-task-worker-{env_name}",
-                retention=logs.RetentionDays.ONE_WEEK,
-                removal_policy=removal_policy,
-            ),
-            environment=bot_environment,
-        )
-
         self.handler_lambda = webhook_lambda
-        self.task_worker_lambda = task_worker_lambda
 
         # Grant least-privilege SSM read access for secrets under the env prefix.
         stack = Stack.of(self)
+
+        # Handlers (webhook and SQS path) use the same SSM parameters.
+        bot_ssm_secret_names = [
+            "bot-token",
+            "webhook-secret-token",
+            "groq-api-key",
+            "gemini-api-key",
+            "deepseek-api-key",
+        ]
 
         def grant_secret_access(fn: _lambda.IFunction, secret_names: list[str]) -> None:
             fn.add_to_role_policy(
@@ -178,15 +164,13 @@ class BotConstruct(Construct):
                 )
             )
 
-        grant_secret_access(webhook_lambda, ["bot-token", "webhook-secret-token"])
-        grant_secret_access(task_worker_lambda, ["bot-token", "groq-api-key", "gemini-api-key", "deepseek-api-key"])
+        grant_secret_access(webhook_lambda, bot_ssm_secret_names)
 
         queue.grant_send_messages(webhook_lambda)
-        queue.grant_consume_messages(task_worker_lambda)
+        queue.grant_consume_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
-        stats_table.grant_read_write_data(task_worker_lambda)
 
-        task_worker_lambda.add_event_source(
+        webhook_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
                 batch_size=1,

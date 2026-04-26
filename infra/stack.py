@@ -7,7 +7,10 @@ from typing import Any
 from aws_cdk import CfnOutput, Stack
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
-from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
+from components.observability import (
+    add_lambda_operational_alarms,
+    add_sqs_dlq_visible_alarm,
+)
 from components.zerde_layer import add_zerde_common_layer
 from constructs import Construct
 from dotenv import load_dotenv
@@ -168,15 +171,8 @@ class ZerdeTelegramBotStack(Stack):
         add_lambda_operational_alarms(
             self,
             env_name=env_name,
-            logical_slug="bot-webhook",
+            logical_slug="bot",
             fn=bot.handler_lambda,
-            duration_p95_threshold_ms=60_000,
-        )
-        add_lambda_operational_alarms(
-            self,
-            env_name=env_name,
-            logical_slug="bot-task-worker",
-            fn=bot.task_worker_lambda,
             duration_p95_threshold_ms=80_000,
         )
         add_lambda_operational_alarms(

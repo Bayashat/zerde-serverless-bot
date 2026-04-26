@@ -6,7 +6,7 @@ from typing import Any
 from zerde_common.config import require, require_int, require_json
 from zerde_common.secrets import load_ssm_secrets_if_needed
 
-# ── SSM: secrets loaded on first access (see __getattr__) — no import-time boto3. ─
+# ── SSM: one GetParameters batch at import when SSM_SECRET_PREFIX is set (warm path avoids SSM). ─
 _SSM_SECRET_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
 _SSM_KEY_MAP: dict[str, str] = {
     "bot-token": "BOT_TOKEN",
@@ -15,6 +15,8 @@ _SSM_KEY_MAP: dict[str, str] = {
     "gemini-api-key": "GEMINI_API_KEY",
     "deepseek-api-key": "DEEPSEEK_API_KEY",
 }
+if _SSM_SECRET_PREFIX:
+    load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, _SSM_KEY_MAP)
 _LAZY_SECRET_ATTRS: frozenset[str] = frozenset(
     {"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"},
 )
