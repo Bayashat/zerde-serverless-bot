@@ -26,11 +26,10 @@ _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=2
 
 
 def _thinking_config_for_model(model: str) -> dict[str, Any] | None:
-    """Minimize Gemini thinking latency for short plain-text explanations."""
-    if model.startswith("gemini-3"):
-        return {"thinkingLevel": "MINIMAL"}
+    """Disable Gemini thinking for short plain-text explanations (latency > benefit)."""
     if model.startswith("gemini-2.5"):
         return {"thinkingBudget": 0}
+    # gemini-3.x flash/flash-lite: thinking is off by default — no config needed.
     return None
 
 
