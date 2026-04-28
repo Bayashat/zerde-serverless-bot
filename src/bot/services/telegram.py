@@ -5,8 +5,9 @@ import time
 from typing import Any
 
 import urllib3
-from core.config import BOT_TOKEN, KICK_BAN_DURATION_SECONDS, TELEGRAM_API_BASE
+from core.config import KICK_BAN_DURATION_SECONDS, TELEGRAM_API_BASE, get_bot_token
 from core.logger import LoggerAdapter, get_logger
+from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -26,7 +27,7 @@ class TelegramClient:
     """HTTP wrapper around the Telegram Bot API."""
 
     def __init__(self) -> None:
-        self.bot_token = BOT_TOKEN
+        self.bot_token = get_bot_token()
         self.api_base = f"{TELEGRAM_API_BASE}{self.bot_token}"
         logger.info("TelegramClient initialized", extra={"api_base": TELEGRAM_API_BASE})
 
@@ -76,7 +77,11 @@ class TelegramClient:
         except TelegramAPIError as e:
             logger.error(
                 "Failed to send message",
-                extra={"chat_id": chat_id, "status": e.status, "response": e.body},
+                extra={
+                    "chat_id": chat_id,
+                    "status": e.status,
+                    "response_preview": truncate_log_text(e.body),
+                },
             )
             raise
         except Exception as e:
@@ -111,7 +116,11 @@ class TelegramClient:
         except TelegramAPIError as e:
             logger.error(
                 "Failed to send photo",
-                extra={"chat_id": chat_id, "status": e.status, "response": e.body},
+                extra={
+                    "chat_id": chat_id,
+                    "status": e.status,
+                    "response_preview": truncate_log_text(e.body),
+                },
             )
             raise
         except Exception as e:
@@ -230,11 +239,12 @@ class TelegramClient:
         payload = {"chat_id": chat_id, "user_id": user_id}
         try:
             result = self._post("getChatMember", payload)
+            res = result.get("result", {})
             logger.debug(
                 "Chat member info",
-                extra={"user_id": user_id, "response": result},
+                extra={"user_id": user_id, "member_status": res.get("status")},
             )
-            return result.get("result", {})
+            return res
         except Exception as e:
             logger.error(
                 "Failed to get chat member",
@@ -279,7 +289,11 @@ class TelegramClient:
         except TelegramAPIError as e:
             logger.error(
                 "Failed to edit message text",
-                extra={"message_id": message_id, "status": e.status, "response": e.body},
+                extra={
+                    "message_id": message_id,
+                    "status": e.status,
+                    "response_preview": truncate_log_text(e.body),
+                },
             )
             raise
         except Exception as e:

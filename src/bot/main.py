@@ -1,47 +1,43 @@
-"""Bot Lambda: Unified entrypoint for API Gateway and SQS events."""
+"""Bot Lambda: API Gateway webhook and SQS consumer (single function, one warm path)."""
 
+import time
 from typing import Any
 
-from core.config import QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
-from core.dispatcher import Dispatcher
+from app import get_bot, get_captcha_repo, get_dispatcher
 from core.logger import LoggerAdapter, get_logger
-from services.handlers import register_handlers
-from services.repositories import (
-    CaptchaRepository,
-    LambdaInvoker,
-    QuizRepository,
-    SQSClient,
-    StatsRepository,
-    VoteRepository,
-)
-from services.telegram import TelegramClient
+from services.sqs_task_router import process_sqs_event
 from webhook import handle_event
+from zerde_common.logging_utils import api_gateway_event_summary
 
 logger = LoggerAdapter(get_logger(__name__), {})
-
-_bot = TelegramClient()
-_stats_repo = StatsRepository()
-_sqs_repo = SQSClient()
-_vote_repo = VoteRepository()
-_captcha_repo = CaptchaRepository()
-_quiz_repo = QuizRepository() if QUIZ_TABLE_NAME else None
-_lambda_invoker = LambdaInvoker() if QUIZ_LAMBDA_NAME else None
-_dispatcher = Dispatcher(
-    _bot,
-    _stats_repo,
-    _sqs_repo,
-    _vote_repo,
-    _quiz_repo,
-    _lambda_invoker,
-    captcha_repo=_captcha_repo,
-)
-register_handlers(_dispatcher)
-logger.info("Bot Lambda initialized and handlers registered")
+logger.info("Bot Lambda initialized")
 
 
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None:
-    """Unified Lambda handler routing by event source."""
+    """Route API Gateway or SQS events. Exceptions on SQS bubble up for retry/DLQ."""
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
-    logger.info("Bot Lambda handler called", extra={"event": event})
-    return handle_event(event, _dispatcher, _bot)
+    records = event.get("Records")
+    if records and len(records) > 0 and records[0].get("eventSource") == "aws:sqs":
+        log_extra: dict = api_gateway_event_summary(event)
+        log_extra["lambda_request_id"] = request_id
+        logger.info("Bot Lambda handler called (SQS)", extra=log_extra)
+        started = time.monotonic()
+        try:
+            process_sqs_event(event, get_bot(), get_captcha_repo())
+        finally:
+            elapsed_ms = int((time.monotonic() - started) * 1000)
+            logger.info(
+                "Bot SQS batch finished",
+                extra={
+                    "lambda_request_id": request_id,
+                    "latency_ms": elapsed_ms,
+                    "record_count": len(records),
+                },
+            )
+        return None
+
+    log_extra_api: dict = api_gateway_event_summary(event)
+    log_extra_api["lambda_request_id"] = request_id
+    logger.info("Bot Lambda handler called", extra=log_extra_api)
+    return handle_event(event, get_dispatcher(), get_bot())

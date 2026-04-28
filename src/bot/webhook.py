@@ -6,24 +6,22 @@ import json
 from typing import Any
 
 from core.config import (
-    CHAT_LANG_MAP,
-    WEBHOOK_SECRET_TOKEN,
     get_chat_lang,
+    get_webhook_secret_token,
+    is_configured_group_chat,
 )
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.handlers import process_explain_task, process_timeout_task
+from services.handlers import process_timeout_task
 from services.repositories.sqs import SQSClient
-from services.repositories.stats import StatsRepository
-from services.spam import RuleBasedSpamFilter, SpamEnforcer, collect_spam_screen_text, process_spam_check_task
-from services.spam.channel_post import should_skip_spam_for_channel_discussion_mirror
-from services.spam.chat_member import is_chat_admin_or_creator
+from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _sqs_client = SQSClient()
+_spam_screening = SpamScreeningService
 
 
 # ── Public entry point (called by main.lambda_handler) ──────────────────────
@@ -40,27 +38,24 @@ def handle_event(
 
     if event_type == "api_gateway":
         return _handle_api_gateway(event, dispatcher, bot)
-    elif event_type == "sqs":
-        _handle_sqs(event, bot, dispatcher)
-    else:
-        logger.warning("Unknown event type received", extra={"event": event})
+    logger.warning("Unknown event type received", extra={"event": event})
 
     return None
 
 
-# ── Event-type detection ────────────────────────────────────────────────────
+# ── Event-type detection ───────────────────────────────────────────────────
 
 
 def _detect_event_type(event: dict[str, Any]) -> str:
     """Detect which AWS service triggered this Lambda invocation."""
     if "Records" in event and event["Records"] and event["Records"][0].get("eventSource") == "aws:sqs":
-        return "sqs"
+        return "unknown"
     if "headers" in event or "requestContext" in event:
         return "api_gateway"
     return "unknown"
 
 
-# ── API Gateway handler ────────────────────────────────────────────────────
+# ── API Gateway handler ──────────────────────────────────────────────────
 
 
 def _handle_api_gateway(
@@ -69,6 +64,7 @@ def _handle_api_gateway(
     bot: TelegramClient,
 ) -> dict[str, Any]:
     """Synchronous webhook handler: validate -> process -> return 200 OK."""
+    screener = _spam_screening(bot, _sqs_client)
     try:
         if not verify_webhook_secret_token(event):
             return create_response(200, {"ok": False, "error": "Unauthorized"})
@@ -82,7 +78,6 @@ def _handle_api_gateway(
 
         chat_id, chat_type = _extract_chat_context(body)
 
-        # Private chats are not supported: always return guidance text.
         if chat_type == "private":
             dispatcher.bot.send_message(
                 chat_id,
@@ -90,13 +85,12 @@ def _handle_api_gateway(
             )
             return create_response(200, {"message": "ok"})
 
-        # Silently drop events from group chats not in the configured whitelist.
-        if chat_type in {"group", "supergroup"} and not _is_chat_whitelisted(chat_id):
+        if chat_type in {"group", "supergroup"} and not is_configured_group_chat(chat_id):
             logger.debug("Silently ignoring event from non-whitelisted chat", extra={"chat_id": chat_id})
             return create_response(200, {"message": "ok"})
 
-        if _should_screen_for_spam(body):
-            _run_spam_screening(body, bot, _sqs_client)
+        if screener.should_screen(body):
+            screener.run(body)
 
         if not is_event_relevant_to_bot(body):
             logger.info("Event not relevant to bot, ignoring")
@@ -114,53 +108,7 @@ def _handle_api_gateway(
     return create_response(200, {"message": "Webhook received"})
 
 
-# ── SQS handler ────────────────────────────────────────────────────────────
-
-
-def _handle_sqs(event: dict[str, Any], bot: TelegramClient, dispatcher: Dispatcher) -> None:
-    """Process SQS batch -- CHECK_TIMEOUT, PROCESS_EXPLAIN, SPAM_CHECK tasks."""
-    logger.debug(
-        "Received SQS batch",
-        extra={"record_count": len(event.get("Records", []))},
-    )
-
-    for record in event["Records"]:
-        try:
-            body = json.loads(record["body"])
-
-            task_chat_id = body.get("chat_id")
-            if task_chat_id is not None and not _is_chat_whitelisted(int(task_chat_id)):
-                logger.debug("Skipping SQS task from non-whitelisted chat", extra={"chat_id": task_chat_id})
-                continue
-
-            task_type = body.get("task_type")
-            if task_type == "CHECK_TIMEOUT":
-                body["_captcha_repo"] = dispatcher.captcha_repo
-                process_timeout_task(bot, body)
-            elif task_type == "PROCESS_EXPLAIN":
-                process_explain_task(bot, body)
-            elif task_type == "SPAM_CHECK":
-                process_spam_check_task(bot, body)
-            else:
-                logger.warning(
-                    "Unexpected SQS record: unsupported task_type, ignoring",
-                    extra={"task_type": task_type, "body": body},
-                )
-
-        except Exception as e:
-            logger.error(
-                "Critical error processing SQS record",
-                extra={
-                    "message_id": record.get("messageId"),
-                    "error": e,
-                },
-                exc_info=True,
-            )
-
-    logger.info("SQS batch processing completed")
-
-
-# ── HTTP / webhook utilities ────────────────────────────────────────────────
+# ── HTTP / webhook utilities ────────────────────────────────────────────
 
 
 def verify_webhook_secret_token(event: dict[str, Any]) -> bool:
@@ -172,7 +120,7 @@ def verify_webhook_secret_token(event: dict[str, Any]) -> bool:
         logger.critical("Missing X-Telegram-Bot-Api-Secret-Token header")
         return False
 
-    if not hmac.compare_digest(received_token, WEBHOOK_SECRET_TOKEN):
+    if not hmac.compare_digest(received_token, get_webhook_secret_token()):
         logger.critical("Webhook secret token mismatch")
         return False
 
@@ -224,86 +172,6 @@ def _extract_chat_context(body: dict[str, Any]) -> tuple[int | None, str | None]
     return None, None
 
 
-def _is_chat_whitelisted(chat_id: int | None) -> bool:
-    """Return whether chat is explicitly configured in CHAT_LANG_MAP."""
-    if chat_id is None:
-        return False
-    return str(chat_id) in CHAT_LANG_MAP
-
-
-def _should_screen_for_spam(body: dict[str, Any]) -> bool:
-    """Return True for non-command, non-bot regular messages that should be spam-screened."""
-    if "message" not in body:
-        return False
-    msg = body["message"]
-    if should_skip_spam_for_channel_discussion_mirror(msg):
-        return False
-    if "new_chat_members" in msg:
-        return False
-    if msg.get("from", {}).get("is_bot", False):
-        return False
-    primary = msg.get("text") or msg.get("caption") or ""
-    if primary.strip().startswith("/"):
-        return False
-    combined = collect_spam_screen_text(msg)
-    if not combined.strip():
-        return False
-    return True
-
-
-def _run_spam_screening(body: dict[str, Any], bot: TelegramClient, sqs_repo: SQSClient) -> None:
-    """Layer-1 spam screening: score message and enforce or enqueue. Never raises."""
-    try:
-        msg = body["message"]
-        combined = collect_spam_screen_text(msg)
-        if not combined.strip():
-            return
-        user_id: int = msg["from"]["id"]
-        message_id: int = msg["message_id"]
-        chat_id: int = msg["chat"]["id"]
-
-        if is_chat_admin_or_creator(bot, chat_id, user_id):
-            logger.info(
-                "Spam screening skipped (sender is administrator or creator)",
-                extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id},
-            )
-            return
-
-        score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
-        if score > 0.8:
-            logger.info(
-                "Rule-based spam detected, enforcing",
-                extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
-            )
-            SpamEnforcer(bot, StatsRepository()).enforce(
-                chat_id=chat_id,
-                user_id=user_id,
-                message_id=message_id,
-                reason=f"rules:{','.join(triggered_rules)}",
-            )
-            return
-        if score > 0.15:
-            logger.info(
-                "Ambiguous spam score, queuing for AI check",
-                extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
-            )
-            sqs_repo.send_spam_check_task(
-                chat_id=chat_id,
-                user_id=user_id,
-                message_id=message_id,
-                text=combined,
-                triggered_rules=triggered_rules,
-            )
-            return
-        if triggered_rules:
-            logger.info(
-                "Spam screening below AI threshold (no automatic action)",
-                extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
-            )
-    except Exception as e:
-        logger.error("Spam screening error, continuing normal flow", extra={"error": e})
-
-
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
     """Return True if the Telegram update warrants processing."""
     if "poll_answer" in body:
@@ -318,6 +186,6 @@ def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
             return True
         text_content = msg.get("text") or ""
         if text_content.strip():
-            return True  # commands + plain text (captcha answers handled by message_handler)
+            return True
 
     return False

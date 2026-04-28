@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
@@ -25,21 +26,21 @@ class NewsConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
+        shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
-        bot_token: str,
-        gemini_api_key: str,
+        ssm_secret_prefix: str,
         chats: dict[str, list[str]],
-        ai_provider: str,
         news_gemini_model: str,
-        news_fallback_model: str,
+        deepseek_api_base: str,
+        deepseek_model: str,
         log_level: str,
     ) -> None:
         super().__init__(scope, construct_id)
 
         removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
 
-        news_lambda = PythonFunction(
+        self.news_lambda = PythonFunction(
             self,
             f"{CONSTRUCT_PREFIX}NewsLambda",
             function_name=f"{RESOURCE_PREFIX}-news-{env_name}",
@@ -47,9 +48,10 @@ class NewsConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
-            architecture=_lambda.Architecture.X86_64,
+            architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
             timeout=Duration.minutes(5),
-            memory_size=256,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}NewsLogGroup",
@@ -59,12 +61,33 @@ class NewsConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
-                "NEWS_AI_PROVIDER": ai_provider,
+                "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "NEWS_GEMINI_MODEL": news_gemini_model,
-                "NEWS_FALLBACK_MODEL": news_fallback_model,
-                "BOT_TOKEN": bot_token,
-                "GEMINI_API_KEY": gemini_api_key,
+                "DEEPSEEK_API_BASE": deepseek_api_base,
+                "DEEPSEEK_MODEL": deepseek_model,
             },
+        )
+
+        stack = Stack.of(self)
+        self.news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="ReadZerdeSSMSecrets",
+                actions=["ssm:GetParameters"],
+                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
+            )
+        )
+        self.news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="DecryptZerdeSSMSecrets",
+                actions=["kms:Decrypt"],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                        "kms:CallerAccount": stack.account,
+                    }
+                },
+            )
         )
 
         if is_prod:
@@ -89,7 +112,7 @@ class NewsConstruct(Construct):
                     )
                     rule.add_target(
                         events_targets.LambdaFunction(
-                            news_lambda,
+                            self.news_lambda,
                             event=events.RuleTargetInput.from_object(
                                 {
                                     "chat_ids": chat_ids,

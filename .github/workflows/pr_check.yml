@@ -47,40 +47,41 @@ jobs:
   infra-preview:
     needs: quality-check
     name: Infrastructure Changes Preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     if: github.event.pull_request.head.repo.full_name == github.repository
 
-    # Same env contract as CDK deploy (infra/stack.py): secrets for keys, vars for open config.
+    # API keys and tokens are stored in SSM Parameter Store — CDK only needs non-secret config.
     env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_WEBHOOK_SECRET_TOKEN: ${{ secrets.DEV_TELEGRAM_WEBHOOK_SECRET_TOKEN }}
-      GEMINI_API_KEY: ${{ secrets.DEV_GEMINI_API_KEY }}
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-      LLAMA_API_KEY: ${{ secrets.LLAMA_API_KEY }}
       DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
       TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
       AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3-flash-preview' }}
-      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL || 'gemini-3.1-flash-lite-preview' }}
-      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL }}
+      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT }}
       GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
-      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL || 'gemini-2.5-flash' }}
-      WTF_FALLBACK_PROVIDER: ${{ vars.WTF_FALLBACK_PROVIDER || 'deepseek' }}
-      GROQ_MODEL: ${{ vars.GROQ_MODEL || 'llama-3.3-70b-versatile' }}
+      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
+      GROQ_MODEL: ${{ vars.GROQ_MODEL }}
       GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
-      LLAMA_MODEL: ${{ vars.LLAMA_MODEL || 'Llama-4-Scout-17B-16E-Instruct-FP8' }}
-      LLAMA_API_BASE: ${{ vars.LLAMA_API_BASE || 'https://api.llama.com/v1' }}
-      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
+      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
       DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
       ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
       CHATS_KK: ${{ vars.CHATS_KK }}
       CHATS_ZH: ${{ vars.CHATS_ZH }}
       CHATS_RU: ${{ vars.CHATS_RU }}
-      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS || '120' }}
-      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
-      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
-      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
+      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS }}
+      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS }}
+      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD }}
+      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD }}
+      CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
+      QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD }}
+      NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL }}
+      QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL }}
+      QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
+      QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
+      QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
+      NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
+      NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
+      NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
 
     steps:
       - name: Checkout code
@@ -99,9 +100,11 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Install AWS CDK CLI
+      # npm package "aws-cdk" is the CLI only; its version is NOT the same as Python "aws-cdk-lib"
+      # (since ~2.179, CLI uses 2.1xxx numbering). Install a recent CLI so cloud-assembly schema matches.
+      - name: Install AWS CDK CLI (pinned)
         run: |
-          npm install -g aws-cdk
+          npm install -g aws-cdk@2.1119.0
 
       - name: Install project dependencies with uv
         run: |
@@ -122,7 +125,16 @@ jobs:
         id: cdk-diff
         working-directory: ./infra
         run: |
-          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1 || true
+          set +e
+          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1
+          diffexit=$?
+          set -e
+          # CDK: 0 = no changes, 1 = differences, other = real failure
+          if [ "$diffexit" -ne 0 ] && [ "$diffexit" -ne 1 ]; then
+            echo "cdk diff failed with exit $diffexit"
+            cat /tmp/cdk-diff.txt
+            exit "$diffexit"
+          fi
 
           echo "## 📊 Infrastructure Changes Preview (Zerde Telegram Bot)" > /tmp/diff-report.md
           echo "" >> /tmp/diff-report.md

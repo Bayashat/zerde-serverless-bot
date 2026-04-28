@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 import urllib3
-from core.config import DEEPSEEK_API_BASE, DEEPSEEK_API_KEY, DEEPSEEK_MODEL
+from core.config import DEEPSEEK_API_BASE, DEEPSEEK_MODEL, get_deepseek_api_key
 from core.logger import LoggerAdapter, get_logger
 from services.ai.wtf_prompts import WTFPromptStyle, build_wtf_openai_chat_payload
 
@@ -32,13 +32,21 @@ class DeepSeekClient:
     def __init__(self) -> None:
         self.api_base = DEEPSEEK_API_BASE
         self.model = DEEPSEEK_MODEL
-        self.api_key = DEEPSEEK_API_KEY
+        api_key = get_deepseek_api_key()
+        if not api_key:
+            raise ValueError("DEEPSEEK_API_KEY must be set to initialize DeepSeekClient")
+        self.api_key = api_key
+        logger.info("DeepSeekClient initialized", extra={"model": self.model})
 
     def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
         """Ask the LLM to explain a tech term in the given language."""
         payload: dict[str, Any] = build_wtf_openai_chat_payload(self.model, term, lang, style=style)
 
         url = f"{self.api_base}/chat/completions"
+        logger.info(
+            "DeepSeek explain request started",
+            extra={"model": self.model, "lang": lang, "style": style, "term_chars": len(term)},
+        )
         resp = _http.request(
             "POST",
             url,
@@ -61,4 +69,6 @@ class DeepSeekClient:
             raise DeepSeekAPIError(resp.status, body)
 
         data = json.loads(body)
-        return data["choices"][0]["message"]["content"].strip()
+        text = data["choices"][0]["message"]["content"].strip()
+        logger.info("DeepSeek explain response parsed", extra={"model": self.model, "response_chars": len(text)})
+        return text

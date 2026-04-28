@@ -2,22 +2,60 @@
 
 import os
 
+from zerde_common.config import require
+from zerde_common.secrets import load_ssm_secrets_if_needed
 
-def _require(name: str) -> str:
-    value = os.environ.get(name, "").strip()
-    if not value:
-        raise EnvironmentError(f"Required environment variable '{name}' is not set")
-    return value
+_SSM_KEY_MAP: dict[str, str] = {
+    "bot-token": "BOT_TOKEN",
+    "gemini-api-key": "GEMINI_API_KEY",
+    "deepseek-api-key": "DEEPSEEK_API_KEY",
+}
+_SSM_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
+_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"})
 
 
-# ── Optional (have defaults) ─────────────────────────────────────────────────
+def _load_secret(ssm_name: str, env_key: str) -> None:
+    load_ssm_secrets_if_needed(_SSM_PREFIX, {ssm_name: env_key})
+
+
+def get_bot_token() -> str:
+    """Return Telegram bot token, loading SSM secrets on first use."""
+    _load_secret("bot-token", "BOT_TOKEN")
+    return require("BOT_TOKEN")
+
+
+def get_gemini_api_key() -> str:
+    """Return Gemini API key, loading SSM secrets on first use."""
+    _load_secret("gemini-api-key", "GEMINI_API_KEY")
+    return require("GEMINI_API_KEY")
+
+
+def get_deepseek_api_key() -> str:
+    """Return DeepSeek API key, loading SSM secrets on first use."""
+    _load_secret("deepseek-api-key", "DEEPSEEK_API_KEY")
+    return require("DEEPSEEK_API_KEY")
+
+
+# ── Optional (have defaults) ─────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 
-AI_PROVIDER: str = os.environ.get("NEWS_AI_PROVIDER", "gemini")
-LLM_MODEL: str = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3-flash-preview")
-FALLBACK_MODEL: str = os.environ.get("NEWS_FALLBACK_MODEL", "gemini-2.5-flash")
+LLM_MODEL: str | None = os.environ.get("NEWS_GEMINI_MODEL")
+
+# ── DeepSeek fallback (non-key) ───────────────────────────────────────────
+DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
+DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
 
 
-# ── Required ────────────────────────────────────────────────────────────────
-BOT_TOKEN: str = _require("BOT_TOKEN")
-GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
+def __getattr__(name: str) -> str:
+    if name in _LAZY_SECRET_ATTRS:
+        if name == "BOT_TOKEN":
+            return get_bot_token()
+        if name == "GEMINI_API_KEY":
+            return get_gemini_api_key()
+        if name == "DEEPSEEK_API_KEY":
+            return get_deepseek_api_key()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:  # pragma: no cover
+    return sorted({*globals().keys(), *_LAZY_SECRET_ATTRS, "__dir__", "__getattr__"})

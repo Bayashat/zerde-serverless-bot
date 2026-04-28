@@ -8,7 +8,14 @@ from core.logger import LoggerAdapter, get_logger
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_SQS_CLIENT = boto3.client("sqs")
+_SQS_CLIENT = None
+
+
+def _get_sqs_client():
+    global _SQS_CLIENT
+    if _SQS_CLIENT is None:
+        _SQS_CLIENT = boto3.client("sqs")
+    return _SQS_CLIENT
 
 
 class SQSClient:
@@ -16,8 +23,11 @@ class SQSClient:
 
     def __init__(self) -> None:
         self.queue_url = QUEUE_URL
-        self.sqs_client = _SQS_CLIENT
         logger.debug(f"SQS client initialized with queue URL: {self.queue_url}")
+
+    @property
+    def sqs_client(self):
+        return _get_sqs_client()
 
     def send_timeout_task(
         self,

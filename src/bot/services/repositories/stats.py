@@ -25,11 +25,14 @@ class StatsRepository:
     """
 
     def __init__(self) -> None:
-        self._table = get_dynamodb().Table(STATS_TABLE_NAME)
         logger.info(
             "StatsRepository initialized",
             extra={"table_name": STATS_TABLE_NAME},
         )
+
+    @property
+    def _table(self):
+        return get_dynamodb().Table(STATS_TABLE_NAME)
 
     def increment_total_joins(self, chat_id: int | str) -> None:
         self._increment(str(chat_id), "total_joins")
@@ -39,6 +42,9 @@ class StatsRepository:
 
     def increment_total_bans(self, chat_id: int | str) -> None:
         self._increment(str(chat_id), "total_bans")
+
+    def increment_spam_bans(self, chat_id: int | str) -> None:
+        self._increment(str(chat_id), "spam_bans")
 
     def _increment(self, stat_key: str, attr: str) -> None:
         try:
@@ -66,6 +72,7 @@ class StatsRepository:
                 "total_joins": item.get("total_joins", 0),
                 "verified_users": item.get("verified_users", 0),
                 "total_bans": item.get("total_bans", 0),
+                "spam_bans": item.get("spam_bans", 0),
                 "started_at": item.get("started_at", "N/A"),
             }
         except ClientError as e:

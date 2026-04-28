@@ -21,7 +21,7 @@ class MessagingConstruct(Construct):
 
         removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
 
-        dlq = sqs.Queue(
+        self.dlq = sqs.Queue(
             self,
             f"{CONSTRUCT_PREFIX}TimeoutTasksDlq",
             queue_name=f"{RESOURCE_PREFIX}-timeout-tasks-dlq-{env_name}",
@@ -39,6 +39,6 @@ class MessagingConstruct(Construct):
             removal_policy=removal_policy,
             dead_letter_queue=sqs.DeadLetterQueue(
                 max_receive_count=3,
-                queue=dlq,
+                queue=self.dlq,
             ),
         )

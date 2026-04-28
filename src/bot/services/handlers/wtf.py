@@ -5,43 +5,52 @@ from __future__ import annotations
 import time
 from typing import Callable, cast
 
-from core.config import DEEPSEEK_API_KEY, GEMINI_API_KEY, LLAMA_API_KEY, WTF_FALLBACK_PROVIDER, get_chat_lang
+from core.config import get_chat_lang, get_deepseek_api_key, get_gemini_api_key
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.ai.deepseek_client import DeepSeekAPIError, DeepSeekClient, DeepSeekRateLimitError
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
-from services.ai.llama_client import LlamaAPIError, LlamaClient, LlamaRateLimitError
 from services.ai.wtf_prompts import WTFPromptStyle
 from services.repositories.explain_tasks import ExplainTaskRepository
 from services.telegram import TelegramAPIError, TelegramClient
+from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _WTF_PROCESSING_REACTION = "✍️"
 _WTF_ERROR_REACTION = "🤡"
 
-_FALLBACK_RATE_LIMIT_ERRORS = (LlamaRateLimitError, DeepSeekRateLimitError)
-_FALLBACK_API_ERRORS = (LlamaAPIError, DeepSeekAPIError)
+_FALLBACK_RATE_LIMIT_ERRORS = (DeepSeekRateLimitError,)
+_FALLBACK_API_ERRORS = (DeepSeekAPIError,)
 
-_FallbackClient = DeepSeekClient | LlamaClient
-
-
-def _make_fallback() -> _FallbackClient | None:
-    if WTF_FALLBACK_PROVIDER == "deepseek" and DEEPSEEK_API_KEY:
-        return DeepSeekClient()
-    if WTF_FALLBACK_PROVIDER == "llama" and LLAMA_API_KEY:
-        return LlamaClient()
-    if DEEPSEEK_API_KEY:
-        return DeepSeekClient()
-    if LLAMA_API_KEY:
-        return LlamaClient()
-    return None
+_FallbackClient = DeepSeekClient
 
 
-_gemini: GeminiClient | None = GeminiClient() if GEMINI_API_KEY else None
-_fallback: _FallbackClient | None = _make_fallback()
-_task_repo = ExplainTaskRepository()
+_gemini: GeminiClient | None = None
+_fallback: _FallbackClient | None = None
+_task_repo: ExplainTaskRepository | None = None
+
+
+def _get_gemini() -> GeminiClient | None:
+    global _gemini
+    if get_gemini_api_key() and _gemini is None:
+        _gemini = GeminiClient()
+    return _gemini
+
+
+def _get_fallback() -> _FallbackClient | None:
+    global _fallback
+    if get_deepseek_api_key() and _fallback is None:
+        _fallback = DeepSeekClient()
+    return _fallback
+
+
+def _get_task_repo() -> ExplainTaskRepository:
+    global _task_repo
+    if _task_repo is None:
+        _task_repo = ExplainTaskRepository()
+    return _task_repo
 
 
 def _extract_term(ctx: Context) -> str:
@@ -58,15 +67,19 @@ def _extract_term(ctx: Context) -> str:
     return ""
 
 
-def _build_rpd_footer(lang: str) -> str:
-    if not _gemini:
+def _build_rpd_footer(lang: str, used_count: int | None = None) -> str:
+    gemini = _get_gemini()
+    if not gemini:
         return ""
-    logger.info("RPD limit", extra={"remaining": _gemini.remaining_rpd, "total": _gemini.rpd_limit})
+    # Prefer the count returned by explain_term() to avoid a second DynamoDB read.
+    # Falls back to a live read only on the fallback/error path where count is unavailable.
+    remaining = max(0, gemini.rpd_limit - used_count) if used_count is not None else gemini.remaining_rpd
+    logger.info("RPD limit", extra={"remaining": remaining, "total": gemini.rpd_limit})
     return get_translated_text(
         "wtf_rpd_footer",
         lang,
-        remaining=_gemini.remaining_rpd,
-        total=_gemini.rpd_limit,
+        remaining=remaining,
+        total=gemini.rpd_limit,
     )
 
 
@@ -76,7 +89,11 @@ def _react_processing(ctx: Context, reaction: str = _WTF_PROCESSING_REACTION) ->
     except TelegramAPIError as e:
         logger.warning(
             "setMessageReaction failed for /wtf",
-            extra={"status": e.status, "body": e.body[:200], "reaction": reaction},
+            extra={
+                "status": e.status,
+                "body_preview": truncate_log_text(e.body, 200),
+                "reaction": reaction,
+            },
         )
 
 
@@ -97,19 +114,21 @@ def _fallback_explain_and_reply(
     style: WTFPromptStyle,
     send_daily_quota_notice: bool,
 ) -> None:
-    assert _fallback is not None
+    fallback = _get_fallback()
+    assert fallback is not None
+    gemini = _get_gemini()
 
-    if send_daily_quota_notice and _gemini is not None:
-        send_reply(get_translated_text("wtf_fallback_notice", lang, total=_gemini.rpd_limit))
+    if send_daily_quota_notice and gemini is not None:
+        send_reply(get_translated_text("wtf_fallback_notice", lang, total=gemini.rpd_limit))
 
     try:
-        explanation = _fallback.explain_term(term, lang, style=style)
+        explanation = fallback.explain_term(term, lang, style=style)
     except _FALLBACK_RATE_LIMIT_ERRORS:
-        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        logger.warning("Fallback API rate limit hit for /wtf", extra={"provider": "deepseek"})
         send_reply(get_translated_text("wtf_fallback_rate_limit", lang))
         return
     except (*_FALLBACK_API_ERRORS, Exception):
-        logger.exception("Fallback API failed for /wtf", extra={"provider": WTF_FALLBACK_PROVIDER})
+        logger.exception("Fallback API failed for /wtf", extra={"provider": "deepseek"})
         send_reply(get_translated_text("wtf_api_error", lang))
         return
 
@@ -130,13 +149,16 @@ def _execute_explain_and_reply(
     def send_reply(text: str) -> None:
         _send_reply(bot, chat_id, reply_to_message_id, text)
 
-    if not _gemini and not _fallback:
+    gemini = _get_gemini()
+    fallback = _get_fallback()
+
+    if not gemini and not fallback:
         send_reply(get_translated_text("wtf_not_configured", lang))
         return
 
-    if not _gemini and _fallback:
+    if not gemini and fallback:
         try:
-            explanation = _fallback.explain_term(term, lang, style=style)
+            explanation = fallback.explain_term(term, lang, style=style)
         except _FALLBACK_RATE_LIMIT_ERRORS:
             send_reply(get_translated_text("wtf_fallback_rate_limit", lang))
             return
@@ -149,35 +171,22 @@ def _execute_explain_and_reply(
         send_reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang))
         return
 
-    if _gemini and not _fallback:
-        if _gemini.remaining_rpd <= 0:
-            send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
-            return
+    if gemini and not fallback:
         try:
-            explanation = _gemini.explain_term(term, lang, style=style)
+            explanation, used_count = gemini.explain_term(term, lang, style=style)
         except GeminiRPDExhaustedError:
             send_reply(get_translated_text("wtf_gemini_exhausted_no_fallback", lang))
             return
         except GeminiUnavailableError:
             send_reply(get_translated_text("wtf_api_error", lang))
             return
-        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
         return
 
-    assert _gemini is not None and _fallback is not None
-
-    if _gemini.remaining_rpd <= 0:
-        _fallback_explain_and_reply(
-            send_reply=send_reply,
-            term=term,
-            lang=lang,
-            style=style,
-            send_daily_quota_notice=True,
-        )
-        return
+    assert gemini is not None and fallback is not None
 
     try:
-        explanation = _gemini.explain_term(term, lang, style=style)
+        explanation, used_count = gemini.explain_term(term, lang, style=style)
     except GeminiRPDExhaustedError:
         _fallback_explain_and_reply(
             send_reply=send_reply,
@@ -198,13 +207,13 @@ def _execute_explain_and_reply(
         )
         return
 
-    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang))
+    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
 
 
 def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: str, usage_key: str) -> None:
     lang = get_chat_lang(ctx.chat_id)
 
-    if not _gemini and not _fallback:
+    if not get_gemini_api_key() and not get_deepseek_api_key():
         _react_processing(ctx, _WTF_ERROR_REACTION)
         ctx.reply(get_translated_text("wtf_not_configured", lang), ctx.message_id)
         return
@@ -235,7 +244,8 @@ def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: 
         },
     )
 
-    if not _task_repo.try_reserve_update(ctx.update_id):
+    task_repo = _get_task_repo()
+    if not task_repo.try_reserve_update(ctx.update_id):
         _react_processing(ctx, _WTF_ERROR_REACTION)
         logger.info("Duplicate explain update skipped", extra={"update_id": ctx.update_id, "chat_id": ctx.chat_id})
         return
@@ -252,9 +262,16 @@ def _enqueue_term_explain(ctx: Context, *, style: WTFPromptStyle, command_name: 
             lang=lang,
             style=style,
         )
-        _task_repo.mark_enqueued(ctx.update_id)
+        task_repo.mark_enqueued(ctx.update_id)
     except Exception:
         logger.exception("Failed to enqueue explain task", extra={"update_id": ctx.update_id})
+        try:
+            task_repo.release_reservation(ctx.update_id)
+        except Exception:
+            logger.exception(
+                "Failed to release explain reservation after enqueue error",
+                extra={"update_id": ctx.update_id},
+            )
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
 
 
@@ -290,7 +307,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
             lang=lang,
             style=cast(WTFPromptStyle, style),
         )
-        _task_repo.mark_completed(update_id)
+        _get_task_repo().mark_completed(update_id)
         elapsed_ms = int((time.monotonic() - started) * 1000)
         logger.info(
             "PROCESS_EXPLAIN completed",

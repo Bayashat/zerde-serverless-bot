@@ -144,6 +144,6 @@ def build_wtf_openai_chat_payload(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": wtf_explain_user_text(term)},
         ],
-        "max_tokens": 500,
-        "temperature": 0.9,
+        "max_tokens": 300,
+        "temperature": 0.7,
     }

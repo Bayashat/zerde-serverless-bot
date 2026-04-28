@@ -83,6 +83,7 @@ def handle_stats(ctx: Context) -> None:
         total = stats["total_joins"]
         verified = stats["verified_users"]
         banned = stats["total_bans"]
+        spam_banned = stats["spam_bans"]
         start_date = stats["started_at"]
 
         activity_level_percentage = int(min(100, 100 * verified / max(1, total)))
@@ -101,6 +102,7 @@ def handle_stats(ctx: Context) -> None:
             total=total,
             verified=verified,
             banned=banned,
+            spam_banned=spam_banned,
             activity_level=activity_level,
         )
         ctx.reply(msg, ctx.message_id)

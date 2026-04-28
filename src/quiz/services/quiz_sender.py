@@ -4,8 +4,9 @@ import json
 from typing import Any
 
 import urllib3
-from core.config import BOT_TOKEN, TELEGRAM_API_BASE
+from core.config import TELEGRAM_API_BASE, get_bot_token
 from core.logger import LoggerAdapter, get_logger
+from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -16,7 +17,7 @@ class QuizSender:
     """Sends Telegram quiz polls to chat groups."""
 
     def __init__(self) -> None:
-        self._base_url = f"{TELEGRAM_API_BASE}{BOT_TOKEN}"
+        self._base_url = f"{TELEGRAM_API_BASE}{get_bot_token()}"
 
     def send_message(
         self,
@@ -45,7 +46,7 @@ class QuizSender:
                 body = resp.data.decode("utf-8")
                 logger.error(
                     "sendMessage failed",
-                    extra={"chat_id": chat_id, "status": resp.status, "body": body},
+                    extra={"chat_id": chat_id, "status": resp.status, "body_preview": truncate_log_text(body)},
                 )
                 return None
             result = json.loads(resp.data.decode("utf-8"))
@@ -88,7 +89,7 @@ class QuizSender:
                 body = resp.data.decode("utf-8")
                 logger.error(
                     "sendPoll failed",
-                    extra={"chat_id": chat_id, "status": resp.status, "body": body},
+                    extra={"chat_id": chat_id, "status": resp.status, "body_preview": truncate_log_text(body)},
                 )
                 return None
 

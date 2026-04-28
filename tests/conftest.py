@@ -4,7 +4,11 @@ import os
 import sys
 from unittest.mock import MagicMock
 
-import pytest
+# Shared layer package (``zerde_common``) — same as ``/opt/python`` on Lambda
+_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, os.path.join(_ROOT, "src", "shared", "python"))
+
+import pytest  # noqa: E402
 
 # Set required env vars BEFORE importing bot modules
 os.environ.setdefault("AWS_DEFAULT_REGION", "eu-central-1")
@@ -18,6 +22,19 @@ os.environ.setdefault("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
 os.environ.setdefault("GEMINI_API_KEY", "test-gemini-api-key")
 os.environ.setdefault("DEFAULT_LANG", "kk")
 os.environ.setdefault("LOG_LEVEL", "DEBUG")
+os.environ.setdefault("ADMIN_USER_ID", "1")
+os.environ.setdefault("GEMINI_RPD_LIMIT", "1000")
+os.environ.setdefault("CHAT_LANG_MAP", "{}")
+os.environ.setdefault("CAPTCHA_TIMEOUT_SECONDS", "300")
+os.environ.setdefault("KICK_BAN_DURATION_SECONDS", "60")
+os.environ.setdefault("VOTEBAN_THRESHOLD", "5")
+os.environ.setdefault("VOTEBAN_FORGIVE_THRESHOLD", "3")
+os.environ.setdefault("CAPTCHA_MAX_ATTEMPTS", "3")
+os.environ.setdefault("GROQ_API_KEY", "test-groq-api-key")
+os.environ.setdefault("GROQ_MODEL", "test-groq-model")
+os.environ.setdefault("DEEPSEEK_MODEL", "test-deepseek-model")
+os.environ.setdefault("WTF_GEMINI_MODEL", "test-gemini-model")
+os.environ.setdefault("QUIZ_LAMBDA_NAME", "test-quiz-lambda")
 
 # Add src/bot to sys.path so imports work like they do in Lambda
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "bot"))

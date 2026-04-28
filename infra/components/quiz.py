@@ -1,10 +1,11 @@
 # infra/components/quiz.py
 from __future__ import annotations
 
-from aws_cdk import Duration, RemovalPolicy
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
@@ -38,17 +39,15 @@ class QuizConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
+        shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
         log_level: str,
         telegram_api_base: str,
-        ai_provider: str,
         quiz_gemini_model: str,
-        bot_token: str,
-        gemini_api_key: str,
-        groq_api_base: str,
-        groq_api_key: str,
-        groq_model: str,
+        ssm_secret_prefix: str,
+        deepseek_api_base: str,
+        deepseek_model: str,
         quiz_llm_rpd: str,
         chats: dict[str, list[str]],
     ) -> None:
@@ -84,9 +83,10 @@ class QuizConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
-            architecture=_lambda.Architecture.X86_64,
+            architecture=_lambda.Architecture.ARM_64,
+            layers=[shared_layer],
             timeout=Duration.seconds(60),
-            memory_size=256,
+            memory_size=512,
             log_group=logs.LogGroup(
                 self,
                 f"{CONSTRUCT_PREFIX}QuizLogGroup",
@@ -96,17 +96,36 @@ class QuizConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "TELEGRAM_API_BASE": telegram_api_base,
-                "AI_PROVIDER": ai_provider,
                 "QUIZ_GEMINI_MODEL": quiz_gemini_model,
-                "BOT_TOKEN": bot_token,
                 "TABLE_NAME": self.quiz_table.table_name,
-                "GEMINI_API_KEY": gemini_api_key,
                 "QUIZ_LLM_RPD": quiz_llm_rpd,
-                "GROQ_API_BASE": groq_api_base,
-                "GROQ_API_KEY": groq_api_key,
-                "GROQ_MODEL": groq_model,
+                "DEEPSEEK_API_BASE": deepseek_api_base,
+                "DEEPSEEK_MODEL": deepseek_model,
             },
+        )
+
+        stack = Stack.of(self)
+        quiz_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="ReadZerdeSSMSecrets",
+                actions=["ssm:GetParameters"],
+                resources=[f"arn:aws:ssm:{stack.region}:{stack.account}:parameter{ssm_secret_prefix}/*"],
+            )
+        )
+        quiz_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                sid="DecryptZerdeSSMSecrets",
+                actions=["kms:Decrypt"],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "kms:ViaService": f"ssm.{stack.region}.amazonaws.com",
+                        "kms:CallerAccount": stack.account,
+                    }
+                },
+            )
         )
 
         self.quiz_lambda = quiz_lambda
@@ -147,7 +166,7 @@ class QuizConstruct(Construct):
                         )
                     )
 
-            # Friday leaderboard (18:00 Almaty = 13:00 UTC, day-of-week=5 in cron = Friday)
+            # Sunday leaderboard (18:00 Almaty = 13:00 UTC, cron week_day=SUN)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
                 chat_ids = chats.get(lang, [])
                 if not chat_ids:
@@ -161,7 +180,7 @@ class QuizConstruct(Construct):
                     schedule=events.Schedule.cron(
                         minute=str(minute_utc),
                         hour=str(hour_utc),
-                        week_day="FRI",
+                        week_day="SUN",
                         month="*",
                         year="*",
                     ),

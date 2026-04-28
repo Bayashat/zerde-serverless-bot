@@ -4,8 +4,8 @@ Rate-limit tracking uses an atomic DynamoDB counter (RPD) shared
 across all Lambda invocations and chat groups. The "day" matches
 Gemini/Google: calendar date in America/Los_Angeles (midnight PT reset).
 
-Timeout budget: API Gateway HTTP API hard-limits responses to 30 s.
-Gemini (12 s) + possible DeepSeek/Llama fallback (15 s) + overhead ≈ 26 s.
+Timeout budget: explain tasks run via SQS Lambda (90 s budget), not API Gateway.
+Read timeout is 25 s; connect timeout is 3 s (fast-fail on DNS/TCP issues).
 """
 
 import json
@@ -14,7 +14,7 @@ import time
 from typing import Any
 
 import urllib3
-from core.config import GEMINI_API_BASE, GEMINI_API_KEY, WTF_GEMINI_MODEL
+from core.config import GEMINI_API_BASE, WTF_GEMINI_MODEL, get_gemini_api_key
 from core.logger import LoggerAdapter, get_logger
 from services.ai.wtf_prompts import WTFPromptStyle, get_wtf_system_prompt, wtf_explain_user_text
 from services.repositories.rate_limit import RateLimitRepository
@@ -22,7 +22,15 @@ from urllib3.exceptions import HTTPError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=20))
+_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=25))
+
+
+def _thinking_config_for_model(model: str) -> dict[str, Any] | None:
+    """Disable Gemini thinking for short plain-text explanations (latency > benefit)."""
+    if model.startswith("gemini-2.5"):
+        return {"thinkingBudget": 0}
+    # gemini-3.x flash/flash-lite: thinking is off by default — no config needed.
+    return None
 
 
 class GeminiRPDExhaustedError(Exception):
@@ -41,7 +49,10 @@ class GeminiClient:
     """Thin urllib3 wrapper around the Gemini generateContent REST endpoint."""
 
     def __init__(self) -> None:
-        self._api_key = GEMINI_API_KEY
+        api_key = get_gemini_api_key()
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY must be set to initialize GeminiClient")
+        self._api_key = api_key
         self._model = WTF_GEMINI_MODEL
         self._rate_repo = RateLimitRepository()
         logger.info("GeminiClient initialized", extra={"model": self._model})
@@ -56,8 +67,12 @@ class GeminiClient:
     def rpd_limit(self) -> int:
         return self._rate_repo.rpd_limit
 
-    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> str:
+    def explain_term(self, term: str, lang: str = "kk", style: WTFPromptStyle = "angry") -> tuple[str, int]:
         """Call Gemini to explain *term*.
+
+        Returns:
+            (explanation_text, used_count_after_increment) so callers can build
+            RPD footer without a second DynamoDB read.
 
         Raises:
             GeminiRPDExhaustedError: daily RPD limit reached after increment.
@@ -73,28 +88,51 @@ class GeminiClient:
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
         system_prompt = get_wtf_system_prompt(lang, style)
+        generation_config: dict[str, Any] = {
+            "temperature": 0.7,
+            "maxOutputTokens": 300,
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [
                 {"role": "user", "parts": [{"text": wtf_explain_user_text(term)}]},
             ],
-            "generationConfig": {
-                "temperature": 0.9,
-                "maxOutputTokens": 500,
-            },
+            "generationConfig": generation_config,
         }
 
         url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
         body = json.dumps(payload)
         headers = {"Content-Type": "application/json"}
 
-        # Two quick retries before falling back to the secondary provider.
-        # Delays are short because the bot Lambda timeout budget is tight.
-        _retry_delays = (3, 8)
+        # Single retry for transient network/timeout failures. 503 (model globally
+        # overloaded) breaks immediately — retrying in 1s won't help and just delays fallback.
+        _retry_delays = (1,)
         last_exc: Exception | None = None
 
+        logger.info(
+            "Gemini explain request prepared",
+            extra={
+                "model": self._model,
+                "lang": lang,
+                "style": style,
+                "temperature": generation_config["temperature"],
+                "max_output_tokens": generation_config["maxOutputTokens"],
+                "thinking_config": thinking_config,
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+                "term_chars": len(term),
+            },
+        )
         for attempt, delay in enumerate(_retry_delays):
             try:
+                logger.info(
+                    "Gemini explain request started",
+                    extra={"model": self._model, "attempt": attempt + 1, "lang": lang, "style": style},
+                )
                 resp = _http.request("POST", url, body=body, headers=headers, retries=False)
             except (HTTPError, OSError) as exc:
                 logger.warning(
@@ -117,6 +155,8 @@ class GeminiClient:
                     extra={"status": resp.status, "attempt": attempt + 1, "body": body_text[:200]},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini API {resp.status}: {body_text[:200]}")
+                if resp.status == 503:
+                    break  # globally overloaded — fall back immediately, don't retry
                 if attempt < len(_retry_delays) - 1:
                     time.sleep(delay + random.uniform(0, 2))
                 continue
@@ -128,9 +168,25 @@ class GeminiClient:
 
             try:
                 data = json.loads(resp.data.decode("utf-8"))
-                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                candidate = data["candidates"][0]
+                text = candidate["content"]["parts"][0]["text"].strip()
+                logger.info(
+                    "Gemini explain response parsed",
+                    extra={
+                        "model": self._model,
+                        "attempt": attempt + 1,
+                        "response_chars": len(text),
+                        "finish_reason": candidate.get("finishReason"),
+                        "rpd_count": count,
+                        "rpd_limit": self.rpd_limit,
+                    },
+                )
+                return text, count
             except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
-                logger.exception("Gemini response parse error")
+                logger.exception(
+                    "Gemini response parse error",
+                    extra={"model": self._model, "attempt": attempt + 1, "status": resp.status},
+                )
                 raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
 
         raise last_exc or GeminiUnavailableError("Gemini unavailable after retries")
