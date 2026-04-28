@@ -82,6 +82,18 @@ GEMINI_API_BASE: str = os.environ.get("GEMINI_API_BASE", "https://generativelang
 WTF_GEMINI_MODEL: str | None = os.environ.get("WTF_GEMINI_MODEL")
 GEMINI_RPD_LIMIT: int = require_int("GEMINI_RPD_LIMIT")
 
+# ── /explain multimodal (Telegram file → Gemini) ─────────────────────────────
+# Max file size downloaded from Telegram and sent to Gemini (inlineData).
+MAX_EXPLAIN_MEDIA_BYTES: int = int(os.environ.get("MAX_EXPLAIN_MEDIA_BYTES", str(20 * 1024 * 1024)))
+# MIME types allowed for automatic document summarization (non-command uploads).
+DOCUMENT_AUTO_SUMMARY_MIMES: frozenset[str] = frozenset(
+    {
+        "application/pdf",
+        "text/plain",
+        "text/markdown",
+    }
+)
+
 # ── Chat → language mapping ──────────────────────────────────────────────────
 _CHAT_LANG_RAW: Any = require_json("CHAT_LANG_MAP")
 if not isinstance(_CHAT_LANG_RAW, dict):

@@ -29,7 +29,8 @@ TRANSLATIONS = {
             "• /stats — Group stats (admins).\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /wtf — Explain an IT term.\n"
-            "• /explain — Explain an IT term in neutral style.\n"
+            "• /explain — Explain an IT term in neutral style (reply to voice/photo supported).\n"
+            "• PDF or .txt/.md documents — auto summary when uploaded (≤20 MB).\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"
             "\n"
@@ -115,7 +116,16 @@ TRANSLATIONS = {
         "explain_usage": (
             "💡 <b>/explain</b> — friendly IT term explainer\n\n"
             "• <code>/explain &lt;term&gt;</code> — explain a term\n"
-            "• Reply to a message + <code>/explain</code> — explain that text"
+            "• Reply to a message + <code>/explain</code> — explain that text\n"
+            "• Reply to a <b>voice</b>, <b>audio</b>, or <b>photo</b> + <code>/explain</code> — "
+            "transcribe or describe (Gemini)"
+        ),
+        "explain_multimodal_gemini_required": (
+            "⚙️ Voice, image, and document features require <b>Gemini</b>. " "Configure GEMINI_API_KEY for this bot."
+        ),
+        "explain_media_file_too_large": "📦 File too large (max 20 MB). Try a smaller file.",
+        "explain_document_mime_not_supported": (
+            "📄 Automatic summary only supports <b>PDF</b> and <b>plain text</b> (.txt / .md) for now."
         ),
         "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
         "wtf_api_error": "😵 AI is not responding right now, try again later.",
@@ -183,7 +193,8 @@ TRANSLATIONS = {
             "• /stats — Топ статистикасы (админдер).\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
             "• /wtf — IT терминді түсіндіру.\n"
-            "• /explain — IT терминді бейтарап стильде түсіндіру.\n"
+            "• /explain — IT терминді бейтарап стильде түсіндіру (дауыс/фотоға жауап).\n"
+            "• PDF немесе .txt/.md құжат — жүктелгенде авто-қорытынды (≤20 МБ).\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
             "• /genquiz — Сұраныс бойынша quiz жасау (тек ADMIN_USER_ID).\n"
             "\n"
@@ -274,7 +285,15 @@ TRANSLATIONS = {
         "explain_usage": (
             "💡 <b>/explain</b> — IT терминін бейтарап стильде түсіндіру\n\n"
             "• <code>/explain &lt;термин&gt;</code> — түсіндіру\n"
-            "• Хабарламаға жауап + <code>/explain</code> — сол мәтінді түсіндіру"
+            "• Хабарламаға жауап + <code>/explain</code> — сол мәтінді түсіндіру\n"
+            "• <b>Дауыс/аудио/фото</b>ға жауап + <code>/explain</code> — транскрипция немесе сипаттама (Gemini)"
+        ),
+        "explain_multimodal_gemini_required": (
+            "⚙️ Дауыс, сурет және құжат үшін <b>Gemini</b> қажет. GEMINI_API_KEY баптаңыз."
+        ),
+        "explain_media_file_too_large": "📦 Файл тым үлкен (макс. 20 МБ). Кішірек файл жіберіңіз.",
+        "explain_document_mime_not_supported": (
+            "📄 Авто-қорытынды қазір тек <b>PDF</b> және <b>мәтін</b> (.txt / .md) үшін қолжетімді."
         ),
         "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
         "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
@@ -342,7 +361,8 @@ TRANSLATIONS = {
             "• /stats — 查看群统计（管理员）。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
             "• /wtf — 解释 IT 术语。\n"
-            "• /explain — 以常规风格解释 IT 术语。\n"
+            "• /explain — 以常规风格解释 IT 术语（可回复语音/图片）。\n"
+            "• 上传 PDF 或 .txt/.md — 自动摘要（≤20 MB）。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
             "• /genquiz — 按需生成 Quiz（仅 ADMIN_USER_ID）。\n"
             "\n"
@@ -426,8 +446,12 @@ TRANSLATIONS = {
         "explain_usage": (
             "💡 <b>/explain</b> — 常规风格解释 IT 术语\n\n"
             "• <code>/explain &lt;术语&gt;</code> — 解释术语\n"
-            "• 回复一条消息 + <code>/explain</code> — 解释该消息全文"
+            "• 回复一条消息 + <code>/explain</code> — 解释该消息全文\n"
+            "• 回复 <b>语音/音频/图片</b> + <code>/explain</code> — 转写或描述（需 Gemini）"
         ),
+        "explain_multimodal_gemini_required": "⚙️ 语音、图片与文档摘要需要配置 <b>Gemini</b>（GEMINI_API_KEY）。",
+        "explain_media_file_too_large": "📦 文件过大（最大 20 MB），请发送较小的文件。",
+        "explain_document_mime_not_supported": "📄 自动摘要目前仅支持 <b>PDF</b> 与 <b>纯文本</b>（.txt / .md）。",
         "wtf_not_configured": "⚙️ /wtf 当前不可用（API 未配置）。",
         "wtf_api_error": "😵 AI 当前无响应，请稍后重试。",
         "wtf_unexpected_error": "😵 出现未知错误，请稍后重试。",
@@ -489,7 +513,8 @@ TRANSLATIONS = {
             "• /stats — статистика группы (для админов).\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
             "• /wtf — объяснить IT-термин.\n"
-            "• /explain — объяснить IT-термин в нейтральном стиле.\n"
+            "• /explain — объяснить IT-термин в нейтральном стиле (ответ на голос/фото).\n"
+            "• PDF или .txt/.md — авто-сводка при загрузке (≤20 МБ).\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
             "• /genquiz — сгенерировать Quiz по запросу (только ADMIN_USER_ID).\n"
             "\n"
@@ -576,7 +601,15 @@ TRANSLATIONS = {
         "explain_usage": (
             "💡 <b>/explain</b> — дружелюбное объяснение IT-термина\n\n"
             "• <code>/explain &lt;термин&gt;</code> — объяснить\n"
-            "• Ответьте на сообщение + <code>/explain</code> — объяснить текст"
+            "• Ответьте на сообщение + <code>/explain</code> — объяснить текст\n"
+            "• Ответ на <b>голос/аудио/фото</b> + <code>/explain</code> — транскрипт или описание (Gemini)"
+        ),
+        "explain_multimodal_gemini_required": (
+            "⚙️ Голос, изображения и авто-сводки документов требуют <b>Gemini</b>. Настройте GEMINI_API_KEY."
+        ),
+        "explain_media_file_too_large": "📦 Файл слишком большой (макс. 20 МБ). Отправьте файл меньше.",
+        "explain_document_mime_not_supported": (
+            "📄 Авто-сводка пока только для <b>PDF</b> и <b>текста</b> (.txt / .md)."
         ),
         "wtf_not_configured": "⚙️ /wtf сейчас недоступен (API не настроен).",
         "wtf_api_error": "😵 AI сейчас не отвечает, попробуйте позже.",

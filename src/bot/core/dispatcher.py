@@ -61,7 +61,15 @@ class Context:
             self.message = update.get("message", {})
             self.user_data = self.message.get("from", {})
 
-        self.text = self.message.get("text", "").strip()
+        raw_text = (self.message.get("text") or "").strip()
+        caption = (self.message.get("caption") or "").strip()
+        if raw_text:
+            self.text = raw_text
+        elif caption.startswith("/"):
+            # Captioned commands (e.g. /start on a photo) route like normal text commands.
+            self.text = caption
+        else:
+            self.text = ""
         self.reply_to_message = self.message.get("reply_to_message")
 
     @property
@@ -155,6 +163,7 @@ class Dispatcher:
         self.callback_query_handler: HandlerFunc | None = None
         self.poll_answer_handler: HandlerFunc | None = None
         self.message_handler: HandlerFunc | None = None
+        self.document_message_handler: HandlerFunc | None = None
 
     def command(self, command_name: str):
         """Decorator to register a command handler (e.g. ``@dp.command("start")``)."""
@@ -189,6 +198,12 @@ class Dispatcher:
         """Decorator to register handler for plain text messages (non-command)."""
         self.message_handler = func
         logger.debug("Registered message handler")
+        return func
+
+    def on_document_message(self, func: HandlerFunc):
+        """Register handler for messages that include a ``document`` (after command routing)."""
+        self.document_message_handler = func
+        logger.debug("Registered document_message handler")
         return func
 
     def process_update(self, update: dict[str, Any]):
@@ -229,6 +244,11 @@ class Dispatcher:
                 self.command_handlers[command_key](ctx)
                 logger.info(f"Dispatching to command handler: {command_key}")
                 return
+
+        if ctx.message.get("document") and self.document_message_handler:
+            logger.info("Dispatching to document_message handler")
+            self.document_message_handler(ctx)
+            return
 
         if ctx.text and not ctx.text.startswith("/") and self.message_handler:
             logger.info("Dispatching to message handler")

@@ -184,6 +184,8 @@ def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
         msg = body["message"]
         if "new_chat_members" in msg:
             return True
+        if msg.get("document"):
+            return True
         text_content = msg.get("text") or ""
         if text_content.strip():
             return True

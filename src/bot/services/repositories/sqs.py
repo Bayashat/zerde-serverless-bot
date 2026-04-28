@@ -74,9 +74,13 @@ class SQSClient:
         term: str,
         lang: str,
         style: str,
+        file_id: str | None = None,
+        mime_type: str | None = None,
+        media_kind: str | None = None,
+        task_source: str = "explain_text",
     ) -> None:
-        """Send async explain task for /wtf or /explain processing."""
-        payload = {
+        """Send async explain task for /wtf, /explain, or multimodal / document-auto."""
+        payload: dict[str, object] = {
             "task_type": "PROCESS_EXPLAIN",
             "update_id": update_id,
             "chat_id": chat_id,
@@ -84,7 +88,14 @@ class SQSClient:
             "term": term,
             "lang": lang,
             "style": style,
+            "task_source": task_source,
         }
+        if file_id:
+            payload["file_id"] = file_id
+        if mime_type:
+            payload["mime_type"] = mime_type
+        if media_kind:
+            payload["media_kind"] = media_kind
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
@@ -96,6 +107,8 @@ class SQSClient:
                     "update_id": update_id,
                     "chat_id": chat_id,
                     "style": style,
+                    "task_source": task_source,
+                    "media_kind": media_kind,
                 },
             )
         except Exception as e:
