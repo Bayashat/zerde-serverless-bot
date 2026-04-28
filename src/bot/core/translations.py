@@ -29,7 +29,7 @@ TRANSLATIONS = {
             "• /stats — Group stats (admins).\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /wtf — Explain an IT term.\n"
-            "• /explain — Explain an IT term in neutral style (reply to voice/photo supported).\n"
+            "• /explain — Explain an IT term in neutral style (reply to voice/audio/photo supported).\n"
             "• PDF or .txt/.md documents — auto summary when uploaded (≤20 MB).\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"

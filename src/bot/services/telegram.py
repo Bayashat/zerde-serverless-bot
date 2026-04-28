@@ -335,7 +335,7 @@ class TelegramClient:
                 if content_len is not None and content_len > max_bytes:
                     raise ValueError(f"File too large: Content-Length {content_len} > max_bytes {max_bytes}")
 
-            chunks: list[bytes] = []
+            buffer = bytearray()
             total = 0
             while True:
                 chunk = resp.read(65536)
@@ -344,7 +344,7 @@ class TelegramClient:
                 total += len(chunk)
                 if total > max_bytes:
                     raise ValueError(f"File exceeds max_bytes={max_bytes}")
-                chunks.append(chunk)
-            return b"".join(chunks)
+                buffer.extend(chunk)
+            return bytes(buffer)
         finally:
             resp.release_conn()

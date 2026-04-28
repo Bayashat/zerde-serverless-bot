@@ -244,6 +244,9 @@ class Dispatcher:
                 self.command_handlers[command_key](ctx)
                 logger.info(f"Dispatching to command handler: {command_key}")
                 return
+            # Keep command behavior consistent: unknown commands are ignored and
+            # must not fall through into document auto-summary handling.
+            return
 
         if ctx.message.get("document") and self.document_message_handler:
             logger.info("Dispatching to document_message handler")

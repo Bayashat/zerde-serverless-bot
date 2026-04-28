@@ -83,8 +83,9 @@ WTF_GEMINI_MODEL: str | None = os.environ.get("WTF_GEMINI_MODEL")
 GEMINI_RPD_LIMIT: int = require_int("GEMINI_RPD_LIMIT")
 
 # ── /explain multimodal (Telegram file → Gemini) ─────────────────────────────
-# Max file size downloaded from Telegram and sent to Gemini (inlineData).
-MAX_EXPLAIN_MEDIA_BYTES: int = int(os.environ.get("MAX_EXPLAIN_MEDIA_BYTES", str(20 * 1024 * 1024)))
+# Limit is for raw Telegram bytes. Gemini inlineData uses base64 (~33% bigger) plus
+# JSON envelope, so keep this lower than any upstream request-body limits.
+MAX_EXPLAIN_MEDIA_BYTES: int = int(os.environ.get("MAX_EXPLAIN_MEDIA_BYTES", str(15 * 1024 * 1024)))
 # MIME types allowed for automatic document summarization (non-command uploads).
 DOCUMENT_AUTO_SUMMARY_MIMES: frozenset[str] = frozenset(
     {
