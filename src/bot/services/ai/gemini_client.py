@@ -33,10 +33,10 @@ _http_multimodal = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connec
 
 
 def _thinking_config_for_model(model: str) -> dict[str, Any] | None:
-    """Disable Gemini thinking for short plain-text explanations (latency > benefit)."""
-    if model.startswith("gemini-2.5"):
+    """Disable Gemini thinking for short bot responses to reduce latency variance."""
+    if model.startswith("gemini-2.5") or model.startswith("gemini-3."):
         return {"thinkingBudget": 0}
-    # gemini-3.x flash/flash-lite: thinking is off by default — no config needed.
+    # Keep unset for unknown model families to avoid sending unsupported fields.
     return None
 
 
