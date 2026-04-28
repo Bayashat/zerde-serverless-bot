@@ -11,6 +11,7 @@ from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.ai.deepseek_client import DeepSeekAPIError, DeepSeekClient, DeepSeekRateLimitError
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
+from services.ai.telegram_html import normalize_llm_output_for_telegram_html
 from services.ai.wtf_prompts import WTFPromptStyle
 from services.explain_multimodal import extract_reply_media
 from services.repositories.explain_tasks import ExplainTaskRepository
@@ -135,7 +136,8 @@ def _fallback_explain_and_reply(
 
     intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
     intro = get_translated_text(intro_key, lang)
-    send_reply(f"{intro}\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang))
+    explanation_html = normalize_llm_output_for_telegram_html(explanation)
+    send_reply(f"{intro}\n<blockquote>{explanation_html}</blockquote>" + _build_rpd_footer(lang))
 
 
 def _execute_explain_and_reply(
@@ -169,7 +171,8 @@ def _execute_explain_and_reply(
             return
         intro_key = "wtf_fallback_takeover_intro" if style == "angry" else "explain_fallback_takeover_intro"
         intro = get_translated_text(intro_key, lang)
-        send_reply(f"{intro}\n\n<blockquote>{explanation}</blockquote>" + _build_rpd_footer(lang))
+        explanation_html = normalize_llm_output_for_telegram_html(explanation)
+        send_reply(f"{intro}\n\n<blockquote>{explanation_html}</blockquote>" + _build_rpd_footer(lang))
         return
 
     if gemini and not fallback:
@@ -181,7 +184,8 @@ def _execute_explain_and_reply(
         except GeminiUnavailableError:
             send_reply(get_translated_text("wtf_api_error", lang))
             return
-        send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
+        explanation_html = normalize_llm_output_for_telegram_html(explanation)
+        send_reply("<blockquote>" + explanation_html + "</blockquote>" + _build_rpd_footer(lang, used_count))
         return
 
     assert gemini is not None and fallback is not None
@@ -208,7 +212,8 @@ def _execute_explain_and_reply(
         )
         return
 
-    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
+    explanation_html = normalize_llm_output_for_telegram_html(explanation)
+    send_reply("<blockquote>" + explanation_html + "</blockquote>" + _build_rpd_footer(lang, used_count))
 
 
 def _execute_multimodal_explain_and_reply(
@@ -268,7 +273,8 @@ def _execute_multimodal_explain_and_reply(
         send_reply(get_translated_text("wtf_api_error", lang))
         return
 
-    send_reply("<blockquote>" + explanation + "</blockquote>" + _build_rpd_footer(lang, used_count))
+    explanation_html = normalize_llm_output_for_telegram_html(explanation)
+    send_reply("<blockquote>" + explanation_html + "</blockquote>" + _build_rpd_footer(lang, used_count))
 
 
 def _enqueue_term_explain(
