@@ -59,75 +59,97 @@ class QuizRepository:
             return None
 
     def update_score_correct(self, chat_id: str, user_id: str, first_name: str, points: int = 1) -> None:
-        """Update user score for a correct answer with streak logic."""
+        """Update user score for a correct answer with streak logic.
+
+        Atomic conditional write prevents double-counting on duplicate poll_answer events.
+        """
         today = _today_almaty()
         yesterday = _yesterday_almaty()
         current = self.get_user_score(chat_id, user_id)
 
-        if current and current.get("last_answered_date") == today:
-            return  # Already answered today
-
-        if current and current.get("last_correct_date") == today:
-            return  # Already counted a correct answer today
-
         if current and current.get("last_correct_date") == yesterday:
-            new_streak = current.get("current_streak", 0) + 1
+            new_streak = int(current.get("current_streak", 0)) + 1
         else:
             new_streak = 1
-
-        best_streak = max(new_streak, (current or {}).get("best_streak", 0))
-        new_score = (current or {}).get("total_score", 0) + points
+        best_streak = max(new_streak, int((current or {}).get("best_streak", 0)))
 
         try:
-            self._table.put_item(
-                Item={
-                    "PK": f"SCORE#{chat_id}",
-                    "SK": f"USER#{user_id}",
-                    "total_score": new_score,
-                    "current_streak": new_streak,
-                    "best_streak": best_streak,
-                    "last_correct_date": today,
-                    "last_answered_date": today,
-                    "first_name": first_name,
-                }
+            self._table.update_item(
+                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
+                UpdateExpression=(
+                    "SET total_score = if_not_exists(total_score, :zero) + :pts,"
+                    "    week_score = if_not_exists(week_score, :zero) + :pts,"
+                    "    current_streak = :streak,"
+                    "    best_streak = :best,"
+                    "    last_correct_date = :today,"
+                    "    last_answered_date = :today,"
+                    "    first_name = :name"
+                ),
+                ConditionExpression=("attribute_not_exists(last_answered_date) OR last_answered_date <> :today"),
+                ExpressionAttributeValues={
+                    ":zero": 0,
+                    ":pts": points,
+                    ":streak": new_streak,
+                    ":best": best_streak,
+                    ":today": today,
+                    ":name": first_name,
+                },
             )
+            logger.info("Correct answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "points": points})
         except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.info("Duplicate poll_answer ignored", extra={"user_id": user_id, "chat_id": chat_id})
+                return
             logger.error("Failed to update score (correct)", extra={"error": str(e)})
             raise
 
     def update_score_wrong(self, chat_id: str, user_id: str, first_name: str) -> None:
-        """Update user record for a wrong answer — reset streak."""
+        """Update user record for a wrong answer — reset streak.
+
+        Uses if_not_exists to avoid a pre-read; conditional write blocks duplicates.
+        """
         today = _today_almaty()
-        current = self.get_user_score(chat_id, user_id)
-
-        if current and current.get("last_answered_date") == today:
-            return  # Already answered today
-
         try:
-            self._table.put_item(
-                Item={
-                    "PK": f"SCORE#{chat_id}",
-                    "SK": f"USER#{user_id}",
-                    "total_score": (current or {}).get("total_score", 0),
-                    "current_streak": 0,
-                    "best_streak": (current or {}).get("best_streak", 0),
-                    "last_correct_date": (current or {}).get("last_correct_date", ""),
-                    "last_answered_date": today,
-                    "first_name": first_name,
-                }
+            self._table.update_item(
+                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
+                UpdateExpression=(
+                    "SET total_score = if_not_exists(total_score, :zero),"
+                    "    week_score = if_not_exists(week_score, :zero),"
+                    "    current_streak = :zero,"
+                    "    best_streak = if_not_exists(best_streak, :zero),"
+                    "    last_answered_date = :today,"
+                    "    first_name = :name,"
+                    "    last_correct_date = if_not_exists(last_correct_date, :empty)"
+                ),
+                ConditionExpression=("attribute_not_exists(last_answered_date) OR last_answered_date <> :today"),
+                ExpressionAttributeValues={
+                    ":zero": 0,
+                    ":today": today,
+                    ":name": first_name,
+                    ":empty": "",
+                },
             )
+            logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id})
         except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.info("Duplicate poll_answer ignored", extra={"user_id": user_id, "chat_id": chat_id})
+                return
             logger.error("Failed to update score (wrong)", extra={"error": str(e)})
             raise
 
     def get_leaderboard(self, chat_id: str) -> list[dict[str, Any]]:
-        """Get all user scores for a chat, sorted by total_score descending."""
+        """Get all user scores for a chat, sorted by week_score descending."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
-            return sorted(items, key=lambda x: x.get("total_score", 0), reverse=True)
+            query_kwargs: dict = {"KeyConditionExpression": Key("PK").eq(f"SCORE#{chat_id}")}
+            items: list[dict[str, Any]] = []
+            while True:
+                resp = self._table.query(**query_kwargs)
+                items.extend(resp.get("Items", []))
+                last_key = resp.get("LastEvaluatedKey")
+                if not last_key:
+                    break
+                query_kwargs["ExclusiveStartKey"] = last_key
+            return sorted(items, key=lambda x: x.get("week_score", 0), reverse=True)
         except ClientError as e:
             logger.error("Failed to get leaderboard", extra={"error": str(e)})
             return []

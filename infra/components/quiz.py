@@ -19,7 +19,7 @@ _LANG_SCHEDULE: dict[str, list[tuple[int, int]]] = {
     "ru": [(8, 4)],  # 08:04 UTC
 }
 
-# Language → (hour_utc, minute_utc) for Sunday evening leaderboard
+# Language → (hour_utc, minute_utc) for Friday evening leaderboard
 _LEADERBOARD_SCHEDULE: dict[str, tuple[int, int]] = {
     "kk": (13, 0),  # 13:00 UTC = 18:00 Almaty
     "zh": (13, 0),  # 13:00 UTC
@@ -166,7 +166,7 @@ class QuizConstruct(Construct):
                         )
                     )
 
-            # Sunday leaderboard (18:00 Almaty = 13:00 UTC, cron week_day=SUN)
+            # Friday leaderboard (18:00 Almaty = 13:00 UTC, cron week_day=FRI)
             for lang, (hour_utc, minute_utc) in _LEADERBOARD_SCHEDULE.items():
                 chat_ids = chats.get(lang, [])
                 if not chat_ids:
@@ -176,11 +176,11 @@ class QuizConstruct(Construct):
                     self,
                     f"{CONSTRUCT_PREFIX}LeaderboardRule{lang.upper()}{slot}",
                     rule_name=f"{RESOURCE_PREFIX}-leaderboard-{lang}-{slot}-{env_name}",
-                    description=f"Send weekly leaderboard at {hour_utc:02d}:{minute_utc:02d} UTC on Sundays for {lang}",
+                    description=f"Send weekly leaderboard at {hour_utc:02d}:{minute_utc:02d} UTC on Fridays for {lang}",
                     schedule=events.Schedule.cron(
                         minute=str(minute_utc),
                         hour=str(hour_utc),
-                        week_day="SUN",
+                        week_day="FRI",
                         month="*",
                         year="*",
                     ),

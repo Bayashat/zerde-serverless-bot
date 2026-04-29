@@ -153,6 +153,101 @@ class TestQuizGeneratorValidation:
         assert result is None
 
 
+_BANKED_QUESTION = {
+    "question": "What does S3 stand for?",
+    "options": ["Simple Storage Service", "Secure Server System", "Scalable SQL Service", "Static Site Storage"],
+    "correct_option_index": 0,
+    "explanation": "S3 = Simple Storage Service.",
+    "difficulty": "easy",
+    "points": 1,
+    "source_label": "AWS CLF-C02 Practice Exam",
+}
+
+
+class TestTranslateQuestion:
+    def test_en_lang_returns_original_unchanged(self):
+        gen = _make_generator()
+        result = gen.translate_question(_BANKED_QUESTION, "en")
+        assert result is _BANKED_QUESTION
+
+    def test_successful_translation_merges_non_text_fields(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = {
+            "question": "S3 нені білдіреді?",
+            "options": ["Қарапайым сақтау қызметі", "Қауіпсіз сервер", "SQL қызметі", "Статикалық сайт"],
+            "explanation": "S3 = Қарапайым Сақтау Қызметі.",
+        }
+
+        result = gen.translate_question(_BANKED_QUESTION, "kk")
+
+        assert result is not None
+        assert result["question"] == "S3 нені білдіреді?"
+        assert len(result["options"]) == 4
+        # Non-text fields preserved from original
+        assert result["correct_option_index"] == 0
+        assert result["difficulty"] == "easy"
+        assert result["points"] == 1
+        assert result["source_label"] == "AWS CLF-C02 Practice Exam"
+
+    def test_non_dict_provider_response_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = "not a dict"
+
+        result = gen.translate_question(_BANKED_QUESTION, "ru")
+        assert result is None
+
+    def test_provider_exception_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.side_effect = Exception("provider down")
+
+        result = gen.translate_question(_BANKED_QUESTION, "kk")
+        assert result is None
+
+    def test_translated_question_too_long_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = {
+            "question": "Q" * 301,
+            "options": ["A", "B", "C", "D"],
+            "explanation": "E.",
+        }
+
+        result = gen.translate_question(_BANKED_QUESTION, "kk")
+        assert result is None
+
+    def test_translated_option_too_long_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = {
+            "question": "Valid?",
+            "options": ["A" * 101, "B", "C", "D"],
+            "explanation": "E.",
+        }
+
+        result = gen.translate_question(_BANKED_QUESTION, "zh")
+        assert result is None
+
+    def test_wrong_option_count_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = {
+            "question": "Valid?",
+            "options": ["A", "B", "C"],  # only 3
+            "explanation": "E.",
+        }
+
+        result = gen.translate_question(_BANKED_QUESTION, "ru")
+        assert result is None
+
+    def test_empty_option_returns_none(self):
+        gen = _make_generator()
+        gen._provider.generate_json.return_value = {
+            "question": "Valid?",
+            "options": ["A", "", "C", "D"],
+            "explanation": "E.",
+        }
+
+        result = gen.translate_question(_BANKED_QUESTION, "kk")
+        assert result is None
+
+
 class TestCategoryPool:
     def test_category_pool_has_expected_entries(self):
         expected = {
@@ -165,5 +260,6 @@ class TestCategoryPool:
             "data-structures",
             "database",
             "devops",
+            "networking",
         }
         assert set(CATEGORY_POOL) == expected
