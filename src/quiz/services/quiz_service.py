@@ -482,7 +482,9 @@ class QuizService:
         if include_rpd_footer:
             remaining = result.get("rpd_remaining")
             total = result.get("rpd_total")
-            if isinstance(remaining, int) and isinstance(total, int):
+            # Only show RPD footer when Gemini was used (remaining > 0).
+            # remaining == 0 means DeepSeek fallback handled the request — no footer.
+            if isinstance(remaining, int) and isinstance(total, int) and remaining > 0:
                 footer = get_translated_text("genquiz_rpd_footer", lang, remaining=remaining, total=total)
                 self._sender.send_message(chat_id, footer, reply_to_message_id=reply_to_message_id)
         return result

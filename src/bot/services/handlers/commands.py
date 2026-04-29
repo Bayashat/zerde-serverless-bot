@@ -1,7 +1,6 @@
 """Simple bot commands: /start, /help, /support, /ping, /stats, /genquiz."""
 
 from core.config import (
-    ADMIN_USER_ID,
     QUIZ_LAMBDA_NAME,
     VALID_DIFFICULTIES,
     VALID_LANGS,
@@ -114,29 +113,8 @@ def handle_stats(ctx: Context) -> None:
         )
 
 
-# Topics that are served from the pre-built question bank; available to all users.
-# Keep in sync with _GENQUIZ_TOPIC_TO_BANKED in src/quiz/services/quiz_service.py.
-_BANKED_TOPICS: frozenset[str] = frozenset(
-    {
-        "cloud",
-        "aws",
-        "aws-clf",
-        "clf",
-        "clf-c02",
-        "aws-clf-c02",
-        "dva",
-        "aws-dva",
-        "dva-c02",
-        "aws-dva-c02",
-    }
-)
-
-
 def handle_quiz_generate(ctx: Context) -> None:
-    """Generate and send an on-demand quiz poll to the current chat.
-
-    Banked topics (cloud/aws/clf/dva) are open to all users.
-    AI-generated topics require admin access.
+    """Generate and send an on-demand quiz poll to the current chat (open to all users).
 
     Usage: ``/genquiz <topic>`` [, ``<difficulty>`` [, ``<lang>``]] — fixed order;
     omitted difficulty defaults to ``medium``, omitted lang to this chat's default.
@@ -153,11 +131,6 @@ def handle_quiz_generate(ctx: Context) -> None:
         return
 
     topic, difficulty, lang = parsed
-
-    # Admin-only gate for AI-generated topics; banked topics are open to everyone
-    if topic.lower().strip() not in _BANKED_TOPICS and ctx.user_id != ADMIN_USER_ID:
-        react_genquiz_processing(ctx, "🤡")
-        return
 
     if lang not in VALID_LANGS:
         react_genquiz_processing(ctx, "🤡")
