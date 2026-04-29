@@ -1,7 +1,6 @@
 """Simple bot commands: /start, /help, /support, /ping, /stats, /genquiz."""
 
 from core.config import (
-    ADMIN_USER_ID,
     QUIZ_LAMBDA_NAME,
     VALID_DIFFICULTIES,
     VALID_LANGS,
@@ -115,15 +114,11 @@ def handle_stats(ctx: Context) -> None:
 
 
 def handle_quiz_generate(ctx: Context) -> None:
-    """Admin-only: generate and send an on-demand quiz poll to the current chat.
+    """Generate and send an on-demand quiz poll to the current chat (open to all users).
 
     Usage: ``/genquiz <topic>`` [, ``<difficulty>`` [, ``<lang>``]] — fixed order;
     omitted difficulty defaults to ``medium``, omitted lang to this chat's default.
     """
-    if ctx.user_id != ADMIN_USER_ID:
-        react_genquiz_processing(ctx, "🤡")
-        return
-
     if not QUIZ_LAMBDA_NAME or not ctx.lambda_invoker:
         react_genquiz_processing(ctx, "🤡")
         ctx.reply(get_translated_text("genquiz_lambda_not_configured", ctx.lang_code), ctx.message_id)

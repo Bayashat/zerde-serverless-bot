@@ -235,6 +235,36 @@ class QuizRepository:
         except Exception as e:
             logger.error("Failed to save question queue", extra={"error": str(e)})
 
+    # ── Genquiz (on-demand) question queue — separate from daily rotation ─────
+
+    def get_genquiz_question_queue(self, category: str, chat_id: str) -> list[str]:
+        """Read the per-chat on-demand genquiz question queue (independent of daily rotation)."""
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"META#genquiz_q_queue#{category}#{chat_id}", "SK": "LATEST"},
+                ConsistentRead=False,
+            )
+            item = resp.get("Item")
+            if item and "remaining" in item:
+                return list(item["remaining"])
+            return []
+        except Exception as e:
+            logger.error("Failed to get genquiz question queue", extra={"error": str(e)})
+            return []
+
+    def save_genquiz_question_queue(self, category: str, chat_id: str, remaining: list[str]) -> None:
+        """Write the per-chat on-demand genquiz question queue."""
+        try:
+            self._table.put_item(
+                Item={
+                    "PK": f"META#genquiz_q_queue#{category}#{chat_id}",
+                    "SK": "LATEST",
+                    "remaining": remaining,
+                }
+            )
+        except Exception as e:
+            logger.error("Failed to save genquiz question queue", extra={"error": str(e)})
+
     def save_quiz_record(
         self,
         chat_id: str,

@@ -62,6 +62,7 @@ class QuizSender:
         options: list[str],
         correct_option_id: int,
         explanation: str | None = None,
+        question_parse_mode: str | None = None,
     ) -> dict[str, Any] | None:
         """Send a quiz poll to a chat. Returns the Telegram response result or None on failure."""
         url = f"{self._base_url}/sendPoll"
@@ -77,6 +78,8 @@ class QuizSender:
         }
         if explanation:
             payload["explanation"] = explanation[:200]  # Telegram limit
+        if question_parse_mode:
+            payload["question_parse_mode"] = question_parse_mode
 
         try:
             resp = http.request(

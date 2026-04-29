@@ -36,6 +36,21 @@ _BANK_SOURCE_LABELS: dict[str, str] = {
     "aws-dva-c02": "AWS Developer Associate Practice Exam",
 }
 
+# Topic aliases that /genquiz should serve from the bank instead of AI.
+# Keys are lowercased topic strings; values are the banked category name.
+_GENQUIZ_TOPIC_TO_BANKED: dict[str, str] = {
+    "cloud": "cloud",
+    "aws": "cloud",
+    "aws-clf": "cloud",
+    "clf": "cloud",
+    "clf-c02": "cloud",
+    "aws-clf-c02": "cloud",
+    "dva": "cloud",
+    "aws-dva": "cloud",
+    "dva-c02": "cloud",
+    "aws-dva-c02": "cloud",
+}
+
 
 class QuizService:
     """Orchestrates quiz operations (daily quiz and leaderboards)."""
@@ -210,6 +225,47 @@ class QuizService:
         self._repo.save_question_queue(category, chat_id, remaining)
         return None
 
+    def _pick_banked_question_for_genquiz(self, category: str, chat_id: str, difficulty: str) -> dict | None:
+        """Pick the next on-demand question from the bank using a genquiz-specific per-chat queue.
+
+        Uses a different DynamoDB key and shuffle seed from the daily rotation so that
+        genquiz picks are unlikely to collide with upcoming daily questions.
+        Daily category queue is never read or written by this method.
+        """
+        sources = _BANKED_CATEGORIES[category]
+        remaining = self._repo.get_genquiz_question_queue(category, chat_id)
+        if not remaining:
+            all_keys = self._repo.get_bank_question_ids(category, sources)
+            if not all_keys:
+                return None
+            # Different seed from daily ("genquiz:" prefix) → different shuffle order
+            rng = random.Random(f"genquiz:{chat_id}::{len(all_keys)}")
+            remaining = rng.sample(all_keys, len(all_keys))
+            logger.info(
+                "New genquiz bank round",
+                extra={"chat_id": chat_id, "category": category, "total": len(remaining)},
+            )
+
+        while remaining:
+            key = remaining.pop(0)
+            source, q_uuid = key.split("::", 1)
+            item = self._repo.get_bank_question(category, source, q_uuid)
+            if item:
+                self._repo.save_genquiz_question_queue(category, chat_id, remaining)
+                return {
+                    "question": item["question"],
+                    "options": list(item["options"]),
+                    "correct_option_index": int(item["correct_option_id"]),
+                    "explanation": item.get("explanation", ""),
+                    "difficulty": difficulty,
+                    "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                    "source_label": _BANK_SOURCE_LABELS.get(source, source),
+                }
+            logger.warning("Genquiz bank question missing, skipping", extra={"uuid": q_uuid})
+
+        self._repo.save_genquiz_question_queue(category, chat_id, remaining)
+        return None
+
     def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
         """Generate and send the daily quiz to each chat with independent category rotation."""
         if not chat_ids:
@@ -333,12 +389,64 @@ class QuizService:
         }
 
     def process_on_demand_quiz(self, chat_id: str, lang: str, topic: str, difficulty: str) -> dict:
-        """Generate and send a single on-demand quiz to one chat."""
+        """Generate and send a single on-demand quiz to one chat.
+
+        For topics that map to a banked category (e.g. "cloud", "aws"), questions are drawn
+        from the question bank using a per-chat genquiz queue that is independent from the
+        daily rotation.  The RPD footer is omitted for bank-sourced questions (no AI used).
+        """
         logger.info(
             "On-demand quiz requested",
             extra={"chat_id": chat_id, "topic": topic, "lang": lang, "difficulty": difficulty},
         )
 
+        # ── Bank path ────────────────────────────────────────────────────────
+        banked_category = _GENQUIZ_TOPIC_TO_BANKED.get(topic.lower().strip())
+        if banked_category:
+            banked = self._pick_banked_question_for_genquiz(banked_category, str(chat_id), difficulty)
+            if banked:
+                question = banked
+                if lang != "en":
+                    translated = self._generator.translate_question(banked, lang)
+                    if translated:
+                        question = translated
+                    else:
+                        logger.warning(
+                            "Genquiz translation failed, using English original",
+                            extra={"chat_id": chat_id, "lang": lang},
+                        )
+                # Prepend source label inline in the question text (no separate announcement)
+                source_label = question.get("source_label", "")
+                if source_label:
+                    prefix = f"<b>📚 {source_label}</b>\n\n"
+                    q_text = question["question"][: 300 - len(prefix)]
+                    poll_question = prefix + q_text
+                else:
+                    poll_question = question["question"]
+                poll_result = self._sender.send_quiz_poll(
+                    chat_id=chat_id,
+                    question=poll_question,
+                    options=question["options"],
+                    correct_option_id=question["correct_option_index"],
+                    explanation=question.get("explanation"),
+                    question_parse_mode="HTML",
+                )
+                if poll_result:
+                    logger.info(
+                        "Genquiz sent from bank",
+                        extra={"chat_id": chat_id, "category": banked_category, "lang": lang},
+                    )
+                    # No rpd_payload — bank questions don't consume AI quota
+                    return {"status": "ok", "sent": 1, "total": 1}
+                logger.error("Failed to send genquiz poll from bank", extra={"chat_id": chat_id})
+                return {"status": "error", "reason": "failed to send poll"}
+            # Bank exhausted (shouldn't happen in practice) — fall through to AI
+            logger.warning(
+                "Genquiz bank empty for topic, falling back to AI",
+                extra={"chat_id": chat_id, "topic": topic},
+            )
+
+        # ── AI path ──────────────────────────────────────────────────────────
         question = self._generator.generate_question(topic, lang, difficulty)
         if not question:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
@@ -353,7 +461,7 @@ class QuizService:
         )
 
         if poll_result:
-            logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
+            logger.info("On-demand quiz sent via AI", extra={"chat_id": chat_id, "topic": topic})
             return {"status": "ok", "sent": 1, "total": 1, **self._rpd_payload()}
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
@@ -374,7 +482,9 @@ class QuizService:
         if include_rpd_footer:
             remaining = result.get("rpd_remaining")
             total = result.get("rpd_total")
-            if isinstance(remaining, int) and isinstance(total, int):
+            # Only show RPD footer when Gemini was used (remaining > 0).
+            # remaining == 0 means DeepSeek fallback handled the request — no footer.
+            if isinstance(remaining, int) and isinstance(total, int) and remaining > 0:
                 footer = get_translated_text("genquiz_rpd_footer", lang, remaining=remaining, total=total)
                 self._sender.send_message(chat_id, footer, reply_to_message_id=reply_to_message_id)
         return result

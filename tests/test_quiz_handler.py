@@ -102,13 +102,15 @@ class TestHandleQuizstats:
         quiz_repo = MagicMock()
         quiz_repo.get_user_score.return_value = {
             "total_score": 10,
+            "week_score": 4,
+            "season_wins": 1,
             "current_streak": 3,
             "best_streak": 5,
         }
         quiz_repo.get_leaderboard.return_value = [
-            {"SK": "USER#111", "total_score": 20},
-            {"SK": "USER#456", "total_score": 10},
-            {"SK": "USER#789", "total_score": 5},
+            {"SK": "USER#111", "week_score": 8},
+            {"SK": "USER#456", "week_score": 4},
+            {"SK": "USER#789", "week_score": 1},
         ]
         ctx = self._make_ctx(-100123, 456, quiz_repo)
         ctx.bot.get_chat.return_value = {
@@ -125,9 +127,11 @@ class TestHandleQuizstats:
         call_text = ctx.bot.send_message.call_args[0][1]
         assert "Test Group" in call_text
         assert "@testgroup" in call_text
-        assert "10</b> points" in call_text
-        assert "3</b> days" in call_text
-        assert "#2</b>" in call_text
+        assert "4 pts" in call_text  # week_score
+        assert "10 pts" in call_text  # total_score (all-time)
+        assert "Season wins: <b>1</b>" in call_text
+        assert "3</b> days" in call_text  # streak
+        assert "#2</b>" in call_text  # rank
 
     def test_shows_no_data_for_new_user(self):
         quiz_repo = MagicMock()
