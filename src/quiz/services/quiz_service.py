@@ -415,14 +415,21 @@ class QuizService:
                             "Genquiz translation failed, using English original",
                             extra={"chat_id": chat_id, "lang": lang},
                         )
-                announcement = self.build_announcement(lang, difficulty, source_label=question.get("source_label"))
-                self._sender.send_message(str(chat_id), announcement)
+                # Prepend source label inline in the question text (no separate announcement)
+                source_label = question.get("source_label", "")
+                if source_label:
+                    prefix = f"<b>📚 {source_label}</b>\n\n"
+                    q_text = question["question"][: 300 - len(prefix)]
+                    poll_question = prefix + q_text
+                else:
+                    poll_question = question["question"]
                 poll_result = self._sender.send_quiz_poll(
                     chat_id=chat_id,
-                    question=question["question"],
+                    question=poll_question,
                     options=question["options"],
                     correct_option_id=question["correct_option_index"],
                     explanation=question.get("explanation"),
+                    question_parse_mode="HTML",
                 )
                 if poll_result:
                     logger.info(
