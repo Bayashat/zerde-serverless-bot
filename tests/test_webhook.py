@@ -53,6 +53,11 @@ def test_relevant_plain_text():
     assert is_event_relevant_to_bot(body) is True
 
 
+def test_is_relevant_document_only():
+    body = {"message": {"document": {"file_id": "AgADx"}, "chat": {"id": 1}}}
+    assert is_event_relevant_to_bot(body) is True
+
+
 def test_create_response():
     resp = create_response(200, {"message": "ok"})
     assert resp["statusCode"] == 200

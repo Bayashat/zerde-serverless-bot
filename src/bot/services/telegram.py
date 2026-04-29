@@ -5,13 +5,15 @@ import time
 from typing import Any
 
 import urllib3
-from core.config import KICK_BAN_DURATION_SECONDS, TELEGRAM_API_BASE, get_bot_token
+from core.config import KICK_BAN_DURATION_SECONDS, MAX_EXPLAIN_MEDIA_BYTES, TELEGRAM_API_BASE, get_bot_token
 from core.logger import LoggerAdapter, get_logger
 from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 http = urllib3.PoolManager(maxsize=4, timeout=urllib3.Timeout(total=10))
+# Longer timeout for Telegram file downloads (large PDFs under MAX_EXPLAIN_MEDIA_BYTES).
+_file_http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=10, read=120))
 
 
 class TelegramAPIError(Exception):
@@ -29,6 +31,7 @@ class TelegramClient:
     def __init__(self) -> None:
         self.bot_token = get_bot_token()
         self.api_base = f"{TELEGRAM_API_BASE}{self.bot_token}"
+        self._file_base_url = f"https://api.telegram.org/file/bot{self.bot_token}/"
         logger.info("TelegramClient initialized", extra={"api_base": TELEGRAM_API_BASE})
 
     def _post(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -302,3 +305,46 @@ class TelegramClient:
                 extra={"message_id": message_id, "error": str(e)},
             )
             raise
+
+    def get_file(self, file_id: str) -> dict[str, Any]:
+        """Resolve ``file_id`` via ``getFile``; result includes ``file_path`` for download."""
+        payload: dict[str, Any] = {"file_id": file_id}
+        result = self._post("getFile", payload)
+        return result.get("result", {})
+
+    def download_file(self, file_path: str, *, max_bytes: int = MAX_EXPLAIN_MEDIA_BYTES) -> bytes:
+        """Download a file from Telegram CDN using ``file_path`` from ``get_file``.
+
+        Raises:
+            TelegramAPIError: HTTP error from Telegram.
+            ValueError: reported or observed size exceeds ``max_bytes``.
+        """
+        url = f"{self._file_base_url}{file_path}"
+        resp = _file_http.request("GET", url, preload_content=False, retries=False)
+        try:
+            if resp.status >= 400:
+                body = resp.data.decode("utf-8", errors="replace") if resp.data else ""
+                raise TelegramAPIError(resp.status, body)
+
+            cl = resp.headers.get("Content-Length")
+            if cl is not None:
+                try:
+                    content_len = int(cl)
+                except ValueError:
+                    content_len = None
+                if content_len is not None and content_len > max_bytes:
+                    raise ValueError(f"File too large: Content-Length {content_len} > max_bytes {max_bytes}")
+
+            buffer = bytearray()
+            total = 0
+            while True:
+                chunk = resp.read(65536)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > max_bytes:
+                    raise ValueError(f"File exceeds max_bytes={max_bytes}")
+                buffer.extend(chunk)
+            return bytes(buffer)
+        finally:
+            resp.release_conn()

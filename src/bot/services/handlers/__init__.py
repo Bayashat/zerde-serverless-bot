@@ -20,6 +20,7 @@ from services.handlers.commands import (
     handle_stats,
     handle_support,
 )
+from services.handlers.explain_document import handle_document_auto_summary
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
 from services.handlers.wtf import handle_explain, handle_wtf, process_explain_task
@@ -60,6 +61,7 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("voteban")(handle_voteban_command)
     dp.command("wtf")(handle_wtf)
     dp.command("explain")(handle_explain)
+    dp.on_document_message(handle_document_auto_summary)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
     dp.command("genquiz")(handle_quiz_generate)
