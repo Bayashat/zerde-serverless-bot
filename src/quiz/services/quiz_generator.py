@@ -11,8 +11,10 @@ _QUESTION_MAX_LEN = 300
 
 DIFFICULTY_POINTS: dict[str, int] = {
     "easy": 1,
-    "medium": 2,
-    "hard": 3,
+    "easy_medium": 2,
+    "medium": 3,
+    "medium_hard": 4,
+    "hard": 5,
     "expert": 5,
 }
 
@@ -26,6 +28,7 @@ CATEGORY_POOL = [
     "data-structures",
     "database",
     "devops",
+    "networking",
 ]
 
 _LANG_NAMES = {
@@ -89,6 +92,90 @@ class QuizGenerator:
                 exc_info=True,
             )
             return None
+
+    def translate_question(self, question: dict, lang: str) -> dict | None:
+        """Translate a banked (English) question dict into *lang*.
+
+        Translates: question text, all 4 options, explanation.
+        Non-text fields (correct_option_index, difficulty, points, source_label) are
+        copied unchanged.
+
+        Returns the translated dict on success, or None if translation/validation fails
+        (caller should fall back to the original English question).
+        """
+        if lang == "en":
+            return question
+
+        lang_name = _LANG_NAMES.get(lang, lang)
+        prompt = (
+            f"Translate the following IT quiz question into {lang_name}.\n"
+            "Rules:\n"
+            "1. Keep well-known technical terms in English "
+            "(e.g. AWS, S3, EC2, IAM, VPC, Docker, Kubernetes, Python, SQL, API, CLI).\n"
+            "2. CRITICAL LENGTH LIMITS (hard Telegram API limits):\n"
+            "   - question: at most 300 characters.\n"
+            "   - Each option: at most 100 characters. Abbreviate aggressively if needed.\n"
+            "   - explanation: at most 200 characters.\n"
+            "3. Preserve the original meaning exactly — do NOT change the correct answer.\n"
+            "4. Respond ONLY with a JSON object in this exact format:\n"
+            '   {"question": "...", "options": ["opt1","opt2","opt3","opt4"], "explanation": "..."}\n\n'
+            "Source question (English):\n"
+            f"question: {question['question']}\n"
+            f"options: {question['options']}\n"
+            f"explanation: {question.get('explanation') or ''}"
+        )
+
+        try:
+            data = self._provider.generate_json(prompt, temperature=0.1)
+            if not isinstance(data, dict):
+                logger.warning(
+                    "Translation provider returned non-dict",
+                    extra={"lang": lang, "type": type(data).__name__},
+                )
+                return None
+            return self._validate_translation(data, question, lang)
+        except Exception:
+            logger.error(
+                "Question translation failed",
+                extra={"lang": lang},
+                exc_info=True,
+            )
+            return None
+
+    def _validate_translation(self, data: dict, original: dict, lang: str) -> dict | None:
+        """Validate translated content and merge with non-text original fields."""
+        q_text = (data.get("question") or "").strip()
+        options = data.get("options", [])
+        explanation = (data.get("explanation") or "").strip() or None
+
+        if not q_text or len(q_text) > _QUESTION_MAX_LEN:
+            logger.warning(
+                "Translated question empty or too long",
+                extra={"lang": lang, "length": len(q_text)},
+            )
+            return None
+
+        if not isinstance(options, list) or len(options) != 4:
+            logger.warning("Translated options count invalid", extra={"lang": lang})
+            return None
+
+        for i, opt in enumerate(options):
+            if not isinstance(opt, str) or not opt.strip():
+                logger.warning("Translated option empty", extra={"lang": lang, "index": i})
+                return None
+            if len(opt.strip()) > _OPTION_MAX_LEN:
+                logger.warning(
+                    "Translated option too long",
+                    extra={"lang": lang, "index": i, "length": len(opt.strip())},
+                )
+                return None
+
+        return {
+            **original,
+            "question": q_text,
+            "options": [opt.strip() for opt in options],
+            "explanation": explanation,
+        }
 
     def _validate(self, data: dict, category: str, lang: str, difficulty: str = "easy") -> dict | None:
         """Validate Gemini response shape and Telegram length limits."""
