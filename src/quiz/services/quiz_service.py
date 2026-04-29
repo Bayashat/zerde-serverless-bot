@@ -132,10 +132,17 @@ class QuizService:
                 if week_count >= _SEASON_LENGTH:
                     season_entries = self._repo.get_season_leaderboard(str(chat_id))
                     season_text = self.build_season_text(lang, season_entries)
-                    self._sender.send_message(str(chat_id), season_text)
-                    logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
-                    self._repo.reset_season_wins(str(chat_id))
-                    self._repo.reset_season_week_count(str(chat_id))
+                    season_result = self._sender.send_message(str(chat_id), season_text)
+                    if season_result:
+                        logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
+                        self._repo.reset_season_wins(str(chat_id))
+                        self._repo.reset_season_week_count(str(chat_id))
+                    else:
+                        failed.append({"chat_id": str(chat_id), "step": "send_season_message"})
+                        logger.error(
+                            "Failed to send season champion announcement",
+                            extra={"chat_id": chat_id},
+                        )
 
                 self._repo.reset_week_scores(str(chat_id))
             else:

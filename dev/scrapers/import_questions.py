@@ -40,7 +40,7 @@ def import_questions(
     category: str,
     dry_run: bool = False,
 ) -> None:
-    questions = json.loads(Path(json_path).read_text())
+    questions = json.loads(Path(json_path).read_text(encoding="utf-8"))
     pk = f"BANK#{category}#{source}"
 
     skipped_bad: list[str] = []

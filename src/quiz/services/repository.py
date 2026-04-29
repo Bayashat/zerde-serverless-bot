@@ -53,13 +53,23 @@ class QuizRepository:
         except Exception as e:
             logger.error("Failed to save category queue", extra={"error": str(e)})
 
+    def _query_all_pages(self, chat_id: str) -> list[dict[str, Any]]:
+        """Paginate through all DynamoDB items for a SCORE#{chat_id} partition."""
+        query_kwargs: dict = {"KeyConditionExpression": Key("PK").eq(f"SCORE#{chat_id}")}
+        items: list[dict[str, Any]] = []
+        while True:
+            resp = self._table.query(**query_kwargs)
+            items.extend(resp.get("Items", []))
+            last_key = resp.get("LastEvaluatedKey")
+            if not last_key:
+                break
+            query_kwargs["ExclusiveStartKey"] = last_key
+        return items
+
     def get_leaderboard(self, chat_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """Return top N users for a chat sorted by week_score descending."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
+            items = self._query_all_pages(chat_id)
             sorted_items = sorted(items, key=lambda x: x.get("week_score", 0), reverse=True)
             return sorted_items[:limit]
         except Exception as e:
@@ -69,16 +79,20 @@ class QuizRepository:
     def reset_week_scores(self, chat_id: str) -> None:
         """Reset week_score to 0 for all users in a chat after the leaderboard is sent."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
+            items = self._query_all_pages(chat_id)
             for item in items:
-                self._table.update_item(
-                    Key={"PK": item["PK"], "SK": item["SK"]},
-                    UpdateExpression="SET week_score = :zero",
-                    ExpressionAttributeValues={":zero": 0},
-                )
+                for attempt in range(3):
+                    try:
+                        self._table.update_item(
+                            Key={"PK": item["PK"], "SK": item["SK"]},
+                            UpdateExpression="SET week_score = :zero",
+                            ExpressionAttributeValues={":zero": 0},
+                        )
+                        break
+                    except Exception:
+                        if attempt == 2:
+                            raise
+                        time.sleep(0.1 * (2**attempt))
             logger.info("Week scores reset", extra={"chat_id": chat_id, "users": len(items)})
         except Exception as e:
             logger.error("Failed to reset week scores", extra={"chat_id": chat_id, "error": str(e)})
@@ -127,10 +141,7 @@ class QuizRepository:
     def get_season_leaderboard(self, chat_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """Return top N users sorted by season_wins descending (only users with ≥1 win)."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
+            items = self._query_all_pages(chat_id)
             active = [i for i in items if int(i.get("season_wins", 0)) > 0]
             return sorted(active, key=lambda x: int(x.get("season_wins", 0)), reverse=True)[:limit]
         except Exception as e:
@@ -140,16 +151,20 @@ class QuizRepository:
     def reset_season_wins(self, chat_id: str) -> None:
         """Reset season_wins to 0 for all users in a chat after the season announcement."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
+            items = self._query_all_pages(chat_id)
             for item in items:
-                self._table.update_item(
-                    Key={"PK": item["PK"], "SK": item["SK"]},
-                    UpdateExpression="SET season_wins = :zero",
-                    ExpressionAttributeValues={":zero": 0},
-                )
+                for attempt in range(3):
+                    try:
+                        self._table.update_item(
+                            Key={"PK": item["PK"], "SK": item["SK"]},
+                            UpdateExpression="SET season_wins = :zero",
+                            ExpressionAttributeValues={":zero": 0},
+                        )
+                        break
+                    except Exception:
+                        if attempt == 2:
+                            raise
+                        time.sleep(0.1 * (2**attempt))
             logger.info("Season wins reset", extra={"chat_id": chat_id, "users": len(items)})
         except Exception as e:
             logger.error("Failed to reset season wins", extra={"chat_id": chat_id, "error": str(e)})

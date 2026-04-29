@@ -127,6 +127,13 @@ class QuizGenerator:
 
         try:
             data = self._provider.generate_json(prompt, temperature=0.1)
+            if not isinstance(data, dict):
+                logger.warning(
+                    "Translation provider returned non-dict",
+                    extra={"lang": lang, "type": type(data).__name__},
+                )
+                return None
+            return self._validate_translation(data, question, lang)
         except Exception:
             logger.error(
                 "Question translation failed",
@@ -134,8 +141,6 @@ class QuizGenerator:
                 exc_info=True,
             )
             return None
-
-        return self._validate_translation(data, question, lang)
 
     def _validate_translation(self, data: dict, original: dict, lang: str) -> dict | None:
         """Validate translated content and merge with non-text original fields."""

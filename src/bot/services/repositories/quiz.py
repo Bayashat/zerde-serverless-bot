@@ -140,10 +140,15 @@ class QuizRepository:
     def get_leaderboard(self, chat_id: str) -> list[dict[str, Any]]:
         """Get all user scores for a chat, sorted by week_score descending."""
         try:
-            resp = self._table.query(
-                KeyConditionExpression=Key("PK").eq(f"SCORE#{chat_id}"),
-            )
-            items = resp.get("Items", [])
+            query_kwargs: dict = {"KeyConditionExpression": Key("PK").eq(f"SCORE#{chat_id}")}
+            items: list[dict[str, Any]] = []
+            while True:
+                resp = self._table.query(**query_kwargs)
+                items.extend(resp.get("Items", []))
+                last_key = resp.get("LastEvaluatedKey")
+                if not last_key:
+                    break
+                query_kwargs["ExclusiveStartKey"] = last_key
             return sorted(items, key=lambda x: x.get("week_score", 0), reverse=True)
         except ClientError as e:
             logger.error("Failed to get leaderboard", extra={"error": str(e)})
