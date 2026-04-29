@@ -165,5 +165,6 @@ class TestCategoryPool:
             "data-structures",
             "database",
             "devops",
+            "networking",
         }
         assert set(CATEGORY_POOL) == expected

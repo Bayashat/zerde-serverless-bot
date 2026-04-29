@@ -65,3 +65,7 @@ docker/dynamodb/*
 
 # Documentation
 CLAUDE.md
+
+# Dev files
+dev/scrapers/output/
+dev/scrapers/scrape_*.py
