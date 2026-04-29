@@ -97,10 +97,11 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>Your Quiz Stats</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Score: <b>{score}</b> points\n"
-            "🔥 Streak: <b>{streak}</b> days\n"
-            "⭐ Best streak: <b>{best_streak}</b> days\n"
-            "📊 Rank: <b>#{rank}</b> / {total_players} players"
+            "🗓 This week: <b>{week_score} pts</b> · Rank <b>#{rank}</b> / {total_players} players\n"
+            "🎖 Season wins: <b>{season_wins}</b>\n"
+            "──────────────\n"
+            "⭐ All-time: <b>{total_score} pts</b>\n"
+            "🔥 Streak: <b>{streak}</b> days current · <b>{best_streak}</b> days best"
         ),
         "quizstats_no_data": "🧠 You haven't answered any quizzes yet. Wait for the next daily quiz!",
         "quizstats_open_private_chat": (
@@ -265,12 +266,13 @@ TRANSLATIONS = {
             "👼 Ақтап шыққандар (қарсы дауыс бергендер): {VOTERS_AGAINST}"
         ),
         "quizstats_response": (
-            "🧠 <b>Сіздің Quiz бойынша нәтижеңіз:</b>\n"
+            "🧠 <b>Сіздің Quiz нәтижеңіз:</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Жалпы ұпай: <b>{score}</b>\n"
-            "🔥 Үздіксіз streak: <b>{streak}</b> күн\n"
-            "⭐ Ең ұзақ streak: <b>{best_streak}</b> күн\n"
-            "📊 Рейтингтегі орныңыз: <b>#{rank}</b> / {total_players} қатысушы"
+            "🗓 Осы апта: <b>{week_score} ұпай</b> · Рейтинг <b>#{rank}</b> / {total_players} қатысушы\n"
+            "🎖 Маусым жеңістері: <b>{season_wins}</b>\n"
+            "──────────────\n"
+            "⭐ Барлық уақыт: <b>{total_score} ұпай</b>\n"
+            "🔥 Streak: <b>{streak}</b> күн қазір · <b>{best_streak}</b> күн рекорд"
         ),
         "quizstats_no_data": "🧠 Сіз әлі ешқандай Quiz сұрағына жауап бермепсіз. Келесі сұрақты жіберіп алмаңыз!",
         "quizstats_open_private_chat": (
@@ -428,10 +430,11 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>你的 Quiz 统计</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 积分：<b>{score}</b>\n"
-            "🔥 连胜：<b>{streak}</b> 天\n"
-            "⭐ 最佳连胜：<b>{best_streak}</b> 天\n"
-            "📊 排名：<b>#{rank}</b> / {total_players} 人"
+            "🗓 本周：<b>{week_score} 分</b> · 排名 <b>#{rank}</b> / {total_players} 人\n"
+            "🎖 赛季冠军次数：<b>{season_wins}</b>\n"
+            "──────────────\n"
+            "⭐ 历史总分：<b>{total_score} 分</b>\n"
+            "🔥 连胜：当前 <b>{streak}</b> 天 · 最佳 <b>{best_streak}</b> 天"
         ),
         "quizstats_no_data": "🧠 你还没有答过 Quiz 题目。请等待下一次每日测验！",
         "quizstats_open_private_chat": (
@@ -582,10 +585,11 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>Ваша статистика Quiz</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Очки: <b>{score}</b>\n"
-            "🔥 Серия: <b>{streak}</b> дней\n"
-            "⭐ Лучшая серия: <b>{best_streak}</b> дней\n"
-            "📊 Ранг: <b>#{rank}</b> / {total_players} игроков"
+            "🗓 На этой неделе: <b>{week_score} очк.</b> · Ранг <b>#{rank}</b> / {total_players} игроков\n"
+            "🎖 Побед в сезоне: <b>{season_wins}</b>\n"
+            "──────────────\n"
+            "⭐ За всё время: <b>{total_score} очк.</b>\n"
+            "🔥 Серия: <b>{streak}</b> дн. сейчас · <b>{best_streak}</b> дн. рекорд"
         ),
         "quizstats_no_data": "🧠 Вы еще не отвечали на Quiz. Дождитесь следующего ежедневного вопроса!",
         "quizstats_open_private_chat": (
