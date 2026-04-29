@@ -36,18 +36,18 @@ TRANSLATIONS = {
             "💰 Дұрыс жауап үшін: <b>{points} ұпай</b>"
         ),
         "difficulty_easy": "Оңай 🟢",
-        "difficulty_easy_medium": "Орташа оңай 🟡",
+        "difficulty_easy_medium": "Оңайлау 🟡",
         "difficulty_medium": "Орташа 🟡",
-        "difficulty_medium_hard": "Орташа қиын 🟠",
+        "difficulty_medium_hard": "Қиындау 🟠",
         "difficulty_hard": "Қиын 🔴",
         "difficulty_expert": "Эксперт ⚫",
-        "leaderboard_header": "🏆 <b>Апталық рейтинг</b>\n<i>(Осы аптадағы ұпайлар — әр аптада сыфырланады)</i>\n\n",
+        "leaderboard_header": "🏆 <b>Апталық рейтинг</b>\n<i>(Осы аптадағы ұпайлар — әр аптада нөлденеді)</i>\n\n",
         "leaderboard_empty": "Әзірге ешкім жауап берген жоқ.",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "season_champion_header": "🎖️ <b>Маусым чемпионы! (4 апта)</b>\n\n",
         "season_champion_empty": "Бұл маусымда апта жеңімпаздары болмады.",
         "season_wins_label": "{wins} жеңіс",
-        "quiz_source_label": "📚 Дерек: {source}",
+        "quiz_source_label": "📚 Дереккөз: {source}",
     },
     "ru": {
         "quiz_announcement": (
