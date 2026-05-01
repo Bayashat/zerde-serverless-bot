@@ -39,7 +39,6 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         chat_id = event.get("chat_id", "")
         topic = event.get("topic", "programming")
         difficulty = event.get("difficulty", "medium")
-        include_rpd_footer = bool(event.get("include_rpd_footer", False))
         reply_to_message_id = event.get("reply_to_message_id")
         if not chat_id:
             return {"status": "error", "reason": "missing chat_id"}
@@ -48,7 +47,6 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             lang,
             topic,
             difficulty,
-            include_rpd_footer=include_rpd_footer,
             reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
         )
 

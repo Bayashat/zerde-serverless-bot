@@ -160,7 +160,6 @@ def handle_quiz_generate(ctx: Context) -> None:
             "topic": topic,
             "lang": lang,
             "difficulty": difficulty,
-            "include_rpd_footer": True,
             "reply_to_message_id": ctx.message_id,
         },
     )
