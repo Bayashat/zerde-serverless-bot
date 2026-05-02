@@ -4,6 +4,8 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+os.environ.setdefault("QUIZ_LLM_RPD", "1000")
+
 _quiz_dir = os.path.join(os.path.dirname(__file__), "..", "src", "quiz")
 _saved_modules: dict[str, object] = {}
 
