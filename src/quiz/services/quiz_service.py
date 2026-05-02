@@ -353,6 +353,21 @@ class QuizService:
         )
 
         if poll_result:
+            poll_id = str(poll_result.get("poll", {}).get("id", ""))
+            message_id = poll_result.get("message_id", 0)
+            self._repo.save_on_demand_quiz_record(
+                chat_id=chat_id,
+                question=question["question"],
+                options=question["options"],
+                correct_option_id=question["correct_option_index"],
+                explanation=question.get("explanation"),
+                category=topic,
+                lang=lang,
+                poll_id=poll_id,
+                message_id=message_id,
+                difficulty=difficulty,
+                points=question["points"],
+            )
             logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
             return {"status": "ok", "sent": 1, "total": 1, **self._rpd_payload()}
 

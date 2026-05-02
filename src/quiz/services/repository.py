@@ -252,13 +252,81 @@ class QuizRepository:
         """Write a daily quiz record for a chat."""
         now = datetime.now(_ALMATY_TZ)
         today = now.strftime("%Y-%m-%d")
+        self._save_quiz_record(
+            chat_id=chat_id,
+            sort_key=f"DATE#{today}",
+            question=question,
+            options=options,
+            correct_option_id=correct_option_id,
+            explanation=explanation,
+            category=category,
+            lang=lang,
+            poll_id=poll_id,
+            message_id=message_id,
+            difficulty=difficulty,
+            points=points,
+            sent_at=now,
+            log_context={"date": today},
+        )
+
+    def save_on_demand_quiz_record(
+        self,
+        chat_id: str,
+        question: str,
+        options: list[str],
+        correct_option_id: int,
+        explanation: str | None,
+        category: str,
+        lang: str,
+        poll_id: str,
+        message_id: int,
+        difficulty: str = "easy",
+        points: int = 1,
+    ) -> None:
+        """Write an on-demand quiz record keyed by poll id for answer lookup."""
+        now = datetime.now(_ALMATY_TZ)
+        self._save_quiz_record(
+            chat_id=chat_id,
+            sort_key=f"ON_DEMAND#{poll_id}",
+            question=question,
+            options=options,
+            correct_option_id=correct_option_id,
+            explanation=explanation,
+            category=category,
+            lang=lang,
+            poll_id=poll_id,
+            message_id=message_id,
+            difficulty=difficulty,
+            points=points,
+            sent_at=now,
+            log_context={"poll_id": str(poll_id)},
+        )
+
+    def _save_quiz_record(
+        self,
+        chat_id: str,
+        sort_key: str,
+        question: str,
+        options: list[str],
+        correct_option_id: int,
+        explanation: str | None,
+        category: str,
+        lang: str,
+        poll_id: str,
+        message_id: int,
+        difficulty: str,
+        points: int,
+        sent_at: datetime,
+        log_context: dict[str, Any],
+    ) -> None:
+        """Persist quiz metadata used by poll_answer scoring."""
         ttl = int(time.time()) + (_TTL_DAYS * 86400)
 
         try:
             self._table.put_item(
                 Item={
                     "PK": f"QUIZ#{chat_id}",
-                    "SK": f"DATE#{today}",
+                    "SK": sort_key,
                     "question": question,
                     "options": options,
                     "correct_option_id": correct_option_id,
@@ -269,11 +337,11 @@ class QuizRepository:
                     "message_id": message_id,
                     "difficulty": difficulty,
                     "points": points,
-                    "sent_at": now.isoformat(),
+                    "sent_at": sent_at.isoformat(),
                     "ttl": ttl,
                 }
             )
-            logger.info("Quiz record saved", extra={"chat_id": chat_id, "date": today})
+            logger.info("Quiz record saved", extra={"chat_id": chat_id, **log_context})
         except Exception as e:
-            logger.error("Failed to save quiz record", extra={"chat_id": chat_id, "error": str(e)})
+            logger.error("Failed to save quiz record", extra={"chat_id": chat_id, **log_context, "error": str(e)})
             raise
