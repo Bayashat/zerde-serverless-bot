@@ -145,8 +145,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
             "❌ Usage: /genquiz &lt;topic&gt; [&lt;difficulty&gt; [&lt;lang&gt;]]\n"
-            "Order: topic → difficulty → language. "
-            "Defaults: difficulty <code>medium</code>, language from this chat (<code>CHAT_LANG_MAP</code>)."
+            "Order: topic → difficulty → language.\n"
+            "Difficulties: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "Defaults: difficulty <code>medium</code>, language from this group's default."
         ),
         "genquiz_invalid_lang": "❌ Invalid lang. Choose from: {langs}",
         "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
@@ -315,8 +316,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
             "❌ Қолданылуы: /genquiz &lt;тақырып&gt; [&lt;деңгей&gt; [&lt;тіл&gt;]]\n"
-            "Реті: тақырып → деңгей → тіл. "
-            "Әдепкі: деңгей <code>medium</code>, тіл чаттан (<code>CHAT_LANG_MAP</code>)."
+            "Реті: тақырып → деңгей → тіл.\n"
+            "Деңгейлер: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "Әдепкі: деңгей <code>medium</code>, тіл осы топтың негізгі тілі бойынша."
         ),
         "genquiz_invalid_lang": "❌ Тіл қате. Келесілерді таңдаңыз: {langs}",
         "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
@@ -471,7 +473,8 @@ TRANSLATIONS = {
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
             "顺序：主题 → 难度 → 语言。\n"
-            "默认：难度 <code>medium</code>，语言为本群设置（<code>CHAT_LANG_MAP</code>）。"
+            "可选难度：<code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>。\n"
+            "默认：难度 <code>medium</code>，语言为当前群组的默认语言。"
         ),
         "genquiz_invalid_lang": "❌ 语言无效。可选：{langs}",
         "genquiz_invalid_difficulty": "❌ 难度无效。可选：{difficulties}",
@@ -633,8 +636,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (
             "❌ Использование: /genquiz &lt;тема&gt; [&lt;сложность&gt; [&lt;язык&gt;]]\n"
-            "Порядок: тема → сложность → язык. "
-            "По умолчанию: сложность <code>medium</code>, язык чата (<code>CHAT_LANG_MAP</code>)."
+            "Порядок: тема → сложность → язык.\n"
+            "Сложности: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "По умолчанию: сложность <code>medium</code>, язык по умолчанию для этой группы."
         ),
         "genquiz_invalid_lang": "❌ Неверный язык. Выберите из: {langs}",
         "genquiz_invalid_difficulty": "❌ Неверная сложность. Выберите из: {difficulties}",
