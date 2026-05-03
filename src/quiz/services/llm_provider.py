@@ -12,7 +12,7 @@ from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
-from services.rate_limit_repository import QuizRateLimitRepository
+from services.rate_limit_repository import QuizRateLimitRepository, QuizRateLimitUnavailableError
 from zerde_common.ai_errors import (
     ProviderRateLimitError,
     ProviderResponseError,
@@ -81,7 +81,10 @@ class GeminiQuizProvider(QuizLLMProvider):
     _RETRY_DELAYS = (5, 15, 30)  # seconds; quiz runs on schedule, has time
 
     def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
-        count, within_limit = self._rate_repo.increment_and_check()
+        try:
+            count, within_limit = self._rate_repo.increment_and_check()
+        except QuizRateLimitUnavailableError as exc:
+            raise ProviderTransportError("Quiz Gemini RPD counter unavailable") from exc
         if not within_limit:
             logger.warning(
                 "Quiz Gemini RPD limit reached",
