@@ -7,6 +7,8 @@ from typing import Any
 
 _DEFAULT_MAX_EXTRA = 512
 _DEFAULT_LLM_PREVIEW = 200
+# CloudWatch log events are capped (~256 KiB); keep serialized Update under this budget.
+_DEFAULT_MAX_TELEGRAM_UPDATE_JSON = 200_000
 
 
 def truncate_log_text(text: str | None, max_chars: int = _DEFAULT_MAX_EXTRA) -> str:
@@ -90,3 +92,37 @@ def safe_json_dumps_for_log(obj: Any, max_chars: int = _DEFAULT_MAX_EXTRA) -> st
     except (TypeError, ValueError) as e:
         return f"<json_error:{e}>"
     return truncate_log_text(raw, max_chars)
+
+
+def _bounded_dict_log_extra(
+    data: dict[str, Any],
+    field_prefix: str,
+    *,
+    max_json_chars: int,
+) -> dict[str, Any]:
+    """Build ``extra`` keys: full dict under ``field_prefix`` if small, else truncated JSON string."""
+    extra: dict[str, Any] = {}
+    try:
+        raw = json.dumps(data, default=str, ensure_ascii=False)
+    except (TypeError, ValueError) as e:
+        extra[field_prefix] = f"<json_error:{e}>"
+        return extra
+    extra[f"{field_prefix}_chars"] = len(raw)
+    if len(raw) <= max_json_chars:
+        extra[field_prefix] = data
+        extra[f"{field_prefix}_truncated"] = False
+    else:
+        extra[f"{field_prefix}_json"] = raw[: max_json_chars - 60] + "…(truncated)"
+        extra[f"{field_prefix}_truncated"] = True
+    return extra
+
+
+def telegram_update_log_extra(
+    update: dict[str, Any],
+    *,
+    max_json_chars: int = _DEFAULT_MAX_TELEGRAM_UPDATE_JSON,
+) -> dict[str, Any]:
+    """Structured ``extra`` for logging a full Telegram Bot API ``Update`` at INFO (size-bounded)."""
+    out = _bounded_dict_log_extra(update, "telegram_update", max_json_chars=max_json_chars)
+    out["update_id"] = update.get("update_id")
+    return out
