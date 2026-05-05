@@ -12,10 +12,14 @@ _loaded_env_keys_by_prefix: dict[str, set[str]] = {}
 def load_ssm_secrets_if_needed(
     ssm_prefix: str,
     ssm_name_to_env: dict[str, str],
+    *,
+    required: bool = True,
 ) -> None:
     """Batch-load parameters into ``os.environ`` (once per ``ssm_prefix`` per cold start).
 
     No-op if ``ssm_prefix`` is empty (local / tests use plain environment variables).
+    Missing parameters raise by default; pass ``required=False`` for optional
+    feature-provider keys that should simply disable the feature when absent.
     """
     p = ssm_prefix.strip()
     if not p:
@@ -38,10 +42,15 @@ def load_ssm_secrets_if_needed(
     response = client.get_parameters(Names=names, WithDecryption=True)
     invalid = list(response.get("InvalidParameters", []))
     if invalid:
-        raise OSError(
-            "SSM get_parameters returned missing or disallowed parameters: "
-            f"{invalid}. Check parameter names, IAM ssm:GetParameters, and KMS decrypt."
-        )
+        if required:
+            raise OSError(
+                "SSM get_parameters returned missing or disallowed parameters: "
+                f"{invalid}. Check parameter names, IAM ssm:GetParameters, and KMS decrypt."
+            )
+        for full_name in invalid:
+            short = full_name.removeprefix(f"{p}/")
+            if env_key := pending.get(short):
+                loaded_env_keys.add(env_key)
     for param in response.get("Parameters", []):
         full_name: str = param.get("Name", "")
         short = full_name.removeprefix(f"{p}/")

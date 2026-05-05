@@ -11,9 +11,6 @@ _SSM_SECRET_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
 _SSM_KEY_MAP: dict[str, str] = {
     "bot-token": "BOT_TOKEN",
     "webhook-secret-token": "WEBHOOK_SECRET_TOKEN",
-    "groq-api-key": "GROQ_API_KEY",
-    "gemini-api-key": "GEMINI_API_KEY",
-    "deepseek-api-key": "DEEPSEEK_API_KEY",
 }
 if _SSM_SECRET_PREFIX:
     load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, _SSM_KEY_MAP)
@@ -40,19 +37,19 @@ def get_webhook_secret_token() -> str:
 
 def get_groq_api_key() -> str | None:
     """Return optional Groq API key, loading SSM secrets on first use."""
-    _load_secret("groq-api-key", "GROQ_API_KEY")
+    load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, {"groq-api-key": "GROQ_API_KEY"}, required=False)
     return os.environ.get("GROQ_API_KEY")
 
 
 def get_gemini_api_key() -> str | None:
     """Return optional Gemini API key, loading SSM secrets on first use."""
-    _load_secret("gemini-api-key", "GEMINI_API_KEY")
+    load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, {"gemini-api-key": "GEMINI_API_KEY"}, required=False)
     return os.environ.get("GEMINI_API_KEY")
 
 
 def get_deepseek_api_key() -> str | None:
     """Return optional DeepSeek API key, loading SSM secrets on first use."""
-    _load_secret("deepseek-api-key", "DEEPSEEK_API_KEY")
+    load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, {"deepseek-api-key": "DEEPSEEK_API_KEY"}, required=False)
     return os.environ.get("DEEPSEEK_API_KEY")
 
 
