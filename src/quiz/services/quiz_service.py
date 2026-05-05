@@ -273,6 +273,16 @@ class QuizService:
         failed: list[dict] = []
 
         for chat_id in chat_ids:
+            existing = self._repo.get_today_quiz_record(str(chat_id))
+            if existing:
+                logger.info(
+                    "Daily quiz already sent for this chat today, skipping",
+                    extra={"chat_id": chat_id, "poll_id": existing.get("poll_id")},
+                )
+                sent_count += 1
+                sent_chat_ids.append(str(chat_id))
+                continue
+
             category, remaining = self._pick_category_for_chat(str(chat_id))
             generated = None
             used_category = category

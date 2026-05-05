@@ -103,7 +103,7 @@ TRANSLATIONS = {
             "⭐ All-time: <b>{total_score} pts</b>\n"
             "🔥 Streak: <b>{streak}</b> days current · <b>{best_streak}</b> days best"
         ),
-        "quizstats_no_data": "🧠 You haven't answered any quizzes yet. Wait for the next daily quiz!",
+        "quizstats_no_data": "🧠 No quiz score yet — answer tomorrow's daily quiz to get on the board!",
         "quizstats_open_private_chat": (
             "📬 I couldn't send you a private message.\n"
             "Please open a chat with me and send /start first, then try /quizstats again."
@@ -275,7 +275,7 @@ TRANSLATIONS = {
             "⭐ Барлық уақыт бойынша: <b>{total_score} ұпай</b>\n"
             "🔥 Серия (Streak): қазір <b>{streak}</b> күн · рекорд <b>{best_streak}</b> күн"
         ),
-        "quizstats_no_data": "🧠 Сіз әлі ешқандай Quiz сұрағына жауап бермепсіз. Келесі күнделікті сұрақты күтіңіз!",
+        "quizstats_no_data": "🧠 Сіздің ұпайыңыз әлі жоқ — ертеңгі күнделікті сұраққа жауап беріп, рейтингке кіріңіз!",
         "quizstats_open_private_chat": (
             "📬 Сізге жеке хабарлама жібере алмадым.\n"
             "Алдымен менімен жеке чат ашып, /start пәрменін жіберіңіз, содан соң /quizstats қайта көріңіз."
@@ -439,7 +439,7 @@ TRANSLATIONS = {
             "⭐ 历史总分：<b>{total_score} 分</b>\n"
             "🔥 连胜：当前 <b>{streak}</b> 天 · 最佳 <b>{best_streak}</b> 天"
         ),
-        "quizstats_no_data": "🧠 你还没有答过 Quiz 题目。请等待下一次每日测验！",
+        "quizstats_no_data": "🧠 暂无积分记录 —— 明天参加每日测验即可上榜！",
         "quizstats_open_private_chat": (
             "📬 我无法给你发送私信。\n" "请先打开与我的私聊并发送 /start，然后再试一次 /quizstats。"
         ),
@@ -595,7 +595,7 @@ TRANSLATIONS = {
             "⭐ За всё время: <b>{total_score} очк.</b>\n"
             "🔥 Серия: <b>{streak}</b> дн. сейчас · <b>{best_streak}</b> дн. рекорд"
         ),
-        "quizstats_no_data": "🧠 Вы еще не отвечали на Quiz. Дождитесь следующего ежедневного вопроса!",
+        "quizstats_no_data": "🧠 Очков пока нет — ответьте на завтрашний ежедневный вопрос и попадите в рейтинг!",
         "quizstats_open_private_chat": (
             "📬 Я не смог отправить вам личное сообщение.\n"
             "Сначала откройте со мной личный чат и отправьте /start, затем попробуйте /quizstats снова."

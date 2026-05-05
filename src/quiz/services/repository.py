@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
+from botocore.exceptions import ClientError
 from core.config import TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 
@@ -265,6 +266,19 @@ class QuizRepository:
         except Exception as e:
             logger.error("Failed to save genquiz question queue", extra={"error": str(e)})
 
+    def get_today_quiz_record(self, chat_id: str) -> dict[str, Any] | None:
+        """Return today's quiz record for a chat, or None if not yet sent."""
+        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"QUIZ#{chat_id}", "SK": f"DATE#{today}"},
+                ConsistentRead=True,
+            )
+            return resp.get("Item")
+        except ClientError as e:
+            logger.error("Failed to read today quiz record", extra={"chat_id": chat_id, "error": str(e)})
+            return None
+
     def save_quiz_record(
         self,
         chat_id: str,
@@ -278,8 +292,12 @@ class QuizRepository:
         message_id: int,
         difficulty: str = "easy",
         points: int = 1,
-    ) -> None:
-        """Write a daily quiz record for a chat."""
+    ) -> bool:
+        """Write a daily quiz record for a chat.
+
+        Returns True on success, False if a record already exists for today
+        (idempotent: safe to call on Lambda retry without overwriting a live poll).
+        """
         now = datetime.now(_ALMATY_TZ)
         today = now.strftime("%Y-%m-%d")
         ttl = int(time.time()) + (_TTL_DAYS * 86400)
@@ -301,9 +319,17 @@ class QuizRepository:
                     "points": points,
                     "sent_at": now.isoformat(),
                     "ttl": ttl,
-                }
+                },
+                ConditionExpression=Attr("PK").not_exists(),
             )
             logger.info("Quiz record saved", extra={"chat_id": chat_id, "date": today})
-        except Exception as e:
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.warning(
+                    "Quiz record already exists for today, skipping save",
+                    extra={"chat_id": chat_id, "date": today},
+                )
+                return False
             logger.error("Failed to save quiz record", extra={"chat_id": chat_id, "error": str(e)})
             raise

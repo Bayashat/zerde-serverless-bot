@@ -69,7 +69,7 @@ def handle_poll_answer(ctx: Context) -> None:
     # Look up the quiz record by poll_id
     quiz_record = ctx.quiz_repo.lookup_poll(poll_id)
     if not quiz_record:
-        logger.debug("poll_answer for unknown poll_id, ignoring", extra={"poll_id": poll_id})
+        logger.warning("poll_answer for unknown poll_id, ignoring", extra={"poll_id": poll_id})
         return
 
     chat_id = quiz_record["PK"].replace("QUIZ#", "")
@@ -96,14 +96,11 @@ def handle_quizstats(ctx: Context) -> None:
     user_id = str(ctx.user_id)
     lang = ctx.lang_code
 
-    user_score = ctx.quiz_repo.get_user_score(chat_id, user_id)
-    if not user_score:
-        ctx.reply(get_translated_text("quizstats_no_data", lang))
-        return
+    user_score = ctx.quiz_repo.get_user_score(chat_id, user_id) or {}
 
-    # Calculate rank
+    # Calculate rank; unranked users (no score record) are placed after the last ranked player
     leaderboard = ctx.quiz_repo.get_leaderboard(chat_id)
-    rank = 1
+    rank = len(leaderboard) + 1
     for i, entry in enumerate(leaderboard):
         if entry.get("SK") == f"USER#{user_id}":
             rank = i + 1
