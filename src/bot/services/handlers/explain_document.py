@@ -63,11 +63,9 @@ def handle_document_auto_summary(ctx: Context) -> None:
     if not isinstance(doc, dict):
         return
 
-    allowed, reason_key = document_auto_allowed(doc)
+    allowed, _ = document_auto_allowed(doc)
     if not allowed:
-        if reason_key:
-            _react(ctx, _ERROR_REACTION)
-            ctx.reply(get_translated_text(reason_key, lang), ctx.message_id)
+        _react(ctx, _ERROR_REACTION)
         return
 
     file_id = doc.get("file_id")

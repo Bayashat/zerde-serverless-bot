@@ -113,7 +113,7 @@ class BotConstruct(Construct):
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             layers=[shared_layer],
-            timeout=Duration.seconds(90),
+            timeout=Duration.seconds(300),
             memory_size=1024,
             log_group=logs.LogGroup(
                 self,

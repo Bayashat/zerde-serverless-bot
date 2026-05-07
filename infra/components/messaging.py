@@ -34,7 +34,7 @@ class MessagingConstruct(Construct):
             f"{CONSTRUCT_PREFIX}TimeoutTasksQueue",
             queue_name=f"{RESOURCE_PREFIX}-timeout-tasks-queue-{env_name}",
             retention_period=Duration.hours(1),
-            visibility_timeout=Duration.seconds(60 * 3),
+            visibility_timeout=Duration.seconds(1800),  # >= 6 × Lambda timeout (300 s)
             receive_message_wait_time=Duration.seconds(20),
             removal_policy=removal_policy,
             dead_letter_queue=sqs.DeadLetterQueue(

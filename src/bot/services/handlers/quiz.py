@@ -101,9 +101,8 @@ def handle_quizstats(ctx: Context) -> None:
     # Calculate rank; unranked users (no score record) are placed after the last ranked player
     leaderboard = ctx.quiz_repo.get_leaderboard(chat_id)
     rank = len(leaderboard) + 1
-    for i, entry in enumerate(leaderboard):
+    for _, entry in enumerate(leaderboard):
         if entry.get("SK") == f"USER#{user_id}":
-            rank = i + 1
             break
 
     chat_title = _html_chat_title_for_pm(ctx.bot, ctx.chat_id)

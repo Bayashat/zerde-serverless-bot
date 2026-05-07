@@ -88,11 +88,7 @@ GEMINI_RPD_LIMIT: int = require_int("GEMINI_RPD_LIMIT")
 MAX_EXPLAIN_MEDIA_BYTES: int = int(os.environ.get("MAX_EXPLAIN_MEDIA_BYTES", str(15 * 1024 * 1024)))
 # MIME types allowed for automatic document summarization (non-command uploads).
 DOCUMENT_AUTO_SUMMARY_MIMES: frozenset[str] = frozenset(
-    {
-        "application/pdf",
-        "text/plain",
-        "text/markdown",
-    }
+    {"application/pdf", "text/plain", "text/markdown", "text/x-web-markdown"}
 )
 
 # ── Chat → language mapping ──────────────────────────────────────────────────

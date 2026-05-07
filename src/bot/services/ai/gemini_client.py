@@ -4,8 +4,11 @@ Rate-limit tracking uses an atomic DynamoDB counter (RPD) shared
 across all Lambda invocations and chat groups. The "day" matches
 Gemini/Google: calendar date in America/Los_Angeles (midnight PT reset).
 
-Timeout budget: explain tasks run via SQS Lambda (90 s budget), not API Gateway.
-Plain-text explain: read timeout 25 s. Multimodal (large inline payloads): read 90 s.
+Timeout budget: explain tasks run via SQS Lambda (300 s budget), not API Gateway.
+Plain-text explain: read timeout 25 s. Multimodal (large inline payloads): read 150 s.
+
+Retry policy: up to 3 retries with exponential back-off (2 s, 4 s, 8 s) for
+transient failures (5xx, network/timeout). 429 raises immediately — no retry.
 """
 
 import base64
@@ -29,7 +32,7 @@ from urllib3.exceptions import HTTPError
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=25))
-_http_multimodal = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=90))
+_http_multimodal = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=150))
 
 
 def _thinking_config_for_model(model: str) -> dict[str, Any] | None:
@@ -115,9 +118,8 @@ class GeminiClient:
         body = json.dumps(payload)
         headers = {"Content-Type": "application/json"}
 
-        # Single retry for transient network/timeout failures. 503 (model globally
-        # overloaded) breaks immediately — retrying in 1s won't help and just delays fallback.
-        _retry_delays = (1,)
+        # 3 retries with exponential back-off; 429 raises immediately without retry.
+        _RETRY_DELAYS = (2, 4, 8)
         last_exc: Exception | None = None
 
         logger.info(
@@ -134,7 +136,7 @@ class GeminiClient:
                 "term_chars": len(term),
             },
         )
-        for attempt, delay in enumerate(_retry_delays):
+        for attempt in range(len(_RETRY_DELAYS) + 1):
             try:
                 logger.info(
                     "Gemini explain request started",
@@ -147,8 +149,8 @@ class GeminiClient:
                     extra={"model": self._model, "attempt": attempt + 1, "error": str(exc)},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini unreachable: {exc}")
-                if attempt < len(_retry_delays) - 1:
-                    time.sleep(delay + random.uniform(0, 2))
+                if attempt < len(_RETRY_DELAYS):
+                    time.sleep(_RETRY_DELAYS[attempt] + random.uniform(0, 1))
                 continue
 
             if resp.status == 429:
@@ -162,10 +164,8 @@ class GeminiClient:
                     extra={"status": resp.status, "attempt": attempt + 1, "body": body_text[:200]},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini API {resp.status}: {body_text[:200]}")
-                if resp.status == 503:
-                    break  # globally overloaded — fall back immediately, don't retry
-                if attempt < len(_retry_delays) - 1:
-                    time.sleep(delay + random.uniform(0, 2))
+                if attempt < len(_RETRY_DELAYS):
+                    time.sleep(_RETRY_DELAYS[attempt] + random.uniform(0, 1))
                 continue
 
             if resp.status >= 400:
@@ -261,7 +261,8 @@ class GeminiClient:
         url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
         body = json.dumps(payload)
         headers = {"Content-Type": "application/json"}
-        _retry_delays = (1,)
+        # 3 retries with exponential back-off; 429 raises immediately without retry.
+        _RETRY_DELAYS = (2, 4, 8)
         last_exc: Exception | None = None
 
         logger.info(
@@ -277,7 +278,7 @@ class GeminiClient:
             },
         )
 
-        for attempt, delay in enumerate(_retry_delays):
+        for attempt in range(len(_RETRY_DELAYS) + 1):
             try:
                 resp = _http_multimodal.request(
                     "POST",
@@ -292,8 +293,8 @@ class GeminiClient:
                     extra={"model": self._model, "attempt": attempt + 1, "error": str(exc)},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini unreachable: {exc}")
-                if attempt < len(_retry_delays) - 1:
-                    time.sleep(delay + random.uniform(0, 2))
+                if attempt < len(_RETRY_DELAYS):
+                    time.sleep(_RETRY_DELAYS[attempt] + random.uniform(0, 1))
                 continue
 
             if resp.status == 429:
@@ -307,10 +308,8 @@ class GeminiClient:
                     extra={"status": resp.status, "attempt": attempt + 1, "body": body_text[:200]},
                 )
                 last_exc = GeminiUnavailableError(f"Gemini API {resp.status}: {body_text[:200]}")
-                if resp.status == 503:
-                    break
-                if attempt < len(_retry_delays) - 1:
-                    time.sleep(delay + random.uniform(0, 2))
+                if attempt < len(_RETRY_DELAYS):
+                    time.sleep(_RETRY_DELAYS[attempt] + random.uniform(0, 1))
                 continue
 
             if resp.status >= 400:
