@@ -23,6 +23,10 @@ _PK_PREFIX = "GEMINI_RPD"
 _TTL_DELTA = timedelta(hours=48)
 
 
+class RateLimitUnavailableError(RuntimeError):
+    """Raised when the RPD counter cannot be updated safely."""
+
+
 class RateLimitRepository:
     """Atomic RPD counter in the shared stats DynamoDB table.
 
@@ -71,9 +75,9 @@ class RateLimitRepository:
                 },
                 ReturnValues="UPDATED_NEW",
             )
-        except ClientError:
+        except ClientError as exc:
             logger.exception("Failed to increment Gemini RPD counter")
-            return 0, True
+            raise RateLimitUnavailableError("Gemini RPD counter unavailable") from exc
 
         count = int(resp["Attributes"]["request_count"])
         return count, count <= self.rpd_limit

@@ -23,7 +23,7 @@ from services.ai.explain_media_prompts import (
     transcribe_system_prompt,
 )
 from services.ai.wtf_prompts import WTFPromptStyle, get_wtf_system_prompt, wtf_explain_user_text
-from services.repositories.rate_limit import RateLimitRepository
+from services.repositories.rate_limit import RateLimitRepository, RateLimitUnavailableError
 from urllib3.exceptions import HTTPError
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -85,7 +85,10 @@ class GeminiClient:
             GeminiRPDExhaustedError: daily RPD limit reached after increment.
             GeminiUnavailableError: 429, 5xx, timeout, or bad response body.
         """
-        count, within_limit = self._rate_repo.increment_and_check()
+        try:
+            count, within_limit = self._rate_repo.increment_and_check()
+        except RateLimitUnavailableError as exc:
+            raise GeminiUnavailableError("Gemini RPD counter unavailable") from exc
 
         if not within_limit:
             logger.warning(
@@ -214,7 +217,10 @@ class GeminiClient:
         Raises:
             GeminiRPDExhaustedError, GeminiUnavailableError: same as ``explain_term``.
         """
-        count, within_limit = self._rate_repo.increment_and_check()
+        try:
+            count, within_limit = self._rate_repo.increment_and_check()
+        except RateLimitUnavailableError as exc:
+            raise GeminiUnavailableError("Gemini RPD counter unavailable") from exc
         if not within_limit:
             logger.warning(
                 "Gemini RPD limit reached (multimodal)",

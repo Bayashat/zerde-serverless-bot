@@ -15,6 +15,10 @@ _PK_PREFIX = "QUIZ_GEMINI_RPD"
 _TTL_DELTA = timedelta(hours=48)
 
 
+class QuizRateLimitUnavailableError(RuntimeError):
+    """Raised when the quiz RPD counter cannot be updated safely."""
+
+
 class QuizRateLimitRepository:
     """DynamoDB-backed daily counter for quiz Gemini requests."""
 
@@ -47,9 +51,9 @@ class QuizRateLimitRepository:
                 ExpressionAttributeValues={":inc": 1, ":zero": 0, ":ttl": ttl_epoch},
                 ReturnValues="UPDATED_NEW",
             )
-        except ClientError:
+        except ClientError as exc:
             logger.exception("Failed to increment quiz Gemini RPD counter")
-            return 0, True
+            raise QuizRateLimitUnavailableError("Quiz Gemini RPD counter unavailable") from exc
 
         count = int(resp["Attributes"]["request_count"])
         return count, count <= self.rpd_limit
