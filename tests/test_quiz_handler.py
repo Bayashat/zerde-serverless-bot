@@ -142,4 +142,4 @@ class TestHandleQuizstats:
 
         ctx.bot.send_message.assert_called_once()
         call_text = ctx.bot.send_message.call_args[0][1]
-        assert "haven't answered" in call_text
+        assert "No quiz score yet" in call_text

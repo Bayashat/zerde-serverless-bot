@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Callable, cast
+from typing import Any, Callable, cast
 
 from core.config import get_chat_lang, get_deepseek_api_key, get_gemini_api_key
 from core.dispatcher import Context
@@ -55,12 +55,21 @@ def _get_task_repo() -> ExplainTaskRepository:
     return _task_repo
 
 
+def _reply_message_visible_text(reply: dict[str, Any]) -> str:
+    """Text body or media caption (channel posts and albums often use caption, not text)."""
+    for key in ("text", "caption"):
+        raw = reply.get(key)
+        if isinstance(raw, str) and raw.strip():
+            return raw.strip()
+    return ""
+
+
 def _extract_term(ctx: Context) -> str:
     parts = ctx.text.split(maxsplit=1)
     if len(parts) > 1:
         return parts[1].strip()
     if ctx.reply_to_message:
-        return (ctx.reply_to_message.get("text") or "").strip()
+        return _reply_message_visible_text(ctx.reply_to_message)
     # External replies (cross-chat forwards) have no reply_to_message;
     # Telegram instead populates `quote.text` with the selected fragment.
     quote_text = (ctx.message.get("quote") or {}).get("text") or ""

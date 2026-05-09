@@ -96,13 +96,26 @@ def handle_quizstats(ctx: Context) -> None:
     user_id = str(ctx.user_id)
     lang = ctx.lang_code
 
-    user_score = ctx.quiz_repo.get_user_score(chat_id, user_id) or {}
+    user_score_raw = ctx.quiz_repo.get_user_score(chat_id, user_id)
+    if user_score_raw is None:
+        try:
+            ctx.send_private_message(get_translated_text("quizstats_no_data", lang))
+            ctx.react("👌")
+        except TelegramAPIError as error:
+            if error.status == 403:
+                ctx.reply(get_translated_text("quizstats_open_private_chat", lang), ctx.message_id)
+                return
+            raise
+        return
 
-    # Calculate rank; unranked users (no score record) are placed after the last ranked player
+    user_score = user_score_raw
+
     leaderboard = ctx.quiz_repo.get_leaderboard(chat_id)
+    # Unranked users (on the board but not in this week's list) go after the last row
     rank = len(leaderboard) + 1
-    for _, entry in enumerate(leaderboard):
+    for i, entry in enumerate(leaderboard):
         if entry.get("SK") == f"USER#{user_id}":
+            rank = i + 1
             break
 
     chat_title = _html_chat_title_for_pm(ctx.bot, ctx.chat_id)
