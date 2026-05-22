@@ -73,7 +73,7 @@ class RateLimitRepository:
             )
         except ClientError:
             logger.exception("Failed to increment Gemini RPD counter")
-            return 0, True
+            return 0, False
 
         count = int(resp["Attributes"]["request_count"])
         return count, count <= self.rpd_limit

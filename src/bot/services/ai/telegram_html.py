@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from html import escape
 
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 _ITALIC_RE = re.compile(r"(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)")
@@ -17,7 +18,7 @@ def normalize_llm_output_for_telegram_html(text: str) -> str:
     for line in lines:
         normalized_lines.append(_BULLET_RE.sub("• ", line))
 
-    normalized = "\n".join(normalized_lines)
+    normalized = escape("\n".join(normalized_lines), quote=False)
     normalized = _BOLD_RE.sub(r"<b>\1</b>", normalized)
     normalized = _CODE_RE.sub(r"<code>\1</code>", normalized)
     normalized = _ITALIC_RE.sub(r"<i>\1</i>", normalized)

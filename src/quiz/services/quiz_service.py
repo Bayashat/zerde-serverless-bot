@@ -173,14 +173,16 @@ class QuizService:
         category = remaining.pop(0)
         return category, remaining
 
-    def _pick_banked_question_for_chat(self, category: str, chat_id: str, difficulty: str) -> dict | None:
-        """Pick the next question from the bank for a chat using per-chat rotation."""
+    def _pick_banked_question_for_chat(
+        self, category: str, chat_id: str, difficulty: str
+    ) -> tuple[dict | None, list[str] | None]:
+        """Pick the next banked question and the queue to persist after successful delivery."""
         sources = _BANKED_CATEGORIES[category]
         remaining = self._repo.get_question_queue(category, chat_id)
         if not remaining:
             all_keys = self._repo.get_bank_question_ids(category, sources)
             if not all_keys:
-                return None
+                return None, None
             # Seed by chat_id + pool size so different chats start at different positions
             rng = random.Random(f"{chat_id}::{len(all_keys)}")
             remaining = rng.sample(all_keys, len(all_keys))
@@ -195,7 +197,6 @@ class QuizService:
             source, q_uuid = key.split("::", 1)
             item = self._repo.get_bank_question(category, source, q_uuid)
             if item:
-                self._repo.save_question_queue(category, chat_id, remaining)
                 return {
                     "question": item["question"],
                     "options": list(item["options"]),
@@ -204,11 +205,11 @@ class QuizService:
                     "difficulty": difficulty,
                     "points": DIFFICULTY_POINTS.get(difficulty, 1),
                     "source_label": _BANK_SOURCE_LABELS.get(source, source),
-                }
+                }, remaining
             logger.warning("Bank question missing, skipping", extra={"uuid": q_uuid})
 
         self._repo.save_question_queue(category, chat_id, remaining)
-        return None
+        return None, None
 
     def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
         """Generate and send the daily quiz to each chat with independent category rotation."""
@@ -227,11 +228,14 @@ class QuizService:
             category, remaining = self._pick_category_for_chat(str(chat_id))
             generated = None
             used_category = category
+            pending_question_queue: tuple[str, list[str]] | None = None
 
             if category in _BANKED_CATEGORIES:
                 # Draw from pre-built question bank
-                banked = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
+                banked, question_queue_remaining = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
                 if banked:
+                    if question_queue_remaining is not None:
+                        pending_question_queue = (category, question_queue_remaining)
                     if lang == "en":
                         generated = banked
                     else:
@@ -315,6 +319,9 @@ class QuizService:
                     points=generated["points"],
                 )
                 self._repo.save_category_queue(remaining, used_category, str(chat_id))
+                if pending_question_queue is not None:
+                    queue_category, question_queue_remaining = pending_question_queue
+                    self._repo.save_question_queue(queue_category, str(chat_id), question_queue_remaining)
                 sent_count += 1
                 sent_chat_ids.append(str(chat_id))
             else:

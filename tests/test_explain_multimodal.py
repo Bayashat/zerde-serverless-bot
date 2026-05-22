@@ -50,6 +50,7 @@ def test_process_explain_task_media_skips_empty_term_check(
     mock_get_repo: MagicMock,
 ) -> None:
     repo = MagicMock()
+    repo.is_completed.return_value = False
     mock_get_repo.return_value = repo
     bot = MagicMock()
     body: dict = {
@@ -67,3 +68,27 @@ def test_process_explain_task_media_skips_empty_term_check(
     wtf_mod.process_explain_task(bot, body)
     mock_exec.assert_called_once()
     repo.mark_completed.assert_called_once_with(1)
+
+
+@patch("services.handlers.wtf._get_task_repo")
+@patch("services.handlers.wtf._execute_explain_and_reply")
+def test_process_explain_task_completed_redelivery_is_noop(
+    mock_exec: MagicMock,
+    mock_get_repo: MagicMock,
+) -> None:
+    repo = MagicMock()
+    repo.is_completed.return_value = True
+    mock_get_repo.return_value = repo
+    body: dict = {
+        "update_id": 2,
+        "chat_id": -100,
+        "reply_to_message_id": 9,
+        "term": "SQS",
+        "lang": "en",
+        "style": "normal",
+    }
+
+    wtf_mod.process_explain_task(MagicMock(), body)
+
+    mock_exec.assert_not_called()
+    repo.mark_completed.assert_not_called()

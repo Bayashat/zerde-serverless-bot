@@ -13,3 +13,10 @@ def test_markdown_bullets_to_dot_bullets() -> None:
     text = "- first\n* second\n  - third"
     out = normalize_llm_output_for_telegram_html(text)
     assert out.splitlines() == ["• first", "• second", "• third"]
+
+
+def test_raw_html_metacharacters_are_escaped() -> None:
+    text = "Use a < b && `List[str]`."
+    out = normalize_llm_output_for_telegram_html(text)
+    assert "a &lt; b &amp;&amp;" in out
+    assert "<code>List[str]</code>" in out

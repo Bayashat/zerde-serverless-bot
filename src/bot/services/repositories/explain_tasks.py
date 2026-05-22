@@ -81,6 +81,19 @@ class ExplainTaskRepository:
             logger.exception("Failed to mark explain task as completed", extra={"update_id": update_id})
             raise
 
+    def is_completed(self, update_id: int) -> bool:
+        """Return True when an SQS redelivery is for an already completed task."""
+        try:
+            resp = self._table.get_item(
+                Key={"stat_key": self._stat_key(update_id)},
+                ConsistentRead=True,
+            )
+        except ClientError:
+            logger.exception("Failed to read explain task status", extra={"update_id": update_id})
+            raise
+
+        return (resp.get("Item") or {}).get("status") == "completed"
+
     def release_reservation(self, update_id: int) -> None:
         """Remove dedup row so the user can retry after SQS send failed (reservation was written)."""
         try:
