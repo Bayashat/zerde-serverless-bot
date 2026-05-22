@@ -143,6 +143,13 @@ class QuizService:
                     season_result = self._sender.send_message(str(chat_id), season_text)
                     if season_result:
                         logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
+                        # Credit the all-time season title to the #1 finisher before resetting
+                        if season_entries:
+                            champion = season_entries[0]
+                            champion_id = champion.get("SK", "").replace("USER#", "")
+                            self._repo.increment_season_champion_count(
+                                str(chat_id), champion_id, champion.get("first_name", "User")
+                            )
                         self._repo.reset_season_wins(str(chat_id))
                         self._repo.reset_season_week_count(str(chat_id))
                     else:

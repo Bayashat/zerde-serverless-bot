@@ -128,6 +128,7 @@ def handle_quizstats(ctx: Context) -> None:
                 chat_title=chat_title,
                 week_score=int(user_score.get("week_score", 0)),
                 season_wins=int(user_score.get("season_wins", 0)),
+                season_champion_count=int(user_score.get("season_champion_count", 0)),
                 total_score=int(user_score.get("total_score", 0)),
                 streak=int(user_score.get("current_streak", 0)),
                 best_streak=int(user_score.get("best_streak", 0)),

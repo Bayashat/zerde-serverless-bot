@@ -29,7 +29,9 @@ CATEGORY_POOL = [
     "database",
     "devops",
     "networking",
+    "system-design",
 ]
+
 
 _LANG_NAMES = {
     "kk": "Kazakh (Cyrillic script)",

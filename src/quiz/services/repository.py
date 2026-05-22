@@ -149,6 +149,31 @@ class QuizRepository:
             logger.error("Failed to get season leaderboard", extra={"chat_id": chat_id, "error": str(e)})
             return []
 
+    def increment_season_champion_count(self, chat_id: str, user_id: str, first_name: str) -> None:
+        """Increment the all-time season champion counter for the overall season winner.
+
+        Unlike season_wins (which resets every 4 weeks), this counter is never cleared —
+        it tracks how many seasons a user has finished in 1st place across all time.
+        """
+        try:
+            self._table.update_item(
+                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
+                UpdateExpression=(
+                    "SET season_champion_count = if_not_exists(season_champion_count, :zero) + :one,"
+                    "    first_name = :name"
+                ),
+                ExpressionAttributeValues={":zero": 0, ":one": 1, ":name": first_name},
+            )
+            logger.info(
+                "Season champion count incremented",
+                extra={"chat_id": chat_id, "user_id": user_id},
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to increment season champion count",
+                extra={"chat_id": chat_id, "user_id": user_id, "error": str(e)},
+            )
+
     def reset_season_wins(self, chat_id: str) -> None:
         """Reset season_wins to 0 for all users in a chat after the season announcement."""
         try:
