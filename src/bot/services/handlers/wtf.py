@@ -445,6 +445,14 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
         logger.warning("PROCESS_EXPLAIN received invalid style", extra={"update_id": update_id, "style": style})
         return
 
+    task_repo = _get_task_repo()
+    if task_repo.get_status(update_id) == "completed":
+        logger.info(
+            "PROCESS_EXPLAIN already completed, skipping SQS redelivery",
+            extra={"update_id": update_id, "chat_id": chat_id},
+        )
+        return
+
     media_kind = ""
     mime_type = "application/octet-stream"
     if has_media:
@@ -454,7 +462,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
                 "PROCESS_EXPLAIN invalid media_kind",
                 extra={"update_id": update_id, "media_kind": media_kind},
             )
-            _get_task_repo().mark_completed(update_id)
+            task_repo.mark_completed(update_id)
             return
         mime_type = str(body.get("mime_type") or "application/octet-stream").strip() or "application/octet-stream"
 
@@ -480,7 +488,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
                 lang=lang,
                 style=cast(WTFPromptStyle, style),
             )
-        _get_task_repo().mark_completed(update_id)
+        task_repo.mark_completed(update_id)
         elapsed_ms = int((time.monotonic() - started) * 1000)
         logger.info(
             "PROCESS_EXPLAIN completed",

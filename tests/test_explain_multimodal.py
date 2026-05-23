@@ -45,6 +45,28 @@ def test_document_auto_allowed_rejects_zip() -> None:
 
 @patch("services.handlers.wtf._get_task_repo")
 @patch("services.handlers.wtf._execute_multimodal_explain_and_reply")
+def test_process_explain_task_skips_when_already_completed(
+    mock_exec: MagicMock,
+    mock_get_repo: MagicMock,
+) -> None:
+    repo = MagicMock()
+    repo.get_status.return_value = "completed"
+    mock_get_repo.return_value = repo
+    body: dict = {
+        "update_id": 99,
+        "chat_id": -100,
+        "reply_to_message_id": 9,
+        "term": "lambda",
+        "lang": "en",
+        "style": "normal",
+    }
+    wtf_mod.process_explain_task(MagicMock(), body)
+    mock_exec.assert_not_called()
+    repo.mark_completed.assert_not_called()
+
+
+@patch("services.handlers.wtf._get_task_repo")
+@patch("services.handlers.wtf._execute_multimodal_explain_and_reply")
 def test_process_explain_task_media_skips_empty_term_check(
     mock_exec: MagicMock,
     mock_get_repo: MagicMock,

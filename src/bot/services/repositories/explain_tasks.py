@@ -55,6 +55,19 @@ class ExplainTaskRepository:
             logger.exception("Failed to reserve explain update", extra={"update_id": update_id})
             raise
 
+    def get_status(self, update_id: int) -> str | None:
+        """Return task status (reserved, enqueued, completed) or None if unknown."""
+        try:
+            resp = self._table.get_item(Key={"stat_key": self._stat_key(update_id)}, ConsistentRead=True)
+            item = resp.get("Item")
+            if not item:
+                return None
+            status = item.get("status")
+            return str(status) if status is not None else None
+        except ClientError:
+            logger.exception("Failed to read explain task status", extra={"update_id": update_id})
+            return None
+
     def mark_enqueued(self, update_id: int) -> None:
         """Mark task as enqueued to improve traceability."""
         try:
