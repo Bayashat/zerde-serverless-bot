@@ -82,14 +82,21 @@ class QuizService:
         return text
 
     def build_leaderboard_text(self, lang: str, entries: list[dict]) -> str:
-        """Build the formatted leaderboard text."""
+        """Build the formatted leaderboard text with competition-style tie handling.
+
+        Users with equal scores share the same rank and medal.
+        Example: two users at 7 pts both get 🥈; the next unique score is rank 4.
+        """
         header = get_translated_text("leaderboard_header", lang)
         if not entries:
             return header + get_translated_text("leaderboard_empty", lang)
 
         lines = []
+        rank = 1
         for i, entry in enumerate(entries):
-            medal = _MEDALS[i] if i < len(_MEDALS) else f"{i + 1}."
+            if i > 0 and int(entry.get("week_score", 0)) < int(entries[i - 1].get("week_score", 0)):
+                rank = i + 1  # standard competition ranking: rank jumps to actual position
+            medal = _MEDALS[rank - 1] if rank - 1 < len(_MEDALS) else f"{rank}."
             user_id = entry.get("SK", "").replace("USER#", "")
             first_name = entry.get("first_name", "User")
             score = int(entry.get("week_score", 0))
@@ -99,14 +106,17 @@ class QuizService:
         return header + "\n".join(lines)
 
     def build_season_text(self, lang: str, entries: list[dict]) -> str:
-        """Build the season champion announcement text."""
+        """Build the season champion announcement text with competition-style tie handling."""
         header = get_translated_text("season_champion_header", lang)
         if not entries:
             return header + get_translated_text("season_champion_empty", lang)
 
         lines = []
+        rank = 1
         for i, entry in enumerate(entries):
-            medal = _MEDALS[i] if i < len(_MEDALS) else f"{i + 1}."
+            if i > 0 and int(entry.get("season_wins", 0)) < int(entries[i - 1].get("season_wins", 0)):
+                rank = i + 1
+            medal = _MEDALS[rank - 1] if rank - 1 < len(_MEDALS) else f"{rank}."
             user_id = entry.get("SK", "").replace("USER#", "")
             first_name = entry.get("first_name", "User")
             wins = int(entry.get("season_wins", 0))
@@ -130,11 +140,14 @@ class QuizService:
                 sent_chat_ids.append(str(chat_id))
                 logger.info("Leaderboard sent", extra={"chat_id": chat_id, "lang": lang})
 
-                # Record the week's winner (only if they actually scored)
+                # Record all co-winners tied for 1st place (only if they actually scored).
                 if entries and int(entries[0].get("week_score", 0)) > 0:
-                    winner = entries[0]
-                    winner_id = winner.get("SK", "").replace("USER#", "")
-                    self._repo.increment_season_wins(str(chat_id), winner_id, winner.get("first_name", "User"))
+                    top_score = int(entries[0].get("week_score", 0))
+                    for entry in entries:
+                        if int(entry.get("week_score", 0)) < top_score:
+                            break
+                        winner_id = entry.get("SK", "").replace("USER#", "")
+                        self._repo.increment_season_wins(str(chat_id), winner_id, entry.get("first_name", "User"))
 
                 # Advance season counter and check if the season is over
                 week_count = self._repo.increment_season_week_count(str(chat_id))
@@ -144,13 +157,16 @@ class QuizService:
                     season_result = self._sender.send_message(str(chat_id), season_text)
                     if season_result:
                         logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
-                        # Credit the all-time season title to the #1 finisher before resetting
+                        # Credit all-time season title to every co-champion before resetting.
                         if season_entries:
-                            champion = season_entries[0]
-                            champion_id = champion.get("SK", "").replace("USER#", "")
-                            self._repo.increment_season_champion_count(
-                                str(chat_id), champion_id, champion.get("first_name", "User")
-                            )
+                            top_wins = int(season_entries[0].get("season_wins", 0))
+                            for entry in season_entries:
+                                if int(entry.get("season_wins", 0)) < top_wins:
+                                    break
+                                champion_id = entry.get("SK", "").replace("USER#", "")
+                                self._repo.increment_season_champion_count(
+                                    str(chat_id), champion_id, entry.get("first_name", "User")
+                                )
                         self._repo.reset_season_wins(str(chat_id))
                         self._repo.reset_season_week_count(str(chat_id))
                     else:
