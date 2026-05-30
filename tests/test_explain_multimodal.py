@@ -50,6 +50,8 @@ def test_process_explain_task_media_skips_empty_term_check(
     mock_get_repo: MagicMock,
 ) -> None:
     repo = MagicMock()
+    repo.get_status.return_value = "enqueued"
+    repo.try_claim_processing.return_value = True
     mock_get_repo.return_value = repo
     bot = MagicMock()
     body: dict = {
@@ -66,4 +68,5 @@ def test_process_explain_task_media_skips_empty_term_check(
     }
     wtf_mod.process_explain_task(bot, body)
     mock_exec.assert_called_once()
+    repo.mark_reply_sent.assert_called_once_with(1)
     repo.mark_completed.assert_called_once_with(1)

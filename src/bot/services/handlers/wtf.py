@@ -458,6 +458,29 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
             return
         mime_type = str(body.get("mime_type") or "application/octet-stream").strip() or "application/octet-stream"
 
+    task_repo = _get_task_repo()
+    status = task_repo.get_status(update_id)
+    if status == "completed":
+        logger.info(
+            "PROCESS_EXPLAIN already completed, skipping duplicate SQS delivery",
+            extra={"update_id": update_id},
+        )
+        return
+    if status == "sent":
+        task_repo.mark_completed(update_id)
+        logger.info(
+            "PROCESS_EXPLAIN reply already sent; reconciled completion on retry",
+            extra={"update_id": update_id},
+        )
+        return
+
+    if not task_repo.try_claim_processing(update_id):
+        logger.info(
+            "PROCESS_EXPLAIN not claimable (in flight or duplicate), skipping",
+            extra={"update_id": update_id, "status": status},
+        )
+        return
+
     try:
         if has_media:
             _execute_multimodal_explain_and_reply(
@@ -480,7 +503,8 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
                 lang=lang,
                 style=cast(WTFPromptStyle, style),
             )
-        _get_task_repo().mark_completed(update_id)
+        task_repo.mark_reply_sent(update_id)
+        task_repo.mark_completed(update_id)
         elapsed_ms = int((time.monotonic() - started) * 1000)
         logger.info(
             "PROCESS_EXPLAIN completed",
@@ -494,6 +518,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
         )
     except Exception:
         logger.exception("PROCESS_EXPLAIN failed", extra={"update_id": update_id, "chat_id": chat_id})
+        task_repo.release_processing(update_id)
         raise
 
 

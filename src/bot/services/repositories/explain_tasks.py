@@ -68,6 +68,79 @@ class ExplainTaskRepository:
             logger.exception("Failed to mark explain task as enqueued", extra={"update_id": update_id})
             raise
 
+    def get_status(self, update_id: int) -> str | None:
+        """Return the current dedup status for an update, if any."""
+        try:
+            resp = self._table.get_item(
+                Key={"stat_key": self._stat_key(update_id)},
+                ConsistentRead=True,
+            )
+            item = resp.get("Item")
+            if not item:
+                return None
+            status = item.get("status")
+            return str(status) if status else None
+        except ClientError:
+            logger.exception("Failed to read explain task status", extra={"update_id": update_id})
+            return None
+
+    def try_claim_processing(self, update_id: int) -> bool:
+        """Atomically move reserved/enqueued → processing. Returns False if already claimed."""
+        try:
+            self._table.update_item(
+                Key={"stat_key": self._stat_key(update_id)},
+                UpdateExpression="SET #s = :status, #t = :ttl",
+                ConditionExpression="#s IN (:reserved, :enqueued)",
+                ExpressionAttributeNames={"#s": "status", "#t": "ttl"},
+                ExpressionAttributeValues={
+                    ":status": "processing",
+                    ":reserved": "reserved",
+                    ":enqueued": "enqueued",
+                    ":ttl": self._ttl_epoch(),
+                },
+            )
+            return True
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code")
+            if code == "ConditionalCheckFailedException":
+                return False
+            logger.exception("Failed to claim explain task for processing", extra={"update_id": update_id})
+            raise
+
+    def mark_reply_sent(self, update_id: int) -> None:
+        """Record that the Telegram reply was delivered (SQS retry must not resend)."""
+        try:
+            self._table.update_item(
+                Key={"stat_key": self._stat_key(update_id)},
+                UpdateExpression="SET #s = :status, #t = :ttl",
+                ExpressionAttributeNames={"#s": "status", "#t": "ttl"},
+                ExpressionAttributeValues={":status": "sent", ":ttl": self._ttl_epoch()},
+            )
+        except ClientError:
+            logger.exception("Failed to mark explain reply as sent", extra={"update_id": update_id})
+            raise
+
+    def release_processing(self, update_id: int) -> None:
+        """Return a failed in-flight task to enqueued so SQS retry can reclaim it."""
+        try:
+            self._table.update_item(
+                Key={"stat_key": self._stat_key(update_id)},
+                UpdateExpression="SET #s = :status, #t = :ttl",
+                ConditionExpression="#s = :processing",
+                ExpressionAttributeNames={"#s": "status", "#t": "ttl"},
+                ExpressionAttributeValues={
+                    ":status": "enqueued",
+                    ":processing": "processing",
+                    ":ttl": self._ttl_epoch(),
+                },
+            )
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code")
+            if code == "ConditionalCheckFailedException":
+                return
+            logger.exception("Failed to release explain processing claim", extra={"update_id": update_id})
+            raise
+
     def mark_completed(self, update_id: int) -> None:
         """Mark task as completed after the final Telegram message is sent."""
         try:
