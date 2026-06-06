@@ -335,28 +335,23 @@ def _enqueue_term_explain(
             _send_typing_once(ctx)
 
             try:
-                ctx.sqs_repo.send_explain_task(
-                    update_id=ctx.update_id,
-                    chat_id=ctx.chat_id,
-                    reply_to_message_id=ctx.message_id,
-                    term=extra,
-                    lang=lang,
-                    style=style,
-                    file_id=fid,
-                    mime_type=mime,
-                    media_kind=media_kind,
-                    task_source="explain_reply",
+                task_repo.enqueue_after_reserve(
+                    ctx.update_id,
+                    lambda: ctx.sqs_repo.send_explain_task(
+                        update_id=ctx.update_id,
+                        chat_id=ctx.chat_id,
+                        reply_to_message_id=ctx.message_id,
+                        term=extra,
+                        lang=lang,
+                        style=style,
+                        file_id=fid,
+                        mime_type=mime,
+                        media_kind=media_kind,
+                        task_source="explain_reply",
+                    ),
                 )
-                task_repo.mark_enqueued(ctx.update_id)
             except Exception:
                 logger.exception("Failed to enqueue explain media task", extra={"update_id": ctx.update_id})
-                try:
-                    task_repo.release_reservation(ctx.update_id)
-                except Exception:
-                    logger.exception(
-                        "Failed to release explain media reservation",
-                        extra={"update_id": ctx.update_id},
-                    )
                 ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
             return
 
@@ -396,25 +391,20 @@ def _enqueue_term_explain(
     _send_typing_once(ctx)
 
     try:
-        ctx.sqs_repo.send_explain_task(
-            update_id=ctx.update_id,
-            chat_id=ctx.chat_id,
-            reply_to_message_id=ctx.message_id,
-            term=term,
-            lang=lang,
-            style=style,
-            task_source="explain_text",
+        task_repo.enqueue_after_reserve(
+            ctx.update_id,
+            lambda: ctx.sqs_repo.send_explain_task(
+                update_id=ctx.update_id,
+                chat_id=ctx.chat_id,
+                reply_to_message_id=ctx.message_id,
+                term=term,
+                lang=lang,
+                style=style,
+                task_source="explain_text",
+            ),
         )
-        task_repo.mark_enqueued(ctx.update_id)
     except Exception:
         logger.exception("Failed to enqueue explain task", extra={"update_id": ctx.update_id})
-        try:
-            task_repo.release_reservation(ctx.update_id)
-        except Exception:
-            logger.exception(
-                "Failed to release explain reservation after enqueue error",
-                extra={"update_id": ctx.update_id},
-            )
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)
 
 
@@ -445,6 +435,14 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
         logger.warning("PROCESS_EXPLAIN received invalid style", extra={"update_id": update_id, "style": style})
         return
 
+    task_repo = _get_task_repo()
+    if task_repo.is_completed(update_id):
+        logger.info(
+            "PROCESS_EXPLAIN already completed, skipping duplicate delivery",
+            extra={"update_id": update_id, "chat_id": chat_id},
+        )
+        return
+
     media_kind = ""
     mime_type = "application/octet-stream"
     if has_media:
@@ -454,7 +452,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
                 "PROCESS_EXPLAIN invalid media_kind",
                 extra={"update_id": update_id, "media_kind": media_kind},
             )
-            _get_task_repo().mark_completed(update_id)
+            task_repo.mark_completed(update_id)
             return
         mime_type = str(body.get("mime_type") or "application/octet-stream").strip() or "application/octet-stream"
 
@@ -480,7 +478,7 @@ def process_explain_task(bot: TelegramClient, body: dict[str, object]) -> None:
                 lang=lang,
                 style=cast(WTFPromptStyle, style),
             )
-        _get_task_repo().mark_completed(update_id)
+        task_repo.mark_completed(update_id)
         elapsed_ms = int((time.monotonic() - started) * 1000)
         logger.info(
             "PROCESS_EXPLAIN completed",

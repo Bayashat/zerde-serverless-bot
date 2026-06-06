@@ -50,6 +50,7 @@ def test_process_explain_task_media_skips_empty_term_check(
     mock_get_repo: MagicMock,
 ) -> None:
     repo = MagicMock()
+    repo.is_completed.return_value = False
     mock_get_repo.return_value = repo
     bot = MagicMock()
     body: dict = {

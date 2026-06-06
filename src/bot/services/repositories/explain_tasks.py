@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 
 from botocore.exceptions import ClientError
@@ -88,3 +89,34 @@ class ExplainTaskRepository:
         except ClientError:
             logger.exception("Failed to release explain reservation", extra={"update_id": update_id})
             raise
+
+    def is_completed(self, update_id: int) -> bool:
+        """Return True when this update was already processed successfully."""
+        try:
+            resp = self._table.get_item(Key={"stat_key": self._stat_key(update_id)})
+            item = resp.get("Item") or {}
+            return item.get("status") == "completed"
+        except ClientError:
+            logger.exception("Failed to read explain task status", extra={"update_id": update_id})
+            return False
+
+    def enqueue_after_reserve(self, update_id: int, send_fn: Callable[[], None]) -> None:
+        """Send the SQS task after reservation; release only when send_fn fails."""
+        try:
+            send_fn()
+        except Exception:
+            try:
+                self.release_reservation(update_id)
+            except Exception:
+                logger.exception(
+                    "Failed to release explain reservation after enqueue error",
+                    extra={"update_id": update_id},
+                )
+            raise
+        try:
+            self.mark_enqueued(update_id)
+        except Exception:
+            logger.exception(
+                "Failed to mark explain task enqueued after SQS send; worker may still process",
+                extra={"update_id": update_id},
+            )

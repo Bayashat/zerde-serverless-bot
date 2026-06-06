@@ -87,27 +87,22 @@ def handle_document_auto_summary(ctx: Context) -> None:
     caption = (ctx.message.get("caption") or "").strip()
 
     try:
-        ctx.sqs_repo.send_explain_task(
-            update_id=ctx.update_id,
-            chat_id=ctx.chat_id,
-            reply_to_message_id=ctx.message_id,
-            term=caption,
-            lang=lang,
-            style="normal",
-            file_id=str(file_id),
-            mime_type=mime,
-            media_kind="document",
-            task_source="document_auto",
+        task_repo.enqueue_after_reserve(
+            ctx.update_id,
+            lambda: ctx.sqs_repo.send_explain_task(
+                update_id=ctx.update_id,
+                chat_id=ctx.chat_id,
+                reply_to_message_id=ctx.message_id,
+                term=caption,
+                lang=lang,
+                style="normal",
+                file_id=str(file_id),
+                mime_type=mime,
+                media_kind="document",
+                task_source="document_auto",
+            ),
         )
-        task_repo.mark_enqueued(ctx.update_id)
     except Exception:
         logger.exception("Failed to enqueue document auto task", extra={"update_id": ctx.update_id})
-        try:
-            task_repo.release_reservation(ctx.update_id)
-        except Exception:
-            logger.exception(
-                "Failed to release document-auto reservation",
-                extra={"update_id": ctx.update_id},
-            )
         _react(ctx, _ERROR_REACTION)
         ctx.reply(get_translated_text("wtf_unexpected_error", lang), ctx.message_id)

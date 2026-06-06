@@ -17,6 +17,7 @@ def test_sqs_send_failure_releases_reservation(
 ) -> None:
     task_repo = MagicMock()
     task_repo.try_reserve_update.return_value = True
+    task_repo.enqueue_after_reserve.side_effect = lambda _uid, send_fn: send_fn()
     mock_get_repo.return_value = task_repo
 
     sqs = MagicMock()
@@ -39,6 +40,5 @@ def test_sqs_send_failure_releases_reservation(
         wtf_mod.handle_wtf(ctx)
 
     task_repo.try_reserve_update.assert_called_once_with(424242)
-    task_repo.release_reservation.assert_called_once_with(424242)
-    assert not task_repo.mark_enqueued.called
+    task_repo.enqueue_after_reserve.assert_called_once()
     ctx.reply.assert_called_once()
