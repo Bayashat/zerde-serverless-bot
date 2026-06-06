@@ -99,6 +99,19 @@ class QuizRepository:
 
     # ── Season helpers ────────────────────────────────────────────────────
 
+    def get_season_week_count(self, chat_id: str) -> int:
+        """Return the current season week counter (0 when unset)."""
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"META#season#{chat_id}", "SK": "LATEST"},
+                ConsistentRead=False,
+            )
+            item = resp.get("Item") or {}
+            return int(item.get("week_count", 0))
+        except Exception as e:
+            logger.error("Failed to get season week count", extra={"chat_id": chat_id, "error": str(e)})
+            return 0
+
     def increment_season_week_count(self, chat_id: str) -> int:
         """Atomically increment the season week counter and return the new value."""
         try:

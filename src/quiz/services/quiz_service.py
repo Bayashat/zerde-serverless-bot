@@ -121,15 +121,8 @@ class QuizService:
                 sent_chat_ids.append(str(chat_id))
                 logger.info("Leaderboard sent", extra={"chat_id": chat_id, "lang": lang})
 
-                # Record the week's winner (only if they actually scored)
-                if entries and int(entries[0].get("week_score", 0)) > 0:
-                    winner = entries[0]
-                    winner_id = winner.get("SK", "").replace("USER#", "")
-                    self._repo.increment_season_wins(str(chat_id), winner_id, winner.get("first_name", "User"))
-
-                # Advance season counter and check if the season is over
-                week_count = self._repo.increment_season_week_count(str(chat_id))
-                if week_count >= _SEASON_LENGTH:
+                pending_season_finale = self._repo.get_season_week_count(str(chat_id)) >= _SEASON_LENGTH
+                if pending_season_finale:
                     season_entries = self._repo.get_season_leaderboard(str(chat_id))
                     season_text = self.build_season_text(lang, season_entries)
                     season_result = self._sender.send_message(str(chat_id), season_text)
@@ -143,8 +136,31 @@ class QuizService:
                             "Failed to send season champion announcement",
                             extra={"chat_id": chat_id},
                         )
+                    self._repo.reset_week_scores(str(chat_id))
+                else:
+                    # Record the week's winner (only if they actually scored)
+                    if entries and int(entries[0].get("week_score", 0)) > 0:
+                        winner = entries[0]
+                        winner_id = winner.get("SK", "").replace("USER#", "")
+                        self._repo.increment_season_wins(str(chat_id), winner_id, winner.get("first_name", "User"))
 
-                self._repo.reset_week_scores(str(chat_id))
+                    week_count = self._repo.increment_season_week_count(str(chat_id))
+                    if week_count >= _SEASON_LENGTH:
+                        season_entries = self._repo.get_season_leaderboard(str(chat_id))
+                        season_text = self.build_season_text(lang, season_entries)
+                        season_result = self._sender.send_message(str(chat_id), season_text)
+                        if season_result:
+                            logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
+                            self._repo.reset_season_wins(str(chat_id))
+                            self._repo.reset_season_week_count(str(chat_id))
+                        else:
+                            failed.append({"chat_id": str(chat_id), "step": "send_season_message"})
+                            logger.error(
+                                "Failed to send season champion announcement",
+                                extra={"chat_id": chat_id},
+                            )
+
+                    self._repo.reset_week_scores(str(chat_id))
             else:
                 failed.append({"chat_id": str(chat_id), "step": "send_message"})
                 logger.error("Failed to send leaderboard", extra={"chat_id": chat_id})
