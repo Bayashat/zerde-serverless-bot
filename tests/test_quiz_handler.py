@@ -129,7 +129,8 @@ class TestHandleQuizstats:
         assert "@testgroup" in call_text
         assert "4 pts" in call_text  # week_score
         assert "10 pts" in call_text  # total_score (all-time)
-        assert "Season wins: <b>1</b>" in call_text
+        assert "This season weekly wins: <b>1/4</b>" in call_text
+        assert "All-time season titles: <b>0</b>" in call_text
         assert "3</b> days" in call_text  # streak
         assert "#2</b>" in call_text  # rank
 
