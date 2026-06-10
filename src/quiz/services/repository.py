@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
+from botocore.exceptions import ClientError
 from core.config import TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 
@@ -148,6 +149,31 @@ class QuizRepository:
             logger.error("Failed to get season leaderboard", extra={"chat_id": chat_id, "error": str(e)})
             return []
 
+    def increment_season_champion_count(self, chat_id: str, user_id: str, first_name: str) -> None:
+        """Increment the all-time season champion counter for the overall season winner.
+
+        Unlike season_wins (which resets every 4 weeks), this counter is never cleared —
+        it tracks how many seasons a user has finished in 1st place across all time.
+        """
+        try:
+            self._table.update_item(
+                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
+                UpdateExpression=(
+                    "SET season_champion_count = if_not_exists(season_champion_count, :zero) + :one,"
+                    "    first_name = :name"
+                ),
+                ExpressionAttributeValues={":zero": 0, ":one": 1, ":name": first_name},
+            )
+            logger.info(
+                "Season champion count incremented",
+                extra={"chat_id": chat_id, "user_id": user_id},
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to increment season champion count",
+                extra={"chat_id": chat_id, "user_id": user_id, "error": str(e)},
+            )
+
     def reset_season_wins(self, chat_id: str) -> None:
         """Reset season_wins to 0 for all users in a chat after the season announcement."""
         try:
@@ -235,6 +261,49 @@ class QuizRepository:
         except Exception as e:
             logger.error("Failed to save question queue", extra={"error": str(e)})
 
+    # ── Genquiz (on-demand) question queue — separate from daily rotation ─────
+
+    def get_genquiz_question_queue(self, category: str, chat_id: str) -> list[str]:
+        """Read the per-chat on-demand genquiz question queue (independent of daily rotation)."""
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"META#genquiz_q_queue#{category}#{chat_id}", "SK": "LATEST"},
+                ConsistentRead=False,
+            )
+            item = resp.get("Item")
+            if item and "remaining" in item:
+                return list(item["remaining"])
+            return []
+        except Exception as e:
+            logger.error("Failed to get genquiz question queue", extra={"error": str(e)})
+            return []
+
+    def save_genquiz_question_queue(self, category: str, chat_id: str, remaining: list[str]) -> None:
+        """Write the per-chat on-demand genquiz question queue."""
+        try:
+            self._table.put_item(
+                Item={
+                    "PK": f"META#genquiz_q_queue#{category}#{chat_id}",
+                    "SK": "LATEST",
+                    "remaining": remaining,
+                }
+            )
+        except Exception as e:
+            logger.error("Failed to save genquiz question queue", extra={"error": str(e)})
+
+    def get_today_quiz_record(self, chat_id: str) -> dict[str, Any] | None:
+        """Return today's quiz record for a chat, or None if not yet sent."""
+        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"QUIZ#{chat_id}", "SK": f"DATE#{today}"},
+                ConsistentRead=True,
+            )
+            return resp.get("Item")
+        except ClientError as e:
+            logger.error("Failed to read today quiz record", extra={"chat_id": chat_id, "error": str(e)})
+            return None
+
     def save_quiz_record(
         self,
         chat_id: str,
@@ -248,8 +317,12 @@ class QuizRepository:
         message_id: int,
         difficulty: str = "easy",
         points: int = 1,
-    ) -> None:
-        """Write a daily quiz record for a chat."""
+    ) -> bool:
+        """Write a daily quiz record for a chat.
+
+        Returns True on success, False if a record already exists for today
+        (idempotent: safe to call on Lambda retry without overwriting a live poll).
+        """
         now = datetime.now(_ALMATY_TZ)
         today = now.strftime("%Y-%m-%d")
         ttl = int(time.time()) + (_TTL_DAYS * 86400)
@@ -271,9 +344,17 @@ class QuizRepository:
                     "points": points,
                     "sent_at": now.isoformat(),
                     "ttl": ttl,
-                }
+                },
+                ConditionExpression=Attr("PK").not_exists(),
             )
             logger.info("Quiz record saved", extra={"chat_id": chat_id, "date": today})
-        except Exception as e:
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.warning(
+                    "Quiz record already exists for today, skipping save",
+                    extra={"chat_id": chat_id, "date": today},
+                )
+                return False
             logger.error("Failed to save quiz record", extra={"chat_id": chat_id, "error": str(e)})
             raise

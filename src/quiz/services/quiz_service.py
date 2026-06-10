@@ -1,6 +1,7 @@
 """Quiz domain services for managing generation, sending and leaderboards."""
 
 import random
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from core.logger import LoggerAdapter, get_logger
@@ -36,6 +37,21 @@ _BANK_SOURCE_LABELS: dict[str, str] = {
     "aws-dva-c02": "AWS Developer Associate Practice Exam",
 }
 
+# Topic aliases that /genquiz should serve from the bank instead of AI.
+# Keys are lowercased topic strings; values are the banked category name.
+_GENQUIZ_TOPIC_TO_BANKED: dict[str, str] = {
+    "cloud": "cloud",
+    "aws": "cloud",
+    "aws-clf": "cloud",
+    "clf": "cloud",
+    "clf-c02": "cloud",
+    "aws-clf-c02": "cloud",
+    "dva": "cloud",
+    "aws-dva": "cloud",
+    "dva-c02": "cloud",
+    "aws-dva-c02": "cloud",
+}
+
 
 class QuizService:
     """Orchestrates quiz operations (daily quiz and leaderboards)."""
@@ -45,13 +61,6 @@ class QuizService:
         self._generator = QuizGenerator(provider)
         self._sender = QuizSender()
         self._repo = QuizRepository()
-
-    def _rpd_payload(self) -> dict[str, int]:
-        """Build a response fragment with quiz Gemini RPD counters."""
-        remaining, total = self._generator.get_rpd_status()
-        if remaining is None or total is None:
-            return {}
-        return {"rpd_remaining": remaining, "rpd_total": total}
 
     def get_difficulty(self) -> str:
         """Return the difficulty level for today (Almaty time)."""
@@ -73,14 +82,21 @@ class QuizService:
         return text
 
     def build_leaderboard_text(self, lang: str, entries: list[dict]) -> str:
-        """Build the formatted leaderboard text."""
+        """Build the formatted leaderboard text with competition-style tie handling.
+
+        Users with equal scores share the same rank and medal.
+        Example: two users at 7 pts both get 🥈; the next unique score is rank 4.
+        """
         header = get_translated_text("leaderboard_header", lang)
         if not entries:
             return header + get_translated_text("leaderboard_empty", lang)
 
         lines = []
+        rank = 1
         for i, entry in enumerate(entries):
-            medal = _MEDALS[i] if i < len(_MEDALS) else f"{i + 1}."
+            if i > 0 and int(entry.get("week_score", 0)) < int(entries[i - 1].get("week_score", 0)):
+                rank = i + 1  # standard competition ranking: rank jumps to actual position
+            medal = _MEDALS[rank - 1] if rank - 1 < len(_MEDALS) else f"{rank}."
             user_id = entry.get("SK", "").replace("USER#", "")
             first_name = entry.get("first_name", "User")
             score = int(entry.get("week_score", 0))
@@ -90,14 +106,17 @@ class QuizService:
         return header + "\n".join(lines)
 
     def build_season_text(self, lang: str, entries: list[dict]) -> str:
-        """Build the season champion announcement text."""
+        """Build the season champion announcement text with competition-style tie handling."""
         header = get_translated_text("season_champion_header", lang)
         if not entries:
             return header + get_translated_text("season_champion_empty", lang)
 
         lines = []
+        rank = 1
         for i, entry in enumerate(entries):
-            medal = _MEDALS[i] if i < len(_MEDALS) else f"{i + 1}."
+            if i > 0 and int(entry.get("season_wins", 0)) < int(entries[i - 1].get("season_wins", 0)):
+                rank = i + 1
+            medal = _MEDALS[rank - 1] if rank - 1 < len(_MEDALS) else f"{rank}."
             user_id = entry.get("SK", "").replace("USER#", "")
             first_name = entry.get("first_name", "User")
             wins = int(entry.get("season_wins", 0))
@@ -121,11 +140,14 @@ class QuizService:
                 sent_chat_ids.append(str(chat_id))
                 logger.info("Leaderboard sent", extra={"chat_id": chat_id, "lang": lang})
 
-                # Record the week's winner (only if they actually scored)
+                # Record all co-winners tied for 1st place (only if they actually scored).
                 if entries and int(entries[0].get("week_score", 0)) > 0:
-                    winner = entries[0]
-                    winner_id = winner.get("SK", "").replace("USER#", "")
-                    self._repo.increment_season_wins(str(chat_id), winner_id, winner.get("first_name", "User"))
+                    top_score = int(entries[0].get("week_score", 0))
+                    for entry in entries:
+                        if int(entry.get("week_score", 0)) < top_score:
+                            break
+                        winner_id = entry.get("SK", "").replace("USER#", "")
+                        self._repo.increment_season_wins(str(chat_id), winner_id, entry.get("first_name", "User"))
 
                 # Advance season counter and check if the season is over
                 week_count = self._repo.increment_season_week_count(str(chat_id))
@@ -135,6 +157,16 @@ class QuizService:
                     season_result = self._sender.send_message(str(chat_id), season_text)
                     if season_result:
                         logger.info("Season champion announced", extra={"chat_id": chat_id, "lang": lang})
+                        # Credit all-time season title to every co-champion before resetting.
+                        if season_entries:
+                            top_wins = int(season_entries[0].get("season_wins", 0))
+                            for entry in season_entries:
+                                if int(entry.get("season_wins", 0)) < top_wins:
+                                    break
+                                champion_id = entry.get("SK", "").replace("USER#", "")
+                                self._repo.increment_season_champion_count(
+                                    str(chat_id), champion_id, entry.get("first_name", "User")
+                                )
                         self._repo.reset_season_wins(str(chat_id))
                         self._repo.reset_season_week_count(str(chat_id))
                     else:
@@ -166,23 +198,33 @@ class QuizService:
         """
         category_queue = self._repo.get_category_queue(chat_id)
         if not category_queue:
-            rng = random.Random(chat_id)
+            # Unique seed per round: chat_id keeps cross-chat independence;
+            # uuid4 ensures each new cycle produces a different shuffled order.
+            rng = random.Random(f"{chat_id}::{uuid.uuid4().hex}")
             category_queue = rng.sample(CATEGORY_POOL, len(CATEGORY_POOL))
             logger.info("New category round started", extra={"chat_id": chat_id, "queue": category_queue})
         remaining = list(category_queue)
         category = remaining.pop(0)
         return category, remaining
 
-    def _pick_banked_question_for_chat(self, category: str, chat_id: str, difficulty: str) -> dict | None:
-        """Pick the next question from the bank for a chat using per-chat rotation."""
+    def _pick_banked_question_for_chat(
+        self, category: str, chat_id: str, difficulty: str
+    ) -> tuple[dict, list[str]] | None:
+        """Pick the next question from the bank for a chat using per-chat rotation.
+
+        Returns (question_dict, remaining_queue) so the caller can persist the queue
+        only after a successful poll send — prevents silent question loss on send failure.
+        Returns None when the bank is empty or all entries are corrupt.
+        """
         sources = _BANKED_CATEGORIES[category]
         remaining = self._repo.get_question_queue(category, chat_id)
         if not remaining:
             all_keys = self._repo.get_bank_question_ids(category, sources)
             if not all_keys:
                 return None
-            # Seed by chat_id + pool size so different chats start at different positions
-            rng = random.Random(f"{chat_id}::{len(all_keys)}")
+            # Unique seed per round: chat_id + category for cross-chat independence;
+            # uuid4 ensures consecutive cycles produce different question orders.
+            rng = random.Random(f"{chat_id}::{category}::{len(all_keys)}::{uuid.uuid4().hex}")
             remaining = rng.sample(all_keys, len(all_keys))
             logger.info(
                 "New question bank round",
@@ -195,19 +237,73 @@ class QuizService:
             source, q_uuid = key.split("::", 1)
             item = self._repo.get_bank_question(category, source, q_uuid)
             if item:
-                self._repo.save_question_queue(category, chat_id, remaining)
-                return {
-                    "question": item["question"],
-                    "options": list(item["options"]),
-                    "correct_option_index": int(item["correct_option_id"]),
-                    "explanation": item.get("explanation", ""),
-                    "difficulty": difficulty,
-                    "points": DIFFICULTY_POINTS.get(difficulty, 1),
-                    "source_label": _BANK_SOURCE_LABELS.get(source, source),
-                }
+                # Return remaining to caller; it commits to DynamoDB only after poll succeeds.
+                return (
+                    {
+                        "question": item["question"],
+                        "options": list(item["options"]),
+                        "correct_option_index": int(item["correct_option_id"]),
+                        "explanation": item.get("explanation", ""),
+                        "difficulty": difficulty,
+                        "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                        "source_label": _BANK_SOURCE_LABELS.get(source, source),
+                    },
+                    remaining,
+                )
             logger.warning("Bank question missing, skipping", extra={"uuid": q_uuid})
 
+        # All entries were corrupt/missing — persist empty queue so next call refills from bank.
         self._repo.save_question_queue(category, chat_id, remaining)
+        return None
+
+    def _pick_banked_question_for_genquiz(
+        self, category: str, chat_id: str, difficulty: str
+    ) -> tuple[dict, list[str]] | None:
+        """Pick the next on-demand question from the bank using a genquiz-specific per-chat queue.
+
+        Returns (question_dict, remaining_queue) so the caller can persist the queue
+        only after a successful poll send — prevents silent question loss on send failure.
+        Uses a different DynamoDB key and shuffle seed from the daily rotation so that
+        genquiz picks are unlikely to collide with upcoming daily questions.
+        Daily category queue is never read or written by this method.
+        """
+        sources = _BANKED_CATEGORIES[category]
+        remaining = self._repo.get_genquiz_question_queue(category, chat_id)
+        if not remaining:
+            all_keys = self._repo.get_bank_question_ids(category, sources)
+            if not all_keys:
+                return None
+            # "genquiz:" prefix keeps daily/genquiz shuffles independent;
+            # uuid4 ensures consecutive cycles produce different question orders.
+            rng = random.Random(f"genquiz:{chat_id}::{category}::{len(all_keys)}::{uuid.uuid4().hex}")
+            remaining = rng.sample(all_keys, len(all_keys))
+            logger.info(
+                "New genquiz bank round",
+                extra={"chat_id": chat_id, "category": category, "total": len(remaining)},
+            )
+
+        while remaining:
+            key = remaining.pop(0)
+            source, q_uuid = key.split("::", 1)
+            item = self._repo.get_bank_question(category, source, q_uuid)
+            if item:
+                # Return remaining to caller; it commits to DynamoDB only after poll succeeds.
+                return (
+                    {
+                        "question": item["question"],
+                        "options": list(item["options"]),
+                        "correct_option_index": int(item["correct_option_id"]),
+                        "explanation": item.get("explanation", ""),
+                        "difficulty": difficulty,
+                        "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                        "source_label": _BANK_SOURCE_LABELS.get(source, source),
+                    },
+                    remaining,
+                )
+            logger.warning("Genquiz bank question missing, skipping", extra={"uuid": q_uuid})
+
+        # All entries were corrupt/missing — persist empty queue so next call refills from bank.
+        self._repo.save_genquiz_question_queue(category, chat_id, remaining)
         return None
 
     def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
@@ -224,14 +320,27 @@ class QuizService:
         failed: list[dict] = []
 
         for chat_id in chat_ids:
+            existing = self._repo.get_today_quiz_record(str(chat_id))
+            if existing:
+                logger.info(
+                    "Daily quiz already sent for this chat today, skipping",
+                    extra={"chat_id": chat_id, "poll_id": existing.get("poll_id")},
+                )
+                sent_count += 1
+                sent_chat_ids.append(str(chat_id))
+                continue
+
             category, remaining = self._pick_category_for_chat(str(chat_id))
             generated = None
             used_category = category
+            # Holds the bank queue to commit only after a successful poll send (Bug #2).
+            bank_remaining: list[str] | None = None
 
             if category in _BANKED_CATEGORIES:
                 # Draw from pre-built question bank
-                banked = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
-                if banked:
+                banked_result = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
+                if banked_result:
+                    banked, bank_remaining = banked_result
                     if lang == "en":
                         generated = banked
                     else:
@@ -254,8 +363,11 @@ class QuizService:
                         generated = q
 
             if not generated:
-                # AI path for non-banked categories (or bank + AI both failed)
+                # AI path for non-banked categories (or bank + AI both failed).
+                # Track categories tried-but-failed so they can be reinserted at the back
+                # of the queue, preserving the "each category appears once per cycle" guarantee.
                 candidates = [category] + remaining
+                tried_and_failed: list[str] = []
                 restarted = False
                 while candidates:
                     cat = candidates.pop(0)
@@ -263,16 +375,19 @@ class QuizService:
                     if question:
                         generated = question
                         used_category = cat
-                        remaining = candidates
+                        # Restore skipped categories at the back so they still appear this cycle.
+                        remaining = candidates if restarted else candidates + tried_and_failed
                         logger.info(
                             "Question generated",
                             extra={"chat_id": chat_id, "category": cat, "lang": lang, "difficulty": difficulty},
                         )
                         break
+                    tried_and_failed.append(cat)
                     if not candidates and not restarted:
                         restarted = True
                         candidates = list(CATEGORY_POOL)
                         random.shuffle(candidates)
+                        tried_and_failed.clear()
                         logger.warning(
                             "Queue exhausted, starting fresh category round",
                             extra={"chat_id": chat_id},
@@ -314,6 +429,9 @@ class QuizService:
                     difficulty=difficulty,
                     points=generated["points"],
                 )
+                # Commit bank question queue only after confirmed send (Bug #2 fix).
+                if bank_remaining is not None:
+                    self._repo.save_question_queue(used_category, str(chat_id), bank_remaining)
                 self._repo.save_category_queue(remaining, used_category, str(chat_id))
                 sent_count += 1
                 sent_chat_ids.append(str(chat_id))
@@ -333,16 +451,70 @@ class QuizService:
         }
 
     def process_on_demand_quiz(self, chat_id: str, lang: str, topic: str, difficulty: str) -> dict:
-        """Generate and send a single on-demand quiz to one chat."""
+        """Generate and send a single on-demand quiz to one chat.
+
+        For topics that map to a banked category (e.g. "cloud", "aws"), questions are drawn
+        from the question bank using a per-chat genquiz queue that is independent from the
+        daily rotation.  The RPD footer is omitted for bank-sourced questions (no AI used).
+        """
         logger.info(
             "On-demand quiz requested",
             extra={"chat_id": chat_id, "topic": topic, "lang": lang, "difficulty": difficulty},
         )
 
+        # ── Bank path ────────────────────────────────────────────────────────
+        banked_category = _GENQUIZ_TOPIC_TO_BANKED.get(topic.lower().strip())
+        if banked_category:
+            banked_result = self._pick_banked_question_for_genquiz(banked_category, str(chat_id), difficulty)
+            if banked_result:
+                banked, genquiz_remaining = banked_result
+                question = banked
+                if lang != "en":
+                    translated = self._generator.translate_question(banked, lang)
+                    if translated:
+                        question = translated
+                    else:
+                        logger.warning(
+                            "Genquiz translation failed, using English original",
+                            extra={"chat_id": chat_id, "lang": lang},
+                        )
+                # Prepend source label inline in the question text (no separate announcement)
+                source_label = question.get("source_label", "")
+                if source_label:
+                    prefix = f"<b>📚 {source_label}</b>\n\n"
+                    q_text = question["question"][: 300 - len(prefix)]
+                    poll_question = prefix + q_text
+                else:
+                    poll_question = question["question"]
+                poll_result = self._sender.send_quiz_poll(
+                    chat_id=chat_id,
+                    question=poll_question,
+                    options=question["options"],
+                    correct_option_id=question["correct_option_index"],
+                    explanation=question.get("explanation"),
+                    question_parse_mode="HTML",
+                )
+                if poll_result:
+                    logger.info(
+                        "Genquiz sent from bank",
+                        extra={"chat_id": chat_id, "category": banked_category, "lang": lang},
+                    )
+                    # Commit question queue only after confirmed send (Bug #2 fix).
+                    self._repo.save_genquiz_question_queue(banked_category, str(chat_id), genquiz_remaining)
+                    return {"status": "ok", "sent": 1, "total": 1}
+                logger.error("Failed to send genquiz poll from bank", extra={"chat_id": chat_id})
+                return {"status": "error", "reason": "failed to send poll"}
+            # Bank exhausted (shouldn't happen in practice) — fall through to AI
+            logger.warning(
+                "Genquiz bank empty for topic, falling back to AI",
+                extra={"chat_id": chat_id, "topic": topic},
+            )
+
+        # ── AI path ──────────────────────────────────────────────────────────
         question = self._generator.generate_question(topic, lang, difficulty)
         if not question:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
-            return {"status": "error", "reason": "no valid question", **self._rpd_payload()}
+            return {"status": "error", "reason": "no valid question"}
 
         poll_result = self._sender.send_quiz_poll(
             chat_id=chat_id,
@@ -353,11 +525,11 @@ class QuizService:
         )
 
         if poll_result:
-            logger.info("On-demand quiz sent", extra={"chat_id": chat_id, "topic": topic})
-            return {"status": "ok", "sent": 1, "total": 1, **self._rpd_payload()}
+            logger.info("On-demand quiz sent via AI", extra={"chat_id": chat_id, "topic": topic})
+            return {"status": "ok", "sent": 1, "total": 1}
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
-        return {"status": "error", "reason": "failed to send poll", **self._rpd_payload()}
+        return {"status": "error", "reason": "failed to send poll"}
 
     def process_on_demand_quiz_with_feedback(
         self,
@@ -366,15 +538,7 @@ class QuizService:
         topic: str,
         difficulty: str,
         *,
-        include_rpd_footer: bool,
         reply_to_message_id: int | None = None,
     ) -> dict:
-        """Run on-demand quiz and optionally send RPD footer to chat."""
-        result = self.process_on_demand_quiz(chat_id, lang, topic, difficulty)
-        if include_rpd_footer:
-            remaining = result.get("rpd_remaining")
-            total = result.get("rpd_total")
-            if isinstance(remaining, int) and isinstance(total, int):
-                footer = get_translated_text("genquiz_rpd_footer", lang, remaining=remaining, total=total)
-                self._sender.send_message(chat_id, footer, reply_to_message_id=reply_to_message_id)
-        return result
+        """Run on-demand quiz (bank or AI path). No RPD footer is sent."""
+        return self.process_on_demand_quiz(chat_id, lang, topic, difficulty)

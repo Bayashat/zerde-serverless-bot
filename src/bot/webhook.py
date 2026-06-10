@@ -17,6 +17,7 @@ from services.handlers import process_timeout_task
 from services.repositories.sqs import SQSClient
 from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
+from zerde_common.logging_utils import telegram_update_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -71,12 +72,15 @@ def _handle_api_gateway(
 
         try:
             body = parse_api_gateway_event(event)
-            logger.info("API Gateway event parsed successfully")
         except ValueError as e:
             logger.error("Failed to parse API Gateway event", extra={"error": e})
             return create_response(200, {"message": "Invalid request"})
 
         chat_id, chat_type = _extract_chat_context(body)
+        update_log = telegram_update_log_extra(body)
+        update_log["chat_id"] = chat_id
+        update_log["chat_type"] = chat_type
+        logger.info("Telegram webhook update received", extra=update_log)
 
         if chat_type == "private":
             dispatcher.bot.send_message(

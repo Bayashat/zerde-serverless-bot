@@ -69,7 +69,7 @@ def handle_poll_answer(ctx: Context) -> None:
     # Look up the quiz record by poll_id
     quiz_record = ctx.quiz_repo.lookup_poll(poll_id)
     if not quiz_record:
-        logger.debug("poll_answer for unknown poll_id, ignoring", extra={"poll_id": poll_id})
+        logger.warning("poll_answer for unknown poll_id, ignoring", extra={"poll_id": poll_id})
         return
 
     chat_id = quiz_record["PK"].replace("QUIZ#", "")
@@ -96,14 +96,23 @@ def handle_quizstats(ctx: Context) -> None:
     user_id = str(ctx.user_id)
     lang = ctx.lang_code
 
-    user_score = ctx.quiz_repo.get_user_score(chat_id, user_id)
-    if not user_score:
-        ctx.reply(get_translated_text("quizstats_no_data", lang))
+    user_score_raw = ctx.quiz_repo.get_user_score(chat_id, user_id)
+    if user_score_raw is None:
+        try:
+            ctx.send_private_message(get_translated_text("quizstats_no_data", lang))
+            ctx.react("👌")
+        except TelegramAPIError as error:
+            if error.status == 403:
+                ctx.reply(get_translated_text("quizstats_open_private_chat", lang), ctx.message_id)
+                return
+            raise
         return
 
-    # Calculate rank
+    user_score = user_score_raw
+
     leaderboard = ctx.quiz_repo.get_leaderboard(chat_id)
-    rank = 1
+    # Unranked users (on the board but not in this week's list) go after the last row
+    rank = len(leaderboard) + 1
     for i, entry in enumerate(leaderboard):
         if entry.get("SK") == f"USER#{user_id}":
             rank = i + 1
@@ -117,9 +126,12 @@ def handle_quizstats(ctx: Context) -> None:
                 "quizstats_response",
                 lang,
                 chat_title=chat_title,
-                score=user_score.get("total_score", 0),
-                streak=user_score.get("current_streak", 0),
-                best_streak=user_score.get("best_streak", 0),
+                week_score=int(user_score.get("week_score", 0)),
+                season_wins=int(user_score.get("season_wins", 0)),
+                season_champion_count=int(user_score.get("season_champion_count", 0)),
+                total_score=int(user_score.get("total_score", 0)),
+                streak=int(user_score.get("current_streak", 0)),
+                best_streak=int(user_score.get("best_streak", 0)),
                 rank=rank,
                 total_players=len(leaderboard),
             )

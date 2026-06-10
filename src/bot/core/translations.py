@@ -97,12 +97,14 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>Your Quiz Stats</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Score: <b>{score}</b> points\n"
-            "🔥 Streak: <b>{streak}</b> days\n"
-            "⭐ Best streak: <b>{best_streak}</b> days\n"
-            "📊 Rank: <b>#{rank}</b> / {total_players} players"
+            "🗓 This week: <b>{week_score} pts</b> · Rank <b>#{rank}</b> / {total_players} players\n"
+            "🎖 This season weekly wins: <b>{season_wins}/4</b>\n"
+            "🏆 All-time season titles: <b>{season_champion_count}</b>\n"
+            "──────────────\n"
+            "⭐ All-time: <b>{total_score} pts</b>\n"
+            "🔥 Streak: <b>{streak}</b> days current · <b>{best_streak}</b> days best"
         ),
-        "quizstats_no_data": "🧠 You haven't answered any quizzes yet. Wait for the next daily quiz!",
+        "quizstats_no_data": "🧠 No quiz score yet — answer tomorrow's daily quiz to get on the board!",
         "quizstats_open_private_chat": (
             "📬 I couldn't send you a private message.\n"
             "Please open a chat with me and send /start first, then try /quizstats again."
@@ -144,8 +146,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
             "❌ Usage: /genquiz &lt;topic&gt; [&lt;difficulty&gt; [&lt;lang&gt;]]\n"
-            "Order: topic → difficulty → language. "
-            "Defaults: difficulty <code>medium</code>, language from this chat (<code>CHAT_LANG_MAP</code>)."
+            "Order: topic → difficulty → language.\n"
+            "Difficulties: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "Defaults: difficulty <code>medium</code>, language from this group's default."
         ),
         "genquiz_invalid_lang": "❌ Invalid lang. Choose from: {langs}",
         "genquiz_invalid_difficulty": "❌ Invalid difficulty. Choose from: {difficulties}",
@@ -262,19 +265,22 @@ TRANSLATIONS = {
         "voteban_forgiven": (
             "💚 <b>Бұғаттаудан бас тартылды</b>\n\n"
             "🎯 {TARGET} {VOTES_AGAINST} дауыспен ақталды.\n\n"
-            "👼 Ақтап шыққандар (қарсы дауыс бергендер): {VOTERS_AGAINST}"
+            "👼 Ақтап шыққандар: {VOTERS_AGAINST}"
         ),
         "quizstats_response": (
-            "🧠 <b>Сіздің Quiz бойынша нәтижеңіз:</b>\n"
+            "🧠 <b>Сіздің Quiz статистикаңыз</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Жалпы ұпай: <b>{score}</b>\n"
-            "🔥 Үздіксіз streak: <b>{streak}</b> күн\n"
-            "⭐ Ең ұзақ streak: <b>{best_streak}</b> күн\n"
-            "📊 Рейтингтегі орныңыз: <b>#{rank}</b> / {total_players} қатысушы"
+            "🗓 Осы аптада: <b>{week_score} ұпай</b> · Рейтинг <b>#{rank}</b> / {total_players} қатысушы\n"
+            "🎖 Осы маусымда апталық жеңістер: <b>{season_wins}/4</b>\n"
+            "🏆 Барлық уақытта маусым чемпиондығы: <b>{season_champion_count}</b>\n"
+            "──────────────\n"
+            "⭐ Барлық уақыт бойынша: <b>{total_score} ұпай</b>\n"
+            "🔥 Серия (Streak): қазір <b>{streak}</b> күн · рекорд <b>{best_streak}</b> күн"
         ),
-        "quizstats_no_data": "🧠 Сіз әлі ешқандай Quiz сұрағына жауап бермепсіз. Келесі сұрақты жіберіп алмаңыз!",
+        "quizstats_no_data": "🧠 Сіздің ұпайыңыз әлі жоқ — ертеңгі күнделікті сұраққа жауап беріп, рейтингке кіріңіз!",
         "quizstats_open_private_chat": (
-            "📬 Сізге жеке хабарлама жібере алмадым.\n" "Алдымен менімен жеке чат ашып, /start пәрменін жіберіңіз"
+            "📬 Сізге жеке хабарлама жібере алмадым.\n"
+            "Алдымен менімен жеке чат ашып, /start пәрменін жіберіңіз, содан соң /quizstats қайта көріңіз."
         ),
         "quiz_not_configured": "⚙️ Quiz бұл бот үшін бапталмаған.",
         "wtf_usage": (
@@ -312,8 +318,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
             "❌ Қолданылуы: /genquiz &lt;тақырып&gt; [&lt;деңгей&gt; [&lt;тіл&gt;]]\n"
-            "Реті: тақырып → деңгей → тіл. "
-            "Әдепкі: деңгей <code>medium</code>, тіл чаттан (<code>CHAT_LANG_MAP</code>)."
+            "Реті: тақырып → деңгей → тіл.\n"
+            "Деңгейлер: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "Әдепкі: деңгей <code>medium</code>, тіл осы топтың негізгі тілі бойынша."
         ),
         "genquiz_invalid_lang": "❌ Тіл қате. Келесілерді таңдаңыз: {langs}",
         "genquiz_invalid_difficulty": "❌ Деңгей қате. Келесілерді таңдаңыз: {difficulties}",
@@ -428,12 +435,14 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>你的 Quiz 统计</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 积分：<b>{score}</b>\n"
-            "🔥 连胜：<b>{streak}</b> 天\n"
-            "⭐ 最佳连胜：<b>{best_streak}</b> 天\n"
-            "📊 排名：<b>#{rank}</b> / {total_players} 人"
+            "🗓 本周：<b>{week_score} 分</b> · 排名 <b>#{rank}</b> / {total_players} 人\n"
+            "🎖 本赛季周冠军次数：<b>{season_wins}/4</b>\n"
+            "🏆 历史赛季冠军次数：<b>{season_champion_count}</b>\n"
+            "──────────────\n"
+            "⭐ 历史总分：<b>{total_score} 分</b>\n"
+            "🔥 连胜：当前 <b>{streak}</b> 天 · 最佳 <b>{best_streak}</b> 天"
         ),
-        "quizstats_no_data": "🧠 你还没有答过 Quiz 题目。请等待下一次每日测验！",
+        "quizstats_no_data": "🧠 暂无积分记录 —— 明天参加每日测验即可上榜！",
         "quizstats_open_private_chat": (
             "📬 我无法给你发送私信。\n" "请先打开与我的私聊并发送 /start，然后再试一次 /quizstats。"
         ),
@@ -467,7 +476,8 @@ TRANSLATIONS = {
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
             "顺序：主题 → 难度 → 语言。\n"
-            "默认：难度 <code>medium</code>，语言为本群设置（<code>CHAT_LANG_MAP</code>）。"
+            "可选难度：<code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>。\n"
+            "默认：难度 <code>medium</code>，语言为当前群组的默认语言。"
         ),
         "genquiz_invalid_lang": "❌ 语言无效。可选：{langs}",
         "genquiz_invalid_difficulty": "❌ 难度无效。可选：{difficulties}",
@@ -582,12 +592,14 @@ TRANSLATIONS = {
         "quizstats_response": (
             "🧠 <b>Ваша статистика Quiz</b>\n"
             "📍 <b>{chat_title}</b>\n\n"
-            "🏆 Очки: <b>{score}</b>\n"
-            "🔥 Серия: <b>{streak}</b> дней\n"
-            "⭐ Лучшая серия: <b>{best_streak}</b> дней\n"
-            "📊 Ранг: <b>#{rank}</b> / {total_players} игроков"
+            "🗓 На этой неделе: <b>{week_score} очк.</b> · Ранг <b>#{rank}</b> / {total_players} игроков\n"
+            "🎖 Недельных побед в текущем сезоне: <b>{season_wins}/4</b>\n"
+            "🏆 Сезонных чемпионств за всё время: <b>{season_champion_count}</b>\n"
+            "──────────────\n"
+            "⭐ За всё время: <b>{total_score} очк.</b>\n"
+            "🔥 Серия: <b>{streak}</b> дн. сейчас · <b>{best_streak}</b> дн. рекорд"
         ),
-        "quizstats_no_data": "🧠 Вы еще не отвечали на Quiz. Дождитесь следующего ежедневного вопроса!",
+        "quizstats_no_data": "🧠 Очков пока нет — ответьте на завтрашний ежедневный вопрос и попадите в рейтинг!",
         "quizstats_open_private_chat": (
             "📬 Я не смог отправить вам личное сообщение.\n"
             "Сначала откройте со мной личный чат и отправьте /start, затем попробуйте /quizstats снова."
@@ -628,8 +640,9 @@ TRANSLATIONS = {
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (
             "❌ Использование: /genquiz &lt;тема&gt; [&lt;сложность&gt; [&lt;язык&gt;]]\n"
-            "Порядок: тема → сложность → язык. "
-            "По умолчанию: сложность <code>medium</code>, язык чата (<code>CHAT_LANG_MAP</code>)."
+            "Порядок: тема → сложность → язык.\n"
+            "Сложности: <code>easy</code>, <code>medium</code>, <code>hard</code>, <code>expert</code>.\n"
+            "По умолчанию: сложность <code>medium</code>, язык по умолчанию для этой группы."
         ),
         "genquiz_invalid_lang": "❌ Неверный язык. Выберите из: {langs}",
         "genquiz_invalid_difficulty": "❌ Неверная сложность. Выберите из: {difficulties}",
