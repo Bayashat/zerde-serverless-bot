@@ -462,6 +462,26 @@ class QuizService:
             extra={"chat_id": chat_id, "topic": topic, "lang": lang, "difficulty": difficulty},
         )
 
+        def save_sent_poll(question: dict, poll_question: str, poll_result: dict, category: str) -> bool:
+            poll_id = str(poll_result.get("poll", {}).get("id", ""))
+            if not poll_id:
+                logger.error("On-demand poll result missing poll id", extra={"chat_id": chat_id, "topic": topic})
+                return False
+            return self._repo.save_quiz_record(
+                chat_id=chat_id,
+                question=poll_question,
+                options=question["options"],
+                correct_option_id=question["correct_option_index"],
+                explanation=question.get("explanation"),
+                category=category,
+                lang=lang,
+                poll_id=poll_id,
+                message_id=int(poll_result.get("message_id", 0)),
+                difficulty=difficulty,
+                points=question["points"],
+                record_key=f"ONDEMAND#{poll_id}",
+            )
+
         # ── Bank path ────────────────────────────────────────────────────────
         banked_category = _GENQUIZ_TOPIC_TO_BANKED.get(topic.lower().strip())
         if banked_category:
@@ -499,6 +519,9 @@ class QuizService:
                         "Genquiz sent from bank",
                         extra={"chat_id": chat_id, "category": banked_category, "lang": lang},
                     )
+                    if not save_sent_poll(question, poll_question, poll_result, banked_category):
+                        logger.error("Failed to save genquiz poll lookup", extra={"chat_id": chat_id})
+                        return {"status": "error", "reason": "failed to save poll record"}
                     # Commit question queue only after confirmed send (Bug #2 fix).
                     self._repo.save_genquiz_question_queue(banked_category, str(chat_id), genquiz_remaining)
                     return {"status": "ok", "sent": 1, "total": 1}
@@ -526,6 +549,9 @@ class QuizService:
 
         if poll_result:
             logger.info("On-demand quiz sent via AI", extra={"chat_id": chat_id, "topic": topic})
+            if not save_sent_poll(question, question["question"], poll_result, topic):
+                logger.error("Failed to save on-demand quiz poll lookup", extra={"chat_id": chat_id, "topic": topic})
+                return {"status": "error", "reason": "failed to save poll record"}
             return {"status": "ok", "sent": 1, "total": 1}
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})

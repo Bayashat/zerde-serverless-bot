@@ -317,21 +317,24 @@ class QuizRepository:
         message_id: int,
         difficulty: str = "easy",
         points: int = 1,
+        record_key: str | None = None,
     ) -> bool:
-        """Write a daily quiz record for a chat.
+        """Write a quiz poll lookup record for a chat.
 
-        Returns True on success, False if a record already exists for today
-        (idempotent: safe to call on Lambda retry without overwriting a live poll).
+        Daily quizzes use ``DATE#YYYY-MM-DD``. On-demand quizzes pass a unique
+        ``record_key`` (normally ``ONDEMAND#<poll_id>``) so their poll answers can
+        be scored without colliding with the daily idempotency record.
         """
         now = datetime.now(_ALMATY_TZ)
         today = now.strftime("%Y-%m-%d")
+        sk = record_key or f"DATE#{today}"
         ttl = int(time.time()) + (_TTL_DAYS * 86400)
 
         try:
             self._table.put_item(
                 Item={
                     "PK": f"QUIZ#{chat_id}",
-                    "SK": f"DATE#{today}",
+                    "SK": sk,
                     "question": question,
                     "options": options,
                     "correct_option_id": correct_option_id,
@@ -347,13 +350,13 @@ class QuizRepository:
                 },
                 ConditionExpression=Attr("PK").not_exists(),
             )
-            logger.info("Quiz record saved", extra={"chat_id": chat_id, "date": today})
+            logger.info("Quiz record saved", extra={"chat_id": chat_id, "sk": sk, "poll_id": poll_id})
             return True
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 logger.warning(
-                    "Quiz record already exists for today, skipping save",
-                    extra={"chat_id": chat_id, "date": today},
+                    "Quiz record already exists, skipping save",
+                    extra={"chat_id": chat_id, "sk": sk, "poll_id": poll_id},
                 )
                 return False
             logger.error("Failed to save quiz record", extra={"chat_id": chat_id, "error": str(e)})

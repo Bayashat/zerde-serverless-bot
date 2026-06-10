@@ -43,7 +43,7 @@ aws sts get-caller-identity
    123456789:ABCdefGHIjkLMNopqrsTUVwxyz
    ```
 
-5. **Save this token** — you will use it as `TELEGRAM_BOT_TOKEN`. Do not share it or commit it to git.
+5. **Save this token** — you will use it as `BOT_TOKEN`. Do not share it or commit it to git.
 
 Optional: Create a test group, add your bot as admin with "Delete messages" and "Restrict members" permissions to test the captcha and kick flows. Add it to a second group to test the quiz.
 
@@ -51,7 +51,7 @@ Optional: Create a test group, add your bot as admin with "Delete messages" and 
 
 ## 3. Get External API Keys
 
-Zerde uses two external APIs beyond Telegram:
+Zerde can use three external APIs beyond Telegram:
 
 ### Google Gemini (for News and Quiz translation)
 
@@ -59,11 +59,15 @@ Zerde uses two external APIs beyond Telegram:
 2. Create an API key. Copy it — this is your `GEMINI_API_KEY`.
 3. Free tier is sufficient for daily digest volumes.
 
-### QuizAPI (for Daily Tech Quiz)
+### Groq (for async spam checks)
 
-1. Go to [quizapi.io](https://quizapi.io) and register a free account.
-2. Generate an API key in your dashboard. Copy it — this is your `QUIZAPI_KEY`.
-3. The free plan covers the daily quiz volume.
+1. Go to [console.groq.com](https://console.groq.com/) and create an API key.
+2. Copy it — this is your `GROQ_API_KEY`.
+
+### DeepSeek (optional fallback for explain/quiz/news)
+
+1. Go to [platform.deepseek.com](https://platform.deepseek.com/) and create an API key.
+2. Copy it — this is your `DEEPSEEK_API_KEY`.
 
 ---
 
@@ -85,20 +89,25 @@ Edit `.env` and fill in all required values:
 
 ```ini
 # Required
-TELEGRAM_BOT_TOKEN=<token from BotFather>
-TELEGRAM_WEBHOOK_SECRET_TOKEN=<hex string from openssl above>
+BOT_TOKEN=<token from BotFather>
+WEBHOOK_SECRET_TOKEN=<hex string from openssl above>
 GEMINI_API_KEY=<your Gemini API key>
-QUIZAPI_KEY=<your QuizAPI key>
+GROQ_API_KEY=<your Groq API key>
+DEEPSEEK_API_KEY=<your DeepSeek API key>
 
 # Optional — configure chat IDs to receive news/quiz
 NEWS_CHATS_KK=<comma-separated chat IDs for Kazakh news>
 NEWS_CHATS_ZH=<comma-separated chat IDs for Chinese news>
 NEWS_CHATS_RU=<comma-separated chat IDs for Russian news>
-QUIZ_CHATS=<comma-separated chat IDs for daily quiz>
+QUIZ_CHATS_KK=<comma-separated chat IDs for Kazakh quiz>
+QUIZ_CHATS_ZH=<comma-separated chat IDs for Chinese quiz>
+QUIZ_CHATS_RU=<comma-separated chat IDs for Russian quiz>
 
 # Optional — defaults shown
 AI_PROVIDER=gemini
-LLM_MODEL=gemini-2.5-flash
+WTF_GEMINI_MODEL=gemini-3.1-flash-lite-preview
+NEWS_GEMINI_MODEL=gemini-3-flash-preview
+QUIZ_GEMINI_MODEL=gemini-3-flash-preview
 DEFAULT_LANG=kk
 ```
 
@@ -140,7 +149,7 @@ Telegram must send updates to your API Gateway URL.
 
 ```bash
 curl -F "url=<YOUR_API_ENDPOINT>/webhook" \
-     -F "secret_token=<YOUR_TELEGRAM_WEBHOOK_SECRET_TOKEN>" \
+     -F "secret_token=<YOUR_WEBHOOK_SECRET_TOKEN>" \
      "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook"
 ```
 

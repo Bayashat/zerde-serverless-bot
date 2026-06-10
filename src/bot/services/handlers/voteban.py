@@ -205,17 +205,17 @@ def _finalize_ban(ctx: Context, target_user_id: int, votes_for: int) -> None:
             ),
         )
 
-        sent_message_id = session.get("reply_message_id")
+        vote_message_id = session.get("sent_message_id") or ctx.message_id
+        target_message_id = session.get("reply_message_id")
         logger.info(
             "Deleting vote message and user's reply message",
-            extra={"msg_id": ctx.message_id, "sent_message_id": sent_message_id},
+            extra={"vote_message_id": vote_message_id, "target_message_id": target_message_id},
         )
-        if ctx.message_id and sent_message_id:
+        for msg_id in dict.fromkeys(m for m in (ctx.message_id, vote_message_id, target_message_id) if m):
             try:
-                ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
-                ctx.bot.delete_message(ctx.chat_id, sent_message_id)
+                ctx.bot.delete_message(ctx.chat_id, msg_id)
             except Exception:
-                logger.exception(f"Failed to delete vote message: {ctx.message_id}")
+                logger.exception(f"Failed to delete vote/target message: {msg_id}")
 
         ctx.vote_repo.delete_vote_session(ctx.chat_id, target_user_id)
         if ctx.stats_repo:
