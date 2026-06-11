@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import re
+import time
+from dataclasses import dataclass
+from numbers import Number
 from typing import Any
 
 from core.config import (
     AGENT_BOT_USERNAME,
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
+    AGENT_PROACTIVE_FINAL_THRESHOLD,
+    AGENT_PROACTIVE_SCORE_THRESHOLD,
     AGENT_RECENT_CONTEXT_LIMIT,
     get_chat_lang,
     get_gemini_api_key,
@@ -28,6 +33,12 @@ from services.telegram import TelegramClient
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
+
+
+@dataclass(frozen=True)
+class ProactiveReplyScore:
+    score: float
+    reasons: tuple[str, ...]
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -110,6 +121,81 @@ def _local_proactive_candidate(text: str) -> bool:
     return True
 
 
+def score_proactive_reply(
+    *,
+    user_text: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    recent_bot_replies: int = 0,
+) -> ProactiveReplyScore:
+    """Cheap, explainable gate before asking the LLM for social timing."""
+    lowered = user_text.lower().strip()
+    score = 0.0
+    reasons: list[str] = []
+
+    if _looks_like_open_question(user_text):
+        score += 0.34
+        reasons.append("open_question")
+
+    technical_cues = (
+        "aws",
+        "opensearch",
+        "dynamodb",
+        "lambda",
+        "python",
+        "telegram",
+        "bot",
+        "infra",
+        "deploy",
+        "api",
+        "database",
+        "serverless",
+        "llm",
+        "gemini",
+        "deepseek",
+        "groq",
+    )
+    if any(cue in lowered for cue in technical_cues):
+        score += 0.22
+        reasons.append("technical_relevance")
+
+    if long_term_memory_context:
+        memory_terms = {
+            term
+            for term in re.findall(r"[a-zа-яәғқңөұүһіё0-9+#._-]{4,}", long_term_memory_context.lower())
+            if term not in {"summary", "speaker", "reason", "daily"}
+        }
+        if any(term in lowered for term in list(memory_terms)[:80]):
+            score += 0.16
+            reasons.append("matches_group_memory")
+
+    if recent_context:
+        score += 0.08
+        reasons.append("has_recent_context")
+    else:
+        score -= 0.08
+        reasons.append("no_recent_context")
+
+    if len(user_text) > 220:
+        score += 0.05
+        reasons.append("substantial_question")
+
+    if any(cue in lowered for cue in ("anyone", "кто-нибудь", "біреу", "有人", "does anyone")):
+        score += 0.08
+        reasons.append("asks_group")
+
+    if recent_bot_replies:
+        penalty = min(0.32, recent_bot_replies * 0.16)
+        score -= penalty
+        reasons.append(f"recent_bot_activity_penalty:{recent_bot_replies}")
+
+    if any(cue in lowered for cue in ("haha", "lol", "ахах", "хаха", "哈哈")):
+        score -= 0.18
+        reasons.append("joke_penalty")
+
+    return ProactiveReplyScore(score=max(0.0, min(1.0, score)), reasons=tuple(reasons))
+
+
 def _trigger_kind(update: dict[str, Any]) -> str | None:
     if not AGENT_ENABLED or not _is_plain_text_message(update):
         return None
@@ -188,11 +274,32 @@ def maybe_answer_proactively(
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
+    long_term_memory_context = format_long_term_memory_context(repo, chat_id)
+    raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
+    recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
+    reply_score = score_proactive_reply(
+        user_text=user_text,
+        recent_context=recent_context,
+        long_term_memory_context=long_term_memory_context,
+        recent_bot_replies=recent_bot_replies,
+    )
+    if reply_score.score < AGENT_PROACTIVE_SCORE_THRESHOLD:
+        logger.info(
+            "Group agent proactive candidate skipped by reply score",
+            extra={
+                "chat_id": chat_id,
+                "message_id": reply_to_message_id,
+                "reply_score": reply_score.score,
+                "reasons": ",".join(reply_score.reasons),
+            },
+        )
+        return False
 
     try:
         decision, _ = gemini.group_chat_proactive_decision(
             user_message=user_text,
             recent_context=recent_context,
+            long_term_memory_context=long_term_memory_context,
             lang=lang,
         )
     except GeminiRPDExhaustedError:
@@ -205,13 +312,16 @@ def maybe_answer_proactively(
         logger.exception("Group agent proactive decision failed", extra={"chat_id": chat_id})
         return False
 
-    if not decision.should_reply or decision.confidence < 0.72 or not decision.reply_text:
+    final_score = reply_score.score * 0.45 + decision.confidence * 0.55
+    if not decision.should_reply or final_score < AGENT_PROACTIVE_FINAL_THRESHOLD or not decision.reply_text:
         logger.info(
             "Group agent stayed silent",
             extra={
                 "chat_id": chat_id,
                 "message_id": reply_to_message_id,
                 "confidence": decision.confidence,
+                "reply_score": reply_score.score,
+                "final_score": final_score,
                 "reason": decision.reason,
             },
         )
@@ -233,8 +343,11 @@ def maybe_answer_proactively(
             bot_message_id=bot_message_id,
             trigger_message_id=reply_to_message_id,
             trigger_kind="proactive",
-            reason=decision.reason or "I judged this as an open question where a short answer could help.",
-            confidence=decision.confidence,
+            reason=(
+                f"{decision.reason or 'I judged this as a useful moment to answer.'} "
+                f"reply_score={reply_score.score:.2f}; signals={', '.join(reply_score.reasons)}"
+            ),
+            confidence=final_score,
         )
     logger.info(
         "Group agent handled update",
@@ -243,6 +356,8 @@ def maybe_answer_proactively(
             "message_id": reply_to_message_id,
             "trigger_kind": "proactive",
             "confidence": decision.confidence,
+            "reply_score": reply_score.score,
+            "final_score": final_score,
             "reason": decision.reason,
         },
     )

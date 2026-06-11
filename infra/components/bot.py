@@ -64,6 +64,8 @@ class BotConstruct(Construct):
         agent_bot_username: str,
         agent_recent_context_limit: str,
         agent_daily_proactive_limit: str,
+        agent_proactive_score_threshold: str,
+        agent_proactive_final_threshold: str,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -128,6 +130,8 @@ class BotConstruct(Construct):
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
             "AGENT_DAILY_PROACTIVE_LIMIT": agent_daily_proactive_limit,
+            "AGENT_PROACTIVE_SCORE_THRESHOLD": agent_proactive_score_threshold,
+            "AGENT_PROACTIVE_FINAL_THRESHOLD": agent_proactive_final_threshold,
             # -- Groq parameters (non-secret) ──────────────────────────────────
             "GROQ_API_BASE": groq_api_base,
             "GROQ_MODEL": groq_model,

@@ -353,6 +353,7 @@ class GeminiClient:
         *,
         user_message: str,
         recent_context: str,
+        long_term_memory_context: str = "",
         lang: str = "kk",
     ) -> tuple[GroupAgentDecision, int]:
         """Decide whether to proactively join a group chat, optionally returning the reply.
@@ -395,6 +396,8 @@ class GeminiClient:
 
         prompt = (
             f"Preferred language code: {lang}\n\n"
+            "Trusted long-term group memory:\n"
+            f"{long_term_memory_context or '(no long-term memory available)'}\n\n"
             "Recent group context, oldest to newest:\n"
             f"{recent_context or '(no recent context available)'}\n\n"
             "Current message:\n"
@@ -417,6 +420,7 @@ class GeminiClient:
                 "model": self._model,
                 "lang": lang,
                 "context_chars": len(recent_context),
+                "long_term_memory_chars": len(long_term_memory_context),
                 "message_chars": len(user_message),
                 "rpd_count": count,
                 "rpd_limit": self.rpd_limit,

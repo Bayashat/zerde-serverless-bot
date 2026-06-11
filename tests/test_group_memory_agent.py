@@ -116,6 +116,37 @@ def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
     ]
     assert values[":topics"]["python"] == Decimal(3)
     assert values[":topics"]["opensearch"] == Decimal(1)
+    assert "uses-cyrillic" in values[":language_style"]
+    assert "opensearch" in values[":interests"]
+
+
+def test_touch_user_profile_extracts_structured_self_stated_profile_fields():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {
+        "Item": {
+            "preferences": ["I prefer Python for quick scripts"],
+            "known_facts": [],
+            "boundaries": [],
+            "language_style": [],
+            "interests": [],
+        }
+    }
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="bayashat",
+        sample_text="I work on AWS Lambda. I prefer OpenSearch for retrieval. Don't ping me at night.",
+        now=1_700_000_100,
+    )
+
+    values = repo.table.update_item.call_args.kwargs["ExpressionAttributeValues"]
+    assert "I prefer Python for quick scripts" in values[":preferences"]
+    assert any("OpenSearch" in item for item in values[":preferences"])
+    assert any("I work on AWS Lambda" in item for item in values[":known_facts"])
+    assert any("Don't ping me" in item for item in values[":boundaries"])
 
 
 def test_format_user_profile_context_uses_target_profile_not_third_party_label():
@@ -127,6 +158,11 @@ def test_format_user_profile_context_uses_target_profile_not_third_party_label()
             "display_name": "Bayashat",
             "message_count": Decimal(12),
             "topic_counts": {"python": Decimal(3), "opensearch": Decimal(2)},
+            "language_style": ["uses-latin", "concise"],
+            "interests": ["opensearch", "python"],
+            "preferences": ["I prefer OpenSearch for retrieval"],
+            "known_facts": ["I work on AWS Lambda"],
+            "boundaries": ["Don't ping me at night"],
             "recent_samples": [
                 "біраз уақыт керек әр адамды тану үшін",
                 "OpenSearch индексациясын қарап жүрмін",
@@ -144,6 +180,9 @@ def test_format_user_profile_context_uses_target_profile_not_third_party_label()
     repo.get_user_profiles_by_usernames.assert_called_once_with(-100123, {"bayashat"})
     assert "username=@bayashat" in context
     assert "own_topic_terms: python, opensearch" in context
+    assert "self_stated_preferences: I prefer OpenSearch for retrieval" in context
+    assert "self_stated_background: I work on AWS Lambda" in context
+    assert "self_stated_boundaries: Don't ping me at night" in context
     assert "OpenSearch индексациясын қарап жүрмін" in context
     assert "токсик" not in context
 
@@ -371,8 +410,22 @@ def test_proactive_agent_asks_social_decision_before_daily_reservation(monkeypat
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.try_reserve_proactive_reply.return_value = False
+    gemini = MagicMock()
+    gemini.group_chat_proactive_decision.return_value = (
+        GroupAgentDecision(
+            True, 0.9, "open technical question with no answer yet", "OpenSearch pricing depends on capacity."
+        ),
+        1,
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous context")
+    monkeypatch.setattr(
+        group_agent,
+        "format_long_term_memory_context",
+        lambda *args, **kwargs: "[event speaker=Ada] OpenSearch pricing discussion",
+    )
 
     handled = group_agent.handle_update(
         repo=repo,
@@ -381,7 +434,43 @@ def test_proactive_agent_asks_social_decision_before_daily_reservation(monkeypat
     )
 
     assert handled is False
-    repo.try_reserve_proactive_reply.assert_not_called()
+    gemini.group_chat_proactive_decision.assert_called_once()
+    repo.try_reserve_proactive_reply.assert_called_once()
+
+
+def test_reply_score_penalizes_recent_bot_activity():
+    score = group_agent.score_proactive_reply(
+        user_text="does anyone know how OpenSearch pricing works?",
+        recent_context="Ada: earlier context",
+        long_term_memory_context="[event speaker=Ada] OpenSearch pricing discussion",
+        recent_bot_replies=3,
+    )
+
+    assert score.score < 0.62
+    assert any(reason.startswith("recent_bot_activity_penalty") for reason in score.reasons)
+
+
+def test_proactive_agent_skips_llm_when_reply_score_is_low(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_SCORE_THRESHOLD", 0.62)
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text="does anyone know?",
+        lang="en",
+    )
+
+    assert handled is False
+    gemini.group_chat_proactive_decision.assert_not_called()
+    bot.send_message.assert_not_called()
 
 
 def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
@@ -394,6 +483,7 @@ def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous answer")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
 
     handled = group_agent.maybe_answer_proactively(
         repo=repo,
@@ -422,6 +512,11 @@ def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(
+        group_agent,
+        "format_long_term_memory_context",
+        lambda *args, **kwargs: "[event speaker=Ada] OpenSearch pricing discussion",
+    )
 
     handled = group_agent.maybe_answer_proactively(
         repo=repo,
@@ -434,6 +529,7 @@ def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
 
     assert handled is True
     repo.try_reserve_proactive_reply.assert_called_once()
+    assert gemini.group_chat_proactive_decision.call_args.kwargs["long_term_memory_context"]
     bot.send_message.assert_called_once_with(
         -100123,
         "OpenSearch pricing depends on shards.",
