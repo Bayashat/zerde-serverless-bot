@@ -88,6 +88,20 @@ class GroupMemoryRepository:
         return counts
 
     @staticmethod
+    def _normalise_profile_list(value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        items: list[str] = []
+        seen: set[str] = set()
+        for raw in value:
+            text = str(raw or "").replace("\n", " ").strip()
+            key = text.lower()
+            if text and key not in seen:
+                seen.add(key)
+                items.append(text[:180])
+        return items[-12:]
+
+    @staticmethod
     def _profile_terms(text: str) -> list[str]:
         """Extract lightweight topic terms from a user's own message."""
         import re
@@ -126,6 +140,80 @@ class GroupMemoryRepository:
             if len(terms) >= 8:
                 break
         return terms
+
+    @staticmethod
+    def _detect_language_style(text: str) -> list[str]:
+        import re
+
+        styles: list[str] = []
+        if re.search(r"[а-яәғқңөұүһіё]", text.lower()):
+            styles.append("uses-cyrillic")
+        if re.search(r"[\u4e00-\u9fff]", text):
+            styles.append("uses-chinese")
+        if re.search(r"[a-z]", text.lower()):
+            styles.append("uses-latin")
+        if "?" in text or "？" in text:
+            styles.append("asks-questions")
+        if re.search(r"[😂😅🤣😭🙂😉👍🔥]", text):
+            styles.append("uses-emoji")
+        if len(text) <= 80:
+            styles.append("concise")
+        elif len(text) >= 240:
+            styles.append("long-form")
+        return styles[:6]
+
+    @staticmethod
+    def _extract_structured_profile_updates(sample_text: str) -> dict[str, list[str]]:
+        import re
+
+        cleaned = sample_text.replace("\n", " ").strip()
+        lowered = cleaned.lower()
+        updates = {
+            "language_style": GroupMemoryRepository._detect_language_style(cleaned),
+            "interests": [],
+            "preferences": [],
+            "known_facts": [],
+            "boundaries": [],
+        }
+
+        tech_terms = GroupMemoryRepository._profile_terms(cleaned)
+        updates["interests"].extend(term for term in tech_terms[:5] if term)
+
+        preference_patterns = (
+            r"\b(?:i prefer|i like|i love|i use|my stack is)\b[^.!?\n]{0,120}",
+            r"\b(?:предпочитаю|люблю|использую)\b[^.!?\n]{0,120}",
+            r"(?:маған ұнайды|қолданам|ұнатам)[^.!?\n]{0,120}",
+            r"(?:我喜欢|我用)[^。！？\n]{0,80}",
+        )
+        for pattern in preference_patterns:
+            for match in re.finditer(pattern, cleaned, flags=re.IGNORECASE):
+                updates["preferences"].append(match.group(0).strip()[:180])
+
+        fact_patterns = (
+            r"\b(?:i work|i am working|i live|i study|i built|i maintain)\b[^.!?\n]{0,120}",
+            r"\b(?:работаю|живу|учусь|поддерживаю)\b[^.!?\n]{0,120}",
+            r"(?:жұмыс істеймін|тұрамын|оқимын)[^.!?\n]{0,120}",
+            r"(?:我在|我住|我负责)[^。！？\n]{0,80}",
+        )
+        for pattern in fact_patterns:
+            for match in re.finditer(pattern, cleaned, flags=re.IGNORECASE):
+                updates["known_facts"].append(match.group(0).strip()[:180])
+
+        boundary_patterns = (
+            r"\b(?:don't call me|do not call me|don't ping me|do not ping me|don't mention me)\b[^.!?\n]{0,120}",
+            r"\b(?:не называй|не пингуй|не упоминай)\b[^.!?\n]{0,120}",
+            r"(?:мені атама|мені мазалама)[^.!?\n]{0,120}",
+            r"(?:别叫我|不要叫我|别提我)[^。！？\n]{0,80}",
+        )
+        for pattern in boundary_patterns:
+            for match in re.finditer(pattern, cleaned, flags=re.IGNORECASE):
+                updates["boundaries"].append(match.group(0).strip()[:180])
+
+        # Strong negative preferences are useful as boundaries, but keep them as
+        # self-stated facts rather than third-party character labels.
+        if any(cue in lowered for cue in ("i hate", "ненавижу", "ұнатпаймын", "我不喜欢")):
+            updates["preferences"].append(cleaned[:180])
+        return updates
 
     def set_chat_settings(
         self,
@@ -234,6 +322,12 @@ class GroupMemoryRepository:
         profile = self.get_user_profile(chat_id, user_id)
         values[":samples"] = self._updated_profile_samples(profile, sample_text)
         values[":topics"] = self._updated_profile_topics(profile, sample_text)
+        structured_updates = self._updated_structured_profile(profile, sample_text)
+        values[":language_style"] = structured_updates["language_style"]
+        values[":interests"] = structured_updates["interests"]
+        values[":preferences"] = structured_updates["preferences"]
+        values[":known_facts"] = structured_updates["known_facts"]
+        values[":boundaries"] = structured_updates["boundaries"]
         names = {"#count": "message_count"}
         sets = [
             "first_seen = if_not_exists(first_seen, :now)",
@@ -244,6 +338,11 @@ class GroupMemoryRepository:
             "last_sample = :sample",
             "recent_samples = :samples",
             "topic_counts = :topics",
+            "language_style = :language_style",
+            "interests = :interests",
+            "preferences = :preferences",
+            "known_facts = :known_facts",
+            "boundaries = :boundaries",
             "#count = if_not_exists(#count, :zero) + :one",
         ]
         if username:
@@ -270,6 +369,21 @@ class GroupMemoryRepository:
             counts[term] = counts.get(term, 0) + 1
         top_terms = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:30]
         return {term: Decimal(count) for term, count in top_terms}
+
+    def _updated_structured_profile(self, profile: dict[str, Any], sample_text: str) -> dict[str, list[str]]:
+        updates = self._extract_structured_profile_updates(sample_text)
+        result: dict[str, list[str]] = {}
+        for field in ("language_style", "interests", "preferences", "known_facts", "boundaries"):
+            merged = self._normalise_profile_list(profile.get(field))
+            seen = {item.lower() for item in merged}
+            for item in updates[field]:
+                text = str(item or "").replace("\n", " ").strip()
+                key = text.lower()
+                if text and key not in seen:
+                    seen.add(key)
+                    merged.append(text[:180])
+            result[field] = merged[-12:]
+        return result
 
     def get_recent_messages(self, chat_id: int | str, *, limit: int) -> list[dict[str, Any]]:
         resp = self.table.query(
@@ -511,6 +625,22 @@ class GroupMemoryRepository:
         )
         items = resp.get("Items") or []
         return items[0] if items else {}
+
+    def count_recent_agent_replies(self, chat_id: int | str, *, since_epoch: int, limit: int = 25) -> int:
+        resp = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            ScanIndexForward=False,
+            Limit=limit,
+        )
+        count = 0
+        for item in resp.get("Items") or []:
+            try:
+                created_at = int(item.get("created_at") or 0)
+            except (TypeError, ValueError):
+                created_at = 0
+            if created_at >= since_epoch:
+                count += 1
+        return count
 
     def get_memory_overview(self, chat_id: int | str) -> dict[str, Any]:
         counts = {

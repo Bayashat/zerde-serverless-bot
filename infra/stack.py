@@ -78,6 +78,8 @@ class ZerdeTelegramBotStack(Stack):
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "10")
+        agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
+        agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
@@ -155,6 +157,8 @@ class ZerdeTelegramBotStack(Stack):
             agent_bot_username=agent_bot_username,
             agent_recent_context_limit=agent_recent_context_limit,
             agent_daily_proactive_limit=agent_daily_proactive_limit,
+            agent_proactive_score_threshold=agent_proactive_score_threshold,
+            agent_proactive_final_threshold=agent_proactive_final_threshold,
         )
 
         news = NewsConstruct(

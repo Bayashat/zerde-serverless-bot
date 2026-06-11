@@ -197,6 +197,19 @@ def _format_recent_samples(value: Any) -> list[str]:
     return samples[-5:]
 
 
+def _format_profile_list(value: Any, *, limit: int = 8) -> str:
+    if not isinstance(value, list):
+        return ""
+    items = []
+    for item in value:
+        text = str(item or "").replace("\n", " ").strip()
+        if text:
+            items.append(text[:180])
+        if len(items) >= limit:
+            break
+    return "; ".join(items)
+
+
 def format_user_profile_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
@@ -227,6 +240,17 @@ def format_user_profile_context(
         topics = _format_topic_counts(profile.get("topic_counts"))
         if topics:
             lines.append(f"  own_topic_terms: {topics}")
+
+        for field, label in (
+            ("language_style", "observed_language_style"),
+            ("interests", "self_observed_interests"),
+            ("preferences", "self_stated_preferences"),
+            ("known_facts", "self_stated_background"),
+            ("boundaries", "self_stated_boundaries"),
+        ):
+            formatted = _format_profile_list(profile.get(field))
+            if formatted:
+                lines.append(f"  {label}: {formatted}")
 
         samples = _format_recent_samples(profile.get("recent_samples"))
         if samples:
