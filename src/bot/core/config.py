@@ -144,6 +144,8 @@ AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", False)
 AGENT_BOT_USERNAME: str = os.environ.get("AGENT_BOT_USERNAME", "").lstrip("@").lower()
 AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
 AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
+GROUP_MEMORY_DAILY_SUMMARY_DAYS: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7"))
+GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500"))
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VOTEBAN_PREFIX = "voteban_"

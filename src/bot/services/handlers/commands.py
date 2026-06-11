@@ -222,6 +222,7 @@ def handle_memory_status(ctx: Context) -> None:
             f"{overview['user_facts']} user facts, "
             f"{overview['group_facts']} group facts, "
             f"{overview['jokes']} jokes\n"
+            f"Daily summaries: {overview['daily_summaries']}\n"
             f"Recorded agent replies: {overview['agent_replies']}"
         ),
         ctx.message_id,
