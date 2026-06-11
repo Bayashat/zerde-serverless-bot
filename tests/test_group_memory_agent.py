@@ -49,6 +49,20 @@ def test_observe_update_stores_opted_in_group_message(monkeypatch):
     assert sqs.send_group_memory_task.call_args.kwargs["text"] == "we discussed OpenSearch today"
 
 
+def test_observe_update_does_not_enqueue_duplicate_message(monkeypatch):
+    repo = MagicMock()
+    sqs = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    repo.store_message.return_value = False
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+
+    group_memory.observe_update(repo, _group_update("we discussed OpenSearch today"), sqs_repo=sqs)
+
+    repo.store_message.assert_called_once()
+    assert repo.store_message.call_args.kwargs["skip_if_exists"] is True
+    sqs.send_group_memory_task.assert_not_called()
+
+
 def test_observe_update_skips_when_chat_has_not_opted_in(monkeypatch):
     repo = MagicMock()
     repo.is_memory_enabled.return_value = False
@@ -198,6 +212,53 @@ def test_format_user_profile_context_uses_target_profile_not_third_party_label()
     assert "self_stated_boundaries: Don't ping me at night" in context
     assert "OpenSearch индексациясын қарап жүрмін" in context
     assert "токсик" not in context
+
+
+def test_format_requester_profile_context_uses_requester_profile():
+    repo = MagicMock()
+    repo.get_user_profile.return_value = {
+        "user_id": "42",
+        "username": "ada",
+        "display_name": "Ada",
+        "message_count": Decimal(4),
+        "topic_counts": {"lambda": Decimal(2)},
+        "known_facts": ["I work on AWS Lambda"],
+    }
+
+    context = group_memory.format_requester_profile_context(
+        repo,
+        -100123,
+        requester_user_id=42,
+        requester_username="ada",
+        requester_display_name="Ada",
+    )
+
+    repo.get_user_profile.assert_called_once_with(-100123, 42)
+    assert "Trusted current requester profile" in context
+    assert "username=@ada" in context
+    assert "self_stated_background: I work on AWS Lambda" in context
+
+
+def test_format_long_term_memory_context_returns_empty_for_termless_query():
+    repo = MagicMock()
+    repo.get_recent_daily_summaries.return_value = [
+        {
+            "summary_date": "2026-06-10",
+            "summary": "The group discussed Claude subscriptions.",
+            "topics": ["claude"],
+        }
+    ]
+    repo.get_recent_long_term_memories.return_value = [
+        {
+            "kind": "event",
+            "display_name": "Ada",
+            "summary": "OpenSearch vector indexing needs a backfill.",
+        }
+    ]
+
+    context = group_memory.format_long_term_memory_context(repo, -100123, query_text="我是谁")
+
+    assert context == ""
 
 
 def test_format_long_term_memory_context_renders_important_memories():
@@ -449,6 +510,29 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     assert payload["lang"] == "en"
 
 
+def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_group_ask_task(
+        update_id=123,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="我是谁",
+        lang="zh",
+        requester_user_id=42,
+        requester_username="ada",
+        requester_display_name="Ada",
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["requester_user_id"] == 42
+    assert payload["requester_username"] == "ada"
+    assert payload["requester_display_name"] == "Ada"
+
+
 def test_sqs_client_sends_vector_memory_task(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -524,6 +608,8 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     assert "infra engineers are still needed" in user_text
     assert "The user asked about a replied-to group message" in user_text
     assert "Поделись по братский" in user_text
+    assert answer.call_args.kwargs["requester_user_id"] == 42
+    assert answer.call_args.kwargs["requester_username"] == "ada"
 
 
 def test_agent_should_not_answer_plain_chatter(monkeypatch):
@@ -730,6 +816,10 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
             "[speaker user_id=101 username=@nurtai_c name=Nurt AI] @bayashat чаттың токсигі\n"
             "[speaker user_id=202 username=@bayashat name=Bayashat] біраз уақыт керек әр адамды тану үшін"
         ),
+        requester_profile_context=(
+            "Trusted current requester profile derived only from the requester's own stored messages:\n"
+            "- [name=Ada username=@ada user_id=42 own_messages=4]"
+        ),
         user_profile_context=(
             "Trusted target-user profiles derived only from each user's own stored messages:\n"
             "- [name=Bayashat username=@bayashat user_id=202 own_messages=12]\n"
@@ -750,8 +840,11 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert "do not use a fixed angry persona by default" in system_prompt
     assert "do not add disclaimers" in system_prompt
     assert "Respect the response length instructions exactly" in system_prompt
+    assert "self-reference questions" in system_prompt
+    assert "Trusted current requester profile context:" in user_prompt
     assert "Trusted target-user profile context:" in user_prompt
     assert "Response length and style instructions:" in user_prompt
+    assert "username=@ada" in user_prompt
     assert "own_topic_terms: opensearch, python" in user_prompt
     assert "distinguish a person's own messages from another user's opinion" in user_prompt
     assert "username=@bayashat" in user_prompt
@@ -777,6 +870,11 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         "format_user_profile_context",
         lambda *args, **kwargs: "Trusted profile: username=@bayashat own_topic_terms: opensearch",
     )
+    monkeypatch.setattr(
+        group_agent,
+        "format_requester_profile_context",
+        lambda *args, **kwargs: "Requester profile: username=@ada own_topic_terms: lambda",
+    )
 
     handled = group_agent.answer_group_question(
         repo=repo,
@@ -785,6 +883,9 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         reply_to_message_id=99,
         user_text="@zerde_kz_bot @bayashat кім",
         lang="kk",
+        requester_user_id=42,
+        requester_username="ada",
+        requester_display_name="Ada",
     )
 
     assert handled is True
@@ -794,6 +895,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         long_term_memory_context="",
         semantic_memory_context="[semantic_memory kind=event] OpenSearch was too expensive",
         user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
+        requester_profile_context="Requester profile: username=@ada own_topic_terms: lambda",
         reply_instructions=(
             "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
             "Do not write an essay by default."
@@ -809,6 +911,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     repo.record_agent_reply.assert_called_once()
     assert repo.record_agent_reply.call_args.kwargs["answer_text"] == "Баяшат OpenSearch жайлы жиі жазады."
     assert repo.record_agent_reply.call_args.kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
+    assert repo.record_agent_reply.call_args.kwargs["requester_user_id"] == 42
 
 
 def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
@@ -822,6 +925,7 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
     monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
 
     handled = group_agent.answer_group_question(
         repo=repo,
@@ -841,6 +945,44 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
 
 
+def test_answer_group_question_scopes_self_reference_to_requester(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("你是 Ada，群里常聊 Lambda。", 1)
+    retrieve = MagicMock(return_value=[{"metadata": {"memory_kind": "user_fact", "text": "Ada works on Lambda"}}])
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", retrieve)
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(
+        group_agent,
+        "format_requester_profile_context",
+        lambda *args, **kwargs: "Requester profile: username=@ada own_topic_terms: lambda",
+    )
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="我是谁",
+        lang="zh",
+        requester_user_id=42,
+        requester_username="ada",
+        requester_display_name="Ada",
+    )
+
+    assert handled is True
+    retrieve.assert_called_once()
+    assert retrieve.call_args.kwargs["user_id"] == 42
+    assert gemini.group_chat_reply.call_args.kwargs["requester_profile_context"] == (
+        "Requester profile: username=@ada own_topic_terms: lambda"
+    )
+
+
 def test_handle_ask_enqueues_group_context_answer():
     ctx = MagicMock()
     ctx.text = "/ask what happened yesterday?"
@@ -849,6 +991,9 @@ def test_handle_ask_enqueues_group_context_answer():
     ctx.message_id = 99
     ctx.lang_code = "en"
     ctx.reply_to_message = None
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
     ctx.memory_repo.is_memory_enabled.return_value = True
 
     handle_ask(ctx)
@@ -859,6 +1004,9 @@ def test_handle_ask_enqueues_group_context_answer():
         reply_to_message_id=99,
         user_text="what happened yesterday?",
         lang="en",
+        requester_user_id=42,
+        requester_username="ada",
+        requester_display_name="Ada",
     )
     ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
@@ -887,6 +1035,9 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     ctx.message_id = 99
     ctx.lang_code = "en"
     ctx.reply_to_message = {"text": "Sure, deploying on Friday evening is always a great idea."}
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
     ctx.memory_repo.is_memory_enabled.return_value = True
 
     handle_ask(ctx)
@@ -1060,6 +1211,77 @@ def test_forget_me_deletes_current_users_memory():
 
     ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
     assert "5" in ctx.reply.call_args.args[0]
+
+
+def test_user_related_vector_items_include_matching_daily_summaries():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {
+        "Item": {
+            "user_id": "42",
+            "username": "ada",
+            "display_name": "Ada Lovelace",
+        }
+    }
+    repo.table.query.return_value = {
+        "Items": [
+            {"sk": "USER_FACT#42#1#2", "user_id": "42"},
+            {"sk": "EVENT#1#3", "user_id": "42"},
+            {
+                "sk": "DAILY_SUMMARY#2026-06-10",
+                "summary": "Ada Lovelace discussed Lambda memory.",
+            },
+            {
+                "sk": "DAILY_SUMMARY#2026-06-11",
+                "summary": "Grace discussed DynamoDB.",
+            },
+        ]
+    }
+
+    items, next_key = repo.list_vectorizable_memory_items(-100123, user_id=42)
+
+    assert next_key is None
+    assert [item["sk"] for item in items] == [
+        "USER_FACT#42#1#2",
+        "EVENT#1#3",
+        "DAILY_SUMMARY#2026-06-10",
+    ]
+
+
+def test_delete_user_memory_removes_matching_daily_summaries():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    batch = MagicMock()
+    repo.table = MagicMock()
+    repo.table.batch_writer.return_value.__enter__.return_value = batch
+    repo.table.get_item.return_value = {
+        "Item": {
+            "user_id": "42",
+            "username": "ada",
+            "display_name": "Ada Lovelace",
+        }
+    }
+    repo.table.query.return_value = {
+        "Items": [
+            {"pk": "CHAT#-100123", "sk": "USER#42"},
+            {"pk": "CHAT#-100123", "sk": "MSG#1#2", "user_id": "42"},
+            {
+                "pk": "CHAT#-100123",
+                "sk": "DAILY_SUMMARY#2026-06-10",
+                "summary": "Ada Lovelace discussed Lambda memory.",
+            },
+            {
+                "pk": "CHAT#-100123",
+                "sk": "DAILY_SUMMARY#2026-06-11",
+                "summary": "Grace discussed DynamoDB.",
+            },
+        ]
+    }
+
+    deleted = repo.delete_user_memory(-100123, 42)
+
+    assert deleted == 3
+    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
+    assert deleted_sks == ["USER#42", "MSG#1#2", "DAILY_SUMMARY#2026-06-10"]
 
 
 def test_forget_me_deletes_vector_memory_when_configured(monkeypatch):

@@ -112,6 +112,42 @@ class GroupMemoryRepository:
         return items[-12:]
 
     @staticmethod
+    def _cleanup_terms_from_profile(profile: dict[str, Any]) -> set[str]:
+        terms: set[str] = set()
+        for field in ("username", "display_name", "requester_username", "requester_display_name"):
+            value = str(profile.get(field) or "").strip().lower().lstrip("@")
+            if value and value not in {"unknown", "user"}:
+                terms.add(value)
+        return terms
+
+    @staticmethod
+    def _daily_summary_mentions_terms(item: dict[str, Any], terms: set[str]) -> bool:
+        if not terms:
+            return False
+        fields = [
+            item.get("summary"),
+            item.get("topics"),
+            item.get("notable_events"),
+            item.get("inside_jokes"),
+            item.get("active_participants"),
+            item.get("tension_points"),
+        ]
+        searchable = " ".join(
+            str(part) for value in fields for part in (value if isinstance(value, list) else [value]) if part
+        ).lower()
+        return any(term in searchable for term in terms)
+
+    def _matches_user_memory_item(self, item: dict[str, Any], user_id: int | str, cleanup_terms: set[str]) -> bool:
+        user_id_str = str(user_id)
+        sk = str(item.get("sk") or "")
+        return bool(
+            str(item.get("user_id") or "") == user_id_str
+            or sk == self._user_sk(user_id)
+            or sk.startswith(f"USER_FACT#{user_id_str}#")
+            or (sk.startswith("DAILY_SUMMARY#") and self._daily_summary_mentions_terms(item, cleanup_terms))
+        )
+
+    @staticmethod
     def _profile_terms(text: str) -> list[str]:
         """Extract lightweight topic terms from a user's own message."""
         import re
@@ -556,13 +592,15 @@ class GroupMemoryRepository:
         if start_key:
             kwargs["ExclusiveStartKey"] = start_key
         resp = self.table.query(**kwargs)
-        user_id_str = str(user_id) if user_id is not None else None
+        cleanup_terms = (
+            self._cleanup_terms_from_profile(self.get_user_profile(chat_id, user_id)) if user_id is not None else set()
+        )
         items: list[dict[str, Any]] = []
         for item in resp.get("Items") or []:
             sk = str(item.get("sk") or "")
             if not self.is_vectorizable_sk(sk):
                 continue
-            if user_id_str is not None and str(item.get("user_id") or "") != user_id_str:
+            if user_id is not None and not self._matches_user_memory_item(item, user_id, cleanup_terms):
                 continue
             items.append(item)
         return items, resp.get("LastEvaluatedKey")
@@ -715,6 +753,9 @@ class GroupMemoryRepository:
         answer_text: str | None = None,
         user_message: str | None = None,
         confidence: float | None = None,
+        requester_user_id: int | str | None = None,
+        requester_username: str | None = None,
+        requester_display_name: str | None = None,
     ) -> None:
         now = int(time.time())
         ttl = now + 7 * 24 * 60 * 60
@@ -736,6 +777,12 @@ class GroupMemoryRepository:
             item["user_message"] = user_message[:1500]
         if confidence is not None:
             item["confidence"] = Decimal(str(max(0.0, min(1.0, confidence))))
+        if requester_user_id is not None:
+            item["requester_user_id"] = str(requester_user_id)
+        if requester_username:
+            item["requester_username"] = requester_username[:160]
+        if requester_display_name:
+            item["requester_display_name"] = requester_display_name[:160]
         self.table.put_item(Item=item)
 
     def get_agent_reply_explanation(
@@ -847,24 +894,18 @@ class GroupMemoryRepository:
 
     def delete_user_memory(self, chat_id: int | str, user_id: int | str) -> int:
         deleted = 0
-        user_id_str = str(user_id)
+        cleanup_terms = self._cleanup_terms_from_profile(self.get_user_profile(chat_id, user_id))
         start_key: dict[str, Any] | None = None
         while True:
             kwargs: dict[str, Any] = {
                 "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
-                "ProjectionExpression": "pk, sk, user_id",
             }
             if start_key:
                 kwargs["ExclusiveStartKey"] = start_key
             resp = self.table.query(**kwargs)
             to_delete = []
             for item in resp.get("Items") or []:
-                sk = str(item.get("sk") or "")
-                if (
-                    item.get("user_id") == user_id_str
-                    or sk == self._user_sk(user_id)
-                    or sk.startswith(f"USER_FACT#{user_id_str}#")
-                ):
+                if self._matches_user_memory_item(item, user_id, cleanup_terms):
                     to_delete.append(item)
             if to_delete:
                 with self.table.batch_writer() as batch:

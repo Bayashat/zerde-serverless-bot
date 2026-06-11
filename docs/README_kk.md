@@ -24,8 +24,8 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
 - **Vector RAG**: long-term memory Gemini embedding арқылы S3 Vectors index-ке түседі.
-- **Agent behavior**: `/ask`, @mention, bot жауабына reply follow-up, proactive reply gating, жауап ұзындығын басқару, `/agent why`.
-- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, owner-only group cleanup.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, conservative proactive reply gating, жауап ұзындығын басқару, `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me` related vector/summary cleanup-пен, owner-only group cleanup.
 
 RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
 
@@ -35,8 +35,8 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 
 | Мүмкіндік | Сипаттама |
 |----------|-----------|
-| Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға recent/profile/long-term/semantic memory контекстімен жауап береді. |
-| RAG memory | Group memory DynamoDB-де сақталады, long-term memory S3 Vectors арқылы semantic retrieval үшін индекстеледі. |
+| Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға requester/recent/profile/long-term/semantic memory контекстімен жауап береді. |
+| RAG memory | Group memory DynamoDB-де сақталады, long-term memory S3 Vectors арқылы distance-filtered semantic retrieval үшін индекстеледі. |
 | Reply thread continuity | Bot жауаптары `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі. |
 | Social timing | Proactive жауаптар local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. |
 | Captcha және anti-spam | Жаңа мүшелерді тексеру, rule-based және Groq арқылы spam тексеру. |
@@ -101,8 +101,8 @@ flowchart LR
 | `/stats` | Admins | Community статистикасы. |
 | `/voteban` | Барлығына | Reply арқылы ban vote бастау. |
 | `/quizstats` | Барлығына | Жеке quiz score, streak, rank. |
-| `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады. |
-| `/memory on/off/status/forget ...` | Group owner немесе bot owner | Group memory басқару және cleanup. |
+| `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады және “мен кіммін” сияқты сұрақтарды requester identity арқылы түсінеді. |
+| `/memory on/off/status/forget ...` | Group owner немесе bot owner | Group memory басқару және user-related vectors/matching daily summaries cleanup. |
 | `/agent on/off/status/why` | Group owner немесе bot owner | Agent participation басқару және bot неге жауап бергенін көру. |
 
 ---

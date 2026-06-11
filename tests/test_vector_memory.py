@@ -40,6 +40,26 @@ def test_s3_vectors_repository_put_query_delete_and_list(monkeypatch):
     assert repo.get_index()["indexName"] == "idx"
 
 
+def test_s3_vectors_repository_query_filters_by_user_and_kind(monkeypatch):
+    fake_client = MagicMock()
+    fake_client.query_vectors.return_value = {"vectors": []}
+    monkeypatch.setattr(vector_repo_module, "_S3_VECTORS_CLIENT", fake_client)
+    monkeypatch.setattr(vector_repo_module, "VECTOR_MEMORY_PROVIDER", "s3_vectors")
+    monkeypatch.setattr(vector_repo_module, "VECTOR_MEMORY_VECTOR_BUCKET_NAME", "bucket")
+    monkeypatch.setattr(vector_repo_module, "VECTOR_MEMORY_INDEX_NAME", "idx")
+
+    repo = S3VectorMemoryRepository()
+    repo.query(chat_id=-100123, vector=[0.1, 0.2], limit=8, user_id=42, memory_kinds=("user_fact", "event"))
+
+    assert fake_client.query_vectors.call_args.kwargs["filter"] == {
+        "$and": [
+            {"chat_id": {"$eq": "-100123"}},
+            {"user_id": {"$eq": "42"}},
+            {"memory_kind": {"$in": ["user_fact", "event"]}},
+        ]
+    }
+
+
 def test_index_memory_item_skips_sensitive_content(monkeypatch):
     monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
     repo = MagicMock()
@@ -133,15 +153,45 @@ def test_retrieve_relevant_memories_uses_query_embedding(monkeypatch):
     embedding = MagicMock()
     embedding.embed.return_value = [0.2] * 768
     vector_repo = MagicMock()
-    vector_repo.query.return_value = [{"metadata": {"text": "S3 Vectors was selected."}}]
+    vector_repo.query.return_value = [{"distance": 0.2, "metadata": {"text": "S3 Vectors was selected."}}]
     monkeypatch.setattr(vector_memory, "_get_embedding_client", lambda: embedding)
     monkeypatch.setattr(vector_memory, "S3VectorMemoryRepository", lambda: vector_repo)
 
     results = vector_memory.retrieve_relevant_memories(-100123, "what did we pick?", limit=3)
 
     embedding.embed.assert_called_once_with("what did we pick?", task_type="RETRIEVAL_QUERY")
-    vector_repo.query.assert_called_once_with(chat_id=-100123, vector=[0.2] * 768, limit=3)
+    vector_repo.query.assert_called_once_with(
+        chat_id=-100123,
+        vector=[0.2] * 768,
+        limit=3,
+        user_id=None,
+        memory_kinds=None,
+    )
     assert results[0]["metadata"]["text"] == "S3 Vectors was selected."
+
+
+def test_retrieve_relevant_memories_filters_by_distance_and_user(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    embedding = MagicMock()
+    embedding.embed.return_value = [0.2] * 768
+    vector_repo = MagicMock()
+    vector_repo.query.return_value = [
+        {"distance": 0.3, "metadata": {"text": "Ada uses Lambda."}},
+        {"distance": 0.91, "metadata": {"text": "Unrelated memory."}},
+    ]
+    monkeypatch.setattr(vector_memory, "_get_embedding_client", lambda: embedding)
+    monkeypatch.setattr(vector_memory, "S3VectorMemoryRepository", lambda: vector_repo)
+
+    results = vector_memory.retrieve_relevant_memories(-100123, "我是谁", limit=3, user_id=42, max_distance=0.85)
+
+    vector_repo.query.assert_called_once_with(
+        chat_id=-100123,
+        vector=[0.2] * 768,
+        limit=3,
+        user_id=42,
+        memory_kinds=None,
+    )
+    assert [row["metadata"]["text"] for row in results] == ["Ada uses Lambda."]
 
 
 def test_semantic_memory_context_format_is_distinct():

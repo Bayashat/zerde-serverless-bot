@@ -9,7 +9,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It observes opted-in group messages and stores recent context.
 - It extracts long-term memories and daily summaries.
 - It embeds long-term memory into S3 Vectors for semantic retrieval.
-- It answers explicit questions with recent context, user profiles, long-term memory, and query-matched vector memory.
+- It answers explicit questions with requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers.
 - It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
 
@@ -61,7 +61,7 @@ flowchart LR
 4. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
 5. Irrelevant group chatter exits early.
 6. Relevant events route to the group agent or the command dispatcher.
-7. `/ask` is queued as `PROCESS_GROUP_ASK` so Telegram webhook latency stays low.
+7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded.
 
 ## SQS Tasks
 
@@ -71,7 +71,7 @@ The bot Lambda consumes both real-time and slower background tasks:
 |-----------|-------|---------|
 | `CHECK_TIMEOUT` | timeout/tasks queue | Captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Groq-based async spam classification. |
-| `PROCESS_GROUP_ASK` | timeout/tasks queue | Async explicit agent answer. |
+| `PROCESS_GROUP_ASK` | timeout/tasks queue | Async explicit agent answer with optional requester metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Extract one long-term memory item from a stored group message. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Build daily summaries for configured groups. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Embed and index one memory item in S3 Vectors. |
@@ -93,7 +93,7 @@ The table is single-table by chat partition:
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, and triggering user message for reply-thread continuity. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering user message, and requester metadata for reply-thread continuity. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
@@ -103,13 +103,14 @@ Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#..
 
 `services.group_agent.answer_group_question` builds these sections:
 
-1. Trusted target-user profile context, only for users explicitly mentioned in the user message.
-2. Semantic memory context from S3 Vectors, query-matched by current user text.
-3. Long-term memory context filtered by current query terms.
-4. Recent group context with speaker metadata.
-5. Reply-thread context when the user replies to the bot's previous answer.
+1. Trusted requester profile context for the user who asked the question.
+2. Trusted target-user profile context, only for users explicitly mentioned in the user message.
+3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
+4. Long-term memory context filtered by current query terms.
+5. Recent group context with speaker metadata.
+6. Reply-thread context when the user replies to the bot's previous answer.
 
-The Gemini prompt instructs the model to treat target-user profiles as higher trust than third-party chatter, to use semantic memory only when relevant, and to avoid turning one-off jokes into permanent facts.
+The Gemini prompt instructs the model to treat requester profiles as highest trust for self-reference, target-user profiles as higher trust than third-party chatter, semantic memory as lower trust than profiles, and to avoid turning one-off jokes into permanent facts. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
 ## Agent Timing And Length
 
@@ -135,10 +136,11 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Embedding model: `VECTOR_MEMORY_EMBEDDING_MODEL` (default `gemini-embedding-2`).
 - Dimensions: `VECTOR_MEMORY_DIMENSIONS` (default `768`).
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
+- Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`).
 - Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`.
-- Cleanup commands should delete both DynamoDB memory and associated vector keys when available.
+- Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory forget me` also removes daily summaries that mention the forgotten user's stored display name or username.
 
-When vector indexing is incomplete, the agent still works with recent context and query-filtered DynamoDB long-term memory. Do not assume vector backfill will fix prompt pollution by itself.
+When vector indexing is incomplete, the agent still works with recent context and query-filtered DynamoDB long-term memory. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 
 ## Important Operational Notes
 
@@ -147,6 +149,7 @@ When vector indexing is incomplete, the agent still works with recent context an
 - `.env` is deploy-time CDK input for non-secret config and local/test execution.
 - Do not log full prompts, full model responses, API keys, Telegram files, or user secrets.
 - For production memory cleanup, first export the target DynamoDB items and vector keys to a local backup file, then delete narrowly.
+- Main task DLQ retention is 4 days and vector-memory DLQ retention is 14 days so failed async memory work can be inspected and redriven.
 - Historical plan documents under `docs/superpowers/` are snapshots. Do not treat them as current architecture.
 
 ## Documentation Maintenance

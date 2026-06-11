@@ -72,6 +72,7 @@ class BotConstruct(Construct):
         vector_memory_embedding_model: str,
         vector_memory_index_throttle_seconds: str,
         vector_memory_backfill_batch_size: str,
+        vector_memory_max_distance: str,
         vector_memory_vector_bucket_name: str | None = None,
         vector_memory_index_name: str | None = None,
     ) -> None:
@@ -173,6 +174,7 @@ class BotConstruct(Construct):
             "VECTOR_MEMORY_EMBEDDING_MODEL": vector_memory_embedding_model,
             "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": vector_memory_index_throttle_seconds,
             "VECTOR_MEMORY_BACKFILL_BATCH_SIZE": vector_memory_backfill_batch_size,
+            "VECTOR_MEMORY_MAX_DISTANCE": vector_memory_max_distance,
             "AGENT_ENABLED": agent_enabled,
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,

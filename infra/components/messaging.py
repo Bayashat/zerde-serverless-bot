@@ -25,7 +25,7 @@ class MessagingConstruct(Construct):
             self,
             f"{CONSTRUCT_PREFIX}TimeoutTasksDlq",
             queue_name=f"{RESOURCE_PREFIX}-timeout-tasks-dlq-{env_name}",
-            retention_period=Duration.hours(2),
+            retention_period=Duration.days(4),
             removal_policy=removal_policy,
         )
 
@@ -47,7 +47,7 @@ class MessagingConstruct(Construct):
             self,
             f"{CONSTRUCT_PREFIX}VectorMemoryTasksDlq",
             queue_name=f"{RESOURCE_PREFIX}-vector-memory-tasks-dlq-{env_name}",
-            retention_period=Duration.hours(6),
+            retention_period=Duration.days(14),
             removal_policy=removal_policy,
         )
 

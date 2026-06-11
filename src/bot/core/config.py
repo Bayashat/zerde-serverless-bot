@@ -153,6 +153,7 @@ VECTOR_MEMORY_DIMENSIONS: int = int(os.environ.get("VECTOR_MEMORY_DIMENSIONS", "
 VECTOR_MEMORY_EMBEDDING_MODEL: str = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
 VECTOR_MEMORY_BACKFILL_BATCH_SIZE: int = int(os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50"))
 VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: float = float(os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "0"))
+VECTOR_MEMORY_MAX_DISTANCE: float = float(os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85"))
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VOTEBAN_PREFIX = "voteban_"

@@ -30,11 +30,11 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It observes opted-in group messages.
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
 - It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
-- It answers `/ask`, @mentions, and reply-to-bot follow-ups with structured context.
+- It answers `/ask`, @mentions, and reply-to-bot follow-ups with requester, profile, recent, long-term, and semantic context.
 - It may proactively answer only after conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
 
-RAG is one capability inside the agent. Do not treat vector search as the only source of truth; recent context, target-user profiles, reply-thread context, and query-filtered long-term memory are also part of the answer path.
+RAG is one capability inside the agent. Do not treat vector search as the only source of truth; requester identity, recent context, target-user profiles, reply-thread context, and query-filtered long-term memory are also part of the answer path.
 
 ## Architecture
 
@@ -72,7 +72,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `app.py` — lazy wiring for Telegram client, dispatcher, captcha repo, and memory repo.
 - `webhook.py` — verifies Telegram secret, screens spam, observes memory, filters irrelevant events, routes agent/commands.
 - `services/sqs_task_router.py` — routes SQS tasks and re-raises failures for retry/DLQ semantics.
-- `services/group_memory.py` — stores recent group context, formats prompt context, target-user profile context, and query-filtered long-term memory.
+- `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
 - `services/group_memory_processor.py` — async long-term extraction and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
@@ -89,7 +89,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `USER#<user_id>` — profile from the user's own messages only.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering user message, and reason for reply-thread continuity and `/agent why`.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering user message, requester metadata, and reason for reply-thread continuity and `/agent why`.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
@@ -117,8 +117,9 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **No SnapStart**: low-frequency workloads and Python package trade-offs make SnapStart unnecessary here.
 - **One bot Lambda for webhook and SQS**: `/ask`, spam, captcha, memory, and vector tasks share warm containers and common wiring.
 - **Separate vector queue**: slower embedding/backfill work does not block real-time timeout/spam/ask tasks.
-- **Trust hierarchy for agent answers**: current user message and reply-thread context > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
+- **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
+- **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
 - **Reply length control**: follow-up replies should stay short unless the user explicitly asks for detail.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 

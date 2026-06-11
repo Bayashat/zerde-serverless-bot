@@ -28,8 +28,8 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **User profiles**: lightweight per-user context derived from each user's own messages.
 - **Long-term memory**: extracted `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items.
 - **Vector RAG**: long-term memories embedded with Gemini and indexed in S3 Vectors for semantic retrieval.
-- **Agent behavior**: explicit `/ask`, @mention handling, reply-to-bot thread continuity, proactive reply gating, reply-length budgeting, and `/agent why`.
-- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, and owner-only group cleanup commands.
+- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length budgeting, and `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me` with related vector/summary cleanup, and owner-only group cleanup commands.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
@@ -39,8 +39,8 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 
 | Feature | Description |
 |---------|-------------|
-| Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with recent, profile, long-term, and semantic memory context. |
-| RAG memory | Stores group memory in DynamoDB and indexes long-term memory in S3 Vectors for query-matched retrieval. |
+| Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with requester, recent, profile, long-term, and semantic memory context. |
+| RAG memory | Stores group memory in DynamoDB and indexes long-term memory in S3 Vectors for query-matched, distance-filtered retrieval. |
 | Reply thread continuity | Records bot answers in `AGENT_REPLY#...` items so follow-up replies know what the bot just said. |
 | Social timing | Proactive replies pass local heuristics, recent bot activity penalties, Gemini judgment, and per-chat daily limits. |
 | Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |
@@ -105,8 +105,8 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/stats` | Admins | Community statistics. |
 | `/voteban` | Everyone | Reply to a message to start a ban vote. |
 | `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
-| `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message. |
-| `/memory on/off/status/forget ...` | Group owner or bot owner for settings | Manage group memory and cleanup. |
+| `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message and understands “who am I” from requester identity. |
+| `/memory on/off/status/forget ...` | Group owner or bot owner for settings | Manage group memory and cleanup, including user-related vectors and matching daily summaries. |
 | `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied. |
 
 ---
