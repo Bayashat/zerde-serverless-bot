@@ -236,6 +236,46 @@ def test_format_long_term_memory_context_includes_daily_summaries(monkeypatch):
     assert "[daily_summary date=2026-06-10 topics=aws, memory]" in context
 
 
+def test_format_long_term_memory_context_can_filter_by_current_query():
+    repo = MagicMock()
+    repo.get_recent_daily_summaries.return_value = [
+        {
+            "summary_date": "2026-06-10",
+            "summary": "The group discussed Claude subscriptions and Nurlan fullstack work.",
+            "topics": ["claude", "fullstack"],
+        },
+        {
+            "summary_date": "2026-06-11",
+            "summary": "The group discussed OpenSearch vector indexing.",
+            "topics": ["opensearch", "vectors"],
+        },
+    ]
+    repo.get_recent_long_term_memories.return_value = [
+        {
+            "kind": "user_fact",
+            "display_name": "Nurlan",
+            "summary": "Nurlan is a fullstack developer.",
+            "reason": "user stated background",
+        },
+        {
+            "kind": "event",
+            "display_name": "Ada",
+            "summary": "OpenSearch vector indexing needs a backfill.",
+            "reason": "time-bound event",
+        },
+    ]
+
+    context = group_memory.format_long_term_memory_context(
+        repo,
+        -100123,
+        query_text="does anyone know how OpenSearch indexing works?",
+    )
+
+    assert "OpenSearch vector indexing" in context
+    assert "Nurlan" not in context
+    assert "fullstack" not in context
+
+
 def test_classify_long_term_memory_detects_user_preference():
     result = classify_long_term_memory("I prefer OpenSearch for AWS-native memory retrieval")
 
@@ -454,6 +494,36 @@ def test_agent_should_answer_mention_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
     assert group_agent.should_answer(_group_update("hey @ZerdeBot what did we decide?")) is True
+
+
+def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_agent_reply_explanation.return_value = {
+        "user_message": "The user asked about a replied-to group message.",
+        "answer_text": "The previous answer explained that infra engineers are still needed.",
+    }
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("Поделись по братский")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "Кто такой, о ком речь? Рассказывай, просвещусь.",
+        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    user_text = answer.call_args.kwargs["user_text"]
+    assert "continuing a thread" in user_text
+    assert "infra engineers are still needed" in user_text
+    assert "The user asked about a replied-to group message" in user_text
+    assert "Поделись по братский" in user_text
 
 
 def test_agent_should_not_answer_plain_chatter(monkeypatch):
@@ -679,7 +749,9 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert "Decide the answer style from the user's wording" in system_prompt
     assert "do not use a fixed angry persona by default" in system_prompt
     assert "do not add disclaimers" in system_prompt
+    assert "Respect the response length instructions exactly" in system_prompt
     assert "Trusted target-user profile context:" in user_prompt
+    assert "Response length and style instructions:" in user_prompt
     assert "own_topic_terms: opensearch, python" in user_prompt
     assert "distinguish a person's own messages from another user's opinion" in user_prompt
     assert "username=@bayashat" in user_prompt
@@ -688,6 +760,7 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
 def test_answer_group_question_passes_target_profile_context(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_reply.return_value = ("Баяшат OpenSearch жайлы жиі жазады.", 1)
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
@@ -721,6 +794,11 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         long_term_memory_context="",
         semantic_memory_context="[semantic_memory kind=event] OpenSearch was too expensive",
         user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
+        reply_instructions=(
+            "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
+            "Do not write an essay by default."
+        ),
+        max_output_tokens=300,
         lang="kk",
     )
     bot.send_message.assert_called_once_with(
@@ -728,6 +806,39 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         "Баяшат OpenSearch жайлы жиі жазады.",
         reply_to_message_id=99,
     )
+    repo.record_agent_reply.assert_called_once()
+    assert repo.record_agent_reply.call_args.kwargs["answer_text"] == "Баяшат OpenSearch жайлы жиі жазады."
+    assert repo.record_agent_reply.call_args.kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
+
+
+def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("Қысқасы, негізгі ой сол.", 1)
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text=(
+            "The user is continuing a thread with this previous bot answer:\n"
+            "Previous bot answer:\nA long answer.\n\n"
+            "User follow-up:\nне айтқың келді?"
+        ),
+        lang="kk",
+    )
+
+    assert handled is True
+    assert gemini.group_chat_reply.call_args.kwargs["max_output_tokens"] == 180
+    assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
 
 
 def test_handle_ask_enqueues_group_context_answer():

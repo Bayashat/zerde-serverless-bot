@@ -112,6 +112,8 @@ class GeminiClient:
         long_term_memory_context: str = "",
         semantic_memory_context: str = "",
         user_profile_context: str = "",
+        reply_instructions: str = "",
+        max_output_tokens: int = 320,
         lang: str = "kk",
     ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
@@ -149,12 +151,13 @@ class GeminiClient:
             "for normal questions, stay natural, concise, and conversational like a group member. "
             "Answer naturally and directly; do not add disclaimers about not being able to characterize people. "
             "If the context is insufficient, say so briefly. "
+            "Respect the response length instructions exactly; short follow-ups should stay short. "
             "Keep replies concise, natural, and in the group's language. "
             "Avoid mentioning that you are using stored memory unless asked."
         )
         generation_config: dict[str, Any] = {
             "temperature": 0.75,
-            "maxOutputTokens": 450,
+            "maxOutputTokens": max(80, min(700, int(max_output_tokens))),
         }
         thinking_config = _thinking_config_for_model(self._model)
         if thinking_config is not None:
@@ -172,6 +175,8 @@ class GeminiClient:
             "Each context line includes speaker metadata. Use it to distinguish a person's own messages "
             "from another user's opinion about them.\n"
             f"{recent_context or '(no recent context available)'}\n\n"
+            "Response length and style instructions:\n"
+            f"{reply_instructions or 'Answer in 2-5 concise sentences unless the user asks for more detail.'}\n\n"
             "Current message directed at you:\n"
             f"{user_message}\n\n"
             "Reply to the current message."

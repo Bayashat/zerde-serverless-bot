@@ -62,10 +62,12 @@ Edit `.env` and fill in the required values. See the table below for all keys.
 
 | Variable | Description |
 |----------|-------------|
-| `TELEGRAM_BOT_TOKEN` | Token from [@BotFather](https://t.me/botfather) |
-| `TELEGRAM_WEBHOOK_SECRET_TOKEN` | Random secret for webhook validation (`openssl rand -hex 32`) |
-| `GEMINI_API_KEY` | Google Gemini API key (for news summarization and quiz translation) |
-| `QUIZAPI_KEY` | [QuizAPI](https://quizapi.io/) key (for daily quiz questions) |
+| `BOT_TOKEN` | Token from [@BotFather](https://t.me/botfather) |
+| `WEBHOOK_SECRET_TOKEN` | Random secret for webhook validation (`openssl rand -hex 32`) |
+| `GEMINI_API_KEY` | Google Gemini API key for agent replies, news, summaries, and quiz generation |
+| `GEMINI_EMBEDDING_API_KEY` | Optional separate Gemini key for vector embeddings; falls back to `GEMINI_API_KEY` when unset |
+| `GROQ_API_KEY` | Groq API key for async spam checks |
+| `DEEPSEEK_API_KEY` | Optional DeepSeek fallback key |
 
 **Optional (have defaults):**
 
@@ -73,12 +75,18 @@ Edit `.env` and fill in the required values. See the table below for all keys.
 |----------|---------|-------------|
 | `DEFAULT_LANG` | `kk` | Default bot language (`kk`, `ru`, `zh`) |
 | `TELEGRAM_API_BASE` | `https://api.telegram.org/bot` | Override for local testing proxies |
-| `AI_PROVIDER` | `gemini` | AI provider for news/quiz (`gemini`) |
-| `LLM_MODEL` | `gemini-2.5-flash` | LLM model name |
+| `GEMINI_MODEL` | `gemini-3.1-flash-lite` | Bot agent and memory-summary model |
+| `NEWS_GEMINI_MODEL` | `gemini-3.1-flash-lite` | News digest model |
+| `QUIZ_GEMINI_MODEL` | `gemini-3.1-flash-lite` | Quiz generation model |
+| `GROUP_MEMORY_ENABLED` | `true` | Enables recent group memory and long-term memory writes |
+| `VECTOR_MEMORY_ENABLED` | `true` | Enables S3 Vectors semantic memory indexing/retrieval |
+| `AGENT_ENABLED` | `true` | Enables `/ask`, @mention, reply-to-bot, and proactive agent behavior |
+| `AGENT_BOT_USERNAME` | `@zerde_kz_bot` | Bot username used for mention detection |
+| `CHATS_KK` / `CHATS_ZH` / `CHATS_RU` | _(empty)_ | Whitelisted bot chats and language mapping |
 | `NEWS_CHATS_KK` | _(empty)_ | Comma-separated chat IDs for Kazakh news digest |
 | `NEWS_CHATS_ZH` | _(empty)_ | Comma-separated chat IDs for Chinese news digest |
 | `NEWS_CHATS_RU` | _(empty)_ | Comma-separated chat IDs for Russian news digest |
-| `QUIZ_CHATS` | _(empty)_ | Comma-separated chat IDs for daily quiz |
+| `QUIZ_CHATS_KK` / `QUIZ_CHATS_ZH` / `QUIZ_CHATS_RU` | _(empty)_ | Per-language quiz target chats |
 
 Never commit `.env` — it is in `.gitignore`.
 
@@ -130,18 +138,22 @@ uv run cdk synth -c env=dev
 | Path | Description |
 |------|-------------|
 | `infra/` | AWS CDK stacks: API Gateway, DynamoDB, SQS, EventBridge, all Lambdas |
-| `src/bot/` | Bot Lambda — webhook handler, captcha, voteban, quiz scoring, stats |
+| `src/bot/` | Bot Lambda — webhook handler, SQS worker, captcha, voteban, spam, group memory, RAG agent, vector indexing |
 | `src/news/` | News Lambda — fetches IT news, summarizes via Gemini, sends multilingual digest |
-| `src/quiz/` | Quiz Lambda — fetches tech questions from QuizAPI, sends daily Telegram quizzes |
+| `src/quiz/` | Quiz Lambda — generates/sends multilingual developer quizzes |
+| `src/shared/python/zerde_common/` | Shared Lambda layer utilities |
+| `docs/ARCHITECTURE.md` | Current architecture source of truth |
 | `scripts/` | DevOps helpers: OIDC setup, webhook registration |
 
-**Three independent Lambda functions:**
+**Lambda functions and workloads:**
 
 | Lambda | Entry | Trigger | Responsibility |
 |--------|-------|---------|----------------|
-| `src/bot/` | `main.py` | API Gateway + SQS | Captcha, voteban, quiz score tracking, `/stats`, `/quizstats` |
-| `src/news/` | `main.py` | EventBridge (daily) | Fetch news → Gemini summary → send to Kazakh/Russian/Chinese chats |
-| `src/quiz/` | `main.py` | EventBridge (daily) | Fetch quiz questions from QuizAPI → send Telegram poll → track scores |
+| `src/bot/` | `main.py` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam checks, `/ask`, agent replies, memory writes, vector indexing |
+| `src/news/` | `main.py` | EventBridge (daily) | Fetch news → Gemini/DeepSeek-compatible summary → send multilingual digest |
+| `src/quiz/` | `main.py` | EventBridge + bot invoke | Generate quiz questions → send Telegram poll → track scores |
+
+Large changes to architecture, memory, agent behavior, SQS tasks, or infrastructure must update `docs/ARCHITECTURE.md`, `.codex/AGENTS.md`, and `.codex/skills/zerdebot-development/SKILL.md` in the same PR.
 
 ---
 

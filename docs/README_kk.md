@@ -1,148 +1,138 @@
-# 🛡️ Zerde Bot
+# Zerde Bot
 
-**[English](README.md)** | **[Қазақша](README_kk.md)** | **[Русский](README_ru.md)**
+[English](../README.md) | [Қазақша](README_kk.md) | [Русский](README_ru.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
 ![uv](https://img.shields.io/badge/uv-Managed-purple.svg?logo=python)
-![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
-![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
-![Linted_by: Flake8](https://img.shields.io/badge/Linted_by-Flake8-yellow.svg)
-![AWS CDK](https://img.shields.io/badge/AWS_CDK-v2-orange.svg)
 ![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-Serverless-ff9900.svg?logo=awslambda&logoColor=white)
 ![DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-NoSQL-4053D6.svg?logo=amazondynamodb&logoColor=white)
+![S3 Vectors](https://img.shields.io/badge/S3_Vectors-RAG_memory-569A31.svg?logo=amazons3&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-8E75B2.svg?logo=googlegemini&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF.svg?logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-![Zerde Bot Architecture](../assets/architecture.png)
+**Zerde** — IT қауымдастықтарына арналған serverless Telegram боты. Бұрын ол қарапайым LLM wrapper және moderation bot болатын; қазіргі бағыты — **RAG жады бар agentic group-chat bot**. Ол `/ask` сұрақтарына жауап береді, reply thread-ті түсінеді, топ контекстін есте сақтайды, ұзақ мерзімді memory-ден релевант ақпарат іздейді және чатқа қашан араласу дұрыс екенін бағалайды.
 
-**Zerde** — бұл IT қауымдастықтарын басқаруға арналған өндіріске дайын, серверсіз Telegram боты. Ол спамға қарсы қорғанысты, қауымдастықтағы дауыс беруді, жасанды интеллект арқылы күнделікті жаңалықтар топтамасын және интерактивті IT викториналарын бірде-бір серверді басқармай-ақ жүзеге асырады.
-
-**Python 3.13** және **AWS CDK v2** арқылы жасалған. AWS Free Tier-де **айына $0** шығынмен 24/7 жұмыс істейді.
+Бот әлі де captcha, anti-spam, voteban, күнделікті AI news digest және IT quiz функцияларын атқарады. Бірақ негізгі жаңа қабат — group memory және agent behavior.
 
 ---
 
-## 🌟 Серверсіз бастапқы шаблон негізінде құрастырылған ($0 Шығын)
+## Не өзгерді?
 
-Серверлерге ақша төлемей, осындай ботты нөлден қалай жасауға болатыны қызық па?
+Zerde енді тек “соңғы хабарламаны LLM-ге жіберетін” бот емес. Қазір онда:
 
-**Zerde Bot** — бұл AWS-те өндірістік деңгейдегі серверсіз Telegram боттарын құруға арналған ашық бастапқы **[serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter)** шаблоны негізінде жасалған нақты мысал.
+- **Recent memory**: command емес топ хабарламалары DynamoDB-де `MSG#...` ретінде сақталады.
+- **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
+- **Vector RAG**: long-term memory Gemini embedding арқылы S3 Vectors index-ке түседі.
+- **Agent behavior**: `/ask`, @mention, bot жауабына reply follow-up, proactive reply gating, жауап ұзындығын басқару, `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, owner-only group cleanup.
 
-**Ең үлкен артықшылығы? Ол айына дәл $0 тұрады.** 100% серверсіз архитектураны (API Gateway, Lambda, DynamoDB, SQS, CDK) пайдаланатындықтан, сіз тек пайдаланған ресурстарыңыз үшін ғана төлейсіз. Көптеген Telegram боттары үшін трафик толығымен жомарт AWS Free Tier шегінде қалады.
-
-Егер сіз осындай мықты архитектурасы бар, техникалық қызмет көрсетуді және хостинг ақысын қажет етпейтін жеке ботыңызды жасағыңыз келсе, шаблоннан бастаңыз! Ол сізге дайын конфигурацияны, CI/CD және жоба құрылымын бірден ұсынады.
-
----
-
-## ✨ Негізгі мүмкіндіктер
-
-| Мүмкіндік | Сипаттамасы |
-|---------|-------------|
-| 🛡️ **Ақылды Captcha және Спамға қарсы** | Жаңа мүшелерді кірістірілген түйме арқылы растағанша автоматты түрде бұғаттайды. Расталмаған пайдаланушылар SQS Delay Queue арқылы **60 секундтан** кейін шығарылады. |
-| 🗳️ **Қауымдастық Voteban** | Демократияландырылған модерация. Дауыс беруді бастау үшін хабарламаға `/voteban` деп жауап беріңіз. Пайдаланушыны бұғаттау немесе кешіру үшін қауымдастықтың 7 даусы қажет. |
-| 📰 **Жасанды интеллект негізіндегі күнделікті жаңалықтар** | Күнделікті EventBridge cron Lambda-ны іске қосып, IT жаңалықтарын жинайды, **Google Gemini API** арқылы қазақ, орыс және қытай тілдерінде қысқаша мазмұндайды және топтарға таратады. |
-| 🧠 **Интерактивті IT Викториналар** | QuizAPI-ден алынған автоматтандырылған күнделікті технологиялық викториналар. Бот жеке ұпайларды қадағалайды, күнделікті қатарынан жауап беруді (streak) сақтайды және қауымдастық көшбасшылар тақтасын ұсынады. |
-| 📊 **Қауымдастық аналитикасы** | Әр топ бойынша қосылуларды, растау сәттілігінің деңгейін және модерация статистикасын кешенді қадағалау. |
-| ⚡ **Нөлдік шығынды серверсіз (Zero-Cost Serverless)** | 100% код түріндегі инфрақұрылым (AWS CDK). Өте жылдам суық іске қосу (cold starts) үшін Lambda **SnapStart** пайдаланады. Толығымен AWS Free Tier аясында қалады (айына $0). |
+RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
 
 ---
 
-## 🏗️ Архитектура
+## Негізгі мүмкіндіктер
 
-Инфрақұрылым ешқандай ортақ коды жоқ үш толық тәуелсіз Lambda функциясынан тұрады, бұл қатаң оқшаулау мен таза архитектураны қамтамасыз етеді:
+| Мүмкіндік | Сипаттама |
+|----------|-----------|
+| Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға recent/profile/long-term/semantic memory контекстімен жауап береді. |
+| RAG memory | Group memory DynamoDB-де сақталады, long-term memory S3 Vectors арқылы semantic retrieval үшін индекстеледі. |
+| Reply thread continuity | Bot жауаптары `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі. |
+| Social timing | Proactive жауаптар local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. |
+| Captcha және anti-spam | Жаңа мүшелерді тексеру, rule-based және Groq арқылы spam тексеру. |
+| Community voteban | `/voteban` арқылы қауымдастық дауысымен ban/forgive. |
+| Daily AI news | EventBridge арқылы іске қосылатын news Lambda Gemini/DeepSeek-compatible жолдармен IT news digest жасайды. |
+| IT quizzes | Scheduled және on-demand quiz Lambda көптілді developer quiz жібереді. |
+| Serverless ops | AWS CDK Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM және alarms ресурстарын басқарады. |
+
+---
+
+## Архитектура
 
 ```mermaid
-graph TD
-    subgraph Telegram
-        TG[Telegram API]
-    end
+flowchart LR
+  TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
 
-    subgraph AWS Cloud [AWS Serverless Infrastructure]
-        API[API Gateway]
-        Bot[Bot Lambda<br/>Webhook: Captcha, Voteban, Commands]
-        SQS[SQS Delay Queue<br/>Timeout Tasks]
-        DB[(DynamoDB<br/>Stats, Votes, Quiz Scores)]
+  BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
+  BOT --> MEMORY[("DynamoDB<br/>group memory")]
+  BOT --> MAINQ["SQS timeout/tasks queue"]
+  MAINQ --> BOT
 
-        EB1[EventBridge<br/>Daily Cron 04:00]
-        News[News Lambda<br/>AI IT News Digest]
+  BOT --> VQ["SQS vector memory queue"]
+  VQ --> BOT
+  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
 
-        EB2[EventBridge<br/>Daily Cron 08:00]
-        Quiz[Quiz Lambda<br/>Tech Quizzes]
-    end
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GROQ["Groq<br/>spam checks"]
 
-    subgraph External APIs
-        Gemini[Google Gemini API]
-        QuizAPI[QuizAPI.io]
-    end
+  EB["EventBridge schedules"] --> NEWS["News Lambda"]
+  EB --> QUIZ["Quiz Lambda"]
+  NEWS --> GEMINI
+  QUIZ --> GEMINI
+  NEWS --> TG
+  QUIZ --> TG
 
-    %% Webhook Flow
-    TG -- Webhook --> API
-    API -- Sync Invoke --> Bot
-    Bot -- 60s Deferred Task --> SQS
-    SQS -- Trigger --> Bot
-    Bot <--> DB
-
-    %% News Flow
-    EB1 --> News
-    News -- Fetch & Summarize --> Gemini
-    News -- Send Digest --> TG
-
-    %% Quiz Flow
-    EB2 --> Quiz
-    Quiz -- Fetch Questions --> QuizAPI
-    Quiz <--> DB
-    Quiz -- Send Quiz --> TG
+  LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> NEWS
+  LAYER -.-> QUIZ
 ```
 
-| Lambda компоненті | Іске қосу көзі | Мақсаты |
-|------------------|----------------|---------|
-| `src/bot/` | API Gateway + SQS | Telegram webhook-терін синхронды түрде өңдейді. Captcha растауларын, voteban сессияларын, викторина ұпайларын және қауымдастық статистикасын басқарады. |
-| `src/news/` | EventBridge Cron | Күнделікті жұмыс істейді (04:00 UTC). Технологиялық жаңалықтарды жинайды, AI көмегімен қысқаша мазмұндайды және мақсатты чаттарға көптілді дайджесттер жібереді. |
-| `src/quiz/` | EventBridge Cron | Күнделікті жұмыс істейді (08:00 UTC). Әзірлеушілерге арналған викториналарды жинайды, қажет болса аударады және оларды қауымдастық чаттарына жібереді. |
+| Компонент | Trigger | Міндеті |
+|-----------|---------|---------|
+| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/news/` | EventBridge | Көптілді IT news digest. |
+| `src/quiz/` | EventBridge + bot invoke | Scheduled және on-demand developer quizzes. |
+| `src/shared/python/zerde_common/` | Lambda layer | Ортақ config, secret loading, logging, redaction, provider error helpers. |
+| `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, Lambda wiring. |
+
+Толығырақ developer map: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 🤖 Бот командалары
+## Bot командалары
 
-| Команда | Кімге | Сипаттамасы |
-|---------|-----|-------------|
-| `/start` | Барлығына | Ботты қайта іске қосу және нұсқаулықтарды көру |
-| `/help` | Барлығына | Пайдалану нұсқаулығы мен ережелерді көрсету |
-| `/ping` | Барлығына | Денсаулықты тексеру — боттың жұмыс істеп тұрғанын растайды |
-| `/support` | Барлығына | Әзірлеушінің байланыс ақпаратын алу |
-| `/stats` | Әкімшілерге | Қауымдастық статистикасы және белсенділік деңгейі |
-| `/voteban` | Барлығына | Бұғаттауға дауыс беруді бастау үшін хабарламаға жауап ретінде жазу |
-| `/quizstats` | Барлығына | Сіздің жеке викторина ұпайыңыз, қатарынан жауап беруіңіз және рейтингіңіз |
+| Команда | Кімге | Сипаттама |
+|---------|------|-----------|
+| `/start` | Барлығына | Ботты қайта бастау және нұсқаулық көру. |
+| `/help` | Барлығына | Командалар мен ережелер. |
+| `/ping` | Барлығына | Health check. |
+| `/support` | Барлығына | Developer contact. |
+| `/stats` | Admins | Community статистикасы. |
+| `/voteban` | Барлығына | Reply арқылы ban vote бастау. |
+| `/quizstats` | Барлығына | Жеке quiz score, streak, rank. |
+| `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады. |
+| `/memory on/off/status/forget ...` | Group owner немесе bot owner | Group memory басқару және cleanup. |
+| `/agent on/off/status/why` | Group owner немесе bot owner | Agent participation басқару және bot неге жауап бергенін көру. |
 
 ---
 
-## ⚙️ CI/CD баптауы (GitHub Actions)
-
-Бұл репозиторийде OIDC арқылы автоматты түрде орналастыруға арналған GitHub Actions жұмыс процесі бар (ұзақ мерзімді AWS кілттерін қажет етпейді).
-
-Біз IAM конфигурациясын автоматтандыру үшін орнату сценарийін ұсынамыз:
+## Әзірлеу
 
 ```bash
-# Пайдалану: ./scripts/setup_oidc.sh <GITHUB_ORG/REPO>
-./scripts/setup_oidc.sh Bayashat/zerde-serverless-bot
+uv sync --frozen
+uv run pytest tests/ -q
+uv run pre-commit run --all-files
 ```
 
-**Бұл сценарий не істейді:**
+Infra тексеру:
 
-- IAM-де OIDC провайдерін жасайды (егер жоқ болса).
-- Сіздің нақты GitHub репозиторийіңізге сенім білдіретін IAM рөлін (`GitHubAction-Deploy-TelegramBot`) жасайды.
-- GitHub Repository Secret ретінде қосу үшін **AWS_ROLE_ARN** шығарады.
+```bash
+cd infra
+uv run cdk synth -c env=dev
+uv run cdk diff -c env=dev
+```
 
----
-
-## 🛠️ Үлес қосу
-
-Біз үлес қосуға әрқашан қуаныштымыз. Әзірлеуді баптау (clone, uv, CDK, pre-commit) және PR процесі туралы білу үшін [CONTRIBUTING.md](CONTRIBUTING.md) файлын қараңыз.
-
-Толық нұсқаулық үшін — AWS аккаунты, жаңа бот, токен, нөлден бастап орналастыру — [Жергілікті тестілеу нұсқаулығын](docs/LOCAL_TESTING.md) қараңыз.
+Setup үшін [CONTRIBUTING.md](../CONTRIBUTING.md), толық AWS + Telegram walkthrough үшін [LOCAL_TESTING.md](LOCAL_TESTING.md) қараңыз.
 
 ---
 
-## 📄 Лицензия
+## Тарих
 
-Бұл жоба **MIT License** бойынша лицензияланған.
+Zerde бастапқыда [serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter) негізінде жасалған. Ол starter қарапайым serverless Telegram bot үшін әлі де пайдалы. Бұл репозиторий кейін memory-enabled agentic bot, news және quiz workload-тары бар толық жүйеге айналды.
+
+---
+
+## License
+
+MIT License.

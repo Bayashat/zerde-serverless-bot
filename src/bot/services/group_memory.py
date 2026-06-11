@@ -13,6 +13,49 @@ from services.repositories.sqs import SQSClient
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _USERNAME_RE = re.compile(r"@([A-Za-z0-9_]{3,32})")
+_RELEVANCE_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{2,}", re.IGNORECASE)
+_RELEVANCE_STOPWORDS = {
+    "about",
+    "and",
+    "any",
+    "are",
+    "bot",
+    "chat",
+    "for",
+    "from",
+    "how",
+    "the",
+    "this",
+    "what",
+    "who",
+    "why",
+    "zerde",
+    "бот",
+    "бро",
+    "его",
+    "как",
+    "кто",
+    "меня",
+    "нету",
+    "про",
+    "что",
+    "чат",
+    "это",
+    "бар",
+    "бір",
+    "деп",
+    "кім",
+    "мен",
+    "неге",
+    "не",
+    "ол",
+    "осы",
+    "сол",
+    "үшін",
+    "什么",
+    "怎么",
+    "这个",
+}
 
 
 def extract_message_text(message: dict[str, Any]) -> str:
@@ -126,12 +169,49 @@ def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, li
     return "\n".join(lines)
 
 
-def format_long_term_memory_context(repo: GroupMemoryRepository, chat_id: int | str, *, limit: int = 12) -> str:
+def _relevance_terms(text: str) -> set[str]:
+    terms: set[str] = set()
+    for raw in _RELEVANCE_TERM_RE.findall((text or "").lower()):
+        term = raw.lstrip("@")
+        if term and term not in _RELEVANCE_STOPWORDS and not term.isdigit():
+            terms.add(term)
+    return terms
+
+
+def _memory_matches_query(item: dict[str, Any], query_terms: set[str]) -> bool:
+    if not query_terms:
+        return True
+    fields = [
+        item.get("summary"),
+        item.get("text"),
+        item.get("topics"),
+        item.get("notable_events"),
+        item.get("inside_jokes"),
+        item.get("tension_points"),
+        item.get("display_name"),
+        item.get("username"),
+    ]
+    searchable = " ".join(
+        str(part) for value in fields for part in (value if isinstance(value, list) else [value]) if part
+    ).lower()
+    return any(term in searchable for term in query_terms)
+
+
+def format_long_term_memory_context(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    *,
+    limit: int = 12,
+    query_text: str | None = None,
+) -> str:
     """Render recent important memories extracted by the async memory processor."""
     daily_summaries = repo.get_recent_daily_summaries(chat_id, limit=GROUP_MEMORY_DAILY_SUMMARY_DAYS)
     memories = repo.get_recent_long_term_memories(chat_id, limit=limit)
+    query_terms = _relevance_terms(query_text or "")
     lines: list[str] = []
     for item in daily_summaries:
+        if not _memory_matches_query(item, query_terms):
+            continue
         summary_date = str(item.get("summary_date") or "").strip()
         summary = str(item.get("summary") or "").replace("\n", " ").strip()
         topics = item.get("topics") if isinstance(item.get("topics"), list) else []
@@ -140,6 +220,8 @@ def format_long_term_memory_context(repo: GroupMemoryRepository, chat_id: int | 
             topic_suffix = f" topics={topic_text}" if topic_text else ""
             lines.append(f"[daily_summary date={summary_date}{topic_suffix}] {summary[:900]}")
     for item in memories:
+        if not _memory_matches_query(item, query_terms):
+            continue
         kind = str(item.get("kind") or "memory")
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
         summary = str(item.get("summary") or item.get("text") or "").replace("\n", " ").strip()
