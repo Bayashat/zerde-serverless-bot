@@ -14,6 +14,7 @@ from services.repositories.captcha import CaptchaRepository
 from services.repositories.group_memory import GroupMemoryRepository
 from services.spam.processor import process_spam_check_task
 from services.telegram import TelegramClient
+from services.vector_memory import process_vector_memory_backfill_task, process_vector_memory_task
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -51,9 +52,13 @@ def process_sqs_event(
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")
                 process_group_ask_task(repo=memory_repo, bot=bot, body=body)
             elif task_type == "PROCESS_GROUP_MEMORY":
-                process_group_memory_task(body)
+                process_group_memory_task(body, repo=memory_repo)
             elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":
-                process_daily_group_summaries_task(body)
+                process_daily_group_summaries_task(body, repo=memory_repo)
+            elif task_type == "PROCESS_VECTOR_MEMORY":
+                process_vector_memory_task(body, repo=memory_repo)
+            elif task_type == "PROCESS_VECTOR_MEMORY_BACKFILL":
+                process_vector_memory_backfill_task(body, repo=memory_repo)
             else:
                 logger.warning(
                     "Unexpected SQS record: unsupported task_type, ignoring",

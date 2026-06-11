@@ -35,6 +35,12 @@ os.environ.setdefault("GROQ_MODEL", "test-groq-model")
 os.environ.setdefault("DEEPSEEK_MODEL", "test-deepseek-model")
 os.environ.setdefault("GEMINI_MODEL", "test-gemini-model")
 os.environ.setdefault("QUIZ_LAMBDA_NAME", "test-quiz-lambda")
+os.environ.setdefault("VECTOR_MEMORY_ENABLED", "false")
+os.environ.setdefault("VECTOR_MEMORY_PROVIDER", "")
+os.environ.setdefault("VECTOR_MEMORY_VECTOR_BUCKET_NAME", "")
+os.environ.setdefault("VECTOR_MEMORY_INDEX_NAME", "")
+os.environ.setdefault("VECTOR_MEMORY_DIMENSIONS", "768")
+os.environ.setdefault("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-001")
 
 # Add src/bot to sys.path so imports work like they do in Lambda
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "bot"))

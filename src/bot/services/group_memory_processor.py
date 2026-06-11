@@ -12,6 +12,8 @@ from core.logger import LoggerAdapter, get_logger
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.group_memory import format_long_term_memory_context
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.sqs import SQSClient
+from services.vector_memory import vector_memory_configured
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -285,11 +287,33 @@ def build_daily_messages_context(messages: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def _enqueue_vector_memory_index(
+    *,
+    chat_id: int | str,
+    source_sk: str,
+    sqs_repo: SQSClient | None = None,
+) -> None:
+    if not vector_memory_configured():
+        return
+    try:
+        (sqs_repo or SQSClient()).send_vector_memory_task(
+            chat_id=chat_id,
+            source_sk=source_sk,
+            reason="memory_write",
+        )
+    except Exception:
+        logger.exception(
+            "Failed to enqueue vector memory indexing",
+            extra={"chat_id": chat_id, "source_sk": source_sk},
+        )
+
+
 def process_daily_group_summary(
     *,
     chat_id: int | str,
     summary_date: str | None = None,
     repo: GroupMemoryRepository | None = None,
+    sqs_repo: SQSClient | None = None,
 ) -> bool:
     """Build and store one daily summary for a memory-enabled group."""
     repo = repo or GroupMemoryRepository()
@@ -354,7 +378,7 @@ def process_daily_group_summary(
         source = "fallback_no_gemini"
 
     summary = _normalise_daily_summary(raw_summary, summary_date=window.summary_date, source=source)
-    repo.store_daily_summary(
+    item = repo.store_daily_summary(
         chat_id=chat_id,
         summary_date=window.summary_date,
         summary=summary["summary"],
@@ -366,6 +390,7 @@ def process_daily_group_summary(
         message_count=len(messages),
         source=summary["source"],
     )
+    _enqueue_vector_memory_index(chat_id=chat_id, source_sk=str(item["sk"]), sqs_repo=sqs_repo)
     logger.info(
         "Daily group summary stored",
         extra={"chat_id": chat_id, "summary_date": window.summary_date, "message_count": len(messages)},
@@ -373,7 +398,12 @@ def process_daily_group_summary(
     return True
 
 
-def process_daily_group_summaries_task(body: dict[str, Any], *, repo: GroupMemoryRepository | None = None) -> None:
+def process_daily_group_summaries_task(
+    body: dict[str, Any],
+    *,
+    repo: GroupMemoryRepository | None = None,
+    sqs_repo: SQSClient | None = None,
+) -> None:
     """Process a scheduled SQS task for one or more configured groups."""
     repo = repo or GroupMemoryRepository()
     chat_ids = body.get("chat_ids")
@@ -383,12 +413,22 @@ def process_daily_group_summaries_task(body: dict[str, Any], *, repo: GroupMemor
 
     stored = 0
     for chat_id in chat_ids:
-        if process_daily_group_summary(chat_id=chat_id, summary_date=body.get("summary_date"), repo=repo):
+        if process_daily_group_summary(
+            chat_id=chat_id,
+            summary_date=body.get("summary_date"),
+            repo=repo,
+            sqs_repo=sqs_repo,
+        ):
             stored += 1
     logger.info("Daily group summaries task completed", extra={"requested": len(chat_ids), "stored": stored})
 
 
-def process_group_memory_task(body: dict[str, Any], *, repo: GroupMemoryRepository | None = None) -> None:
+def process_group_memory_task(
+    body: dict[str, Any],
+    *,
+    repo: GroupMemoryRepository | None = None,
+    sqs_repo: SQSClient | None = None,
+) -> None:
     """Process one SQS group-memory task and store important long-term memory."""
     repo = repo or GroupMemoryRepository()
     try:
@@ -407,7 +447,7 @@ def process_group_memory_task(body: dict[str, Any], *, repo: GroupMemoryReposito
         logger.debug("PROCESS_GROUP_MEMORY skipped low-value or sensitive message", extra={"chat_id": chat_id})
         return
 
-    repo.store_long_term_memory(
+    item = repo.store_long_term_memory(
         chat_id=chat_id,
         message_id=message_id,
         user_id=user_id,
@@ -420,6 +460,7 @@ def process_group_memory_task(body: dict[str, Any], *, repo: GroupMemoryReposito
         confidence=classification.confidence,
         created_at=body.get("created_at"),
     )
+    _enqueue_vector_memory_index(chat_id=chat_id, source_sk=str(item["sk"]), sqs_repo=sqs_repo)
     logger.info(
         "PROCESS_GROUP_MEMORY stored long-term memory",
         extra={"chat_id": chat_id, "message_id": message_id, "kind": classification.kind},

@@ -74,12 +74,18 @@ class ZerdeTelegramBotStack(Stack):
         group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "30")
         group_memory_daily_summary_days = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7")
         group_memory_daily_summary_message_limit = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500")
-        agent_enabled = os.environ.get("AGENT_ENABLED", "false" if is_prod else "true")
+        agent_enabled = os.environ.get("AGENT_ENABLED", "true")
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "10")
         agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
+        vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
+        vector_memory_provider = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors")
+        vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
+        vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-001")
+        vector_memory_vector_bucket_name = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
+        vector_memory_index_name = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
@@ -157,6 +163,12 @@ class ZerdeTelegramBotStack(Stack):
             agent_daily_proactive_limit=agent_daily_proactive_limit,
             agent_proactive_score_threshold=agent_proactive_score_threshold,
             agent_proactive_final_threshold=agent_proactive_final_threshold,
+            vector_memory_enabled=vector_memory_enabled,
+            vector_memory_provider=vector_memory_provider,
+            vector_memory_dimensions=vector_memory_dimensions,
+            vector_memory_embedding_model=vector_memory_embedding_model,
+            vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
+            vector_memory_index_name=vector_memory_index_name,
         )
 
         news = NewsConstruct(

@@ -115,10 +115,10 @@ CAPTCHA_MAX_ATTEMPTS: int = require_int("CAPTCHA_MAX_ATTEMPTS")
 
 # ── Group memory / agent MVP ────────────────────────────────────────────────
 MEMORY_TABLE_NAME: str | None = os.environ.get("MEMORY_TABLE_NAME")
-GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", False)
+GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", True)
 GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "80"))
 GROUP_MEMORY_RETENTION_DAYS: int = int(os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "30"))
-AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", False)
+AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", True)
 AGENT_BOT_USERNAME: str = os.environ.get("AGENT_BOT_USERNAME", "").lstrip("@").lower()
 AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
 AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
@@ -126,6 +126,15 @@ AGENT_PROACTIVE_SCORE_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_S
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
 GROUP_MEMORY_DAILY_SUMMARY_DAYS: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7"))
 GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500"))
+
+# ── Vector memory retrieval ────────────────────────────────────────────────
+VECTOR_MEMORY_ENABLED: bool = _env_bool("VECTOR_MEMORY_ENABLED", True)
+VECTOR_MEMORY_PROVIDER: str = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors").strip().lower()
+VECTOR_MEMORY_VECTOR_BUCKET_NAME: str | None = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
+VECTOR_MEMORY_INDEX_NAME: str | None = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
+VECTOR_MEMORY_DIMENSIONS: int = int(os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768"))
+VECTOR_MEMORY_EMBEDDING_MODEL: str = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-001")
+VECTOR_MEMORY_BACKFILL_BATCH_SIZE: int = int(os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50"))
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VOTEBAN_PREFIX = "voteban_"

@@ -30,6 +30,7 @@ from services.group_memory import (
 )
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram import TelegramClient
+from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -382,6 +383,9 @@ def answer_group_question(
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id)
+    semantic_memory_context = format_semantic_memory_context(
+        retrieve_relevant_memories(chat_id, user_text, limit=8),
+    )
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     user_profile_context = format_user_profile_context(
         repo,
@@ -395,6 +399,7 @@ def answer_group_question(
             user_message=user_text,
             recent_context=recent_context,
             long_term_memory_context=long_term_memory_context,
+            semantic_memory_context=semantic_memory_context,
             user_profile_context=user_profile_context,
             lang=lang,
         )
@@ -427,7 +432,7 @@ def answer_group_question(
             trigger_kind="explicit",
             reason=(
                 "I was mentioned, replied to, or called through /ask, "
-                "so I answered with recent and trusted memory context."
+                "so I answered with recent, semantic, and trusted memory context."
             ),
         )
     return True

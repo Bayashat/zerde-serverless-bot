@@ -14,6 +14,12 @@ from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.group_agent import answer_group_question
 from services.handlers.quiz import react_genquiz_processing
+from services.vector_memory import (
+    delete_chat_vectors,
+    delete_user_vectors,
+    get_vector_index_status,
+    vector_memory_configured,
+)
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -252,6 +258,23 @@ def handle_memory_status(ctx: Context) -> None:
         else get_translated_text("status_off", ctx.lang_code)
     )
     overview = ctx.memory_repo.get_memory_overview(ctx.chat_id)
+    vector_status = get_vector_index_status(ctx.chat_id, repo=ctx.memory_repo, overview=overview)
+    vector_configured = get_translated_text(
+        "vector_configured_yes" if vector_status["configured"] else "vector_configured_no",
+        ctx.lang_code,
+    )
+    backfill_status = str(vector_status.get("last_backfill_status") or "")
+    backfill_key = f"vector_backfill_{backfill_status}"
+    if backfill_key not in {
+        "vector_backfill_queued",
+        "vector_backfill_queued_next_page",
+        "vector_backfill_queued_with_failures",
+    }:
+        backfill_key = "vector_backfill_none"
+    vector_backfill = get_translated_text(
+        backfill_key,
+        ctx.lang_code,
+    )
     ctx.reply(
         get_translated_text(
             "memory_status_message",
@@ -266,6 +289,13 @@ def handle_memory_status(ctx: Context) -> None:
             jokes=overview["jokes"],
             daily_summaries=overview["daily_summaries"],
             agent_replies=overview["agent_replies"],
+            vector_configured=vector_configured,
+            vector_indexed=vector_status["indexed_count"],
+            vector_total=vector_status["total_count"],
+            vector_pending=vector_status["pending_count"],
+            vector_failed=vector_status["failed_count"],
+            vector_skipped=vector_status["skipped_count"],
+            vector_backfill=vector_backfill,
         ),
         ctx.message_id,
     )
@@ -373,8 +403,12 @@ def handle_forget_group(ctx: Context) -> None:
         return
     if not _require_admin_user(ctx):
         return
+    vector_note = _delete_chat_vectors_note(ctx)
     deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
-    ctx.reply(get_translated_text("forget_group_done", ctx.lang_code, deleted=deleted), ctx.message_id)
+    ctx.reply(
+        get_translated_text("forget_group_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
+        ctx.message_id,
+    )
 
 
 def handle_forget_me(ctx: Context) -> None:
@@ -383,8 +417,34 @@ def handle_forget_me(ctx: Context) -> None:
     if not ctx.user_id:
         ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
         return
+    vector_note = _delete_user_vectors_note(ctx, ctx.user_id)
     deleted = ctx.memory_repo.delete_user_memory(ctx.chat_id, ctx.user_id)
-    ctx.reply(get_translated_text("forget_me_done", ctx.lang_code, deleted=deleted), ctx.message_id)
+    ctx.reply(
+        get_translated_text("forget_me_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
+        ctx.message_id,
+    )
+
+
+def _delete_chat_vectors_note(ctx: Context) -> str:
+    if not vector_memory_configured():
+        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
+    try:
+        deleted = delete_chat_vectors(ctx.chat_id, repo=ctx.memory_repo)
+        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
+    except Exception:
+        logger.exception("Failed to delete chat vector memory", extra={"chat_id": ctx.chat_id})
+        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
+
+
+def _delete_user_vectors_note(ctx: Context, user_id: int | str) -> str:
+    if not vector_memory_configured():
+        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
+    try:
+        deleted = delete_user_vectors(ctx.chat_id, user_id, repo=ctx.memory_repo)
+        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
+    except Exception:
+        logger.exception("Failed to delete user vector memory", extra={"chat_id": ctx.chat_id, "user_id": user_id})
+        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
 
 
 def handle_why_reply(ctx: Context) -> None:

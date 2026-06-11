@@ -12,6 +12,8 @@ from botocore.exceptions import ClientError
 from core.config import GROUP_MEMORY_RETENTION_DAYS, MEMORY_TABLE_NAME
 from services.repositories._common import get_dynamodb
 
+_VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
+
 
 class GroupMemoryRepository:
     """Store opt-in group memory in a single-table DynamoDB layout."""
@@ -58,6 +60,14 @@ class GroupMemoryRepository:
     @staticmethod
     def _daily_summary_sk(summary_date: str) -> str:
         return f"DAILY_SUMMARY#{summary_date}"
+
+    @staticmethod
+    def _vector_backfill_sk() -> str:
+        return "VECTOR_BACKFILL"
+
+    @staticmethod
+    def is_vectorizable_sk(sk: str) -> bool:
+        return sk.startswith(_VECTOR_MEMORY_PREFIXES)
 
     @staticmethod
     def _normalise_profile_samples(value: Any) -> list[str]:
@@ -249,8 +259,8 @@ class GroupMemoryRepository:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._settings_sk()})
         item = resp.get("Item") or {}
         return {
-            "memory_enabled": bool(item.get("memory_enabled", False)),
-            "agent_enabled": bool(item.get("agent_enabled", False)),
+            "memory_enabled": bool(item.get("memory_enabled", True)),
+            "agent_enabled": bool(item.get("agent_enabled", True)),
             "updated_at": item.get("updated_at"),
         }
 
@@ -427,7 +437,7 @@ class GroupMemoryRepository:
         reason: str,
         confidence: float,
         created_at: int | None = None,
-    ) -> None:
+    ) -> dict[str, Any]:
         """Store one trusted long-term memory extracted from a user's own message."""
         now = int(time.time())
         created_at = created_at or now
@@ -451,6 +461,7 @@ class GroupMemoryRepository:
         if username:
             item["username"] = username
         self.table.put_item(Item=item)
+        return item
 
     def get_recent_long_term_memories(self, chat_id: int | str, *, limit: int = 12) -> list[dict[str, Any]]:
         """Return recent important memories across long-term memory item types."""
@@ -479,29 +490,29 @@ class GroupMemoryRepository:
         tension_points: list[str],
         message_count: int,
         source: str,
-    ) -> None:
+    ) -> dict[str, Any]:
         """Store one daily compressed group memory summary."""
         now = int(time.time())
         ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
-        self.table.put_item(
-            Item={
-                "pk": self._chat_pk(chat_id),
-                "sk": self._daily_summary_sk(summary_date),
-                "kind": "daily_summary",
-                "chat_id": str(chat_id),
-                "summary_date": summary_date,
-                "summary": summary[:1200],
-                "topics": topics[:12],
-                "notable_events": notable_events[:12],
-                "inside_jokes": inside_jokes[:8],
-                "active_participants": active_participants[:20],
-                "tension_points": tension_points[:8],
-                "message_count": message_count,
-                "source": source,
-                "created_at": now,
-                "ttl": ttl,
-            }
-        )
+        item = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._daily_summary_sk(summary_date),
+            "kind": "daily_summary",
+            "chat_id": str(chat_id),
+            "summary_date": summary_date,
+            "summary": summary[:1200],
+            "topics": topics[:12],
+            "notable_events": notable_events[:12],
+            "inside_jokes": inside_jokes[:8],
+            "active_participants": active_participants[:20],
+            "tension_points": tension_points[:8],
+            "message_count": message_count,
+            "source": source,
+            "created_at": now,
+            "ttl": ttl,
+        }
+        self.table.put_item(Item=item)
+        return item
 
     def get_recent_daily_summaries(self, chat_id: int | str, *, limit: int = 7) -> list[dict[str, Any]]:
         resp = self.table.query(
@@ -511,6 +522,106 @@ class GroupMemoryRepository:
         )
         items = resp.get("Items") or []
         return list(reversed(items))
+
+    def get_memory_item(self, chat_id: int | str, source_sk: str) -> dict[str, Any]:
+        resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": source_sk})
+        return resp.get("Item") or {}
+
+    def list_vectorizable_memory_items(
+        self,
+        chat_id: int | str,
+        *,
+        limit: int = 50,
+        start_key: dict[str, Any] | None = None,
+        user_id: int | str | None = None,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+        """Return one DynamoDB page of memory items eligible for vector indexing."""
+        kwargs: dict[str, Any] = {
+            "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
+            "Limit": limit,
+        }
+        if start_key:
+            kwargs["ExclusiveStartKey"] = start_key
+        resp = self.table.query(**kwargs)
+        user_id_str = str(user_id) if user_id is not None else None
+        items: list[dict[str, Any]] = []
+        for item in resp.get("Items") or []:
+            sk = str(item.get("sk") or "")
+            if not self.is_vectorizable_sk(sk):
+                continue
+            if user_id_str is not None and str(item.get("user_id") or "") != user_id_str:
+                continue
+            items.append(item)
+        return items, resp.get("LastEvaluatedKey")
+
+    def mark_vector_status(
+        self,
+        chat_id: int | str,
+        source_sk: str,
+        *,
+        status: str,
+        vector_key: str | None = None,
+        error: str | None = None,
+        embedding_model: str | None = None,
+        dimensions: int | None = None,
+    ) -> None:
+        now = int(time.time())
+        values: dict[str, Any] = {
+            ":status": status,
+            ":now": now,
+        }
+        sets = ["vector_status = :status", "vector_updated_at = :now"]
+        removes: list[str] = []
+        if vector_key:
+            values[":vector_key"] = vector_key
+            sets.append("vector_key = :vector_key")
+        if embedding_model:
+            values[":model"] = embedding_model
+            sets.append("vector_embedding_model = :model")
+        if dimensions:
+            values[":dimensions"] = Decimal(dimensions)
+            sets.append("vector_dimensions = :dimensions")
+        if error:
+            values[":error"] = error[:300]
+            sets.append("vector_error = :error")
+        else:
+            removes.append("vector_error")
+
+        update = "SET " + ", ".join(sets)
+        if removes:
+            update += " REMOVE " + ", ".join(removes)
+        self.table.update_item(
+            Key={"pk": self._chat_pk(chat_id), "sk": source_sk},
+            UpdateExpression=update,
+            ExpressionAttributeValues=values,
+        )
+
+    def record_vector_backfill_status(
+        self,
+        chat_id: int | str,
+        *,
+        status: str,
+        processed: int = 0,
+        enqueued: int = 0,
+        failures: int = 0,
+        next_token: dict[str, Any] | None = None,
+    ) -> None:
+        now = int(time.time())
+        item: dict[str, Any] = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._vector_backfill_sk(),
+            "kind": "vector_backfill",
+            "chat_id": str(chat_id),
+            "vector_backfill_status": status,
+            "vector_backfill_processed": Decimal(processed),
+            "vector_backfill_enqueued": Decimal(enqueued),
+            "vector_backfill_failures": Decimal(failures),
+            "vector_backfill_updated_at": now,
+            "ttl": now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60,
+        }
+        if next_token:
+            item["vector_backfill_next_token"] = next_token
+        self.table.put_item(Item=item)
 
     def get_user_profile(self, chat_id: int | str, user_id: int | str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._user_sk(user_id)})
@@ -652,12 +763,25 @@ class GroupMemoryRepository:
             "jokes": 0,
             "daily_summaries": 0,
             "agent_replies": 0,
+            "vector_total": 0,
+            "vector_indexed": 0,
+            "vector_failed": 0,
+            "vector_skipped": 0,
+            "vector_pending": 0,
+            "vector_backfill_status": "",
+            "vector_backfill_updated_at": "",
+            "vector_backfill_processed": 0,
+            "vector_backfill_enqueued": 0,
+            "vector_backfill_failures": 0,
         }
         start_key: dict[str, Any] | None = None
         while True:
             kwargs: dict[str, Any] = {
                 "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
-                "ProjectionExpression": "sk",
+                "ProjectionExpression": (
+                    "sk, vector_status, vector_backfill_status, vector_backfill_updated_at, "
+                    "vector_backfill_processed, vector_backfill_enqueued, vector_backfill_failures"
+                ),
             }
             if start_key:
                 kwargs["ExclusiveStartKey"] = start_key
@@ -680,6 +804,24 @@ class GroupMemoryRepository:
                     counts["daily_summaries"] += 1
                 elif sk.startswith("AGENT_REPLY#"):
                     counts["agent_replies"] += 1
+                elif sk == self._vector_backfill_sk():
+                    counts["vector_backfill_status"] = str(item.get("vector_backfill_status") or "")
+                    counts["vector_backfill_updated_at"] = item.get("vector_backfill_updated_at") or ""
+                    counts["vector_backfill_processed"] = int(item.get("vector_backfill_processed") or 0)
+                    counts["vector_backfill_enqueued"] = int(item.get("vector_backfill_enqueued") or 0)
+                    counts["vector_backfill_failures"] = int(item.get("vector_backfill_failures") or 0)
+
+                if self.is_vectorizable_sk(sk):
+                    counts["vector_total"] += 1
+                    vector_status = str(item.get("vector_status") or "")
+                    if vector_status == "indexed":
+                        counts["vector_indexed"] += 1
+                    elif vector_status == "failed":
+                        counts["vector_failed"] += 1
+                    elif vector_status == "skipped":
+                        counts["vector_skipped"] += 1
+                    else:
+                        counts["vector_pending"] += 1
             start_key = resp.get("LastEvaluatedKey")
             if not start_key:
                 return counts

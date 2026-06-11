@@ -12,6 +12,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
+from aws_cdk import aws_s3vectors as s3vectors
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
@@ -64,10 +65,22 @@ class BotConstruct(Construct):
         agent_daily_proactive_limit: str,
         agent_proactive_score_threshold: str,
         agent_proactive_final_threshold: str,
+        vector_memory_enabled: str,
+        vector_memory_provider: str,
+        vector_memory_dimensions: str,
+        vector_memory_embedding_model: str,
+        vector_memory_vector_bucket_name: str | None = None,
+        vector_memory_index_name: str | None = None,
     ) -> None:
         super().__init__(scope, construct_id)
 
         removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
+        vector_memory_create_resources = (
+            vector_memory_enabled.strip().lower() in {"1", "true", "yes", "on"}
+            and vector_memory_provider.strip().lower() == "s3_vectors"
+        )
+        vector_bucket_name = vector_memory_vector_bucket_name or f"{RESOURCE_PREFIX}-memory-vectors-{env_name}"
+        vector_index_name = vector_memory_index_name or f"{RESOURCE_PREFIX}-group-memory-{env_name}"
 
         stats_table = dynamodb.Table(
             self,
@@ -107,6 +120,30 @@ class BotConstruct(Construct):
             time_to_live_attribute="ttl",
         )
 
+        vector_bucket: s3vectors.CfnVectorBucket | None = None
+        vector_index: s3vectors.CfnIndex | None = None
+        if vector_memory_create_resources:
+            vector_bucket = s3vectors.CfnVectorBucket(
+                self,
+                f"{CONSTRUCT_PREFIX}MemoryVectorBucket",
+                vector_bucket_name=vector_bucket_name,
+            )
+            vector_bucket.apply_removal_policy(removal_policy)
+            vector_index = s3vectors.CfnIndex(
+                self,
+                f"{CONSTRUCT_PREFIX}MemoryVectorIndex",
+                vector_bucket_name=vector_bucket.vector_bucket_name,
+                index_name=vector_index_name,
+                data_type="float32",
+                dimension=int(vector_memory_dimensions),
+                distance_metric="cosine",
+                metadata_configuration=s3vectors.CfnIndex.MetadataConfigurationProperty(
+                    non_filterable_metadata_keys=["text"],
+                ),
+            )
+            vector_index.add_dependency(vector_bucket)
+            vector_index.apply_removal_policy(removal_policy)
+
         bot_environment = {
             "LOG_LEVEL": log_level,
             "TELEGRAM_API_BASE": telegram_api_base,
@@ -124,6 +161,12 @@ class BotConstruct(Construct):
             "GROUP_MEMORY_RETENTION_DAYS": group_memory_retention_days,
             "GROUP_MEMORY_DAILY_SUMMARY_DAYS": group_memory_daily_summary_days,
             "GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT": group_memory_daily_summary_message_limit,
+            "VECTOR_MEMORY_ENABLED": vector_memory_enabled,
+            "VECTOR_MEMORY_PROVIDER": vector_memory_provider if vector_memory_create_resources else "",
+            "VECTOR_MEMORY_VECTOR_BUCKET_NAME": vector_bucket_name if vector_memory_create_resources else "",
+            "VECTOR_MEMORY_INDEX_NAME": vector_index_name if vector_memory_create_resources else "",
+            "VECTOR_MEMORY_DIMENSIONS": vector_memory_dimensions,
+            "VECTOR_MEMORY_EMBEDDING_MODEL": vector_memory_embedding_model,
             "AGENT_ENABLED": agent_enabled,
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
@@ -218,6 +261,23 @@ class BotConstruct(Construct):
         queue.grant_consume_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
         memory_table.grant_read_write_data(webhook_lambda)
+        if vector_bucket is not None and vector_index is not None:
+            webhook_lambda.add_to_role_policy(
+                iam.PolicyStatement(
+                    sid="UseZerdeMemoryVectors",
+                    actions=[
+                        "s3vectors:PutVectors",
+                        "s3vectors:QueryVectors",
+                        "s3vectors:DeleteVectors",
+                        "s3vectors:ListVectors",
+                        "s3vectors:GetIndex",
+                    ],
+                    resources=[
+                        vector_bucket.attr_vector_bucket_arn,
+                        vector_index.attr_index_arn,
+                    ],
+                )
+            )
 
         webhook_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
