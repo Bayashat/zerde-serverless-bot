@@ -67,6 +67,34 @@ def test_index_memory_item_skips_sensitive_content(monkeypatch):
     assert repo.mark_vector_status.call_args.kwargs["status"] == "skipped"
 
 
+def test_embedding_privacy_guard_allows_dates_and_message_counts():
+    text = (
+        "Daily group memory summary for 2026-06-11. "
+        "2026-06-11: imported 151187 Telegram export messages from 42 participants."
+    )
+
+    assert vector_memory.looks_sensitive_for_embedding(text) is False
+
+
+def test_embedding_privacy_guard_still_blocks_phone_numbers():
+    assert vector_memory.looks_sensitive_for_embedding("Call me at +7 777 123 45 67") is True
+
+
+def test_gemini_embedding_2_formats_retrieval_tasks(monkeypatch):
+    monkeypatch.setattr(vector_memory, "VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
+    client = vector_memory.GeminiEmbeddingClient.__new__(vector_memory.GeminiEmbeddingClient)
+    client._api_key = "test"
+    client._model = "gemini-embedding-2"
+    client._dimensions = 768
+
+    assert client._content_for_task("What happened?", task_type="RETRIEVAL_QUERY").startswith(
+        "task: question answering | query:"
+    )
+    assert client._content_for_task("A memory", task_type="RETRIEVAL_DOCUMENT").startswith(
+        "title: group memory | text:"
+    )
+
+
 def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
     repo = MagicMock()

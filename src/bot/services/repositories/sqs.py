@@ -3,7 +3,7 @@
 import json
 
 import boto3
-from core.config import QUEUE_URL
+from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -23,6 +23,7 @@ class SQSClient:
 
     def __init__(self) -> None:
         self.queue_url = QUEUE_URL
+        self.vector_queue_url = VECTOR_MEMORY_QUEUE_URL or QUEUE_URL
         logger.debug(f"SQS client initialized with queue URL: {self.queue_url}")
 
     @property
@@ -209,7 +210,7 @@ class SQSClient:
             payload["reason"] = reason
         try:
             self.sqs_client.send_message(
-                QueueUrl=self.queue_url,
+                QueueUrl=getattr(self, "vector_queue_url", self.queue_url),
                 MessageBody=json.dumps(payload),
             )
             logger.info("Queued vector memory task", extra={"chat_id": chat_id, "source_sk": source_sk})
@@ -234,7 +235,7 @@ class SQSClient:
             payload["start_key"] = start_key
         try:
             self.sqs_client.send_message(
-                QueueUrl=self.queue_url,
+                QueueUrl=getattr(self, "vector_queue_url", self.queue_url),
                 MessageBody=json.dumps(payload),
             )
             logger.info("Queued vector memory backfill task", extra={"chat_id": chat_id, "limit": limit})

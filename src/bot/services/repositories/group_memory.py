@@ -281,7 +281,9 @@ class GroupMemoryRepository:
         username: str | None,
         text: str,
         created_at: int | None = None,
-    ) -> None:
+        touch_profile: bool = True,
+        skip_if_exists: bool = False,
+    ) -> bool:
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
@@ -300,15 +302,26 @@ class GroupMemoryRepository:
         }
         if username:
             item["username"] = username
-        self.table.put_item(Item=item)
-        self._touch_user_profile(
-            chat_id=chat_id,
-            user_id=user_id,
-            display_name=display_name,
-            username=username,
-            sample_text=text,
-            now=now,
-        )
+        kwargs: dict[str, Any] = {"Item": item}
+        if skip_if_exists:
+            kwargs["ConditionExpression"] = "attribute_not_exists(pk)"
+        try:
+            self.table.put_item(**kwargs)
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code")
+            if skip_if_exists and code == "ConditionalCheckFailedException":
+                return False
+            raise
+        if touch_profile:
+            self._touch_user_profile(
+                chat_id=chat_id,
+                user_id=user_id,
+                display_name=display_name,
+                username=username,
+                sample_text=text,
+                now=now,
+            )
+        return True
 
     def _touch_user_profile(
         self,

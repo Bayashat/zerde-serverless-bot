@@ -20,7 +20,7 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _summary_gemini: GeminiClient | None = None
 
 _EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}\b")
-_PHONE_RE = re.compile(r"(?:\+?\d[\s().-]*){9,}")
+_PHONE_RE = re.compile(r"(?<![\w+])(?:\+\d[\d\s().-]{7,}\d|\d{10,15})(?!\w)")
 _SECRET_CUES = (
     "password",
     "passwd",

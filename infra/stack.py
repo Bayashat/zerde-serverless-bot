@@ -66,12 +66,12 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
         # ── Group memory / agent MVP ─────────────────────────────────────────
         group_memory_enabled = os.environ.get("GROUP_MEMORY_ENABLED", "true")
         group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
-        group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "30")
+        group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650")
         group_memory_daily_summary_days = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7")
         group_memory_daily_summary_message_limit = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500")
         agent_enabled = os.environ.get("AGENT_ENABLED", "true")
@@ -83,7 +83,9 @@ class ZerdeTelegramBotStack(Stack):
         vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
         vector_memory_provider = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors")
         vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
-        vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-001")
+        vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
+        vector_memory_index_throttle_seconds = os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3")
+        vector_memory_backfill_batch_size = os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50")
         vector_memory_vector_bucket_name = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
         vector_memory_index_name = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 
@@ -137,6 +139,7 @@ class ZerdeTelegramBotStack(Stack):
             default_lang=default_lang,
             ssm_secret_prefix=ssm_secret_prefix,
             queue=messaging.queue,
+            vector_queue=messaging.vector_queue,
             admin_user_id=admin_user_id,
             gemini_api_base=gemini_api_base,
             gemini_model=gemini_model,
@@ -167,6 +170,8 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_provider=vector_memory_provider,
             vector_memory_dimensions=vector_memory_dimensions,
             vector_memory_embedding_model=vector_memory_embedding_model,
+            vector_memory_index_throttle_seconds=vector_memory_index_throttle_seconds,
+            vector_memory_backfill_batch_size=vector_memory_backfill_batch_size,
             vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
             vector_memory_index_name=vector_memory_index_name,
         )

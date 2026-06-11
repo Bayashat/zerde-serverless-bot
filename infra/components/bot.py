@@ -39,6 +39,7 @@ class BotConstruct(Construct):
         default_lang: str,
         ssm_secret_prefix: str,
         queue: sqs.Queue,
+        vector_queue: sqs.Queue,
         admin_user_id: str,
         gemini_api_base: str,
         gemini_model: str,
@@ -69,6 +70,8 @@ class BotConstruct(Construct):
         vector_memory_provider: str,
         vector_memory_dimensions: str,
         vector_memory_embedding_model: str,
+        vector_memory_index_throttle_seconds: str,
+        vector_memory_backfill_batch_size: str,
         vector_memory_vector_bucket_name: str | None = None,
         vector_memory_index_name: str | None = None,
     ) -> None:
@@ -154,6 +157,7 @@ class BotConstruct(Construct):
             "STATS_TABLE_NAME": stats_table.table_name,
             "MEMORY_TABLE_NAME": memory_table.table_name,
             "QUEUE_URL": queue.queue_url,
+            "VECTOR_MEMORY_QUEUE_URL": vector_queue.queue_url,
             "ADMIN_USER_ID": admin_user_id,
             # -- Group memory / agent MVP ─────────────────────────────────────
             "GROUP_MEMORY_ENABLED": group_memory_enabled,
@@ -167,6 +171,8 @@ class BotConstruct(Construct):
             "VECTOR_MEMORY_INDEX_NAME": vector_index_name if vector_memory_create_resources else "",
             "VECTOR_MEMORY_DIMENSIONS": vector_memory_dimensions,
             "VECTOR_MEMORY_EMBEDDING_MODEL": vector_memory_embedding_model,
+            "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": vector_memory_index_throttle_seconds,
+            "VECTOR_MEMORY_BACKFILL_BATCH_SIZE": vector_memory_backfill_batch_size,
             "AGENT_ENABLED": agent_enabled,
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
@@ -227,6 +233,7 @@ class BotConstruct(Construct):
             "webhook-secret-token",
             "groq-api-key",
             "gemini-api-key",
+            "gemini-embedding-api-key",
             "deepseek-api-key",
         ]
 
@@ -259,6 +266,8 @@ class BotConstruct(Construct):
 
         queue.grant_send_messages(webhook_lambda)
         queue.grant_consume_messages(webhook_lambda)
+        vector_queue.grant_send_messages(webhook_lambda)
+        vector_queue.grant_consume_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
         memory_table.grant_read_write_data(webhook_lambda)
         if vector_bucket is not None and vector_index is not None:
@@ -285,6 +294,15 @@ class BotConstruct(Construct):
                 batch_size=1,
                 max_batching_window=Duration.seconds(0),
                 max_concurrency=10,
+            )
+        )
+
+        webhook_lambda.add_event_source(
+            lambda_event_sources.SqsEventSource(
+                vector_queue,
+                batch_size=1,
+                max_batching_window=Duration.seconds(0),
+                max_concurrency=3,
             )
         )
 

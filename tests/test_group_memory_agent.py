@@ -353,6 +353,7 @@ def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
     sqs = SQSClient.__new__(SQSClient)
     sqs.queue_url = "queue-url"
+    sqs.vector_queue_url = "vector-queue-url"
 
     sqs.send_group_memory_task(
         chat_id=-100123,
@@ -399,6 +400,7 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert fake_client.send_message.call_args.kwargs["QueueUrl"] == "queue-url"
     assert payload["task_type"] == "PROCESS_GROUP_ASK"
     assert payload["update_id"] == 123
     assert payload["chat_id"] == -100123
@@ -412,10 +414,12 @@ def test_sqs_client_sends_vector_memory_task(monkeypatch):
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
     sqs = SQSClient.__new__(SQSClient)
     sqs.queue_url = "queue-url"
+    sqs.vector_queue_url = "vector-queue-url"
 
     sqs.send_vector_memory_task(chat_id=-100123, source_sk="EVENT#1#2", reason="memory_write")
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert fake_client.send_message.call_args.kwargs["QueueUrl"] == "vector-queue-url"
     assert payload == {
         "task_type": "PROCESS_VECTOR_MEMORY",
         "chat_id": -100123,
@@ -429,6 +433,7 @@ def test_sqs_client_sends_vector_memory_backfill_task(monkeypatch):
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
     sqs = SQSClient.__new__(SQSClient)
     sqs.queue_url = "queue-url"
+    sqs.vector_queue_url = "vector-queue-url"
 
     sqs.send_vector_memory_backfill_task(
         chat_id=-100123,
@@ -437,6 +442,7 @@ def test_sqs_client_sends_vector_memory_backfill_task(monkeypatch):
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert fake_client.send_message.call_args.kwargs["QueueUrl"] == "vector-queue-url"
     assert payload["task_type"] == "PROCESS_VECTOR_MEMORY_BACKFILL"
     assert payload["chat_id"] == -100123
     assert payload["limit"] == 25
