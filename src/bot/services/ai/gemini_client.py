@@ -110,6 +110,7 @@ class GeminiClient:
         user_message: str,
         recent_context: str,
         long_term_memory_context: str = "",
+        semantic_memory_context: str = "",
         user_profile_context: str = "",
         lang: str = "kk",
     ) -> tuple[str, int]:
@@ -136,6 +137,8 @@ class GeminiClient:
             "someone's profile, and do not casually repeat those labels as facts. "
             "When provided, the trusted target-user profile section is higher-trust than recent group context "
             "for questions about that person because it is derived from the target user's own messages. "
+            "Semantic long-term memory retrieval is query-matched historical context; use it when relevant, "
+            "but do not let it override the trusted target-user profile or clear recent evidence. "
             "Decide the answer style from the user's wording and the replied-to context: "
             "for IT terms or technical concepts, give a clear technical explanation; "
             "for questions about a replied-to group message, explain the message in context; "
@@ -161,6 +164,8 @@ class GeminiClient:
             f"Preferred language code: {lang}\n\n"
             "Trusted target-user profile context:\n"
             f"{user_profile_context or '(no target-user profile context available)'}\n\n"
+            "Semantic long-term memory retrieval, query-matched and lower trust than target-user profiles:\n"
+            f"{semantic_memory_context or '(no semantic memory results available)'}\n\n"
             "Trusted long-term group memory:\n"
             f"{long_term_memory_context or '(no long-term memory available)'}\n\n"
             "Recent group context, oldest to newest:\n"
@@ -188,6 +193,7 @@ class GeminiClient:
                 "lang": lang,
                 "context_chars": len(recent_context),
                 "long_term_memory_chars": len(long_term_memory_context),
+                "semantic_memory_chars": len(semantic_memory_context),
                 "profile_context_chars": len(user_profile_context),
                 "message_chars": len(user_message),
                 "rpd_count": count,

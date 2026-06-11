@@ -191,3 +191,55 @@ class SQSClient:
         except Exception as e:
             logger.exception("Failed to send daily group summaries task", extra={"error": e})
             raise
+
+    def send_vector_memory_task(
+        self,
+        *,
+        chat_id: int | str,
+        source_sk: str,
+        reason: str | None = None,
+    ) -> None:
+        """Enqueue vector indexing for one already-stored long-term memory item."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_VECTOR_MEMORY",
+            "chat_id": chat_id,
+            "source_sk": source_sk,
+        }
+        if reason:
+            payload["reason"] = reason
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info("Queued vector memory task", extra={"chat_id": chat_id, "source_sk": source_sk})
+        except Exception as e:
+            logger.exception("Failed to send vector memory task to SQS", extra={"error": e, "chat_id": chat_id})
+            raise
+
+    def send_vector_memory_backfill_task(
+        self,
+        *,
+        chat_id: int | str,
+        limit: int = 50,
+        start_key: dict | None = None,
+    ) -> None:
+        """Enqueue one page of vector-memory backfill for a chat."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_VECTOR_MEMORY_BACKFILL",
+            "chat_id": chat_id,
+            "limit": limit,
+        }
+        if start_key:
+            payload["start_key"] = start_key
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info("Queued vector memory backfill task", extra={"chat_id": chat_id, "limit": limit})
+        except Exception as e:
+            logger.exception(
+                "Failed to send vector memory backfill task to SQS", extra={"error": e, "chat_id": chat_id}
+            )
+            raise

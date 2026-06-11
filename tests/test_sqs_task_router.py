@@ -86,7 +86,7 @@ def test_process_group_memory_routes() -> None:
         patch("services.sqs_task_router.process_group_memory_task") as mock_pm,
     ):
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pm.assert_called_once_with(body)
+    mock_pm.assert_called_once_with(body, repo=None)
 
 
 def test_process_daily_group_summaries_routes() -> None:
@@ -97,7 +97,37 @@ def test_process_daily_group_summaries_routes() -> None:
     }
     with patch("services.sqs_task_router.process_daily_group_summaries_task") as mock_pd:
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pd.assert_called_once_with(body)
+    mock_pd.assert_called_once_with(body, repo=None)
+
+
+def test_process_vector_memory_routes() -> None:
+    body = {
+        "task_type": "PROCESS_VECTOR_MEMORY",
+        "chat_id": -1001,
+        "source_sk": "EVENT#1#2",
+    }
+    memory_repo = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_vector_memory_task") as mock_pv,
+    ):
+        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), memory_repo)
+    mock_pv.assert_called_once_with(body, repo=memory_repo)
+
+
+def test_process_vector_memory_backfill_routes() -> None:
+    body = {
+        "task_type": "PROCESS_VECTOR_MEMORY_BACKFILL",
+        "chat_id": -1001,
+        "limit": 25,
+    }
+    memory_repo = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_vector_memory_backfill_task") as mock_pb,
+    ):
+        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), memory_repo)
+    mock_pb.assert_called_once_with(body, repo=memory_repo)
 
 
 def test_non_whitelisted_chat_skips_handlers() -> None:

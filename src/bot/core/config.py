@@ -127,6 +127,15 @@ AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_F
 GROUP_MEMORY_DAILY_SUMMARY_DAYS: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7"))
 GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500"))
 
+# ── Vector memory retrieval ────────────────────────────────────────────────
+VECTOR_MEMORY_ENABLED: bool = _env_bool("VECTOR_MEMORY_ENABLED", False)
+VECTOR_MEMORY_PROVIDER: str = os.environ.get("VECTOR_MEMORY_PROVIDER", "").strip().lower()
+VECTOR_MEMORY_VECTOR_BUCKET_NAME: str | None = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
+VECTOR_MEMORY_INDEX_NAME: str | None = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
+VECTOR_MEMORY_DIMENSIONS: int = int(os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768"))
+VECTOR_MEMORY_EMBEDDING_MODEL: str = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-001")
+VECTOR_MEMORY_BACKFILL_BATCH_SIZE: int = int(os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50"))
+
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VOTEBAN_PREFIX = "voteban_"
 VOTEBAN_FOR_PREFIX = "voteban_for_"

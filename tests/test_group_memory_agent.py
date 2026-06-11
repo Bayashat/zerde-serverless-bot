@@ -394,6 +394,42 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     assert payload["lang"] == "en"
 
 
+def test_sqs_client_sends_vector_memory_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_vector_memory_task(chat_id=-100123, source_sk="EVENT#1#2", reason="memory_write")
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload == {
+        "task_type": "PROCESS_VECTOR_MEMORY",
+        "chat_id": -100123,
+        "source_sk": "EVENT#1#2",
+        "reason": "memory_write",
+    }
+
+
+def test_sqs_client_sends_vector_memory_backfill_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_vector_memory_backfill_task(
+        chat_id=-100123,
+        limit=25,
+        start_key={"pk": "CHAT#-100123", "sk": "EVENT#1#2"},
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["task_type"] == "PROCESS_VECTOR_MEMORY_BACKFILL"
+    assert payload["chat_id"] == -100123
+    assert payload["limit"] == 25
+    assert payload["start_key"]["sk"] == "EVENT#1#2"
+
+
 def test_agent_should_answer_mention_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
@@ -641,6 +677,11 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
+        "retrieve_relevant_memories",
+        lambda *args, **kwargs: [{"metadata": {"memory_kind": "event", "text": "OpenSearch was too expensive"}}],
+    )
+    monkeypatch.setattr(
+        group_agent,
         "format_user_profile_context",
         lambda *args, **kwargs: "Trusted profile: username=@bayashat own_topic_terms: opensearch",
     )
@@ -659,6 +700,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
         user_message="@zerde_kz_bot @bayashat кім",
         recent_context="Nurt AI: @bayashat токсик",
         long_term_memory_context="",
+        semantic_memory_context="[semantic_memory kind=event] OpenSearch was too expensive",
         user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
         lang="kk",
     )
@@ -788,7 +830,43 @@ def test_memory_status_allows_group_admin(monkeypatch):
     ctx.memory_repo.get_chat_settings.assert_called_once_with(-100123)
     ctx.memory_repo.get_memory_overview.assert_called_once_with(-100123)
     assert "1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
+    assert "Vector memory" in ctx.reply.call_args.args[0]
     assert "2" in ctx.reply.call_args.args[0]
+
+
+def test_memory_status_includes_vector_status(monkeypatch):
+    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
+    monkeypatch.setattr(
+        commands,
+        "get_vector_index_status",
+        lambda *args, **kwargs: {
+            "configured": True,
+            "indexed_count": 7,
+            "total_count": 9,
+            "pending_count": 1,
+            "failed_count": 1,
+            "skipped_count": 0,
+            "last_backfill_status": "queued",
+        },
+    )
+    ctx = _command_ctx(user_id=42, status="administrator")
+    ctx.memory_repo.get_memory_overview.return_value = {
+        "recent_messages": 10,
+        "user_profiles": 2,
+        "events": 1,
+        "user_facts": 3,
+        "group_facts": 1,
+        "jokes": 1,
+        "daily_summaries": 2,
+        "agent_replies": 4,
+    }
+
+    commands.handle_memory_status(ctx)
+
+    message = ctx.reply.call_args.args[0]
+    assert "configured yes" in message
+    assert "indexed 7/9" in message
+    assert "queued" in message
 
 
 def test_memory_command_routes_subcommands(monkeypatch):
@@ -829,6 +907,21 @@ def test_forget_group_allows_only_bot_owner(monkeypatch):
     owner_ctx.memory_repo.delete_chat_memory.assert_called_once_with(-100123)
 
 
+def test_forget_group_deletes_vector_memory_when_configured(monkeypatch):
+    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
+    delete_vectors = MagicMock(return_value=2)
+    monkeypatch.setattr(commands, "delete_chat_vectors", delete_vectors)
+    ctx = _command_ctx(user_id=1, status="member")
+    ctx.memory_repo.delete_chat_memory.return_value = 3
+
+    commands.handle_forget_group(ctx)
+
+    delete_vectors.assert_called_once_with(-100123, repo=ctx.memory_repo)
+    ctx.memory_repo.delete_chat_memory.assert_called_once_with(-100123)
+    assert "2" in ctx.reply.call_args.args[0]
+
+
 def test_forget_me_deletes_current_users_memory():
     ctx = _command_ctx(user_id=42)
     ctx.memory_repo.delete_user_memory.return_value = 5
@@ -837,6 +930,19 @@ def test_forget_me_deletes_current_users_memory():
 
     ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
     assert "5" in ctx.reply.call_args.args[0]
+
+
+def test_forget_me_deletes_vector_memory_when_configured(monkeypatch):
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
+    delete_vectors = MagicMock(return_value=1)
+    monkeypatch.setattr(commands, "delete_user_vectors", delete_vectors)
+    ctx = _command_ctx(user_id=42)
+    ctx.memory_repo.delete_user_memory.return_value = 5
+
+    commands.handle_forget_me(ctx)
+
+    delete_vectors.assert_called_once_with(-100123, 42, repo=ctx.memory_repo)
+    ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
 
 
 def test_why_reply_uses_replied_bot_message_reason():

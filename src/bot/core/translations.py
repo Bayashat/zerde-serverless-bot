@@ -146,15 +146,27 @@ TRANSLATIONS = {
             "📚 <b>Long-term memory:</b> {events} events, {user_facts} user facts, "
             "{group_facts} group facts, {jokes} jokes\n"
             "🗓 <b>Daily summaries:</b> {daily_summaries}\n"
+            "🔎 <b>Vector memory:</b> configured {vector_configured}, indexed {vector_indexed}/{vector_total}, "
+            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
+            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
             "🧾 <b>Recorded agent replies:</b> {agent_replies}"
         ),
         "ask_usage": "💬 Usage: <code>/ask question</code> or reply to a message with <code>/ask</code>.",
         "ask_memory_off": "🧠 Group memory is off. Ask the group owner to run <code>/memory on</code> first.",
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
         "ask_daily_quota_exhausted": "⚠️ AI daily quota is exhausted for today.",
-        "forget_group_done": "🧹 Deleted {deleted} memory items for this group.",
+        "forget_group_done": "🧹 Deleted {deleted} memory items for this group.\n{vector_note}",
         "forget_me_no_user": "❌ I could not identify your Telegram user id.",
-        "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.",
+        "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.\n{vector_note}",
+        "vector_configured_yes": "yes",
+        "vector_configured_no": "no",
+        "vector_backfill_none": "-",
+        "vector_backfill_queued": "queued",
+        "vector_backfill_queued_next_page": "queued; more pages pending",
+        "vector_backfill_queued_with_failures": "queued with failures",
+        "vector_cleanup_deleted": "Vector memory cleanup requested for {deleted} indexed item(s).",
+        "vector_cleanup_skipped": "Vector memory cleanup is not configured.",
+        "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
         "why_reply_message": (
             "🧾 <b>Why I replied</b>\n" "Reason: {reason}\n" "Trigger: {trigger}\n" "Confidence: {confidence}"
@@ -346,6 +358,9 @@ TRANSLATIONS = {
             "📚 <b>Ұзақ мерзімді жад:</b> {events} оқиға, {user_facts} қолданушы фактісі, "
             "{group_facts} топ фактісі, {jokes} әзіл\n"
             "🗓 <b>Күндік қорытындылар:</b> {daily_summaries}\n"
+            "🔎 <b>Vector жады:</b> бапталған {vector_configured}, indexed {vector_indexed}/{vector_total}, "
+            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
+            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
             "🧾 <b>Жазылған agent жауаптары:</b> {agent_replies}"
         ),
         "ask_usage": (
@@ -354,9 +369,18 @@ TRANSLATIONS = {
         "ask_memory_off": "🧠 Топ жады өшірулі. Топ иесінен алдымен <code>/memory on</code> жіберуді сұраңыз.",
         "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
         "ask_daily_quota_exhausted": "⚠️ Бүгінгі AI күндік лимиті таусылды.",
-        "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.",
+        "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.\n{vector_note}",
         "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
-        "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.",
+        "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
+        "vector_configured_yes": "иә",
+        "vector_configured_no": "жоқ",
+        "vector_backfill_none": "-",
+        "vector_backfill_queued": "кезекке қойылды",
+        "vector_backfill_queued_next_page": "кезекке қойылды; тағы беттер бар",
+        "vector_backfill_queued_with_failures": "кезекке қойылды, кейбір қате бар",
+        "vector_cleanup_deleted": "{deleted} indexed vector жад элементін өшіру сұралды.",
+        "vector_cleanup_skipped": "Vector жадын тазалау бапталмаған.",
+        "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
         "why_reply_message": (
             "🧾 <b>Неге жауап бердім</b>\n" "Себеп: {reason}\n" "Триггер: {trigger}\n" "Сенімділік: {confidence}"
@@ -540,15 +564,27 @@ TRANSLATIONS = {
             "📚 <b>长期记忆：</b>{events} 个事件，{user_facts} 条用户事实，"
             "{group_facts} 条群事实，{jokes} 个梗\n"
             "🗓 <b>每日摘要：</b>{daily_summaries}\n"
+            "🔎 <b>向量记忆：</b>已配置 {vector_configured}，已索引 {vector_indexed}/{vector_total}，"
+            "待处理 {vector_pending}，失败 {vector_failed}，跳过 {vector_skipped}\n"
+            "🧵 <b>向量回填：</b>{vector_backfill}\n"
             "🧾 <b>已记录 agent 回复：</b>{agent_replies}"
         ),
         "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复一条消息并发送 <code>/ask</code>。",
         "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
         "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
-        "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。",
+        "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。\n{vector_note}",
         "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
-        "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。",
+        "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。\n{vector_note}",
+        "vector_configured_yes": "是",
+        "vector_configured_no": "否",
+        "vector_backfill_none": "-",
+        "vector_backfill_queued": "已入队",
+        "vector_backfill_queued_next_page": "已入队；还有后续分页",
+        "vector_backfill_queued_with_failures": "已入队，但有部分失败",
+        "vector_cleanup_deleted": "已请求删除 {deleted} 条已索引向量记忆。",
+        "vector_cleanup_skipped": "未配置向量记忆清理。",
+        "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
         "why_reply_message": ("🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}"),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
@@ -733,6 +769,9 @@ TRANSLATIONS = {
             "📚 <b>Долгосрочная память:</b> события {events}, факты пользователей {user_facts}, "
             "факты группы {group_facts}, шутки {jokes}\n"
             "🗓 <b>Дневные сводки:</b> {daily_summaries}\n"
+            "🔎 <b>Векторная память:</b> настроена {vector_configured}, indexed {vector_indexed}/{vector_total}, "
+            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
+            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
             "🧾 <b>Записанные ответы agent-а:</b> {agent_replies}"
         ),
         "ask_usage": "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение командой <code>/ask</code>.",
@@ -741,9 +780,18 @@ TRANSLATIONS = {
         ),
         "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
         "ask_daily_quota_exhausted": "⚠️ Дневная квота AI на сегодня исчерпана.",
-        "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.",
+        "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.\n{vector_note}",
         "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",
-        "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.",
+        "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.\n{vector_note}",
+        "vector_configured_yes": "да",
+        "vector_configured_no": "нет",
+        "vector_backfill_none": "-",
+        "vector_backfill_queued": "поставлен в очередь",
+        "vector_backfill_queued_next_page": "поставлен в очередь; есть следующие страницы",
+        "vector_backfill_queued_with_failures": "поставлен в очередь с ошибками",
+        "vector_cleanup_deleted": "Запрошено удаление indexed vector-памяти: {deleted}.",
+        "vector_cleanup_skipped": "Очистка vector-памяти не настроена.",
+        "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
         "why_reply_message": (
             "🧾 <b>Почему я ответил</b>\n" "Причина: {reason}\n" "Триггер: {trigger}\n" "Уверенность: {confidence}"
