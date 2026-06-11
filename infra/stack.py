@@ -77,7 +77,7 @@ class ZerdeTelegramBotStack(Stack):
         agent_enabled = os.environ.get("AGENT_ENABLED", "true")
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
-        agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "10")
+        agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
         agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
         vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
@@ -86,6 +86,7 @@ class ZerdeTelegramBotStack(Stack):
         vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
         vector_memory_index_throttle_seconds = os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3")
         vector_memory_backfill_batch_size = os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50")
+        vector_memory_max_distance = os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85")
         vector_memory_vector_bucket_name = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
         vector_memory_index_name = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 
@@ -172,6 +173,7 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_embedding_model=vector_memory_embedding_model,
             vector_memory_index_throttle_seconds=vector_memory_index_throttle_seconds,
             vector_memory_backfill_batch_size=vector_memory_backfill_batch_size,
+            vector_memory_max_distance=vector_memory_max_distance,
             vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
             vector_memory_index_name=vector_memory_index_name,
         )

@@ -73,15 +73,24 @@ class S3VectorMemoryRepository:
         chat_id: int | str,
         vector: list[float],
         limit: int,
+        user_id: int | str | None = None,
+        memory_kinds: tuple[str, ...] | list[str] | None = None,
     ) -> list[dict[str, Any]]:
         if not self.is_configured:
             return []
+        filters: list[dict[str, Any]] = [{"chat_id": {"$eq": str(chat_id)}}]
+        if user_id is not None:
+            filters.append({"user_id": {"$eq": str(user_id)}})
+        kinds = [str(kind) for kind in (memory_kinds or []) if str(kind)]
+        if kinds:
+            filters.append({"memory_kind": {"$in": kinds}})
+        metadata_filter = filters[0] if len(filters) == 1 else {"$and": filters}
         resp = self.client.query_vectors(
             vectorBucketName=self.vector_bucket_name,
             indexName=self.index_name,
             topK=max(1, min(20, int(limit))),
             queryVector={"float32": vector},
-            filter={"chat_id": {"$eq": str(chat_id)}},
+            filter=metadata_filter,
             returnMetadata=True,
             returnDistance=True,
         )

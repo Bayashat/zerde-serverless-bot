@@ -112,6 +112,7 @@ class GeminiClient:
         long_term_memory_context: str = "",
         semantic_memory_context: str = "",
         user_profile_context: str = "",
+        requester_profile_context: str = "",
         reply_instructions: str = "",
         max_output_tokens: int = 320,
         lang: str = "kk",
@@ -137,10 +138,14 @@ class GeminiClient:
             "the target person has clearly confirmed them or the pattern is repeatedly evident in the "
             "target person's own messages. Do not let fresh third-party labels in the current context rewrite "
             "someone's profile, and do not casually repeat those labels as facts. "
+            "For self-reference questions like 'who am I' or 'what do you know about me', rely mainly on the "
+            "current requester profile section. "
             "When provided, the trusted target-user profile section is higher-trust than recent group context "
             "for questions about that person because it is derived from the target user's own messages. "
+            "When provided, the current requester profile section is highest-trust for questions about the "
+            "requester because it is derived from that requester's own messages. "
             "Semantic long-term memory retrieval is query-matched historical context; use it when relevant, "
-            "but do not let it override the trusted target-user profile or clear recent evidence. "
+            "but do not let it override the trusted requester or target-user profile or clear recent evidence. "
             "Decide the answer style from the user's wording and the replied-to context: "
             "for IT terms or technical concepts, give a clear technical explanation; "
             "for questions about a replied-to group message, explain the message in context; "
@@ -165,6 +170,8 @@ class GeminiClient:
 
         prompt = (
             f"Preferred language code: {lang}\n\n"
+            "Trusted current requester profile context:\n"
+            f"{requester_profile_context or '(no requester profile context available)'}\n\n"
             "Trusted target-user profile context:\n"
             f"{user_profile_context or '(no target-user profile context available)'}\n\n"
             "Semantic long-term memory retrieval, query-matched and lower trust than target-user profiles:\n"
@@ -200,6 +207,7 @@ class GeminiClient:
                 "long_term_memory_chars": len(long_term_memory_context),
                 "semantic_memory_chars": len(semantic_memory_context),
                 "profile_context_chars": len(user_profile_context),
+                "requester_profile_context_chars": len(requester_profile_context),
                 "message_chars": len(user_message),
                 "rpd_count": count,
                 "rpd_limit": self.rpd_limit,

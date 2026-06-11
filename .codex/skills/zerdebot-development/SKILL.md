@@ -9,7 +9,7 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wrapper. The bot combines serverless community tooling with RAG memory and social agent behavior:
 
-- Recent group context and user profiles live in DynamoDB.
+- Recent group context, requester identity, and user profiles live in DynamoDB.
 - Long-term memory and daily summaries live in DynamoDB and are indexed in S3 Vectors.
 - Gemini handles agent answers, proactive timing decisions, summaries, and embeddings.
 - Groq handles async spam checks.
@@ -23,13 +23,20 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 4. Preserve user changes. Do not revert unrelated files.
 5. Prefer repo patterns and focused changes over new abstractions.
 
+## Git Workflow
+
+- When creating a new branch, use conventional prefixes such as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`, or `test/`.
+- Do not create `codex/` branches for this repository.
+- Use conventional commit-style titles for commits and PRs, for example `feat: improve RAG memory grounding` or `fix: scope self-reference retrieval`.
+- Do not add `codex` or `[codex]` to commit messages or PR titles.
+
 ## Repository Map
 
 - `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing.
 - `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length policy.
-- `src/bot/services/group_memory.py`: recent context observation and prompt formatting, target-user profiles, query-filtered long-term context.
+- `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/group_memory_processor.py`: async long-term memory extraction and daily summaries.
-- `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval, vector cleanup/backfill.
+- `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, and proactive counters.
 - `src/news/`: scheduled news digest Lambda.
 - `src/quiz/`: scheduled and on-demand quiz Lambda.
@@ -41,7 +48,10 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 ## Memory And Agent Guardrails
 
 - Do not inject unfiltered long-term memory into agent prompts. Use query-filtered long-term context and semantic vector retrieval.
+- Self-reference questions must include requester identity/profile context in the answer path.
 - User profile context must be derived from the target user's own messages; third-party roasts or labels are low trust.
+- Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
+- Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Reply-to-bot follow-ups must include prior `AGENT_REPLY#...` answer context when available.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep proactive participation conservative: local open-question prefilter, bot-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.

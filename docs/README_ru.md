@@ -24,8 +24,8 @@ Zerde больше не просто отправляет последнее с�
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
 - **Vector RAG**: long-term memory эмбеддится через Gemini и индексируется в S3 Vectors.
-- **Agent behavior**: `/ask`, @mention, follow-up через reply на ответ бота, proactive reply gating, контроль длины ответа, `/agent why`.
-- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, owner-only group cleanup.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me` с related vector/summary cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
 
@@ -35,8 +35,8 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 
 | Функция | Описание |
 |---------|----------|
-| Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом recent/profile/long-term/semantic memory. |
-| RAG memory | Group memory хранится в DynamoDB, long-term memory индексируется в S3 Vectors для semantic retrieval. |
+| Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом requester/recent/profile/long-term/semantic memory. |
+| RAG memory | Group memory хранится в DynamoDB, long-term memory индексируется в S3 Vectors для distance-filtered semantic retrieval. |
 | Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
 | Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
@@ -101,8 +101,8 @@ flowchart LR
 | `/stats` | Admins | Статистика сообщества. |
 | `/voteban` | Все | Начать голосование за ban, ответив на сообщение. |
 | `/quizstats` | Все | Личный quiz score, streak и rank. |
-| `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение. |
-| `/memory on/off/status/forget ...` | Group owner или bot owner | Управление group memory и cleanup. |
+| `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение, включая self-reference вроде “кто я”. |
+| `/memory on/off/status/forget ...` | Group owner или bot owner | Управление group memory и cleanup, включая user-related vectors и matching daily summaries. |
 | `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил. |
 
 ---

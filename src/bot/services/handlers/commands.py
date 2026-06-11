@@ -13,6 +13,7 @@ from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.group_agent import answer_group_question
+from services.group_memory import display_name
 from services.handlers.quiz import react_genquiz_processing
 from services.vector_memory import (
     delete_chat_vectors,
@@ -362,6 +363,9 @@ def handle_ask(ctx: Context) -> None:
             reply_to_message_id=ctx.message_id,
             user_text=question,
             lang=ctx.lang_code,
+            requester_user_id=ctx.user_id,
+            requester_username=ctx.username,
+            requester_display_name=display_name(ctx.user_data),
         )
     except Exception:
         logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
@@ -380,6 +384,7 @@ def process_group_ask_task(
     reply_to_message_id = int(body["reply_to_message_id"])
     user_text = str(body["user_text"]).strip()
     lang = str(body.get("lang") or "kk")
+    requester_user_id = body.get("requester_user_id")
     if not user_text:
         logger.warning("PROCESS_GROUP_ASK received empty user_text", extra={"chat_id": chat_id})
         return
@@ -390,6 +395,9 @@ def process_group_ask_task(
         reply_to_message_id=reply_to_message_id,
         user_text=user_text,
         lang=lang,
+        requester_user_id=requester_user_id,
+        requester_username=str(body.get("requester_username") or "") or None,
+        requester_display_name=str(body.get("requester_display_name") or "") or None,
         raise_on_unavailable=True,
     )
     if not handled:

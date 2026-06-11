@@ -121,7 +121,7 @@ def observe_update(
     try:
         sender_name = display_name(user)
         username = user.get("username")
-        repo.store_message(
+        stored = repo.store_message(
             chat_id=chat_id,
             message_id=message_id,
             user_id=user_id,
@@ -129,9 +129,10 @@ def observe_update(
             username=username,
             text=text,
             created_at=message.get("date"),
+            skip_if_exists=True,
         )
         logger.debug("Stored group memory message", extra={"chat_id": chat_id, "message_id": message_id})
-        if sqs_repo:
+        if stored and sqs_repo:
             sqs_repo.send_group_memory_task(
                 chat_id=chat_id,
                 message_id=message_id,
@@ -208,6 +209,8 @@ def format_long_term_memory_context(
     daily_summaries = repo.get_recent_daily_summaries(chat_id, limit=GROUP_MEMORY_DAILY_SUMMARY_DAYS)
     memories = repo.get_recent_long_term_memories(chat_id, limit=limit)
     query_terms = _relevance_terms(query_text or "")
+    if query_text is not None and not query_terms:
+        return ""
     lines: list[str] = []
     for item in daily_summaries:
         if not _memory_matches_query(item, query_terms):
@@ -292,20 +295,11 @@ def _format_profile_list(value: Any, *, limit: int = 8) -> str:
     return "; ".join(items)
 
 
-def format_user_profile_context(
-    repo: GroupMemoryRepository,
-    chat_id: int | str,
-    *,
-    user_text: str,
-    ignored_usernames: set[str] | None = None,
-) -> str:
-    """Render trusted target-user profile context from the target's own messages."""
-    usernames = extract_mentioned_usernames(user_text, ignore=ignored_usernames)
-    profiles = repo.get_user_profiles_by_usernames(chat_id, usernames)
+def _format_profile_context(profiles: list[dict[str, Any]], *, intro: str) -> str:
     if not profiles:
         return ""
 
-    lines = ["Trusted target-user profiles derived only from each user's own stored messages:"]
+    lines = [intro]
     for profile in profiles:
         username = str(profile.get("username") or "").lstrip("@")
         display = str(profile.get("display_name") or username or profile.get("user_id") or "Unknown")
@@ -341,3 +335,50 @@ def format_user_profile_context(
                 lines.append(f"  - {sample}")
 
     return "\n".join(lines)
+
+
+def format_user_profile_context(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    *,
+    user_text: str,
+    ignored_usernames: set[str] | None = None,
+) -> str:
+    """Render trusted target-user profile context from the target's own messages."""
+    usernames = extract_mentioned_usernames(user_text, ignore=ignored_usernames)
+    profiles = repo.get_user_profiles_by_usernames(chat_id, usernames)
+    return _format_profile_context(
+        profiles,
+        intro="Trusted target-user profiles derived only from each user's own stored messages:",
+    )
+
+
+def format_requester_profile_context(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    *,
+    requester_user_id: int | str | None = None,
+    requester_username: str | None = None,
+    requester_display_name: str | None = None,
+) -> str:
+    """Render trusted context about the user who asked the current question."""
+    if requester_user_id is None:
+        return ""
+
+    profile = repo.get_user_profile(chat_id, requester_user_id)
+    if not profile:
+        profile = {
+            "user_id": str(requester_user_id),
+            "username": requester_username,
+            "display_name": requester_display_name,
+        }
+    else:
+        if requester_username and not profile.get("username"):
+            profile = {**profile, "username": requester_username}
+        if requester_display_name and not profile.get("display_name"):
+            profile = {**profile, "display_name": requester_display_name}
+
+    return _format_profile_context(
+        [profile],
+        intro="Trusted current requester profile derived only from the requester's own stored messages:",
+    )

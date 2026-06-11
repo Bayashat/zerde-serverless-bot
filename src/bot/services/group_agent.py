@@ -23,9 +23,11 @@ from core.translations import get_translated_text
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
 from services.group_memory import (
+    display_name,
     extract_message_text,
     format_long_term_memory_context,
     format_recent_context,
+    format_requester_profile_context,
     format_user_profile_context,
 )
 from services.repositories.group_memory import GroupMemoryRepository
@@ -35,6 +37,25 @@ from services.vector_memory import format_semantic_memory_context, retrieve_rele
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
+
+_SELF_REFERENCE_CUES = (
+    "who am i",
+    "who am i?",
+    "what do you know about me",
+    "what did i say",
+    "did i say",
+    "我是谁",
+    "你知道我",
+    "我说过",
+    "кто я",
+    "я кто",
+    "что ты знаешь обо мне",
+    "что я говорил",
+    "что я сказал",
+    "мен кім",
+    "мен кіммін",
+    "мен не дедім",
+)
 
 
 @dataclass(frozen=True)
@@ -72,6 +93,12 @@ def _mentions_bot(text: str) -> bool:
     if not AGENT_BOT_USERNAME:
         return False
     return re.search(rf"@{re.escape(AGENT_BOT_USERNAME)}\b", text, flags=re.IGNORECASE) is not None
+
+
+def _looks_like_self_reference(text: str) -> bool:
+    lowered = " ".join((text or "").lower().split())
+    compact = lowered.replace(" ", "")
+    return any(cue in lowered or cue.replace(" ", "") in compact for cue in _SELF_REFERENCE_CUES)
 
 
 def _replies_to_bot(message: dict[str, Any]) -> bool:
@@ -377,6 +404,9 @@ def handle_update(
         reply_to_message_id=message_id,
         user_text=_explicit_user_text(repo, chat_id, message),
         lang=get_chat_lang(chat_id),
+        requester_user_id=(message.get("from") or {}).get("id"),
+        requester_username=(message.get("from") or {}).get("username"),
+        requester_display_name=display_name(message.get("from") or {}),
     )
     if handled:
         logger.info(
@@ -502,6 +532,9 @@ def answer_group_question(
     reply_to_message_id: int,
     user_text: str,
     lang: str,
+    requester_user_id: int | str | None = None,
+    requester_username: str | None = None,
+    requester_display_name: str | None = None,
     raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
@@ -511,8 +544,14 @@ def answer_group_question(
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
+    self_reference = _looks_like_self_reference(user_text)
     semantic_memory_context = format_semantic_memory_context(
-        retrieve_relevant_memories(chat_id, user_text, limit=8),
+        retrieve_relevant_memories(
+            chat_id,
+            user_text,
+            limit=8,
+            user_id=requester_user_id if self_reference else None,
+        ),
     )
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     user_profile_context = format_user_profile_context(
@@ -520,6 +559,13 @@ def answer_group_question(
         chat_id,
         user_text=user_text,
         ignored_usernames=ignored_usernames,
+    )
+    requester_profile_context = format_requester_profile_context(
+        repo,
+        chat_id,
+        requester_user_id=requester_user_id,
+        requester_username=requester_username,
+        requester_display_name=requester_display_name,
     )
     reply_policy = _reply_policy(user_text)
 
@@ -530,6 +576,7 @@ def answer_group_question(
             long_term_memory_context=long_term_memory_context,
             semantic_memory_context=semantic_memory_context,
             user_profile_context=user_profile_context,
+            requester_profile_context=requester_profile_context,
             reply_instructions=reply_policy.instructions,
             max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
@@ -568,5 +615,8 @@ def answer_group_question(
             ),
             answer_text=answer_text,
             user_message=user_text,
+            requester_user_id=requester_user_id,
+            requester_username=requester_username,
+            requester_display_name=requester_display_name,
         )
     return True

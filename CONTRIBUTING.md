@@ -159,10 +159,12 @@ Large changes to architecture, memory, agent behavior, SQS tasks, or infrastruct
 
 ## Pull Request Process
 
-1. **Fork** the repo and create a branch from `main` following the convention `<type>/<slug>` (e.g. `feat/add-leaderboard-command`).
-2. Ensure **pre-commit** passes: `uv run pre-commit run --all-files`.
-3. If you changed **infrastructure** (`infra/`), include the output of `uv run cdk diff -c env=dev` in the PR description.
-4. Open the pull request — the template will prompt you for What, Why, and Verification steps.
+1. **Fork** the repo and create a branch from `main` following the convention `<type>/<slug>` (e.g. `feat/add-leaderboard-command`, `fix/scope-agent-memory`, `docs/update-local-testing`).
+2. Use conventional commit-style commit and PR titles, such as `feat: add leaderboard command`, `fix: scope agent memory retrieval`, or `docs: update local testing guide`.
+3. Do not use `codex/` branch names or include `codex` / `[codex]` in commit messages or PR titles.
+4. Ensure **pre-commit** passes: `uv run pre-commit run --all-files`.
+5. If you changed **infrastructure** (`infra/`), include the output of `uv run cdk diff -c env=dev` in the PR description.
+6. Open the pull request — the template will prompt you for What, Why, and Verification steps.
 
 ---
 

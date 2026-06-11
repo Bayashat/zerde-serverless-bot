@@ -17,6 +17,7 @@ from core.config import (
     VECTOR_MEMORY_EMBEDDING_MODEL,
     VECTOR_MEMORY_ENABLED,
     VECTOR_MEMORY_INDEX_THROTTLE_SECONDS,
+    VECTOR_MEMORY_MAX_DISTANCE,
     VECTOR_MEMORY_PROVIDER,
     get_gemini_embedding_api_key,
 )
@@ -309,13 +310,36 @@ def index_memory_item(
         raise
 
 
-def retrieve_relevant_memories(chat_id: int | str, query: str, limit: int = 8) -> list[dict[str, Any]]:
+def _within_distance(row: dict[str, Any], *, max_distance: float) -> bool:
+    distance = row.get("distance")
+    if not isinstance(distance, int | float):
+        return True
+    return float(distance) <= max_distance
+
+
+def retrieve_relevant_memories(
+    chat_id: int | str,
+    query: str,
+    limit: int = 8,
+    *,
+    user_id: int | str | None = None,
+    memory_kinds: tuple[str, ...] | list[str] | None = None,
+    max_distance: float | None = None,
+) -> list[dict[str, Any]]:
     """Return semantic long-term memories relevant to a query; failures fall back to empty context."""
     if not vector_memory_configured() or not query.strip():
         return []
     try:
         query_vector = _get_embedding_client().embed(query, task_type="RETRIEVAL_QUERY")
-        return S3VectorMemoryRepository().query(chat_id=chat_id, vector=query_vector, limit=limit)
+        rows = S3VectorMemoryRepository().query(
+            chat_id=chat_id,
+            vector=query_vector,
+            limit=limit,
+            user_id=user_id,
+            memory_kinds=memory_kinds,
+        )
+        threshold = VECTOR_MEMORY_MAX_DISTANCE if max_distance is None else max_distance
+        return [row for row in rows if _within_distance(row, max_distance=threshold)]
     except Exception:
         logger.exception("Vector memory retrieval failed", extra={"chat_id": chat_id})
         return []
