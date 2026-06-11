@@ -39,6 +39,23 @@ class GroupMemoryRepository:
         return f"MSG#{created_at_ms:013d}#{message_id}"
 
     @staticmethod
+    def _memory_sk(kind: str, created_at_ms: int, message_id: int | str, user_id: int | str | None = None) -> str:
+        if kind == "user_fact" and user_id is not None:
+            return f"USER_FACT#{user_id}#{created_at_ms:013d}#{message_id}"
+        prefix = {
+            "event": "EVENT",
+            "group_fact": "GROUP_FACT",
+            "joke": "JOKE",
+        }.get(kind)
+        if not prefix:
+            raise ValueError(f"Unsupported long-term memory kind: {kind}")
+        return f"{prefix}#{created_at_ms:013d}#{message_id}"
+
+    @staticmethod
+    def _agent_reply_sk(message_id: int | str) -> str:
+        return f"AGENT_REPLY#{int(message_id):013d}"
+
+    @staticmethod
     def _normalise_profile_samples(value: Any) -> list[str]:
         if not isinstance(value, list):
             return []
@@ -259,6 +276,59 @@ class GroupMemoryRepository:
         items = resp.get("Items") or []
         return list(reversed(items))
 
+    def store_long_term_memory(
+        self,
+        *,
+        chat_id: int | str,
+        message_id: int | str,
+        user_id: int | str,
+        display_name: str,
+        username: str | None,
+        text: str,
+        kind: str,
+        summary: str,
+        reason: str,
+        confidence: float,
+        created_at: int | None = None,
+    ) -> None:
+        """Store one trusted long-term memory extracted from a user's own message."""
+        now = int(time.time())
+        created_at = created_at or now
+        created_at_ms = created_at * 1000
+        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        item = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._memory_sk(kind, created_at_ms, message_id, user_id),
+            "kind": kind,
+            "chat_id": str(chat_id),
+            "message_id": int(message_id),
+            "user_id": str(user_id),
+            "display_name": display_name,
+            "text": text[:1200],
+            "summary": summary[:500],
+            "reason": reason[:240],
+            "confidence": Decimal(str(max(0.0, min(1.0, confidence)))),
+            "created_at": created_at,
+            "ttl": ttl,
+        }
+        if username:
+            item["username"] = username
+        self.table.put_item(Item=item)
+
+    def get_recent_long_term_memories(self, chat_id: int | str, *, limit: int = 12) -> list[dict[str, Any]]:
+        """Return recent important memories across long-term memory item types."""
+        items: list[dict[str, Any]] = []
+        per_kind_limit = max(1, limit // 2)
+        for prefix in ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#"):
+            resp = self.table.query(
+                KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(prefix),
+                ScanIndexForward=False,
+                Limit=per_kind_limit,
+            )
+            items.extend(resp.get("Items") or [])
+        newest = sorted(items, key=lambda row: int(row.get("created_at") or 0), reverse=True)[:limit]
+        return list(reversed(newest))
+
     def get_user_profile(self, chat_id: int | str, user_id: int | str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._user_sk(user_id)})
         return resp.get("Item") or {}
@@ -326,6 +396,121 @@ class GroupMemoryRepository:
             if code == "ConditionalCheckFailedException":
                 return False
             raise
+
+    def record_agent_reply(
+        self,
+        *,
+        chat_id: int | str,
+        bot_message_id: int | str,
+        trigger_message_id: int | str,
+        trigger_kind: str,
+        reason: str,
+        confidence: float | None = None,
+    ) -> None:
+        now = int(time.time())
+        ttl = now + 7 * 24 * 60 * 60
+        item: dict[str, Any] = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._agent_reply_sk(bot_message_id),
+            "kind": "agent_reply",
+            "chat_id": str(chat_id),
+            "bot_message_id": int(bot_message_id),
+            "trigger_message_id": int(trigger_message_id),
+            "trigger_kind": trigger_kind,
+            "reason": reason[:500],
+            "created_at": now,
+            "ttl": ttl,
+        }
+        if confidence is not None:
+            item["confidence"] = Decimal(str(max(0.0, min(1.0, confidence))))
+        self.table.put_item(Item=item)
+
+    def get_agent_reply_explanation(
+        self,
+        chat_id: int | str,
+        *,
+        bot_message_id: int | str | None = None,
+    ) -> dict[str, Any]:
+        if bot_message_id is not None:
+            resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._agent_reply_sk(bot_message_id)})
+            return resp.get("Item") or {}
+
+        resp = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            ScanIndexForward=False,
+            Limit=1,
+        )
+        items = resp.get("Items") or []
+        return items[0] if items else {}
+
+    def get_memory_overview(self, chat_id: int | str) -> dict[str, Any]:
+        counts = {
+            "recent_messages": 0,
+            "user_profiles": 0,
+            "events": 0,
+            "user_facts": 0,
+            "group_facts": 0,
+            "jokes": 0,
+            "agent_replies": 0,
+        }
+        start_key: dict[str, Any] | None = None
+        while True:
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
+                "ProjectionExpression": "sk",
+            }
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self.table.query(**kwargs)
+            for item in resp.get("Items") or []:
+                sk = str(item.get("sk") or "")
+                if sk.startswith("MSG#"):
+                    counts["recent_messages"] += 1
+                elif sk.startswith("USER#"):
+                    counts["user_profiles"] += 1
+                elif sk.startswith("EVENT#"):
+                    counts["events"] += 1
+                elif sk.startswith("USER_FACT#"):
+                    counts["user_facts"] += 1
+                elif sk.startswith("GROUP_FACT#"):
+                    counts["group_facts"] += 1
+                elif sk.startswith("JOKE#"):
+                    counts["jokes"] += 1
+                elif sk.startswith("AGENT_REPLY#"):
+                    counts["agent_replies"] += 1
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                return counts
+
+    def delete_user_memory(self, chat_id: int | str, user_id: int | str) -> int:
+        deleted = 0
+        user_id_str = str(user_id)
+        start_key: dict[str, Any] | None = None
+        while True:
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
+                "ProjectionExpression": "pk, sk, user_id",
+            }
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self.table.query(**kwargs)
+            to_delete = []
+            for item in resp.get("Items") or []:
+                sk = str(item.get("sk") or "")
+                if (
+                    item.get("user_id") == user_id_str
+                    or sk == self._user_sk(user_id)
+                    or sk.startswith(f"USER_FACT#{user_id_str}#")
+                ):
+                    to_delete.append(item)
+            if to_delete:
+                with self.table.batch_writer() as batch:
+                    for item in to_delete:
+                        batch.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
+                        deleted += 1
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                return deleted
 
     def delete_chat_memory(self, chat_id: int | str) -> int:
         deleted = 0

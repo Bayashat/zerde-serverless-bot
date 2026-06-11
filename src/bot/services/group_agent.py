@@ -16,7 +16,12 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.ai.telegram_html import normalize_llm_output_for_telegram_html
-from services.group_memory import extract_message_text, format_recent_context, format_user_profile_context
+from services.group_memory import (
+    extract_message_text,
+    format_long_term_memory_context,
+    format_recent_context,
+    format_user_profile_context,
+)
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram import TelegramClient
 
@@ -220,7 +225,17 @@ def maybe_answer_proactively(
         return False
 
     answer_html = normalize_llm_output_for_telegram_html(decision.reply_text)
-    bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
+    if bot_message_id:
+        repo.record_agent_reply(
+            chat_id=chat_id,
+            bot_message_id=bot_message_id,
+            trigger_message_id=reply_to_message_id,
+            trigger_kind="proactive",
+            reason=decision.reason or "I judged this as an open question where a short answer could help.",
+            confidence=decision.confidence,
+        )
     logger.info(
         "Group agent handled update",
         extra={
@@ -249,6 +264,7 @@ def answer_group_question(
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
+    long_term_memory_context = format_long_term_memory_context(repo, chat_id)
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     user_profile_context = format_user_profile_context(
         repo,
@@ -261,6 +277,7 @@ def answer_group_question(
         answer, _ = gemini.group_chat_reply(
             user_message=user_text,
             recent_context=recent_context,
+            long_term_memory_context=long_term_memory_context,
             user_profile_context=user_profile_context,
             lang=lang,
         )
@@ -275,5 +292,17 @@ def answer_group_question(
         return False
 
     answer_html = normalize_llm_output_for_telegram_html(answer)
-    bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
+    if bot_message_id:
+        repo.record_agent_reply(
+            chat_id=chat_id,
+            bot_message_id=bot_message_id,
+            trigger_message_id=reply_to_message_id,
+            trigger_kind="explicit",
+            reason=(
+                "I was mentioned, replied to, or called through /ask, "
+                "so I answered with recent and trusted memory context."
+            ),
+        )
     return True

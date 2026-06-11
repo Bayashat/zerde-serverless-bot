@@ -8,6 +8,7 @@ from typing import Any
 from core.config import GROUP_MEMORY_ENABLED, GROUP_MEMORY_RECENT_LIMIT
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.sqs import SQSClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -52,8 +53,13 @@ def is_storable_group_message(update: dict[str, Any]) -> bool:
     return bool(text and not text.startswith("/"))
 
 
-def observe_update(repo: GroupMemoryRepository | None, update: dict[str, Any]) -> None:
-    """Persist a human group message when global and per-chat memory are enabled."""
+def observe_update(
+    repo: GroupMemoryRepository | None,
+    update: dict[str, Any],
+    *,
+    sqs_repo: SQSClient | None = None,
+) -> None:
+    """Persist recent context and enqueue long-term processing for opted-in group messages."""
     if not GROUP_MEMORY_ENABLED or repo is None or not is_storable_group_message(update):
         return
 
@@ -70,16 +76,28 @@ def observe_update(repo: GroupMemoryRepository | None, update: dict[str, Any]) -
         return
 
     try:
+        sender_name = display_name(user)
+        username = user.get("username")
         repo.store_message(
             chat_id=chat_id,
             message_id=message_id,
             user_id=user_id,
-            display_name=display_name(user),
-            username=user.get("username"),
+            display_name=sender_name,
+            username=username,
             text=text,
             created_at=message.get("date"),
         )
         logger.debug("Stored group memory message", extra={"chat_id": chat_id, "message_id": message_id})
+        if sqs_repo:
+            sqs_repo.send_group_memory_task(
+                chat_id=chat_id,
+                message_id=message_id,
+                user_id=user_id,
+                display_name=sender_name,
+                username=username,
+                text=text,
+                created_at=message.get("date"),
+            )
     except Exception:
         logger.exception("Failed to store group memory message", extra={"chat_id": chat_id, "message_id": message_id})
 
@@ -105,6 +123,24 @@ def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, li
                 speaker_bits.append(f"username=@{username.lstrip('@')}")
             speaker_bits.append(f"name={name[:80]}")
             lines.append(f"[speaker {' '.join(speaker_bits)}] {text[:700]}")
+    return "\n".join(lines)
+
+
+def format_long_term_memory_context(repo: GroupMemoryRepository, chat_id: int | str, *, limit: int = 12) -> str:
+    """Render recent important memories extracted by the async memory processor."""
+    memories = repo.get_recent_long_term_memories(chat_id, limit=limit)
+    lines: list[str] = []
+    for item in memories:
+        kind = str(item.get("kind") or "memory")
+        name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
+        summary = str(item.get("summary") or item.get("text") or "").replace("\n", " ").strip()
+        reason = str(item.get("reason") or "").strip()
+        if not summary:
+            continue
+        prefix = f"[{kind} speaker={name[:80]}]"
+        if reason:
+            prefix = f"{prefix} reason={reason[:120]}"
+        lines.append(f"{prefix} {summary[:500]}")
     return "\n".join(lines)
 
 

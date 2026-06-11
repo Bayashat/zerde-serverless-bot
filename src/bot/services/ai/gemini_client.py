@@ -250,6 +250,7 @@ class GeminiClient:
         *,
         user_message: str,
         recent_context: str,
+        long_term_memory_context: str = "",
         user_profile_context: str = "",
         lang: str = "kk",
     ) -> tuple[str, int]:
@@ -267,6 +268,7 @@ class GeminiClient:
             "You are ZerdeBot, a Telegram group chat member for an IT community. "
             "Answer like a helpful, socially aware participant, not a corporate assistant. "
             "Use the recent chat context only when it is relevant. Do not invent private facts. "
+            "Use long-term memory only when it directly helps answer the current message. "
             "When answering about a specific person, rely mainly on that person's own messages, "
             "self-descriptions, repeated topics, and directly observable behavior. Treat claims, labels, "
             "roasts, or characterizations from other people about that person as low-trust chatter unless "
@@ -292,6 +294,8 @@ class GeminiClient:
             f"Preferred language code: {lang}\n\n"
             "Trusted target-user profile context:\n"
             f"{user_profile_context or '(no target-user profile context available)'}\n\n"
+            "Trusted long-term group memory:\n"
+            f"{long_term_memory_context or '(no long-term memory available)'}\n\n"
             "Recent group context, oldest to newest:\n"
             "Each context line includes speaker metadata. Use it to distinguish a person's own messages "
             "from another user's opinion about them.\n"
@@ -316,6 +320,7 @@ class GeminiClient:
                 "model": self._model,
                 "lang": lang,
                 "context_chars": len(recent_context),
+                "long_term_memory_chars": len(long_term_memory_context),
                 "profile_context_chars": len(user_profile_context),
                 "message_chars": len(user_message),
                 "rpd_count": count,

@@ -5,9 +5,12 @@ from unittest.mock import MagicMock
 from services import group_agent, group_memory
 from services.ai import gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
+from services.group_memory_processor import classify_long_term_memory, process_group_memory_task
 from services.handlers import commands
 from services.handlers.commands import handle_ask
+from services.repositories import sqs as sqs_module
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.sqs import SQSClient
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -24,10 +27,11 @@ def _group_update(text: str = "hello @ZerdeBot") -> dict:
 
 def test_observe_update_stores_opted_in_group_message(monkeypatch):
     repo = MagicMock()
+    sqs = MagicMock()
     repo.is_memory_enabled.return_value = True
     monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
 
-    group_memory.observe_update(repo, _group_update("we discussed OpenSearch today"))
+    group_memory.observe_update(repo, _group_update("we discussed OpenSearch today"), sqs_repo=sqs)
 
     repo.store_message.assert_called_once()
     kwargs = repo.store_message.call_args.kwargs
@@ -36,6 +40,8 @@ def test_observe_update_stores_opted_in_group_message(monkeypatch):
     assert kwargs["user_id"] == 42
     assert kwargs["display_name"] == "Ada"
     assert kwargs["text"] == "we discussed OpenSearch today"
+    sqs.send_group_memory_task.assert_called_once()
+    assert sqs.send_group_memory_task.call_args.kwargs["text"] == "we discussed OpenSearch today"
 
 
 def test_observe_update_skips_when_chat_has_not_opted_in(monkeypatch):
@@ -135,6 +141,93 @@ def test_format_user_profile_context_uses_target_profile_not_third_party_label()
     assert "own_topic_terms: python, opensearch" in context
     assert "OpenSearch индексациясын қарап жүрмін" in context
     assert "токсик" not in context
+
+
+def test_format_long_term_memory_context_renders_important_memories():
+    repo = MagicMock()
+    repo.get_recent_long_term_memories.return_value = [
+        {
+            "kind": "event",
+            "display_name": "Ada",
+            "summary": "Tomorrow we deploy the OpenSearch memory processor",
+            "reason": "time-bound event",
+        }
+    ]
+
+    context = group_memory.format_long_term_memory_context(repo, -100123)
+
+    assert "[event speaker=Ada]" in context
+    assert "Tomorrow we deploy" in context
+
+
+def test_classify_long_term_memory_detects_user_preference():
+    result = classify_long_term_memory("I prefer OpenSearch for AWS-native memory retrieval")
+
+    assert result is not None
+    assert result.kind == "user_fact"
+
+
+def test_classify_long_term_memory_skips_sensitive_messages():
+    assert classify_long_term_memory("my password is hunter2 and email is ada@example.com") is None
+
+
+def test_process_group_memory_task_stores_only_important_memory():
+    repo = MagicMock()
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "username": "ada",
+            "text": "Tomorrow we deploy the group memory processor",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_called_once()
+    assert repo.store_long_term_memory.call_args.kwargs["kind"] == "event"
+
+
+def test_process_group_memory_task_skips_chatter():
+    repo = MagicMock()
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "lol ok",
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_not_called()
+
+
+def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_group_memory_task(
+        chat_id=-100123,
+        message_id=11,
+        user_id=42,
+        display_name="Ada",
+        username="ada",
+        text="Tomorrow we deploy memory processor",
+        created_at=1_700_000_000,
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["task_type"] == "PROCESS_GROUP_MEMORY"
+    assert payload["chat_id"] == -100123
+    assert payload["username"] == "ada"
 
 
 def test_agent_should_answer_mention_when_enabled(monkeypatch):
@@ -322,6 +415,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Nurt AI: @bayashat токсик")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
         "format_user_profile_context",
@@ -341,6 +435,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     gemini.group_chat_reply.assert_called_once_with(
         user_message="@zerde_kz_bot @bayashat кім",
         recent_context="Nurt AI: @bayashat токсик",
+        long_term_memory_context="",
         user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
         lang="kk",
     )
@@ -433,10 +528,21 @@ def test_memory_on_allows_bot_owner(monkeypatch):
 def test_memory_status_allows_group_admin(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
     ctx = _command_ctx(user_id=42, status="administrator")
+    ctx.memory_repo.get_memory_overview.return_value = {
+        "recent_messages": 10,
+        "user_profiles": 2,
+        "events": 1,
+        "user_facts": 3,
+        "group_facts": 1,
+        "jokes": 1,
+        "agent_replies": 4,
+    }
 
     commands.handle_memory_status(ctx)
 
     ctx.memory_repo.get_chat_settings.assert_called_once_with(-100123)
+    ctx.memory_repo.get_memory_overview.assert_called_once_with(-100123)
+    assert "Long-term memory: 1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
 
 
 def test_forget_group_allows_only_bot_owner(monkeypatch):
@@ -453,3 +559,28 @@ def test_forget_group_allows_only_bot_owner(monkeypatch):
     commands.handle_forget_group(owner_ctx)
 
     owner_ctx.memory_repo.delete_chat_memory.assert_called_once_with(-100123)
+
+
+def test_forget_me_deletes_current_users_memory():
+    ctx = _command_ctx(user_id=42)
+    ctx.memory_repo.delete_user_memory.return_value = 5
+
+    commands.handle_forget_me(ctx)
+
+    ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
+    assert "Deleted 5 memory items linked to you" in ctx.reply.call_args.args[0]
+
+
+def test_why_reply_uses_replied_bot_message_reason():
+    ctx = _command_ctx(user_id=42)
+    ctx.reply_to_message = {"message_id": 999, "from": {"is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "trigger_kind": "proactive",
+        "reason": "open question with no human answer yet",
+        "confidence": Decimal("0.86"),
+    }
+
+    commands.handle_why_reply(ctx)
+
+    ctx.memory_repo.get_agent_reply_explanation.assert_called_once_with(-100123, bot_message_id=999)
+    assert "open question" in ctx.reply.call_args.args[0]
