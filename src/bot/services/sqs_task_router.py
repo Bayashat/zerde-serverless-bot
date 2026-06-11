@@ -1,4 +1,4 @@
-"""SQS record routing: captcha timeout, async explain, spam, and memory tasks."""
+"""SQS record routing: captcha timeout, spam, group-agent, and memory tasks."""
 
 from __future__ import annotations
 
@@ -9,8 +9,9 @@ from typing import Any
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
 from services.group_memory_processor import process_daily_group_summaries_task, process_group_memory_task
-from services.handlers import process_explain_task, process_timeout_task
+from services.handlers import process_group_ask_task, process_timeout_task
 from services.repositories.captcha import CaptchaRepository
+from services.repositories.group_memory import GroupMemoryRepository
 from services.spam.processor import process_spam_check_task
 from services.telegram import TelegramClient
 
@@ -21,6 +22,7 @@ def process_sqs_event(
     event: dict[str, Any],
     bot: TelegramClient,
     captcha_repo: CaptchaRepository,
+    memory_repo: GroupMemoryRepository | None = None,
 ) -> None:
     """Process one Lambda invocation carrying SQS ``Records``."""
     logger.debug(
@@ -42,10 +44,12 @@ def process_sqs_event(
             if task_type == "CHECK_TIMEOUT":
                 body["_captcha_repo"] = captcha_repo
                 process_timeout_task(bot, body)
-            elif task_type == "PROCESS_EXPLAIN":
-                process_explain_task(bot, body)
             elif task_type == "SPAM_CHECK":
                 process_spam_check_task(bot, body, captcha_repo=captcha_repo)
+            elif task_type == "PROCESS_GROUP_ASK":
+                if memory_repo is None:
+                    raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")
+                process_group_ask_task(repo=memory_repo, bot=bot, body=body)
             elif task_type == "PROCESS_GROUP_MEMORY":
                 process_group_memory_task(body)
             elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":

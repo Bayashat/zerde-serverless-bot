@@ -371,6 +371,29 @@ def test_sqs_client_sends_daily_group_summaries_task(monkeypatch):
     assert payload["summary_date"] == "2026-06-10"
 
 
+def test_sqs_client_sends_group_ask_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_group_ask_task(
+        update_id=123,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="what did we decide?",
+        lang="en",
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["task_type"] == "PROCESS_GROUP_ASK"
+    assert payload["update_id"] == 123
+    assert payload["chat_id"] == -100123
+    assert payload["reply_to_message_id"] == 99
+    assert payload["user_text"] == "what did we decide?"
+    assert payload["lang"] == "en"
+
+
 def test_agent_should_answer_mention_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
@@ -646,26 +669,26 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     )
 
 
-def test_handle_ask_uses_group_context_answer(monkeypatch):
+def test_handle_ask_enqueues_group_context_answer():
     ctx = MagicMock()
     ctx.text = "/ask what happened yesterday?"
+    ctx.update_id = 12345
     ctx.chat_id = -100123
     ctx.message_id = 99
     ctx.lang_code = "en"
+    ctx.reply_to_message = None
     ctx.memory_repo.is_memory_enabled.return_value = True
-    answer = MagicMock(return_value=True)
-    monkeypatch.setattr("services.handlers.commands.answer_group_question", answer)
 
     handle_ask(ctx)
 
-    answer.assert_called_once_with(
-        repo=ctx.memory_repo,
-        bot=ctx.bot,
+    ctx.sqs_repo.send_group_ask_task.assert_called_once_with(
+        update_id=12345,
         chat_id=-100123,
         reply_to_message_id=99,
         user_text="what happened yesterday?",
         lang="en",
     )
+    ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
 
 
@@ -684,22 +707,22 @@ def test_handle_ask_usage_message_has_no_html_tag():
     assert "/ask" in message
 
 
-def test_handle_ask_reply_with_question_passes_replied_text_and_question(monkeypatch):
+def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     ctx = MagicMock()
     ctx.text = "/ask is he being sarcastic?"
+    ctx.update_id = 12345
     ctx.chat_id = -100123
     ctx.message_id = 99
     ctx.lang_code = "en"
     ctx.reply_to_message = {"text": "Sure, deploying on Friday evening is always a great idea."}
     ctx.memory_repo.is_memory_enabled.return_value = True
-    answer = MagicMock(return_value=True)
-    monkeypatch.setattr("services.handlers.commands.answer_group_question", answer)
 
     handle_ask(ctx)
 
-    user_text = answer.call_args.kwargs["user_text"]
+    user_text = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"]
     assert "deploying on Friday evening" in user_text
     assert "is he being sarcastic?" in user_text
+    ctx.reply.assert_not_called()
 
 
 def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:

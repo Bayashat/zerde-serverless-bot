@@ -19,6 +19,7 @@ from core.config import (
     get_gemini_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
+from core.translations import get_translated_text
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.ai.telegram_html import normalize_llm_output_for_telegram_html
 from services.group_memory import (
@@ -372,6 +373,7 @@ def answer_group_question(
     reply_to_message_id: int,
     user_text: str,
     lang: str,
+    raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
     gemini = _get_gemini()
@@ -397,13 +399,21 @@ def answer_group_question(
             lang=lang,
         )
     except GeminiRPDExhaustedError:
-        bot.send_message(chat_id, "AI daily quota is exhausted for today.", reply_to_message_id=reply_to_message_id)
+        bot.send_message(
+            chat_id,
+            get_translated_text("ask_daily_quota_exhausted", lang),
+            reply_to_message_id=reply_to_message_id,
+        )
         return True
     except GeminiUnavailableError:
         logger.warning("Group agent Gemini call unavailable", extra={"chat_id": chat_id})
+        if raise_on_unavailable:
+            raise
         return False
     except Exception:
         logger.exception("Group agent failed", extra={"chat_id": chat_id})
+        if raise_on_unavailable:
+            raise
         return False
 
     answer_html = normalize_llm_output_for_telegram_html(answer)

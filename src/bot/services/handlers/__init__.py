@@ -22,14 +22,13 @@ from services.handlers.commands import (
     handle_start,
     handle_stats,
     handle_support,
+    process_group_ask_task,
 )
-from services.handlers.explain_document import handle_document_auto_summary
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.spam_review import handle_spam_review_callback, is_spam_review_callback
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
-from services.handlers.wtf import process_explain_task
 
-__all__ = ["register_handlers", "process_timeout_task", "process_explain_task"]
+__all__ = ["register_handlers", "process_timeout_task", "process_group_ask_task"]
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -68,7 +67,6 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("agent")(handle_agent)
     dp.command("ask")(handle_ask)
     dp.command("voteban")(handle_voteban_command)
-    dp.on_document_message(handle_document_auto_summary)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
     dp.command("genquiz")(handle_quiz_generate)

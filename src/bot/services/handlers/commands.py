@@ -308,6 +308,9 @@ def handle_agent(ctx: Context) -> None:
 def handle_ask(ctx: Context) -> None:
     if not _require_memory_repo(ctx):
         return
+    if not ctx.sqs_repo:
+        ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
+        return
     question = _build_ask_user_text(ctx)
     if not question:
         ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
@@ -315,16 +318,54 @@ def handle_ask(ctx: Context) -> None:
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
         ctx.reply(get_translated_text("ask_memory_off", ctx.lang_code), ctx.message_id)
         return
+    try:
+        ctx.react("👀")
+    except Exception:
+        logger.debug(
+            "Failed to react to /ask before enqueue",
+            extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id},
+        )
+    try:
+        ctx.sqs_repo.send_group_ask_task(
+            update_id=ctx.update_id or ctx.message_id or 0,
+            chat_id=ctx.chat_id,
+            reply_to_message_id=ctx.message_id,
+            user_text=question,
+            lang=ctx.lang_code,
+        )
+    except Exception:
+        logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
+        ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
+        return
+
+
+def process_group_ask_task(
+    *,
+    repo,
+    bot,
+    body: dict[str, object],
+) -> None:
+    """Process an async /ask request from SQS."""
+    chat_id = int(body["chat_id"])
+    reply_to_message_id = int(body["reply_to_message_id"])
+    user_text = str(body["user_text"]).strip()
+    lang = str(body.get("lang") or "kk")
+    if not user_text:
+        logger.warning("PROCESS_GROUP_ASK received empty user_text", extra={"chat_id": chat_id})
+        return
     handled = answer_group_question(
-        repo=ctx.memory_repo,
-        bot=ctx.bot,
-        chat_id=ctx.chat_id,
-        reply_to_message_id=ctx.message_id,
-        user_text=question,
-        lang=ctx.lang_code,
+        repo=repo,
+        bot=bot,
+        chat_id=chat_id,
+        reply_to_message_id=reply_to_message_id,
+        user_text=user_text,
+        lang=lang,
+        raise_on_unavailable=True,
     )
     if not handled:
-        ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
+        bot.send_message(
+            chat_id, get_translated_text("ask_agent_unavailable", lang), reply_to_message_id=reply_to_message_id
+        )
 
 
 def handle_forget_group(ctx: Context) -> None:

@@ -65,54 +65,39 @@ class SQSClient:
             logger.exception("Failed to send timeout task to SQS", extra={"error": e})
             raise
 
-    def send_explain_task(
+    def send_group_ask_task(
         self,
         *,
         update_id: int,
         chat_id: int,
         reply_to_message_id: int,
-        term: str,
+        user_text: str,
         lang: str,
-        style: str,
-        file_id: str | None = None,
-        mime_type: str | None = None,
-        media_kind: str | None = None,
-        task_source: str = "explain_text",
     ) -> None:
-        """Send async explain task for /wtf, /explain, or multimodal / document-auto."""
+        """Enqueue an explicit /ask request for async group-agent answering."""
         payload: dict[str, object] = {
-            "task_type": "PROCESS_EXPLAIN",
+            "task_type": "PROCESS_GROUP_ASK",
             "update_id": update_id,
             "chat_id": chat_id,
             "reply_to_message_id": reply_to_message_id,
-            "term": term,
+            "user_text": user_text,
             "lang": lang,
-            "style": style,
-            "task_source": task_source,
         }
-        if file_id:
-            payload["file_id"] = file_id
-        if mime_type:
-            payload["mime_type"] = mime_type
-        if media_kind:
-            payload["media_kind"] = media_kind
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
                 MessageBody=json.dumps(payload),
             )
             logger.info(
-                "Queued explain task",
+                "Queued group ask task",
                 extra={
                     "update_id": update_id,
                     "chat_id": chat_id,
-                    "style": style,
-                    "task_source": task_source,
-                    "media_kind": media_kind,
+                    "reply_to_message_id": reply_to_message_id,
                 },
             )
         except Exception as e:
-            logger.exception("Failed to send explain task to SQS", extra={"error": e, "update_id": update_id})
+            logger.exception("Failed to send group ask task to SQS", extra={"error": e, "update_id": update_id})
             raise
 
     def send_spam_check_task(

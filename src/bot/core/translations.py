@@ -31,7 +31,6 @@ TRANSLATIONS = {
             "• /agent on|off|status|why — Manage agent participation.\n"
             "• /ask — Ask the agent, or reply to a message with /ask.\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
-            "• PDF or .txt/.md documents — auto summary when uploaded (≤20 MB).\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"
             "\n"
@@ -152,45 +151,13 @@ TRANSLATIONS = {
         "ask_usage": "💬 Usage: <code>/ask question</code> or reply to a message with <code>/ask</code>.",
         "ask_memory_off": "🧠 Group memory is off. Ask the group owner to run <code>/memory on</code> first.",
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
+        "ask_daily_quota_exhausted": "⚠️ AI daily quota is exhausted for today.",
         "forget_group_done": "🧹 Deleted {deleted} memory items for this group.",
         "forget_me_no_user": "❌ I could not identify your Telegram user id.",
         "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.",
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
         "why_reply_message": (
             "🧾 <b>Why I replied</b>\n" "Reason: {reason}\n" "Trigger: {trigger}\n" "Confidence: {confidence}"
-        ),
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — cynical IT term explainer\n\n"
-            "• <code>/wtf &lt;term&gt;</code> — explain a term\n"
-            "• Reply to a message + <code>/wtf</code> — explain that text"
-        ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — friendly IT term explainer\n\n"
-            "• <code>/explain &lt;term&gt;</code> — explain a term\n"
-            "• Reply to a message + <code>/explain</code> — explain that text\n"
-            "• Reply to a <b>voice</b>, <b>audio</b>, or <b>photo</b> + <code>/explain</code> — "
-            "transcribe or describe (Gemini)"
-        ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Voice, image, and document features require <b>Gemini</b>. " "Configure GEMINI_API_KEY for this bot."
-        ),
-        "explain_media_file_too_large": "📦 File too large (max 20 MB). Try a smaller file.",
-        "explain_document_mime_not_supported": (
-            "📄 Automatic summary only supports <b>PDF</b> and <b>plain text</b> (.txt / .md) for now."
-        ),
-        "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
-        "wtf_api_error": "😵 AI is not responding right now, try again later.",
-        "wtf_unexpected_error": "😵 Something went wrong, try again later.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Today's Gemini daily quota ({total}) is exhausted.</b> "
-            "Explanations will use the backup AI until the quota resets (Pacific midnight)."
-        ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
-        "explain_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
-        "wtf_fallback_rate_limit": "⏳ Backup AI is temporarily rate-limited. Please try again in a minute.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Today's Gemini daily quota is exhausted. Configure a fallback AI or try again tomorrow."
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
@@ -260,7 +227,6 @@ TRANSLATIONS = {
             "• /agent on|off|status|why — Agent режимін басқару.\n"
             "• /ask — Agent-тен сұрау немесе хабарламаға reply жасап сұрау.\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
-            "• PDF немесе .txt/.md құжат — жүктелгенде авто-қорытынды (≤20 МБ).\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
             "• /genquiz — Сұраныс бойынша quiz жасау (тек ADMIN_USER_ID).\n"
             "\n"
@@ -387,44 +353,13 @@ TRANSLATIONS = {
         ),
         "ask_memory_off": "🧠 Топ жады өшірулі. Топ иесінен алдымен <code>/memory on</code> жіберуді сұраңыз.",
         "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
+        "ask_daily_quota_exhausted": "⚠️ Бүгінгі AI күндік лимиті таусылды.",
         "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.",
         "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
         "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.",
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
         "why_reply_message": (
             "🧾 <b>Неге жауап бердім</b>\n" "Себеп: {reason}\n" "Триггер: {trigger}\n" "Сенімділік: {confidence}"
-        ),
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — техтерминді түсіндіру\n\n"
-            "• <code>/wtf &lt;термин&gt;</code> — түсіндіру\n"
-            "• Хабарламаға жауап + <code>/wtf</code> — сол мәтінді түсіндіру"
-        ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — IT терминін бейтарап стильде түсіндіру\n\n"
-            "• <code>/explain &lt;термин&gt;</code> — түсіндіру\n"
-            "• Хабарламаға жауап + <code>/explain</code> — сол мәтінді түсіндіру\n"
-            "• <b>Дауыс/аудио/фото</b>ға жауап + <code>/explain</code> — транскрипция немесе сипаттама (Gemini)"
-        ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Дауыс, сурет және құжат үшін <b>Gemini</b> қажет. GEMINI_API_KEY баптаңыз."
-        ),
-        "explain_media_file_too_large": "📦 Файл тым үлкен (макс. 20 МБ). Кішірек файл жіберіңіз.",
-        "explain_document_mime_not_supported": (
-            "📄 Авто-қорытынды қазір тек <b>PDF</b> және <b>мәтін</b> (.txt / .md) үшін қолжетімді."
-        ),
-        "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
-        "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
-        "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
-            "Лимит қайта толғанға дейін түсіндірулер резервтік AI арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."  # noqa: E501
-        ),
-        "wtf_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
-        "explain_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
-        "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Резервтік AI-ды баптаңыз немесе ертең қайталап көріңіз."
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
@@ -494,7 +429,6 @@ TRANSLATIONS = {
             "• /agent on|off|status|why — 管理 agent 参与方式。\n"
             "• /ask — 向 agent 提问，也可回复消息提问。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
-            "• 上传 PDF 或 .txt/.md — 自动摘要（≤20 MB）。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
             "• /genquiz — 按需生成 Quiz（仅 ADMIN_USER_ID）。\n"
             "\n"
@@ -611,36 +545,12 @@ TRANSLATIONS = {
         "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复一条消息并发送 <code>/ask</code>。",
         "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
+        "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
         "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。",
         "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
         "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
         "why_reply_message": ("🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}"),
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — 毒舌程序员风解释术语\n\n"
-            "• <code>/wtf &lt;术语&gt;</code> — 解释术语\n"
-            "• 回复一条消息 + <code>/wtf</code> — 解释该消息全文"
-        ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — 常规风格解释 IT 术语\n\n"
-            "• <code>/explain &lt;术语&gt;</code> — 解释术语\n"
-            "• 回复一条消息 + <code>/explain</code> — 解释该消息全文\n"
-            "• 回复 <b>语音/音频/图片</b> + <code>/explain</code> — 转写或描述（需 Gemini）"
-        ),
-        "explain_multimodal_gemini_required": "⚙️ 语音、图片与文档摘要需要配置 <b>Gemini</b>（GEMINI_API_KEY）。",
-        "explain_media_file_too_large": "📦 文件过大（最大 20 MB），请发送较小的文件。",
-        "explain_document_mime_not_supported": "📄 自动摘要目前仅支持 <b>PDF</b> 与 <b>纯文本</b>（.txt / .md）。",
-        "wtf_not_configured": "⚙️ /wtf 当前不可用（API 未配置）。",
-        "wtf_api_error": "😵 AI 当前无响应，请稍后重试。",
-        "wtf_unexpected_error": "😵 出现未知错误，请稍后重试。",
-        "wtf_fallback_notice": (
-            "⚠️ <b>今日 Gemini 配额 ({total}) 已耗尽。</b> " "在配额重置前（太平洋时间午夜），将使用备用 AI。"
-        ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
-        "explain_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
-        "wtf_fallback_rate_limit": "⏳ 备用 AI 触发限流，请 1 分钟后重试。",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD：{remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": "⚠️ 今日 Gemini 配额已耗尽。请配置备用 AI 或明天再试。",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
@@ -707,7 +617,6 @@ TRANSLATIONS = {
             "• /agent on|off|status|why — управление agent-режимом.\n"
             "• /ask — задать вопрос agent-у или спросить ответом на сообщение.\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
-            "• PDF или .txt/.md — авто-сводка при загрузке (≤20 МБ).\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
             "• /genquiz — сгенерировать Quiz по запросу (только ADMIN_USER_ID).\n"
             "\n"
@@ -831,44 +740,13 @@ TRANSLATIONS = {
             "🧠 Память группы выключена. Попросите владельца группы сначала выполнить <code>/memory on</code>."
         ),
         "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
+        "ask_daily_quota_exhausted": "⚠️ Дневная квота AI на сегодня исчерпана.",
         "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.",
         "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",
         "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.",
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
         "why_reply_message": (
             "🧾 <b>Почему я ответил</b>\n" "Причина: {reason}\n" "Триггер: {trigger}\n" "Уверенность: {confidence}"
-        ),
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — циничное объяснение IT-термина\n\n"
-            "• <code>/wtf &lt;термин&gt;</code> — объяснить\n"
-            "• Ответьте на сообщение + <code>/wtf</code> — объяснить текст"
-        ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — дружелюбное объяснение IT-термина\n\n"
-            "• <code>/explain &lt;термин&gt;</code> — объяснить\n"
-            "• Ответьте на сообщение + <code>/explain</code> — объяснить текст\n"
-            "• Ответ на <b>голос/аудио/фото</b> + <code>/explain</code> — транскрипт или описание (Gemini)"
-        ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Голос, изображения и авто-сводки документов требуют <b>Gemini</b>. Настройте GEMINI_API_KEY."
-        ),
-        "explain_media_file_too_large": "📦 Файл слишком большой (макс. 20 МБ). Отправьте файл меньше.",
-        "explain_document_mime_not_supported": (
-            "📄 Авто-сводка пока только для <b>PDF</b> и <b>текста</b> (.txt / .md)."
-        ),
-        "wtf_not_configured": "⚙️ /wtf сейчас недоступен (API не настроен).",
-        "wtf_api_error": "😵 AI сейчас не отвечает, попробуйте позже.",
-        "wtf_unexpected_error": "😵 Что-то пошло не так, попробуйте позже.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Дневная квота Gemini ({total}) исчерпана.</b> "
-            "До сброса квоты (полночь по Тихоокеанскому времени) будет использоваться резервный AI."
-        ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
-        "explain_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
-        "wtf_fallback_rate_limit": "⏳ Для резервного AI временно сработал лимит. Попробуйте через минуту.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Дневная квота Gemini исчерпана. " "Настройте резервный AI или попробуйте завтра."
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (

@@ -53,7 +53,7 @@ class ZerdeTelegramBotStack(Stack):
         gemini_api_base = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
-        wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL")
+        gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3.1-flash-lite")
         quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-3.1-flash-lite")
 
@@ -133,15 +133,13 @@ class ZerdeTelegramBotStack(Stack):
             queue=messaging.queue,
             admin_user_id=admin_user_id,
             gemini_api_base=gemini_api_base,
-            wtf_gemini_model=wtf_gemini_model,
+            gemini_model=gemini_model,
             gemini_rpd_limit=gemini_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
             spam_rule_enforce_threshold=spam_rule_enforce_threshold,
             spam_rule_ai_threshold=spam_rule_ai_threshold,
             spam_ai_confidence_threshold=spam_ai_confidence_threshold,
-            deepseek_api_base=deepseek_api_base,
-            deepseek_model=deepseek_model,
             chat_lang_map=chat_lang_map,
             captcha_timeout_seconds=captcha_timeout_seconds,
             captcha_max_attempts=captcha_max_attempts,

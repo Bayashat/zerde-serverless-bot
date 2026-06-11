@@ -13,13 +13,10 @@ _SSM_KEY_MAP: dict[str, str] = {
     "webhook-secret-token": "WEBHOOK_SECRET_TOKEN",
     "groq-api-key": "GROQ_API_KEY",
     "gemini-api-key": "GEMINI_API_KEY",
-    "deepseek-api-key": "DEEPSEEK_API_KEY",
 }
 if _SSM_SECRET_PREFIX:
     load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, _SSM_KEY_MAP)
-_LAZY_SECRET_ATTRS: frozenset[str] = frozenset(
-    {"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"},
-)
+_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY"})
 
 
 def _load_secret(ssm_name: str, env_key: str) -> None:
@@ -50,12 +47,6 @@ def get_gemini_api_key() -> str | None:
     return os.environ.get("GEMINI_API_KEY")
 
 
-def get_deepseek_api_key() -> str | None:
-    """Return optional DeepSeek API key, loading SSM secrets on first use."""
-    _load_secret("deepseek-api-key", "DEEPSEEK_API_KEY")
-    return os.environ.get("DEEPSEEK_API_KEY")
-
-
 # ── Environment variables (non-secrets) ───────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
@@ -78,23 +69,10 @@ SPAM_RULE_ENFORCE_THRESHOLD: float = float(os.environ.get("SPAM_RULE_ENFORCE_THR
 SPAM_RULE_AI_THRESHOLD: float = float(os.environ.get("SPAM_RULE_AI_THRESHOLD", "0.15"))
 SPAM_AI_CONFIDENCE_THRESHOLD: float = float(os.environ.get("SPAM_AI_CONFIDENCE_THRESHOLD", "0.85"))
 
-# ── DeepSeek parameters ───────────────────────────────────────────────────────
-DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
-
 # ── Gemini parameters (non-key) ─────────────────────────────────────────────
 GEMINI_API_BASE: str = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
-WTF_GEMINI_MODEL: str | None = os.environ.get("WTF_GEMINI_MODEL")
+GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 GEMINI_RPD_LIMIT: int = require_int("GEMINI_RPD_LIMIT")
-
-# ── /explain multimodal (Telegram file → Gemini) ─────────────────────────────
-# Limit is for raw Telegram bytes. Gemini inlineData uses base64 (~33% bigger) plus
-# JSON envelope, so keep this lower than any upstream request-body limits.
-MAX_EXPLAIN_MEDIA_BYTES: int = int(os.environ.get("MAX_EXPLAIN_MEDIA_BYTES", str(15 * 1024 * 1024)))
-# MIME types allowed for automatic document summarization (non-command uploads).
-DOCUMENT_AUTO_SUMMARY_MIMES: frozenset[str] = frozenset(
-    {"application/pdf", "text/plain", "text/markdown", "text/x-web-markdown"}
-)
 
 # ── Chat → language mapping ──────────────────────────────────────────────────
 _CHAT_LANG_RAW: Any = require_json("CHAT_LANG_MAP")
@@ -176,8 +154,6 @@ def __getattr__(name: str) -> str | None:
             return get_groq_api_key()
         if name == "GEMINI_API_KEY":
             return get_gemini_api_key()
-        if name == "DEEPSEEK_API_KEY":
-            return get_deepseek_api_key()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
