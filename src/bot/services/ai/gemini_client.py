@@ -63,7 +63,7 @@ class GeminiClient:
         if not api_key:
             raise ValueError("GEMINI_API_KEY must be set to initialize GeminiClient")
         self._api_key = api_key
-        self._model = WTF_GEMINI_MODEL or "gemini-3.1-flash-lite-preview"
+        self._model = WTF_GEMINI_MODEL or "gemini-3.1-flash-lite"
         self._rate_repo = RateLimitRepository()
         logger.info("GeminiClient initialized", extra={"model": self._model})
 

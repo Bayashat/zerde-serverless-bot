@@ -105,7 +105,7 @@ QUIZ_CHATS_RU=<comma-separated chat IDs for Russian quiz>
 
 # Optional — defaults shown
 AI_PROVIDER=gemini
-WTF_GEMINI_MODEL=gemini-3.1-flash-lite-preview
+WTF_GEMINI_MODEL=gemini-3.1-flash-lite
 NEWS_GEMINI_MODEL=gemini-3-flash-preview
 QUIZ_GEMINI_MODEL=gemini-3-flash-preview
 DEFAULT_LANG=kk
