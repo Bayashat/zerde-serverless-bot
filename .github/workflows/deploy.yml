@@ -79,16 +79,19 @@ jobs:
           DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
           TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
-          NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL }}
-          QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL }}
+          NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
+          QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
           WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL }}
-          GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT }}
+          GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
           GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
           FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
           GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
-          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
           DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
+          SPAM_RULE_ENFORCE_THRESHOLD: ${{ vars.SPAM_RULE_ENFORCE_THRESHOLD || '0.8' }}
+          SPAM_RULE_AI_THRESHOLD: ${{ vars.SPAM_RULE_AI_THRESHOLD || '0.15' }}
+          SPAM_AI_CONFIDENCE_THRESHOLD: ${{ vars.SPAM_AI_CONFIDENCE_THRESHOLD || '0.85' }}
           ADMIN_USER_ID: ${{ secrets.ADMIN_USER_ID }}
           CHATS_KK: ${{ vars.CHATS_KK }}
           CHATS_ZH: ${{ vars.CHATS_ZH }}
@@ -104,14 +107,26 @@ jobs:
           VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
           VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
           CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
-          QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD }}
+          QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD || '20' }}
           GROUP_MEMORY_ENABLED: ${{ vars.GROUP_MEMORY_ENABLED || 'true' }}
           GROUP_MEMORY_RECENT_LIMIT: ${{ vars.GROUP_MEMORY_RECENT_LIMIT || '300' }}
-          GROUP_MEMORY_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_RETENTION_DAYS || '30' }}
+          GROUP_MEMORY_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_RETENTION_DAYS || '3650' }}
+          GROUP_MEMORY_DAILY_SUMMARY_DAYS: ${{ vars.GROUP_MEMORY_DAILY_SUMMARY_DAYS || '7' }}
+          GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: ${{ vars.GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT || '500' }}
+          VECTOR_MEMORY_ENABLED: ${{ vars.VECTOR_MEMORY_ENABLED || 'true' }}
+          VECTOR_MEMORY_PROVIDER: ${{ vars.VECTOR_MEMORY_PROVIDER || 's3_vectors' }}
+          VECTOR_MEMORY_DIMENSIONS: ${{ vars.VECTOR_MEMORY_DIMENSIONS || '768' }}
+          VECTOR_MEMORY_EMBEDDING_MODEL: ${{ vars.VECTOR_MEMORY_EMBEDDING_MODEL || 'gemini-embedding-2' }}
+          VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: ${{ vars.VECTOR_MEMORY_INDEX_THROTTLE_SECONDS || '3' }}
+          VECTOR_MEMORY_BACKFILL_BATCH_SIZE: ${{ vars.VECTOR_MEMORY_BACKFILL_BATCH_SIZE || '50' }}
+          VECTOR_MEMORY_VECTOR_BUCKET_NAME: ${{ vars.VECTOR_MEMORY_VECTOR_BUCKET_NAME }}
+          VECTOR_MEMORY_INDEX_NAME: ${{ vars.VECTOR_MEMORY_INDEX_NAME }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED || 'true' }}
           AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME || '@zerde_kz_bot' }}
           AGENT_RECENT_CONTEXT_LIMIT: ${{ vars.AGENT_RECENT_CONTEXT_LIMIT || '100' }}
           AGENT_DAILY_PROACTIVE_LIMIT: ${{ vars.AGENT_DAILY_PROACTIVE_LIMIT || '10' }}
+          AGENT_PROACTIVE_SCORE_THRESHOLD: ${{ vars.AGENT_PROACTIVE_SCORE_THRESHOLD || '0.62' }}
+          AGENT_PROACTIVE_FINAL_THRESHOLD: ${{ vars.AGENT_PROACTIVE_FINAL_THRESHOLD || '0.72' }}
         run: |
           echo "🚀 Deploying to ${{ env.TARGET_ENV }} environment..."
           if [ "${{ env.TARGET_ENV }}" = "prod" ]; then

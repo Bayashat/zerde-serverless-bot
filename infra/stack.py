@@ -66,7 +66,7 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
         # ── Group memory / agent MVP ─────────────────────────────────────────
         group_memory_enabled = os.environ.get("GROUP_MEMORY_ENABLED", "true")
@@ -85,6 +85,7 @@ class ZerdeTelegramBotStack(Stack):
         vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
         vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
         vector_memory_index_throttle_seconds = os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3")
+        vector_memory_backfill_batch_size = os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50")
         vector_memory_vector_bucket_name = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
         vector_memory_index_name = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 
@@ -170,6 +171,7 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_dimensions=vector_memory_dimensions,
             vector_memory_embedding_model=vector_memory_embedding_model,
             vector_memory_index_throttle_seconds=vector_memory_index_throttle_seconds,
+            vector_memory_backfill_batch_size=vector_memory_backfill_batch_size,
             vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
             vector_memory_index_name=vector_memory_index_name,
         )
