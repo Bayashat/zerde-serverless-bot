@@ -33,7 +33,7 @@ os.environ.setdefault("CAPTCHA_MAX_ATTEMPTS", "3")
 os.environ.setdefault("GROQ_API_KEY", "test-groq-api-key")
 os.environ.setdefault("GROQ_MODEL", "test-groq-model")
 os.environ.setdefault("DEEPSEEK_MODEL", "test-deepseek-model")
-os.environ.setdefault("WTF_GEMINI_MODEL", "test-gemini-model")
+os.environ.setdefault("GEMINI_MODEL", "test-gemini-model")
 os.environ.setdefault("QUIZ_LAMBDA_NAME", "test-quiz-lambda")
 
 # Add src/bot to sys.path so imports work like they do in Lambda

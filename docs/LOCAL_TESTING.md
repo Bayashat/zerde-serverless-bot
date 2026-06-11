@@ -64,7 +64,7 @@ Zerde can use three external APIs beyond Telegram:
 1. Go to [console.groq.com](https://console.groq.com/) and create an API key.
 2. Copy it — this is your `GROQ_API_KEY`.
 
-### DeepSeek (optional fallback for explain/quiz/news)
+### DeepSeek (optional fallback for quiz/news)
 
 1. Go to [platform.deepseek.com](https://platform.deepseek.com/) and create an API key.
 2. Copy it — this is your `DEEPSEEK_API_KEY`.
@@ -105,7 +105,7 @@ QUIZ_CHATS_RU=<comma-separated chat IDs for Russian quiz>
 
 # Optional — defaults shown
 AI_PROVIDER=gemini
-WTF_GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.1-flash-lite
 NEWS_GEMINI_MODEL=gemini-3-flash-preview
 QUIZ_GEMINI_MODEL=gemini-3-flash-preview
 DEFAULT_LANG=kk

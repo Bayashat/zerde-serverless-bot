@@ -19,7 +19,7 @@ from constructs import Construct
 
 
 class BotConstruct(Construct):
-    """One bot Lambda: API Gateway webhook and SQS consumer (shared warm container, lower /wtf latency).
+    """One bot Lambda: API Gateway webhook and SQS consumer.
 
     Exposes:
         api (apigwv2.HttpApi): HTTP API used by stack for CfnOutput.
@@ -40,15 +40,13 @@ class BotConstruct(Construct):
         queue: sqs.Queue,
         admin_user_id: str,
         gemini_api_base: str,
-        wtf_gemini_model: str,
+        gemini_model: str,
         gemini_rpd_limit: int,
         groq_api_base: str,
         groq_model: str,
         spam_rule_enforce_threshold: str,
         spam_rule_ai_threshold: str,
         spam_ai_confidence_threshold: str,
-        deepseek_api_base: str,
-        deepseek_model: str,
         chat_lang_map: dict[str, str],
         captcha_timeout_seconds: int,
         captcha_max_attempts: int,
@@ -138,12 +136,9 @@ class BotConstruct(Construct):
             "SPAM_RULE_ENFORCE_THRESHOLD": spam_rule_enforce_threshold,
             "SPAM_RULE_AI_THRESHOLD": spam_rule_ai_threshold,
             "SPAM_AI_CONFIDENCE_THRESHOLD": spam_ai_confidence_threshold,
-            # -- DeepSeek parameters (non-secret) ──────────────────────────────
-            "DEEPSEEK_API_BASE": deepseek_api_base,
-            "DEEPSEEK_MODEL": deepseek_model,
             # -- Gemini parameters (non-secret) ────────────────────────────────
             "GEMINI_API_BASE": gemini_api_base,
-            "WTF_GEMINI_MODEL": wtf_gemini_model,
+            "GEMINI_MODEL": gemini_model,
             "GEMINI_RPD_LIMIT": gemini_rpd_limit,
             # -- Chat → language mapping ───────────────────────────────────────
             "CHAT_LANG_MAP": json.dumps(chat_lang_map),

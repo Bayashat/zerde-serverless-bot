@@ -13,29 +13,22 @@ from services.handlers.captcha import (
     process_timeout_task,
 )
 from services.handlers.commands import (
-    handle_agent_off,
-    handle_agent_on,
+    handle_agent,
     handle_ask,
-    handle_forget_group,
-    handle_forget_me,
     handle_help,
-    handle_memory_off,
-    handle_memory_on,
-    handle_memory_status,
+    handle_memory,
     handle_ping,
     handle_quiz_generate,
     handle_start,
     handle_stats,
     handle_support,
-    handle_why_reply,
+    process_group_ask_task,
 )
-from services.handlers.explain_document import handle_document_auto_summary
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
 from services.handlers.spam_review import handle_spam_review_callback, is_spam_review_callback
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
-from services.handlers.wtf import handle_explain, handle_wtf, process_explain_task
 
-__all__ = ["register_handlers", "process_timeout_task", "process_explain_task"]
+__all__ = ["register_handlers", "process_timeout_task", "process_group_ask_task"]
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -70,19 +63,10 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("support")(handle_support)
     dp.command("ping")(handle_ping)
     dp.command("stats")(handle_stats)
-    dp.command("memory_on")(handle_memory_on)
-    dp.command("memory_off")(handle_memory_off)
-    dp.command("agent_on")(handle_agent_on)
-    dp.command("agent_off")(handle_agent_off)
+    dp.command("memory")(handle_memory)
+    dp.command("agent")(handle_agent)
     dp.command("ask")(handle_ask)
-    dp.command("memory_status")(handle_memory_status)
-    dp.command("forget_group")(handle_forget_group)
-    dp.command("forget_me")(handle_forget_me)
-    dp.command("why_reply")(handle_why_reply)
     dp.command("voteban")(handle_voteban_command)
-    dp.command("wtf")(handle_wtf)
-    dp.command("explain")(handle_explain)
-    dp.on_document_message(handle_document_auto_summary)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
     dp.command("genquiz")(handle_quiz_generate)

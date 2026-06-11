@@ -1,6 +1,7 @@
 """Tests for dispatcher routing logic."""
 
 from core.dispatcher import Dispatcher
+from services.handlers import register_handlers
 
 
 def test_command_routing(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo):
@@ -29,6 +30,22 @@ def test_command_routing(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_rep
     dp.process_update(update)
     assert handler_called.get("start") is True
     assert "help" not in handler_called
+
+
+def test_registered_public_command_surface(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo):
+    """Agentic command surface should expose consolidated commands only."""
+    dp = Dispatcher(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo)
+
+    register_handlers(dp)
+
+    assert "/memory" in dp.command_handlers
+    assert "/agent" in dp.command_handlers
+    assert "/ask" in dp.command_handlers
+    assert "/wtf" not in dp.command_handlers
+    assert "/explain" not in dp.command_handlers
+    assert "/memory_on" not in dp.command_handlers
+    assert "/agent_on" not in dp.command_handlers
+    assert "/why_reply" not in dp.command_handlers
 
 
 def test_callback_query_routing(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo):

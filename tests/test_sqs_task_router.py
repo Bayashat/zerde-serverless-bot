@@ -34,22 +34,23 @@ def test_check_timeout_routes_and_injects_captcha_repo() -> None:
     assert passed["_captcha_repo"] is captcha
 
 
-def test_process_explain_routes() -> None:
+def test_process_group_ask_routes() -> None:
     body = {
-        "task_type": "PROCESS_EXPLAIN",
+        "task_type": "PROCESS_GROUP_ASK",
         "chat_id": -1001,
         "update_id": 99,
         "reply_to_message_id": 3,
-        "term": "k8s",
+        "user_text": "what is k8s?",
         "lang": "kk",
-        "style": "normal",
     }
+    memory_repo = MagicMock()
+    bot = MagicMock()
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_explain_task") as mock_pe,
+        patch("services.sqs_task_router.process_group_ask_task") as mock_pa,
     ):
-        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pe.assert_called_once()
+        process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
+    mock_pa.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
 
 
 def test_spam_check_routes() -> None:
@@ -118,20 +119,19 @@ def test_non_whitelisted_chat_skips_handlers() -> None:
 
 def test_handler_failure_reraises_for_sqs_retry() -> None:
     body = {
-        "task_type": "PROCESS_EXPLAIN",
+        "task_type": "PROCESS_GROUP_ASK",
         "chat_id": -1001,
         "update_id": 1,
         "reply_to_message_id": 1,
-        "term": "x",
+        "user_text": "x",
         "lang": "kk",
-        "style": "normal",
     }
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
         patch(
-            "services.sqs_task_router.process_explain_task",
+            "services.sqs_task_router.process_group_ask_task",
             side_effect=RuntimeError("boom"),
         ),
     ):
         with pytest.raises(RuntimeError, match="boom"):
-            process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
+            process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), MagicMock())

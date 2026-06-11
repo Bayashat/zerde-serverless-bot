@@ -27,10 +27,10 @@ TRANSLATIONS = {
             "• /support — Contact support.\n"
             "• /ping — Health check.\n"
             "• /stats — Group stats (admins).\n"
+            "• /memory on|off|status|forget me|forget group — Manage group memory.\n"
+            "• /agent on|off|status|why — Manage agent participation.\n"
+            "• /ask — Ask the agent, or reply to a message with /ask.\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
-            "• /wtf — Explain an IT term.\n"
-            "• /explain — Explain an IT term in neutral style (reply to voice/audio/photo supported).\n"
-            "• PDF or .txt/.md documents — auto summary when uploaded (≤20 MB).\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"
             "\n"
@@ -110,38 +110,54 @@ TRANSLATIONS = {
             "Please open a chat with me and send /start first, then try /quizstats again."
         ),
         "quiz_not_configured": "⚙️ Quiz is not configured for this bot.",
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — cynical IT term explainer\n\n"
-            "• <code>/wtf &lt;term&gt;</code> — explain a term\n"
-            "• Reply to a message + <code>/wtf</code> — explain that text"
+        "memory_usage": (
+            "🧠 <b>Group memory</b>\n\n"
+            "• <code>/memory on</code> — enable group memory\n"
+            "• <code>/memory off</code> — disable memory and agent\n"
+            "• <code>/memory status</code> — show memory status\n"
+            "• <code>/memory forget me</code> — delete your memory in this group\n"
+            "• <code>/memory forget group</code> — delete all group memory"
         ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — friendly IT term explainer\n\n"
-            "• <code>/explain &lt;term&gt;</code> — explain a term\n"
-            "• Reply to a message + <code>/explain</code> — explain that text\n"
-            "• Reply to a <b>voice</b>, <b>audio</b>, or <b>photo</b> + <code>/explain</code> — "
-            "transcribe or describe (Gemini)"
+        "agent_usage": (
+            "🤖 <b>Agent mode</b>\n\n"
+            "• <code>/agent on</code> — let me answer and occasionally join in\n"
+            "• <code>/agent off</code> — stop agent participation\n"
+            "• <code>/agent status</code> — show agent and memory status\n"
+            "• <code>/agent why</code> — explain why I replied"
         ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Voice, image, and document features require <b>Gemini</b>. " "Configure GEMINI_API_KEY for this bot."
+        "memory_storage_not_configured": "⚙️ Group memory storage is not configured for this deployment.",
+        "memory_deployment_disabled": "⚙️ Group memory is disabled by deployment config.",
+        "agent_deployment_disabled": "⚙️ The group agent is disabled by deployment config.",
+        "status_on": "on",
+        "status_off": "off",
+        "memory_owner_only": "❌ Only the group owner or bot owner can change group memory settings.",
+        "bot_owner_only": "❌ Only the bot owner can do that.",
+        "memory_enabled": "🧠 Group memory is now on. I will remember recent non-command messages for context.",
+        "memory_disabled": (
+            "🧠 Group memory is now off. Existing stored memory is kept until TTL or /memory forget group."
         ),
-        "explain_media_file_too_large": "📦 File too large (max 20 MB). Try a smaller file.",
-        "explain_document_mime_not_supported": (
-            "📄 Automatic summary only supports <b>PDF</b> and <b>plain text</b> (.txt / .md) for now."
+        "agent_enabled": "🤖 Group agent is now on. I can answer when asked and join in when it is useful.",
+        "agent_disabled": "🤖 Group agent is now off. Memory can remain on for /ask and future context.",
+        "memory_status_message": (
+            "🧠 <b>Group memory:</b> {memory}\n"
+            "🤖 <b>Group agent:</b> {agent}\n"
+            "💬 <b>Recent messages:</b> {recent_messages}\n"
+            "👥 <b>User profiles:</b> {user_profiles}\n"
+            "📚 <b>Long-term memory:</b> {events} events, {user_facts} user facts, "
+            "{group_facts} group facts, {jokes} jokes\n"
+            "🗓 <b>Daily summaries:</b> {daily_summaries}\n"
+            "🧾 <b>Recorded agent replies:</b> {agent_replies}"
         ),
-        "wtf_not_configured": "⚙️ /wtf is currently unavailable (API not configured).",
-        "wtf_api_error": "😵 AI is not responding right now, try again later.",
-        "wtf_unexpected_error": "😵 Something went wrong, try again later.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Today's Gemini daily quota ({total}) is exhausted.</b> "
-            "Explanations will use the backup AI until the quota resets (Pacific midnight)."
-        ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
-        "explain_fallback_takeover_intro": "🤕 Gemini is taking a coffee break, so the backup AI is jumping in! ⚡",
-        "wtf_fallback_rate_limit": "⏳ Backup AI is temporarily rate-limited. Please try again in a minute.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Today's Gemini daily quota is exhausted. Configure a fallback AI or try again tomorrow."
+        "ask_usage": "💬 Usage: <code>/ask question</code> or reply to a message with <code>/ask</code>.",
+        "ask_memory_off": "🧠 Group memory is off. Ask the group owner to run <code>/memory on</code> first.",
+        "ask_agent_unavailable": "😵 The AI agent is not available right now.",
+        "ask_daily_quota_exhausted": "⚠️ AI daily quota is exhausted for today.",
+        "forget_group_done": "🧹 Deleted {deleted} memory items for this group.",
+        "forget_me_no_user": "❌ I could not identify your Telegram user id.",
+        "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.",
+        "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
+        "why_reply_message": (
+            "🧾 <b>Why I replied</b>\n" "Reason: {reason}\n" "Trigger: {trigger}\n" "Confidence: {confidence}"
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
@@ -207,10 +223,10 @@ TRANSLATIONS = {
             "• /support — Қолдау қызметіне жазу.\n"
             "• /ping — Тексеру пәрмені.\n"
             "• /stats — Топ статистикасы (админдер).\n"
+            "• /memory on|off|status|forget me|forget group — Топ жадын басқару.\n"
+            "• /agent on|off|status|why — Agent режимін басқару.\n"
+            "• /ask — Agent-тен сұрау немесе хабарламаға reply жасап сұрау.\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
-            "• /wtf — IT терминді түсіндіру.\n"
-            "• /explain — IT терминді бейтарап стильде түсіндіру (дауыс/фотоға жауап).\n"
-            "• PDF немесе .txt/.md құжат — жүктелгенде авто-қорытынды (≤20 МБ).\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
             "• /genquiz — Сұраныс бойынша quiz жасау (тек ADMIN_USER_ID).\n"
             "\n"
@@ -296,37 +312,54 @@ TRANSLATIONS = {
             "Алдымен менімен жеке чат ашып, /start пәрменін жіберіңіз, содан соң /quizstats қайта көріңіз."
         ),
         "quiz_not_configured": "⚙️ Quiz бұл бот үшін бапталмаған.",
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — техтерминді түсіндіру\n\n"
-            "• <code>/wtf &lt;термин&gt;</code> — түсіндіру\n"
-            "• Хабарламаға жауап + <code>/wtf</code> — сол мәтінді түсіндіру"
+        "memory_usage": (
+            "🧠 <b>Топ жады</b>\n\n"
+            "• <code>/memory on</code> — топ жадын қосу\n"
+            "• <code>/memory off</code> — жад пен agent режимін өшіру\n"
+            "• <code>/memory status</code> — жад күйін көрсету\n"
+            "• <code>/memory forget me</code> — осы топтағы өз жадыңызды өшіру\n"
+            "• <code>/memory forget group</code> — топтың барлық жадын өшіру"
         ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — IT терминін бейтарап стильде түсіндіру\n\n"
-            "• <code>/explain &lt;термин&gt;</code> — түсіндіру\n"
-            "• Хабарламаға жауап + <code>/explain</code> — сол мәтінді түсіндіру\n"
-            "• <b>Дауыс/аудио/фото</b>ға жауап + <code>/explain</code> — транскрипция немесе сипаттама (Gemini)"
+        "agent_usage": (
+            "🤖 <b>Agent режимі</b>\n\n"
+            "• <code>/agent on</code> — жауап беруге және қажет жерде чатқа қосылуға рұқсат беру\n"
+            "• <code>/agent off</code> — agent қатысуын өшіру\n"
+            "• <code>/agent status</code> — agent пен жад күйін көрсету\n"
+            "• <code>/agent why</code> — неге жауап бергенімді түсіндіру"
         ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Дауыс, сурет және құжат үшін <b>Gemini</b> қажет. GEMINI_API_KEY баптаңыз."
+        "memory_storage_not_configured": "⚙️ Бұл deployment үшін топ жады қоймасы бапталмаған.",
+        "memory_deployment_disabled": "⚙️ Топ жады deployment конфигінде өшірілген.",
+        "agent_deployment_disabled": "⚙️ Топ agent-і deployment конфигінде өшірілген.",
+        "status_on": "қосулы",
+        "status_off": "өшірулі",
+        "memory_owner_only": "❌ Топ жадын тек топ иесі немесе bot owner өзгерте алады.",
+        "bot_owner_only": "❌ Мұны тек bot owner істей алады.",
+        "memory_enabled": "🧠 Топ жады қосылды. Контекст үшін соңғы command емес хабарламаларды есте сақтаймын.",
+        "memory_disabled": "🧠 Топ жады өшірілді. Бар жад TTL біткенше немесе /memory forget group дейін сақталады.",
+        "agent_enabled": "🤖 Agent режимі қосылды. Сұрағанда жауап беремін, пайдалы кезде чатқа қосыла аламын.",
+        "agent_disabled": "🤖 Agent режимі өшірілді. Жад /ask және болашақ контекст үшін қала алады.",
+        "memory_status_message": (
+            "🧠 <b>Топ жады:</b> {memory}\n"
+            "🤖 <b>Agent режимі:</b> {agent}\n"
+            "💬 <b>Соңғы хабарламалар:</b> {recent_messages}\n"
+            "👥 <b>Қолданушы профильдері:</b> {user_profiles}\n"
+            "📚 <b>Ұзақ мерзімді жад:</b> {events} оқиға, {user_facts} қолданушы фактісі, "
+            "{group_facts} топ фактісі, {jokes} әзіл\n"
+            "🗓 <b>Күндік қорытындылар:</b> {daily_summaries}\n"
+            "🧾 <b>Жазылған agent жауаптары:</b> {agent_replies}"
         ),
-        "explain_media_file_too_large": "📦 Файл тым үлкен (макс. 20 МБ). Кішірек файл жіберіңіз.",
-        "explain_document_mime_not_supported": (
-            "📄 Авто-қорытынды қазір тек <b>PDF</b> және <b>мәтін</b> (.txt / .md) үшін қолжетімді."
+        "ask_usage": (
+            "💬 Қолданылуы: <code>/ask сұрақ</code> немесе хабарламаға reply жасап <code>/ask</code> жіберіңіз."
         ),
-        "wtf_not_configured": "⚙️ /wtf пәрмені қазір қолжетімсіз (API бапталмаған).",
-        "wtf_api_error": "😵 AI қазір жауап бермей тұр, кейінірек қайталап көріңіз.",
-        "wtf_unexpected_error": "😵 Белгісіз қате орын алды, кейінірек қайталап көріңіз.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Бүгінгі Gemini күнделікті лимиті ({total}) таусылды.</b> "
-            "Лимит қайта толғанға дейін түсіндірулер резервтік AI арқылы жүреді (Тынық мұхиты уақыты бойынша түн ортасы)."  # noqa: E501
-        ),
-        "wtf_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
-        "explain_fallback_takeover_intro": "<i>🫖 Gemini шай ішуге кетті, кезек <b>Резервтік AI</b>-да⚡️</i>",
-        "wtf_fallback_rate_limit": "⏳ Резервтік AI қазір шектеуге тап болды. Бір минуттан кейін қайталап көріңіз.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Бүгінгі Gemini күнделікті лимиті таусылды. Резервтік AI-ды баптаңыз немесе ертең қайталап көріңіз."
+        "ask_memory_off": "🧠 Топ жады өшірулі. Топ иесінен алдымен <code>/memory on</code> жіберуді сұраңыз.",
+        "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
+        "ask_daily_quota_exhausted": "⚠️ Бүгінгі AI күндік лимиті таусылды.",
+        "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.",
+        "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
+        "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.",
+        "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
+        "why_reply_message": (
+            "🧾 <b>Неге жауап бердім</b>\n" "Себеп: {reason}\n" "Триггер: {trigger}\n" "Сенімділік: {confidence}"
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
@@ -392,10 +425,10 @@ TRANSLATIONS = {
             "• /support — 联系支持。\n"
             "• /ping — 健康检查。\n"
             "• /stats — 查看群统计（管理员）。\n"
+            "• /memory on|off|status|forget me|forget group — 管理群记忆。\n"
+            "• /agent on|off|status|why — 管理 agent 参与方式。\n"
+            "• /ask — 向 agent 提问，也可回复消息提问。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
-            "• /wtf — 解释 IT 术语。\n"
-            "• /explain — 以常规风格解释 IT 术语（可回复语音/图片）。\n"
-            "• 上传 PDF 或 .txt/.md — 自动摘要（≤20 MB）。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
             "• /genquiz — 按需生成 Quiz（仅 ADMIN_USER_ID）。\n"
             "\n"
@@ -473,31 +506,51 @@ TRANSLATIONS = {
             "📬 我无法给你发送私信。\n" "请先打开与我的私聊并发送 /start，然后再试一次 /quizstats。"
         ),
         "quiz_not_configured": "⚙️ 本机器人未配置 Quiz 功能。",
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — 毒舌程序员风解释术语\n\n"
-            "• <code>/wtf &lt;术语&gt;</code> — 解释术语\n"
-            "• 回复一条消息 + <code>/wtf</code> — 解释该消息全文"
+        "memory_usage": (
+            "🧠 <b>群记忆</b>\n\n"
+            "• <code>/memory on</code> — 开启群记忆\n"
+            "• <code>/memory off</code> — 关闭记忆和 agent\n"
+            "• <code>/memory status</code> — 查看记忆状态\n"
+            "• <code>/memory forget me</code> — 删除你在本群的记忆\n"
+            "• <code>/memory forget group</code> — 删除整个群的记忆"
         ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — 常规风格解释 IT 术语\n\n"
-            "• <code>/explain &lt;术语&gt;</code> — 解释术语\n"
-            "• 回复一条消息 + <code>/explain</code> — 解释该消息全文\n"
-            "• 回复 <b>语音/音频/图片</b> + <code>/explain</code> — 转写或描述（需 Gemini）"
+        "agent_usage": (
+            "🤖 <b>Agent 模式</b>\n\n"
+            "• <code>/agent on</code> — 允许我回答并在合适时加入聊天\n"
+            "• <code>/agent off</code> — 关闭 agent 参与\n"
+            "• <code>/agent status</code> — 查看 agent 和记忆状态\n"
+            "• <code>/agent why</code> — 解释我为什么回复"
         ),
-        "explain_multimodal_gemini_required": "⚙️ 语音、图片与文档摘要需要配置 <b>Gemini</b>（GEMINI_API_KEY）。",
-        "explain_media_file_too_large": "📦 文件过大（最大 20 MB），请发送较小的文件。",
-        "explain_document_mime_not_supported": "📄 自动摘要目前仅支持 <b>PDF</b> 与 <b>纯文本</b>（.txt / .md）。",
-        "wtf_not_configured": "⚙️ /wtf 当前不可用（API 未配置）。",
-        "wtf_api_error": "😵 AI 当前无响应，请稍后重试。",
-        "wtf_unexpected_error": "😵 出现未知错误，请稍后重试。",
-        "wtf_fallback_notice": (
-            "⚠️ <b>今日 Gemini 配额 ({total}) 已耗尽。</b> " "在配额重置前（太平洋时间午夜），将使用备用 AI。"
+        "memory_storage_not_configured": "⚙️ 当前部署未配置群记忆存储。",
+        "memory_deployment_disabled": "⚙️ 群记忆已被部署配置关闭。",
+        "agent_deployment_disabled": "⚙️ 群 agent 已被部署配置关闭。",
+        "status_on": "开启",
+        "status_off": "关闭",
+        "memory_owner_only": "❌ 只有群主或 bot owner 可以修改群记忆设置。",
+        "bot_owner_only": "❌ 只有 bot owner 可以这样做。",
+        "memory_enabled": "🧠 群记忆已开启。我会记住近期非命令消息，用于上下文。",
+        "memory_disabled": "🧠 群记忆已关闭。已有记忆会保留到 TTL 到期，或直到执行 /memory forget group。",
+        "agent_enabled": "🤖 Agent 模式已开启。有人问我时我会回答，也会在有帮助的时候加入聊天。",
+        "agent_disabled": "🤖 Agent 模式已关闭。记忆仍可用于 /ask 和未来上下文。",
+        "memory_status_message": (
+            "🧠 <b>群记忆：</b>{memory}\n"
+            "🤖 <b>群 agent：</b>{agent}\n"
+            "💬 <b>近期消息：</b>{recent_messages}\n"
+            "👥 <b>用户画像：</b>{user_profiles}\n"
+            "📚 <b>长期记忆：</b>{events} 个事件，{user_facts} 条用户事实，"
+            "{group_facts} 条群事实，{jokes} 个梗\n"
+            "🗓 <b>每日摘要：</b>{daily_summaries}\n"
+            "🧾 <b>已记录 agent 回复：</b>{agent_replies}"
         ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
-        "explain_fallback_takeover_intro": "🤕 Gemini 正在休息，备用 AI 顶上啦！⚡",
-        "wtf_fallback_rate_limit": "⏳ 备用 AI 触发限流，请 1 分钟后重试。",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD：{remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": "⚠️ 今日 Gemini 配额已耗尽。请配置备用 AI 或明天再试。",
+        "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复一条消息并发送 <code>/ask</code>。",
+        "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
+        "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
+        "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
+        "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。",
+        "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
+        "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。",
+        "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
+        "why_reply_message": ("🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}"),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
@@ -560,10 +613,10 @@ TRANSLATIONS = {
             "• /support — связаться с поддержкой.\n"
             "• /ping — проверка доступности.\n"
             "• /stats — статистика группы (для админов).\n"
+            "• /memory on|off|status|forget me|forget group — управление памятью группы.\n"
+            "• /agent on|off|status|why — управление agent-режимом.\n"
+            "• /ask — задать вопрос agent-у или спросить ответом на сообщение.\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
-            "• /wtf — объяснить IT-термин.\n"
-            "• /explain — объяснить IT-термин в нейтральном стиле (ответ на голос/фото).\n"
-            "• PDF или .txt/.md — авто-сводка при загрузке (≤20 МБ).\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
             "• /genquiz — сгенерировать Quiz по запросу (только ADMIN_USER_ID).\n"
             "\n"
@@ -644,37 +697,56 @@ TRANSLATIONS = {
             "Сначала откройте со мной личный чат и отправьте /start, затем попробуйте /quizstats снова."
         ),
         "quiz_not_configured": "⚙️ Quiz для этого бота не настроен.",
-        "wtf_usage": (
-            "🤔 <b>/wtf</b> — циничное объяснение IT-термина\n\n"
-            "• <code>/wtf &lt;термин&gt;</code> — объяснить\n"
-            "• Ответьте на сообщение + <code>/wtf</code> — объяснить текст"
+        "memory_usage": (
+            "🧠 <b>Память группы</b>\n\n"
+            "• <code>/memory on</code> — включить память группы\n"
+            "• <code>/memory off</code> — выключить память и agent\n"
+            "• <code>/memory status</code> — показать статус памяти\n"
+            "• <code>/memory forget me</code> — удалить вашу память в этой группе\n"
+            "• <code>/memory forget group</code> — удалить всю память группы"
         ),
-        "explain_usage": (
-            "💡 <b>/explain</b> — дружелюбное объяснение IT-термина\n\n"
-            "• <code>/explain &lt;термин&gt;</code> — объяснить\n"
-            "• Ответьте на сообщение + <code>/explain</code> — объяснить текст\n"
-            "• Ответ на <b>голос/аудио/фото</b> + <code>/explain</code> — транскрипт или описание (Gemini)"
+        "agent_usage": (
+            "🤖 <b>Agent-режим</b>\n\n"
+            "• <code>/agent on</code> — разрешить мне отвечать и иногда подключаться к чату\n"
+            "• <code>/agent off</code> — выключить участие agent-а\n"
+            "• <code>/agent status</code> — показать статус agent-а и памяти\n"
+            "• <code>/agent why</code> — объяснить, почему я ответил"
         ),
-        "explain_multimodal_gemini_required": (
-            "⚙️ Голос, изображения и авто-сводки документов требуют <b>Gemini</b>. Настройте GEMINI_API_KEY."
+        "memory_storage_not_configured": "⚙️ Хранилище памяти группы не настроено для этого deployment.",
+        "memory_deployment_disabled": "⚙️ Память группы выключена в deployment-конфиге.",
+        "agent_deployment_disabled": "⚙️ Group agent выключен в deployment-конфиге.",
+        "status_on": "включено",
+        "status_off": "выключено",
+        "memory_owner_only": "❌ Только владелец группы или bot owner может менять настройки памяти.",
+        "bot_owner_only": "❌ Это может делать только bot owner.",
+        "memory_enabled": "🧠 Память группы включена. Я буду помнить недавние не-command сообщения для контекста.",
+        "memory_disabled": (
+            "🧠 Память группы выключена. Уже сохраненная память останется до TTL или /memory forget group."
         ),
-        "explain_media_file_too_large": "📦 Файл слишком большой (макс. 20 МБ). Отправьте файл меньше.",
-        "explain_document_mime_not_supported": (
-            "📄 Авто-сводка пока только для <b>PDF</b> и <b>текста</b> (.txt / .md)."
+        "agent_enabled": "🤖 Agent-режим включен. Я могу отвечать по запросу и подключаться, когда это полезно.",
+        "agent_disabled": "🤖 Agent-режим выключен. Память может оставаться для /ask и будущего контекста.",
+        "memory_status_message": (
+            "🧠 <b>Память группы:</b> {memory}\n"
+            "🤖 <b>Agent-режим:</b> {agent}\n"
+            "💬 <b>Недавние сообщения:</b> {recent_messages}\n"
+            "👥 <b>Профили пользователей:</b> {user_profiles}\n"
+            "📚 <b>Долгосрочная память:</b> события {events}, факты пользователей {user_facts}, "
+            "факты группы {group_facts}, шутки {jokes}\n"
+            "🗓 <b>Дневные сводки:</b> {daily_summaries}\n"
+            "🧾 <b>Записанные ответы agent-а:</b> {agent_replies}"
         ),
-        "wtf_not_configured": "⚙️ /wtf сейчас недоступен (API не настроен).",
-        "wtf_api_error": "😵 AI сейчас не отвечает, попробуйте позже.",
-        "wtf_unexpected_error": "😵 Что-то пошло не так, попробуйте позже.",
-        "wtf_fallback_notice": (
-            "⚠️ <b>Дневная квота Gemini ({total}) исчерпана.</b> "
-            "До сброса квоты (полночь по Тихоокеанскому времени) будет использоваться резервный AI."
+        "ask_usage": "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение командой <code>/ask</code>.",
+        "ask_memory_off": (
+            "🧠 Память группы выключена. Попросите владельца группы сначала выполнить <code>/memory on</code>."
         ),
-        "wtf_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
-        "explain_fallback_takeover_intro": "🤕 Gemini ушел на перерыв, подключаем резервный AI⚡️",
-        "wtf_fallback_rate_limit": "⏳ Для резервного AI временно сработал лимит. Попробуйте через минуту.",
-        "wtf_rpd_footer": "\n---\n📊 Gemini RPD: {remaining}/{total}",
-        "wtf_gemini_exhausted_no_fallback": (
-            "⚠️ Дневная квота Gemini исчерпана. " "Настройте резервный AI или попробуйте завтра."
+        "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
+        "ask_daily_quota_exhausted": "⚠️ Дневная квота AI на сегодня исчерпана.",
+        "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.",
+        "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",
+        "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.",
+        "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
+        "why_reply_message": (
+            "🧾 <b>Почему я ответил</b>\n" "Причина: {reason}\n" "Триггер: {trigger}\n" "Уверенность: {confidence}"
         ),
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (

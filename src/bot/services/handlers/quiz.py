@@ -13,7 +13,7 @@ _GENQUIZ_PROCESSING_REACTION = "👌"
 
 
 def react_genquiz_processing(ctx: Context, reaction: str = _GENQUIZ_PROCESSING_REACTION) -> None:
-    """React to the /genquiz message before slow work so the webhook is visibly active (same idea as /wtf)."""
+    """React to the /genquiz message before slow work so the webhook is visibly active."""
     try:
         ctx.react(reaction)
     except TelegramAPIError as e:
