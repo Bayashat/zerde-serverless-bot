@@ -74,6 +74,8 @@ def test_ai_on_demand_quiz_saves_poll_lookup_record() -> None:
         message_id=321,
         difficulty="medium",
         points=3,
+        subtopic=None,
+        fingerprint=None,
         record_key="ONDEMAND#poll-ai",
     )
 

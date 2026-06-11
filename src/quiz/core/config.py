@@ -11,9 +11,10 @@ _SSM_KEY_MAP: dict[str, str] = {
     "bot-token": "BOT_TOKEN",
     "gemini-api-key": "GEMINI_API_KEY",
     "deepseek-api-key": "DEEPSEEK_API_KEY",
+    "groq-api-key": "GROQ_API_KEY",
 }
 _SSM_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
-_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"})
+_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "GEMINI_API_KEY", "DEEPSEEK_API_KEY", "GROQ_API_KEY"})
 
 
 def _load_secret(ssm_name: str, env_key: str) -> None:
@@ -38,6 +39,12 @@ def get_deepseek_api_key() -> str | None:
     return os.environ.get("DEEPSEEK_API_KEY")
 
 
+def get_groq_api_key() -> str | None:
+    """Return optional Groq API key, loading SSM secrets on first use."""
+    _load_secret("groq-api-key", "GROQ_API_KEY")
+    return os.environ.get("GROQ_API_KEY")
+
+
 # ── Optional ────────────────────────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
@@ -50,6 +57,8 @@ TABLE_NAME: str = require("TABLE_NAME")
 # ── DeepSeek fallback (non-key) ───────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
 DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
+GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
+GROQ_MODEL: str | None = os.environ.get("GROQ_MODEL")
 
 
 def __getattr__(name: str) -> Any:
@@ -60,6 +69,8 @@ def __getattr__(name: str) -> Any:
             return get_gemini_api_key()
         if name == "DEEPSEEK_API_KEY":
             return get_deepseek_api_key()
+        if name == "GROQ_API_KEY":
+            return get_groq_api_key()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

@@ -42,6 +42,9 @@ class BotConstruct(Construct):
         gemini_rpd_limit: int,
         groq_api_base: str,
         groq_model: str,
+        spam_rule_enforce_threshold: str,
+        spam_rule_ai_threshold: str,
+        spam_ai_confidence_threshold: str,
         deepseek_api_base: str,
         deepseek_model: str,
         chat_lang_map: dict[str, str],
@@ -85,6 +88,9 @@ class BotConstruct(Construct):
             # -- Groq parameters (non-secret) ──────────────────────────────────
             "GROQ_API_BASE": groq_api_base,
             "GROQ_MODEL": groq_model,
+            "SPAM_RULE_ENFORCE_THRESHOLD": spam_rule_enforce_threshold,
+            "SPAM_RULE_AI_THRESHOLD": spam_rule_ai_threshold,
+            "SPAM_AI_CONFIDENCE_THRESHOLD": spam_ai_confidence_threshold,
             # -- DeepSeek parameters (non-secret) ──────────────────────────────
             "DEEPSEEK_API_BASE": deepseek_api_base,
             "DEEPSEEK_MODEL": deepseek_model,

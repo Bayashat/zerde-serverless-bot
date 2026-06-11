@@ -117,6 +117,18 @@ def test_skips_channel_discussion_actor_before_groq(mock_get_detector, mock_bot)
 
 
 @patch("services.spam.processor._get_detector")
+def test_skips_pending_captcha_before_groq(mock_get_detector, mock_bot):
+    mock_get_detector.return_value = MagicMock()
+    captcha_repo = MagicMock()
+    captcha_repo.get_pending.return_value = {"expected": "3719"}
+
+    process_spam_check_task(mock_bot, _BODY, captcha_repo=captcha_repo)
+
+    captcha_repo.get_pending.assert_called_once_with(_BODY["chat_id"], _BODY["user_id"])
+    mock_get_detector.return_value.classify.assert_not_called()
+
+
+@patch("services.spam.processor._get_detector")
 def test_malformed_body_does_not_raise(mock_get_detector, mock_bot):
     # Missing required keys
     for bad_body in [{}, {"task_type": "SPAM_CHECK"}, None]:
@@ -128,17 +140,29 @@ def test_malformed_body_does_not_raise(mock_get_detector, mock_bot):
 
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
-def test_spam_low_confidence_sends_alert(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_spam_low_confidence_sends_alert(
+    mock_get_detector,
+    _mock_lang,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
-    mock_detector.classify.return_value = _make_result("SPAM", 0.70)
+    mock_detector.classify.return_value = _make_result("SPAM", 0.70, reason="dm_redirect_scam")
     mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "suspicious_user"}}
 
     process_spam_check_task(mock_bot, _BODY)
 
     mock_bot.send_message.assert_called_once()
     args = mock_bot.send_message.call_args[0]
+    kwargs = mock_bot.send_message.call_args.kwargs
     assert args[0] == _BODY["chat_id"]
     assert isinstance(args[1], str)
     assert "@suspicious_user" in args[1]
+    assert "DM redirect scam" in args[1]
+    assert "70%" in args[1]
+    assert kwargs["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == "spam_ban:111222333:42"
+    assert kwargs["reply_markup"]["inline_keyboard"][0][1]["callback_data"] == "spam_ignore:111222333:42"

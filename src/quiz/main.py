@@ -35,6 +35,15 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     if event.get("action") == "leaderboard":
         return quiz_service.process_leaderboard(chat_ids, lang)
 
+    if event.get("action") == "build_question_bank":
+        return quiz_service.build_generated_question_bank(
+            max_questions=int(event.get("max_questions", 20)),
+            target_per_combo=int(event.get("target_per_combo", 2)),
+            categories=event.get("categories"),
+            difficulties=event.get("difficulties"),
+            subtopics_by_category=event.get("subtopics_by_category"),
+        )
+
     if event.get("action") == "on_demand":
         chat_id = event.get("chat_id", "")
         topic = event.get("topic", "programming")

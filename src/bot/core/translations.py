@@ -156,16 +156,29 @@ TRANSLATIONS = {
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Spam detected: {REASON}. {TARGET} was removed.",
         "spam_uncertain_notice": (
-            "⚠️ Suspicious message from {TARGET} detected, but confidence is low — admins please check."
+            "⚠️ Suspicious message from {TARGET}: {REASON} ({CONFIDENCE}% confidence). Admins please check."
         ),
         "spam_reason_job_offer": "job/income offer",
+        "spam_reason_dm_redirect_scam": "DM redirect scam",
         "spam_reason_vpn_ad": "VPN advertisement",
         "spam_reason_referral_promo": "referral/promotional link",
         "spam_reason_selling_services": "selling digital services",
+        "spam_reason_account_sale": "account/access sale",
+        "spam_reason_crypto_investment": "crypto/investment promotion",
+        "spam_reason_phishing": "phishing or malware",
+        "spam_reason_adult_gambling": "adult/gambling promotion",
         "spam_reason_commercial": "commercial/promotional content",
         "spam_reason_suspicious_link": "suspicious link",
+        "spam_reason_admin_review": "admin-reviewed spam",
         "spam_reason_rules": "matched spam rules",
         "spam_reason_unknown": "unknown reason",
+        "spam_review_ban_button": "Ban",
+        "spam_review_ignore_button": "Ignore",
+        "spam_review_admin_only": "Only group admins can review spam alerts.",
+        "spam_review_banned_toast": "User banned.",
+        "spam_review_ignored_toast": "Alert ignored.",
+        "spam_review_banned_notice": "✅ Admin reviewed this alert and banned the user.",
+        "spam_review_ignored_notice": "✅ Admin reviewed this alert and ignored it.",
         "captcha_image_challenge": (
             "👋 Welcome {MENTION}!\n\n"
             "Look at the image and type the <b>4 highlighted numbers</b> in order ①②③④.\n\n"
@@ -328,16 +341,29 @@ TRANSLATIONS = {
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Спам анықталды: {REASON}. {TARGET} топтан шығарылды.",
         "spam_uncertain_notice": (
-            "⚠️ {TARGET} пайдаланушыдан күдікті хабарлама анықтадым, бірақ сәл сенімсіз болып тұрмын — админдердің тексеруіне қалдырамын"  # noqa: E501
+            "⚠️ {TARGET} пайдаланушыдан күдікті хабарлама: {REASON} ({CONFIDENCE}% сенімділік). Админдер тексерсін."  # noqa: E501
         ),
         "spam_reason_job_offer": "жұмыс/табыс ұсынысы",
+        "spam_reason_dm_redirect_scam": "жеке хабарламаға тартатын алаяқтық",
         "spam_reason_vpn_ad": "VPN жарнамасы",
         "spam_reason_referral_promo": "реферал/жарнама сілтемесі",
         "spam_reason_selling_services": "цифрлық қызметтерді сату",
+        "spam_reason_account_sale": "аккаунт/қолжетімділік сату",
+        "spam_reason_crypto_investment": "крипто/инвестиция жарнамасы",
+        "spam_reason_phishing": "фишинг немесе зиянды сілтеме",
+        "spam_reason_adult_gambling": "ересектер/құмар ойын жарнамасы",
         "spam_reason_commercial": "коммерциялық/жарнама мазмұны",
         "spam_reason_suspicious_link": "күдікті сілтеме",
+        "spam_reason_admin_review": "админ тексерген спам",
         "spam_reason_rules": "спам ережелеріне сәйкес",
         "spam_reason_unknown": "себебі белгісіз",
+        "spam_review_ban_button": "Бан",
+        "spam_review_ignore_button": "Елемеу",
+        "spam_review_admin_only": "Спам ескертулерін тек топ админдері тексере алады.",
+        "spam_review_banned_toast": "Пайдаланушы бұғатталды.",
+        "spam_review_ignored_toast": "Ескерту еленбеді.",
+        "spam_review_banned_notice": "✅ Админ бұл ескертуді тексеріп, пайдаланушыны бұғаттады.",
+        "spam_review_ignored_notice": "✅ Админ бұл ескертуді тексеріп, елемеді.",
         "captcha_image_challenge": (
             "👋 Қош келдіңіз, {MENTION}!\n\n"
             "Суреттегі <b>①②③④ белгіленген 4 санды</b> кезегімен жазыңыз.\n\n"
@@ -484,15 +510,28 @@ TRANSLATIONS = {
         "genquiz_failed": "❌ 生成 Quiz 失败：{reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
         "spam_enforced_notice": "🚫 检测到垃圾信息：{REASON}。{TARGET} 已被移出群组。",
-        "spam_uncertain_notice": "⚠️ 检测到来自 {TARGET} 的可疑消息，但置信度较低——请管理员人工核查。",
+        "spam_uncertain_notice": "⚠️ 检测到来自 {TARGET} 的可疑消息：{REASON}（置信度 {CONFIDENCE}%）。请管理员核查。",
         "spam_reason_job_offer": "工作/收入邀约",
+        "spam_reason_dm_redirect_scam": "私聊引流诈骗",
         "spam_reason_vpn_ad": "VPN 广告",
         "spam_reason_referral_promo": "推荐/推广链接",
         "spam_reason_selling_services": "出售数字服务",
+        "spam_reason_account_sale": "出售账号/访问权限",
+        "spam_reason_crypto_investment": "加密货币/投资推广",
+        "spam_reason_phishing": "钓鱼或恶意链接",
+        "spam_reason_adult_gambling": "成人/赌博推广",
         "spam_reason_commercial": "商业/推广内容",
         "spam_reason_suspicious_link": "可疑链接",
+        "spam_reason_admin_review": "管理员确认的垃圾信息",
         "spam_reason_rules": "匹配垃圾规则",
         "spam_reason_unknown": "原因未知",
+        "spam_review_ban_button": "封禁",
+        "spam_review_ignore_button": "忽略",
+        "spam_review_admin_only": "只有群管理员可以处理垃圾信息提醒。",
+        "spam_review_banned_toast": "用户已封禁。",
+        "spam_review_ignored_toast": "已忽略。",
+        "spam_review_banned_notice": "✅ 管理员已核查此提醒，并封禁了该用户。",
+        "spam_review_ignored_notice": "✅ 管理员已核查此提醒，并选择忽略。",
         "captcha_image_challenge": (
             "👋 欢迎 {MENTION}！\n\n"
             "请查看图片，按顺序输入 <b>①②③④ 标记的 4 个数字</b>。\n\n"
@@ -650,16 +689,29 @@ TRANSLATIONS = {
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Обнаружен спам: {REASON}. Пользователь {TARGET} удален из группы.",
         "spam_uncertain_notice": (
-            "⚠️ Обнаружено подозрительное сообщение от {TARGET}, но уверенность низкая — проверьте вручную."
+            "⚠️ Подозрительное сообщение от {TARGET}: {REASON} ({CONFIDENCE}% уверенности). Проверьте вручную."
         ),
         "spam_reason_job_offer": "предложение работы/дохода",
+        "spam_reason_dm_redirect_scam": "скам с переводом в личные сообщения",
         "spam_reason_vpn_ad": "реклама VPN",
         "spam_reason_referral_promo": "реферальная/рекламная ссылка",
         "spam_reason_selling_services": "продажа цифровых услуг",
+        "spam_reason_account_sale": "продажа аккаунтов/доступа",
+        "spam_reason_crypto_investment": "крипто/инвестиционная реклама",
+        "spam_reason_phishing": "фишинг или вредоносная ссылка",
+        "spam_reason_adult_gambling": "реклама 18+/казино/ставок",
         "spam_reason_commercial": "коммерческий/рекламный контент",
         "spam_reason_suspicious_link": "подозрительная ссылка",
+        "spam_reason_admin_review": "спам, подтвержденный админом",
         "spam_reason_rules": "соответствие правилам спама",
         "spam_reason_unknown": "неизвестная причина",
+        "spam_review_ban_button": "Бан",
+        "spam_review_ignore_button": "Игнор",
+        "spam_review_admin_only": "Проверять спам-алерты могут только админы группы.",
+        "spam_review_banned_toast": "Пользователь забанен.",
+        "spam_review_ignored_toast": "Алерт проигнорирован.",
+        "spam_review_banned_notice": "✅ Админ проверил этот алерт и забанил пользователя.",
+        "spam_review_ignored_notice": "✅ Админ проверил этот алерт и проигнорировал его.",
         "captcha_image_challenge": (
             "👋 Добро пожаловать, {MENTION}!\n\n"
             "Посмотрите на изображение и введите <b>4 отмеченных числа</b> по порядку ①②③④.\n\n"

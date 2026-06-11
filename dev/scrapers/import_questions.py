@@ -11,18 +11,32 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
+import re
 from pathlib import Path
 
 import boto3
 
-# CLF-C02 domain → difficulty mapping
+# CLF-C02 is a foundation exam. Keep imported questions in the lower tiers.
 _DOMAIN_DIFFICULTY: dict[str, str] = {
     "domain 1": "easy",  # Cloud Concepts
-    "domain 2": "medium",  # Security and Compliance
+    "domain 2": "easy_medium",  # Security and Compliance
     "domain 3": "easy_medium",  # Cloud Technology and Services
     "domain 4": "easy",  # Billing, Pricing, and Support
 }
+
+_SUBTOPIC_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("iam", ("iam", "identity", "access management", "permission", "policy", "role")),
+    ("security", ("security", "encryption", "compliance", "guardduty", "shield", "waf", "kms")),
+    ("storage", ("s3", "storage", "ebs", "efs", "glacier", "backup")),
+    ("compute", ("ec2", "lambda", "elastic beanstalk", "auto scaling", "compute")),
+    ("networking", ("vpc", "subnet", "route table", "cloudfront", "load balancer", "dns", "route 53")),
+    ("database", ("rds", "dynamodb", "aurora", "redshift", "database")),
+    ("monitoring", ("cloudwatch", "cloudtrail", "config", "monitoring", "logging")),
+    ("billing", ("billing", "pricing", "cost", "budget", "support plan", "trusted advisor")),
+    ("migration", ("migration", "snowball", "datasync", "transfer")),
+)
 
 
 def _map_difficulty(domain_name: str) -> str:
@@ -30,7 +44,45 @@ def _map_difficulty(domain_name: str) -> str:
     for key, diff in _DOMAIN_DIFFICULTY.items():
         if key in domain_lower:
             return diff
-    return "medium"
+    return "easy_medium"
+
+
+def _normalize_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip().lower())
+
+
+def _question_fingerprint(q: dict) -> str:
+    text = " ".join(
+        [
+            _normalize_text(q.get("question", "")),
+            *[_normalize_text(opt) for opt in q.get("options", [])],
+        ]
+    )
+    return hashlib.sha1(text.encode("utf-8")).hexdigest()
+
+
+def _domain_slug(domain_name: str) -> str:
+    value = _normalize_text(domain_name)
+    value = re.sub(r"^domain\s+\d+:\s*", "", value)
+    value = re.sub(r"[^a-z0-9]+", "-", value).strip("-")
+    return value or "foundation"
+
+
+def _map_subtopic(q: dict) -> str:
+    haystack = _normalize_text(
+        " ".join(
+            [
+                q.get("domain", ""),
+                q.get("question", ""),
+                q.get("explanation", ""),
+                " ".join(q.get("options", [])),
+            ]
+        )
+    )
+    for subtopic, keywords in _SUBTOPIC_KEYWORDS:
+        if any(keyword in haystack for keyword in keywords):
+            return subtopic
+    return _domain_slug(q.get("domain", ""))
 
 
 def import_questions(
@@ -101,6 +153,9 @@ def _build_item(pk: str, q: dict, source: str, category: str) -> dict:
         "category": category,
         "domain": q.get("domain", ""),
         "difficulty": _map_difficulty(q.get("domain", "")),
+        "difficulty_band": "foundation",
+        "subtopic": _map_subtopic(q),
+        "fingerprint": _question_fingerprint(q),
         "question": q["question"],
         "options": q["options"],
         "correct_option_id": int(q["correct_option_id"]),

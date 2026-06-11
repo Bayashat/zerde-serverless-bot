@@ -7,7 +7,16 @@ from abc import ABC, abstractmethod
 from typing import Any, TypedDict
 
 import urllib3
-from core.config import DEEPSEEK_API_BASE, DEEPSEEK_MODEL, GEMINI_MODEL, get_deepseek_api_key, get_gemini_api_key
+from core.config import (
+    DEEPSEEK_API_BASE,
+    DEEPSEEK_MODEL,
+    GEMINI_MODEL,
+    GROQ_API_BASE,
+    GROQ_MODEL,
+    get_deepseek_api_key,
+    get_gemini_api_key,
+    get_groq_api_key,
+)
 from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
@@ -141,16 +150,17 @@ class GeminiQuizProvider(QuizLLMProvider):
                 raise
 
 
-class DeepSeekQuizProvider(QuizLLMProvider):
-    """DeepSeek provider via OpenAI-compatible chat/completions endpoint."""
+class OpenAICompatibleQuizProvider(QuizLLMProvider):
+    """OpenAI-compatible chat/completions provider."""
 
     _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=5, read=60))
 
-    def __init__(self, api_key: str, api_base: str, model: str) -> None:
+    def __init__(self, provider_name: str, api_key: str, api_base: str, model: str) -> None:
+        self._provider_name = provider_name
         self._api_key = api_key
         self._api_base = api_base.rstrip("/")
         self._model = model
-        logger.info("DeepSeekQuizProvider initialized", extra={"model": model})
+        logger.info("OpenAI-compatible Quiz provider initialized", extra={"provider": provider_name, "model": model})
 
     def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
         payload: dict[str, Any] = {
@@ -161,8 +171,13 @@ class DeepSeekQuizProvider(QuizLLMProvider):
         }
 
         logger.info(
-            "Quiz DeepSeek request started",
-            extra={"model": self._model, "temperature": temperature, "response_format": "json_object"},
+            "Quiz fallback provider request started",
+            extra={
+                "provider": self._provider_name,
+                "model": self._model,
+                "temperature": temperature,
+                "response_format": "json_object",
+            },
         )
         resp = self._http.request(
             "POST",
@@ -175,72 +190,99 @@ class DeepSeekQuizProvider(QuizLLMProvider):
         )
 
         if resp.status == 429:
-            logger.warning("DeepSeek 429 rate limit hit", extra={"model": self._model})
-            raise ProviderRateLimitError(f"DeepSeek rate limited: {resp.status}")
+            logger.warning("Quiz fallback provider 429 rate limit hit", extra={"provider": self._provider_name})
+            raise ProviderRateLimitError(f"{self._provider_name} rate limited: {resp.status}")
 
         if resp.status >= 400:
             body = resp.data.decode("utf-8")
-            logger.error("DeepSeek API error", extra={"status": resp.status, "body": body[:500]})
+            logger.error(
+                "Quiz fallback provider API error",
+                extra={"provider": self._provider_name, "status": resp.status, "body": body[:500]},
+            )
             raise map_http_status_to_provider_error(
                 resp.status,
-                f"DeepSeek API {resp.status}: {body[:200]}",
+                f"{self._provider_name} API {resp.status}: {body[:200]}",
             )
 
         try:
             data = json.loads(resp.data.decode("utf-8"))
             content = data["choices"][0]["message"]["content"]
         except json.JSONDecodeError as e:
-            raise ProviderResponseError(f"DeepSeek response was not valid JSON: {e}") from e
+            raise ProviderResponseError(f"{self._provider_name} response was not valid JSON: {e}") from e
         except (KeyError, IndexError, TypeError):
             raise
         try:
             result = json.loads(content)
         except json.JSONDecodeError as e:
-            raise ProviderResponseError(f"DeepSeek returned invalid content JSON: {e}") from e
+            raise ProviderResponseError(f"{self._provider_name} returned invalid content JSON: {e}") from e
         logger.info(
-            "Quiz DeepSeek response parsed",
-            extra={"model": self._model, "response_chars": len(content)},
+            "Quiz fallback provider response parsed",
+            extra={"provider": self._provider_name, "model": self._model, "response_chars": len(content)},
         )
         return result
 
 
-class FallbackProvider(QuizLLMProvider):
-    """Tries the primary provider; on ``ZerdeProviderError`` uses the secondary."""
+class DeepSeekQuizProvider(OpenAICompatibleQuizProvider):
+    """DeepSeek provider via OpenAI-compatible chat/completions endpoint."""
 
-    def __init__(self, primary: QuizLLMProvider, fallback: QuizLLMProvider) -> None:
-        self._primary = primary
-        self._fallback = fallback
+    def __init__(self, api_key: str, api_base: str, model: str) -> None:
+        super().__init__("DeepSeek", api_key, api_base, model)
+
+
+class GroqQuizProvider(OpenAICompatibleQuizProvider):
+    """Groq provider via OpenAI-compatible chat/completions endpoint."""
+
+    def __init__(self, api_key: str, api_base: str, model: str) -> None:
+        super().__init__("Groq", api_key, api_base, model)
+
+
+class FallbackProvider(QuizLLMProvider):
+    """Tries providers in order, falling through on mapped provider errors."""
+
+    def __init__(self, providers: list[QuizLLMProvider]) -> None:
+        self._providers = providers
 
     def generate_json(self, prompt: str, temperature: float = 0.3) -> dict:
-        try:
-            result = self._primary.generate_json(prompt, temperature)
-            logger.info("Quiz generated by primary provider")
-            return result
-        except ZerdeProviderError as e:
-            logger.warning(
-                "Primary provider failed, falling back to secondary provider",
-                extra={"error": str(e), "error_type": type(e).__name__},
-            )
-            result = self._fallback.generate_json(prompt, temperature)
-            logger.info("Quiz generated by fallback provider")
-            return result
+        last_error: ZerdeProviderError | None = None
+        for index, provider in enumerate(self._providers):
+            try:
+                result = provider.generate_json(prompt, temperature)
+                logger.info("Quiz generated by provider", extra={"provider_index": index})
+                return result
+            except ZerdeProviderError as e:
+                last_error = e
+                logger.warning(
+                    "Quiz provider failed, trying next provider",
+                    extra={"provider_index": index, "error": str(e), "error_type": type(e).__name__},
+                )
+        if last_error:
+            raise last_error
+        raise ProviderResponseError("No quiz providers configured")
 
     def get_rpd_status(self) -> tuple[int | None, int | None]:
-        return self._primary.get_rpd_status()
+        return self._providers[0].get_rpd_status() if self._providers else (None, None)
 
 
 def create_provider() -> QuizLLMProvider:
-    """Build the provider chain: Gemini primary -> DeepSeek fallback (if configured)."""
-    primary: QuizLLMProvider = GeminiQuizProvider(api_key=get_gemini_api_key(), model=GEMINI_MODEL)
+    """Build the provider chain: Gemini primary -> DeepSeek -> Groq when configured."""
+    providers: list[QuizLLMProvider] = [GeminiQuizProvider(api_key=get_gemini_api_key(), model=GEMINI_MODEL)]
 
     deepseek_api_key = get_deepseek_api_key()
     if deepseek_api_key:
-        fallback = DeepSeekQuizProvider(api_key=deepseek_api_key, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
-        logger.info(
-            "FallbackProvider configured",
-            extra={"primary": GEMINI_MODEL, "fallback": DEEPSEEK_MODEL},
+        providers.append(
+            DeepSeekQuizProvider(api_key=deepseek_api_key, api_base=DEEPSEEK_API_BASE, model=DEEPSEEK_MODEL)
         )
-        return FallbackProvider(primary=primary, fallback=fallback)
 
-    logger.info("DeepSeek fallback not configured (DEEPSEEK_API_KEY empty), using Gemini only")
-    return primary
+    groq_api_key = get_groq_api_key()
+    if groq_api_key and GROQ_MODEL:
+        providers.append(GroqQuizProvider(api_key=groq_api_key, api_base=GROQ_API_BASE, model=GROQ_MODEL))
+
+    if len(providers) > 1:
+        logger.info(
+            "Quiz fallback provider chain configured",
+            extra={"provider_count": len(providers), "primary": GEMINI_MODEL},
+        )
+        return FallbackProvider(providers)
+
+    logger.info("Quiz fallback providers not configured, using Gemini only")
+    return providers[0]

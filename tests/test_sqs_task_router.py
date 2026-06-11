@@ -65,8 +65,10 @@ def test_spam_check_routes() -> None:
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
         patch("services.sqs_task_router.process_spam_check_task") as mock_ps,
     ):
-        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_ps.assert_called_once()
+        captcha = MagicMock()
+        bot = MagicMock()
+        process_sqs_event({"Records": [_record(body)]}, bot, captcha)
+    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha)
 
 
 def test_non_whitelisted_chat_skips_handlers() -> None:

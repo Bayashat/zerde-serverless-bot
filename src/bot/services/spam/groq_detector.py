@@ -23,6 +23,10 @@ SPAM includes:
 - Work-from-home or freelance recruitment targeted at group members
 - Selling, renting, or connecting digital services (e.g., ChatGPT Plus, Claude, CapCut, premium accounts)
 - Any promotional/commercial content or price lists
+- Crypto/investment "signals", guaranteed profit, pump groups, trading referrals
+- Phishing, credential theft, malware, suspicious giveaways, fake support/admin impersonation
+- Account sales, SIM/number sales, marketplace spam
+- Adult, gambling, casino or betting promotions
 
 NOT_SPAM includes:
 - Technical questions, code sharing, IT discussions, IT news or opinions
@@ -48,9 +52,14 @@ Output format is always:
 The "reason" field is REQUIRED for every response:
 - If label is "SPAM", reason must be exactly one of:
   - "job_offer" - Job/gig/income offers (including DM-redirect gig spam)
+  - "dm_redirect_scam" - DM/private-message redirect scam, especially with money/job hooks
   - "vpn_ad" - VPN service advertisements
   - "referral_promo" - Referral/promotional links for external services
   - "selling_services" - Selling/renting digital services or accounts
+  - "account_sale" - Selling accounts, phone numbers, SIMs, or access
+  - "crypto_investment" - Crypto/trading/investment profit promotions
+  - "phishing" - Credential theft, fake support/admin, malware, suspicious giveaways
+  - "adult_gambling" - Adult, casino, betting, gambling promotions
   - "commercial" - General promotional/commercial content
   - "suspicious_link" - Suspicious or unknown links
 - If label is "NOT_SPAM", reason must be exactly "not_spam"
@@ -71,7 +80,16 @@ Message: "За пару движений дам 12500р. срочно!!!"
 {"label": "SPAM", "confidence": 0.99, "reason": "job_offer"}
 
 Message: "Приветик. Шабашка на 4 часа. Оплата 7800. Если интересно-пиши в лс"
-{"label": "SPAM", "confidence": 0.97, "reason": "job_offer"}
+{"label": "SPAM", "confidence": 0.97, "reason": "dm_redirect_scam"}
+
+Message: "Инсайды по крипте, x5 за неделю, вход в закрытый канал @profit_signal"
+{"label": "SPAM", "confidence": 0.96, "reason": "crypto_investment"}
+
+Message: "Подтвердите аккаунт Telegram, иначе блокировка: http://tg-login-security.example"
+{"label": "SPAM", "confidence": 0.98, "reason": "phishing"}
+
+Message: "Продам аккаунты ChatGPT Plus / Claude, гарантия, оплата Kaspi"
+{"label": "SPAM", "confidence": 0.96, "reason": "account_sale"}
 
 # Medium confidence SPAM
 Message: "Ребята, нашел интересный канал про крипту, кому интересно заходите @crypto_news_123"
