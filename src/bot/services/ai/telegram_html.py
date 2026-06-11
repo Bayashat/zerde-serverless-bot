@@ -10,6 +10,27 @@ _CODE_RE = re.compile(r"`([^`]+)`")
 _BULLET_RE = re.compile(r"^\s*[-*]\s+")
 
 
+def fit_llm_output(text: str, *, max_chars: int) -> str:
+    """Trim model text before Telegram HTML normalization."""
+    cleaned = (text or "").strip()
+    if max_chars <= 0 or len(cleaned) <= max_chars:
+        return cleaned
+
+    suffix = "..."
+    cut_limit = max(1, max_chars - len(suffix))
+    boundary = max(
+        cleaned.rfind("\n\n", 0, cut_limit),
+        cleaned.rfind(". ", 0, cut_limit),
+        cleaned.rfind("! ", 0, cut_limit),
+        cleaned.rfind("? ", 0, cut_limit),
+    )
+    if boundary < cut_limit * 0.55:
+        boundary = cleaned.rfind(" ", 0, cut_limit)
+    if boundary < cut_limit * 0.55:
+        boundary = cut_limit
+    return cleaned[:boundary].rstrip() + suffix
+
+
 def normalize_llm_output_for_telegram_html(text: str) -> str:
     """Convert common markdown-like fragments into Telegram-safe HTML subset."""
     lines = text.splitlines()

@@ -8,7 +8,7 @@ This guide walks you through running Zerde Bot end-to-end: creating an AWS accou
 
 1. Go to [aws.amazon.com](https://aws.amazon.com) and choose **Create an AWS Account**.
 2. Complete sign-up (email, password, account type, payment method, identity verification).
-   **Note:** The AWS Free Tier is sufficient for all three Lambda functions; you will not be charged under normal testing loads.
+   **Note:** The AWS Free Tier is usually sufficient for light testing, but vector memory and LLM calls can create provider-side costs or quotas.
 3. Sign in to the **AWS Management Console**.
 4. (Recommended) Create an IAM user for day-to-day use instead of the root user:
    - **IAM** → **Users** → **Create user** (e.g. `zerde-dev`).
@@ -45,7 +45,7 @@ aws sts get-caller-identity
 
 5. **Save this token** — you will use it as `BOT_TOKEN`. Do not share it or commit it to git.
 
-Optional: Create a test group, add your bot as admin with "Delete messages" and "Restrict members" permissions to test the captcha and kick flows. Add it to a second group to test the quiz.
+Optional: Create a test group, add your bot as admin with "Delete messages" and "Restrict members" permissions to test captcha, kick, and full group-context flows. Disable BotFather privacy mode or keep the bot as admin so it can observe non-command group messages for memory.
 
 ---
 
@@ -53,11 +53,12 @@ Optional: Create a test group, add your bot as admin with "Delete messages" and 
 
 Zerde can use three external APIs beyond Telegram:
 
-### Google Gemini (for News and Quiz translation)
+### Google Gemini (for agent replies, memory summaries, embeddings, news, and quiz)
 
 1. Go to [aistudio.google.com](https://aistudio.google.com) and sign in with a Google account.
 2. Create an API key. Copy it — this is your `GEMINI_API_KEY`.
-3. Free tier is sufficient for daily digest volumes.
+3. Free tier is usually sufficient for small tests.
+4. Optional: use a separate key for `GEMINI_EMBEDDING_API_KEY`; if omitted, the bot can use `GEMINI_API_KEY`.
 
 ### Groq (for async spam checks)
 
@@ -96,6 +97,9 @@ GROQ_API_KEY=<your Groq API key>
 DEEPSEEK_API_KEY=<your DeepSeek API key>
 
 # Optional — configure chat IDs to receive news/quiz
+CHATS_KK=<comma-separated chat IDs for Kazakh/default bot groups>
+CHATS_ZH=<comma-separated chat IDs for Chinese bot groups>
+CHATS_RU=<comma-separated chat IDs for Russian bot groups>
 NEWS_CHATS_KK=<comma-separated chat IDs for Kazakh news>
 NEWS_CHATS_ZH=<comma-separated chat IDs for Chinese news>
 NEWS_CHATS_RU=<comma-separated chat IDs for Russian news>
@@ -104,11 +108,18 @@ QUIZ_CHATS_ZH=<comma-separated chat IDs for Chinese quiz>
 QUIZ_CHATS_RU=<comma-separated chat IDs for Russian quiz>
 
 # Optional — defaults shown
-AI_PROVIDER=gemini
 GEMINI_MODEL=gemini-3.1-flash-lite
-NEWS_GEMINI_MODEL=gemini-3-flash-preview
-QUIZ_GEMINI_MODEL=gemini-3-flash-preview
+NEWS_GEMINI_MODEL=gemini-3.1-flash-lite
+QUIZ_GEMINI_MODEL=gemini-3.1-flash-lite
 DEFAULT_LANG=kk
+
+# Optional — group memory / agent
+GROUP_MEMORY_ENABLED=true
+VECTOR_MEMORY_ENABLED=true
+VECTOR_MEMORY_PROVIDER=s3_vectors
+AGENT_ENABLED=true
+AGENT_BOT_USERNAME=@your_bot_username
+AGENT_RECENT_CONTEXT_LIMIT=100
 ```
 
 **To find a group's chat ID:** Add [@userinfobot](https://t.me/userinfobot) to the group; it will print the chat ID on join.
@@ -123,7 +134,7 @@ Never commit `.env` — it is in `.gitignore`.
 # Synthesize CloudFormation (optional validation step)
 uv run cdk synth -c env=dev
 
-# Deploy all three Lambdas + infrastructure
+# Deploy Lambdas + queues + tables + optional S3 Vectors resources
 uv run cdk deploy -c env=dev
 ```
 
@@ -132,10 +143,12 @@ When prompted to approve IAM changes, type `y`.
 After a successful deploy, the terminal prints an **ApiEndpoint** URL (e.g. `https://xxxx.execute-api.eu-central-1.amazonaws.com/dev/`). Copy it.
 
 The deploy creates:
-- **Bot Lambda** — API Gateway webhook endpoint + SQS queue
+- **Bot Lambda** — API Gateway webhook endpoint + SQS worker for captcha, spam, `/ask`, memory, and vector tasks
 - **News Lambda** — EventBridge rules (only active in `prod` env)
 - **Quiz Lambda** — EventBridge rule at 08:00 UTC + DynamoDB quiz table (only active in `prod` env)
-- **DynamoDB** — stats table (joins/bans) + quiz table (scores/leaderboard)
+- **DynamoDB** — stats table, group-memory table, and quiz table
+- **SQS** — timeout/tasks queue plus vector-memory queue, each with DLQ
+- **S3 Vectors** — vector bucket/index when `VECTOR_MEMORY_ENABLED=true` and provider is `s3_vectors`
 
 > EventBridge schedules are only created when deploying with `-c env=prod`. For local testing, invoke the News and Quiz Lambdas manually from the AWS Console or CLI.
 
@@ -176,6 +189,9 @@ curl -F "url=https://abc123.execute-api.eu-central-1.amazonaws.com/dev/webhook" 
 3. Send `/ping` — confirms the Lambda is reachable.
 4. Add the bot to a test group as admin and trigger a join to test captcha flow.
 5. Reply to any message with `/voteban` to test the vote-to-ban flow.
+6. In a group, run `/memory status` to confirm memory and vector status.
+7. Run `/ask what is this chat discussing?` or reply to a message with `/ask` to test the group agent.
+8. Reply to the bot's answer with a follow-up question to test `AGENT_REPLY#...` thread continuity.
 
 **To test the Quiz Lambda manually:**
 
@@ -215,10 +231,10 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
 | AWS | Account + IAM user with CLI access (`aws configure`) |
 | Telegram | Bot created via @BotFather, token saved |
 | Gemini | API key from [aistudio.google.com](https://aistudio.google.com) |
-| QuizAPI | API key from [quizapi.io](https://quizapi.io) |
-| Project | Clone, uv, CDK CLI, `uv sync`, `.env` with all required keys |
+| Groq | API key from [console.groq.com](https://console.groq.com/) |
+| Project | Clone, uv, CDK CLI, `uv sync`, `.env` with required keys and chat IDs |
 | Deploy | `uv run cdk deploy -c env=dev` |
 | Webhook | `setWebhook` with API endpoint and same secret as in `.env` |
-| Test | Chat with bot and/or test in a group |
+| Test | Chat with bot, test captcha/voteban, `/memory status`, `/ask`, and reply-to-bot follow-ups |
 
 For contribution workflow (branching, pre-commit, PRs), see [CONTRIBUTING.md](../CONTRIBUTING.md).

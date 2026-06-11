@@ -1,6 +1,8 @@
 # Telegram History Import
 
-Use this for one-time import of Telegram Desktop JSON exports into ZerdeBot group memory.
+Use this for one-time import of Telegram Desktop JSON exports into ZerdeBot group memory and RAG retrieval.
+
+The importer is for bootstrapping memory when Telegram cannot give the bot old group history. It writes DynamoDB memory items first, then optionally enqueues vector indexing so the agent can retrieve relevant historical facts through S3 Vectors.
 
 ## Export
 
@@ -25,7 +27,7 @@ uv run python dev/tools/import_telegram_history.py \
   --since 2026-01-01
 ```
 
-The report shows parsed messages, skipped sensitive/command/service messages, estimated long-term memories, daily summaries, and vector tasks.
+The report shows parsed messages, skipped sensitive/command/service messages, estimated long-term memories, daily summaries, and vector tasks. Review this before writing because imported memory can influence future agent answers.
 
 ## Import
 
@@ -45,12 +47,14 @@ Repeat once per group/export file.
 
 ## What Gets Imported
 
-- `MSG#...` raw text records for non-sensitive messages, with user profile updates.
+- `MSG#...` raw text records for non-sensitive messages, with `USER#...` profile updates derived from the speaker's own text.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...` long-term memory items.
 - `DAILY_SUMMARY#YYYY-MM-DD` summaries for each imported day.
 - `PROCESS_VECTOR_MEMORY` tasks for each long-term memory and daily summary.
 
 The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only long-term memory items and daily summaries go to S3 Vectors.
+
+Imported long-term memory is later used by `/ask` and proactive agent replies through a mix of query-filtered DynamoDB reads and semantic vector retrieval. Keep joke-like or sarcastic memories narrow; a one-off roast should not become a permanent user fact.
 
 ## Useful Options
 
@@ -60,3 +64,15 @@ The importer skips commands, empty/system messages, and secret/sensitive-looking
 - `--no-raw-messages` to skip raw `MSG#...` records and user profile updates.
 - `--no-long-term` to skip event/fact/joke extraction.
 - `--no-daily-summaries` to skip daily summaries.
+
+If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find that history.
+
+## Cleanup And Pollution Control
+
+Before importing a large group, do a small `--max-messages` dry run and inspect whether user facts, group facts, and jokes look trustworthy. If polluted records are written, clean both sides of memory:
+
+- Delete the narrow DynamoDB keys for bad `USER#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, or `DAILY_SUMMARY#...` items.
+- Delete matching vector keys for vectorized long-term memory and daily summaries.
+- Back up the exact items and vector keys before production cleanup.
+
+Do not rely on vector backfill to fix bad source data. If DynamoDB memory is polluted, the agent can still retrieve it through non-vector long-term context.

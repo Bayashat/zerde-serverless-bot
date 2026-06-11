@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file guides Codex when working in this repository. Keep it current with `docs/ARCHITECTURE.md` and `.codex/skills/zerdebot-development/SKILL.md`.
 
 ## Commands
 
@@ -8,85 +8,129 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 # Install dependencies
 uv sync --frozen
 
-# Activate virtual environment
-source .venv/bin/activate
+# Validate Python behavior
+uv run pytest tests/ -q
+uv run pre-commit run --all-files
 
-# Validate CDK infrastructure (run from infra/)
+# Validate CDK infrastructure
 cd infra && uv run cdk synth -c env=dev
 cd infra && uv run cdk diff -c env=dev
 
-# Deploy to AWS
+# Deploy / destroy
 cd infra && uv run cdk deploy -c env=dev
-
-# Destroy stack
 cd infra && uv run cdk destroy -c env=dev
-
-# Tests and lint
-uv run pytest tests/ -q
-uv run pre-commit run --all-files
 ```
 
-Pre-commit runs Black, Isort, and Flake8. Run `uv run pre-commit install` once locally.
+When changing `infra/`, include meaningful `cd infra && uv run cdk diff -c env=dev` output in PR notes. If the diff is only environment config such as `CHAT_LANG_MAP`, say that explicitly.
 
-When changing `infra/`, include `cd infra && uv run cdk diff -c env=dev` output in PR descriptions.
+## Product Direction
 
-## Architecture (current)
+ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now a **memory-enabled agentic Telegram group bot**:
 
-ZerdeBot is a serverless Telegram bot and related jobs on AWS (CDK in `infra/`). Python Lambdas share a **Lambda Layer** with small utilities only (`src/shared/python/zerde_common/`): typed env helpers, SSM secret batch load, JSON logging helpers, provider error types, log redaction helpers.
+- It observes opted-in group messages.
+- It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
+- It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
+- It answers `/ask`, @mentions, and reply-to-bot follow-ups with structured context.
+- It may proactively answer only after conservative local and LLM social-timing gates.
+- It still supports captcha, anti-spam, voteban, daily news, and quizzes.
+
+RAG is one capability inside the agent. Do not treat vector search as the only source of truth; recent context, target-user profiles, reply-thread context, and query-filtered long-term memory are also part of the answer path.
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  Telegram[Telegram] --> APIGW[API_Gateway_HTTP]
-  APIGW --> BotLambda[Lambda_bot]
-  BotLambda --> SQS[SQS_timeout_tasks_queue]
-  SQS --> BotLambda
-  EB[EventBridge_schedules] --> NewsLambda[Lambda_news]
-  EB --> QuizLambda[Lambda_quiz]
+  Telegram[Telegram_groups] --> APIGW[HTTP_API_Gateway]
+  APIGW --> BotLambda[Bot_Lambda_webhook_and_SQS_worker]
+  MainQ[SQS_timeout_tasks_queue] --> BotLambda
+  VectorQ[SQS_vector_memory_queue] --> BotLambda
+  BotLambda --> MainQ
+  BotLambda --> VectorQ
+  BotLambda --> Stats[(DynamoDB_stats)]
+  BotLambda --> Memory[(DynamoDB_group_memory)]
+  BotLambda --> S3Vectors[S3_Vectors_memory_index]
+  BotLambda --> Gemini[Gemini]
+  BotLambda --> Groq[Groq]
+  EventBridge[EventBridge_schedules] --> NewsLambda[News_Lambda]
+  EventBridge --> QuizLambda[Quiz_Lambda]
+  Layer[zerde_common_layer] -.-> BotLambda
+  Layer -.-> NewsLambda
+  Layer -.-> QuizLambda
 ```
 
 | Lambda | Package | Entry | Purpose |
 |--------|---------|-------|---------|
-| Bot | `src/bot/` | `main.py:lambda_handler` | API Gateway: verify secret, spam, dispatcher. Same function consumes SQS: `CHECK_TIMEOUT`, `PROCESS_EXPLAIN`, `SPAM_CHECK` (shared container = lower /wtf latency). |
-| News | `src/news/` | `main.py:lambda_handler` | Scheduled digest pipeline |
-| Quiz | `src/quiz/` | `main.py:lambda_handler` | Scheduled quiz + on-demand via bot invoke |
+| Bot | `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and SQS worker. Handles captcha, voteban, spam, `/ask`, agent replies, group memory, vector indexing, and cleanup commands. |
+| News | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest. |
+| Quiz | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand quiz workflow. |
 
-**Bot package (`src/bot/`):**
+Detailed architecture lives in `docs/ARCHITECTURE.md`.
 
-- `main.py` — one handler: SQS path → `services.sqs_task_router.process_sqs_event`; else → `webhook.handle_event`
-- `app.py` — lazy wiring: `get_bot()`, `get_dispatcher()`, `get_captcha_repo()` (avoid eager init / cold-start cost)
-- `webhook.py` — API Gateway path: secret verification, spam screening service, dispatcher
-- `services/sqs_task_router.py` — SQS record routing; failures **re-raise** so SQS retry + DLQ apply
-- `services/spam/screening_service.py` — rule-based spam + SQS hand-off for Groq check
-- `core/config.py` — non-secret env at import; when `SSM_SECRET_PREFIX` is set, all bot secrets are **batch-loaded once** at import, then getters read `os.environ`
-- `core/dispatcher.py`, `core/translations.py`, `services/handlers/`, `services/repositories/`, `services/telegram.py` — as before
+## Bot Package Map
 
-**Shared layer:** `src/shared/python/zerde_common/` — wired in CDK to bot, news, and quiz Lambdas.
+- `main.py` — detects SQS vs API Gateway and delegates.
+- `app.py` — lazy wiring for Telegram client, dispatcher, captcha repo, and memory repo.
+- `webhook.py` — verifies Telegram secret, screens spam, observes memory, filters irrelevant events, routes agent/commands.
+- `services/sqs_task_router.py` — routes SQS tasks and re-raises failures for retry/DLQ semantics.
+- `services/group_memory.py` — stores recent group context, formats prompt context, target-user profile context, and query-filtered long-term memory.
+- `services/group_memory_processor.py` — async long-term extraction and daily summaries.
+- `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
+- `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
+- `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters.
+- `services/ai/gemini_client.py` — Gemini calls for agent answers, proactive decisions, summaries, embeddings.
+- `services/spam/` — rule-based spam screening plus Groq async checks.
 
-**Infrastructure (`infra/`):**
+## Memory Table
 
-- `stack.py` — `MessagingConstruct`, `BotConstruct`, `NewsConstruct`, `QuizConstruct`, shared layer, CloudWatch alarms
-- `components/bot.py` — one bot Lambda, stats DynamoDB, HTTP API, SQS send + consume
-- `components/messaging.py` — main SQS queue + **DLQ** (`self.dlq`, `self.queue`)
-- `components/news.py`, `components/quiz.py` — scheduled Lambdas + prod EventBridge rules
-- `components/observability.py` — Lambda errors/throttles/duration p95 + DLQ visible alarms (no SNS in repo; subscribe in console if needed)
-- `components/zerde_layer.py` — shared Python layer asset
+Single table partitioned by `pk=CHAT#<chat_id>`:
 
-## Secrets and config
+- `SETTINGS` — memory/agent flags.
+- `MSG#<created_at_ms>#<message_id>` — recent non-command group messages.
+- `USER#<user_id>` — profile from the user's own messages only.
+- `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
+- `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering user message, and reason for reply-thread continuity and `/agent why`.
+- `VECTOR_BACKFILL` — vector backfill status.
+- `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
-- Deploy-time `.env` is loaded in `stack.py` for **non-secret** CDK context only.
-- Runtime secrets live in **SSM Parameter Store** under `SSM_SECRET_PREFIX` (e.g. `/zerde/{env}/bot-token`). Bot loads all mapped keys in **one** `GetParameters` call at `core.config` import; news/quiz use their own policies.
-- Local/tests: set env vars directly; leave `SSM_SECRET_PREFIX` empty to skip SSM.
+Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `DAILY_SUMMARY#`.
 
-Lambda env names differ from informal names: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN` (not `TELEGRAM_*` in Lambda env).
+## SQS Tasks
 
-## Key design decisions
+- `CHECK_TIMEOUT` — captcha timeout enforcement.
+- `SPAM_CHECK` — async Groq spam decision.
+- `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
+- `PROCESS_GROUP_MEMORY` — classify/store long-term memory from one message.
+- `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
+- `PROCESS_VECTOR_MEMORY` — embed/index one memory item.
+- `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing.
 
-- **No SnapStart** on these Lambdas (low-frequency / different trade-offs).
-- **One bot Lambda** (API + SQS) so `/wtf` and similar async paths reuse the same warm container; IAM covers webhook + SQS.
-- **Synchronous Telegram updates** via API Gateway; async work via SQS (`/wtf`, spam check, captcha timeout).
-- **Structured JSON logs** via `zerde_common` + per-handler `LoggerAdapter`; no AWS Lambda Powertools dependency in the runtime bundle (keeps cold start lean).
-- **PythonFunction** (`aws_lambda_python_alpha`) bundles each Lambda from its `requirements.txt`; Docker required at synth/deploy time.
+## Secrets And Config
 
-## Naming constants
+- Deploy-time `.env` is loaded by `infra/stack.py` for non-secret CDK config and local runs.
+- Runtime secrets live in SSM Parameter Store under `SSM_SECRET_PREFIX`, for example `/zerde/prod/bot-token`.
+- Bot Lambda env names are `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `GROQ_API_KEY`, and `DEEPSEEK_API_KEY`; avoid old informal names such as `TELEGRAM_BOT_TOKEN`.
+- Telegram BotFather privacy mode must be disabled, or the bot must be an admin, for full group context.
 
-`CONSTRUCT_PREFIX` ("ZerdeServerless") and `RESOURCE_PREFIX` ("zerde-serverless") live in `components/constants.py` — do not duplicate as string literals in constructs.
+## Key Design Decisions
+
+- **No SnapStart**: low-frequency workloads and Python package trade-offs make SnapStart unnecessary here.
+- **One bot Lambda for webhook and SQS**: `/ask`, spam, captcha, memory, and vector tasks share warm containers and common wiring.
+- **Separate vector queue**: slower embedding/backfill work does not block real-time timeout/spam/ask tasks.
+- **Trust hierarchy for agent answers**: current user message and reply-thread context > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
+- **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
+- **Reply length control**: follow-up replies should stay short unless the user explicitly asks for detail.
+- **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
+
+## Documentation Maintenance
+
+When making a large change to architecture, memory, agent behavior, SQS tasks, data schemas, environment variables, or infrastructure:
+
+1. Update `docs/ARCHITECTURE.md`.
+2. Update this file.
+3. Update `.codex/skills/zerdebot-development/SKILL.md`.
+4. Update `README.md`, `docs/README_kk.md`, and `docs/README_ru.md` when user-visible behavior changes.
+5. Update `docs/LOCAL_TESTING.md` and `.env.example` when setup/config changes.
+6. Update `docs/telegram_history_import.md` when import or vector indexing behavior changes.
+
+Historical documents under `docs/superpowers/` are plan snapshots, not current architecture references.

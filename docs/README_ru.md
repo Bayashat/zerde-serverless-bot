@@ -1,148 +1,138 @@
-# 🛡️ Zerde Bot
+# Zerde Bot
 
-**[English](README.md)** | **[Қазақша](README_kk.md)** | **[Русский](README_ru.md)**
+[English](../README.md) | [Қазақша](README_kk.md) | [Русский](README_ru.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
 ![uv](https://img.shields.io/badge/uv-Managed-purple.svg?logo=python)
-![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)
-![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
-![Linted_by: Flake8](https://img.shields.io/badge/Linted_by-Flake8-yellow.svg)
-![AWS CDK](https://img.shields.io/badge/AWS_CDK-v2-orange.svg)
 ![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-Serverless-ff9900.svg?logo=awslambda&logoColor=white)
 ![DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-NoSQL-4053D6.svg?logo=amazondynamodb&logoColor=white)
+![S3 Vectors](https://img.shields.io/badge/S3_Vectors-RAG_memory-569A31.svg?logo=amazons3&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-8E75B2.svg?logo=googlegemini&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF.svg?logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-![Zerde Bot Architecture](assets/architecture.png)
+**Zerde** — serverless Telegram-бот для IT-сообществ. Раньше он был простым LLM wrapper и ботом для модерации; сейчас это **agentic group-chat bot с RAG-памятью**. Он отвечает на `/ask`, понимает reply threads, помнит контекст группы, достает релевантные долгосрочные воспоминания и решает, когда уместно вступить в разговор.
 
-**Zerde** — это готовый к использованию в рабочей среде бессерверный Telegram-бот для управления IT-сообществами. Он обрабатывает защиту от спама, голосования сообщества, ежедневные подборки новостей на базе ИИ и интерактивные технические викторины, и всё это без управления серверами.
-
-Создан с использованием **Python 3.13** и **AWS CDK v2**. Работает 24/7 на уровне AWS Free Tier с затратами **$0/мес**.
+Бот по-прежнему поддерживает captcha, anti-spam, voteban, ежедневные AI news digest и IT quizzes. Главный новый слой — group memory и agent behavior.
 
 ---
 
-## 🌟 Создан на базе бессерверного шаблона (Затраты $0)
+## Что изменилось?
 
-Интересно, как создать подобного бота с нуля, не платя за серверы?
+Zerde больше не просто отправляет последнее сообщение в LLM. Сейчас в нем есть:
 
-**Zerde Bot** — это реальная реализация, построенная на базе **[serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter)** — опенсорсного шаблона для создания production-ready бессерверных Telegram-ботов на AWS.
+- **Recent memory**: не-command сообщения группы хранятся в DynamoDB как `MSG#...`.
+- **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
+- **Vector RAG**: long-term memory эмбеддится через Gemini и индексируется в S3 Vectors.
+- **Agent behavior**: `/ask`, @mention, follow-up через reply на ответ бота, proactive reply gating, контроль длины ответа, `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, owner-only group cleanup.
 
-**Главное преимущество? Это стоит ровно $0 в месяц.** Поскольку используется 100% бессерверная архитектура (API Gateway, Lambda, DynamoDB, SQS, CDK), вы платите только за то, что используете. Для большинства Telegram-ботов трафик полностью укладывается в щедрые рамки AWS Free Tier.
-
-Если вы хотите создать своего собственного бота с такой же надежной архитектурой, отсутствием необходимости в обслуживании и нулевыми затратами на хостинг, начните с этого шаблона! Он предоставляет готовую инфраструктуру, CI/CD и структуру проекта прямо из коробки.
+RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
 
 ---
 
-## ✨ Ключевые возможности
+## Ключевые возможности
 
 | Функция | Описание |
-|---------|-------------|
-| 🛡️ **Умная Captcha и антиспам** | Автоматически мутит новых участников, пока они не подтвердят себя через inline-кнопку. Неподтвержденные пользователи удаляются через **60 секунд** с помощью очереди задержки SQS. |
-| 🗳️ **Общественный Voteban** | Демократизированная модерация. Ответьте на сообщение командой `/voteban`, чтобы начать голосование. Требуется 7 голосов сообщества, чтобы забанить или простить пользователя. |
-| 📰 **Ежедневные новости на базе ИИ** | Ежедневный cron EventBridge запускает Lambda для сбора IT-новостей, делает их краткую сводку через **Google Gemini API** на казахском, русском и китайском языках и рассылает по группам. |
-| 🧠 **Интерактивные IT-викторины** | Автоматизированные ежедневные технические викторины из QuizAPI. Бот отслеживает индивидуальные баллы, серии ответов и ведет таблицу лидеров сообщества. |
-| 📊 **Аналитика сообщества** | Комплексное отслеживание присоединений, уровня успешных верификаций и статистики модерации по группам. |
-| ⚡ **Zero-Cost Serverless** | 100% Infrastructure as Code (AWS CDK). Использует Lambda **SnapStart** для сверхбыстрого холодного запуска. Полностью остается в рамках AWS Free Tier ($0/мес). |
+|---------|----------|
+| Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом recent/profile/long-term/semantic memory. |
+| RAG memory | Group memory хранится в DynamoDB, long-term memory индексируется в S3 Vectors для semantic retrieval. |
+| Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
+| Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
+| Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
+| Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
+| Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |
+| IT quizzes | Scheduled и on-demand quiz Lambda отправляет multilingual developer quizzes. |
+| Serverless ops | AWS CDK управляет Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM и alarms. |
 
 ---
 
-## 🏗️ Архитектура
-
-Инфраструктура состоит из трех полностью независимых функций Lambda, не имеющих общего кода, что обеспечивает строгую изоляцию и чистую архитектуру:
+## Архитектура
 
 ```mermaid
-graph TD
-    subgraph Telegram
-        TG[Telegram API]
-    end
+flowchart LR
+  TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
 
-    subgraph AWS Cloud [AWS Serverless Infrastructure]
-        API[API Gateway]
-        Bot[Bot Lambda<br/>Webhook: Captcha, Voteban, Commands]
-        SQS[SQS Delay Queue<br/>Timeout Tasks]
-        DB[(DynamoDB<br/>Stats, Votes, Quiz Scores)]
+  BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
+  BOT --> MEMORY[("DynamoDB<br/>group memory")]
+  BOT --> MAINQ["SQS timeout/tasks queue"]
+  MAINQ --> BOT
 
-        EB1[EventBridge<br/>Daily Cron 04:00]
-        News[News Lambda<br/>AI IT News Digest]
+  BOT --> VQ["SQS vector memory queue"]
+  VQ --> BOT
+  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
 
-        EB2[EventBridge<br/>Daily Cron 08:00]
-        Quiz[Quiz Lambda<br/>Tech Quizzes]
-    end
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GROQ["Groq<br/>spam checks"]
 
-    subgraph External APIs
-        Gemini[Google Gemini API]
-        QuizAPI[QuizAPI.io]
-    end
+  EB["EventBridge schedules"] --> NEWS["News Lambda"]
+  EB --> QUIZ["Quiz Lambda"]
+  NEWS --> GEMINI
+  QUIZ --> GEMINI
+  NEWS --> TG
+  QUIZ --> TG
 
-    %% Webhook Flow
-    TG -- Webhook --> API
-    API -- Sync Invoke --> Bot
-    Bot -- 60s Deferred Task --> SQS
-    SQS -- Trigger --> Bot
-    Bot <--> DB
-
-    %% News Flow
-    EB1 --> News
-    News -- Fetch & Summarize --> Gemini
-    News -- Send Digest --> TG
-
-    %% Quiz Flow
-    EB2 --> Quiz
-    Quiz -- Fetch Questions --> QuizAPI
-    Quiz <--> DB
-    Quiz -- Send Quiz --> TG
+  LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> NEWS
+  LAYER -.-> QUIZ
 ```
 
-| Компонент Lambda | Источник триггера | Назначение |
-|------------------|----------------|---------|
-| `src/bot/` | API Gateway + SQS | Синхронно обрабатывает вебхуки Telegram. Управляет верификацией капчи, сессиями voteban, подсчетом очков в викторинах и статистикой сообщества. |
-| `src/news/` | EventBridge Cron | Запускается ежедневно (04:00 UTC). Собирает новости технологий, делает их сводку с помощью ИИ и отправляет мультиязычные дайджесты в целевые чаты. |
-| `src/quiz/` | EventBridge Cron | Запускается ежедневно (08:00 UTC). Собирает викторины для разработчиков, при необходимости переводит их и рассылает в чаты сообщества. |
+| Компонент | Trigger | Ответственность |
+|-----------|---------|-----------------|
+| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/news/` | EventBridge | Мультиязычный IT news digest. |
+| `src/quiz/` | EventBridge + bot invoke | Scheduled и on-demand developer quizzes. |
+| `src/shared/python/zerde_common/` | Lambda layer | Общие config, secret loading, logging, redaction, provider error helpers. |
+| `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, Lambda wiring. |
+
+Подробная карта для разработки: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 🤖 Команды бота
+## Команды бота
 
 | Команда | Для кого | Описание |
-|---------|-----|-------------|
-| `/start` | Для всех | Перезапустить бота и просмотреть инструкции |
-| `/help` | Для всех | Показать руководство по использованию и правила |
-| `/ping` | Для всех | Проверка работоспособности — подтверждает, что бот активен |
-| `/support` | Для всех | Получить контактную информацию разработчика |
-| `/stats` | Админы | Статистика сообщества и уровень активности |
-| `/voteban` | Для всех | Ответить на сообщение, чтобы начать голосование за бан |
-| `/quizstats` | Для всех | Ваш личный счет в викторинах, серия и рейтинг |
+|---------|----------|----------|
+| `/start` | Все | Перезапустить бота и показать инструкции. |
+| `/help` | Все | Команды и правила. |
+| `/ping` | Все | Health check. |
+| `/support` | Все | Контакты разработчика. |
+| `/stats` | Admins | Статистика сообщества. |
+| `/voteban` | Все | Начать голосование за ban, ответив на сообщение. |
+| `/quizstats` | Все | Личный quiz score, streak и rank. |
+| `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение. |
+| `/memory on/off/status/forget ...` | Group owner или bot owner | Управление group memory и cleanup. |
+| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил. |
 
 ---
 
-## ⚙️ Настройка CI/CD (GitHub Actions)
-
-Этот репозиторий включает рабочий процесс GitHub Actions для автоматического развертывания через OIDC (без долгоживущих ключей AWS).
-
-Мы предоставляем скрипт настройки для автоматизации конфигурации IAM:
+## Разработка
 
 ```bash
-# Использование: ./scripts/setup_oidc.sh <GITHUB_ORG/REPO>
-./scripts/setup_oidc.sh Bayashat/zerde-serverless-bot
+uv sync --frozen
+uv run pytest tests/ -q
+uv run pre-commit run --all-files
 ```
 
-**Что делает этот скрипт:**
+Проверка infra:
 
-- Создает провайдер OIDC в IAM (если отсутствует).
-- Создает роль IAM (`GitHubAction-Deploy-TelegramBot`), которая доверяет вашему конкретному репозиторию GitHub.
-- Выводит **AWS_ROLE_ARN** для добавления в качестве секрета репозитория (Repository Secret) на GitHub.
+```bash
+cd infra
+uv run cdk synth -c env=dev
+uv run cdk diff -c env=dev
+```
 
----
-
-## 🛠️ Участие в разработке
-
-Мы приветствуем ваш вклад. Ознакомьтесь с [CONTRIBUTING.md](CONTRIBUTING.md) для настройки среды разработки (clone, uv, CDK, pre-commit) и процессом создания PR.
-
-Для полного пошагового руководства — аккаунт AWS, новый бот, токен, развертывание с нуля — см. [Руководство по локальному тестированию](docs/LOCAL_TESTING.md).
+Setup описан в [CONTRIBUTING.md](../CONTRIBUTING.md), полный AWS + Telegram walkthrough — в [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
 ---
 
-## 📄 Лицензия
+## История
 
-Этот проект лицензирован в соответствии с **MIT License**.
+Zerde изначально был построен на базе [serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter). Starter все еще полезен для простых serverless Telegram-ботов. Этот репозиторий вырос в memory-enabled agentic bot с отдельными news и quiz workloads.
+
+---
+
+## License
+
+MIT License.

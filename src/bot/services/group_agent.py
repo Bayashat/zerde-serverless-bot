@@ -21,7 +21,7 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
-from services.ai.telegram_html import normalize_llm_output_for_telegram_html
+from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
 from services.group_memory import (
     extract_message_text,
     format_long_term_memory_context,
@@ -41,6 +41,13 @@ _agent_gemini: GeminiClient | None = None
 class ProactiveReplyScore:
     score: float
     reasons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ReplyPolicy:
+    instructions: str
+    max_output_tokens: int
+    max_chars: int
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -73,6 +80,124 @@ def _replies_to_bot(message: dict[str, Any]) -> bool:
         return False
     sender = reply.get("from") or {}
     return bool(sender.get("is_bot"))
+
+
+def _reply_text(message: dict[str, Any]) -> str:
+    reply = message.get("reply_to_message")
+    if not isinstance(reply, dict):
+        return ""
+    return extract_message_text(reply)
+
+
+def _agent_reply_thread_context(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    *,
+    bot_message_id: int | str,
+    telegram_reply_text: str,
+) -> str:
+    try:
+        item = repo.get_agent_reply_explanation(chat_id, bot_message_id=bot_message_id)
+    except Exception:
+        logger.exception("Failed to load previous agent reply context", extra={"chat_id": chat_id})
+        item = {}
+    if not isinstance(item, dict):
+        item = {}
+    previous_user = str(item.get("user_message") or "").strip()
+    previous_answer = str(item.get("answer_text") or telegram_reply_text or "").strip()
+    parts = ["The user is continuing a thread with this previous bot answer:"]
+    if previous_user:
+        parts.append(f"Previous user request:\n{previous_user[:1200]}")
+    if previous_answer:
+        parts.append(f"Previous bot answer:\n{previous_answer[:1800]}")
+    elif telegram_reply_text:
+        parts.append(f"Previous bot answer from Telegram reply:\n{telegram_reply_text[:1800]}")
+    return "\n\n".join(parts)
+
+
+def _explicit_user_text(repo: GroupMemoryRepository, chat_id: int | str, message: dict[str, Any]) -> str:
+    text = extract_message_text(message)
+    replied_text = _reply_text(message)
+    if _replies_to_bot(message):
+        reply = message.get("reply_to_message") or {}
+        thread_context = _agent_reply_thread_context(
+            repo,
+            chat_id,
+            bot_message_id=reply.get("message_id") or 0,
+            telegram_reply_text=replied_text,
+        )
+        return f"{thread_context}\n\nUser follow-up:\n{text}"
+    return text
+
+
+def _reply_policy(user_text: str) -> ReplyPolicy:
+    lowered = user_text.lower()
+    explicit_long = any(
+        cue in lowered
+        for cue in (
+            "подробно",
+            "толық",
+            "детально",
+            "развернуто",
+            "deep dive",
+            "explain in detail",
+            "详细",
+            "展开",
+        )
+    )
+    explicit_short = any(
+        cue in lowered
+        for cue in (
+            "қысқа",
+            "қысқаша",
+            "короче",
+            "кратко",
+            "short",
+            "brief",
+            "tl;dr",
+            "tldr",
+            "总结",
+            "简短",
+        )
+    )
+    continuation = "user is continuing a thread with this previous bot answer" in lowered
+    ask_without_question = "wants you to explain it or answer based on it" in lowered
+
+    if explicit_long:
+        return ReplyPolicy(
+            instructions=(
+                "The user asked for detail. Answer with the minimum useful detail, up to 5 short paragraphs "
+                "or 6 bullets. Avoid repeating the full context."
+            ),
+            max_output_tokens=460,
+            max_chars=2600,
+        )
+    if explicit_short or continuation:
+        return ReplyPolicy(
+            instructions=(
+                "This is a short follow-up. Answer directly in 1-3 short sentences. "
+                "Do not recap the whole previous answer unless the user asks."
+            ),
+            max_output_tokens=180,
+            max_chars=900,
+        )
+    if ask_without_question:
+        return ReplyPolicy(
+            instructions=(
+                "The user asked about a replied-to message without a specific question. "
+                "Give the main point in 3-5 concise sentences or at most 3 bullets."
+            ),
+            max_output_tokens=260,
+            max_chars=1400,
+        )
+    return ReplyPolicy(
+        instructions=(
+            "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
+            "Do not write an essay by default."
+        ),
+        max_output_tokens=300,
+        max_chars=1800,
+    )
 
 
 def _looks_like_open_question(text: str) -> bool:
@@ -250,7 +375,7 @@ def handle_update(
         bot=bot,
         chat_id=chat_id,
         reply_to_message_id=message_id,
-        user_text=extract_message_text(message),
+        user_text=_explicit_user_text(repo, chat_id, message),
         lang=get_chat_lang(chat_id),
     )
     if handled:
@@ -276,7 +401,7 @@ def maybe_answer_proactively(
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
-    long_term_memory_context = format_long_term_memory_context(repo, chat_id)
+    long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
     raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
     recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
     reply_score = score_proactive_reply(
@@ -336,7 +461,8 @@ def maybe_answer_proactively(
         )
         return False
 
-    answer_html = normalize_llm_output_for_telegram_html(decision.reply_text)
+    answer_text = fit_llm_output(decision.reply_text, max_chars=900)
+    answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
     if bot_message_id:
@@ -349,6 +475,8 @@ def maybe_answer_proactively(
                 f"{decision.reason or 'I judged this as a useful moment to answer.'} "
                 f"reply_score={reply_score.score:.2f}; signals={', '.join(reply_score.reasons)}"
             ),
+            answer_text=answer_text,
+            user_message=user_text,
             confidence=final_score,
         )
     logger.info(
@@ -382,7 +510,7 @@ def answer_group_question(
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
-    long_term_memory_context = format_long_term_memory_context(repo, chat_id)
+    long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
     semantic_memory_context = format_semantic_memory_context(
         retrieve_relevant_memories(chat_id, user_text, limit=8),
     )
@@ -393,6 +521,7 @@ def answer_group_question(
         user_text=user_text,
         ignored_usernames=ignored_usernames,
     )
+    reply_policy = _reply_policy(user_text)
 
     try:
         answer, _ = gemini.group_chat_reply(
@@ -401,6 +530,8 @@ def answer_group_question(
             long_term_memory_context=long_term_memory_context,
             semantic_memory_context=semantic_memory_context,
             user_profile_context=user_profile_context,
+            reply_instructions=reply_policy.instructions,
+            max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
         )
     except GeminiRPDExhaustedError:
@@ -421,7 +552,8 @@ def answer_group_question(
             raise
         return False
 
-    answer_html = normalize_llm_output_for_telegram_html(answer)
+    answer_text = fit_llm_output(answer, max_chars=reply_policy.max_chars)
+    answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
     if bot_message_id:
@@ -434,5 +566,7 @@ def answer_group_question(
                 "I was mentioned, replied to, or called through /ask, "
                 "so I answered with recent, semantic, and trusted memory context."
             ),
+            answer_text=answer_text,
+            user_message=user_text,
         )
     return True

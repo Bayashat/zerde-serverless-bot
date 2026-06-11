@@ -1,6 +1,6 @@
-# 🛡️ Zerde Bot
+# Zerde Bot
 
-[ 🇬🇧 English ](README.md) | [ 🇰🇿 Қазақша ](docs/README_KK.md) | [ 🇷🇺 Русский ](docs/README_RU.md)
+[English](README.md) | [Қазақша](docs/README_kk.md) | [Русский](docs/README_ru.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
 ![uv](https://img.shields.io/badge/uv-Managed-purple.svg?logo=python)
@@ -10,139 +10,133 @@
 ![AWS CDK](https://img.shields.io/badge/AWS_CDK-v2-orange.svg)
 ![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-Serverless-ff9900.svg?logo=awslambda&logoColor=white)
 ![DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-NoSQL-4053D6.svg?logo=amazondynamodb&logoColor=white)
+![S3 Vectors](https://img.shields.io/badge/S3_Vectors-RAG_memory-569A31.svg?logo=amazons3&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-8E75B2.svg?logo=googlegemini&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF.svg?logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-![Zerde Bot Architecture](assets/architecture.png)
+**Zerde** is a serverless Telegram bot for IT communities. It started as a simple LLM wrapper and community-management bot; it is now an **agentic group-chat bot with RAG memory**. It can answer explicit `/ask` prompts, follow reply threads, remember group context, retrieve relevant long-term memories, and decide when it is socially useful to join a conversation.
 
-**Zerde** is a production-ready, serverless Telegram bot for IT community management — handling anti-spam, community voting, daily AI-powered news digests, and interactive tech quizzes, all without managing a single server.
-
-Built with **Python 3.13** and **AWS CDK v2**. Running 24/7 on AWS Free Tier at **$0/month**.
+The bot still handles moderation, captcha, voteban, daily AI news digests, and tech quizzes. The current architecture is optimized for small community workloads on AWS serverless infrastructure.
 
 ---
 
-## 🌟 Built on a Serverless Starter Template ($0 Cost)
+## What Changed
 
-Curious about how to build a bot like this from scratch without paying for servers?
+Zerde is no longer "just call an LLM with the latest message." The bot now has:
 
-**Zerde Bot** is a real-world implementation built on top of the **[serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter)** — an open-source template for building production-grade serverless Telegram bots on AWS.
+- **Recent memory**: non-command group messages stored in DynamoDB as `MSG#...`.
+- **User profiles**: lightweight per-user context derived from each user's own messages.
+- **Long-term memory**: extracted `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items.
+- **Vector RAG**: long-term memories embedded with Gemini and indexed in S3 Vectors for semantic retrieval.
+- **Agent behavior**: explicit `/ask`, @mention handling, reply-to-bot thread continuity, proactive reply gating, reply-length budgeting, and `/agent why`.
+- **Memory controls**: `/memory`, `/agent`, `/memory forget me`, and owner-only group cleanup commands.
 
-**The biggest advantage? It costs exactly $0/month.** Because it uses a 100% serverless architecture (API Gateway, Lambda, DynamoDB, SQS, CDK), you only pay for what you use. For most Telegram bots, the traffic falls entirely within the generous AWS Free Tier.
-
-If you want to build your own bot with the same robust architecture, zero maintenance, and zero hosting fees, start with the template! It gives you the wiring, CI/CD, and project structure out of the box.
+RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 | Feature | Description |
 |---------|-------------|
-| 🛡️ **Smart Captcha & Anti-Spam** | Automatically mutes new members until they verify via an inline button. Unverified users are kicked after **60 seconds** using an SQS Delay Queue. |
-| 🗳️ **Community Voteban** | Democratized moderation. Reply to a message with `/voteban` to initiate a vote. Requires 7 community votes to ban or forgive a user. |
-| 📰 **AI-Powered Daily News** | Daily EventBridge cron triggers a Lambda to fetch IT news, summarize it via **Google Gemini API** in Kazakh, Russian, and Chinese, and broadcast it to groups. |
-| 🧠 **Interactive IT Quizzes** | Automated daily tech quizzes sourced from QuizAPI. The bot tracks individual scores, maintains daily streaks, and features a community leaderboard. |
-| 📊 **Community Analytics** | Comprehensive tracking of joins, verification success rates, and moderation stats per group. |
-| ⚡ **Zero-Cost Serverless** | 100% Infrastructure as Code (AWS CDK). Uses Lambda **SnapStart** for ultra-fast cold starts. Stays entirely within the AWS Free Tier ($0/month). |
+| Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with recent, profile, long-term, and semantic memory context. |
+| RAG memory | Stores group memory in DynamoDB and indexes long-term memory in S3 Vectors for query-matched retrieval. |
+| Reply thread continuity | Records bot answers in `AGENT_REPLY#...` items so follow-up replies know what the bot just said. |
+| Social timing | Proactive replies pass local heuristics, recent bot activity penalties, Gemini judgment, and per-chat daily limits. |
+| Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |
+| Community voteban | Lets communities vote to ban or forgive by replying with `/voteban`. |
+| Daily AI news | EventBridge-triggered news Lambda summarizes tech news through Gemini/DeepSeek-compatible provider paths. |
+| IT quizzes | Scheduled and on-demand quiz Lambda sends multilingual developer quizzes and tracks scores. |
+| Serverless operations | AWS CDK manages Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM, and alarms. |
 
 ---
 
-## 🏗️ Architecture
-
-The infrastructure consists of three fully independent Lambda functions sharing no code, achieving strict isolation and clean architecture:
+## Architecture
 
 ```mermaid
-graph TD
-    subgraph Telegram
-        TG[Telegram API]
-    end
+flowchart LR
+  TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
 
-    subgraph AWS Cloud [AWS Serverless Infrastructure]
-        API[API Gateway]
-        Bot[Bot Lambda<br/>Webhook: Captcha, Voteban, Commands]
-        SQS[SQS Delay Queue<br/>Timeout Tasks]
-        DB[(DynamoDB<br/>Stats, Votes, Quiz Scores)]
+  BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
+  BOT --> MEMORY[("DynamoDB<br/>group memory")]
+  BOT --> MAINQ["SQS timeout/tasks queue"]
+  MAINQ --> BOT
 
-        EB1[EventBridge<br/>Daily Cron 04:00]
-        News[News Lambda<br/>AI IT News Digest]
+  BOT --> VQ["SQS vector memory queue"]
+  VQ --> BOT
+  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
 
-        EB2[EventBridge<br/>Daily Cron 08:00]
-        Quiz[Quiz Lambda<br/>Tech Quizzes]
-    end
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GROQ["Groq<br/>spam checks"]
 
-    subgraph External APIs
-        Gemini[Google Gemini API]
-        QuizAPI[QuizAPI.io]
-    end
+  EB["EventBridge schedules"] --> NEWS["News Lambda"]
+  EB --> QUIZ["Quiz Lambda"]
+  NEWS --> GEMINI
+  QUIZ --> GEMINI
+  NEWS --> TG
+  QUIZ --> TG
 
-    %% Webhook Flow
-    TG -- Webhook --> API
-    API -- Sync Invoke --> Bot
-    Bot -- 60s Deferred Task --> SQS
-    SQS -- Trigger --> Bot
-    Bot <--> DB
-
-    %% News Flow
-    EB1 --> News
-    News -- Fetch & Summarize --> Gemini
-    News -- Send Digest --> TG
-
-    %% Quiz Flow
-    EB2 --> Quiz
-    Quiz -- Fetch Questions --> QuizAPI
-    Quiz <--> DB
-    Quiz -- Send Quiz --> TG
+  LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> NEWS
+  LAYER -.-> QUIZ
 ```
 
-| Lambda Component | Trigger Source | Purpose |
-|------------------|----------------|---------|
-| `src/bot/` | API Gateway + SQS | Handles Telegram webhooks synchronously. Manages captcha verifications, voteban sessions, quiz scoring, and community stats. |
-| `src/news/` | EventBridge Cron | Runs daily (04:00 UTC). Fetches tech news, summarizes it using AI, and pushes multilingual digests to target chats. |
-| `src/quiz/` | EventBridge Cron | Runs daily (08:00 UTC). Fetches developer quizzes, translates them if necessary, and dispatches them to community chats. |
+| Component | Trigger | Responsibility |
+|-----------|---------|----------------|
+| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/news/` | EventBridge | Scheduled multilingual IT news digest. |
+| `src/quiz/` | EventBridge + bot invoke | Scheduled and on-demand developer quizzes. |
+| `src/shared/python/zerde_common/` | Lambda layer | Shared config, secret loading, logging, redaction, and provider error helpers. |
+| `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, and Lambda wiring. |
+
+For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
-## 🤖 Bot Commands
+## Bot Commands
 
 | Command | Who | Description |
 |---------|-----|-------------|
-| `/start` | Everyone | Restart the bot and view instructions |
-| `/help` | Everyone | Show usage guide and rules |
-| `/ping` | Everyone | Health check — confirms bot is alive |
-| `/support` | Everyone | Get developer contact info |
-| `/stats` | Admins | Community statistics and activity level |
-| `/voteban` | Everyone | Reply to a message to start a ban vote |
-| `/quizstats` | Everyone | Your personal quiz score, streak, and rank |
+| `/start` | Everyone | Restart the bot and view instructions. |
+| `/help` | Everyone | Show usage guide and available commands. |
+| `/ping` | Everyone | Health check. |
+| `/support` | Everyone | Developer contact info. |
+| `/stats` | Admins | Community statistics. |
+| `/voteban` | Everyone | Reply to a message to start a ban vote. |
+| `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
+| `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message. |
+| `/memory on/off/status/forget ...` | Group owner or bot owner for settings | Manage group memory and cleanup. |
+| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied. |
 
 ---
 
-## ⚙️ CI/CD Setup (GitHub Actions)
-
-This repository includes a GitHub Actions workflow for automated deployment via OIDC (no long-lived AWS keys).
-
-We provide a setup script to automate the IAM configuration:
+## Development
 
 ```bash
-# Usage: ./scripts/setup_oidc.sh <GITHUB_ORG/REPO>
-./scripts/setup_oidc.sh Bayashat/zerde-serverless-bot
+uv sync --frozen
+uv run pytest tests/ -q
+uv run pre-commit run --all-files
 ```
 
-**What this script does:**
+Infrastructure validation:
 
-- Creates an OIDC Provider in IAM (if missing).
-- Creates an IAM Role (`GitHubAction-Deploy-TelegramBot`) that trusts your specific GitHub repository.
-- Outputs the **AWS_ROLE_ARN** to add as a GitHub Repository Secret.
+```bash
+cd infra
+uv run cdk synth -c env=dev
+uv run cdk diff -c env=dev
+```
 
----
-
-## 🛠️ Contributing
-
-We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup (clone, uv, CDK, pre-commit) and PR process.
-
-For a full walkthrough — AWS account, new bot, token, deploy from scratch — see [Local Testing Guide](docs/LOCAL_TESTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a full AWS + Telegram walkthrough.
 
 ---
 
-## 📄 License
+## History
 
-This project is licensed under the **MIT License**.
+Zerde was originally built from the [serverless-tg-bot-starter](https://github.com/Bayashat/serverless-tg-bot-starter) template. That starter remains useful for simple serverless Telegram bots. This repository has since grown into a memory-enabled agentic bot with separate news and quiz workloads.
+
+---
+
+## License
+
+This project is licensed under the MIT License.

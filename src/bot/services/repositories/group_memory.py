@@ -712,6 +712,8 @@ class GroupMemoryRepository:
         trigger_message_id: int | str,
         trigger_kind: str,
         reason: str,
+        answer_text: str | None = None,
+        user_message: str | None = None,
         confidence: float | None = None,
     ) -> None:
         now = int(time.time())
@@ -728,6 +730,10 @@ class GroupMemoryRepository:
             "created_at": now,
             "ttl": ttl,
         }
+        if answer_text:
+            item["answer_text"] = answer_text[:3000]
+        if user_message:
+            item["user_message"] = user_message[:1500]
         if confidence is not None:
             item["confidence"] = Decimal(str(max(0.0, min(1.0, confidence))))
         self.table.put_item(Item=item)
