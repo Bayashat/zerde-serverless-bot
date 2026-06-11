@@ -104,7 +104,7 @@ class ZerdeTelegramBotStack(Stack):
         for feature_chats in (bot_chats, news_chats, quiz_chats):
             for lang, cids in feature_chats.items():
                 all_chats_union[lang].update(cids)
-        chat_lang_map = {cid: lang for lang, cids in all_chats_union.items() for cid in cids}
+        chat_lang_map = {cid: lang for lang, cids in all_chats_union.items() for cid in sorted(cids)}
 
         # ── Constructs ─────────────────────────────────────────────────────────
         zerde_layer = add_zerde_common_layer(self, f"{CONSTRUCT_PREFIX}ZerdeCommonLayer")
