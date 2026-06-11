@@ -56,6 +56,10 @@ class GroupMemoryRepository:
         return f"AGENT_REPLY#{int(message_id):013d}"
 
     @staticmethod
+    def _daily_summary_sk(summary_date: str) -> str:
+        return f"DAILY_SUMMARY#{summary_date}"
+
+    @staticmethod
     def _normalise_profile_samples(value: Any) -> list[str]:
         if not isinstance(value, list):
             return []
@@ -276,6 +280,25 @@ class GroupMemoryRepository:
         items = resp.get("Items") or []
         return list(reversed(items))
 
+    def get_messages_for_day(
+        self,
+        chat_id: int | str,
+        *,
+        start_epoch: int,
+        end_epoch: int,
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        """Return messages in [start_epoch, end_epoch) ordered oldest to newest."""
+        start_ms = start_epoch * 1000
+        end_ms = max(start_ms, end_epoch * 1000 - 1)
+        resp = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id))
+            & Key("sk").between(f"MSG#{start_ms:013d}#", f"MSG#{end_ms:013d}#~"),
+            ScanIndexForward=True,
+            Limit=limit,
+        )
+        return resp.get("Items") or []
+
     def store_long_term_memory(
         self,
         *,
@@ -328,6 +351,52 @@ class GroupMemoryRepository:
             items.extend(resp.get("Items") or [])
         newest = sorted(items, key=lambda row: int(row.get("created_at") or 0), reverse=True)[:limit]
         return list(reversed(newest))
+
+    def store_daily_summary(
+        self,
+        *,
+        chat_id: int | str,
+        summary_date: str,
+        summary: str,
+        topics: list[str],
+        notable_events: list[str],
+        inside_jokes: list[str],
+        active_participants: list[str],
+        tension_points: list[str],
+        message_count: int,
+        source: str,
+    ) -> None:
+        """Store one daily compressed group memory summary."""
+        now = int(time.time())
+        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        self.table.put_item(
+            Item={
+                "pk": self._chat_pk(chat_id),
+                "sk": self._daily_summary_sk(summary_date),
+                "kind": "daily_summary",
+                "chat_id": str(chat_id),
+                "summary_date": summary_date,
+                "summary": summary[:1200],
+                "topics": topics[:12],
+                "notable_events": notable_events[:12],
+                "inside_jokes": inside_jokes[:8],
+                "active_participants": active_participants[:20],
+                "tension_points": tension_points[:8],
+                "message_count": message_count,
+                "source": source,
+                "created_at": now,
+                "ttl": ttl,
+            }
+        )
+
+    def get_recent_daily_summaries(self, chat_id: int | str, *, limit: int = 7) -> list[dict[str, Any]]:
+        resp = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("DAILY_SUMMARY#"),
+            ScanIndexForward=False,
+            Limit=limit,
+        )
+        items = resp.get("Items") or []
+        return list(reversed(items))
 
     def get_user_profile(self, chat_id: int | str, user_id: int | str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._user_sk(user_id)})
@@ -451,6 +520,7 @@ class GroupMemoryRepository:
             "user_facts": 0,
             "group_facts": 0,
             "jokes": 0,
+            "daily_summaries": 0,
             "agent_replies": 0,
         }
         start_key: dict[str, Any] | None = None
@@ -476,6 +546,8 @@ class GroupMemoryRepository:
                     counts["group_facts"] += 1
                 elif sk.startswith("JOKE#"):
                     counts["jokes"] += 1
+                elif sk.startswith("DAILY_SUMMARY#"):
+                    counts["daily_summaries"] += 1
                 elif sk.startswith("AGENT_REPLY#"):
                     counts["agent_replies"] += 1
             start_key = resp.get("LastEvaluatedKey")

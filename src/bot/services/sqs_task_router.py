@@ -8,7 +8,7 @@ from typing import Any
 
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
-from services.group_memory_processor import process_group_memory_task
+from services.group_memory_processor import process_daily_group_summaries_task, process_group_memory_task
 from services.handlers import process_explain_task, process_timeout_task
 from services.repositories.captcha import CaptchaRepository
 from services.spam.processor import process_spam_check_task
@@ -48,6 +48,8 @@ def process_sqs_event(
                 process_spam_check_task(bot, body, captcha_repo=captcha_repo)
             elif task_type == "PROCESS_GROUP_MEMORY":
                 process_group_memory_task(body)
+            elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":
+                process_daily_group_summaries_task(body)
             else:
                 logger.warning(
                     "Unexpected SQS record: unsupported task_type, ignoring",

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from core.config import GROUP_MEMORY_ENABLED, GROUP_MEMORY_RECENT_LIMIT
+from core.config import GROUP_MEMORY_DAILY_SUMMARY_DAYS, GROUP_MEMORY_ENABLED, GROUP_MEMORY_RECENT_LIMIT
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
@@ -128,8 +128,17 @@ def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, li
 
 def format_long_term_memory_context(repo: GroupMemoryRepository, chat_id: int | str, *, limit: int = 12) -> str:
     """Render recent important memories extracted by the async memory processor."""
+    daily_summaries = repo.get_recent_daily_summaries(chat_id, limit=GROUP_MEMORY_DAILY_SUMMARY_DAYS)
     memories = repo.get_recent_long_term_memories(chat_id, limit=limit)
     lines: list[str] = []
+    for item in daily_summaries:
+        summary_date = str(item.get("summary_date") or "").strip()
+        summary = str(item.get("summary") or "").replace("\n", " ").strip()
+        topics = item.get("topics") if isinstance(item.get("topics"), list) else []
+        topic_text = ", ".join(str(topic) for topic in topics[:8] if topic)
+        if summary:
+            topic_suffix = f" topics={topic_text}" if topic_text else ""
+            lines.append(f"[daily_summary date={summary_date}{topic_suffix}] {summary[:900]}")
     for item in memories:
         kind = str(item.get("kind") or "memory")
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")

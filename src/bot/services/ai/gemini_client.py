@@ -450,6 +450,94 @@ class GeminiClient:
         except (KeyError, IndexError, json.JSONDecodeError, TypeError, ValueError) as exc:
             raise GeminiUnavailableError(f"Bad Gemini decision response: {exc}") from exc
 
+    def group_daily_summary(
+        self,
+        *,
+        summary_date: str,
+        messages_context: str,
+        long_term_memory_context: str = "",
+        lang: str = "kk",
+    ) -> tuple[dict[str, Any], int]:
+        """Summarize one group/day into structured memory fields."""
+        if _circuit_is_open():
+            logger.warning("Gemini circuit open, skipping daily summary", extra={"model": self._model})
+            raise GeminiUnavailableError("Gemini circuit open")
+
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning("Gemini RPD limit reached (daily summary)", extra={"count": count, "limit": self.rpd_limit})
+            raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
+
+        system_prompt = (
+            "You compress one Telegram group day into trustworthy memory for ZerdeBot. "
+            "Summarize only what is directly supported by the messages. Do not infer private traits, secrets, "
+            "medical, financial, identity, or contact details. Preserve useful context: events, decisions, "
+            "recurring topics, harmless inside jokes, active participants, and tension points if any. "
+            "Return compact JSON with keys: summary (string), topics (array of strings), "
+            "notable_events (array), inside_jokes (array), active_participants (array), tension_points (array)."
+        )
+        generation_config: dict[str, Any] = {
+            "temperature": 0.2,
+            "maxOutputTokens": 900,
+            "responseMimeType": "application/json",
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
+        prompt = (
+            f"Preferred language code: {lang}\n"
+            f"Summary date: {summary_date}\n\n"
+            "Already extracted long-term memories for this period:\n"
+            f"{long_term_memory_context or '(none)'}\n\n"
+            "Messages, oldest to newest:\n"
+            f"{messages_context}\n\n"
+            "Create the daily memory summary JSON."
+        )
+        payload: dict[str, Any] = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
+
+        logger.info(
+            "Gemini daily summary request started",
+            extra={
+                "model": self._model,
+                "lang": lang,
+                "summary_date": summary_date,
+                "messages_context_chars": len(messages_context),
+                "long_term_memory_chars": len(long_term_memory_context),
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+            },
+        )
+        try:
+            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
+        except (HTTPError, OSError) as exc:
+            _record_transient_failure()
+            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
+
+        if resp.status == 429 or resp.status >= 500:
+            _record_transient_failure()
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+        if resp.status >= 400:
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            candidate = data["candidates"][0]
+            text = candidate["content"]["parts"][0]["text"].strip()
+            summary = json.loads(text)
+            _record_success()
+            return summary if isinstance(summary, dict) else {}, count
+        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            raise GeminiUnavailableError(f"Bad Gemini daily summary response: {exc}") from exc
+
     def explain_media(
         self,
         *,

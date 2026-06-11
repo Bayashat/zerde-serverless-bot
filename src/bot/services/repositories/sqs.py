@@ -182,3 +182,27 @@ class SQSClient:
         except Exception as e:
             logger.exception("Failed to send group memory task to SQS", extra={"error": e, "chat_id": chat_id})
             raise
+
+    def send_daily_group_summaries_task(
+        self,
+        *,
+        chat_ids: list[int | str],
+        summary_date: str | None = None,
+    ) -> None:
+        """Enqueue daily summary generation for all configured memory-enabled groups."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
+            "chat_ids": [str(chat_id) for chat_id in chat_ids],
+        }
+        if summary_date:
+            payload["summary_date"] = summary_date
+
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info("Queued daily group summaries task", extra={"chat_count": len(chat_ids)})
+        except Exception as e:
+            logger.exception("Failed to send daily group summaries task", extra={"error": e})
+            raise

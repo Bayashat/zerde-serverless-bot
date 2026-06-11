@@ -88,6 +88,17 @@ def test_process_group_memory_routes() -> None:
     mock_pm.assert_called_once_with(body)
 
 
+def test_process_daily_group_summaries_routes() -> None:
+    body = {
+        "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
+        "chat_ids": [-1001, -1002],
+        "summary_date": "2026-06-10",
+    }
+    with patch("services.sqs_task_router.process_daily_group_summaries_task") as mock_pd:
+        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
+    mock_pd.assert_called_once_with(body)
+
+
 def test_non_whitelisted_chat_skips_handlers() -> None:
     body = {
         "task_type": "SPAM_CHECK",

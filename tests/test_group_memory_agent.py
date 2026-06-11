@@ -5,7 +5,12 @@ from unittest.mock import MagicMock
 from services import group_agent, group_memory
 from services.ai import gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
-from services.group_memory_processor import classify_long_term_memory, process_group_memory_task
+from services.group_memory_processor import (
+    build_daily_messages_context,
+    classify_long_term_memory,
+    process_daily_group_summaries_task,
+    process_group_memory_task,
+)
 from services.handlers import commands
 from services.handlers.commands import handle_ask
 from services.repositories import sqs as sqs_module
@@ -145,6 +150,7 @@ def test_format_user_profile_context_uses_target_profile_not_third_party_label()
 
 def test_format_long_term_memory_context_renders_important_memories():
     repo = MagicMock()
+    repo.get_recent_daily_summaries.return_value = []
     repo.get_recent_long_term_memories.return_value = [
         {
             "kind": "event",
@@ -158,6 +164,24 @@ def test_format_long_term_memory_context_renders_important_memories():
 
     assert "[event speaker=Ada]" in context
     assert "Tomorrow we deploy" in context
+
+
+def test_format_long_term_memory_context_includes_daily_summaries(monkeypatch):
+    repo = MagicMock()
+    repo.get_recent_daily_summaries.return_value = [
+        {
+            "summary_date": "2026-06-10",
+            "summary": "The group discussed AWS costs and memory processing.",
+            "topics": ["aws", "memory"],
+        }
+    ]
+    repo.get_recent_long_term_memories.return_value = []
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_DAILY_SUMMARY_DAYS", 3)
+
+    context = group_memory.format_long_term_memory_context(repo, -100123)
+
+    repo.get_recent_daily_summaries.assert_called_once_with(-100123, limit=3)
+    assert "[daily_summary date=2026-06-10 topics=aws, memory]" in context
 
 
 def test_classify_long_term_memory_detects_user_preference():
@@ -208,6 +232,70 @@ def test_process_group_memory_task_skips_chatter():
     repo.store_long_term_memory.assert_not_called()
 
 
+def test_build_daily_messages_context_redacts_sensitive_contact_details():
+    context = build_daily_messages_context(
+        [
+            {"display_name": "Ada", "text": "Deploy went well, call me at +7 777 123 45 67"},
+            {"display_name": "Grace", "text": "my password is secret"},
+        ]
+    )
+
+    assert "[phone]" in context
+    assert "Grace" not in context
+
+
+def test_process_daily_group_summaries_task_stores_gemini_summary(monkeypatch):
+    repo = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    repo.get_messages_for_day.return_value = [
+        {"display_name": "Ada", "text": "Today we decided to keep DynamoDB summaries"},
+        {"display_name": "Grace", "text": "The deploy deadline is tomorrow"},
+    ]
+    repo.get_recent_daily_summaries.return_value = []
+    repo.get_recent_long_term_memories.return_value = []
+    gemini = MagicMock()
+    gemini.group_daily_summary.return_value = (
+        {
+            "summary": "The group aligned on DynamoDB summaries and deployment timing.",
+            "topics": ["dynamodb", "deploy"],
+            "notable_events": ["Deploy deadline is tomorrow"],
+            "inside_jokes": [],
+            "active_participants": ["Ada", "Grace"],
+            "tension_points": [],
+        },
+        1,
+    )
+    monkeypatch.setattr("services.group_memory_processor._get_gemini", lambda: gemini)
+    monkeypatch.setattr("services.group_memory_processor.get_chat_lang", lambda chat_id: "en")
+
+    process_daily_group_summaries_task(
+        {"chat_ids": [-100123], "summary_date": "2026-06-10"},
+        repo=repo,
+    )
+
+    repo.store_daily_summary.assert_called_once()
+    kwargs = repo.store_daily_summary.call_args.kwargs
+    assert kwargs["summary_date"] == "2026-06-10"
+    assert kwargs["source"] == "gemini"
+    assert kwargs["message_count"] == 2
+
+
+def test_process_daily_group_summaries_task_uses_fallback_without_gemini(monkeypatch):
+    repo = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    repo.get_messages_for_day.return_value = [{"display_name": "Ada", "text": "Today we discussed OpenSearch"}]
+    repo.get_recent_daily_summaries.return_value = []
+    repo.get_recent_long_term_memories.return_value = []
+    monkeypatch.setattr("services.group_memory_processor._get_gemini", lambda: None)
+
+    process_daily_group_summaries_task(
+        {"chat_ids": [-100123], "summary_date": "2026-06-10"},
+        repo=repo,
+    )
+
+    assert repo.store_daily_summary.call_args.kwargs["source"] == "fallback_no_gemini"
+
+
 def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -228,6 +316,20 @@ def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     assert payload["task_type"] == "PROCESS_GROUP_MEMORY"
     assert payload["chat_id"] == -100123
     assert payload["username"] == "ada"
+
+
+def test_sqs_client_sends_daily_group_summaries_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_daily_group_summaries_task(chat_ids=[-100123, -100456], summary_date="2026-06-10")
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["task_type"] == "PROCESS_DAILY_GROUP_SUMMARIES"
+    assert payload["chat_ids"] == ["-100123", "-100456"]
+    assert payload["summary_date"] == "2026-06-10"
 
 
 def test_agent_should_answer_mention_when_enabled(monkeypatch):
@@ -535,6 +637,7 @@ def test_memory_status_allows_group_admin(monkeypatch):
         "user_facts": 3,
         "group_facts": 1,
         "jokes": 1,
+        "daily_summaries": 2,
         "agent_replies": 4,
     }
 
@@ -543,6 +646,7 @@ def test_memory_status_allows_group_admin(monkeypatch):
     ctx.memory_repo.get_chat_settings.assert_called_once_with(-100123)
     ctx.memory_repo.get_memory_overview.assert_called_once_with(-100123)
     assert "Long-term memory: 1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
+    assert "Daily summaries: 2" in ctx.reply.call_args.args[0]
 
 
 def test_forget_group_allows_only_bot_owner(monkeypatch):

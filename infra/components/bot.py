@@ -6,6 +6,8 @@ from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
 from aws_cdk import aws_dynamodb as dynamodb
+from aws_cdk import aws_events as events
+from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
@@ -56,6 +58,8 @@ class BotConstruct(Construct):
         group_memory_enabled: str,
         group_memory_recent_limit: str,
         group_memory_retention_days: str,
+        group_memory_daily_summary_days: str,
+        group_memory_daily_summary_message_limit: str,
         agent_enabled: str,
         agent_bot_username: str,
         agent_recent_context_limit: str,
@@ -118,6 +122,8 @@ class BotConstruct(Construct):
             "GROUP_MEMORY_ENABLED": group_memory_enabled,
             "GROUP_MEMORY_RECENT_LIMIT": group_memory_recent_limit,
             "GROUP_MEMORY_RETENTION_DAYS": group_memory_retention_days,
+            "GROUP_MEMORY_DAILY_SUMMARY_DAYS": group_memory_daily_summary_days,
+            "GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT": group_memory_daily_summary_message_limit,
             "AGENT_ENABLED": agent_enabled,
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
@@ -222,6 +228,26 @@ class BotConstruct(Construct):
                 max_concurrency=10,
             )
         )
+
+        if is_prod and chat_lang_map:
+            summary_rule = events.Rule(
+                self,
+                f"{CONSTRUCT_PREFIX}DailyGroupSummaryRule",
+                rule_name=f"{RESOURCE_PREFIX}-group-memory-daily-summary-{env_name}",
+                description="Queue daily group memory summaries for configured chats",
+                schedule=events.Schedule.cron(minute="55", hour="20", day="*", month="*", year="*"),
+            )
+            summary_rule.add_target(
+                events_targets.SqsQueue(
+                    queue,
+                    message=events.RuleTargetInput.from_object(
+                        {
+                            "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
+                            "chat_ids": sorted(chat_lang_map.keys()),
+                        }
+                    ),
+                )
+            )
 
         self.api = apigwv2.HttpApi(
             self,
