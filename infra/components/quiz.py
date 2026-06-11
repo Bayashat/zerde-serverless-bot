@@ -46,6 +46,8 @@ class QuizConstruct(Construct):
         telegram_api_base: str,
         quiz_gemini_model: str,
         ssm_secret_prefix: str,
+        groq_api_base: str,
+        groq_model: str,
         deepseek_api_base: str,
         deepseek_model: str,
         quiz_llm_rpd: str,
@@ -85,7 +87,7 @@ class QuizConstruct(Construct):
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
             layers=[shared_layer],
-            timeout=Duration.seconds(60),
+            timeout=Duration.seconds(300),
             memory_size=512,
             log_group=logs.LogGroup(
                 self,
@@ -103,6 +105,8 @@ class QuizConstruct(Construct):
                 "QUIZ_LLM_RPD": quiz_llm_rpd,
                 "DEEPSEEK_API_BASE": deepseek_api_base,
                 "DEEPSEEK_MODEL": deepseek_model,
+                "GROQ_API_BASE": groq_api_base,
+                "GROQ_MODEL": groq_model,
             },
         )
 
@@ -197,3 +201,29 @@ class QuizConstruct(Construct):
                         ),
                     )
                 )
+
+            builder_rule = events.Rule(
+                self,
+                f"{CONSTRUCT_PREFIX}QuizBankBuilderRule0730",
+                rule_name=f"{RESOURCE_PREFIX}-quiz-bank-builder-0730-{env_name}",
+                description="Weekly top-up for the AI-generated quiz question bank",
+                schedule=events.Schedule.cron(
+                    minute="30",
+                    hour="7",
+                    month="*",
+                    week_day="MON",
+                    year="*",
+                ),
+            )
+            builder_rule.add_target(
+                events_targets.LambdaFunction(
+                    quiz_lambda,
+                    event=events.RuleTargetInput.from_object(
+                        {
+                            "action": "build_question_bank",
+                            "max_questions": 20,
+                            "target_per_combo": 2,
+                        }
+                    ),
+                )
+            )

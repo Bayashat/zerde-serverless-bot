@@ -60,6 +60,29 @@ def test_wrong_answer_increments_attempts():
     ctx.bot.restrict_chat_member.assert_not_called()
 
 
+def test_non_digit_text_during_captcha_counts_as_wrong_attempt():
+    """Any non-answer text while captcha is pending is handled by captcha, not spam."""
+    from services.handlers.captcha import handle_captcha_answer
+
+    captcha_repo = MagicMock()
+    captcha_repo.get_pending.return_value = {
+        "expected": "3719",
+        "join_msg_id": 5,
+        "verify_msg_id": 6,
+        "attempts": 0,
+    }
+    captcha_repo.increment_attempts.return_value = 1
+
+    ctx = _make_ctx("ОНЛАЙН РАБОТА C ДОХОДОМ @spam_bot", user_id=42, chat_id=-100123, captcha_repo=captcha_repo)
+    ctx.bot.send_message.return_value = {"message_id": 777}
+    handle_captcha_answer(ctx)
+
+    captcha_repo.increment_attempts.assert_called_once_with(-100123, 42)
+    ctx.bot.delete_message.assert_called_once_with(-100123, 10)
+    ctx.bot.kick_chat_member.assert_not_called()
+    captcha_repo.append_wrong_message.assert_called_once_with(-100123, 42, 777)
+
+
 def test_third_wrong_answer_kicks_user():
     """After CAPTCHA_MAX_ATTEMPTS wrong answers, user is kicked."""
     from core.config import CAPTCHA_MAX_ATTEMPTS

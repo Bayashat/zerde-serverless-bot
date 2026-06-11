@@ -22,6 +22,7 @@ from services.handlers.commands import (
 )
 from services.handlers.explain_document import handle_document_auto_summary
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
+from services.handlers.spam_review import handle_spam_review_callback, is_spam_review_callback
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
 from services.handlers.wtf import handle_explain, handle_wtf, process_explain_task
 
@@ -40,6 +41,8 @@ def register_handlers(dp: Dispatcher) -> None:
         try:
             if ctx.callback_data.startswith((VOTEBAN_FOR_PREFIX, VOTEBAN_AGAINST_PREFIX)):
                 handle_vote_callback(ctx)
+            elif is_spam_review_callback(ctx.callback_data):
+                handle_spam_review_callback(ctx)
             elif ctx.callback_query_id:
                 ctx.bot.answer_callback_query(
                     ctx.callback_query_id,

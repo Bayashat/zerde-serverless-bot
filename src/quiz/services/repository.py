@@ -1,6 +1,9 @@
 """DynamoDB repository for Quiz Lambda — writes quiz records and category metadata."""
 
+import hashlib
+import re
 import time
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -14,6 +17,13 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 _ALMATY_TZ = timezone(timedelta(hours=5))
 _TTL_DAYS = 90
+
+
+def _question_fingerprint(question: str) -> str:
+    normalized = re.sub(r"[^a-z0-9\s]+", " ", question.lower())
+    normalized = re.sub(r"\b\d+\b", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return hashlib.sha1(normalized.encode("utf-8")).hexdigest()
 
 
 class QuizRepository:
@@ -53,6 +63,46 @@ class QuizRepository:
             )
         except Exception as e:
             logger.error("Failed to save category queue", extra={"error": str(e)})
+
+    def get_subtopic_queue(self, chat_id: str, category: str, difficulty: str) -> list[str]:
+        """Read the per-chat subtopic deck for a category/difficulty pair."""
+        try:
+            resp = self._table.get_item(
+                Key={"PK": f"META#subtopic#{category}#{difficulty}#{chat_id}", "SK": "LATEST"},
+                ConsistentRead=False,
+            )
+            item = resp.get("Item")
+            if item and "remaining" in item:
+                return list(item["remaining"])
+            return []
+        except Exception as e:
+            logger.error("Failed to get subtopic queue", extra={"error": str(e)})
+            return []
+
+    def save_subtopic_queue(
+        self,
+        chat_id: str,
+        category: str,
+        difficulty: str,
+        remaining: list[str],
+        used_subtopic: str,
+    ) -> None:
+        """Write the updated per-chat subtopic deck."""
+        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
+        try:
+            self._table.put_item(
+                Item={
+                    "PK": f"META#subtopic#{category}#{difficulty}#{chat_id}",
+                    "SK": "LATEST",
+                    "remaining": remaining,
+                    "category": category,
+                    "difficulty": difficulty,
+                    "subtopic": used_subtopic,
+                    "date": today,
+                }
+            )
+        except Exception as e:
+            logger.error("Failed to save subtopic queue", extra={"error": str(e)})
 
     def _query_all_pages(self, chat_id: str) -> list[dict[str, Any]]:
         """Paginate through all DynamoDB items for a SCORE#{chat_id} partition."""
@@ -197,8 +247,14 @@ class QuizRepository:
 
     # ── Question bank helpers ─────────────────────────────────────────────
 
-    def get_bank_question_ids(self, category: str, sources: list[str]) -> list[str]:
-        """Return all '{source}::{uuid}' keys from the question bank for a category."""
+    def get_bank_question_ids(
+        self,
+        category: str,
+        sources: list[str],
+        allowed_difficulties: set[str] | None = None,
+        subtopic: str | None = None,
+    ) -> list[str]:
+        """Return all '{source}::{uuid}' bank keys for a category, optionally by difficulty."""
         all_keys: list[str] = []
         for source in sources:
             try:
@@ -206,6 +262,16 @@ class QuizRepository:
                     "KeyConditionExpression": Key("PK").eq(f"BANK#{category}#{source}"),
                     "ProjectionExpression": "SK",
                 }
+                filter_expression = None
+                if allowed_difficulties:
+                    filter_expression = Attr("difficulty").is_in(list(allowed_difficulties))
+                if subtopic:
+                    subtopic_filter = Attr("subtopic").eq(subtopic)
+                    filter_expression = (
+                        subtopic_filter if filter_expression is None else filter_expression & subtopic_filter
+                    )
+                if filter_expression is not None:
+                    query_kwargs["FilterExpression"] = filter_expression
                 resp = self._table.query(**query_kwargs)
                 items = list(resp.get("Items", []))
                 while "LastEvaluatedKey" in resp:
@@ -218,6 +284,83 @@ class QuizRepository:
                     extra={"category": category, "source": source, "error": str(e)},
                 )
         return all_keys
+
+    def get_bank_question_summaries(
+        self,
+        category: str,
+        source: str,
+        difficulty: str | None = None,
+        subtopic: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return lightweight bank metadata for counting and dedupe."""
+        try:
+            query_kwargs: dict = {
+                "KeyConditionExpression": Key("PK").eq(f"BANK#{category}#{source}"),
+                "ProjectionExpression": "SK, difficulty, subtopic, fingerprint, created_at, last_used_at",
+            }
+            filter_expression = None
+            if difficulty:
+                filter_expression = Attr("difficulty").eq(difficulty)
+            if subtopic:
+                subtopic_filter = Attr("subtopic").eq(subtopic)
+                filter_expression = (
+                    subtopic_filter if filter_expression is None else filter_expression & subtopic_filter
+                )
+            if filter_expression is not None:
+                query_kwargs["FilterExpression"] = filter_expression
+
+            items: list[dict[str, Any]] = []
+            resp = self._table.query(**query_kwargs)
+            items.extend(resp.get("Items", []))
+            while "LastEvaluatedKey" in resp:
+                resp = self._table.query(**query_kwargs, ExclusiveStartKey=resp["LastEvaluatedKey"])
+                items.extend(resp.get("Items", []))
+            return items
+        except Exception as e:
+            logger.error(
+                "Failed to get bank question summaries",
+                extra={
+                    "category": category,
+                    "source": source,
+                    "difficulty": difficulty,
+                    "subtopic": subtopic,
+                    "error": str(e),
+                },
+            )
+            return []
+
+    def save_generated_bank_question(self, category: str, source: str, question: dict) -> bool:
+        """Write an AI-generated bank question. Returns False on duplicate UUID collision."""
+        q_uuid = question.get("uuid") or str(uuid.uuid4())
+        now = datetime.now(_ALMATY_TZ).isoformat()
+        try:
+            self._table.put_item(
+                Item={
+                    "PK": f"BANK#{category}#{source}",
+                    "SK": f"Q#{q_uuid}",
+                    "uuid": q_uuid,
+                    "source": source,
+                    "category": category,
+                    "subtopic": question.get("subtopic"),
+                    "difficulty": question.get("difficulty"),
+                    "difficulty_band": question.get("difficulty_band", "ai-generated"),
+                    "fingerprint": question.get("fingerprint") or _question_fingerprint(question["question"]),
+                    "question": question["question"],
+                    "options": list(question["options"]),
+                    "correct_option_id": int(question["correct_option_index"]),
+                    "explanation": question.get("explanation", ""),
+                    "created_at": now,
+                    "last_used_at": None,
+                },
+                ConditionExpression=Attr("PK").not_exists(),
+            )
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.warning("Generated bank UUID already exists", extra={"category": category, "uuid": q_uuid})
+                return False
+            logger.error("Failed to save generated bank question", extra={"category": category, "error": str(e)})
+            raise
 
     def get_bank_question(self, category: str, source: str, uuid: str) -> dict | None:
         """Read a single question from the bank by its UUID."""
@@ -233,11 +376,29 @@ class QuizRepository:
             )
             return None
 
-    def get_question_queue(self, category: str, chat_id: str) -> list[str]:
+    def mark_bank_question_used(self, category: str, source: str, uuid: str) -> None:
+        """Record best-effort usage timestamp on a bank question."""
+        try:
+            self._table.update_item(
+                Key={"PK": f"BANK#{category}#{source}", "SK": f"Q#{uuid}"},
+                UpdateExpression="SET last_used_at = :now ADD use_count :one",
+                ExpressionAttributeValues={":now": datetime.now(_ALMATY_TZ).isoformat(), ":one": 1},
+            )
+        except Exception as e:
+            logger.warning(
+                "Failed to mark bank question used",
+                extra={"category": category, "source": source, "uuid": uuid, "error": str(e)},
+            )
+
+    def get_question_queue(
+        self, category: str, chat_id: str, difficulty: str | None = None, scope: str | None = None
+    ) -> list[str]:
         """Read the per-chat per-category question queue (list of 'source::uuid' keys)."""
+        difficulty_suffix = f"#{difficulty}" if difficulty else ""
+        scope_suffix = f"#{scope}" if scope else ""
         try:
             resp = self._table.get_item(
-                Key={"PK": f"META#q_queue#{category}#{chat_id}", "SK": "LATEST"},
+                Key={"PK": f"META#q_queue#{category}{difficulty_suffix}{scope_suffix}#{chat_id}", "SK": "LATEST"},
                 ConsistentRead=False,
             )
             item = resp.get("Item")
@@ -248,12 +409,21 @@ class QuizRepository:
             logger.error("Failed to get question queue", extra={"error": str(e)})
             return []
 
-    def save_question_queue(self, category: str, chat_id: str, remaining: list[str]) -> None:
+    def save_question_queue(
+        self,
+        category: str,
+        chat_id: str,
+        remaining: list[str],
+        difficulty: str | None = None,
+        scope: str | None = None,
+    ) -> None:
         """Write the per-chat per-category question queue."""
+        difficulty_suffix = f"#{difficulty}" if difficulty else ""
+        scope_suffix = f"#{scope}" if scope else ""
         try:
             self._table.put_item(
                 Item={
-                    "PK": f"META#q_queue#{category}#{chat_id}",
+                    "PK": f"META#q_queue#{category}{difficulty_suffix}{scope_suffix}#{chat_id}",
                     "SK": "LATEST",
                     "remaining": remaining,
                 }
@@ -263,11 +433,12 @@ class QuizRepository:
 
     # ── Genquiz (on-demand) question queue — separate from daily rotation ─────
 
-    def get_genquiz_question_queue(self, category: str, chat_id: str) -> list[str]:
+    def get_genquiz_question_queue(self, category: str, chat_id: str, difficulty: str | None = None) -> list[str]:
         """Read the per-chat on-demand genquiz question queue (independent of daily rotation)."""
+        difficulty_suffix = f"#{difficulty}" if difficulty else ""
         try:
             resp = self._table.get_item(
-                Key={"PK": f"META#genquiz_q_queue#{category}#{chat_id}", "SK": "LATEST"},
+                Key={"PK": f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}", "SK": "LATEST"},
                 ConsistentRead=False,
             )
             item = resp.get("Item")
@@ -278,12 +449,15 @@ class QuizRepository:
             logger.error("Failed to get genquiz question queue", extra={"error": str(e)})
             return []
 
-    def save_genquiz_question_queue(self, category: str, chat_id: str, remaining: list[str]) -> None:
+    def save_genquiz_question_queue(
+        self, category: str, chat_id: str, remaining: list[str], difficulty: str | None = None
+    ) -> None:
         """Write the per-chat on-demand genquiz question queue."""
+        difficulty_suffix = f"#{difficulty}" if difficulty else ""
         try:
             self._table.put_item(
                 Item={
-                    "PK": f"META#genquiz_q_queue#{category}#{chat_id}",
+                    "PK": f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}",
                     "SK": "LATEST",
                     "remaining": remaining,
                 }
@@ -317,6 +491,8 @@ class QuizRepository:
         message_id: int,
         difficulty: str = "easy",
         points: int = 1,
+        subtopic: str | None = None,
+        fingerprint: str | None = None,
         record_key: str | None = None,
     ) -> bool:
         """Write a quiz poll lookup record for a chat.
@@ -345,6 +521,8 @@ class QuizRepository:
                     "message_id": message_id,
                     "difficulty": difficulty,
                     "points": points,
+                    "subtopic": subtopic,
+                    "fingerprint": fingerprint or _question_fingerprint(question),
                     "sent_at": now.isoformat(),
                     "ttl": ttl,
                 },

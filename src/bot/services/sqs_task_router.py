@@ -44,7 +44,7 @@ def process_sqs_event(
             elif task_type == "PROCESS_EXPLAIN":
                 process_explain_task(bot, body)
             elif task_type == "SPAM_CHECK":
-                process_spam_check_task(bot, body)
+                process_spam_check_task(bot, body, captcha_repo=captcha_repo)
             else:
                 logger.warning(
                     "Unexpected SQS record: unsupported task_type, ignoring",

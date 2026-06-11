@@ -1,8 +1,10 @@
 """Tests for webhook event parsing and routing."""
 
 import json
+from unittest.mock import MagicMock, patch
 
 from webhook import (
+    _handle_api_gateway,
     create_response,
     is_event_relevant_to_bot,
     parse_api_gateway_event,
@@ -74,3 +76,31 @@ def test_rule_filter_external_mention_requires_risk_signal_with_at():
 
     _, rules_risky = f.check("впн реклама @bad", 1, -1001)
     assert "external_mention" in rules_risky
+
+
+def test_pending_captcha_message_skips_spam_screening():
+    body = {
+        "message": {
+            "message_id": 10,
+            "text": "ОНЛАЙН РАБОТА C ДОХОДОМ @spam_bot",
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 42, "is_bot": False},
+        }
+    }
+    event = {
+        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret"},
+        "body": json.dumps(body),
+    }
+    dispatcher = MagicMock()
+    dispatcher.captcha_repo.get_pending.return_value = {"expected": "3719"}
+    screener = MagicMock()
+    screener.should_screen.return_value = True
+
+    with (
+        patch("webhook._spam_screening", return_value=screener),
+        patch("webhook.is_configured_group_chat", return_value=True),
+    ):
+        _handle_api_gateway(event, dispatcher, MagicMock())
+
+    screener.run.assert_not_called()
+    dispatcher.process_update.assert_called_once_with(body)

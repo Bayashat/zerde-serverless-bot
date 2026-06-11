@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from core.config import SPAM_RULE_AI_THRESHOLD, SPAM_RULE_ENFORCE_THRESHOLD
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.sqs import SQSClient
 from services.repositories.stats import StatsRepository
@@ -61,7 +62,7 @@ class SpamScreeningService:
                 return
 
             score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
-            if score > 0.8:
+            if score >= SPAM_RULE_ENFORCE_THRESHOLD:
                 logger.info(
                     "Rule-based spam detected, enforcing",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
@@ -73,7 +74,7 @@ class SpamScreeningService:
                     reason=f"rules:{','.join(triggered_rules)}",
                 )
                 return
-            if score > 0.15:
+            if score >= SPAM_RULE_AI_THRESHOLD:
                 logger.info(
                     "Ambiguous spam score, queuing for AI check",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},

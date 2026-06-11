@@ -60,6 +60,9 @@ class ZerdeTelegramBotStack(Stack):
         # ── Groq parameters ──────────────────────────────────────────────────
         groq_api_base = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
         groq_model = os.environ.get("GROQ_MODEL")
+        spam_rule_enforce_threshold = os.environ.get("SPAM_RULE_ENFORCE_THRESHOLD", "0.8")
+        spam_rule_ai_threshold = os.environ.get("SPAM_RULE_AI_THRESHOLD", "0.15")
+        spam_ai_confidence_threshold = os.environ.get("SPAM_AI_CONFIDENCE_THRESHOLD", "0.85")
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
@@ -121,6 +124,9 @@ class ZerdeTelegramBotStack(Stack):
             gemini_rpd_limit=gemini_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
+            spam_rule_enforce_threshold=spam_rule_enforce_threshold,
+            spam_rule_ai_threshold=spam_rule_ai_threshold,
+            spam_ai_confidence_threshold=spam_ai_confidence_threshold,
             deepseek_api_base=deepseek_api_base,
             deepseek_model=deepseek_model,
             chat_lang_map=chat_lang_map,
@@ -155,6 +161,8 @@ class ZerdeTelegramBotStack(Stack):
             telegram_api_base=telegram_api_base,
             quiz_gemini_model=quiz_gemini_model,
             ssm_secret_prefix=ssm_secret_prefix,
+            groq_api_base=groq_api_base,
+            groq_model=groq_model,
             deepseek_api_base=deepseek_api_base,
             deepseek_model=deepseek_model,
             quiz_llm_rpd=quiz_llm_rpd,

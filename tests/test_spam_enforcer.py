@@ -88,8 +88,24 @@ def test_translate_reason_rules_prefix_uses_rules_translation(_mock_lang: object
     )
 
     sent_text = bot.send_message.call_args[0][1]
-    # English: "matched spam rules"
-    assert "matched spam rules" in sent_text
+    assert "referral/promotional link" in sent_text
+
+
+@patch("services.spam.enforcer.get_chat_lang", return_value="en")
+def test_translate_reason_rules_prefix_uses_specific_highest_priority_reason(_mock_lang: object) -> None:
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
+    stats_repo = MagicMock()
+
+    SpamEnforcer(bot, stats_repo).enforce(
+        chat_id=-1001234567890,
+        user_id=12345,
+        message_id=42,
+        reason="rules:external_mention,vpn_pattern,job_offer",
+    )
+
+    sent_text = bot.send_message.call_args[0][1]
+    assert "VPN advertisement" in sent_text
 
 
 @patch("services.spam.enforcer.get_chat_lang", return_value="en")
@@ -138,11 +154,17 @@ def test_translate_reason_all_known_codes(_mock_lang: object) -> None:
 
     known_reasons = [
         ("job_offer", "job/income offer"),
+        ("dm_redirect_scam", "DM redirect scam"),
         ("vpn_ad", "VPN advertisement"),
         ("referral_promo", "referral/promotional link"),
         ("selling_services", "selling digital services"),
+        ("account_sale", "account/access sale"),
+        ("crypto_investment", "crypto/investment promotion"),
+        ("phishing", "phishing or malware"),
+        ("adult_gambling", "adult/gambling promotion"),
         ("commercial", "commercial/promotional content"),
         ("suspicious_link", "suspicious link"),
+        ("admin_review", "admin-reviewed spam"),
     ]
 
     enforcer = SpamEnforcer(bot, stats_repo)

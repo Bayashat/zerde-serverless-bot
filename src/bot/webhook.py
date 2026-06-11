@@ -93,7 +93,7 @@ def _handle_api_gateway(
             logger.debug("Silently ignoring event from non-whitelisted chat", extra={"chat_id": chat_id})
             return create_response(200, {"message": "ok"})
 
-        if screener.should_screen(body):
+        if screener.should_screen(body) and not _has_pending_captcha(dispatcher, body):
             screener.run(body)
 
         if not is_event_relevant_to_bot(body):
@@ -174,6 +174,36 @@ def _extract_chat_context(body: dict[str, Any]) -> tuple[int | None, str | None]
         return chat.get("id"), chat.get("type")
 
     return None, None
+
+
+def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
+    """Return True when this message belongs to a user currently solving captcha.
+
+    Captcha is the first moderation state for new users. While it is pending,
+    their messages should be handled only by the captcha answer flow, not by spam
+    screening, to avoid double-handling and stale captcha messages.
+    """
+    captcha_repo = dispatcher.captcha_repo
+    if not captcha_repo:
+        return False
+
+    msg = body.get("message")
+    if not isinstance(msg, dict):
+        return False
+
+    chat_id = msg.get("chat", {}).get("id")
+    user_id = msg.get("from", {}).get("id")
+    if not chat_id or not user_id:
+        return False
+
+    try:
+        return captcha_repo.get_pending(chat_id, user_id) is not None
+    except Exception as e:
+        logger.warning(
+            "Failed to check pending captcha before spam screening",
+            extra={"chat_id": chat_id, "user_id": user_id, "error": str(e)},
+        )
+        return False
 
 
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:

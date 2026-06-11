@@ -151,6 +151,32 @@ def _delete_all_captcha_messages(ctx: Context, pending: dict, extra_ids: list[in
             pass
 
 
+def _handle_wrong_captcha_attempt(ctx: Context, pending: dict) -> None:
+    """Delete the user's message, increment attempts, and kick after max failures."""
+    new_attempts = ctx.captcha_repo.increment_attempts(ctx.chat_id, ctx.user_id)
+    remaining = CAPTCHA_MAX_ATTEMPTS - new_attempts
+
+    try:
+        ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
+    except Exception:
+        pass
+
+    if remaining <= 0:
+        ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
+        _delete_all_captcha_messages(ctx, pending)
+        ctx.bot.kick_chat_member(ctx.chat_id, ctx.user_id)
+        logger.info("User %s kicked after %d wrong captcha attempts.", ctx.user_id, new_attempts)
+        return
+
+    error_msg = ctx.reply(
+        get_translated_text("captcha_wrong_answer", ctx.lang_code, ATTEMPTS_LEFT=remaining),
+        reply_to_message_id=pending["verify_msg_id"],
+    )
+    if error_msg and error_msg.get("message_id"):
+        ctx.captcha_repo.append_wrong_message(ctx.chat_id, ctx.user_id, error_msg["message_id"])
+    logger.info("User %s wrong captcha attempt %d/%d.", ctx.user_id, new_attempts, CAPTCHA_MAX_ATTEMPTS)
+
+
 def handle_captcha_answer(ctx: Context) -> None:
     """Check plain-text message from restricted user against their captcha answer."""
     if not ctx.captcha_repo or not ctx.user_id or not ctx.chat_id:
@@ -163,12 +189,9 @@ def handle_captcha_answer(ctx: Context) -> None:
     expected = pending["expected"]
     answer = ctx.text.strip()
 
-    # Delete any non-digit message silently (letters, emoji, mixed, etc.)
+    # Any non-answer text from a pending user is treated as a failed captcha attempt.
     if not re.match(rf"^\d{{{len(expected)}}}$", answer):
-        try:
-            ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
-        except Exception:
-            pass
+        _handle_wrong_captcha_attempt(ctx, pending)
         return
 
     if answer == expected:
@@ -191,26 +214,4 @@ def handle_captcha_answer(ctx: Context) -> None:
 
     else:
         # ── Wrong answer ─────────────────────────────────────────────────────
-        new_attempts = ctx.captcha_repo.increment_attempts(ctx.chat_id, ctx.user_id)
-        remaining = CAPTCHA_MAX_ATTEMPTS - new_attempts
-
-        # Delete the user's wrong-answer message immediately
-        try:
-            ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
-        except Exception:
-            pass
-
-        if remaining <= 0:
-            # Kick silently — no notification message (kicked user won't see it anyway)
-            ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
-            _delete_all_captcha_messages(ctx, pending)
-            ctx.bot.kick_chat_member(ctx.chat_id, ctx.user_id)
-            logger.info("User %s kicked after %d wrong captcha attempts.", ctx.user_id, new_attempts)
-        else:
-            error_msg = ctx.reply(
-                get_translated_text("captcha_wrong_answer", ctx.lang_code, ATTEMPTS_LEFT=remaining),
-                reply_to_message_id=pending["verify_msg_id"],
-            )
-            if error_msg and error_msg.get("message_id"):
-                ctx.captcha_repo.append_wrong_message(ctx.chat_id, ctx.user_id, error_msg["message_id"])
-            logger.info("User %s wrong captcha attempt %d/%d.", ctx.user_id, new_attempts, CAPTCHA_MAX_ATTEMPTS)
+        _handle_wrong_captcha_attempt(ctx, pending)

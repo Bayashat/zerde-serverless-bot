@@ -24,7 +24,7 @@ try:
             _saved_modules[mod_name] = sys.modules.pop(mod_name)
 
     sys.path.insert(0, _quiz_dir)
-    from services.quiz_generator import CATEGORY_POOL, QuizGenerator  # noqa: E402
+    from services.quiz_generator import CATEGORY_POOL, SUBTOPIC_POOL, QuizGenerator, question_fingerprint  # noqa: E402
 finally:
     if _quiz_dir in sys.path:
         sys.path.remove(_quiz_dir)
@@ -152,6 +152,64 @@ class TestQuizGeneratorValidation:
         result = gen.generate_question("cloud", "kk")
         assert result is None
 
+    def test_correct_option_must_not_be_obviously_longest(self):
+        gen = _make_generator()
+        _mock_response(
+            gen,
+            _make_valid_data(
+                question="Which cache setting reduces stale reads?",
+                options=[
+                    "A very detailed cache invalidation strategy with multiple explicit guarantees",
+                    "Short TTL",
+                    "Read replica",
+                    "Hash index",
+                ],
+                correct_index=0,
+            ),
+        )
+
+        result = gen.generate_question("system-design", "en", "medium")
+        assert result is None
+
+    def test_question_must_not_leak_correct_answer_terms(self):
+        gen = _make_generator()
+        _mock_response(
+            gen,
+            _make_valid_data(
+                question="A team needs cache invalidation for stale reads. What should they configure?",
+                options=["Cache invalidation", "Read replica", "Hash index", "Message queue"],
+                correct_index=0,
+            ),
+        )
+
+        result = gen.generate_question("system-design", "en", "medium")
+        assert result is None
+
+    def test_medium_prompt_requires_applied_scenario(self):
+        gen = _make_generator()
+        _mock_response(gen, _make_valid_data())
+
+        result = gen.generate_question("cloud", "en", "medium")
+
+        assert result is not None
+        prompt = gen._provider.generate_json.call_args.args[0]
+        assert "L3 applied scenario" in prompt
+        assert "specific scenario" in prompt
+        assert "Avoid generic textbook-definition questions" in prompt
+
+    def test_subtopic_prompt_stays_on_topic_path(self):
+        gen = _make_generator()
+        _mock_response(gen, _make_valid_data(question="Why can Lambda cold starts happen?"))
+
+        result = gen.generate_question("cloud", "en", "medium", "Lambda / cold start")
+
+        assert result is not None
+        assert result["subtopic"] == "Lambda / cold start"
+        assert result["fingerprint"] == question_fingerprint("Why can Lambda cold starts happen?")
+        prompt = gen._provider.generate_json.call_args.args[0]
+        assert "cloud / Lambda / cold start" in prompt
+        assert "Stay tightly within the requested topic path" in prompt
+
 
 _BANKED_QUESTION = {
     "question": "What does S3 stand for?",
@@ -264,3 +322,7 @@ class TestCategoryPool:
             "system-design",
         }
         assert set(CATEGORY_POOL) == expected
+
+    def test_every_category_has_subtopics(self):
+        assert set(SUBTOPIC_POOL) == set(CATEGORY_POOL)
+        assert all(len(subtopics) >= 6 for subtopics in SUBTOPIC_POOL.values())

@@ -1,13 +1,14 @@
 """Quiz domain services for managing generation, sending and leaderboards."""
 
 import random
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.llm_provider import create_provider
-from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, QuizGenerator
+from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, SUBTOPIC_POOL, QuizGenerator
 from services.quiz_sender import QuizSender
 from services.repository import QuizRepository
 
@@ -25,16 +26,35 @@ _WEEKDAY_DIFFICULTY: dict[int, str] = {
 
 _MEDALS = ["🥇", "🥈", "🥉"]
 _SEASON_LENGTH = 4  # weeks per season
+_AI_BANK_SOURCE = "ai-generated"
+_AI_BANK_TARGET_PER_COMBO = 2
+_AI_BANK_DEFAULT_BUILD_LIMIT = 20
+_AI_BANK_DEFAULT_DIFFICULTIES = list(dict.fromkeys(_WEEKDAY_DIFFICULTY.values()))
 
 # Categories that draw questions from a pre-built bank instead of AI
 _BANKED_CATEGORIES: dict[str, list[str]] = {
     "cloud": ["aws-clf-c02"],
 }
 
+# Difficulty coverage declared per bank source. CLF-C02 is a foundations exam, so
+# it should not satisfy medium/hard daily slots even if the user asks for AWS.
+_BANK_SOURCE_DIFFICULTIES: dict[str, set[str]] = {
+    "aws-clf-c02": {"easy", "easy_medium"},
+    _AI_BANK_SOURCE: set(DIFFICULTY_POINTS),
+}
+
+# Existing CLF-C02 imports have per-item difficulty tags. For easy_medium, allow
+# easy foundation questions too; for higher difficulties, do not use CLF-C02.
+_BANK_ITEM_DIFFICULTY_COMPAT: dict[str, set[str]] = {
+    "easy": {"easy"},
+    "easy_medium": {"easy", "easy_medium"},
+}
+
 # Human-readable labels shown in the quiz announcement for each bank source
 _BANK_SOURCE_LABELS: dict[str, str] = {
     "aws-clf-c02": "AWS CLF-C02 Practice Exam",
     "aws-dva-c02": "AWS Developer Associate Practice Exam",
+    _AI_BANK_SOURCE: "Zerde AI Quiz Bank",
 }
 
 # Topic aliases that /genquiz should serve from the bank instead of AI.
@@ -46,11 +66,24 @@ _GENQUIZ_TOPIC_TO_BANKED: dict[str, str] = {
     "clf": "cloud",
     "clf-c02": "cloud",
     "aws-clf-c02": "cloud",
-    "dva": "cloud",
-    "aws-dva": "cloud",
-    "dva-c02": "cloud",
-    "aws-dva-c02": "cloud",
 }
+
+
+def _bank_sources_for_difficulty(category: str, difficulty: str) -> list[str]:
+    """Return bank sources whose declared coverage includes the requested difficulty."""
+    sources = _BANKED_CATEGORIES.get(category, [])
+    all_difficulties = set(DIFFICULTY_POINTS)
+    return [source for source in sources if difficulty in _BANK_SOURCE_DIFFICULTIES.get(source, all_difficulties)]
+
+
+def _bank_item_difficulties_for_request(difficulty: str) -> set[str]:
+    """Return item-level difficulties that can satisfy a requested difficulty."""
+    return _BANK_ITEM_DIFFICULTY_COMPAT.get(difficulty, {difficulty})
+
+
+def _queue_scope(source: str, subtopic: str | None = None) -> str:
+    value = source if not subtopic else f"{source}:{subtopic}"
+    return re.sub(r"[^a-zA-Z0-9_.:-]+", "-", value).strip("-")
 
 
 class QuizService:
@@ -207,6 +240,91 @@ class QuizService:
         category = remaining.pop(0)
         return category, remaining
 
+    def _pick_subtopic_for_chat(self, category: str, chat_id: str, difficulty: str) -> tuple[str, list[str]]:
+        """Return (chosen_subtopic, remaining_queue) for AI-generated questions."""
+        subtopics = SUBTOPIC_POOL.get(category) or [category]
+        subtopic_queue = self._repo.get_subtopic_queue(chat_id, category, difficulty)
+        if not subtopic_queue:
+            rng = random.Random(f"{chat_id}::{category}::{difficulty}::{uuid.uuid4().hex}")
+            subtopic_queue = rng.sample(subtopics, len(subtopics))
+            logger.info(
+                "New subtopic round started",
+                extra={
+                    "chat_id": chat_id,
+                    "category": category,
+                    "difficulty": difficulty,
+                    "total": len(subtopic_queue),
+                },
+            )
+        remaining = list(subtopic_queue)
+        subtopic = remaining.pop(0)
+        return subtopic, remaining
+
+    def _generate_ai_question_for_chat(
+        self, category: str, chat_id: str, lang: str, difficulty: str
+    ) -> tuple[dict, str, list[str]] | None:
+        """Generate an AI question with a rotated subtopic deck."""
+        subtopic, subtopic_remaining = self._pick_subtopic_for_chat(category, chat_id, difficulty)
+        question = self._generator.generate_question(category, lang, difficulty, subtopic)
+        if not question:
+            return None
+        return question, subtopic, subtopic_remaining
+
+    def _pick_ai_bank_question_for_chat(
+        self, category: str, chat_id: str, difficulty: str, subtopic: str
+    ) -> tuple[dict, list[str]] | None:
+        """Pick an AI-generated bank question for a concrete category/subtopic/difficulty."""
+        scope = _queue_scope(_AI_BANK_SOURCE, subtopic)
+        remaining = self._repo.get_question_queue(category, chat_id, difficulty, scope)
+        if not remaining:
+            all_keys = self._repo.get_bank_question_ids(
+                category,
+                [_AI_BANK_SOURCE],
+                allowed_difficulties={difficulty},
+                subtopic=subtopic,
+            )
+            if not all_keys:
+                return None
+            rng = random.Random(f"ai-bank:{chat_id}::{category}::{difficulty}::{subtopic}::{uuid.uuid4().hex}")
+            remaining = rng.sample(all_keys, len(all_keys))
+            logger.info(
+                "New AI bank question round",
+                extra={
+                    "chat_id": chat_id,
+                    "category": category,
+                    "difficulty": difficulty,
+                    "subtopic": subtopic,
+                    "total": len(remaining),
+                },
+            )
+
+        while remaining:
+            key = remaining.pop(0)
+            source, q_uuid = key.split("::", 1)
+            item = self._repo.get_bank_question(category, source, q_uuid)
+            if item:
+                return (
+                    {
+                        "question": item["question"],
+                        "options": list(item["options"]),
+                        "correct_option_index": int(item["correct_option_id"]),
+                        "explanation": item.get("explanation", ""),
+                        "difficulty": difficulty,
+                        "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                        "subtopic": item.get("subtopic"),
+                        "fingerprint": item.get("fingerprint"),
+                        "source_label": _BANK_SOURCE_LABELS.get(source, source),
+                        "bank_source": source,
+                        "bank_uuid": q_uuid,
+                        "bank_scope": scope,
+                    },
+                    remaining,
+                )
+            logger.warning("AI bank question missing, skipping", extra={"uuid": q_uuid})
+
+        self._repo.save_question_queue(category, chat_id, remaining, difficulty, scope)
+        return None
+
     def _pick_banked_question_for_chat(
         self, category: str, chat_id: str, difficulty: str
     ) -> tuple[dict, list[str]] | None:
@@ -216,10 +334,21 @@ class QuizService:
         only after a successful poll send — prevents silent question loss on send failure.
         Returns None when the bank is empty or all entries are corrupt.
         """
-        sources = _BANKED_CATEGORIES[category]
-        remaining = self._repo.get_question_queue(category, chat_id)
+        sources = _bank_sources_for_difficulty(category, difficulty)
+        if not sources:
+            logger.info(
+                "No bank source covers requested difficulty",
+                extra={"chat_id": chat_id, "category": category, "difficulty": difficulty},
+            )
+            return None
+
+        remaining = self._repo.get_question_queue(category, chat_id, difficulty)
         if not remaining:
-            all_keys = self._repo.get_bank_question_ids(category, sources)
+            all_keys = self._repo.get_bank_question_ids(
+                category,
+                sources,
+                allowed_difficulties=_bank_item_difficulties_for_request(difficulty),
+            )
             if not all_keys:
                 return None
             # Unique seed per round: chat_id + category for cross-chat independence;
@@ -246,6 +375,8 @@ class QuizService:
                         "explanation": item.get("explanation", ""),
                         "difficulty": difficulty,
                         "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                        "subtopic": item.get("subtopic"),
+                        "fingerprint": item.get("fingerprint"),
                         "source_label": _BANK_SOURCE_LABELS.get(source, source),
                     },
                     remaining,
@@ -253,7 +384,7 @@ class QuizService:
             logger.warning("Bank question missing, skipping", extra={"uuid": q_uuid})
 
         # All entries were corrupt/missing — persist empty queue so next call refills from bank.
-        self._repo.save_question_queue(category, chat_id, remaining)
+        self._repo.save_question_queue(category, chat_id, remaining, difficulty)
         return None
 
     def _pick_banked_question_for_genquiz(
@@ -267,10 +398,21 @@ class QuizService:
         genquiz picks are unlikely to collide with upcoming daily questions.
         Daily category queue is never read or written by this method.
         """
-        sources = _BANKED_CATEGORIES[category]
-        remaining = self._repo.get_genquiz_question_queue(category, chat_id)
+        sources = _bank_sources_for_difficulty(category, difficulty)
+        if not sources:
+            logger.info(
+                "No genquiz bank source covers requested difficulty",
+                extra={"chat_id": chat_id, "category": category, "difficulty": difficulty},
+            )
+            return None
+
+        remaining = self._repo.get_genquiz_question_queue(category, chat_id, difficulty)
         if not remaining:
-            all_keys = self._repo.get_bank_question_ids(category, sources)
+            all_keys = self._repo.get_bank_question_ids(
+                category,
+                sources,
+                allowed_difficulties=_bank_item_difficulties_for_request(difficulty),
+            )
             if not all_keys:
                 return None
             # "genquiz:" prefix keeps daily/genquiz shuffles independent;
@@ -296,6 +438,8 @@ class QuizService:
                         "explanation": item.get("explanation", ""),
                         "difficulty": difficulty,
                         "points": DIFFICULTY_POINTS.get(difficulty, 1),
+                        "subtopic": item.get("subtopic"),
+                        "fingerprint": item.get("fingerprint"),
                         "source_label": _BANK_SOURCE_LABELS.get(source, source),
                     },
                     remaining,
@@ -303,7 +447,7 @@ class QuizService:
             logger.warning("Genquiz bank question missing, skipping", extra={"uuid": q_uuid})
 
         # All entries were corrupt/missing — persist empty queue so next call refills from bank.
-        self._repo.save_genquiz_question_queue(category, chat_id, remaining)
+        self._repo.save_genquiz_question_queue(category, chat_id, remaining, difficulty)
         return None
 
     def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
@@ -335,8 +479,32 @@ class QuizService:
             used_category = category
             # Holds the bank queue to commit only after a successful poll send (Bug #2).
             bank_remaining: list[str] | None = None
+            bank_scope: str | None = None
+            bank_source: str | None = None
+            bank_uuid: str | None = None
+            used_subtopic: str | None = None
+            subtopic_remaining: list[str] | None = None
+            commit_subtopic_deck = False
 
-            if category in _BANKED_CATEGORIES:
+            used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(category, str(chat_id), difficulty)
+            ai_bank_result = self._pick_ai_bank_question_for_chat(category, str(chat_id), difficulty, used_subtopic)
+            if ai_bank_result:
+                generated, bank_remaining = ai_bank_result
+                bank_scope = generated.get("bank_scope")
+                bank_source = generated.get("bank_source")
+                bank_uuid = generated.get("bank_uuid")
+                commit_subtopic_deck = True
+                if lang != "en":
+                    translated = self._generator.translate_question(generated, lang)
+                    if translated:
+                        generated = translated
+                    else:
+                        logger.warning(
+                            "AI bank translation failed, falling back to English bank question",
+                            extra={"chat_id": chat_id, "lang": lang},
+                        )
+
+            if not generated and category in _BANKED_CATEGORIES:
                 # Draw from pre-built question bank
                 banked_result = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
                 if banked_result:
@@ -358,9 +526,10 @@ class QuizService:
                         "Bank empty, falling back to AI",
                         extra={"chat_id": chat_id, "category": category},
                     )
-                    q = self._generator.generate_question(category, lang, difficulty)
-                    if q:
-                        generated = q
+                    ai_result = self._generator.generate_question(category, lang, difficulty, used_subtopic)
+                    if ai_result:
+                        generated = ai_result
+                        commit_subtopic_deck = True
 
             if not generated:
                 # AI path for non-banked categories (or bank + AI both failed).
@@ -371,9 +540,23 @@ class QuizService:
                 restarted = False
                 while candidates:
                     cat = candidates.pop(0)
-                    question = self._generator.generate_question(cat, lang, difficulty)
-                    if question:
-                        generated = question
+                    used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(cat, str(chat_id), difficulty)
+                    ai_bank_result = self._pick_ai_bank_question_for_chat(cat, str(chat_id), difficulty, used_subtopic)
+                    if ai_bank_result:
+                        generated, bank_remaining = ai_bank_result
+                        bank_scope = generated.get("bank_scope")
+                        bank_source = generated.get("bank_source")
+                        bank_uuid = generated.get("bank_uuid")
+                        commit_subtopic_deck = True
+                        if lang != "en":
+                            translated = self._generator.translate_question(generated, lang)
+                            if translated:
+                                generated = translated
+                    if not generated:
+                        generated = self._generator.generate_question(cat, lang, difficulty, used_subtopic)
+                        if generated:
+                            commit_subtopic_deck = True
+                    if generated:
                         used_category = cat
                         # Restore skipped categories at the back so they still appear this cycle.
                         remaining = candidates if restarted else candidates + tried_and_failed
@@ -428,10 +611,18 @@ class QuizService:
                     message_id=message_id,
                     difficulty=difficulty,
                     points=generated["points"],
+                    subtopic=generated.get("subtopic"),
+                    fingerprint=generated.get("fingerprint"),
                 )
                 # Commit bank question queue only after confirmed send (Bug #2 fix).
                 if bank_remaining is not None:
-                    self._repo.save_question_queue(used_category, str(chat_id), bank_remaining)
+                    self._repo.save_question_queue(used_category, str(chat_id), bank_remaining, difficulty, bank_scope)
+                if bank_source and bank_uuid:
+                    self._repo.mark_bank_question_used(used_category, bank_source, bank_uuid)
+                if commit_subtopic_deck and used_subtopic is not None and subtopic_remaining is not None:
+                    self._repo.save_subtopic_queue(
+                        str(chat_id), used_category, difficulty, subtopic_remaining, used_subtopic
+                    )
                 self._repo.save_category_queue(remaining, used_category, str(chat_id))
                 sent_count += 1
                 sent_chat_ids.append(str(chat_id))
@@ -479,6 +670,8 @@ class QuizService:
                 message_id=int(poll_result.get("message_id", 0)),
                 difficulty=difficulty,
                 points=question["points"],
+                subtopic=question.get("subtopic"),
+                fingerprint=question.get("fingerprint"),
                 record_key=f"ONDEMAND#{poll_id}",
             )
 
@@ -523,7 +716,7 @@ class QuizService:
                         logger.error("Failed to save genquiz poll lookup", extra={"chat_id": chat_id})
                         return {"status": "error", "reason": "failed to save poll record"}
                     # Commit question queue only after confirmed send (Bug #2 fix).
-                    self._repo.save_genquiz_question_queue(banked_category, str(chat_id), genquiz_remaining)
+                    self._repo.save_genquiz_question_queue(banked_category, str(chat_id), genquiz_remaining, difficulty)
                     return {"status": "ok", "sent": 1, "total": 1}
                 logger.error("Failed to send genquiz poll from bank", extra={"chat_id": chat_id})
                 return {"status": "error", "reason": "failed to send poll"}
@@ -556,6 +749,69 @@ class QuizService:
 
         logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
         return {"status": "error", "reason": "failed to send poll"}
+
+    def build_generated_question_bank(
+        self,
+        *,
+        max_questions: int = _AI_BANK_DEFAULT_BUILD_LIMIT,
+        target_per_combo: int = _AI_BANK_TARGET_PER_COMBO,
+        categories: list[str] | None = None,
+        difficulties: list[str] | None = None,
+        subtopics_by_category: dict[str, list[str]] | None = None,
+    ) -> dict:
+        """Top up the AI-generated question bank without sending Telegram polls."""
+        categories_to_build = categories or list(CATEGORY_POOL)
+        difficulties_to_build = difficulties or _AI_BANK_DEFAULT_DIFFICULTIES
+        created = 0
+        skipped_existing = 0
+        failed = 0
+
+        for category in categories_to_build:
+            subtopics = (subtopics_by_category or {}).get(category) or SUBTOPIC_POOL.get(category, [category])
+            for subtopic in subtopics:
+                for difficulty in difficulties_to_build:
+                    existing = self._repo.get_bank_question_summaries(
+                        category, _AI_BANK_SOURCE, difficulty=difficulty, subtopic=subtopic
+                    )
+                    fingerprints = {item.get("fingerprint") for item in existing if item.get("fingerprint")}
+                    needed = max(0, target_per_combo - len(existing))
+                    if needed == 0:
+                        skipped_existing += 1
+                        continue
+
+                    for _ in range(needed):
+                        if created >= max_questions:
+                            return {
+                                "status": "ok",
+                                "action": "build_question_bank",
+                                "created": created,
+                                "failed": failed,
+                                "skipped_existing": skipped_existing,
+                                "limit": max_questions,
+                            }
+                        question = self._generator.generate_question(category, "en", difficulty, subtopic)
+                        if not question:
+                            failed += 1
+                            continue
+                        fingerprint = question.get("fingerprint")
+                        if fingerprint in fingerprints:
+                            skipped_existing += 1
+                            continue
+                        question["difficulty_band"] = "ai-generated"
+                        if self._repo.save_generated_bank_question(category, _AI_BANK_SOURCE, question):
+                            created += 1
+                            fingerprints.add(fingerprint)
+                        else:
+                            skipped_existing += 1
+
+        return {
+            "status": "ok",
+            "action": "build_question_bank",
+            "created": created,
+            "failed": failed,
+            "skipped_existing": skipped_existing,
+            "limit": max_questions,
+        }
 
     def process_on_demand_quiz_with_feedback(
         self,

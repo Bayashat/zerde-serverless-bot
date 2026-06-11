@@ -90,13 +90,40 @@ class SpamEnforcer:
         return f"ID:{user_id}"
 
     def _translate_reason(self, reason: str, lang: str) -> str:
-        if reason.startswith("rules:"):
-            return get_translated_text("spam_reason_rules", lang)
+        return translate_spam_reason(reason, lang)
 
-        reason_key = f"spam_reason_{reason}"
-        translated = get_translated_text(reason_key, lang)
 
-        if translated == reason_key:
-            return get_translated_text("spam_reason_unknown", lang)
+def translate_spam_reason(reason: str, lang: str) -> str:
+    """Translate detector/rule reason codes into user-facing moderation reasons."""
+    if reason.startswith("rules:"):
+        reason = _primary_rule_reason(reason)
 
-        return translated
+    reason_key = f"spam_reason_{reason}"
+    translated = get_translated_text(reason_key, lang)
+
+    if translated == reason_key:
+        return get_translated_text("spam_reason_unknown", lang)
+
+    return translated
+
+
+def _primary_rule_reason(reason: str) -> str:
+    rules = {rule.strip() for rule in reason.removeprefix("rules:").split(",") if rule.strip()}
+    priority = [
+        ("vpn_pattern", "vpn_ad"),
+        ("money_and_dm_redirect", "dm_redirect_scam"),
+        ("dm_redirect", "dm_redirect_scam"),
+        ("money_and_scam_hook", "dm_redirect_scam"),
+        ("scam_hook", "dm_redirect_scam"),
+        ("job_offer", "job_offer"),
+        ("money_pattern", "job_offer"),
+        ("external_url", "suspicious_link"),
+        ("cis_spam_obfuscation", "suspicious_link"),
+        ("external_mention", "referral_promo"),
+        ("promo_words", "referral_promo"),
+        ("short_text_with_contact", "referral_promo"),
+    ]
+    for rule, reason_code in priority:
+        if rule in rules:
+            return reason_code
+    return "rules"

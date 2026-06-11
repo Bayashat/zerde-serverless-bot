@@ -73,6 +73,11 @@ ADMIN_USER_ID: int = require_int("ADMIN_USER_ID")
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 GROQ_MODEL: str | None = os.environ.get("GROQ_MODEL")
 
+# ── Spam moderation thresholds ──────────────────────────────────────────────
+SPAM_RULE_ENFORCE_THRESHOLD: float = float(os.environ.get("SPAM_RULE_ENFORCE_THRESHOLD", "0.8"))
+SPAM_RULE_AI_THRESHOLD: float = float(os.environ.get("SPAM_RULE_AI_THRESHOLD", "0.15"))
+SPAM_AI_CONFIDENCE_THRESHOLD: float = float(os.environ.get("SPAM_AI_CONFIDENCE_THRESHOLD", "0.85"))
+
 # ── DeepSeek parameters ───────────────────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
 DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
@@ -127,6 +132,8 @@ CAPTCHA_MAX_ATTEMPTS: int = require_int("CAPTCHA_MAX_ATTEMPTS")
 VOTEBAN_PREFIX = "voteban_"
 VOTEBAN_FOR_PREFIX = "voteban_for_"
 VOTEBAN_AGAINST_PREFIX = "voteban_against_"
+SPAM_REVIEW_BAN_PREFIX = "spam_ban:"
+SPAM_REVIEW_IGNORE_PREFIX = "spam_ignore:"
 
 # ── Telegram well-known ids ─────────────────────────────────────────────────
 # ``from`` user id for messages posted via a channel into a linked discussion supergroup.
