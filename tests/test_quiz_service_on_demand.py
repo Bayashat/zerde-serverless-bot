@@ -80,6 +80,38 @@ def test_ai_on_demand_quiz_saves_poll_lookup_record() -> None:
     )
 
 
+def test_on_demand_quiz_uses_interactive_ai_generation() -> None:
+    svc = _make_service()
+    question = _question(points=3)
+    svc._generator.generate_question.return_value = question
+    svc._sender.send_quiz_poll.return_value = {"poll": {"id": "poll-ai"}, "message_id": 321}
+
+    result = svc.process_on_demand_quiz("-100123", "kk", "python", "medium", interactive=True)
+
+    assert result["status"] == "ok"
+    svc._generator.generate_question.assert_called_once_with("python", "kk", "medium", interactive=True)
+
+
+def test_on_demand_quiz_with_feedback_replies_on_generation_failure() -> None:
+    svc = _make_service()
+    svc._generator.generate_question.return_value = None
+    svc._sender.send_message.return_value = {"message_id": 777}
+
+    result = svc.process_on_demand_quiz_with_feedback(
+        "-100123",
+        "en",
+        "python",
+        "medium",
+        reply_to_message_id=42,
+    )
+
+    assert result == {"status": "error", "reason": "no valid question"}
+    svc._sender.send_message.assert_called_once()
+    assert svc._sender.send_message.call_args.args[0] == "-100123"
+    assert "Failed to generate quiz" in svc._sender.send_message.call_args.args[1]
+    assert svc._sender.send_message.call_args.kwargs["reply_to_message_id"] == 42
+
+
 def test_banked_on_demand_quiz_saves_lookup_before_committing_queue() -> None:
     svc = _make_service()
     banked = {

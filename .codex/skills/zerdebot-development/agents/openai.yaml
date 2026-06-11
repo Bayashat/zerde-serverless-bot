@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZerdeBot Development"
+  short_description: "Work safely on the ZerdeBot serverless Telegram bot."
+  default_prompt: "Use $zerdebot-development to inspect, change, test, and validate this repository."

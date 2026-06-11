@@ -48,7 +48,7 @@ def get_groq_api_key() -> str | None:
 # ── Optional ────────────────────────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 TELEGRAM_API_BASE: str = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
-GEMINI_MODEL: str | None = os.environ.get("QUIZ_GEMINI_MODEL")
+GEMINI_MODEL: str = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-3.1-flash-lite")
 QUIZ_LLM_RPD: int = require_int("QUIZ_LLM_RPD")
 
 # ── Required (non-secret identifiers) ─────────────────────────────────────
@@ -56,7 +56,7 @@ TABLE_NAME: str = require("TABLE_NAME")
 
 # ── DeepSeek fallback (non-key) ───────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
+DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 GROQ_MODEL: str | None = os.environ.get("GROQ_MODEL")
 

@@ -197,6 +197,15 @@ class TestQuizGeneratorValidation:
         assert "specific scenario" in prompt
         assert "Avoid generic textbook-definition questions" in prompt
 
+    def test_interactive_generation_passes_fast_provider_mode(self):
+        gen = _make_generator()
+        _mock_response(gen, _make_valid_data())
+
+        result = gen.generate_question("cloud", "en", "medium", interactive=True)
+
+        assert result is not None
+        assert gen._provider.generate_json.call_args.kwargs["interactive"] is True
+
     def test_subtopic_prompt_stays_on_topic_path(self):
         gen = _make_generator()
         _mock_response(gen, _make_valid_data(question="Why can Lambda cold starts happen?"))

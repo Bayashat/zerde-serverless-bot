@@ -641,7 +641,15 @@ class QuizService:
             "failed": failed,
         }
 
-    def process_on_demand_quiz(self, chat_id: str, lang: str, topic: str, difficulty: str) -> dict:
+    def process_on_demand_quiz(
+        self,
+        chat_id: str,
+        lang: str,
+        topic: str,
+        difficulty: str,
+        *,
+        interactive: bool = False,
+    ) -> dict:
         """Generate and send a single on-demand quiz to one chat.
 
         For topics that map to a banked category (e.g. "cloud", "aws"), questions are drawn
@@ -683,7 +691,10 @@ class QuizService:
                 banked, genquiz_remaining = banked_result
                 question = banked
                 if lang != "en":
-                    translated = self._generator.translate_question(banked, lang)
+                    if interactive:
+                        translated = self._generator.translate_question(banked, lang, interactive=True)
+                    else:
+                        translated = self._generator.translate_question(banked, lang)
                     if translated:
                         question = translated
                     else:
@@ -727,7 +738,10 @@ class QuizService:
             )
 
         # ── AI path ──────────────────────────────────────────────────────────
-        question = self._generator.generate_question(topic, lang, difficulty)
+        if interactive:
+            question = self._generator.generate_question(topic, lang, difficulty, interactive=True)
+        else:
+            question = self._generator.generate_question(topic, lang, difficulty)
         if not question:
             logger.error("Failed to generate on-demand question", extra={"topic": topic})
             return {"status": "error", "reason": "no valid question"}
@@ -822,5 +836,17 @@ class QuizService:
         *,
         reply_to_message_id: int | None = None,
     ) -> dict:
-        """Run on-demand quiz (bank or AI path). No RPD footer is sent."""
-        return self.process_on_demand_quiz(chat_id, lang, topic, difficulty)
+        """Run on-demand quiz and notify the user when async generation fails."""
+        result = self.process_on_demand_quiz(chat_id, lang, topic, difficulty, interactive=True)
+        if result.get("status") == "ok":
+            return result
+
+        reason = str(result.get("reason") or "unknown error")
+        text = get_translated_text("genquiz_failed", lang, reason=reason)
+        sent = self._sender.send_message(str(chat_id), text, reply_to_message_id=reply_to_message_id)
+        if not sent:
+            logger.error(
+                "Failed to send genquiz failure feedback",
+                extra={"chat_id": chat_id, "reason": reason, "reply_to_message_id": reply_to_message_id},
+            )
+        return result

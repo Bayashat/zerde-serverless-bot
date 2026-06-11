@@ -80,7 +80,7 @@ SPAM_AI_CONFIDENCE_THRESHOLD: float = float(os.environ.get("SPAM_AI_CONFIDENCE_T
 
 # ── DeepSeek parameters ───────────────────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
+DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 
 # ── Gemini parameters (non-key) ─────────────────────────────────────────────
 GEMINI_API_BASE: str = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
