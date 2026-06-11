@@ -82,12 +82,24 @@ def observe_update(repo: GroupMemoryRepository | None, update: dict[str, Any]) -
 
 
 def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, limit: int | None = None) -> str:
-    """Render recent messages as compact prompt context."""
+    """Render recent messages as compact prompt context.
+
+    Speaker metadata is intentionally explicit so the group agent can separate
+    "Alice said this about Bob" from "Bob said this about himself".
+    """
     messages = repo.get_recent_messages(chat_id, limit=limit or GROUP_MEMORY_RECENT_LIMIT)
     lines: list[str] = []
     for item in messages:
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
+        username = str(item.get("username") or "").strip()
+        user_id = str(item.get("user_id") or "").strip()
         text = str(item.get("text") or "").replace("\n", " ").strip()
         if text:
-            lines.append(f"{name}: {text[:700]}")
+            speaker_bits = []
+            if user_id:
+                speaker_bits.append(f"user_id={user_id}")
+            if username:
+                speaker_bits.append(f"username=@{username.lstrip('@')}")
+            speaker_bits.append(f"name={name[:80]}")
+            lines.append(f"[speaker {' '.join(speaker_bits)}] {text[:700]}")
     return "\n".join(lines)
