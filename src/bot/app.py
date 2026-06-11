@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from core.config import QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
+from core.config import MEMORY_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
 from services.repositories import (
     CaptchaRepository,
+    GroupMemoryRepository,
     LambdaInvoker,
     QuizRepository,
     SQSClient,
@@ -20,6 +21,7 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
+_memory_repo: GroupMemoryRepository | None = None
 _dispatcher: Dispatcher | None = None
 
 
@@ -39,6 +41,16 @@ def get_captcha_repo() -> CaptchaRepository:
     return _captcha_repo
 
 
+def get_memory_repo() -> GroupMemoryRepository | None:
+    """Return a singleton group-memory repository when memory storage is configured."""
+    global _memory_repo
+    if not MEMORY_TABLE_NAME:
+        return None
+    if _memory_repo is None:
+        _memory_repo = GroupMemoryRepository()
+    return _memory_repo
+
+
 def get_dispatcher() -> Dispatcher:
     """Wire the webhook dispatcher lazily and reuse it across warm invocations."""
     global _dispatcher
@@ -51,6 +63,7 @@ def get_dispatcher() -> Dispatcher:
             QuizRepository() if QUIZ_TABLE_NAME else None,
             LambdaInvoker() if QUIZ_LAMBDA_NAME else None,
             captcha_repo=get_captcha_repo(),
+            memory_repo=get_memory_repo(),
         )
         register_handlers(dispatcher)
         _dispatcher = dispatcher

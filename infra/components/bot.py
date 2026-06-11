@@ -53,6 +53,13 @@ class BotConstruct(Construct):
         kick_ban_duration_seconds: int,
         voteban_threshold: int,
         voteban_forgive_threshold: int,
+        group_memory_enabled: str,
+        group_memory_recent_limit: str,
+        group_memory_retention_days: str,
+        agent_enabled: str,
+        agent_bot_username: str,
+        agent_recent_context_limit: str,
+        agent_daily_proactive_limit: str,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -75,6 +82,27 @@ class BotConstruct(Construct):
             time_to_live_attribute="ttl",
         )
 
+        memory_table = dynamodb.Table(
+            self,
+            f"{CONSTRUCT_PREFIX}MemoryTable",
+            table_name=f"{RESOURCE_PREFIX}-bot-memory-{env_name}",
+            partition_key=dynamodb.Attribute(
+                name="pk",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            sort_key=dynamodb.Attribute(
+                name="sk",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=removal_policy,
+            deletion_protection=is_prod,
+            point_in_time_recovery_specification=dynamodb.PointInTimeRecoverySpecification(
+                point_in_time_recovery_enabled=is_prod
+            ),
+            time_to_live_attribute="ttl",
+        )
+
         bot_environment = {
             "LOG_LEVEL": log_level,
             "TELEGRAM_API_BASE": telegram_api_base,
@@ -83,8 +111,17 @@ class BotConstruct(Construct):
             "SSM_SECRET_PREFIX": ssm_secret_prefix,
             # -- Non-secret bot parameters ─────────────────────────────────────
             "STATS_TABLE_NAME": stats_table.table_name,
+            "MEMORY_TABLE_NAME": memory_table.table_name,
             "QUEUE_URL": queue.queue_url,
             "ADMIN_USER_ID": admin_user_id,
+            # -- Group memory / agent MVP ─────────────────────────────────────
+            "GROUP_MEMORY_ENABLED": group_memory_enabled,
+            "GROUP_MEMORY_RECENT_LIMIT": group_memory_recent_limit,
+            "GROUP_MEMORY_RETENTION_DAYS": group_memory_retention_days,
+            "AGENT_ENABLED": agent_enabled,
+            "AGENT_BOT_USERNAME": agent_bot_username,
+            "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
+            "AGENT_DAILY_PROACTIVE_LIMIT": agent_daily_proactive_limit,
             # -- Groq parameters (non-secret) ──────────────────────────────────
             "GROQ_API_BASE": groq_api_base,
             "GROQ_MODEL": groq_model,
@@ -175,6 +212,7 @@ class BotConstruct(Construct):
         queue.grant_send_messages(webhook_lambda)
         queue.grant_consume_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
+        memory_table.grant_read_write_data(webhook_lambda)
 
         webhook_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(

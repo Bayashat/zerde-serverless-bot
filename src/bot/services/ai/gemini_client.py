@@ -234,6 +234,83 @@ class GeminiClient:
         _record_transient_failure()
         raise last_exc or GeminiUnavailableError("Gemini unavailable after retries")
 
+    def group_chat_reply(self, *, user_message: str, recent_context: str, lang: str = "kk") -> tuple[str, int]:
+        """Generate a context-aware reply for an explicitly bot-directed group message."""
+        if _circuit_is_open():
+            logger.warning("Gemini circuit open, skipping group agent request", extra={"model": self._model})
+            raise GeminiUnavailableError("Gemini circuit open")
+
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning("Gemini RPD limit reached (group agent)", extra={"count": count, "limit": self.rpd_limit})
+            raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
+
+        system_prompt = (
+            "You are ZerdeBot, a Telegram group chat member for an IT community. "
+            "Answer like a helpful, socially aware participant, not a corporate assistant. "
+            "Use the recent chat context only when it is relevant. Do not invent private facts. "
+            "If the context is insufficient, say so briefly. "
+            "Keep replies concise, natural, and in the group's language. "
+            "Avoid mentioning that you are using stored memory unless asked."
+        )
+        generation_config: dict[str, Any] = {
+            "temperature": 0.75,
+            "maxOutputTokens": 450,
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
+        prompt = (
+            f"Preferred language code: {lang}\n\n"
+            "Recent group context, oldest to newest:\n"
+            f"{recent_context or '(no recent context available)'}\n\n"
+            "Current message directed at you:\n"
+            f"{user_message}\n\n"
+            "Reply to the current message."
+        )
+        payload: dict[str, Any] = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
+
+        logger.info(
+            "Gemini group agent request started",
+            extra={
+                "model": self._model,
+                "lang": lang,
+                "context_chars": len(recent_context),
+                "message_chars": len(user_message),
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+            },
+        )
+        try:
+            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
+        except (HTTPError, OSError) as exc:
+            _record_transient_failure()
+            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
+
+        if resp.status == 429 or resp.status >= 500:
+            _record_transient_failure()
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+        if resp.status >= 400:
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            candidate = data["candidates"][0]
+            text = candidate["content"]["parts"][0]["text"].strip()
+            _record_success()
+            return text, count
+        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
+
     def explain_media(
         self,
         *,

@@ -13,7 +13,14 @@ from services.handlers.captcha import (
     process_timeout_task,
 )
 from services.handlers.commands import (
+    handle_agent_off,
+    handle_agent_on,
+    handle_ask,
+    handle_forget_group,
     handle_help,
+    handle_memory_off,
+    handle_memory_on,
+    handle_memory_status,
     handle_ping,
     handle_quiz_generate,
     handle_start,
@@ -61,6 +68,13 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("support")(handle_support)
     dp.command("ping")(handle_ping)
     dp.command("stats")(handle_stats)
+    dp.command("memory_on")(handle_memory_on)
+    dp.command("memory_off")(handle_memory_off)
+    dp.command("agent_on")(handle_agent_on)
+    dp.command("agent_off")(handle_agent_off)
+    dp.command("ask")(handle_ask)
+    dp.command("memory_status")(handle_memory_status)
+    dp.command("forget_group")(handle_forget_group)
     dp.command("voteban")(handle_voteban_command)
     dp.command("wtf")(handle_wtf)
     dp.command("explain")(handle_explain)

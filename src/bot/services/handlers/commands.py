@@ -1,6 +1,9 @@
 """Simple bot commands: /start, /help, /support, /ping, /stats, /genquiz."""
 
 from core.config import (
+    ADMIN_USER_ID,
+    AGENT_ENABLED,
+    GROUP_MEMORY_ENABLED,
     QUIZ_LAMBDA_NAME,
     VALID_DIFFICULTIES,
     VALID_LANGS,
@@ -9,9 +12,59 @@ from core.config import (
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.group_agent import answer_group_question
 from services.handlers.quiz import react_genquiz_processing
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+
+def _is_admin_user(ctx: Context) -> bool:
+    return ctx.user_id == ADMIN_USER_ID
+
+
+def _chat_member_status(ctx: Context) -> str:
+    try:
+        member = ctx.bot.get_chat_member(ctx.chat_id, ctx.user_id)
+        return (member.get("status") or "").lower()
+    except Exception:
+        logger.exception("Failed to verify chat member status", extra={"chat_id": ctx.chat_id, "user_id": ctx.user_id})
+        return ""
+
+
+def _is_chat_admin(ctx: Context) -> bool:
+    return _is_admin_user(ctx) or _chat_member_status(ctx) in ("creator", "administrator")
+
+
+def _is_chat_owner_or_admin_user(ctx: Context) -> bool:
+    return _is_admin_user(ctx) or _chat_member_status(ctx) == "creator"
+
+
+def _require_chat_admin(ctx: Context) -> bool:
+    if _is_chat_admin(ctx):
+        return True
+    ctx.reply(get_translated_text("stats_admin_only", ctx.lang_code), ctx.message_id)
+    return False
+
+
+def _require_chat_owner_or_admin_user(ctx: Context) -> bool:
+    if _is_chat_owner_or_admin_user(ctx):
+        return True
+    ctx.reply("Only the group owner or bot owner can change group memory settings.", ctx.message_id)
+    return False
+
+
+def _require_admin_user(ctx: Context) -> bool:
+    if _is_admin_user(ctx):
+        return True
+    ctx.reply("Only the bot owner can do that.", ctx.message_id)
+    return False
+
+
+def _require_memory_repo(ctx: Context) -> bool:
+    if ctx.memory_repo:
+        return True
+    ctx.reply("Group memory storage is not configured for this deployment.", ctx.message_id)
+    return False
 
 
 def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
@@ -69,13 +122,7 @@ def handle_ping(ctx: Context) -> None:
 def handle_stats(ctx: Context) -> None:
     """Admin-only: reply with group statistics."""
     try:
-        member = ctx.bot.get_chat_member(ctx.chat_id, ctx.user_id)
-        status = (member.get("status") or "").lower()
-        if status not in ("creator", "administrator"):
-            ctx.reply(
-                get_translated_text("stats_admin_only", ctx.lang_code),
-                ctx.message_id,
-            )
+        if not _require_chat_admin(ctx):
             return
 
         stats: dict = ctx.stats_repo.get_stats(ctx.chat_id)
@@ -111,6 +158,93 @@ def handle_stats(ctx: Context) -> None:
             get_translated_text("stats_error", ctx.lang_code),
             ctx.message_id,
         )
+
+
+def handle_memory_on(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not GROUP_MEMORY_ENABLED:
+        ctx.reply("Group memory is disabled by deployment config.", ctx.message_id)
+        return
+    if not _require_chat_owner_or_admin_user(ctx):
+        return
+    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True)
+    ctx.reply("Group memory is now on. I will remember recent non-command messages for context.", ctx.message_id)
+
+
+def handle_memory_off(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not _require_chat_owner_or_admin_user(ctx):
+        return
+    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=False, agent_enabled=False)
+    ctx.reply("Group memory is now off. Existing stored memory is kept until TTL or /forget_group.", ctx.message_id)
+
+
+def handle_agent_on(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not AGENT_ENABLED:
+        ctx.reply("The group agent is disabled by deployment config.", ctx.message_id)
+        return
+    if not _require_chat_owner_or_admin_user(ctx):
+        return
+    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True, agent_enabled=True)
+    ctx.reply("Group agent is now on. I will answer when mentioned or replied to.", ctx.message_id)
+
+
+def handle_agent_off(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not _require_chat_owner_or_admin_user(ctx):
+        return
+    ctx.memory_repo.set_chat_settings(ctx.chat_id, agent_enabled=False)
+    ctx.reply("Group agent is now off. Memory can remain on for commands and future context.", ctx.message_id)
+
+
+def handle_memory_status(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not _require_chat_admin(ctx):
+        return
+    settings = ctx.memory_repo.get_chat_settings(ctx.chat_id)
+    memory = "on" if settings["memory_enabled"] else "off"
+    agent = "on" if settings["agent_enabled"] else "off"
+    ctx.reply(f"Group memory: {memory}\nGroup agent: {agent}", ctx.message_id)
+
+
+def handle_ask(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    parts = ctx.text.split(maxsplit=1)
+    question = parts[1].strip() if len(parts) > 1 else ""
+    if not question and ctx.reply_to_message:
+        question = (ctx.reply_to_message.get("text") or ctx.reply_to_message.get("caption") or "").strip()
+    if not question:
+        ctx.reply("Usage: /ask <question> or reply to a message with /ask", ctx.message_id)
+        return
+    if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
+        ctx.reply("Group memory is off. Ask an admin to run /memory_on first.", ctx.message_id)
+        return
+    handled = answer_group_question(
+        repo=ctx.memory_repo,
+        bot=ctx.bot,
+        chat_id=ctx.chat_id,
+        reply_to_message_id=ctx.message_id,
+        user_text=question,
+        lang=ctx.lang_code,
+    )
+    if not handled:
+        ctx.reply("AI agent is not available right now.", ctx.message_id)
+
+
+def handle_forget_group(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not _require_admin_user(ctx):
+        return
+    deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
+    ctx.reply(f"Deleted {deleted} memory items for this group.", ctx.message_id)
 
 
 def handle_quiz_generate(ctx: Context) -> None:

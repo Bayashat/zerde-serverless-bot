@@ -82,6 +82,13 @@ jobs:
       NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
       NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
       NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
+      GROUP_MEMORY_ENABLED: ${{ vars.GROUP_MEMORY_ENABLED || 'true' }}
+      GROUP_MEMORY_RECENT_LIMIT: ${{ vars.GROUP_MEMORY_RECENT_LIMIT || '300' }}
+      GROUP_MEMORY_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_RETENTION_DAYS || '30' }}
+      AGENT_ENABLED: ${{ vars.AGENT_ENABLED || 'true' }}
+      AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME || '@zerde_kz_bot' }}
+      AGENT_RECENT_CONTEXT_LIMIT: ${{ vars.AGENT_RECENT_CONTEXT_LIMIT || '100' }}
+      AGENT_DAILY_PROACTIVE_LIMIT: ${{ vars.AGENT_DAILY_PROACTIVE_LIMIT || '10' }}
 
     steps:
       - name: Checkout code

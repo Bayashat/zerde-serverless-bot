@@ -68,6 +68,15 @@ class ZerdeTelegramBotStack(Stack):
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
         deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 
+        # ── Group memory / agent MVP ─────────────────────────────────────────
+        group_memory_enabled = os.environ.get("GROUP_MEMORY_ENABLED", "true")
+        group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
+        group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "30")
+        agent_enabled = os.environ.get("AGENT_ENABLED", "false" if is_prod else "true")
+        agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
+        agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
+        agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "10")
+
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
             "kk": _parse_chat_ids("CHATS_KK"),
@@ -135,6 +144,13 @@ class ZerdeTelegramBotStack(Stack):
             kick_ban_duration_seconds=kick_ban_duration_seconds,
             voteban_threshold=voteban_threshold,
             voteban_forgive_threshold=voteban_forgive_threshold,
+            group_memory_enabled=group_memory_enabled,
+            group_memory_recent_limit=group_memory_recent_limit,
+            group_memory_retention_days=group_memory_retention_days,
+            agent_enabled=agent_enabled,
+            agent_bot_username=agent_bot_username,
+            agent_recent_context_limit=agent_recent_context_limit,
+            agent_daily_proactive_limit=agent_daily_proactive_limit,
         )
 
         news = NewsConstruct(
