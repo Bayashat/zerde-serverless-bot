@@ -58,16 +58,27 @@ class QuizRepository:
             logger.error("Failed to get user score", extra={"error": str(e)})
             return None
 
-    def update_score_correct(self, chat_id: str, user_id: str, first_name: str, points: int = 1) -> None:
+    def update_score_correct(
+        self,
+        chat_id: str,
+        user_id: str,
+        first_name: str,
+        *,
+        poll_id: str,
+        points: int = 1,
+    ) -> None:
         """Update user score for a correct answer with streak logic.
 
-        Atomic conditional write prevents double-counting on duplicate poll_answer events.
+        Atomic conditional write prevents double-counting duplicate poll_answer events
+        while still allowing multiple different quiz polls on the same day.
         """
         today = _today_almaty()
         yesterday = _yesterday_almaty()
         current = self.get_user_score(chat_id, user_id)
 
-        if current and current.get("last_correct_date") == yesterday:
+        if current and current.get("last_correct_date") == today:
+            new_streak = int(current.get("current_streak", 1))
+        elif current and current.get("last_correct_date") == yesterday:
             new_streak = int(current.get("current_streak", 0)) + 1
         else:
             new_streak = 1
@@ -83,9 +94,12 @@ class QuizRepository:
                     "    best_streak = :best,"
                     "    last_correct_date = :today,"
                     "    last_answered_date = :today,"
+                    "    answered_poll_ids = list_append(if_not_exists(answered_poll_ids, :empty_list), :poll_list),"
                     "    first_name = :name"
                 ),
-                ConditionExpression=("attribute_not_exists(last_answered_date) OR last_answered_date <> :today"),
+                ConditionExpression=(
+                    "attribute_not_exists(answered_poll_ids) OR NOT contains(answered_poll_ids, :poll_id)"
+                ),
                 ExpressionAttributeValues={
                     ":zero": 0,
                     ":pts": points,
@@ -93,20 +107,30 @@ class QuizRepository:
                     ":best": best_streak,
                     ":today": today,
                     ":name": first_name,
+                    ":empty_list": [],
+                    ":poll_list": [poll_id],
+                    ":poll_id": poll_id,
                 },
             )
-            logger.info("Correct answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "points": points})
+            logger.info(
+                "Correct answer recorded",
+                extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id, "points": points},
+            )
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                logger.info("Duplicate poll_answer ignored", extra={"user_id": user_id, "chat_id": chat_id})
+                logger.info(
+                    "Duplicate poll_answer ignored",
+                    extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id},
+                )
                 return
             logger.error("Failed to update score (correct)", extra={"error": str(e)})
             raise
 
-    def update_score_wrong(self, chat_id: str, user_id: str, first_name: str) -> None:
+    def update_score_wrong(self, chat_id: str, user_id: str, first_name: str, *, poll_id: str) -> None:
         """Update user record for a wrong answer — reset streak.
 
-        Uses if_not_exists to avoid a pre-read; conditional write blocks duplicates.
+        Uses if_not_exists to avoid a pre-read; conditional write blocks duplicate
+        answers for the same poll, not other polls on the same day.
         """
         today = _today_almaty()
         try:
@@ -118,21 +142,30 @@ class QuizRepository:
                     "    current_streak = :zero,"
                     "    best_streak = if_not_exists(best_streak, :zero),"
                     "    last_answered_date = :today,"
+                    "    answered_poll_ids = list_append(if_not_exists(answered_poll_ids, :empty_list), :poll_list),"
                     "    first_name = :name,"
                     "    last_correct_date = if_not_exists(last_correct_date, :empty)"
                 ),
-                ConditionExpression=("attribute_not_exists(last_answered_date) OR last_answered_date <> :today"),
+                ConditionExpression=(
+                    "attribute_not_exists(answered_poll_ids) OR NOT contains(answered_poll_ids, :poll_id)"
+                ),
                 ExpressionAttributeValues={
                     ":zero": 0,
                     ":today": today,
                     ":name": first_name,
                     ":empty": "",
+                    ":empty_list": [],
+                    ":poll_list": [poll_id],
+                    ":poll_id": poll_id,
                 },
             )
-            logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id})
+            logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id})
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                logger.info("Duplicate poll_answer ignored", extra={"user_id": user_id, "chat_id": chat_id})
+                logger.info(
+                    "Duplicate poll_answer ignored",
+                    extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id},
+                )
                 return
             logger.error("Failed to update score (wrong)", extra={"error": str(e)})
             raise

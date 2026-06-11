@@ -35,13 +35,18 @@ class TestStreakCorrectAnswer:
 
         repo = QuizRepository()
         repo.get_user_score = MagicMock(return_value=None)
-        repo.update_score_correct("chat1", "user1", "Test")
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1")
 
         mock_table.update_item.assert_called_once()
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        call_kwargs = mock_table.update_item.call_args[1]
+        vals = call_kwargs["ExpressionAttributeValues"]
         assert vals[":pts"] == 1
         assert vals[":streak"] == 1
         assert vals[":best"] == 1
+        assert vals[":poll_id"] == "poll-1"
+        assert vals[":poll_list"] == ["poll-1"]
+        assert "answered_poll_ids" in call_kwargs["ConditionExpression"]
+        assert "last_answered_date <> :today" not in call_kwargs["ConditionExpression"]
 
     @_PATCH_YESTERDAY
     @_PATCH_TODAY
@@ -64,7 +69,7 @@ class TestStreakCorrectAnswer:
                 "first_name": "Test",
             }
         )
-        repo.update_score_correct("chat1", "user1", "Test")
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-2")
 
         mock_table.update_item.assert_called_once()
         vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
@@ -93,13 +98,68 @@ class TestStreakCorrectAnswer:
                 "first_name": "Test",
             }
         )
-        repo.update_score_correct("chat1", "user1", "Test")
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-3")
 
         mock_table.update_item.assert_called_once()
         vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
         assert vals[":pts"] == 1
         assert vals[":streak"] == 1
         assert vals[":best"] == 8  # Preserved
+
+    @_PATCH_YESTERDAY
+    @_PATCH_TODAY
+    @patch("services.repositories.quiz.get_dynamodb")
+    def test_second_correct_same_day_keeps_streak(self, mock_dynamo, _m_today, _m_yday):
+        mock_table = MagicMock()
+        mock_dynamo.return_value.Table.return_value = mock_table
+
+        from services.repositories.quiz import QuizRepository
+
+        repo = QuizRepository()
+        repo.get_user_score = MagicMock(
+            return_value={
+                "total_score": 5,
+                "week_score": 3,
+                "current_streak": 4,
+                "best_streak": 4,
+                "last_correct_date": FROZEN_TODAY,
+                "last_answered_date": FROZEN_TODAY,
+                "answered_poll_ids": ["poll-1"],
+                "first_name": "Test",
+            }
+        )
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-4")
+
+        mock_table.update_item.assert_called_once()
+        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        assert vals[":streak"] == 4
+        assert vals[":best"] == 4
+
+    @_PATCH_YESTERDAY
+    @_PATCH_TODAY
+    @patch("services.repositories.quiz.get_dynamodb")
+    def test_different_poll_same_day_is_allowed_by_condition(self, mock_dynamo, _m_today, _m_yday):
+        mock_table = MagicMock()
+        mock_dynamo.return_value.Table.return_value = mock_table
+
+        from services.repositories.quiz import QuizRepository
+
+        repo = QuizRepository()
+        repo.get_user_score = MagicMock(
+            return_value={
+                "current_streak": 1,
+                "best_streak": 1,
+                "last_correct_date": FROZEN_TODAY,
+                "last_answered_date": FROZEN_TODAY,
+                "answered_poll_ids": ["poll-1"],
+            }
+        )
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-2")
+
+        condition = mock_table.update_item.call_args[1]["ConditionExpression"]
+        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        assert "NOT contains(answered_poll_ids, :poll_id)" in condition
+        assert vals[":poll_id"] == "poll-2"
 
     @_PATCH_YESTERDAY
     @_PATCH_TODAY
@@ -125,7 +185,7 @@ class TestStreakCorrectAnswer:
             }
         )
         # Must not raise
-        repo.update_score_correct("chat1", "user1", "Test")
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1")
         mock_table.update_item.assert_called_once()
 
 
@@ -142,15 +202,17 @@ class TestStreakWrongAnswer:
         from services.repositories.quiz import QuizRepository
 
         repo = QuizRepository()
-        repo.update_score_wrong("chat1", "user1", "Test")
+        repo.update_score_wrong("chat1", "user1", "Test", poll_id="poll-1")
 
         mock_table.update_item.assert_called_once()
         call_kwargs = mock_table.update_item.call_args[1]
         vals = call_kwargs["ExpressionAttributeValues"]
         assert vals[":zero"] == 0
         assert vals[":today"] == FROZEN_TODAY
+        assert vals[":poll_id"] == "poll-1"
         # streak reset is expressed via :zero in the UpdateExpression
         assert "current_streak = :zero" in call_kwargs["UpdateExpression"]
+        assert "answered_poll_ids" in call_kwargs["ConditionExpression"]
 
     @_PATCH_YESTERDAY
     @_PATCH_TODAY
@@ -165,5 +227,5 @@ class TestStreakWrongAnswer:
 
         repo = QuizRepository()
         # Must not raise
-        repo.update_score_wrong("chat1", "user1", "Test")
+        repo.update_score_wrong("chat1", "user1", "Test", poll_id="poll-1")
         mock_table.update_item.assert_called_once()
