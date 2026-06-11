@@ -54,8 +54,8 @@ class ZerdeTelegramBotStack(Stack):
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
         wtf_gemini_model = os.environ.get("WTF_GEMINI_MODEL")
-        news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL")
-        quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL")
+        news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3.1-flash-lite")
+        quiz_gemini_model = os.environ.get("QUIZ_GEMINI_MODEL", "gemini-3.1-flash-lite")
 
         # ── Groq parameters ──────────────────────────────────────────────────
         groq_api_base = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
@@ -66,7 +66,7 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-        deepseek_model = os.environ.get("DEEPSEEK_MODEL")
+        deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {

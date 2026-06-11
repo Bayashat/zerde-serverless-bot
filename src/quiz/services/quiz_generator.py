@@ -219,6 +219,7 @@ class QuizGenerator:
         lang: str,
         difficulty: str = "easy",
         subtopic: str | None = None,
+        interactive: bool = False,
     ) -> dict | None:
         """Generate a quiz question for the given category, language, and difficulty.
 
@@ -258,7 +259,7 @@ class QuizGenerator:
         )
 
         try:
-            data = self._provider.generate_json(prompt, temperature=0.3)
+            data = self._provider.generate_json(prompt, temperature=0.3, interactive=interactive)
             return self._validate(data, category, lang, difficulty, subtopic)
 
         except Exception:
@@ -269,7 +270,7 @@ class QuizGenerator:
             )
             return None
 
-    def translate_question(self, question: dict, lang: str) -> dict | None:
+    def translate_question(self, question: dict, lang: str, *, interactive: bool = False) -> dict | None:
         """Translate a banked (English) question dict into *lang*.
 
         Translates: question text, all 4 options, explanation.
@@ -302,7 +303,7 @@ class QuizGenerator:
         )
 
         try:
-            data = self._provider.generate_json(prompt, temperature=0.1)
+            data = self._provider.generate_json(prompt, temperature=0.1, interactive=interactive)
             if not isinstance(data, dict):
                 logger.warning(
                     "Translation provider returned non-dict",

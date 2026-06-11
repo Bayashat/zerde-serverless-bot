@@ -39,11 +39,11 @@ def get_deepseek_api_key() -> str:
 # ── Optional (have defaults) ─────────────────────────────────────────────
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 
-LLM_MODEL: str | None = os.environ.get("NEWS_GEMINI_MODEL")
+LLM_MODEL: str = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 # ── DeepSeek fallback (non-key) ───────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
-DEEPSEEK_MODEL: str | None = os.environ.get("DEEPSEEK_MODEL")
+DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 
 
 def __getattr__(name: str) -> str:
