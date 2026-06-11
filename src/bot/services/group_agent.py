@@ -16,7 +16,7 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.ai.telegram_html import normalize_llm_output_for_telegram_html
-from services.group_memory import extract_message_text, format_recent_context
+from services.group_memory import extract_message_text, format_recent_context, format_user_profile_context
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram import TelegramClient
 
@@ -249,11 +249,19 @@ def answer_group_question(
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
+    ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
+    user_profile_context = format_user_profile_context(
+        repo,
+        chat_id,
+        user_text=user_text,
+        ignored_usernames=ignored_usernames,
+    )
 
     try:
         answer, _ = gemini.group_chat_reply(
             user_message=user_text,
             recent_context=recent_context,
+            user_profile_context=user_profile_context,
             lang=lang,
         )
     except GeminiRPDExhaustedError:

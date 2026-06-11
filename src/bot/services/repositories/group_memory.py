@@ -38,6 +38,74 @@ class GroupMemoryRepository:
     def _msg_sk(created_at_ms: int, message_id: int | str) -> str:
         return f"MSG#{created_at_ms:013d}#{message_id}"
 
+    @staticmethod
+    def _normalise_profile_samples(value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        samples: list[str] = []
+        for item in value:
+            text = str(item or "").strip()
+            if text:
+                samples.append(text[:220])
+        return samples[-8:]
+
+    @staticmethod
+    def _normalise_topic_counts(value: Any) -> dict[str, int]:
+        if not isinstance(value, dict):
+            return {}
+        counts: dict[str, int] = {}
+        for key, raw_count in value.items():
+            term = str(key or "").strip().lower()
+            if not term:
+                continue
+            try:
+                count = int(raw_count)
+            except (TypeError, ValueError):
+                continue
+            if count > 0:
+                counts[term] = count
+        return counts
+
+    @staticmethod
+    def _profile_terms(text: str) -> list[str]:
+        """Extract lightweight topic terms from a user's own message."""
+        import re
+
+        cleaned = re.sub(r"https?://\S+|@\w+|/\w+", " ", text.lower())
+        raw_terms = re.findall(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{2,}", cleaned)
+        stopwords = {
+            "and",
+            "are",
+            "for",
+            "from",
+            "that",
+            "the",
+            "this",
+            "with",
+            "бар",
+            "деп",
+            "ғой",
+            "мен",
+            "сол",
+            "үшін",
+            "бір",
+            "как",
+            "для",
+            "или",
+            "что",
+            "это",
+        }
+        terms: list[str] = []
+        seen: set[str] = set()
+        for term in raw_terms:
+            if term in stopwords or term.isdigit() or term in seen:
+                continue
+            seen.add(term)
+            terms.append(term[:40])
+            if len(terms) >= 8:
+                break
+        return terms
+
     def set_chat_settings(
         self,
         chat_id: int | str,
@@ -138,14 +206,23 @@ class GroupMemoryRepository:
             ":one": Decimal(1),
             ":now": now,
             ":display_name": display_name,
+            ":kind": "profile",
             ":sample": sample_text[:500],
+            ":user_id": str(user_id),
         }
+        profile = self.get_user_profile(chat_id, user_id)
+        values[":samples"] = self._updated_profile_samples(profile, sample_text)
+        values[":topics"] = self._updated_profile_topics(profile, sample_text)
         names = {"#count": "message_count"}
         sets = [
             "first_seen = if_not_exists(first_seen, :now)",
+            "kind = :kind",
+            "user_id = :user_id",
             "last_seen = :now",
             "display_name = :display_name",
             "last_sample = :sample",
+            "recent_samples = :samples",
+            "topic_counts = :topics",
             "#count = if_not_exists(#count, :zero) + :one",
         ]
         if username:
@@ -159,6 +236,20 @@ class GroupMemoryRepository:
             ExpressionAttributeValues=values,
         )
 
+    def _updated_profile_samples(self, profile: dict[str, Any], sample_text: str) -> list[str]:
+        samples = self._normalise_profile_samples(profile.get("recent_samples"))
+        sample = sample_text.replace("\n", " ").strip()[:220]
+        if sample and (not samples or samples[-1] != sample):
+            samples.append(sample)
+        return samples[-8:]
+
+    def _updated_profile_topics(self, profile: dict[str, Any], sample_text: str) -> dict[str, Decimal]:
+        counts = self._normalise_topic_counts(profile.get("topic_counts"))
+        for term in self._profile_terms(sample_text):
+            counts[term] = counts.get(term, 0) + 1
+        top_terms = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:30]
+        return {term: Decimal(count) for term, count in top_terms}
+
     def get_recent_messages(self, chat_id: int | str, *, limit: int) -> list[dict[str, Any]]:
         resp = self.table.query(
             KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("MSG#"),
@@ -171,6 +262,43 @@ class GroupMemoryRepository:
     def get_user_profile(self, chat_id: int | str, user_id: int | str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._user_sk(user_id)})
         return resp.get("Item") or {}
+
+    def get_user_profiles_by_usernames(
+        self,
+        chat_id: int | str,
+        usernames: set[str],
+        *,
+        scan_limit: int = 500,
+    ) -> list[dict[str, Any]]:
+        wanted = {username.lower().lstrip("@") for username in usernames if username}
+        if not wanted:
+            return []
+
+        profiles: list[dict[str, Any]] = []
+        seen = 0
+        start_key: dict[str, Any] | None = None
+        while seen < scan_limit:
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("USER#"),
+                "ScanIndexForward": False,
+                "Limit": min(100, scan_limit - seen),
+            }
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self.table.query(**kwargs)
+            items = resp.get("Items") or []
+            seen += len(items)
+            for item in items:
+                username = str(item.get("username") or "").lower().lstrip("@")
+                if username in wanted:
+                    profiles.append(item)
+                    wanted.remove(username)
+                    if not wanted:
+                        return profiles
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                return profiles
+        return profiles
 
     def try_reserve_proactive_reply(self, chat_id: int | str, *, daily_limit: int) -> bool:
         """Atomically reserve one proactive agent reply for this chat/day."""

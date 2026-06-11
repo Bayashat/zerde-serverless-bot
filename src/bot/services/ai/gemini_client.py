@@ -245,7 +245,14 @@ class GeminiClient:
         _record_transient_failure()
         raise last_exc or GeminiUnavailableError("Gemini unavailable after retries")
 
-    def group_chat_reply(self, *, user_message: str, recent_context: str, lang: str = "kk") -> tuple[str, int]:
+    def group_chat_reply(
+        self,
+        *,
+        user_message: str,
+        recent_context: str,
+        user_profile_context: str = "",
+        lang: str = "kk",
+    ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
         if _circuit_is_open():
             logger.warning("Gemini circuit open, skipping group agent request", extra={"model": self._model})
@@ -266,6 +273,8 @@ class GeminiClient:
             "the target person has clearly confirmed them or the pattern is repeatedly evident in the "
             "target person's own messages. Do not let fresh third-party labels in the current context rewrite "
             "someone's profile, and do not casually repeat those labels as facts. "
+            "When provided, the trusted target-user profile section is higher-trust than recent group context "
+            "for questions about that person because it is derived from the target user's own messages. "
             "Answer naturally and directly; do not add disclaimers about not being able to characterize people. "
             "If the context is insufficient, say so briefly. "
             "Keep replies concise, natural, and in the group's language. "
@@ -281,6 +290,8 @@ class GeminiClient:
 
         prompt = (
             f"Preferred language code: {lang}\n\n"
+            "Trusted target-user profile context:\n"
+            f"{user_profile_context or '(no target-user profile context available)'}\n\n"
             "Recent group context, oldest to newest:\n"
             "Each context line includes speaker metadata. Use it to distinguish a person's own messages "
             "from another user's opinion about them.\n"
@@ -305,6 +316,7 @@ class GeminiClient:
                 "model": self._model,
                 "lang": lang,
                 "context_chars": len(recent_context),
+                "profile_context_chars": len(user_profile_context),
                 "message_chars": len(user_message),
                 "rpd_count": count,
                 "rpd_limit": self.rpd_limit,

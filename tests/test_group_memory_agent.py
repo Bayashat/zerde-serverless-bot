@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from unittest.mock import MagicMock
 
 from services import group_agent, group_memory
@@ -69,6 +70,71 @@ def test_format_recent_context_keeps_speaker_source_metadata():
     assert "[speaker user_id=101 username=@nurtai_c name=Nurt AI]" in context
     assert "[speaker user_id=202 username=@bayashat name=Bayashat]" in context
     assert "@bayashat чаттың токсигі" in context
+
+
+def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {
+        "Item": {
+            "recent_samples": ["мен Python туралы жаздым"],
+            "topic_counts": {"python": Decimal(2)},
+        }
+    }
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="bayashat",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    kwargs = repo.table.update_item.call_args.kwargs
+    values = kwargs["ExpressionAttributeValues"]
+
+    assert "kind = :kind" in kwargs["UpdateExpression"]
+    assert "recent_samples = :samples" in kwargs["UpdateExpression"]
+    assert "topic_counts = :topics" in kwargs["UpdateExpression"]
+    assert values[":user_id"] == "202"
+    assert values[":username"] == "bayashat"
+    assert values[":samples"] == [
+        "мен Python туралы жаздым",
+        "OpenSearch пен Python индексациясын қарап жүрмін",
+    ]
+    assert values[":topics"]["python"] == Decimal(3)
+    assert values[":topics"]["opensearch"] == Decimal(1)
+
+
+def test_format_user_profile_context_uses_target_profile_not_third_party_label():
+    repo = MagicMock()
+    repo.get_user_profiles_by_usernames.return_value = [
+        {
+            "user_id": "202",
+            "username": "bayashat",
+            "display_name": "Bayashat",
+            "message_count": Decimal(12),
+            "topic_counts": {"python": Decimal(3), "opensearch": Decimal(2)},
+            "recent_samples": [
+                "біраз уақыт керек әр адамды тану үшін",
+                "OpenSearch индексациясын қарап жүрмін",
+            ],
+        }
+    ]
+
+    context = group_memory.format_user_profile_context(
+        repo,
+        -100123,
+        user_text="@zerde_kz_bot @bayashat кім",
+        ignored_usernames={"zerde_kz_bot"},
+    )
+
+    repo.get_user_profiles_by_usernames.assert_called_once_with(-100123, {"bayashat"})
+    assert "username=@bayashat" in context
+    assert "own_topic_terms: python, opensearch" in context
+    assert "OpenSearch индексациясын қарап жүрмін" in context
+    assert "токсик" not in context
 
 
 def test_agent_should_answer_mention_when_enabled(monkeypatch):
@@ -225,6 +291,11 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
             "[speaker user_id=101 username=@nurtai_c name=Nurt AI] @bayashat чаттың токсигі\n"
             "[speaker user_id=202 username=@bayashat name=Bayashat] біраз уақыт керек әр адамды тану үшін"
         ),
+        user_profile_context=(
+            "Trusted target-user profiles derived only from each user's own stored messages:\n"
+            "- [name=Bayashat username=@bayashat user_id=202 own_messages=12]\n"
+            "  own_topic_terms: opensearch, python"
+        ),
         lang="kk",
     )
 
@@ -237,8 +308,47 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert "rely mainly on that person's own messages" in system_prompt
     assert "fresh third-party labels" in system_prompt
     assert "do not add disclaimers" in system_prompt
+    assert "Trusted target-user profile context:" in user_prompt
+    assert "own_topic_terms: opensearch, python" in user_prompt
     assert "distinguish a person's own messages from another user's opinion" in user_prompt
     assert "username=@bayashat" in user_prompt
+
+
+def test_answer_group_question_passes_target_profile_context(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("Баяшат OpenSearch жайлы жиі жазады.", 1)
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Nurt AI: @bayashat токсик")
+    monkeypatch.setattr(
+        group_agent,
+        "format_user_profile_context",
+        lambda *args, **kwargs: "Trusted profile: username=@bayashat own_topic_terms: opensearch",
+    )
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="@zerde_kz_bot @bayashat кім",
+        lang="kk",
+    )
+
+    assert handled is True
+    gemini.group_chat_reply.assert_called_once_with(
+        user_message="@zerde_kz_bot @bayashat кім",
+        recent_context="Nurt AI: @bayashat токсик",
+        user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
+        lang="kk",
+    )
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "Баяшат OpenSearch жайлы жиі жазады.",
+        reply_to_message_id=99,
+    )
 
 
 def test_handle_ask_uses_group_context_answer(monkeypatch):
