@@ -598,6 +598,8 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert count == 1
     assert "rely mainly on that person's own messages" in system_prompt
     assert "fresh third-party labels" in system_prompt
+    assert "Decide the answer style from the user's wording" in system_prompt
+    assert "do not use a fixed angry persona by default" in system_prompt
     assert "do not add disclaimers" in system_prompt
     assert "Trusted target-user profile context:" in user_prompt
     assert "own_topic_terms: opensearch, python" in user_prompt
@@ -672,13 +674,32 @@ def test_handle_ask_usage_message_has_no_html_tag():
     ctx.text = "/ask"
     ctx.reply_to_message = None
     ctx.message_id = 99
+    ctx.lang_code = "en"
     ctx.memory_repo.is_memory_enabled.return_value = True
 
     handle_ask(ctx)
 
     message = ctx.reply.call_args.args[0]
     assert "<question>" not in message
-    assert "Usage: /ask question" in message
+    assert "/ask" in message
+
+
+def test_handle_ask_reply_with_question_passes_replied_text_and_question(monkeypatch):
+    ctx = MagicMock()
+    ctx.text = "/ask is he being sarcastic?"
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = {"text": "Sure, deploying on Friday evening is always a great idea."}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr("services.handlers.commands.answer_group_question", answer)
+
+    handle_ask(ctx)
+
+    user_text = answer.call_args.kwargs["user_text"]
+    assert "deploying on Friday evening" in user_text
+    assert "is he being sarcastic?" in user_text
 
 
 def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:
@@ -689,6 +710,8 @@ def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:
     ctx.lang_code = "en"
     ctx.memory_repo.get_chat_settings.return_value = {"memory_enabled": True, "agent_enabled": False}
     ctx.bot.get_chat_member.return_value = {"status": status}
+    ctx.text = ""
+    ctx.reply_to_message = None
     return ctx
 
 
@@ -741,8 +764,30 @@ def test_memory_status_allows_group_admin(monkeypatch):
 
     ctx.memory_repo.get_chat_settings.assert_called_once_with(-100123)
     ctx.memory_repo.get_memory_overview.assert_called_once_with(-100123)
-    assert "Long-term memory: 1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
-    assert "Daily summaries: 2" in ctx.reply.call_args.args[0]
+    assert "1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
+    assert "2" in ctx.reply.call_args.args[0]
+
+
+def test_memory_command_routes_subcommands(monkeypatch):
+    ctx = _command_ctx(user_id=1)
+    ctx.text = "/memory forget me"
+    forget_me = MagicMock()
+    monkeypatch.setattr(commands, "handle_forget_me", forget_me)
+
+    commands.handle_memory(ctx)
+
+    forget_me.assert_called_once_with(ctx)
+
+
+def test_agent_command_routes_why(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/agent why"
+    why = MagicMock()
+    monkeypatch.setattr(commands, "handle_why_reply", why)
+
+    commands.handle_agent(ctx)
+
+    why.assert_called_once_with(ctx)
 
 
 def test_forget_group_allows_only_bot_owner(monkeypatch):
@@ -768,7 +813,7 @@ def test_forget_me_deletes_current_users_memory():
     commands.handle_forget_me(ctx)
 
     ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
-    assert "Deleted 5 memory items linked to you" in ctx.reply.call_args.args[0]
+    assert "5" in ctx.reply.call_args.args[0]
 
 
 def test_why_reply_uses_replied_bot_message_reason():

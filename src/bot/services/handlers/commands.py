@@ -49,22 +49,55 @@ def _require_chat_admin(ctx: Context) -> bool:
 def _require_chat_owner_or_admin_user(ctx: Context) -> bool:
     if _is_chat_owner_or_admin_user(ctx):
         return True
-    ctx.reply("Only the group owner or bot owner can change group memory settings.", ctx.message_id)
+    ctx.reply(get_translated_text("memory_owner_only", ctx.lang_code), ctx.message_id)
     return False
 
 
 def _require_admin_user(ctx: Context) -> bool:
     if _is_admin_user(ctx):
         return True
-    ctx.reply("Only the bot owner can do that.", ctx.message_id)
+    ctx.reply(get_translated_text("bot_owner_only", ctx.lang_code), ctx.message_id)
     return False
 
 
 def _require_memory_repo(ctx: Context) -> bool:
     if ctx.memory_repo:
         return True
-    ctx.reply("Group memory storage is not configured for this deployment.", ctx.message_id)
+    ctx.reply(get_translated_text("memory_storage_not_configured", ctx.lang_code), ctx.message_id)
     return False
+
+
+def _command_args(text: str) -> str:
+    parts = text.split(maxsplit=1)
+    return parts[1].strip() if len(parts) > 1 else ""
+
+
+def _normalized_subcommand(args: str) -> str:
+    return " ".join(args.replace("_", " ").lower().split())
+
+
+def _reply_text(ctx: Context) -> str:
+    if not isinstance(ctx.reply_to_message, dict):
+        return ""
+    return (ctx.reply_to_message.get("text") or ctx.reply_to_message.get("caption") or "").strip()
+
+
+def _build_ask_user_text(ctx: Context) -> str:
+    question = _command_args(ctx.text)
+    replied_text = _reply_text(ctx)
+    if question and replied_text:
+        return (
+            "The user is asking about this replied-to group message:\n"
+            f"{replied_text}\n\n"
+            "User question:\n"
+            f"{question}"
+        )
+    if replied_text:
+        return (
+            "The user replied to this group message and wants you to explain it or answer based on it:\n"
+            f"{replied_text}"
+        )
+    return question
 
 
 def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
@@ -164,12 +197,12 @@ def handle_memory_on(ctx: Context) -> None:
     if not _require_memory_repo(ctx):
         return
     if not GROUP_MEMORY_ENABLED:
-        ctx.reply("Group memory is disabled by deployment config.", ctx.message_id)
+        ctx.reply(get_translated_text("memory_deployment_disabled", ctx.lang_code), ctx.message_id)
         return
     if not _require_chat_owner_or_admin_user(ctx):
         return
     ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True)
-    ctx.reply("Group memory is now on. I will remember recent non-command messages for context.", ctx.message_id)
+    ctx.reply(get_translated_text("memory_enabled", ctx.lang_code), ctx.message_id)
 
 
 def handle_memory_off(ctx: Context) -> None:
@@ -178,19 +211,19 @@ def handle_memory_off(ctx: Context) -> None:
     if not _require_chat_owner_or_admin_user(ctx):
         return
     ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=False, agent_enabled=False)
-    ctx.reply("Group memory is now off. Existing stored memory is kept until TTL or /forget_group.", ctx.message_id)
+    ctx.reply(get_translated_text("memory_disabled", ctx.lang_code), ctx.message_id)
 
 
 def handle_agent_on(ctx: Context) -> None:
     if not _require_memory_repo(ctx):
         return
     if not AGENT_ENABLED:
-        ctx.reply("The group agent is disabled by deployment config.", ctx.message_id)
+        ctx.reply(get_translated_text("agent_deployment_disabled", ctx.lang_code), ctx.message_id)
         return
     if not _require_chat_owner_or_admin_user(ctx):
         return
     ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True, agent_enabled=True)
-    ctx.reply("Group agent is now on. I will answer when mentioned or replied to.", ctx.message_id)
+    ctx.reply(get_translated_text("agent_enabled", ctx.lang_code), ctx.message_id)
 
 
 def handle_agent_off(ctx: Context) -> None:
@@ -199,7 +232,7 @@ def handle_agent_off(ctx: Context) -> None:
     if not _require_chat_owner_or_admin_user(ctx):
         return
     ctx.memory_repo.set_chat_settings(ctx.chat_id, agent_enabled=False)
-    ctx.reply("Group agent is now off. Memory can remain on for commands and future context.", ctx.message_id)
+    ctx.reply(get_translated_text("agent_disabled", ctx.lang_code), ctx.message_id)
 
 
 def handle_memory_status(ctx: Context) -> None:
@@ -208,39 +241,79 @@ def handle_memory_status(ctx: Context) -> None:
     if not _require_chat_admin(ctx):
         return
     settings = ctx.memory_repo.get_chat_settings(ctx.chat_id)
-    memory = "on" if settings["memory_enabled"] else "off"
-    agent = "on" if settings["agent_enabled"] else "off"
+    memory = (
+        get_translated_text("status_on", ctx.lang_code)
+        if settings["memory_enabled"]
+        else get_translated_text("status_off", ctx.lang_code)
+    )
+    agent = (
+        get_translated_text("status_on", ctx.lang_code)
+        if settings["agent_enabled"]
+        else get_translated_text("status_off", ctx.lang_code)
+    )
     overview = ctx.memory_repo.get_memory_overview(ctx.chat_id)
     ctx.reply(
-        (
-            f"Group memory: {memory}\n"
-            f"Group agent: {agent}\n"
-            f"Recent messages: {overview['recent_messages']}\n"
-            f"User profiles: {overview['user_profiles']}\n"
-            f"Long-term memory: "
-            f"{overview['events']} events, "
-            f"{overview['user_facts']} user facts, "
-            f"{overview['group_facts']} group facts, "
-            f"{overview['jokes']} jokes\n"
-            f"Daily summaries: {overview['daily_summaries']}\n"
-            f"Recorded agent replies: {overview['agent_replies']}"
+        get_translated_text(
+            "memory_status_message",
+            ctx.lang_code,
+            memory=memory,
+            agent=agent,
+            recent_messages=overview["recent_messages"],
+            user_profiles=overview["user_profiles"],
+            events=overview["events"],
+            user_facts=overview["user_facts"],
+            group_facts=overview["group_facts"],
+            jokes=overview["jokes"],
+            daily_summaries=overview["daily_summaries"],
+            agent_replies=overview["agent_replies"],
         ),
         ctx.message_id,
     )
 
 
+def handle_memory(ctx: Context) -> None:
+    action = _normalized_subcommand(_command_args(ctx.text))
+    if action == "on":
+        handle_memory_on(ctx)
+    elif action == "off":
+        handle_memory_off(ctx)
+    elif action == "status":
+        handle_memory_status(ctx)
+    elif action == "forget me":
+        handle_forget_me(ctx)
+    elif action == "forget group":
+        handle_forget_group(ctx)
+    else:
+        ctx.reply(get_translated_text("memory_usage", ctx.lang_code), ctx.message_id)
+
+
+def handle_agent_status(ctx: Context) -> None:
+    handle_memory_status(ctx)
+
+
+def handle_agent(ctx: Context) -> None:
+    action = _normalized_subcommand(_command_args(ctx.text))
+    if action == "on":
+        handle_agent_on(ctx)
+    elif action == "off":
+        handle_agent_off(ctx)
+    elif action == "status":
+        handle_agent_status(ctx)
+    elif action == "why":
+        handle_why_reply(ctx)
+    else:
+        ctx.reply(get_translated_text("agent_usage", ctx.lang_code), ctx.message_id)
+
+
 def handle_ask(ctx: Context) -> None:
     if not _require_memory_repo(ctx):
         return
-    parts = ctx.text.split(maxsplit=1)
-    question = parts[1].strip() if len(parts) > 1 else ""
-    if not question and ctx.reply_to_message:
-        question = (ctx.reply_to_message.get("text") or ctx.reply_to_message.get("caption") or "").strip()
+    question = _build_ask_user_text(ctx)
     if not question:
-        ctx.reply("Usage: /ask question or reply to a message with /ask", ctx.message_id)
+        ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
         return
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
-        ctx.reply("Group memory is off. Ask an admin to run /memory_on first.", ctx.message_id)
+        ctx.reply(get_translated_text("ask_memory_off", ctx.lang_code), ctx.message_id)
         return
     handled = answer_group_question(
         repo=ctx.memory_repo,
@@ -251,7 +324,7 @@ def handle_ask(ctx: Context) -> None:
         lang=ctx.lang_code,
     )
     if not handled:
-        ctx.reply("AI agent is not available right now.", ctx.message_id)
+        ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
 
 
 def handle_forget_group(ctx: Context) -> None:
@@ -260,17 +333,17 @@ def handle_forget_group(ctx: Context) -> None:
     if not _require_admin_user(ctx):
         return
     deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
-    ctx.reply(f"Deleted {deleted} memory items for this group.", ctx.message_id)
+    ctx.reply(get_translated_text("forget_group_done", ctx.lang_code, deleted=deleted), ctx.message_id)
 
 
 def handle_forget_me(ctx: Context) -> None:
     if not _require_memory_repo(ctx):
         return
     if not ctx.user_id:
-        ctx.reply("I could not identify your Telegram user id.", ctx.message_id)
+        ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
         return
     deleted = ctx.memory_repo.delete_user_memory(ctx.chat_id, ctx.user_id)
-    ctx.reply(f"Deleted {deleted} memory items linked to you in this group.", ctx.message_id)
+    ctx.reply(get_translated_text("forget_me_done", ctx.lang_code, deleted=deleted), ctx.message_id)
 
 
 def handle_why_reply(ctx: Context) -> None:
@@ -284,15 +357,20 @@ def handle_why_reply(ctx: Context) -> None:
 
     item = ctx.memory_repo.get_agent_reply_explanation(ctx.chat_id, bot_message_id=bot_message_id)
     if not item:
-        ctx.reply("I do not have a recorded reason for that reply.", ctx.message_id)
+        ctx.reply(get_translated_text("why_reply_missing", ctx.lang_code), ctx.message_id)
         return
 
     trigger_kind = item.get("trigger_kind") or "unknown"
     reason = item.get("reason") or "No reason recorded."
     confidence = item.get("confidence")
-    confidence_line = f"\nConfidence: {float(confidence):.2f}" if confidence is not None else ""
     ctx.reply(
-        f"Why I replied: {reason}\nTrigger: {trigger_kind}{confidence_line}",
+        get_translated_text(
+            "why_reply_message",
+            ctx.lang_code,
+            reason=reason,
+            trigger=trigger_kind,
+            confidence=f"{float(confidence):.2f}" if confidence is not None else "-",
+        ),
         ctx.message_id,
     )
 
