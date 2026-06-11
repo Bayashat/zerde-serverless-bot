@@ -259,8 +259,8 @@ class GroupMemoryRepository:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": self._settings_sk()})
         item = resp.get("Item") or {}
         return {
-            "memory_enabled": bool(item.get("memory_enabled", False)),
-            "agent_enabled": bool(item.get("agent_enabled", False)),
+            "memory_enabled": bool(item.get("memory_enabled", True)),
+            "agent_enabled": bool(item.get("agent_enabled", True)),
             "updated_at": item.get("updated_at"),
         }
 

@@ -83,6 +83,19 @@ def test_format_recent_context_keeps_speaker_source_metadata():
     assert "@bayashat чаттың токсигі" in context
 
 
+def test_chat_settings_default_to_memory_and_agent_on():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {}
+
+    settings = repo.get_chat_settings(-100123)
+
+    assert settings["memory_enabled"] is True
+    assert settings["agent_enabled"] is True
+    assert repo.is_memory_enabled(-100123) is True
+    assert repo.is_agent_enabled(-100123) is True
+
+
 def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
