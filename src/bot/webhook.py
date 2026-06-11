@@ -101,7 +101,7 @@ def _handle_api_gateway(
             screener.run(body)
 
         if not has_pending_captcha:
-            observe_group_memory_update(dispatcher.memory_repo, body)
+            observe_group_memory_update(dispatcher.memory_repo, body, sqs_repo=_sqs_client)
 
         if not is_event_relevant_to_bot(body):
             logger.info("Event not relevant to bot, ignoring")

@@ -210,7 +210,22 @@ def handle_memory_status(ctx: Context) -> None:
     settings = ctx.memory_repo.get_chat_settings(ctx.chat_id)
     memory = "on" if settings["memory_enabled"] else "off"
     agent = "on" if settings["agent_enabled"] else "off"
-    ctx.reply(f"Group memory: {memory}\nGroup agent: {agent}", ctx.message_id)
+    overview = ctx.memory_repo.get_memory_overview(ctx.chat_id)
+    ctx.reply(
+        (
+            f"Group memory: {memory}\n"
+            f"Group agent: {agent}\n"
+            f"Recent messages: {overview['recent_messages']}\n"
+            f"User profiles: {overview['user_profiles']}\n"
+            f"Long-term memory: "
+            f"{overview['events']} events, "
+            f"{overview['user_facts']} user facts, "
+            f"{overview['group_facts']} group facts, "
+            f"{overview['jokes']} jokes\n"
+            f"Recorded agent replies: {overview['agent_replies']}"
+        ),
+        ctx.message_id,
+    )
 
 
 def handle_ask(ctx: Context) -> None:
@@ -245,6 +260,40 @@ def handle_forget_group(ctx: Context) -> None:
         return
     deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
     ctx.reply(f"Deleted {deleted} memory items for this group.", ctx.message_id)
+
+
+def handle_forget_me(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not ctx.user_id:
+        ctx.reply("I could not identify your Telegram user id.", ctx.message_id)
+        return
+    deleted = ctx.memory_repo.delete_user_memory(ctx.chat_id, ctx.user_id)
+    ctx.reply(f"Deleted {deleted} memory items linked to you in this group.", ctx.message_id)
+
+
+def handle_why_reply(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    bot_message_id = None
+    if ctx.reply_to_message:
+        sender = ctx.reply_to_message.get("from") or {}
+        if sender.get("is_bot"):
+            bot_message_id = ctx.reply_to_message.get("message_id")
+
+    item = ctx.memory_repo.get_agent_reply_explanation(ctx.chat_id, bot_message_id=bot_message_id)
+    if not item:
+        ctx.reply("I do not have a recorded reason for that reply.", ctx.message_id)
+        return
+
+    trigger_kind = item.get("trigger_kind") or "unknown"
+    reason = item.get("reason") or "No reason recorded."
+    confidence = item.get("confidence")
+    confidence_line = f"\nConfidence: {float(confidence):.2f}" if confidence is not None else ""
+    ctx.reply(
+        f"Why I replied: {reason}\nTrigger: {trigger_kind}{confidence_line}",
+        ctx.message_id,
+    )
 
 
 def handle_quiz_generate(ctx: Context) -> None:

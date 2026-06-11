@@ -71,6 +71,23 @@ def test_spam_check_routes() -> None:
     mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha)
 
 
+def test_process_group_memory_routes() -> None:
+    body = {
+        "task_type": "PROCESS_GROUP_MEMORY",
+        "chat_id": -1001,
+        "user_id": 7,
+        "message_id": 8,
+        "display_name": "Ada",
+        "text": "Tomorrow we deploy the memory processor",
+    }
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_group_memory_task") as mock_pm,
+    ):
+        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
+    mock_pm.assert_called_once_with(body)
+
+
 def test_non_whitelisted_chat_skips_handlers() -> None:
     body = {
         "task_type": "SPAM_CHECK",

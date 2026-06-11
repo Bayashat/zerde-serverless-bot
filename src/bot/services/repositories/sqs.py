@@ -1,4 +1,4 @@
-"""SQS client for deferred timeout tasks."""
+"""SQS client for asynchronous bot tasks."""
 
 import json
 
@@ -19,7 +19,7 @@ def _get_sqs_client():
 
 
 class SQSClient:
-    """Sends delayed CHECK_TIMEOUT tasks to SQS."""
+    """Sends asynchronous bot tasks to SQS."""
 
     def __init__(self) -> None:
         self.queue_url = QUEUE_URL
@@ -144,3 +144,41 @@ class SQSClient:
             )
         except Exception as e:
             logger.exception("Failed to send spam check task to SQS", extra={"error": e})
+
+    def send_group_memory_task(
+        self,
+        *,
+        chat_id: int,
+        message_id: int,
+        user_id: int,
+        display_name: str,
+        username: str | None,
+        text: str,
+        created_at: int | None = None,
+    ) -> None:
+        """Enqueue a group message for async long-term memory processing."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_GROUP_MEMORY",
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "user_id": user_id,
+            "display_name": display_name,
+            "text": text,
+        }
+        if username:
+            payload["username"] = username
+        if created_at:
+            payload["created_at"] = created_at
+
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info(
+                "Queued group memory task",
+                extra={"chat_id": chat_id, "message_id": message_id, "user_id": user_id},
+            )
+        except Exception as e:
+            logger.exception("Failed to send group memory task to SQS", extra={"error": e, "chat_id": chat_id})
+            raise

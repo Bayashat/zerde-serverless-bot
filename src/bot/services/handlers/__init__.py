@@ -17,6 +17,7 @@ from services.handlers.commands import (
     handle_agent_on,
     handle_ask,
     handle_forget_group,
+    handle_forget_me,
     handle_help,
     handle_memory_off,
     handle_memory_on,
@@ -26,6 +27,7 @@ from services.handlers.commands import (
     handle_start,
     handle_stats,
     handle_support,
+    handle_why_reply,
 )
 from services.handlers.explain_document import handle_document_auto_summary
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
@@ -75,6 +77,8 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("ask")(handle_ask)
     dp.command("memory_status")(handle_memory_status)
     dp.command("forget_group")(handle_forget_group)
+    dp.command("forget_me")(handle_forget_me)
+    dp.command("why_reply")(handle_why_reply)
     dp.command("voteban")(handle_voteban_command)
     dp.command("wtf")(handle_wtf)
     dp.command("explain")(handle_explain)
