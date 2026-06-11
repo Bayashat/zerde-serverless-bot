@@ -7,6 +7,7 @@ from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
     CaptchaRepository,
+    GroupMemoryRepository,
     LambdaInvoker,
     QuizRepository,
     SQSClient,
@@ -39,6 +40,7 @@ class Context:
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
         captcha_repo: CaptchaRepository | None = None,
+        memory_repo: GroupMemoryRepository | None = None,
     ):
         self._update = update
         self.bot = bot
@@ -48,6 +50,7 @@ class Context:
         self.quiz_repo = quiz_repo
         self.lambda_invoker = lambda_invoker
         self.captcha_repo = captcha_repo
+        self.memory_repo = memory_repo
 
         self.callback_query = update.get("callback_query")
         if self.callback_query:
@@ -149,6 +152,7 @@ class Dispatcher:
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
         captcha_repo: CaptchaRepository | None = None,
+        memory_repo: GroupMemoryRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo
@@ -157,6 +161,7 @@ class Dispatcher:
         self.quiz_repo = quiz_repo
         self.lambda_invoker = lambda_invoker
         self.captcha_repo = captcha_repo
+        self.memory_repo = memory_repo
 
         self.command_handlers: dict[str, HandlerFunc] = {}
         self.new_chat_members_handler: HandlerFunc | None = None
@@ -217,6 +222,7 @@ class Dispatcher:
             self.quiz_repo,
             self.lambda_invoker,
             self.captcha_repo,
+            self.memory_repo,
         )
 
         poll_answer = ctx._update.get("poll_answer")

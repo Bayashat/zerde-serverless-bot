@@ -110,6 +110,13 @@ def get_chat_lang(chat_id: int | str | None) -> str:
     return CHAT_LANG_MAP.get(str(chat_id), DEFAULT_LANG)
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def is_configured_group_chat(chat_id: int | str | None) -> bool:
     """True when ``chat_id`` is allowed (present in the configured group → language map)."""
     if chat_id is None:
@@ -127,6 +134,16 @@ VOTEBAN_FORGIVE_THRESHOLD: int = require_int("VOTEBAN_FORGIVE_THRESHOLD")
 
 # ── Captcha settings ────────────────────────────────────────────────────────
 CAPTCHA_MAX_ATTEMPTS: int = require_int("CAPTCHA_MAX_ATTEMPTS")
+
+# ── Group memory / agent MVP ────────────────────────────────────────────────
+MEMORY_TABLE_NAME: str | None = os.environ.get("MEMORY_TABLE_NAME")
+GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", False)
+GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "80"))
+GROUP_MEMORY_RETENTION_DAYS: int = int(os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "30"))
+AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", False)
+AGENT_BOT_USERNAME: str = os.environ.get("AGENT_BOT_USERNAME", "").lstrip("@").lower()
+AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
+AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────
 VOTEBAN_PREFIX = "voteban_"

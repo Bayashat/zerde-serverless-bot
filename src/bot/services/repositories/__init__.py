@@ -1,7 +1,8 @@
-"""Data-access layer: DynamoDB (stats + voteban + quiz + rate limit) and SQS (timeout tasks)."""
+"""Data-access layer: DynamoDB repositories and SQS task helpers."""
 
 from services.repositories.captcha import CaptchaRepository
 from services.repositories.explain_tasks import ExplainTaskRepository
+from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.lambda_invoker import LambdaInvoker
 from services.repositories.quiz import QuizRepository
 from services.repositories.rate_limit import RateLimitRepository
@@ -11,8 +12,9 @@ from services.repositories.votes import VoteRepository
 
 __all__ = [
     "CaptchaRepository",
-    "LambdaInvoker",
     "ExplainTaskRepository",
+    "GroupMemoryRepository",
+    "LambdaInvoker",
     "QuizRepository",
     "RateLimitRepository",
     "SQSClient",
