@@ -23,6 +23,13 @@ cd infra && uv run cdk destroy -c env=dev
 
 When changing `infra/`, include meaningful `cd infra && uv run cdk diff -c env=dev` output in PR notes. If the diff is only environment config such as `CHAT_LANG_MAP`, say that explicitly.
 
+## Git Workflow
+
+- Create new work branches with conventional prefixes such as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`, or `test/`.
+- Do not use `codex/` as a branch prefix in this repository.
+- Use conventional commit-style commit and PR titles, for example `feat: improve RAG memory grounding` or `fix: scope self-reference retrieval`.
+- Do not include `codex` or `[codex]` in commit messages or PR titles.
+
 ## Product Direction
 
 ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now a **memory-enabled agentic Telegram group bot**:

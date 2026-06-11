@@ -23,6 +23,13 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 4. Preserve user changes. Do not revert unrelated files.
 5. Prefer repo patterns and focused changes over new abstractions.
 
+## Git Workflow
+
+- When creating a new branch, use conventional prefixes such as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`, or `test/`.
+- Do not create `codex/` branches for this repository.
+- Use conventional commit-style titles for commits and PRs, for example `feat: improve RAG memory grounding` or `fix: scope self-reference retrieval`.
+- Do not add `codex` or `[codex]` to commit messages or PR titles.
+
 ## Repository Map
 
 - `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing.
