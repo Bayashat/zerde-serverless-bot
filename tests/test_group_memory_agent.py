@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 from services import group_agent, group_memory
+from services.ai.gemini_client import GroupAgentDecision
 from services.handlers import commands
 from services.handlers.commands import handle_ask
 from services.repositories.group_memory import GroupMemoryRepository
@@ -65,7 +66,21 @@ def test_agent_can_consider_open_question_when_enabled(monkeypatch):
     assert group_agent.should_answer(_group_update("does anyone know how OpenSearch pricing works?")) is True
 
 
-def test_proactive_agent_respects_daily_limit(monkeypatch):
+def test_agent_does_not_consider_bot_meta_question_for_proactive_reply(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+
+    assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is False
+
+
+def test_agent_does_not_consider_stop_cue_for_proactive_reply(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+
+    assert group_agent.should_answer(_group_update("болды жазба енді?")) is False
+
+
+def test_proactive_agent_asks_social_decision_before_daily_reservation(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.try_reserve_proactive_reply.return_value = False
@@ -79,7 +94,64 @@ def test_proactive_agent_respects_daily_limit(monkeypatch):
     )
 
     assert handled is False
+    repo.try_reserve_proactive_reply.assert_not_called()
+
+
+def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_proactive_decision.return_value = (
+        GroupAgentDecision(False, 0.91, "humans are already handling it", ""),
+        1,
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous answer")
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="en",
+    )
+
+    assert handled is False
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
+    repo = MagicMock()
+    repo.try_reserve_proactive_reply.return_value = True
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_proactive_decision.return_value = (
+        GroupAgentDecision(
+            True, 0.86, "open technical question with no answer yet", "OpenSearch pricing depends on shards."
+        ),
+        1,
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="en",
+    )
+
+    assert handled is True
     repo.try_reserve_proactive_reply.assert_called_once()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "OpenSearch pricing depends on shards.",
+        reply_to_message_id=11,
+    )
 
 
 def test_proactive_reservation_escapes_ttl_attribute():

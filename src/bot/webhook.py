@@ -115,7 +115,7 @@ def _handle_api_gateway(
             bot=bot,
             update=body,
         ):
-            logger.info("Group agent handled update", extra={"chat_id": chat_id})
+            pass
         else:
             dispatcher.process_update(body)
 
