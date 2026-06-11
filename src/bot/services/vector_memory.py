@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from decimal import Decimal
 from typing import Any
 
@@ -15,8 +16,9 @@ from core.config import (
     VECTOR_MEMORY_DIMENSIONS,
     VECTOR_MEMORY_EMBEDDING_MODEL,
     VECTOR_MEMORY_ENABLED,
+    VECTOR_MEMORY_INDEX_THROTTLE_SECONDS,
     VECTOR_MEMORY_PROVIDER,
-    get_gemini_api_key,
+    get_gemini_embedding_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.group_memory import GroupMemoryRepository
@@ -29,7 +31,7 @@ _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=2, read=1
 _embedding_client: "GeminiEmbeddingClient | None" = None
 
 _EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}\b")
-_PHONE_RE = re.compile(r"(?:\+?\d[\s().-]*){9,}")
+_PHONE_RE = re.compile(r"(?<![\w+])(?:\+\d[\d\s().-]{7,}\d|\d{10,15})(?!\w)")
 _SECRET_ASSIGNMENT_RE = re.compile(
     r"\b(?:api[_ -]?key|token|secret|password|passwd|bearer|authorization)\s*[:=]",
     flags=re.IGNORECASE,
@@ -72,22 +74,35 @@ class GeminiEmbeddingClient:
     """Small REST client for Gemini embeddings."""
 
     def __init__(self) -> None:
-        api_key = get_gemini_api_key()
+        api_key = get_gemini_embedding_api_key()
         if not api_key:
-            raise VectorMemoryUnavailableError("GEMINI_API_KEY must be set for vector memory embeddings")
+            raise VectorMemoryUnavailableError("A Gemini API key must be set for vector memory embeddings")
         self._api_key = api_key
         self._model = VECTOR_MEMORY_EMBEDDING_MODEL
         self._dimensions = VECTOR_MEMORY_DIMENSIONS
+
+    def _content_for_task(self, text: str, *, task_type: str) -> str:
+        if self._model == "gemini-embedding-2":
+            if task_type == "RETRIEVAL_DOCUMENT":
+                return f"title: group memory | text: {text}"
+            if task_type == "RETRIEVAL_QUERY":
+                return f"task: question answering | query: {text}"
+            return f"task: search result | query: {text}"
+        return text
 
     def embed(self, text: str, *, task_type: str) -> list[float]:
         cleaned = " ".join((text or "").split())
         if not cleaned:
             return []
+        content_text = self._content_for_task(cleaned, task_type=task_type)
         payload: dict[str, Any] = {
-            "content": {"parts": [{"text": cleaned[:4000]}]},
-            "taskType": task_type,
-            "outputDimensionality": self._dimensions,
+            "content": {"parts": [{"text": content_text[:4000]}]},
         }
+        if self._model == "gemini-embedding-2":
+            payload["output_dimensionality"] = self._dimensions
+        else:
+            payload["taskType"] = task_type
+            payload["outputDimensionality"] = self._dimensions
         url = f"{GEMINI_API_BASE}/{self._model}:embedContent?key={self._api_key}"
         try:
             resp = _http.request(
@@ -262,6 +277,8 @@ def index_memory_item(
     vector_repo = vector_repo or S3VectorMemoryRepository()
     embedding_client = embedding_client or _get_embedding_client()
     try:
+        if VECTOR_MEMORY_INDEX_THROTTLE_SECONDS > 0:
+            time.sleep(VECTOR_MEMORY_INDEX_THROTTLE_SECONDS)
         vector = embedding_client.embed(text, task_type="RETRIEVAL_DOCUMENT")
         vector_repo.put_memory_vector(
             key=vector_key,

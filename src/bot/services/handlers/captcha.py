@@ -41,6 +41,19 @@ _TEXT_ONLY_PERMISSIONS: dict[str, bool] = {
 }
 
 
+def _delete_timeout_messages(
+    bot: TelegramClient,
+    chat_id: int | str,
+    join_message_id: int,
+    verification_message_id: int,
+) -> None:
+    try:
+        bot.delete_message(chat_id, join_message_id)
+        bot.delete_message(chat_id, verification_message_id)
+    except Exception as e:
+        logger.warning("Failed to delete join/verification messages: %s", e)
+
+
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
     """Process CHECK_TIMEOUT task: kick user if still restricted, clean up captcha state."""
     chat_id = task_data.get("chat_id")
@@ -53,25 +66,27 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
         logger.warning("Timeout task missing required fields", task_data=task_data)
         return
     try:
-        # Use DynamoDB state as source of truth: if no pending entry, user already verified
+        # Use DynamoDB state as the fast path, but do not treat a missing/expired
+        # pending entry as proof of verification. Timeout tasks can be delayed by
+        # SQS backlog, while the pending captcha record has a short TTL buffer.
         if captcha_repo:
             pending = captcha_repo.get_pending(chat_id, user_id)
             if pending is None:
-                logger.info("User %s already verified. Ignoring timeout.", user_id)
-                return
+                member = bot.get_chat_member(chat_id, user_id)
+                status = (member.get("status") or "").lower()
+                if status != "restricted":
+                    _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
+                    logger.info("User %s already verified. Ignoring timeout.", user_id)
+                    return
         else:
             member = bot.get_chat_member(chat_id, user_id)
             status = (member.get("status") or "").lower()
-            if status not in ("restricted", "member"):
+            if status != "restricted":
                 return
 
         logger.info("User %s timed out. Kicking.", user_id)
         bot.kick_chat_member(chat_id, user_id)
-        try:
-            bot.delete_message(chat_id, join_message_id)
-            bot.delete_message(chat_id, verification_message_id)
-        except Exception as e:
-            logger.warning("Failed to delete join/verification messages: %s", e)
+        _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
     except Exception as e:
         logger.exception("Timeout task error (user may have left or message deleted): %s", e)
     finally:
