@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from services import group_agent, group_memory
 from services.handlers import commands
 from services.handlers.commands import handle_ask
+from services.repositories.group_memory import GroupMemoryRepository
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -81,6 +82,17 @@ def test_proactive_agent_respects_daily_limit(monkeypatch):
     repo.try_reserve_proactive_reply.assert_called_once()
 
 
+def test_proactive_reservation_escapes_ttl_attribute():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    assert repo.try_reserve_proactive_reply(-100123, daily_limit=10) is True
+
+    kwargs = repo.table.update_item.call_args.kwargs
+    assert "#ttl = :ttl" in kwargs["UpdateExpression"]
+    assert kwargs["ExpressionAttributeNames"]["#ttl"] == "ttl"
+
+
 def test_handle_ask_uses_group_context_answer(monkeypatch):
     ctx = MagicMock()
     ctx.text = "/ask what happened yesterday?"
@@ -102,6 +114,20 @@ def test_handle_ask_uses_group_context_answer(monkeypatch):
         lang="en",
     )
     ctx.reply.assert_not_called()
+
+
+def test_handle_ask_usage_message_has_no_html_tag():
+    ctx = MagicMock()
+    ctx.text = "/ask"
+    ctx.reply_to_message = None
+    ctx.message_id = 99
+    ctx.memory_repo.is_memory_enabled.return_value = True
+
+    handle_ask(ctx)
+
+    message = ctx.reply.call_args.args[0]
+    assert "<question>" not in message
+    assert "Usage: /ask question" in message
 
 
 def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:

@@ -182,9 +182,9 @@ class GroupMemoryRepository:
         try:
             self.table.update_item(
                 Key={"pk": self._chat_pk(chat_id), "sk": f"PROACTIVE#{day}"},
-                UpdateExpression="SET #count = if_not_exists(#count, :zero) + :one, ttl = :ttl",
+                UpdateExpression="SET #count = if_not_exists(#count, :zero) + :one, #ttl = :ttl",
                 ConditionExpression="attribute_not_exists(#count) OR #count < :limit",
-                ExpressionAttributeNames={"#count": "count"},
+                ExpressionAttributeNames={"#count": "count", "#ttl": "ttl"},
                 ExpressionAttributeValues={
                     ":zero": Decimal(0),
                     ":one": Decimal(1),

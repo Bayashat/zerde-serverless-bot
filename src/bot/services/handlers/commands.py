@@ -221,7 +221,7 @@ def handle_ask(ctx: Context) -> None:
     if not question and ctx.reply_to_message:
         question = (ctx.reply_to_message.get("text") or ctx.reply_to_message.get("caption") or "").strip()
     if not question:
-        ctx.reply("Usage: /ask <question> or reply to a message with /ask", ctx.message_id)
+        ctx.reply("Usage: /ask question or reply to a message with /ask", ctx.message_id)
         return
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
         ctx.reply("Group memory is off. Ask an admin to run /memory_on first.", ctx.message_id)
