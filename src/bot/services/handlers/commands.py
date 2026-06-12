@@ -264,6 +264,17 @@ def handle_memory_status(ctx: Context) -> None:
         backfill_key,
         ctx.lang_code,
     )
+    backfill_processed_total = int(vector_status.get("last_backfill_processed_total") or 0)
+    backfill_enqueued_total = int(vector_status.get("last_backfill_enqueued_total") or 0)
+    backfill_failures_total = int(vector_status.get("last_backfill_failures_total") or 0)
+    if backfill_processed_total or backfill_enqueued_total or backfill_failures_total:
+        vector_backfill = f"{vector_backfill}; " + get_translated_text(
+            "vector_backfill_progress",
+            ctx.lang_code,
+            processed_total=backfill_processed_total,
+            enqueued_total=backfill_enqueued_total,
+            failures_total=backfill_failures_total,
+        )
     ctx.reply(
         get_translated_text(
             "memory_status_message",

@@ -86,7 +86,12 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
-Failures re-raise in `services/sqs_task_router.py` so SQS retry and DLQ semantics apply.
+Failures re-raise in `services/sqs_task_router.py` so SQS retry and DLQ semantics apply. The main
+task queue defaults to 1 day of message retention, the vector-memory queue defaults to 4 days, and
+both DLQs default to 14 days for incident inspection and redrive. CDK deploy-time env vars
+`MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
+`VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS` can tune these values
+within SQS's 1-14 day range.
 
 ## DynamoDB Memory Table
 
@@ -103,7 +108,7 @@ The table is single-table by chat partition:
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
 | `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, and `/memory forget this`. |
-| `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
+| `sk=VECTOR_BACKFILL` | Cumulative vector backfill status for a chat. Tracks `processed_total`, `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and continuation tokens. Legacy `vector_backfill_*` attributes are still written for compatibility. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
 Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items are prompt context, not vector memory.
@@ -173,6 +178,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
 - Vector indexing runs in the dedicated vector-indexer Lambda, with its own log group and Lambda alarms. The bot Lambda can still query/delete vectors for retrieval and memory cleanup, but it no longer consumes the vector memory queue.
+- Vector backfill is page-based internally but records cumulative progress on the `VECTOR_BACKFILL` memory item. `/memory status` can show total processed, enqueued, and failed items across pages, plus timestamps for start, last update, and completion.
 
 When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and prefix-specific lexical fallback over vectorizable long-term memory items. The lexical fallback does not scan raw `MSG#...` items. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 
@@ -183,7 +189,7 @@ When vector indexing is incomplete, the agent still works with recent context, q
 - `.env` is deploy-time CDK input for non-secret config and local/test execution.
 - Do not log full prompts, full model responses, API keys, Telegram files, or user secrets.
 - For production memory cleanup, first export the target DynamoDB items and vector keys to a local backup file, then delete narrowly.
-- Main task DLQ retention is 4 days and vector-memory DLQ retention is 14 days so failed async memory work can be inspected and redriven.
+- Main task queue retention defaults to 1 day, vector-memory queue retention defaults to 4 days, and both DLQs default to 14 days so failed async memory work can be inspected and redriven after temporary provider/API outages.
 - Historical plan documents under `docs/superpowers/` are snapshots. Do not treat them as current architecture.
 
 ## Documentation Maintenance

@@ -32,9 +32,48 @@ class ZerdeTelegramBotStack(Stack):
             value = os.environ.get(key, "")
             return [cid.strip() for cid in value.split(",") if cid.strip()]
 
+        def _parse_int_env(key: str, default: int, *, min_value: int, max_value: int) -> int:
+            raw = os.environ.get(key)
+            try:
+                value = int(raw) if raw else default
+            except ValueError:
+                value = default
+            return max(min_value, min(max_value, value))
+
         # ── Parameters ──────────────────────────────────────────────────────────
         default_lang = os.environ.get("DEFAULT_LANG", "kk")
         telegram_api_base = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org/bot")
+
+        # ── SQS operational retention ─────────────────────────────────────────
+        main_task_queue_retention_days = _parse_int_env(
+            "MAIN_TASK_QUEUE_RETENTION_DAYS",
+            1,
+            min_value=1,
+            max_value=14,
+        )
+        main_task_dlq_retention_days = _parse_int_env(
+            "MAIN_TASK_DLQ_RETENTION_DAYS",
+            14,
+            min_value=1,
+            max_value=14,
+        )
+        vector_memory_queue_retention_days = _parse_int_env(
+            "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
+            4,
+            min_value=1,
+            max_value=14,
+        )
+        vector_memory_dlq_retention_days = _parse_int_env(
+            "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
+            14,
+            min_value=1,
+            max_value=14,
+        )
+        main_task_dlq_retention_days = max(main_task_dlq_retention_days, main_task_queue_retention_days)
+        vector_memory_dlq_retention_days = max(
+            vector_memory_dlq_retention_days,
+            vector_memory_queue_retention_days,
+        )
 
         # ── Timing parameters ──────────────────────────────────────────────────
         captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120")
@@ -135,6 +174,10 @@ class ZerdeTelegramBotStack(Stack):
             f"{CONSTRUCT_PREFIX}Messaging",
             env_name=env_name,
             is_prod=is_prod,
+            main_queue_retention_days=main_task_queue_retention_days,
+            main_dlq_retention_days=main_task_dlq_retention_days,
+            vector_queue_retention_days=vector_memory_queue_retention_days,
+            vector_dlq_retention_days=vector_memory_dlq_retention_days,
         )
 
         bot = BotConstruct(

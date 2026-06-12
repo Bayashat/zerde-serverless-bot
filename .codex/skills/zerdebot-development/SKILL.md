@@ -89,6 +89,12 @@ Current vector-indexer SQS task types:
 - `PROCESS_VECTOR_MEMORY`
 - `PROCESS_VECTOR_MEMORY_BACKFILL`
 
+Queue retention defaults are operationally conservative: main task queue 1 day, vector memory queue
+4 days, and both DLQs 14 days. CDK deploy-time env vars
+`MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
+`VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS` can tune retention
+within SQS's 1-14 day range.
+
 DynamoDB memory key families:
 
 - `SETTINGS`
@@ -100,7 +106,9 @@ DynamoDB memory key families:
 - `JOKE#...`
 - `DAILY_SUMMARY#...`
 - `AGENT_REPLY#...`
-- `VECTOR_BACKFILL`
+- `VECTOR_BACKFILL` with cumulative `processed_total`, `enqueued_total`, `failures_total`,
+  `started_at`, `last_updated_at`, optional `finished_at`, and page continuation tokens. Legacy
+  `vector_backfill_*` fields are still written for compatibility.
 - `PROACTIVE#...`
 
 ## Common Commands

@@ -109,7 +109,8 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
 - `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`.
-- `VECTOR_BACKFILL` — vector backfill status.
+- `VECTOR_BACKFILL` — cumulative vector backfill status with processed/enqueued/failure totals,
+  start/update/finish timestamps, and continuation tokens.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
 Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
@@ -124,6 +125,11 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
 - `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.
 
+Main task queue retention defaults to 1 day, vector-memory queue retention defaults to 4 days, and
+both DLQs default to 14 days for incident inspection and redrive. Tune these at CDK deploy time with
+`MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
+`VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS`.
+
 ## Secrets And Config
 
 - Deploy-time `.env` is loaded by `infra/stack.py` for non-secret CDK config and local runs.
@@ -136,6 +142,9 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - **No SnapStart**: low-frequency workloads and Python package trade-offs make SnapStart unnecessary here.
 - **Bot Lambda for webhook and main SQS only**: `/ask`, spam, captcha, and memory extraction share the bot warm path.
 - **Separate vector indexer Lambda and vector queue**: slower embedding/backfill/S3 Vectors work has independent concurrency, logs, alarms, and DLQ visibility so it does not block webhook or interactive `/ask` work.
+- **Vector backfill observability**: `VECTOR_BACKFILL` keeps cumulative `processed_total`,
+  `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and
+  page continuation tokens while retaining legacy `vector_backfill_*` fields for compatibility.
 - **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.

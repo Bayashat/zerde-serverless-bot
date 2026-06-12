@@ -158,6 +158,86 @@ def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any)
     assert _event_source_targets(template, vector_queue_id) == [{"Ref": vector_indexer_lambda_id}]
 
 
+def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -> None:
+    monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
+    for key in (
+        "MAIN_TASK_QUEUE_RETENTION_DAYS",
+        "MAIN_TASK_DLQ_RETENTION_DAYS",
+        "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
+        "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    template = _dev_template(monkeypatch)
+    _, main_queue = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-timeout-tasks-queue-dev",
+    )
+    _, main_dlq = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-timeout-tasks-dlq-dev",
+    )
+    _, vector_queue = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-vector-memory-tasks-queue-dev",
+    )
+    _, vector_dlq = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-vector-memory-tasks-dlq-dev",
+    )
+
+    assert main_queue["Properties"]["MessageRetentionPeriod"] == 86_400
+    assert main_dlq["Properties"]["MessageRetentionPeriod"] == 1_209_600
+    assert vector_queue["Properties"]["MessageRetentionPeriod"] == 345_600
+    assert vector_dlq["Properties"]["MessageRetentionPeriod"] == 1_209_600
+
+
+def test_sqs_queue_retention_is_configurable_from_env(monkeypatch: Any) -> None:
+    monkeypatch.setenv("MAIN_TASK_QUEUE_RETENTION_DAYS", "2")
+    monkeypatch.setenv("MAIN_TASK_DLQ_RETENTION_DAYS", "3")
+    monkeypatch.setenv("VECTOR_MEMORY_QUEUE_RETENTION_DAYS", "7")
+    monkeypatch.setenv("VECTOR_MEMORY_DLQ_RETENTION_DAYS", "10")
+
+    template = _dev_template(monkeypatch)
+    _, main_queue = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-timeout-tasks-queue-dev",
+    )
+    _, main_dlq = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-timeout-tasks-dlq-dev",
+    )
+    _, vector_queue = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-vector-memory-tasks-queue-dev",
+    )
+    _, vector_dlq = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-vector-memory-tasks-dlq-dev",
+    )
+
+    assert main_queue["Properties"]["MessageRetentionPeriod"] == 172_800
+    assert main_dlq["Properties"]["MessageRetentionPeriod"] == 259_200
+    assert vector_queue["Properties"]["MessageRetentionPeriod"] == 604_800
+    assert vector_dlq["Properties"]["MessageRetentionPeriod"] == 864_000
+
+
 def test_bot_can_send_but_not_consume_vector_queue(monkeypatch: Any) -> None:
     template = _dev_template(monkeypatch)
     _, bot_lambda = _find_resource_by_property(

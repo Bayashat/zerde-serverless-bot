@@ -2355,6 +2355,9 @@ def test_memory_status_includes_vector_status(monkeypatch):
             "failed_count": 1,
             "skipped_count": 0,
             "last_backfill_status": "queued",
+            "last_backfill_processed_total": 12,
+            "last_backfill_enqueued_total": 11,
+            "last_backfill_failures_total": 1,
         },
     )
     ctx = _command_ctx(user_id=42, status="administrator")
@@ -2375,6 +2378,7 @@ def test_memory_status_includes_vector_status(monkeypatch):
     assert "configured yes" in message
     assert "indexed 7/9" in message
     assert "queued" in message
+    assert "processed 12, enqueued 11, failures 1" in message
 
 
 def test_memory_command_routes_subcommands(monkeypatch):
@@ -2538,6 +2542,104 @@ def test_vectorizable_memory_items_resume_inside_prefix_with_dynamodb_start_key(
     assert [item["sk"] for item in resumed_items] == ["EVENT#1#3"]
     assert repo.table.query.call_args_list[1].kwargs["ExclusiveStartKey"] == first_next_key
     assert _memory_query_prefixes(repo) == ["EVENT#", "EVENT#"]
+
+
+def test_record_vector_backfill_status_accumulates_totals(monkeypatch):
+    monkeypatch.setattr("services.repositories.group_memory.time.time", lambda: 1_800_000_100)
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {
+        "Item": {
+            "processed_total": Decimal(2),
+            "enqueued_total": Decimal(1),
+            "failures_total": Decimal(1),
+            "started_at": 1_800_000_000,
+        }
+    }
+
+    repo.record_vector_backfill_status(
+        -100123,
+        status="queued_next_page",
+        processed=3,
+        enqueued=2,
+        failures=1,
+        start_key={"pk": "CHAT#-100123", "sk": "EVENT#1#2"},
+        next_token={"__vector_prefix": "USER_FACT#"},
+    )
+
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["processed_total"] == Decimal(5)
+    assert item["enqueued_total"] == Decimal(3)
+    assert item["failures_total"] == Decimal(2)
+    assert item["started_at"] == 1_800_000_000
+    assert item["last_updated_at"] == 1_800_000_100
+    assert item["last_start_key"] == {"pk": "CHAT#-100123", "sk": "EVENT#1#2"}
+    assert item["next_token"] == {"__vector_prefix": "USER_FACT#"}
+    assert item["vector_backfill_processed"] == Decimal(5)
+    assert item["vector_backfill_enqueued"] == Decimal(3)
+    assert item["vector_backfill_failures"] == Decimal(2)
+
+
+def test_record_vector_backfill_status_resets_and_finishes(monkeypatch):
+    monkeypatch.setattr("services.repositories.group_memory.time.time", lambda: 1_800_000_200)
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.record_vector_backfill_status(
+        -100123,
+        status="queued",
+        processed=4,
+        enqueued=4,
+        failures=0,
+        reset=True,
+        finished=True,
+    )
+
+    repo.table.get_item.assert_not_called()
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["processed_total"] == Decimal(4)
+    assert item["enqueued_total"] == Decimal(4)
+    assert item["failures_total"] == Decimal(0)
+    assert item["started_at"] == 1_800_000_200
+    assert item["last_updated_at"] == 1_800_000_200
+    assert item["finished_at"] == 1_800_000_200
+    assert "next_token" not in item
+
+
+def test_memory_overview_reads_cumulative_vector_backfill_status():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.return_value = {
+        "Items": [
+            {
+                "sk": "VECTOR_BACKFILL",
+                "vector_backfill_status": "queued",
+                "processed_total": Decimal(12),
+                "enqueued_total": Decimal(11),
+                "failures_total": Decimal(1),
+                "started_at": 1_800_000_000,
+                "last_updated_at": 1_800_000_100,
+                "finished_at": 1_800_000_100,
+                "last_start_key": {"pk": "CHAT#-100123", "sk": "EVENT#1#2"},
+                "next_token": {"__vector_prefix": "USER_FACT#"},
+            }
+        ]
+    }
+
+    overview = repo.get_memory_overview(-100123)
+
+    assert overview["vector_backfill_status"] == "queued"
+    assert overview["vector_backfill_processed"] == 12
+    assert overview["vector_backfill_enqueued"] == 11
+    assert overview["vector_backfill_failures"] == 1
+    assert overview["vector_backfill_processed_total"] == 12
+    assert overview["vector_backfill_enqueued_total"] == 11
+    assert overview["vector_backfill_failures_total"] == 1
+    assert overview["vector_backfill_started_at"] == 1_800_000_000
+    assert overview["vector_backfill_updated_at"] == 1_800_000_100
+    assert overview["vector_backfill_finished_at"] == 1_800_000_100
+    assert overview["vector_backfill_last_start_key"] == {"pk": "CHAT#-100123", "sk": "EVENT#1#2"}
+    assert overview["vector_backfill_next_token"] == {"__vector_prefix": "USER_FACT#"}
 
 
 def test_user_related_vector_items_include_matching_daily_summaries():

@@ -990,23 +990,70 @@ class GroupMemoryRepository:
         processed: int = 0,
         enqueued: int = 0,
         failures: int = 0,
+        start_key: dict[str, Any] | None = None,
         next_token: dict[str, Any] | None = None,
+        reset: bool = False,
+        finished: bool = False,
     ) -> None:
         now = int(time.time())
+        key = {"pk": self._chat_pk(chat_id), "sk": self._vector_backfill_sk()}
+
+        def _item_int(item: dict[str, Any], *names: str) -> int:
+            for name in names:
+                value = item.get(name)
+                if value is None:
+                    continue
+                try:
+                    return int(value)
+                except (TypeError, ValueError):
+                    continue
+            return 0
+
+        existing: dict[str, Any] = {}
+        if not reset:
+            existing = self.table.get_item(Key=key).get("Item") or {}
+
+        started_at = now if reset else _item_int(existing, "started_at", "vector_backfill_started_at") or now
+        processed_total = (0 if reset else _item_int(existing, "processed_total", "vector_backfill_processed")) + max(
+            0,
+            int(processed),
+        )
+        enqueued_total = (0 if reset else _item_int(existing, "enqueued_total", "vector_backfill_enqueued")) + max(
+            0,
+            int(enqueued),
+        )
+        failures_total = (0 if reset else _item_int(existing, "failures_total", "vector_backfill_failures")) + max(
+            0,
+            int(failures),
+        )
+
         item: dict[str, Any] = {
-            "pk": self._chat_pk(chat_id),
-            "sk": self._vector_backfill_sk(),
+            **key,
             "kind": "vector_backfill",
             "chat_id": str(chat_id),
+            "status": status,
             "vector_backfill_status": status,
-            "vector_backfill_processed": Decimal(processed),
-            "vector_backfill_enqueued": Decimal(enqueued),
-            "vector_backfill_failures": Decimal(failures),
+            "processed_total": Decimal(processed_total),
+            "enqueued_total": Decimal(enqueued_total),
+            "failures_total": Decimal(failures_total),
+            "started_at": started_at,
+            "last_updated_at": now,
+            "vector_backfill_processed": Decimal(processed_total),
+            "vector_backfill_enqueued": Decimal(enqueued_total),
+            "vector_backfill_failures": Decimal(failures_total),
+            "vector_backfill_started_at": started_at,
             "vector_backfill_updated_at": now,
             "ttl": now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60,
         }
+        if start_key:
+            item["last_start_key"] = start_key
+            item["vector_backfill_last_start_key"] = start_key
         if next_token:
+            item["next_token"] = next_token
             item["vector_backfill_next_token"] = next_token
+        if finished:
+            item["finished_at"] = now
+            item["vector_backfill_finished_at"] = now
         self.table.put_item(Item=item)
 
     def get_user_profile(self, chat_id: int | str, user_id: int | str) -> dict[str, Any]:
@@ -1217,6 +1264,13 @@ class GroupMemoryRepository:
             "vector_backfill_processed": 0,
             "vector_backfill_enqueued": 0,
             "vector_backfill_failures": 0,
+            "vector_backfill_processed_total": 0,
+            "vector_backfill_enqueued_total": 0,
+            "vector_backfill_failures_total": 0,
+            "vector_backfill_started_at": "",
+            "vector_backfill_finished_at": "",
+            "vector_backfill_last_start_key": None,
+            "vector_backfill_next_token": None,
         }
         start_key: dict[str, Any] | None = None
         while True:
@@ -1224,7 +1278,10 @@ class GroupMemoryRepository:
                 "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
                 "ProjectionExpression": (
                     "sk, vector_status, vector_backfill_status, vector_backfill_updated_at, "
-                    "vector_backfill_processed, vector_backfill_enqueued, vector_backfill_failures"
+                    "vector_backfill_processed, vector_backfill_enqueued, vector_backfill_failures, "
+                    "processed_total, enqueued_total, failures_total, started_at, last_updated_at, "
+                    "finished_at, last_start_key, next_token, vector_backfill_started_at, "
+                    "vector_backfill_finished_at, vector_backfill_last_start_key, vector_backfill_next_token"
                 ),
             }
             if start_key:
@@ -1249,11 +1306,31 @@ class GroupMemoryRepository:
                 elif sk.startswith("AGENT_REPLY#"):
                     counts["agent_replies"] += 1
                 elif sk == self._vector_backfill_sk():
+                    processed_total = int(item.get("processed_total") or item.get("vector_backfill_processed") or 0)
+                    enqueued_total = int(item.get("enqueued_total") or item.get("vector_backfill_enqueued") or 0)
+                    failures_total = int(item.get("failures_total") or item.get("vector_backfill_failures") or 0)
                     counts["vector_backfill_status"] = str(item.get("vector_backfill_status") or "")
-                    counts["vector_backfill_updated_at"] = item.get("vector_backfill_updated_at") or ""
-                    counts["vector_backfill_processed"] = int(item.get("vector_backfill_processed") or 0)
-                    counts["vector_backfill_enqueued"] = int(item.get("vector_backfill_enqueued") or 0)
-                    counts["vector_backfill_failures"] = int(item.get("vector_backfill_failures") or 0)
+                    counts["vector_backfill_updated_at"] = (
+                        item.get("last_updated_at") or item.get("vector_backfill_updated_at") or ""
+                    )
+                    counts["vector_backfill_processed"] = processed_total
+                    counts["vector_backfill_enqueued"] = enqueued_total
+                    counts["vector_backfill_failures"] = failures_total
+                    counts["vector_backfill_processed_total"] = processed_total
+                    counts["vector_backfill_enqueued_total"] = enqueued_total
+                    counts["vector_backfill_failures_total"] = failures_total
+                    counts["vector_backfill_started_at"] = (
+                        item.get("started_at") or item.get("vector_backfill_started_at") or ""
+                    )
+                    counts["vector_backfill_finished_at"] = (
+                        item.get("finished_at") or item.get("vector_backfill_finished_at") or ""
+                    )
+                    counts["vector_backfill_last_start_key"] = item.get("last_start_key") or item.get(
+                        "vector_backfill_last_start_key"
+                    )
+                    counts["vector_backfill_next_token"] = item.get("next_token") or item.get(
+                        "vector_backfill_next_token"
+                    )
 
                 if self.is_vectorizable_sk(sk):
                     counts["vector_total"] += 1

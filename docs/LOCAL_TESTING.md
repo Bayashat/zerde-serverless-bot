@@ -112,6 +112,10 @@ GEMINI_MODEL=gemini-3.1-flash-lite
 NEWS_GEMINI_MODEL=gemini-3.1-flash-lite
 QUIZ_GEMINI_MODEL=gemini-3.1-flash-lite
 DEFAULT_LANG=kk
+MAIN_TASK_QUEUE_RETENTION_DAYS=1
+MAIN_TASK_DLQ_RETENTION_DAYS=14
+VECTOR_MEMORY_QUEUE_RETENTION_DAYS=4
+VECTOR_MEMORY_DLQ_RETENTION_DAYS=14
 
 # Optional — group memory / agent
 GROUP_MEMORY_ENABLED=true
@@ -155,7 +159,10 @@ The deploy creates:
 - **News Lambda** — EventBridge rules (only active in `prod` env)
 - **Quiz Lambda** — EventBridge rule at 08:00 UTC + DynamoDB quiz table (only active in `prod` env)
 - **DynamoDB** — stats table, group-memory table, and quiz table
-- **SQS** — timeout/tasks queue plus vector-memory queue, each with DLQ
+- **SQS** — timeout/tasks queue plus vector-memory queue, each with DLQ. Defaults retain main
+  tasks for 1 day, vector-memory tasks for 4 days, and DLQ messages for 14 days; tune with
+  `MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
+  `VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS`.
 - **S3 Vectors** — vector bucket/index when `VECTOR_MEMORY_ENABLED=true` and provider is `s3_vectors`
 
 > EventBridge schedules are only created when deploying with `-c env=prod`. For local testing, invoke the News and Quiz Lambdas manually from the AWS Console or CLI.

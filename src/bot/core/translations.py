@@ -188,6 +188,9 @@ TRANSLATIONS = {
         "vector_backfill_queued": "queued",
         "vector_backfill_queued_next_page": "queued; more pages pending",
         "vector_backfill_queued_with_failures": "queued with failures",
+        "vector_backfill_progress": (
+            "processed {processed_total}, enqueued {enqueued_total}, failures {failures_total}"
+        ),
         "vector_cleanup_deleted": "Vector memory cleanup requested for {deleted} indexed item(s).",
         "vector_cleanup_skipped": "Vector memory cleanup is not configured.",
         "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
@@ -442,6 +445,9 @@ TRANSLATIONS = {
         "vector_backfill_queued": "кезекке қойылды",
         "vector_backfill_queued_next_page": "кезекке қойылды; тағы беттер бар",
         "vector_backfill_queued_with_failures": "кезекке қойылды, кейбір қате бар",
+        "vector_backfill_progress": (
+            "өңделді {processed_total}, кезекке қойылды {enqueued_total}, қате {failures_total}"
+        ),
         "vector_cleanup_deleted": "{deleted} indexed vector жад элементін өшіру сұралды.",
         "vector_cleanup_skipped": "Vector жадын тазалау бапталмаған.",
         "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
@@ -681,6 +687,7 @@ TRANSLATIONS = {
         "vector_backfill_queued": "已入队",
         "vector_backfill_queued_next_page": "已入队；还有后续分页",
         "vector_backfill_queued_with_failures": "已入队，但有部分失败",
+        "vector_backfill_progress": "已扫描 {processed_total}，已入队 {enqueued_total}，失败 {failures_total}",
         "vector_cleanup_deleted": "已请求删除 {deleted} 条已索引向量记忆。",
         "vector_cleanup_skipped": "未配置向量记忆清理。",
         "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
@@ -925,6 +932,9 @@ TRANSLATIONS = {
         "vector_backfill_queued": "поставлен в очередь",
         "vector_backfill_queued_next_page": "поставлен в очередь; есть следующие страницы",
         "vector_backfill_queued_with_failures": "поставлен в очередь с ошибками",
+        "vector_backfill_progress": (
+            "обработано {processed_total}, поставлено в очередь {enqueued_total}, ошибок {failures_total}"
+        ),
         "vector_cleanup_deleted": "Запрошено удаление indexed vector-памяти: {deleted}.",
         "vector_cleanup_skipped": "Очистка vector-памяти не настроена.",
         "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",

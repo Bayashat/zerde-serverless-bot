@@ -68,7 +68,7 @@ Imported long-term memory is later used by `/ask` and proactive agent replies th
 - `--no-long-term` to skip event/fact/joke extraction.
 - `--no-daily-summaries` to skip daily summaries.
 
-If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find long-term history. Imported daily summaries should stay out of semantic retrieval unless you have inspected them and decided they are useful.
+If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find long-term history. Backfill records cumulative `processed_total`, `enqueued_total`, `failures_total`, start/update timestamps, optional completion time, and continuation tokens on the chat's `VECTOR_BACKFILL` item; `/memory status` shows the cumulative queueing progress. Imported daily summaries should stay out of semantic retrieval unless you have inspected them and decided they are useful.
 
 ## Cleanup And Pollution Control
 

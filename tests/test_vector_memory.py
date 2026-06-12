@@ -514,4 +514,38 @@ def test_vector_backfill_batches_and_continues(monkeypatch):
         start_key={"pk": "CHAT#-100123", "sk": "JOKE#3#4"},
     )
     repo.record_vector_backfill_status.assert_called_once()
-    assert repo.record_vector_backfill_status.call_args.kwargs["status"] == "queued_next_page"
+    assert repo.record_vector_backfill_status.call_args.kwargs == {
+        "status": "queued_next_page",
+        "processed": 2,
+        "enqueued": 2,
+        "failures": 0,
+        "start_key": None,
+        "next_token": {"pk": "CHAT#-100123", "sk": "JOKE#3#4"},
+        "reset": True,
+        "finished": False,
+    }
+
+
+def test_vector_backfill_marks_final_page_finished(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.list_vectorizable_memory_items.return_value = ([{"sk": "EVENT#1#2"}], None)
+    sqs = MagicMock()
+
+    vector_memory.process_vector_memory_backfill_task(
+        {"chat_id": -100123, "limit": 2, "start_key": {"pk": "CHAT#-100123", "sk": "EVENT#0#1"}},
+        repo=repo,
+        sqs_repo=sqs,
+    )
+
+    sqs.send_vector_memory_backfill_task.assert_not_called()
+    assert repo.record_vector_backfill_status.call_args.kwargs == {
+        "status": "queued",
+        "processed": 1,
+        "enqueued": 1,
+        "failures": 0,
+        "start_key": {"pk": "CHAT#-100123", "sk": "EVENT#0#1"},
+        "next_token": None,
+        "reset": False,
+        "finished": True,
+    }
