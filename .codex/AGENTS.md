@@ -38,6 +38,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
 - It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups with requester, profile, recent, long-term, and semantic context.
+- Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
 - It may proactively answer only after conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
 
@@ -96,7 +97,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `USER#<user_id>` — profile from the user's own messages only.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering user message, requester metadata, and reason for reply-thread continuity and `/agent why`.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and reason for reply-thread continuity and `/agent why`.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
@@ -129,7 +130,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
-- **Reply length control**: follow-up replies should stay short unless the user explicitly asks for detail.
+- **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 - **Vector observability**: retrieval and indexing success paths emit INFO logs with counts, filters, distance cutoffs, and vector dimensions; do not rely only on ERROR logs to confirm vector health.
 

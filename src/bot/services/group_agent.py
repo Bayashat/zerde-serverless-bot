@@ -26,6 +26,7 @@ from services.group_memory import (
     display_name,
     extract_message_text,
     format_long_term_memory_context,
+    format_message_reference,
     format_recent_context,
     format_requester_profile_context,
     format_user_profile_context,
@@ -75,6 +76,14 @@ class ReplyPolicy:
     max_chars: int
 
 
+@dataclass(frozen=True)
+class ExplicitQuestionContext:
+    user_text: str
+    current_user_message: str
+    source_message_context: str = ""
+    parent_bot_message_id: int | None = None
+
+
 def _get_gemini() -> GeminiClient | None:
     global _agent_gemini
     if get_gemini_api_key() and _agent_gemini is None:
@@ -120,23 +129,31 @@ def _reply_text(message: dict[str, Any]) -> str:
     return extract_message_text(reply)
 
 
-def _agent_reply_thread_context(
+def _load_agent_reply_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
     *,
     bot_message_id: int | str,
-    telegram_reply_text: str,
-) -> str:
+) -> dict[str, Any]:
     try:
         item = repo.get_agent_reply_explanation(chat_id, bot_message_id=bot_message_id)
     except Exception:
         logger.exception("Failed to load previous agent reply context", extra={"chat_id": chat_id})
-        item = {}
-    if not isinstance(item, dict):
-        item = {}
-    previous_user = str(item.get("user_message") or "").strip()
+        return {}
+    return item if isinstance(item, dict) else {}
+
+
+def _agent_reply_thread_context(
+    item: dict[str, Any],
+    *,
+    telegram_reply_text: str,
+) -> str:
+    source_context = str(item.get("source_message_context") or "").strip()
+    previous_user = str(item.get("current_user_message") or item.get("user_message") or "").strip()
     previous_answer = str(item.get("answer_text") or telegram_reply_text or "").strip()
     parts = ["The user is continuing a thread with this previous bot answer:"]
+    if source_context:
+        parts.append(f"Original source message for the previous answer:\n{source_context[:1800]}")
     if previous_user:
         parts.append(f"Previous user request:\n{previous_user[:1200]}")
     if previous_answer:
@@ -146,19 +163,111 @@ def _agent_reply_thread_context(
     return "\n\n".join(parts)
 
 
-def _explicit_user_text(repo: GroupMemoryRepository, chat_id: int | str, message: dict[str, Any]) -> str:
-    text = extract_message_text(message)
-    replied_text = _reply_text(message)
+def build_explicit_question_context(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    message: dict[str, Any],
+    *,
+    current_text: str | None = None,
+) -> ExplicitQuestionContext:
+    text = (current_text if current_text is not None else extract_message_text(message)).strip()
+    reply = message.get("reply_to_message")
+    if not isinstance(reply, dict):
+        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+
     if _replies_to_bot(message):
-        reply = message.get("reply_to_message") or {}
-        thread_context = _agent_reply_thread_context(
+        replied_text = _reply_text(message)
+        parent_bot_message_id = reply.get("message_id")
+        item = _load_agent_reply_context(
             repo,
             chat_id,
-            bot_message_id=reply.get("message_id") or 0,
+            bot_message_id=parent_bot_message_id or 0,
+        )
+        thread_context = _agent_reply_thread_context(
+            item,
             telegram_reply_text=replied_text,
         )
-        return f"{thread_context}\n\nUser follow-up:\n{text}"
-    return text
+        source_context = str(item.get("source_message_context") or "").strip()
+        followup = text or "The user replied to the previous bot answer and wants an explanation or continuation."
+        return ExplicitQuestionContext(
+            user_text=f"{thread_context}\n\nUser follow-up:\n{followup}",
+            current_user_message=text,
+            source_message_context=source_context,
+            parent_bot_message_id=int(parent_bot_message_id) if parent_bot_message_id is not None else None,
+        )
+
+    source_context = format_message_reference(reply)
+    if not source_context:
+        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+    if text:
+        user_text = (
+            "The user is asking about this replied-to group message:\n"
+            f"{source_context}\n\n"
+            "User question:\n"
+            f"{text}"
+        )
+    else:
+        user_text = (
+            "The user replied to this group message and wants you to explain it or answer based on it:\n"
+            f"{source_context}"
+        )
+    return ExplicitQuestionContext(
+        user_text=user_text,
+        current_user_message=text,
+        source_message_context=source_context,
+    )
+
+
+def _clear_reply_to_bot_request(text: str) -> bool:
+    lowered = " ".join((text or "").lower().split())
+    if not lowered:
+        return False
+    if "?" in text or "？" in text:
+        return True
+    if re.search(
+        r"\b(why|how|what|who|where|when|explain|expand|elaborate|detail|details|more|example|examples)\b",
+        lowered,
+    ):
+        return True
+    if re.search(
+        (
+            r"(^|\s)(қалай|неге|не|кім|түсіндір|толық|толығырақ|мысал|как|что|кто|почему|зачем|"
+            r"объясни|расскажи|подробнее|поделись)(\s|$|[?.!,])"
+        ),
+        lowered,
+    ):
+        return True
+    return any(cue in lowered for cue in ("怎么", "为什么", "什么", "谁", "解释", "详细", "展开", "举例"))
+
+
+def _reply_to_bot_followup_skip_reason(text: str) -> str | None:
+    lowered = " ".join((text or "").lower().split())
+    if not lowered:
+        return "empty_followup"
+    if _clear_reply_to_bot_request(text):
+        return None
+    reaction_cues = (
+        "haha",
+        "lol",
+        "lmao",
+        "хаха",
+        "ахах",
+        "哈哈",
+        "thanks",
+        "thank you",
+        "спасибо",
+        "рахмет",
+        "ок",
+        "okay",
+        "interesting",
+        "nice",
+        "cool",
+        "қызық",
+        "круто",
+    )
+    if any(cue in lowered for cue in reaction_cues):
+        return "reaction_or_ack"
+    return "no_clear_question_or_request"
 
 
 def _reply_policy(user_text: str) -> ReplyPolicy:
@@ -388,11 +497,33 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return None
     message = update["message"]
     text = extract_message_text(message)
-    if _mentions_bot(text) or _replies_to_bot(message):
+    if _mentions_bot(text):
+        return "explicit"
+    if _replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None:
         return "explicit"
     if _local_proactive_candidate(text):
         return "proactive"
     return None
+
+
+def _log_skipped_reply_to_bot_followup(update: dict[str, Any]) -> None:
+    if not AGENT_ENABLED or not _is_plain_text_message(update):
+        return
+    message = update["message"]
+    text = extract_message_text(message)
+    if not _replies_to_bot(message) or _mentions_bot(text):
+        return
+    skip_reason = _reply_to_bot_followup_skip_reason(text)
+    if not skip_reason:
+        return
+    logger.info(
+        "Group agent reply-to-bot follow-up skipped",
+        extra={
+            "chat_id": (message.get("chat") or {}).get("id"),
+            "message_id": message.get("message_id"),
+            "skip_reason": skip_reason,
+        },
+    )
 
 
 def should_answer(update: dict[str, Any]) -> bool:
@@ -412,7 +543,10 @@ def handle_update(
     continue routing it as a plain message.
     """
     trigger_kind = _trigger_kind(update)
-    if repo is None or trigger_kind is None:
+    if trigger_kind is None:
+        _log_skipped_reply_to_bot_followup(update)
+        return False
+    if repo is None:
         return False
 
     message = update["message"]
@@ -430,16 +564,20 @@ def handle_update(
             lang=get_chat_lang(chat_id),
         )
 
+    question_context = build_explicit_question_context(repo, chat_id, message)
     handled = answer_group_question(
         repo=repo,
         bot=bot,
         chat_id=chat_id,
         reply_to_message_id=message_id,
-        user_text=_explicit_user_text(repo, chat_id, message),
+        user_text=question_context.user_text,
         lang=get_chat_lang(chat_id),
         requester_user_id=(message.get("from") or {}).get("id"),
         requester_username=(message.get("from") or {}).get("username"),
         requester_display_name=display_name(message.get("from") or {}),
+        current_user_message=question_context.current_user_message,
+        source_message_context=question_context.source_message_context,
+        parent_bot_message_id=question_context.parent_bot_message_id,
     )
     if handled:
         logger.info(
@@ -547,6 +685,7 @@ def maybe_answer_proactively(
             ),
             answer_text=answer_text,
             user_message=user_text,
+            current_user_message=user_text,
             confidence=final_score,
         )
     logger.info(
@@ -575,9 +714,13 @@ def answer_group_question(
     requester_user_id: int | str | None = None,
     requester_username: str | None = None,
     requester_display_name: str | None = None,
+    current_user_message: str | None = None,
+    source_message_context: str | None = None,
+    parent_bot_message_id: int | str | None = None,
     raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
+    current_user_message = user_text if current_user_message is None else current_user_message
     guarded_answer = _guardrail_reply(user_text, lang)
     if guarded_answer:
         answer_html = normalize_llm_output_for_telegram_html(guarded_answer)
@@ -592,6 +735,9 @@ def answer_group_question(
                 reason="Guardrail blocked a subjective ranking or persistent future-answer directive.",
                 answer_text=guarded_answer,
                 user_message=user_text,
+                current_user_message=current_user_message,
+                source_message_context=source_message_context,
+                parent_bot_message_id=parent_bot_message_id,
             )
         return True
 
@@ -695,6 +841,9 @@ def answer_group_question(
             ),
             answer_text=answer_text,
             user_message=user_text,
+            current_user_message=current_user_message,
+            source_message_context=source_message_context,
+            parent_bot_message_id=parent_bot_message_id,
             requester_user_id=requester_user_id,
             requester_username=requester_username,
             requester_display_name=requester_display_name,

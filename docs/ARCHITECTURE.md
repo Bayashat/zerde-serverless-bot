@@ -10,7 +10,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It extracts long-term memories and daily summaries.
 - It embeds long-term memory into S3 Vectors for semantic retrieval.
 - It answers explicit questions with requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
-- It can continue reply threads with its own previous answers.
+- It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
@@ -93,7 +93,7 @@ The table is single-table by chat partition:
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering user message, and requester metadata for reply-thread continuity. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, and requester metadata for reply-thread continuity. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
@@ -108,7 +108,7 @@ Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#..
 3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
 4. Long-term memory context filtered by current query terms.
 5. Recent group context with speaker metadata.
-6. Reply-thread context when the user replies to the bot's previous answer.
+6. Reply-thread context when the user replies to the bot's previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
 
 The Gemini prompt instructs the model to treat requester profiles as highest trust for self-reference, target-user profiles as higher trust than third-party chatter, semantic memory as lower trust than profiles, and to avoid turning one-off jokes into permanent facts. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
@@ -127,6 +127,7 @@ Proactive replies are conservative:
 Answer length is explicit:
 
 - Reply-to-bot follow-ups get a short budget.
+- Reply-to-bot follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent.
 - Plain `/ask` explanations get a medium budget.
 - Detailed answers require explicit cues such as "подробно", "толық", or "deep dive".
 - `fit_llm_output` trims overly long responses before Telegram HTML normalization.

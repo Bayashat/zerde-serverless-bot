@@ -77,6 +77,9 @@ class SQSClient:
         requester_user_id: int | str | None = None,
         requester_username: str | None = None,
         requester_display_name: str | None = None,
+        current_user_message: str | None = None,
+        source_message_context: str | None = None,
+        parent_bot_message_id: int | str | None = None,
     ) -> None:
         """Enqueue an explicit /ask request for async group-agent answering."""
         payload: dict[str, object] = {
@@ -93,6 +96,12 @@ class SQSClient:
             payload["requester_username"] = requester_username
         if requester_display_name:
             payload["requester_display_name"] = requester_display_name
+        if current_user_message:
+            payload["current_user_message"] = current_user_message
+        if source_message_context:
+            payload["source_message_context"] = source_message_context
+        if parent_bot_message_id is not None:
+            payload["parent_bot_message_id"] = parent_bot_message_id
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
