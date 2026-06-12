@@ -881,11 +881,50 @@ def test_agent_can_consider_open_question_when_enabled(monkeypatch):
     assert group_agent.should_answer(_group_update("does anyone know how OpenSearch pricing works?")) is True
 
 
+def test_agent_can_consider_telegram_bot_stack_question_when_enabled(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+
+    text = (
+        "Маған идея керек, бір жаңа телеграм бот жасауым керек, "
+        "соған нақты техникалық стэк керек болып тұр, қандай ұсына аласыздар???"
+    )
+
+    assert group_agent._local_proactive_skip_reason(text) is None
+    assert group_agent.should_answer(_group_update(text)) is True
+    score = group_agent.score_proactive_reply(
+        user_text=text, recent_context="Ada: context", long_term_memory_context=""
+    )
+    assert "technical_relevance" in score.reasons
+
+
 def test_agent_does_not_consider_bot_meta_question_for_proactive_reply(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
+    assert group_agent._local_proactive_skip_reason("қазір кез келген хатты оқитын болған ба?") == "bot_meta"
     assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is False
+
+
+def test_agent_logs_local_proactive_prefilter_skip(monkeypatch):
+    repo = MagicMock()
+    info = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent.logger, "info", info)
+
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=MagicMock(),
+        update=_group_update("қазір кез келген хатты оқитын болған ба?"),
+    )
+
+    assert handled is False
+    assert any(
+        call.args[0] == "Group agent proactive candidate skipped by local prefilter"
+        and call.kwargs["extra"]["skip_reason"] == "bot_meta"
+        for call in info.call_args_list
+    )
 
 
 def test_agent_does_not_consider_stop_cue_for_proactive_reply(monkeypatch):

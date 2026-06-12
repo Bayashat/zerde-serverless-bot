@@ -119,7 +119,8 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 Proactive replies are conservative:
 
 - The local prefilter only considers open questions or requests.
-- Bot-meta complaints and stop cues are ignored.
+- Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
+- Local prefilter skips for open-question candidates are logged with a structured skip reason before score/model gating.
 - Recent bot activity lowers the score.
 - Gemini must return a strong "should reply" decision.
 - `AGENT_DAILY_PROACTIVE_LIMIT` caps per-chat daily proactive responses.

@@ -131,6 +131,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
+- **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Log structured local prefilter skips for open-question candidates.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 - **Vector observability**: retrieval and indexing success paths emit INFO logs with counts, filters, distance cutoffs, and vector dimensions; do not rely only on ERROR logs to confirm vector health.
 
