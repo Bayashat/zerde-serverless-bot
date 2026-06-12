@@ -350,17 +350,48 @@ def _format_lexical_memory_context(candidates: list[MemoryCandidate]) -> str:
     return "\n".join(lines)
 
 
-def _merge_contexts(*contexts: str) -> str:
-    lines: list[str] = []
-    seen: set[str] = set()
-    for context in contexts:
-        for line in (context or "").splitlines():
-            normalized = " ".join(line.lower().split())
-            if not normalized or normalized in seen:
-                continue
-            seen.add(normalized)
-            lines.append(line)
-    return "\n".join(lines)
+def _format_semantic_candidate_context(candidate: MemoryCandidate) -> str:
+    text = candidate.text.replace("\n", " ").strip()
+    if not text or not is_memory_learning_safe(text):
+        return ""
+    bits = [f"kind={candidate.memory_kind or 'memory'}"]
+    if candidate.source_sk:
+        bits.append(f"source={candidate.source_sk}")
+    speaker = str(
+        candidate.metadata.get("display_name")
+        or candidate.metadata.get("username")
+        or candidate.metadata.get("user_id")
+        or ""
+    ).strip()
+    if speaker:
+        bits.append(f"speaker={speaker[:80]}")
+    distance = candidate.metadata.get("distance")
+    if isinstance(distance, int | float):
+        bits.append(f"distance={distance:.4f}")
+    return f"[semantic_memory {' '.join(bits)}] {text[:900]}"
+
+
+def _render_candidate_context(candidate: MemoryCandidate) -> str:
+    if candidate.source == "semantic":
+        return _format_semantic_candidate_context(candidate)
+    if candidate.source == "lexical":
+        return _format_lexical_memory_context([candidate])
+    text = candidate.text.strip()
+    if not text:
+        return ""
+    return text
+
+
+def _candidate_context_key(candidate: MemoryCandidate) -> str:
+    if candidate.source == "requester_profile":
+        return "requester_profile_context"
+    if candidate.source == "target_profile":
+        return "user_profile_context"
+    if candidate.source == "semantic":
+        return "semantic_memory_context"
+    if candidate.source == "recent":
+        return "recent_context"
+    return "long_term_memory_context"
 
 
 def _default_lexical_search(
@@ -425,18 +456,12 @@ def retrieve_candidates(
         limit=semantic_limit,
         user_id=requester_user_id if intent.is_self_reference else None,
     )
-    semantic_context = semantic_context_fn(semantic_rows)
     semantic_candidates = [candidate for row in semantic_rows if (candidate := _semantic_candidate(row)) is not None]
-    semantic_source_sks = {candidate.source_sk for candidate in semantic_candidates if candidate.source_sk}
     lexical_terms = extract_lexical_terms(user_text)
     lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []
     lexical_candidates = [
         candidate for row in lexical_rows if (candidate := _lexical_candidate(row, lexical_terms)) is not None
     ]
-    lexical_context = _format_lexical_memory_context(
-        [candidate for candidate in lexical_candidates if candidate.source_sk not in semantic_source_sks]
-    )
-    packed_long_term_context = _merge_contexts(long_term_context, lexical_context)
     user_profile_context = user_profile_context_fn(
         repo,
         chat_id,
@@ -485,8 +510,8 @@ def retrieve_candidates(
     return (
         {
             "recent_context": recent_context,
-            "long_term_memory_context": packed_long_term_context,
-            "semantic_memory_context": semantic_context,
+            "long_term_memory_context": long_term_context,
+            "semantic_memory_context": "",
             "user_profile_context": user_profile_context,
             "requester_profile_context": requester_profile_context,
         },
@@ -596,26 +621,39 @@ def pack_context(
     char_budget: int = 12_000,
     source_limit: int = 16,
 ) -> RetrievalBundle:
-    """Pack context sections in trust order and return source metadata."""
+    """Render and pack only selected reranked candidates into prompt sections."""
     remaining = max(0, int(char_budget))
-    packed: dict[str, str] = {}
-    for key in (
-        "requester_profile_context",
-        "user_profile_context",
-        "semantic_memory_context",
-        "long_term_memory_context",
-        "recent_context",
-    ):
-        packed[key], remaining = _pack_text(contexts.get(key, ""), remaining)
+    packed_lines: dict[str, list[str]] = {
+        "requester_profile_context": [],
+        "user_profile_context": [],
+        "semantic_memory_context": [],
+        "long_term_memory_context": [],
+        "recent_context": [],
+    }
+    selected_candidates: list[MemoryCandidate] = []
+    for candidate in candidates:
+        if len(selected_candidates) >= source_limit:
+            break
+        key = _candidate_context_key(candidate)
+        rendered = _render_candidate_context(candidate)
+        if not rendered:
+            continue
+        separator_cost = 1 if packed_lines[key] else 0
+        packed_text, remaining_after = _pack_text(rendered, remaining - separator_cost)
+        if not packed_text:
+            continue
+        packed_lines[key].append(packed_text)
+        remaining = remaining_after
+        selected_candidates.append(candidate)
 
-    selected_sources = [candidate.source_metadata() for candidate in candidates[:source_limit]]
+    selected_sources = [candidate.source_metadata() for candidate in selected_candidates]
     return RetrievalBundle(
         intent=intent,
-        recent_context=packed["recent_context"],
-        long_term_memory_context=packed["long_term_memory_context"],
-        semantic_memory_context=packed["semantic_memory_context"],
-        user_profile_context=packed["user_profile_context"],
-        requester_profile_context=packed["requester_profile_context"],
+        recent_context="\n".join(packed_lines["recent_context"]),
+        long_term_memory_context="\n".join(packed_lines["long_term_memory_context"]),
+        semantic_memory_context="\n".join(packed_lines["semantic_memory_context"]),
+        user_profile_context="\n".join(packed_lines["user_profile_context"]),
+        requester_profile_context="\n".join(packed_lines["requester_profile_context"]),
         candidates=candidates,
         retrieval_sources=selected_sources,
     )

@@ -437,7 +437,57 @@ def test_joke_intent_preserves_joke_candidate_and_non_joke_query_penalizes_it():
     assert joke_score < event_score
 
 
-def test_pack_context_respects_char_budget():
+def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_injection():
+    repo = MagicMock()
+    semantic_rows = [
+        {
+            "distance": 0.01,
+            "metadata": {
+                "source_sk": "DAILY_SUMMARY#2026-06-12",
+                "memory_kind": "daily_summary",
+                "text": "Daily summary: the group briefly mentioned OpenSearch indexing during casual chatter.",
+            },
+        },
+        {
+            "distance": 0.18,
+            "metadata": {
+                "source_sk": "USER_FACT#42#7",
+                "memory_kind": "user_fact",
+                "text": "Ada fixes E1027 indexing.",
+                "confidence": 0.95,
+            },
+        },
+    ]
+
+    bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=-100123,
+        user_text="OpenSearch indexing E1027",
+        recent_context_fn=lambda *args, **kwargs: "[recent] this should not fit",
+        long_term_context_fn=lambda *args, **kwargs: "[daily_summary] generic OpenSearch daily summary",
+        semantic_retrieval_fn=MagicMock(return_value=semantic_rows),
+        semantic_context_fn=lambda rows: "\n".join(row["metadata"]["text"] for row in rows),
+        lexical_search_fn=MagicMock(return_value=[]),
+        user_profile_context_fn=_empty_context,
+        requester_profile_context_fn=_empty_context,
+        char_budget=110,
+    )
+
+    assert "Ada fixes E1027 indexing" in bundle.semantic_memory_context
+    assert "Daily summary" not in bundle.semantic_memory_context
+    assert "generic OpenSearch daily summary" not in bundle.long_term_memory_context
+    assert bundle.retrieval_sources == [
+        {
+            "source": "semantic",
+            "score": bundle.retrieval_sources[0]["score"],
+            "trust_level": 60,
+            "source_sk": "USER_FACT#42#7",
+            "memory_kind": "user_fact",
+        }
+    ]
+
+
+def test_pack_context_respects_char_budget_with_selected_candidates_only():
     intent = RetrievalIntent(
         is_self_reference=False,
         target_usernames=set(),
@@ -450,14 +500,35 @@ def test_pack_context_respects_char_budget():
     bundle = pack_context(
         intent=intent,
         contexts={
-            "requester_profile_context": "requester line",
-            "user_profile_context": "target line",
-            "semantic_memory_context": "semantic line",
-            "long_term_memory_context": "long term line",
-            "recent_context": "recent line",
+            "requester_profile_context": "legacy requester line",
+            "user_profile_context": "legacy target line",
+            "semantic_memory_context": "legacy semantic line",
+            "long_term_memory_context": "legacy long term line",
+            "recent_context": "legacy recent line",
         },
-        candidates=[],
-        char_budget=26,
+        candidates=[
+            MemoryCandidate(
+                "semantic",
+                "USER_FACT#42#1",
+                "user_fact",
+                "Ada owns OpenSearch indexing.",
+                0.9,
+                60,
+                None,
+                {},
+            ),
+            MemoryCandidate(
+                "recent",
+                None,
+                "message",
+                "[speaker user_id=42] this recent line should not fit",
+                0.1,
+                20,
+                None,
+                {},
+            ),
+        ],
+        char_budget=90,
     )
 
     total_chars = sum(
@@ -470,5 +541,52 @@ def test_pack_context_respects_char_budget():
             bundle.recent_context,
         )
     )
-    assert total_chars <= 26
-    assert bundle.requester_profile_context == "requester line"
+    assert total_chars <= 90
+    assert "legacy" not in "\n".join(
+        [
+            bundle.requester_profile_context,
+            bundle.user_profile_context,
+            bundle.semantic_memory_context,
+            bundle.long_term_memory_context,
+            bundle.recent_context,
+        ]
+    )
+    assert "OpenSearch" in bundle.semantic_memory_context
+    assert bundle.recent_context == ""
+    assert [source["source"] for source in bundle.retrieval_sources] == ["semantic"]
+
+
+def test_pack_context_records_only_sources_selected_for_prompt():
+    intent = analyze_query_intent("OpenSearch indexing")
+
+    bundle = pack_context(
+        intent=intent,
+        contexts={},
+        candidates=[
+            MemoryCandidate(
+                "semantic",
+                "USER_FACT#42#1",
+                "user_fact",
+                "Ada owns OpenSearch indexing.",
+                0.9,
+                60,
+                None,
+                {},
+            ),
+            MemoryCandidate(
+                "semantic",
+                "GROUP_FACT#1#3",
+                "group_fact",
+                "This second memory is too long for the remaining budget.",
+                0.8,
+                54,
+                None,
+                {},
+            ),
+        ],
+        char_budget=90,
+    )
+
+    assert "Ada owns OpenSearch indexing" in bundle.semantic_memory_context
+    assert "second memory" not in bundle.semantic_memory_context
+    assert [source.get("source_sk") for source in bundle.retrieval_sources] == ["USER_FACT#42#1"]

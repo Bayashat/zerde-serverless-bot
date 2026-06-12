@@ -36,7 +36,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing entrypoints.
 - `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
-- `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 wrapper for query intent, source tracking, local scoring/dedupe, and context packing around existing retrieval helpers.
+- `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
@@ -52,6 +52,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 ## Memory And Agent Guardrails
 
 - Do not inject unfiltered long-term memory into agent prompts. Use query-filtered long-term context and semantic vector retrieval.
+- Do not let preformatted whole context sections bypass the local reranker; prompt memory sections should be rendered from selected, deduped candidates.
 - Self-reference questions must include requester identity/profile context in the answer path.
 - User profile context must be derived from the target user's own messages; third-party roasts or labels are low trust.
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
