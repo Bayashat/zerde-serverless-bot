@@ -113,6 +113,7 @@ Treat AI behavior as user-facing reliability work:
 - Prefer fast fallback for interactive commands and `/ask` paths over long primary-provider retries.
 - Keep scheduled/batch paths allowed to retry longer than interactive user commands.
 - Map provider transport, 429, 5xx, and parse failures into consistent error types where the codebase already has that pattern.
+- Treat Gemini HTTP 200 responses with no candidate text as non-retryable for interactive `/ask`; log safe response-shape metadata such as block reason, finish reason, and candidate counts without logging full model responses.
 - Do not log full prompts, model responses, API keys, Telegram file contents, or user secrets.
 
 ## Implementation Guidance

@@ -2,6 +2,7 @@ import json
 from decimal import Decimal
 from unittest.mock import MagicMock
 
+import pytest
 from services import group_agent, group_memory
 from services.ai import gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
@@ -1222,6 +1223,42 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert "username=@bayashat" in user_prompt
 
 
+def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
+    class FakeHttp:
+        def request(self, method, url, body, headers, retries):
+            return MagicMock(
+                status=200,
+                data=json.dumps(
+                    {
+                        "promptFeedback": {
+                            "blockReason": "SAFETY",
+                            "blockReasonMessage": "No candidate was returned.",
+                            "safetyRatings": [{"category": "HARM_CATEGORY_DANGEROUS_CONTENT"}],
+                        }
+                    }
+                ).encode("utf-8"),
+            )
+
+    monkeypatch.setattr(gemini_client, "_http", FakeHttp())
+    monkeypatch.setattr(gemini_client, "_circuit_open_until", 0.0)
+
+    client = GeminiClient.__new__(GeminiClient)
+    client._api_key = "test-key"
+    client._model = "test-gemini-model"
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+
+    with pytest.raises(gemini_client.GeminiEmptyResponseError) as exc_info:
+        client.group_chat_reply(
+            user_message="/ask Бауырым, плов қалай жасайд?",
+            recent_context="",
+            lang="kk",
+        )
+
+    assert exc_info.value.retryable is False
+    assert "prompt_block_reason=SAFETY" in str(exc_info.value)
+
+
 def test_answer_group_question_passes_target_profile_context(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
@@ -1392,6 +1429,68 @@ def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
         "😵 AI agent қазір қолжетімсіз.",
         reply_to_message_id=99,
     )
+    repo.record_agent_reply.assert_not_called()
+
+
+def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_retry(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiEmptyResponseError(
+        "Gemini response had no candidate text: missing_candidates; prompt_block_reason=SAFETY"
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="/ask Бауырым, плов қалай жасайд?",
+        lang="kk",
+        raise_on_unavailable=True,
+    )
+
+    assert handled is True
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "😵 AI agent қазір қолжетімсіз.",
+        reply_to_message_id=99,
+    )
+    repo.record_agent_reply.assert_not_called()
+
+
+def test_answer_group_question_reraises_retryable_unavailable_for_sqs(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
+        "Gemini transport ReadTimeoutError: read timed out"
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    with pytest.raises(gemini_client.GeminiUnavailableError):
+        group_agent.answer_group_question(
+            repo=repo,
+            bot=bot,
+            chat_id=-100123,
+            reply_to_message_id=99,
+            user_text="@zerde_kz_bot не білесің?",
+            lang="kk",
+            raise_on_unavailable=True,
+        )
+
+    bot.send_message.assert_not_called()
     repo.record_agent_reply.assert_not_called()
 
 

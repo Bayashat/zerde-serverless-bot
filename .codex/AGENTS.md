@@ -132,6 +132,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
 - **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates.
+- **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 - **Vector observability**: retrieval and indexing success paths emit INFO logs with counts, filters, distance cutoffs, and vector dimensions; do not rely only on ERROR logs to confirm vector health.
 

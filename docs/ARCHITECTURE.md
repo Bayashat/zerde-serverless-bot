@@ -133,6 +133,7 @@ Answer length is explicit:
 - Plain `/ask` explanations get a medium budget.
 - Detailed answers require explicit cues such as "подробно", "толық", or "deep dive".
 - `fit_llm_output` trims overly long responses before Telegram HTML normalization.
+- Gemini `200 OK` responses with no candidate text are logged with safe response-shape metadata and treated as non-retryable for interactive `/ask` SQS work; the user gets the normal unavailable notice instead of a noisy retry loop.
 
 ## Vector Memory
 
