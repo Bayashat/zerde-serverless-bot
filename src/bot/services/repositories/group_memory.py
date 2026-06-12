@@ -269,6 +269,132 @@ class GroupMemoryRepository:
             or (sk.startswith("DAILY_SUMMARY#") and self._daily_summary_mentions_terms(item, cleanup_terms))
         )
 
+    @classmethod
+    def is_memory_item_related_to_user(cls, item: dict[str, Any], user_id: int | str) -> bool:
+        """Return whether a stored memory item directly belongs to one user."""
+        user_id_str = str(user_id)
+        sk = str(item.get("sk") or "")
+        return bool(
+            str(item.get("user_id") or "") == user_id_str
+            or sk == cls._user_sk(user_id)
+            or sk.startswith(f"USER_FACT#{user_id_str}#")
+        )
+
+    @staticmethod
+    def _item_matches_message_id(item: dict[str, Any], message_id: int | str) -> bool:
+        try:
+            target_id = int(message_id)
+        except (TypeError, ValueError):
+            return False
+        try:
+            if int(item.get("message_id")) == target_id:
+                return True
+        except (TypeError, ValueError):
+            pass
+        evidence_ids = item.get("evidence_message_ids")
+        if not isinstance(evidence_ids, list):
+            return False
+        for raw_id in evidence_ids:
+            try:
+                if int(raw_id) == target_id:
+                    return True
+            except (TypeError, ValueError):
+                continue
+        return False
+
+    def list_message_items_by_message_id(
+        self,
+        chat_id: int | str,
+        message_id: int | str,
+        *,
+        scan_limit: int = 500,
+    ) -> list[dict[str, Any]]:
+        """Find stored raw MSG items matching a Telegram message id."""
+        items: list[dict[str, Any]] = []
+        seen = 0
+        start_key: dict[str, Any] | None = None
+        scan_limit = max(1, int(scan_limit))
+        while seen < scan_limit:
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("MSG#"),
+                "ScanIndexForward": False,
+                "Limit": min(100, scan_limit - seen),
+            }
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self.table.query(**kwargs)
+            batch = resp.get("Items") or []
+            seen += len(batch)
+            items.extend(item for item in batch if self._item_matches_message_id(item, message_id))
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                return items
+        return items
+
+    def list_long_term_memory_items_by_message_id(
+        self,
+        chat_id: int | str,
+        message_id: int | str,
+        *,
+        scan_limit_per_prefix: int = 1000,
+    ) -> list[dict[str, Any]]:
+        """Find vectorizable long-term memories produced from one Telegram message."""
+        matched: list[dict[str, Any]] = []
+        scan_limit_per_prefix = max(1, int(scan_limit_per_prefix))
+        for prefix in _VECTOR_MEMORY_PREFIXES:
+            seen = 0
+            start_key: dict[str, Any] | None = None
+            while seen < scan_limit_per_prefix:
+                kwargs: dict[str, Any] = {
+                    "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(prefix),
+                    "Limit": min(100, scan_limit_per_prefix - seen),
+                }
+                if start_key:
+                    kwargs["ExclusiveStartKey"] = start_key
+                resp = self.table.query(**kwargs)
+                batch = resp.get("Items") or []
+                seen += len(batch)
+                matched.extend(item for item in batch if self._item_matches_message_id(item, message_id))
+                start_key = resp.get("LastEvaluatedKey")
+                if not start_key:
+                    break
+        return matched
+
+    def delete_memory_items_by_sks(self, chat_id: int | str, source_sks: list[str]) -> list[dict[str, Any]]:
+        """Delete explicit memory items and return the items that existed."""
+        unique_sks: list[str] = []
+        seen: set[str] = set()
+        for source_sk in source_sks:
+            sk = str(source_sk or "").strip()
+            if sk and sk not in seen:
+                seen.add(sk)
+                unique_sks.append(sk)
+        if not unique_sks:
+            return []
+
+        items: list[dict[str, Any]] = []
+        for sk in unique_sks:
+            resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": sk})
+            item = resp.get("Item") or {}
+            if item:
+                items.append(item)
+        if not items:
+            return []
+
+        with self.table.batch_writer() as batch:
+            for item in items:
+                batch.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
+        return items
+
+    def delete_memory_for_message(self, chat_id: int | str, message_id: int | str) -> list[dict[str, Any]]:
+        """Delete the stored raw message and long-term memories derived from it."""
+        candidates = [
+            *self.list_message_items_by_message_id(chat_id, message_id),
+            *self.list_long_term_memory_items_by_message_id(chat_id, message_id),
+        ]
+        source_sks = [str(item.get("sk") or "") for item in candidates if item.get("sk")]
+        return self.delete_memory_items_by_sks(chat_id, source_sks)
+
     @staticmethod
     def _profile_terms(text: str) -> list[str]:
         """Extract lightweight topic terms from a user's own message."""

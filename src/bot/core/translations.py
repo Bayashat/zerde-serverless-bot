@@ -115,7 +115,9 @@ TRANSLATIONS = {
             "• <code>/memory on</code> — enable group memory\n"
             "• <code>/memory off</code> — disable memory and agent\n"
             "• <code>/memory status</code> — show memory status\n"
+            "• <code>/memory about me</code> — show what I know from your own messages\n"
             "• <code>/memory forget me</code> — delete your memory in this group\n"
+            "• <code>/memory forget this</code> — reply to a bot answer or source message and delete related memory\n"
             "• <code>/memory forget group</code> — delete all group memory"
         ),
         "agent_usage": (
@@ -162,6 +164,24 @@ TRANSLATIONS = {
         "forget_group_done": "🧹 Deleted {deleted} memory items for this group.\n{vector_note}",
         "forget_me_no_user": "❌ I could not identify your Telegram user id.",
         "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.\n{vector_note}",
+        "memory_about_me_empty": "🧠 I do not have a stored profile for you in this group yet.",
+        "memory_about_me_message": (
+            "🧠 <b>I know this from your own messages:</b>\n"
+            "- language style: {language_style}\n"
+            "- common topics: {common_topics}\n"
+            "- self-stated preferences: {preferences}\n"
+            "- self-stated background: {background}\n"
+            "- boundaries: {boundaries}\n\n"
+            "Use <code>/memory forget me</code> to remove your stored user memory."
+        ),
+        "forget_this_usage": ("Reply to a bot answer or source message with <code>/memory forget this</code>."),
+        "forget_this_not_allowed": (
+            "❌ You can only delete memory linked to your own messages. "
+            "The group owner or bot owner can delete group memory."
+        ),
+        "forget_this_no_sources": "🧠 That bot answer has no deletable recorded memory sources.",
+        "forget_this_nothing_deleted": "🧠 I did not find stored memory for that message.",
+        "forget_this_done": "🧹 Deleted {deleted} related memory item(s).\n{vector_note}",
         "vector_configured_yes": "yes",
         "vector_configured_no": "no",
         "vector_backfill_none": "-",
@@ -173,8 +193,22 @@ TRANSLATIONS = {
         "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
         "why_reply_message": (
-            "🧾 <b>Why I replied</b>\n" "Reason: {reason}\n" "Trigger: {trigger}\n" "Confidence: {confidence}"
+            "🧾 <b>Why I replied</b>\n"
+            "Reason: {reason}\n"
+            "Trigger: {trigger}\n"
+            "Confidence: {confidence}\n"
+            "{sources}"
         ),
+        "why_sources_none": "Memory sources: none recorded",
+        "why_sources_header": "Memory sources:",
+        "why_sources_item": "- {label}: {value}",
+        "why_source_yes": "yes",
+        "why_source_requester_profile": "requester profile",
+        "why_source_target_profile": "target profile",
+        "why_source_semantic": "semantic memory",
+        "why_source_lexical": "lexical memory",
+        "why_source_long_term": "long-term group memory",
+        "why_source_recent": "recent context",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
             "❌ Usage: /genquiz &lt;topic&gt; [&lt;difficulty&gt; [&lt;lang&gt;]]\n"
@@ -333,7 +367,9 @@ TRANSLATIONS = {
             "• <code>/memory on</code> — топ жадын қосу\n"
             "• <code>/memory off</code> — жад пен agent режимін өшіру\n"
             "• <code>/memory status</code> — жад күйін көрсету\n"
+            "• <code>/memory about me</code> — өз хабарламаларыңыздан не білгенімді көрсету\n"
             "• <code>/memory forget me</code> — осы топтағы өз жадыңызды өшіру\n"
+            "• <code>/memory forget this</code> — bot жауабына не source хабарламаға reply жасап қатысты жадты өшіру\n"
             "• <code>/memory forget group</code> — топтың барлық жадын өшіру"
         ),
         "agent_usage": (
@@ -380,6 +416,26 @@ TRANSLATIONS = {
         "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.\n{vector_note}",
         "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
         "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
+        "memory_about_me_empty": "🧠 Бұл топта сіз туралы сақталған профиль әлі жоқ.",
+        "memory_about_me_message": (
+            "🧠 <b>Өз хабарламаларыңыздан мынаны білемін:</b>\n"
+            "- тіл стилі: {language_style}\n"
+            "- жиі тақырыптар: {common_topics}\n"
+            "- өзіңіз айтқан қалаулар: {preferences}\n"
+            "- өзіңіз айтқан background: {background}\n"
+            "- шекаралар: {boundaries}\n\n"
+            "Сақталған user memory өшіру үшін <code>/memory forget me</code> қолданыңыз."
+        ),
+        "forget_this_usage": (
+            "Bot жауабына немесе source хабарламаға reply жасап <code>/memory forget this</code> жіберіңіз."
+        ),
+        "forget_this_not_allowed": (
+            "❌ Тек өз хабарламаларыңызға байланысты жадты өшіре аласыз. "
+            "Топ иесі немесе bot owner group memory өшіре алады."
+        ),
+        "forget_this_no_sources": "🧠 Бұл bot жауабында өшіруге болатын жазылған memory source жоқ.",
+        "forget_this_nothing_deleted": "🧠 Ол хабарлама үшін сақталған жад таппадым.",
+        "forget_this_done": "🧹 Қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
         "vector_configured_yes": "иә",
         "vector_configured_no": "жоқ",
         "vector_backfill_none": "-",
@@ -391,8 +447,22 @@ TRANSLATIONS = {
         "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
         "why_reply_message": (
-            "🧾 <b>Неге жауап бердім</b>\n" "Себеп: {reason}\n" "Триггер: {trigger}\n" "Сенімділік: {confidence}"
+            "🧾 <b>Неге жауап бердім</b>\n"
+            "Себеп: {reason}\n"
+            "Триггер: {trigger}\n"
+            "Сенімділік: {confidence}\n"
+            "{sources}"
         ),
+        "why_sources_none": "Memory sources: жазылмаған",
+        "why_sources_header": "Memory sources:",
+        "why_sources_item": "- {label}: {value}",
+        "why_source_yes": "иә",
+        "why_source_requester_profile": "сұраушы профилі",
+        "why_source_target_profile": "нысан user профилі",
+        "why_source_semantic": "semantic memory",
+        "why_source_lexical": "lexical memory",
+        "why_source_long_term": "ұзақ мерзімді group memory",
+        "why_source_recent": "соңғы контекст",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
             "❌ Қолданылуы: /genquiz &lt;тақырып&gt; [&lt;деңгей&gt; [&lt;тіл&gt;]]\n"
@@ -543,7 +613,9 @@ TRANSLATIONS = {
             "• <code>/memory on</code> — 开启群记忆\n"
             "• <code>/memory off</code> — 关闭记忆和 agent\n"
             "• <code>/memory status</code> — 查看记忆状态\n"
+            "• <code>/memory about me</code> — 查看我从你自己的消息中记住了什么\n"
             "• <code>/memory forget me</code> — 删除你在本群的记忆\n"
+            "• <code>/memory forget this</code> — 回复 bot 答案或来源消息并删除相关记忆\n"
             "• <code>/memory forget group</code> — 删除整个群的记忆"
         ),
         "agent_usage": (
@@ -588,6 +660,21 @@ TRANSLATIONS = {
         "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。\n{vector_note}",
         "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
         "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。\n{vector_note}",
+        "memory_about_me_empty": "🧠 我还没有在这个群里保存你的画像。",
+        "memory_about_me_message": (
+            "🧠 <b>我从你自己的消息中知道这些：</b>\n"
+            "- 语言风格：{language_style}\n"
+            "- 常见话题：{common_topics}\n"
+            "- 自述偏好：{preferences}\n"
+            "- 自述背景：{background}\n"
+            "- 边界：{boundaries}\n\n"
+            "使用 <code>/memory forget me</code> 删除你的用户记忆。"
+        ),
+        "forget_this_usage": "请回复一条 bot 答案或来源消息，并发送 <code>/memory forget this</code>。",
+        "forget_this_not_allowed": "❌ 你只能删除与你自己消息相关的记忆。群主或 bot owner 可以删除群记忆。",
+        "forget_this_no_sources": "🧠 那条 bot 答案没有可删除的已记录记忆来源。",
+        "forget_this_nothing_deleted": "🧠 我没有找到那条消息对应的已存记忆。",
+        "forget_this_done": "🧹 已删除 {deleted} 条相关记忆。\n{vector_note}",
         "vector_configured_yes": "是",
         "vector_configured_no": "否",
         "vector_backfill_none": "-",
@@ -598,7 +685,19 @@ TRANSLATIONS = {
         "vector_cleanup_skipped": "未配置向量记忆清理。",
         "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
-        "why_reply_message": ("🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}"),
+        "why_reply_message": (
+            "🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}\n" "{sources}"
+        ),
+        "why_sources_none": "记忆来源：未记录",
+        "why_sources_header": "记忆来源：",
+        "why_sources_item": "- {label}: {value}",
+        "why_source_yes": "是",
+        "why_source_requester_profile": "提问者画像",
+        "why_source_target_profile": "目标用户画像",
+        "why_source_semantic": "语义记忆",
+        "why_source_lexical": "词面记忆",
+        "why_source_long_term": "长期群记忆",
+        "why_source_recent": "近期上下文",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
@@ -750,7 +849,10 @@ TRANSLATIONS = {
             "• <code>/memory on</code> — включить память группы\n"
             "• <code>/memory off</code> — выключить память и agent\n"
             "• <code>/memory status</code> — показать статус памяти\n"
+            "• <code>/memory about me</code> — показать, что я знаю из ваших сообщений\n"
             "• <code>/memory forget me</code> — удалить вашу память в этой группе\n"
+            "• <code>/memory forget this</code> — ответьте на ответ бота или source-сообщение "
+            "и удалите связанную память\n"
             "• <code>/memory forget group</code> — удалить всю память группы"
         ),
         "agent_usage": (
@@ -799,6 +901,24 @@ TRANSLATIONS = {
         "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.\n{vector_note}",
         "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",
         "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.\n{vector_note}",
+        "memory_about_me_empty": "🧠 У меня пока нет сохраненного профиля для вас в этой группе.",
+        "memory_about_me_message": (
+            "🧠 <b>Я знаю это из ваших собственных сообщений:</b>\n"
+            "- стиль языка: {language_style}\n"
+            "- частые темы: {common_topics}\n"
+            "- заявленные предпочтения: {preferences}\n"
+            "- заявленный background: {background}\n"
+            "- границы: {boundaries}\n\n"
+            "Используйте <code>/memory forget me</code>, чтобы удалить вашу user memory."
+        ),
+        "forget_this_usage": ("Ответьте на ответ бота или source-сообщение командой <code>/memory forget this</code>."),
+        "forget_this_not_allowed": (
+            "❌ Вы можете удалять только память, связанную с вашими сообщениями. "
+            "Владелец группы или bot owner может удалять group memory."
+        ),
+        "forget_this_no_sources": "🧠 У этого ответа бота нет записанных источников памяти, которые можно удалить.",
+        "forget_this_nothing_deleted": "🧠 Я не нашел сохраненную память для этого сообщения.",
+        "forget_this_done": "🧹 Удалено связанных элементов памяти: {deleted}.\n{vector_note}",
         "vector_configured_yes": "да",
         "vector_configured_no": "нет",
         "vector_backfill_none": "-",
@@ -810,8 +930,22 @@ TRANSLATIONS = {
         "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
         "why_reply_message": (
-            "🧾 <b>Почему я ответил</b>\n" "Причина: {reason}\n" "Триггер: {trigger}\n" "Уверенность: {confidence}"
+            "🧾 <b>Почему я ответил</b>\n"
+            "Причина: {reason}\n"
+            "Триггер: {trigger}\n"
+            "Уверенность: {confidence}\n"
+            "{sources}"
         ),
+        "why_sources_none": "Источники памяти: не записаны",
+        "why_sources_header": "Источники памяти:",
+        "why_sources_item": "- {label}: {value}",
+        "why_source_yes": "да",
+        "why_source_requester_profile": "профиль запросившего",
+        "why_source_target_profile": "профиль целевого пользователя",
+        "why_source_semantic": "семантическая память",
+        "why_source_lexical": "лексическая память",
+        "why_source_long_term": "долгосрочная память группы",
+        "why_source_recent": "недавний контекст",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (
             "❌ Использование: /genquiz &lt;тема&gt; [&lt;сложность&gt; [&lt;язык&gt;]]\n"

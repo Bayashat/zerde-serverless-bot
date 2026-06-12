@@ -66,6 +66,24 @@ def test_s3_vectors_repository_put_query_delete_and_list(monkeypatch):
     assert repo.get_index()["indexName"] == "idx"
 
 
+def test_delete_memory_vectors_for_items_skips_non_vectorizable_items(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    vector_repo = MagicMock()
+    vector_repo.delete_vectors.return_value = 1
+
+    deleted = vector_memory.delete_memory_vectors_for_items(
+        -100123,
+        [
+            {"sk": "MSG#0000000001000#8"},
+            {"sk": "USER_FACT#42#0000000001000#8", "vector_key": "memory/user-fact"},
+        ],
+        vector_repo=vector_repo,
+    )
+
+    vector_repo.delete_vectors.assert_called_once_with(["memory/user-fact"])
+    assert deleted == 1
+
+
 def test_s3_vectors_repository_query_filters_by_user_and_kind(monkeypatch):
     fake_client = MagicMock()
     fake_client.query_vectors.return_value = {"vectors": []}

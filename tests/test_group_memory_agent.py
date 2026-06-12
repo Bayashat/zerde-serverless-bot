@@ -2150,6 +2150,28 @@ def test_memory_command_routes_subcommands(monkeypatch):
     forget_me.assert_called_once_with(ctx)
 
 
+def test_memory_command_routes_about_me(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/memory about me"
+    about_me = MagicMock()
+    monkeypatch.setattr(commands, "handle_memory_about_me", about_me)
+
+    commands.handle_memory(ctx)
+
+    about_me.assert_called_once_with(ctx)
+
+
+def test_memory_command_routes_forget_this(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/memory forget this"
+    forget_this = MagicMock()
+    monkeypatch.setattr(commands, "handle_forget_this", forget_this)
+
+    commands.handle_memory(ctx)
+
+    forget_this.assert_called_once_with(ctx)
+
+
 def test_agent_command_routes_why(monkeypatch):
     ctx = _command_ctx(user_id=42)
     ctx.text = "/agent why"
@@ -2368,6 +2390,217 @@ def test_forget_me_deletes_vector_memory_when_configured(monkeypatch):
     ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
 
 
+def test_memory_about_me_shows_current_users_profile_only():
+    ctx = _command_ctx(user_id=42)
+    ctx.memory_repo.get_user_profile.return_value = {
+        "user_id": "42",
+        "language_style": ["uses-latin", "asks-questions"],
+        "interests": ["lambda", "opensearch"],
+        "preferences": ["I prefer concise answers"],
+        "known_facts": ["I maintain the bot"],
+        "boundaries": ["do not ping me at night"],
+    }
+
+    commands.handle_memory_about_me(ctx)
+
+    ctx.memory_repo.get_user_profile.assert_called_once_with(-100123, 42)
+    message = ctx.reply.call_args.args[0]
+    assert "I know this from your own messages" in message
+    assert "lambda" in message
+    assert "I prefer concise answers" in message
+    assert "do not ping me at night" in message
+    assert "Grace" not in message
+
+
+def test_memory_about_me_empty_profile_is_friendly():
+    ctx = _command_ctx(user_id=42)
+    ctx.memory_repo.get_user_profile.return_value = {}
+
+    commands.handle_memory_about_me(ctx)
+
+    assert "do not have a stored profile" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_reply_to_own_source_message_deletes_message_memory(monkeypatch):
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "from": {"id": 42, "is_bot": False, "first_name": "Ada"},
+        "text": "I prefer concise answers",
+    }
+    ctx.memory_repo.delete_memory_for_message.return_value = [
+        {"pk": "CHAT#-100123", "sk": "MSG#0000000001000#8"},
+        {"pk": "CHAT#-100123", "sk": "USER_FACT#42#0000000001000#8"},
+    ]
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.delete_memory_for_message.assert_called_once_with(-100123, 8)
+    assert "Deleted 2 related memory" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_rejects_other_users_source_message():
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt"},
+        "text": "We chose S3 Vectors.",
+    }
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.delete_memory_for_message.assert_not_called()
+    assert "only delete memory linked to your own messages" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_group_owner_can_delete_group_source_message(monkeypatch):
+    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
+    ctx = _command_ctx(user_id=42, status="creator")
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt"},
+        "text": "We chose S3 Vectors.",
+    }
+    ctx.memory_repo.delete_memory_for_message.return_value = [
+        {"pk": "CHAT#-100123", "sk": "GROUP_FACT#0000000001000#8"},
+    ]
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.delete_memory_for_message.assert_called_once_with(-100123, 8)
+    assert "Deleted 1 related memory" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_bot_answer_deletes_only_current_users_sources(monkeypatch):
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "retrieval_sources": [
+            {"source": "requester_profile", "source_sk": "USER#42"},
+            {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#8"},
+        ]
+    }
+    items = {
+        "USER#42": {"pk": "CHAT#-100123", "sk": "USER#42", "user_id": "42"},
+        "GROUP_FACT#0000000001000#8": {
+            "pk": "CHAT#-100123",
+            "sk": "GROUP_FACT#0000000001000#8",
+            "user_id": "7",
+        },
+    }
+    ctx.memory_repo.get_memory_item.side_effect = lambda chat_id, sk: items[sk]
+    ctx.memory_repo.is_memory_item_related_to_user.side_effect = GroupMemoryRepository.is_memory_item_related_to_user
+    ctx.memory_repo.delete_memory_items_by_sks.return_value = [items["USER#42"]]
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.delete_memory_items_by_sks.assert_called_once_with(-100123, ["USER#42"])
+    assert "Deleted 1 related memory" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_bot_answer_group_owner_deletes_group_sources(monkeypatch):
+    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
+    delete_vectors = MagicMock(return_value=1)
+    monkeypatch.setattr(commands, "delete_memory_vectors_for_items", delete_vectors)
+    ctx = _command_ctx(user_id=42, status="creator")
+    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
+    item = {"pk": "CHAT#-100123", "sk": "GROUP_FACT#0000000001000#8"}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "retrieval_sources": [{"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#8"}]
+    }
+    ctx.memory_repo.delete_memory_items_by_sks.return_value = [item]
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.delete_memory_items_by_sks.assert_called_once_with(
+        -100123,
+        ["GROUP_FACT#0000000001000#8"],
+    )
+    delete_vectors.assert_called_once_with(-100123, [item])
+    assert "1" in ctx.reply.call_args.args[0]
+
+
+def test_delete_memory_for_message_deletes_raw_and_derived_memory():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.list_message_items_by_message_id = MagicMock(
+        return_value=[{"pk": "CHAT#-100123", "sk": "MSG#0000000001000#8"}]
+    )
+    repo.list_long_term_memory_items_by_message_id = MagicMock(
+        return_value=[{"pk": "CHAT#-100123", "sk": "USER_FACT#42#0000000001000#8"}]
+    )
+    repo.delete_memory_items_by_sks = MagicMock(
+        return_value=[
+            {"pk": "CHAT#-100123", "sk": "MSG#0000000001000#8"},
+            {"pk": "CHAT#-100123", "sk": "USER_FACT#42#0000000001000#8"},
+        ]
+    )
+
+    deleted = repo.delete_memory_for_message(-100123, 8)
+
+    assert [item["sk"] for item in deleted] == [
+        "MSG#0000000001000#8",
+        "USER_FACT#42#0000000001000#8",
+    ]
+    repo.delete_memory_items_by_sks.assert_called_once_with(
+        -100123,
+        ["MSG#0000000001000#8", "USER_FACT#42#0000000001000#8"],
+    )
+
+
+def test_list_long_term_memory_items_by_message_id_queries_vector_prefixes():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.side_effect = [
+        {
+            "Items": [
+                {"sk": "EVENT#0000000001000#8", "message_id": 8},
+                {"sk": "EVENT#0000000001000#9", "message_id": 9},
+            ]
+        },
+        {"Items": [{"sk": "USER_FACT#42#0000000001000#8", "evidence_message_ids": [8]}]},
+        {"Items": []},
+        {"Items": [{"sk": "JOKE#0000000001000#7", "evidence_message_ids": [7]}]},
+        {"Items": [{"sk": "DAILY_SUMMARY#2026-06-12", "message_id": 8}]},
+    ]
+
+    items = repo.list_long_term_memory_items_by_message_id(-100123, 8)
+
+    assert [item["sk"] for item in items] == [
+        "EVENT#0000000001000#8",
+        "USER_FACT#42#0000000001000#8",
+        "DAILY_SUMMARY#2026-06-12",
+    ]
+    assert _memory_query_prefixes(repo) == [
+        "EVENT#",
+        "USER_FACT#",
+        "GROUP_FACT#",
+        "JOKE#",
+        "DAILY_SUMMARY#",
+    ]
+
+
+def test_delete_memory_items_by_sks_deletes_existing_unique_items():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    batch = MagicMock()
+    repo.table.batch_writer.return_value.__enter__.return_value = batch
+    item = {"pk": "CHAT#-100123", "sk": "USER#42"}
+    repo.table.get_item.side_effect = [
+        {"Item": item},
+        {},
+    ]
+
+    deleted = repo.delete_memory_items_by_sks(-100123, ["USER#42", "USER#42", "MISSING#1"])
+
+    assert deleted == [item]
+    assert repo.table.get_item.call_count == 2
+    batch.delete_item.assert_called_once_with(Key={"pk": "CHAT#-100123", "sk": "USER#42"})
+
+
 def test_why_reply_uses_replied_bot_message_reason():
     ctx = _command_ctx(user_id=42)
     ctx.reply_to_message = {"message_id": 999, "from": {"is_bot": True}}
@@ -2381,3 +2614,29 @@ def test_why_reply_uses_replied_bot_message_reason():
 
     ctx.memory_repo.get_agent_reply_explanation.assert_called_once_with(-100123, bot_message_id=999)
     assert "open question" in ctx.reply.call_args.args[0]
+
+
+def test_why_reply_includes_memory_source_counts_without_text():
+    ctx = _command_ctx(user_id=42)
+    ctx.reply_to_message = {"message_id": 999, "from": {"is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "trigger_kind": "explicit",
+        "reason": "explicit question",
+        "confidence": Decimal("0.91"),
+        "retrieval_sources": [
+            {"source": "requester_profile", "source_sk": "USER#42", "text": "private profile text"},
+            {"source": "semantic", "source_sk": "USER_FACT#42#1#2", "text": "private semantic text"},
+            {"source": "semantic", "source_sk": "GROUP_FACT#1#3"},
+            {"source": "recent"},
+        ],
+    }
+
+    commands.handle_why_reply(ctx)
+
+    message = ctx.reply.call_args.args[0]
+    assert "Memory sources:" in message
+    assert "requester profile: yes" in message
+    assert "semantic memory: 2" in message
+    assert "recent context: yes" in message
+    assert "private profile text" not in message
+    assert "private semantic text" not in message
