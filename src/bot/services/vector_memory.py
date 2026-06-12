@@ -12,6 +12,7 @@ from typing import Any
 import urllib3
 from core.config import (
     GEMINI_API_BASE,
+    GEMINI_EMBEDDING_RPD_LIMIT,
     VECTOR_MEMORY_BACKFILL_BATCH_SIZE,
     VECTOR_MEMORY_DIMENSIONS,
     VECTOR_MEMORY_EMBEDDING_MODEL,
@@ -24,6 +25,7 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.rate_limit import RateLimitRepository
 from services.repositories.vector_memory import S3VectorMemoryRepository
 from urllib3.exceptions import HTTPError
 
@@ -72,6 +74,10 @@ class VectorMemoryUnavailableError(Exception):
     """Vector memory backend or embedding provider is unavailable."""
 
 
+def _elapsed_ms(started_at: float) -> int:
+    return int((time.monotonic() - started_at) * 1000)
+
+
 class GeminiEmbeddingClient:
     """Small REST client for Gemini embeddings."""
 
@@ -82,6 +88,7 @@ class GeminiEmbeddingClient:
         self._api_key = api_key
         self._model = VECTOR_MEMORY_EMBEDDING_MODEL
         self._dimensions = VECTOR_MEMORY_DIMENSIONS
+        self._rate_repo = RateLimitRepository(scope="gemini_embedding")
 
     def _content_for_task(self, text: str, *, task_type: str) -> str:
         if self._model == "gemini-embedding-2":
@@ -97,6 +104,22 @@ class GeminiEmbeddingClient:
         if not cleaned:
             return []
         content_text = self._content_for_task(cleaned, task_type=task_type)
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning(
+                "Gemini embedding RPD limit reached",
+                extra={
+                    "embedding_rpd_count": count,
+                    "embedding_rpd_limit": self._rate_repo.rpd_limit,
+                    "configured_embedding_rpd_limit": GEMINI_EMBEDDING_RPD_LIMIT,
+                    "embedding_model": self._model,
+                    "task_type": task_type,
+                    "text_chars": len(cleaned),
+                },
+            )
+            raise VectorMemoryUnavailableError(
+                f"Gemini embedding RPD limit reached: {count}/{self._rate_repo.rpd_limit}"
+            )
         payload: dict[str, Any] = {
             "content": {"parts": [{"text": content_text[:4000]}]},
         }
@@ -106,6 +129,7 @@ class GeminiEmbeddingClient:
             payload["taskType"] = task_type
             payload["outputDimensionality"] = self._dimensions
         url = f"{GEMINI_API_BASE}/{self._model}:embedContent?key={self._api_key}"
+        started_at = time.monotonic()
         try:
             resp = _http.request(
                 "POST",
@@ -132,6 +156,17 @@ class GeminiEmbeddingClient:
             raise VectorMemoryUnavailableError(
                 f"Gemini embedding returned {len(vector)} dimensions, expected {self._dimensions}"
             )
+        logger.info(
+            "Gemini embedding request completed",
+            extra={
+                "embedding_model": self._model,
+                "task_type": task_type,
+                "embedding_rpd_count": count,
+                "embedding_rpd_limit": self._rate_repo.rpd_limit,
+                "latency_ms": _elapsed_ms(started_at),
+                "vector_dimension_count": len(vector),
+            },
+        )
         return vector
 
 

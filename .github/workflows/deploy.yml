@@ -79,10 +79,12 @@ jobs:
           DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
           TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
           NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
           QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
           WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL }}
           GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
+          GEMINI_EMBEDDING_RPD_LIMIT: ${{ vars.GEMINI_EMBEDDING_RPD_LIMIT || '1000' }}
           GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
           FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
           GROQ_MODEL: ${{ vars.GROQ_MODEL }}
@@ -119,6 +121,7 @@ jobs:
           VECTOR_MEMORY_EMBEDDING_MODEL: ${{ vars.VECTOR_MEMORY_EMBEDDING_MODEL || 'gemini-embedding-2' }}
           VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: ${{ vars.VECTOR_MEMORY_INDEX_THROTTLE_SECONDS || '3' }}
           VECTOR_MEMORY_BACKFILL_BATCH_SIZE: ${{ vars.VECTOR_MEMORY_BACKFILL_BATCH_SIZE || '50' }}
+          VECTOR_MEMORY_MAX_DISTANCE: ${{ vars.VECTOR_MEMORY_MAX_DISTANCE || '0.85' }}
           VECTOR_MEMORY_VECTOR_BUCKET_NAME: ${{ vars.VECTOR_MEMORY_VECTOR_BUCKET_NAME }}
           VECTOR_MEMORY_INDEX_NAME: ${{ vars.VECTOR_MEMORY_INDEX_NAME }}
           AGENT_ENABLED: ${{ vars.AGENT_ENABLED || 'true' }}

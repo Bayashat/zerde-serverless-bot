@@ -52,6 +52,7 @@ class ZerdeTelegramBotStack(Stack):
         # ── Gemini parameters ──────────────────────────────────────────────────
         gemini_api_base = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
+        gemini_embedding_rpd_limit = os.environ.get("GEMINI_EMBEDDING_RPD_LIMIT", "1000")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
         gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3.1-flash-lite")
@@ -145,6 +146,7 @@ class ZerdeTelegramBotStack(Stack):
             gemini_api_base=gemini_api_base,
             gemini_model=gemini_model,
             gemini_rpd_limit=gemini_rpd_limit,
+            gemini_embedding_rpd_limit=gemini_embedding_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
             spam_rule_enforce_threshold=spam_rule_enforce_threshold,

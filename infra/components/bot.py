@@ -44,6 +44,7 @@ class BotConstruct(Construct):
         gemini_api_base: str,
         gemini_model: str,
         gemini_rpd_limit: int,
+        gemini_embedding_rpd_limit: str,
         groq_api_base: str,
         groq_model: str,
         spam_rule_enforce_threshold: str,
@@ -191,6 +192,7 @@ class BotConstruct(Construct):
             "GEMINI_API_BASE": gemini_api_base,
             "GEMINI_MODEL": gemini_model,
             "GEMINI_RPD_LIMIT": gemini_rpd_limit,
+            "GEMINI_EMBEDDING_RPD_LIMIT": gemini_embedding_rpd_limit,
             # -- Chat → language mapping ───────────────────────────────────────
             "CHAT_LANG_MAP": json.dumps(chat_lang_map),
             # -- Timing parameters ─────────────────────────────────────────────

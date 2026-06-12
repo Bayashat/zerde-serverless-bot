@@ -90,6 +90,7 @@ SPAM_AI_CONFIDENCE_THRESHOLD: float = float(os.environ.get("SPAM_AI_CONFIDENCE_T
 GEMINI_API_BASE: str = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
 GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 GEMINI_RPD_LIMIT: int = require_int("GEMINI_RPD_LIMIT")
+GEMINI_EMBEDDING_RPD_LIMIT: int = int(os.environ.get("GEMINI_EMBEDDING_RPD_LIMIT", "1000"))
 
 # ── Chat → language mapping ──────────────────────────────────────────────────
 _CHAT_LANG_RAW: Any = require_json("CHAT_LANG_MAP")

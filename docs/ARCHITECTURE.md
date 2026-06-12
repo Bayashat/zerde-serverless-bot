@@ -143,6 +143,7 @@ Answer length is explicit:
 S3 Vectors is used for semantic retrieval over trusted long-term memory:
 
 - Embedding model: `VECTOR_MEMORY_EMBEDDING_MODEL` (default `gemini-embedding-2`).
+- Embedding API calls use a shared DynamoDB RPD counter scoped as `gemini_embedding`; configure it with `GEMINI_EMBEDDING_RPD_LIMIT` (default `1000`).
 - Dimensions: `VECTOR_MEMORY_DIMENSIONS` (default `768`).
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
 - Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`) filters out distant vector matches before prompt injection.

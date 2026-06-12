@@ -1,6 +1,9 @@
+import json
 from unittest.mock import MagicMock
 
+import pytest
 from services import vector_memory
+from services.repositories import rate_limit as rate_limit_module
 from services.repositories import vector_memory as vector_repo_module
 from services.repositories.vector_memory import S3VectorMemoryRepository
 
@@ -187,6 +190,63 @@ def test_gemini_embedding_2_formats_retrieval_tasks(monkeypatch):
     )
 
 
+def test_gemini_embedding_client_checks_rpd_before_http(monkeypatch):
+    client = vector_memory.GeminiEmbeddingClient.__new__(vector_memory.GeminiEmbeddingClient)
+    client._api_key = "test"
+    client._model = "gemini-embedding-001"
+    client._dimensions = 2
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+    http = MagicMock()
+    http.request.return_value = MagicMock(
+        status=200,
+        data=json.dumps({"embedding": {"values": [0.1, 0.2]}}).encode("utf-8"),
+    )
+    monkeypatch.setattr(vector_memory, "_http", http)
+
+    vector = client.embed("A memory", task_type="RETRIEVAL_DOCUMENT")
+
+    assert vector == [0.1, 0.2]
+    client._rate_repo.increment_and_check.assert_called_once()
+    http.request.assert_called_once()
+
+
+def test_gemini_embedding_client_quota_exhausted_does_not_call_http(monkeypatch):
+    client = vector_memory.GeminiEmbeddingClient.__new__(vector_memory.GeminiEmbeddingClient)
+    client._api_key = "test"
+    client._model = "gemini-embedding-001"
+    client._dimensions = 2
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1001, False)
+    http = MagicMock()
+    monkeypatch.setattr(vector_memory, "_http", http)
+
+    with pytest.raises(vector_memory.VectorMemoryUnavailableError, match="RPD limit reached"):
+        client.embed("A memory", task_type="RETRIEVAL_DOCUMENT")
+
+    client._rate_repo.increment_and_check.assert_called_once()
+    http.request.assert_not_called()
+
+
+def test_rate_limit_repository_uses_independent_scope_keys(monkeypatch):
+    fake_table = MagicMock()
+    fake_table.update_item.return_value = {"Attributes": {"request_count": 1}}
+    fake_dynamodb = MagicMock()
+    fake_dynamodb.Table.return_value = fake_table
+    monkeypatch.setattr(rate_limit_module, "get_dynamodb", lambda: fake_dynamodb)
+    monkeypatch.setattr(rate_limit_module.RateLimitRepository, "_today_pt", staticmethod(lambda: "2026-06-12"))
+
+    repo = rate_limit_module.RateLimitRepository()
+    assert repo.increment_and_check() == (1, True)
+    assert repo.increment_and_check(scope="gemini_embedding") == (1, True)
+
+    keys = [call.kwargs["Key"]["stat_key"] for call in fake_table.update_item.call_args_list]
+    assert keys == [
+        "RATE#gemini_generate#2026-06-12",
+        "RATE#gemini_embedding#2026-06-12",
+    ]
+
+
 def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
     repo = MagicMock()
@@ -218,6 +278,36 @@ def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     assert put_kwargs["metadata"]["memory_kind"] == "event"
     repo.mark_vector_status.assert_called_once()
     assert repo.mark_vector_status.call_args.kwargs["status"] == "indexed"
+
+
+def test_index_memory_item_marks_failed_when_embedding_quota_exhausted(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.get_memory_item.return_value = {
+        "sk": "EVENT#1#2",
+        "kind": "event",
+        "summary": "We decided to use S3 Vectors for memory retrieval.",
+        "created_at": 1_700_000_000,
+    }
+    embedding = MagicMock()
+    embedding.embed.side_effect = vector_memory.VectorMemoryUnavailableError(
+        "Gemini embedding RPD limit reached: 1001/1000"
+    )
+    vector_repo = MagicMock()
+
+    with pytest.raises(vector_memory.VectorMemoryUnavailableError, match="RPD limit reached"):
+        vector_memory.index_memory_item(
+            -100123,
+            "EVENT#1#2",
+            repo=repo,
+            vector_repo=vector_repo,
+            embedding_client=embedding,
+        )
+
+    vector_repo.put_memory_vector.assert_not_called()
+    repo.mark_vector_status.assert_called_once()
+    assert repo.mark_vector_status.call_args.kwargs["status"] == "failed"
+    assert "RPD limit reached" in repo.mark_vector_status.call_args.kwargs["error"]
 
 
 def test_index_memory_item_still_supports_explicit_daily_summary_vectorization(monkeypatch):
