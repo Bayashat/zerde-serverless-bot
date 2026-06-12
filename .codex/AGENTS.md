@@ -113,6 +113,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
 Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
+Indexed memory items also carry `vector_document_hash`, `vector_schema_version`, `vector_embedding_model`, and `vector_dimensions` so duplicate SQS deliveries can skip unchanged items and future embedding migrations can redrive stale records explicitly.
 
 ## SQS Tasks
 

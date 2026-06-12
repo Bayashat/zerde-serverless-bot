@@ -70,6 +70,8 @@ Imported long-term memory is later used by `/ask` and proactive agent replies th
 
 If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find long-term history. Imported daily summaries should stay out of semantic retrieval unless you have inspected them and decided they are useful.
 
+Vector indexing is idempotent for unchanged items. Backfills and duplicate SQS deliveries skip embedding when the stored `vector_document_hash`, `vector_schema_version`, `vector_embedding_model`, and `vector_dimensions` still match the current rendered document and config. Bump `VECTOR_MEMORY_SCHEMA_VERSION`, change `VECTOR_MEMORY_EMBEDDING_MODEL`, or change `VECTOR_MEMORY_DIMENSIONS` when you intentionally want a backfill to rebuild existing vectors.
+
 ## Cleanup And Pollution Control
 
 Before importing a large group, do a small `--max-messages` dry run and inspect whether user facts, group facts, and jokes look trustworthy. If polluted records are written, clean both sides of memory:
