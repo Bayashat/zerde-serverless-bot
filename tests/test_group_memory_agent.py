@@ -725,6 +725,27 @@ def test_agent_should_answer_mention_when_enabled(monkeypatch):
     assert group_agent.should_answer(_group_update("hey @ZerdeBot what did we decide?")) is True
 
 
+def test_agent_off_does_not_answer_mentions(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = False
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=bot,
+        update=_group_update("hey @ZerdeBot what did we decide?"),
+    )
+
+    assert handled is False
+    repo.is_agent_enabled.assert_called_once_with(-100123)
+    answer.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
 def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
@@ -1562,6 +1583,47 @@ def test_handle_ask_enqueues_group_context_answer():
     )
     ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
+
+
+def test_handle_ask_still_enqueues_when_agent_off():
+    ctx = MagicMock()
+    ctx.text = "/ask what happened yesterday?"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = None
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+    ctx.memory_repo.is_agent_enabled.return_value = False
+
+    handle_ask(ctx)
+
+    ctx.sqs_repo.send_group_ask_task.assert_called_once()
+    assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"] == "what happened yesterday?"
+    ctx.memory_repo.is_memory_enabled.assert_called_once_with(-100123)
+    ctx.memory_repo.is_agent_enabled.assert_not_called()
+    ctx.reply.assert_not_called()
+
+
+def test_handle_ask_rejects_when_memory_off():
+    ctx = MagicMock()
+    ctx.text = "/ask what happened yesterday?"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = None
+    ctx.memory_repo.is_memory_enabled.return_value = False
+
+    handle_ask(ctx)
+
+    ctx.memory_repo.is_memory_enabled.assert_called_once_with(-100123)
+    ctx.sqs_repo.send_group_ask_task.assert_not_called()
+    ctx.react.assert_not_called()
+    assert "Group memory is off" in ctx.reply.call_args.args[0]
 
 
 def test_handle_ask_usage_message_has_no_html_tag():

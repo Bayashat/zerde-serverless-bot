@@ -103,7 +103,7 @@ flowchart LR
 | `/quizstats` | Барлығына | Жеке quiz score, streak, rank. |
 | `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады және “мен кіммін” сияқты сұрақтарды requester identity арқылы түсінеді. |
 | `/memory on/off/status/forget ...` | Group owner немесе bot owner | Group memory басқару және user-related vectors/matching daily summaries cleanup. |
-| `/agent on/off/status/why` | Group owner немесе bot owner | Agent participation басқару және bot неге жауап бергенін көру. |
+| `/agent on/off/status/why` | Group owner немесе bot owner | Agent participation басқару және bot неге жауап бергенін көру. `/agent off` proactive, mention және reply-thread қатысуын өшіреді; жад қосулы болса, `/ask` қолжетімді. |
 
 ---
 

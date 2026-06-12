@@ -121,7 +121,7 @@ TRANSLATIONS = {
         "agent_usage": (
             "🤖 <b>Agent mode</b>\n\n"
             "• <code>/agent on</code> — let me answer and occasionally join in\n"
-            "• <code>/agent off</code> — stop agent participation\n"
+            "• <code>/agent off</code> — stop proactive, mention, and reply-thread participation\n"
             "• <code>/agent status</code> — show agent and memory status\n"
             "• <code>/agent why</code> — explain why I replied"
         ),
@@ -137,7 +137,11 @@ TRANSLATIONS = {
             "🧠 Group memory is now off. Existing stored memory is kept until TTL or /memory forget group."
         ),
         "agent_enabled": "🤖 Group agent is now on. I can answer when asked and join in when it is useful.",
-        "agent_disabled": "🤖 Group agent is now off. Memory can remain on for /ask and future context.",
+        "agent_disabled": (
+            "🤖 Agent participation is disabled.\n"
+            "I will not proactively join conversations or respond to mentions/replies.\n"
+            "Explicit /ask remains available while memory is enabled."
+        ),
         "memory_status_message": (
             "🧠 <b>Group memory:</b> {memory}\n"
             "🤖 <b>Group agent:</b> {agent}\n"
@@ -335,7 +339,7 @@ TRANSLATIONS = {
         "agent_usage": (
             "🤖 <b>Agent режимі</b>\n\n"
             "• <code>/agent on</code> — жауап беруге және қажет жерде чатқа қосылуға рұқсат беру\n"
-            "• <code>/agent off</code> — agent қатысуын өшіру\n"
+            "• <code>/agent off</code> — proactive, mention және reply-thread қатысуын өшіру\n"
             "• <code>/agent status</code> — agent пен жад күйін көрсету\n"
             "• <code>/agent why</code> — неге жауап бергенімді түсіндіру"
         ),
@@ -349,7 +353,11 @@ TRANSLATIONS = {
         "memory_enabled": "🧠 Топ жады қосылды. Контекст үшін соңғы command емес хабарламаларды есте сақтаймын.",
         "memory_disabled": "🧠 Топ жады өшірілді. Бар жад TTL біткенше немесе /memory forget group дейін сақталады.",
         "agent_enabled": "🤖 Agent режимі қосылды. Сұрағанда жауап беремін, пайдалы кезде чатқа қосыла аламын.",
-        "agent_disabled": "🤖 Agent режимі өшірілді. Жад /ask және болашақ контекст үшін қала алады.",
+        "agent_disabled": (
+            "🤖 Agent қатысуы өшірілді.\n"
+            "Мен proactive түрде чатқа қосылмаймын және mention/reply хабарламаларына жауап бермеймін.\n"
+            "Жад қосулы болса, explicit /ask қолжетімді болып қалады."
+        ),
         "memory_status_message": (
             "🧠 <b>Топ жады:</b> {memory}\n"
             "🤖 <b>Agent режимі:</b> {agent}\n"
@@ -541,7 +549,7 @@ TRANSLATIONS = {
         "agent_usage": (
             "🤖 <b>Agent 模式</b>\n\n"
             "• <code>/agent on</code> — 允许我回答并在合适时加入聊天\n"
-            "• <code>/agent off</code> — 关闭 agent 参与\n"
+            "• <code>/agent off</code> — 关闭主动、mention 和 reply-thread 参与\n"
             "• <code>/agent status</code> — 查看 agent 和记忆状态\n"
             "• <code>/agent why</code> — 解释我为什么回复"
         ),
@@ -555,7 +563,11 @@ TRANSLATIONS = {
         "memory_enabled": "🧠 群记忆已开启。我会记住近期非命令消息，用于上下文。",
         "memory_disabled": "🧠 群记忆已关闭。已有记忆会保留到 TTL 到期，或直到执行 /memory forget group。",
         "agent_enabled": "🤖 Agent 模式已开启。有人问我时我会回答，也会在有帮助的时候加入聊天。",
-        "agent_disabled": "🤖 Agent 模式已关闭。记忆仍可用于 /ask 和未来上下文。",
+        "agent_disabled": (
+            "🤖 Agent 参与已关闭。\n"
+            "我不会主动加入对话，也不会响应 mention/reply。\n"
+            "只要群记忆开启，显式 /ask 仍然可用。"
+        ),
         "memory_status_message": (
             "🧠 <b>群记忆：</b>{memory}\n"
             "🤖 <b>群 agent：</b>{agent}\n"
@@ -744,7 +756,7 @@ TRANSLATIONS = {
         "agent_usage": (
             "🤖 <b>Agent-режим</b>\n\n"
             "• <code>/agent on</code> — разрешить мне отвечать и иногда подключаться к чату\n"
-            "• <code>/agent off</code> — выключить участие agent-а\n"
+            "• <code>/agent off</code> — выключить proactive, mention и reply-thread участие\n"
             "• <code>/agent status</code> — показать статус agent-а и памяти\n"
             "• <code>/agent why</code> — объяснить, почему я ответил"
         ),
@@ -760,7 +772,11 @@ TRANSLATIONS = {
             "🧠 Память группы выключена. Уже сохраненная память останется до TTL или /memory forget group."
         ),
         "agent_enabled": "🤖 Agent-режим включен. Я могу отвечать по запросу и подключаться, когда это полезно.",
-        "agent_disabled": "🤖 Agent-режим выключен. Память может оставаться для /ask и будущего контекста.",
+        "agent_disabled": (
+            "🤖 Участие agent-а выключено.\n"
+            "Я не буду proactive вступать в разговоры или отвечать на mentions/replies.\n"
+            "Явный /ask остается доступен, пока включена память."
+        ),
         "memory_status_message": (
             "🧠 <b>Память группы:</b> {memory}\n"
             "🤖 <b>Agent-режим:</b> {agent}\n"
