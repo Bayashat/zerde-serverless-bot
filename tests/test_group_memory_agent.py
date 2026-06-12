@@ -1860,6 +1860,84 @@ def test_forget_me_deletes_current_users_memory():
     assert "5" in ctx.reply.call_args.args[0]
 
 
+def _memory_query_prefixes(repo: GroupMemoryRepository) -> list[str]:
+    prefixes = []
+    for call in repo.table.query.call_args_list:
+        expression = call.kwargs["KeyConditionExpression"]
+        key_conditions = expression.get_expression()["values"]
+        begins_with = key_conditions[1].get_expression()
+        assert begins_with["operator"] == "begins_with"
+        prefixes.append(begins_with["values"][1])
+    return prefixes
+
+
+def test_vectorizable_memory_items_query_vector_prefixes_not_full_partition():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.side_effect = [
+        {"Items": [{"sk": "EVENT#1#2"}]},
+        {"Items": [{"sk": "USER_FACT#42#1#3"}]},
+        {"Items": [{"sk": "GROUP_FACT#1#4"}]},
+        {"Items": [{"sk": "JOKE#1#5"}]},
+        {"Items": [{"sk": "DAILY_SUMMARY#2026-06-10"}]},
+    ]
+
+    items, next_key = repo.list_vectorizable_memory_items(-100123, limit=10)
+
+    assert next_key is None
+    assert [item["sk"] for item in items] == [
+        "EVENT#1#2",
+        "USER_FACT#42#1#3",
+        "GROUP_FACT#1#4",
+        "JOKE#1#5",
+        "DAILY_SUMMARY#2026-06-10",
+    ]
+    assert _memory_query_prefixes(repo) == [
+        "EVENT#",
+        "USER_FACT#",
+        "GROUP_FACT#",
+        "JOKE#",
+        "DAILY_SUMMARY#",
+    ]
+
+
+def test_vectorizable_memory_items_continue_at_next_prefix_when_page_fills_boundary():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.side_effect = [
+        {"Items": [{"sk": "EVENT#1#2"}]},
+        {"Items": [{"sk": "USER_FACT#42#1#3"}]},
+    ]
+
+    items, next_key = repo.list_vectorizable_memory_items(-100123, limit=1)
+    resumed_items, resumed_next_key = repo.list_vectorizable_memory_items(-100123, limit=1, start_key=next_key)
+
+    assert [item["sk"] for item in items] == ["EVENT#1#2"]
+    assert next_key == {"__vector_prefix": "USER_FACT#"}
+    assert [item["sk"] for item in resumed_items] == ["USER_FACT#42#1#3"]
+    assert resumed_next_key == {"__vector_prefix": "GROUP_FACT#"}
+    assert _memory_query_prefixes(repo) == ["EVENT#", "USER_FACT#"]
+
+
+def test_vectorizable_memory_items_resume_inside_prefix_with_dynamodb_start_key():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    first_next_key = {"pk": "CHAT#-100123", "sk": "EVENT#1#2"}
+    repo.table.query.side_effect = [
+        {"Items": [{"sk": "EVENT#1#2"}], "LastEvaluatedKey": first_next_key},
+        {"Items": [{"sk": "EVENT#1#3"}]},
+    ]
+
+    items, next_key = repo.list_vectorizable_memory_items(-100123, limit=1)
+    resumed_items, _ = repo.list_vectorizable_memory_items(-100123, limit=1, start_key=next_key)
+
+    assert [item["sk"] for item in items] == ["EVENT#1#2"]
+    assert next_key == first_next_key
+    assert [item["sk"] for item in resumed_items] == ["EVENT#1#3"]
+    assert repo.table.query.call_args_list[1].kwargs["ExclusiveStartKey"] == first_next_key
+    assert _memory_query_prefixes(repo) == ["EVENT#", "EVENT#"]
+
+
 def test_user_related_vector_items_include_matching_daily_summaries():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
@@ -1870,27 +1948,31 @@ def test_user_related_vector_items_include_matching_daily_summaries():
             "display_name": "Ada Lovelace",
         }
     }
-    repo.table.query.return_value = {
-        "Items": [
-            {"sk": "USER_FACT#42#1#2", "user_id": "42"},
-            {"sk": "EVENT#1#3", "user_id": "42"},
-            {
-                "sk": "DAILY_SUMMARY#2026-06-10",
-                "summary": "Ada Lovelace discussed Lambda memory.",
-            },
-            {
-                "sk": "DAILY_SUMMARY#2026-06-11",
-                "summary": "Grace discussed DynamoDB.",
-            },
-        ]
-    }
+    repo.table.query.side_effect = [
+        {"Items": [{"sk": "EVENT#1#3", "user_id": "42"}]},
+        {"Items": [{"sk": "USER_FACT#42#1#2", "user_id": "42"}]},
+        {"Items": []},
+        {"Items": []},
+        {
+            "Items": [
+                {
+                    "sk": "DAILY_SUMMARY#2026-06-10",
+                    "summary": "Ada Lovelace discussed Lambda memory.",
+                },
+                {
+                    "sk": "DAILY_SUMMARY#2026-06-11",
+                    "summary": "Grace discussed DynamoDB.",
+                },
+            ]
+        },
+    ]
 
     items, next_key = repo.list_vectorizable_memory_items(-100123, user_id=42)
 
     assert next_key is None
     assert [item["sk"] for item in items] == [
-        "USER_FACT#42#1#2",
         "EVENT#1#3",
+        "USER_FACT#42#1#2",
         "DAILY_SUMMARY#2026-06-10",
     ]
 

@@ -14,6 +14,7 @@ from services.memory_safety import is_memory_learning_safe
 from services.repositories._common import get_dynamodb
 
 _VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
+_VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
 
 
 class GroupMemoryRepository:
@@ -69,6 +70,36 @@ class GroupMemoryRepository:
     @staticmethod
     def is_vectorizable_sk(sk: str) -> bool:
         return sk.startswith(_VECTOR_MEMORY_PREFIXES)
+
+    @staticmethod
+    def _vector_prefix_for_start_key(start_key: dict[str, Any] | None) -> str:
+        if not start_key:
+            return _VECTOR_MEMORY_PREFIXES[0]
+        token_prefix = str(start_key.get(_VECTOR_PREFIX_TOKEN_KEY) or "")
+        if token_prefix in _VECTOR_MEMORY_PREFIXES:
+            return token_prefix
+        sk = str(start_key.get("sk") or "")
+        for prefix in _VECTOR_MEMORY_PREFIXES:
+            if sk.startswith(prefix):
+                return prefix
+        return _VECTOR_MEMORY_PREFIXES[0]
+
+    @staticmethod
+    def _dynamodb_start_key_for_prefix(start_key: dict[str, Any] | None, prefix: str) -> dict[str, Any] | None:
+        if not start_key:
+            return None
+        sk = str(start_key.get("sk") or "")
+        if not sk.startswith(prefix):
+            return None
+        return {key: value for key, value in start_key.items() if not str(key).startswith("__")}
+
+    @staticmethod
+    def _next_vector_prefix_token(prefix: str) -> dict[str, Any] | None:
+        try:
+            next_prefix = _VECTOR_MEMORY_PREFIXES[_VECTOR_MEMORY_PREFIXES.index(prefix) + 1]
+        except IndexError:
+            return None
+        return {_VECTOR_PREFIX_TOKEN_KEY: next_prefix}
 
     @staticmethod
     def _normalise_profile_samples(value: Any) -> list[str]:
@@ -590,26 +621,42 @@ class GroupMemoryRepository:
         start_key: dict[str, Any] | None = None,
         user_id: int | str | None = None,
     ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-        """Return one DynamoDB page of memory items eligible for vector indexing."""
-        kwargs: dict[str, Any] = {
-            "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
-            "Limit": limit,
-        }
-        if start_key:
-            kwargs["ExclusiveStartKey"] = start_key
-        resp = self.table.query(**kwargs)
+        """Return one page of memory items eligible for vector indexing."""
         cleanup_terms = (
             self._cleanup_terms_from_profile(self.get_user_profile(chat_id, user_id)) if user_id is not None else set()
         )
+        limit = max(1, int(limit))
         items: list[dict[str, Any]] = []
-        for item in resp.get("Items") or []:
-            sk = str(item.get("sk") or "")
-            if not self.is_vectorizable_sk(sk):
-                continue
-            if user_id is not None and not self._matches_user_memory_item(item, user_id, cleanup_terms):
-                continue
-            items.append(item)
-        return items, resp.get("LastEvaluatedKey")
+        start_prefix = self._vector_prefix_for_start_key(start_key)
+        start_index = _VECTOR_MEMORY_PREFIXES.index(start_prefix)
+        exclusive_start_key = self._dynamodb_start_key_for_prefix(start_key, start_prefix)
+
+        for prefix in _VECTOR_MEMORY_PREFIXES[start_index:]:
+            remaining = limit - len(items)
+            if remaining <= 0:
+                return items, self._next_vector_prefix_token(prefix)
+
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(prefix),
+                "Limit": remaining,
+            }
+            if exclusive_start_key:
+                kwargs["ExclusiveStartKey"] = exclusive_start_key
+
+            resp = self.table.query(**kwargs)
+            for item in resp.get("Items") or []:
+                if user_id is not None and not self._matches_user_memory_item(item, user_id, cleanup_terms):
+                    continue
+                items.append(item)
+
+            next_key = resp.get("LastEvaluatedKey")
+            if next_key:
+                return items, next_key
+            if len(items) >= limit:
+                return items, self._next_vector_prefix_token(prefix)
+            exclusive_start_key = None
+
+        return items, None
 
     def mark_vector_status(
         self,
