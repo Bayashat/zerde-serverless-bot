@@ -62,6 +62,7 @@ flowchart LR
 5. Irrelevant group chatter exits early.
 6. Relevant events route to the group agent or the command dispatcher.
 7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded.
+8. `agent_enabled` gates non-command group agent participation: proactive replies, @mentions, and reply-to-bot follow-ups. Explicit `/ask` remains available while `memory_enabled` is true.
 
 ## SQS Tasks
 
@@ -115,6 +116,8 @@ The Gemini prompt instructs the model to treat requester profiles as highest tru
 Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, and semantic prompt context.
 
 ## Agent Timing And Length
+
+`/agent off` disables proactive, mention, and reply-to-bot participation only. It does not disable explicit `/ask`; use `/memory off` when the group should stop memory-backed explicit answers too.
 
 Proactive replies are conservative:
 

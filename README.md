@@ -107,7 +107,7 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
 | `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message and understands “who am I” from requester identity. |
 | `/memory on/off/status/forget ...` | Group owner or bot owner for settings | Manage group memory and cleanup, including user-related vectors and matching daily summaries. |
-| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied. |
+| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
 
 ---
 

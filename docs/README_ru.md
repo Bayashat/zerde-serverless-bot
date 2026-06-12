@@ -103,7 +103,7 @@ flowchart LR
 | `/quizstats` | Все | Личный quiz score, streak и rank. |
 | `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение, включая self-reference вроде “кто я”. |
 | `/memory on/off/status/forget ...` | Group owner или bot owner | Управление group memory и cleanup, включая user-related vectors и matching daily summaries. |
-| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил. |
+| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
 
 ---
 

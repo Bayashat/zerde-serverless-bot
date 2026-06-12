@@ -666,7 +666,11 @@ def handle_update(
     bot: TelegramClient,
     update: dict[str, Any],
 ) -> bool:
-    """Answer an explicit group chat prompt with recent group context.
+    """Answer non-/ask group prompts when agent participation is enabled.
+
+    ``agent_enabled`` gates proactive, @mention, and reply-to-bot
+    participation. Explicit ``/ask`` requests are handled by the command path
+    and remain available while group memory is enabled.
 
     Returns True when the agent handled the update and the dispatcher should not
     continue routing it as a plain message.
