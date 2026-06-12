@@ -30,6 +30,10 @@ from services.group_memory import (
     format_requester_profile_context,
     format_user_profile_context,
 )
+from services.memory_safety import (
+    looks_like_future_answer_directive,
+    looks_like_subjective_person_ranking_question,
+)
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram import TelegramClient
 from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
@@ -225,6 +229,35 @@ def _reply_policy(user_text: str) -> ReplyPolicy:
         max_output_tokens=300,
         max_chars=1800,
     )
+
+
+def _guardrail_reply(user_text: str, lang: str) -> str:
+    lowered_lang = (lang or "").lower()
+    if looks_like_future_answer_directive(user_text):
+        if lowered_lang == "ru":
+            return (
+                "Понял шутку, но я не буду запоминать такие инструкции как правило. "
+                "Особенно если это субъективный рейтинг или фиксированный ответ про человека."
+            )
+        if lowered_lang == "zh":
+            return "懂你的意思，但我不会把这种固定回答当成长期规则，尤其是关于某个人的主观排名。"
+        return (
+            "Түсіндім, бірақ мұндайды тұрақты ереже ретінде сақтамаймын. "
+            "Әсіресе адам туралы субъективті рейтинг немесе алдын ала бекітілген жауап болса."
+        )
+    if looks_like_subjective_person_ranking_question(user_text):
+        if lowered_lang == "ru":
+            return (
+                "Не буду ранжировать людей как «самого сильного» в чате. "
+                "Если нужен разбор по конкретному опыту или сообщениям, спроси точнее."
+            )
+        if lowered_lang == "zh":
+            return "我不会给群友做“最强/第一”这种主观排名。可以问某个人说过什么、做过什么或擅长哪些话题。"
+        return (
+            "Чаттағы адамдарды «ең мықты» деп рейтингтемеймін. "
+            "Нақты тәжірибесі, айтқан сөздері немесе тақырыптары бойынша сұрасаң, соған сүйеніп жауап берем."
+        )
+    return ""
 
 
 def _looks_like_open_question(text: str) -> bool:
@@ -538,6 +571,23 @@ def answer_group_question(
     raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
+    guarded_answer = _guardrail_reply(user_text, lang)
+    if guarded_answer:
+        answer_html = normalize_llm_output_for_telegram_html(guarded_answer)
+        sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+        bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
+        if bot_message_id:
+            repo.record_agent_reply(
+                chat_id=chat_id,
+                bot_message_id=bot_message_id,
+                trigger_message_id=reply_to_message_id,
+                trigger_kind="explicit",
+                reason="Guardrail blocked a subjective ranking or persistent future-answer directive.",
+                answer_text=guarded_answer,
+                user_message=user_text,
+            )
+        return True
+
     gemini = _get_gemini()
     if not gemini:
         return False
@@ -545,13 +595,23 @@ def answer_group_question(
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
     self_reference = _looks_like_self_reference(user_text)
-    semantic_memory_context = format_semantic_memory_context(
-        retrieve_relevant_memories(
-            chat_id,
-            user_text,
-            limit=8,
-            user_id=requester_user_id if self_reference else None,
-        ),
+    semantic_memories = retrieve_relevant_memories(
+        chat_id,
+        user_text,
+        limit=8,
+        user_id=requester_user_id if self_reference else None,
+    )
+    semantic_memory_context = format_semantic_memory_context(semantic_memories)
+    logger.info(
+        "Group agent semantic memory context prepared",
+        extra={
+            "chat_id": chat_id,
+            "retrieved_count": len(semantic_memories),
+            "context_item_count": len(semantic_memory_context.splitlines()) if semantic_memory_context else 0,
+            "context_chars": len(semantic_memory_context),
+            "self_reference": self_reference,
+            "requester_filter_applied": bool(self_reference and requester_user_id is not None),
+        },
     )
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     user_profile_context = format_user_profile_context(

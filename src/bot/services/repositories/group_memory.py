@@ -10,6 +10,7 @@ from typing import Any
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from core.config import GROUP_MEMORY_RETENTION_DAYS, MEMORY_TABLE_NAME
+from services.memory_safety import is_memory_learning_safe
 from services.repositories._common import get_dynamodb
 
 _VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
@@ -379,14 +380,6 @@ class GroupMemoryRepository:
             ":user_id": str(user_id),
         }
         profile = self.get_user_profile(chat_id, user_id)
-        values[":samples"] = self._updated_profile_samples(profile, sample_text)
-        values[":topics"] = self._updated_profile_topics(profile, sample_text)
-        structured_updates = self._updated_structured_profile(profile, sample_text)
-        values[":language_style"] = structured_updates["language_style"]
-        values[":interests"] = structured_updates["interests"]
-        values[":preferences"] = structured_updates["preferences"]
-        values[":known_facts"] = structured_updates["known_facts"]
-        values[":boundaries"] = structured_updates["boundaries"]
         names = {"#count": "message_count"}
         sets = [
             "first_seen = if_not_exists(first_seen, :now)",
@@ -394,16 +387,29 @@ class GroupMemoryRepository:
             "user_id = :user_id",
             "last_seen = :now",
             "display_name = :display_name",
-            "last_sample = :sample",
-            "recent_samples = :samples",
-            "topic_counts = :topics",
-            "language_style = :language_style",
-            "interests = :interests",
-            "preferences = :preferences",
-            "known_facts = :known_facts",
-            "boundaries = :boundaries",
             "#count = if_not_exists(#count, :zero) + :one",
         ]
+        if is_memory_learning_safe(sample_text):
+            values[":samples"] = self._updated_profile_samples(profile, sample_text)
+            values[":topics"] = self._updated_profile_topics(profile, sample_text)
+            structured_updates = self._updated_structured_profile(profile, sample_text)
+            values[":language_style"] = structured_updates["language_style"]
+            values[":interests"] = structured_updates["interests"]
+            values[":preferences"] = structured_updates["preferences"]
+            values[":known_facts"] = structured_updates["known_facts"]
+            values[":boundaries"] = structured_updates["boundaries"]
+            sets.extend(
+                [
+                    "last_sample = :sample",
+                    "recent_samples = :samples",
+                    "topic_counts = :topics",
+                    "language_style = :language_style",
+                    "interests = :interests",
+                    "preferences = :preferences",
+                    "known_facts = :known_facts",
+                    "boundaries = :boundaries",
+                ]
+            )
         if username:
             values[":username"] = username
             sets.append("username = :username")

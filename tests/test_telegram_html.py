@@ -9,6 +9,16 @@ def test_markdown_bold_italic_code_to_html() -> None:
     assert "<code>code</code>" in out
 
 
+def test_raw_broken_html_is_escaped_before_markdown_conversion() -> None:
+    text = "Bad <i>tag</code> but **markdown** and `x < y` are fine."
+
+    out = normalize_llm_output_for_telegram_html(text)
+
+    assert "&lt;i&gt;tag&lt;/code&gt;" in out
+    assert "<b>markdown</b>" in out
+    assert "<code>x &lt; y</code>" in out
+
+
 def test_markdown_bullets_to_dot_bullets() -> None:
     text = "- first\n* second\n  - third"
     out = normalize_llm_output_for_telegram_html(text)

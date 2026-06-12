@@ -112,6 +112,8 @@ Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#..
 
 The Gemini prompt instructs the model to treat requester profiles as highest trust for self-reference, target-user profiles as higher trust than third-party chatter, semantic memory as lower trust than profiles, and to avoid turning one-off jokes into permanent facts. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
+Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, and semantic prompt context.
+
 ## Agent Timing And Length
 
 Proactive replies are conservative:
@@ -136,9 +138,11 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Embedding model: `VECTOR_MEMORY_EMBEDDING_MODEL` (default `gemini-embedding-2`).
 - Dimensions: `VECTOR_MEMORY_DIMENSIONS` (default `768`).
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
-- Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`).
+- Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`) filters out distant vector matches before prompt injection.
 - Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`.
 - Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory forget me` also removes daily summaries that mention the forgotten user's stored display name or username.
+- Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.
+- Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
 
 When vector indexing is incomplete, the agent still works with recent context and query-filtered DynamoDB long-term memory. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 

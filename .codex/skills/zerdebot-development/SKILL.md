@@ -52,6 +52,9 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - User profile context must be derived from the target user's own messages; third-party roasts or labels are low trust.
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
+- Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
+- Raw `MSG#...` records may keep audit context, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
+- Vector retrieval and indexing success paths should emit structured INFO logs with counts, filters, distance cutoffs, and vector dimensions. Avoid logging full prompts, full memory text, vectors, or secrets.
 - Reply-to-bot follow-ups must include prior `AGENT_REPLY#...` answer context when available.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep proactive participation conservative: local open-question prefilter, bot-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
@@ -115,6 +118,7 @@ Treat AI behavior as user-facing reliability work:
 - Use `zerde_common` for shared provider errors, config helpers, redaction, and structured logging.
 - Keep Lambda env names consistent with code: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`.
 - Use `CONSTRUCT_PREFIX` and `RESOURCE_PREFIX` from `infra/components/constants.py`; do not duplicate those string literals in constructs.
+- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy.
 - If editing Telegram HTML output, normalize/escape LLM output before sending and respect Telegram length constraints.
 
 ## Documentation Maintenance

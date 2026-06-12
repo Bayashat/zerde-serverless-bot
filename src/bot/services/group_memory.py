@@ -7,6 +7,7 @@ from typing import Any
 
 from core.config import GROUP_MEMORY_DAILY_SUMMARY_DAYS, GROUP_MEMORY_ENABLED, GROUP_MEMORY_RECENT_LIMIT
 from core.logger import LoggerAdapter, get_logger
+from services.memory_safety import is_memory_learning_safe, is_profile_context_value_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 
@@ -159,6 +160,8 @@ def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, li
         username = str(item.get("username") or "").strip()
         user_id = str(item.get("user_id") or "").strip()
         text = str(item.get("text") or "").replace("\n", " ").strip()
+        if text and not is_memory_learning_safe(text):
+            continue
         if text:
             speaker_bits = []
             if user_id:
@@ -218,8 +221,10 @@ def format_long_term_memory_context(
         summary_date = str(item.get("summary_date") or "").strip()
         summary = str(item.get("summary") or "").replace("\n", " ").strip()
         topics = item.get("topics") if isinstance(item.get("topics"), list) else []
-        topic_text = ", ".join(str(topic) for topic in topics[:8] if topic)
-        if summary:
+        topic_text = ", ".join(
+            str(topic) for topic in topics[:8] if topic and is_profile_context_value_safe(str(topic))
+        )
+        if summary and is_memory_learning_safe(summary):
             topic_suffix = f" topics={topic_text}" if topic_text else ""
             lines.append(f"[daily_summary date={summary_date}{topic_suffix}] {summary[:900]}")
     for item in memories:
@@ -229,7 +234,7 @@ def format_long_term_memory_context(
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
         summary = str(item.get("summary") or item.get("text") or "").replace("\n", " ").strip()
         reason = str(item.get("reason") or "").strip()
-        if not summary:
+        if not summary or not is_memory_learning_safe(summary):
             continue
         prefix = f"[{kind} speaker={name[:80]}]"
         if reason:
@@ -263,7 +268,7 @@ def _format_topic_counts(value: Any) -> str:
     for key, raw_count in value.items():
         term = str(key or "").strip()
         count = _profile_count(raw_count)
-        if term and count > 0:
+        if term and count > 0 and is_profile_context_value_safe(term):
             counts.append((term, count))
     if not counts:
         return ""
@@ -277,7 +282,7 @@ def _format_recent_samples(value: Any) -> list[str]:
     samples: list[str] = []
     for item in value:
         text = str(item or "").replace("\n", " ").strip()
-        if text:
+        if text and is_profile_context_value_safe(text):
             samples.append(text[:220])
     return samples[-5:]
 
@@ -288,7 +293,7 @@ def _format_profile_list(value: Any, *, limit: int = 8) -> str:
     items = []
     for item in value:
         text = str(item or "").replace("\n", " ").strip()
-        if text:
+        if text and is_profile_context_value_safe(text):
             items.append(text[:180])
         if len(items) >= limit:
             break

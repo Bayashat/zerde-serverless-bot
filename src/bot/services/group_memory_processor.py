@@ -11,6 +11,7 @@ from core.config import GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT, get_chat_lang,
 from core.logger import LoggerAdapter, get_logger
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.group_memory import format_long_term_memory_context
+from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 from services.vector_memory import vector_memory_configured
@@ -192,7 +193,7 @@ def _summary_window(summary_date: str | None = None) -> DailySummaryWindow:
 def classify_long_term_memory(text: str) -> MemoryClassification | None:
     """Classify a message into a trusted long-term memory item, if worth keeping."""
     cleaned = " ".join((text or "").split())
-    if len(cleaned) < 12 or _should_skip_for_privacy(cleaned):
+    if len(cleaned) < 12 or _should_skip_for_privacy(cleaned) or not is_memory_learning_safe(cleaned):
         return None
 
     if _contains_any(cleaned, _GROUP_FACT_CUES):
@@ -262,15 +263,19 @@ def _fallback_daily_summary(
 
 def _normalise_daily_summary(raw: dict[str, Any], *, summary_date: str, source: str) -> dict[str, Any]:
     summary = str(raw.get("summary") or "").replace("\n", " ").strip()
-    if not summary:
+    if not summary or not is_memory_learning_safe(summary):
         summary = f"{summary_date}: group activity summary."
     return {
         "summary": summary[:1200],
-        "topics": _list_field(raw.get("topics")),
-        "notable_events": _list_field(raw.get("notable_events")),
-        "inside_jokes": _list_field(raw.get("inside_jokes"), limit=8),
+        "topics": [item for item in _list_field(raw.get("topics")) if is_memory_learning_safe(item)],
+        "notable_events": [item for item in _list_field(raw.get("notable_events")) if is_memory_learning_safe(item)],
+        "inside_jokes": [
+            item for item in _list_field(raw.get("inside_jokes"), limit=8) if is_memory_learning_safe(item)
+        ],
         "active_participants": _list_field(raw.get("active_participants"), limit=20),
-        "tension_points": _list_field(raw.get("tension_points"), limit=8),
+        "tension_points": [
+            item for item in _list_field(raw.get("tension_points"), limit=8) if is_memory_learning_safe(item)
+        ],
         "source": source,
     }
 
@@ -282,7 +287,7 @@ def build_daily_messages_context(messages: list[dict[str, Any]]) -> str:
             continue
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
         text = _redact_for_summary(str(item.get("text") or "")).replace("\n", " ").strip()
-        if text:
+        if text and is_memory_learning_safe(text):
             lines.append(f"{name[:80]}: {text[:500]}")
     return "\n".join(lines)
 
