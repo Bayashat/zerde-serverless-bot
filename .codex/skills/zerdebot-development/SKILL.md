@@ -135,7 +135,7 @@ Treat AI behavior as user-facing reliability work:
 - Use `zerde_common` for shared provider errors, config helpers, redaction, and structured logging.
 - Keep Lambda env names consistent with code: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`.
 - Use `CONSTRUCT_PREFIX` and `RESOURCE_PREFIX` from `infra/components/constants.py`; do not duplicate those string literals in constructs.
-- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy.
+- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy. Keep Bot Lambda permissions limited to query/get/delete/get-index; reserve `s3vectors:PutVectors` and `s3vectors:ListVectors` for the vector-indexer Lambda.
 - If editing Telegram HTML output, normalize/escape LLM output before sending and respect Telegram length constraints.
 
 ## Documentation Maintenance

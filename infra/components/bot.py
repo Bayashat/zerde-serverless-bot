@@ -293,11 +293,9 @@ class BotConstruct(Construct):
                 iam.PolicyStatement(
                     sid="UseZerdeMemoryVectors",
                     actions=[
-                        "s3vectors:PutVectors",
                         "s3vectors:QueryVectors",
                         "s3vectors:GetVectors",
                         "s3vectors:DeleteVectors",
-                        "s3vectors:ListVectors",
                         "s3vectors:GetIndex",
                     ],
                     resources=[
