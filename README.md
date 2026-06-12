@@ -26,7 +26,7 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 
 - **Recent memory**: non-command group messages stored in DynamoDB as `MSG#...`.
 - **User profiles**: lightweight per-user context derived from each user's own messages.
-- **Long-term memory**: schema-based extracted `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
+- **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length budgeting, and `/agent why` source summaries.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, and `/memory forget this` with related vector cleanup and owner-only group cleanup commands.

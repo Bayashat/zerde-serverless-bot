@@ -219,7 +219,10 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
 
     env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PROVIDER"] == "gemini"
+    assert env_vars["GROUP_MEMORY_EXTRACTOR_MODE"] == "gemini_candidate_only"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE"] == "0.65"
+    assert env_vars["GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT"] == "50"
+    assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
 
 
 def test_vector_indexer_ssm_access_is_limited_to_gemini(monkeypatch: Any) -> None:

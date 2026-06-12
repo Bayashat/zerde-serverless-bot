@@ -48,6 +48,23 @@ def test_observe_update_stores_opted_in_group_message(monkeypatch):
     assert kwargs["text"] == "we discussed OpenSearch today"
     sqs.send_group_memory_task.assert_called_once()
     assert sqs.send_group_memory_task.call_args.kwargs["text"] == "we discussed OpenSearch today"
+    assert sqs.send_group_memory_task.call_args.kwargs["is_reply"] is False
+    assert sqs.send_group_memory_task.call_args.kwargs["has_mention"] is False
+
+
+def test_observe_update_enqueues_reply_and_mention_hints(monkeypatch):
+    repo = MagicMock()
+    sqs = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+    update = _group_update("@ada we decided to keep DynamoDB")
+    update["message"]["reply_to_message"] = {"message_id": 7}
+
+    group_memory.observe_update(repo, update, sqs_repo=sqs)
+
+    kwargs = sqs.send_group_memory_task.call_args.kwargs
+    assert kwargs["is_reply"] is True
+    assert kwargs["has_mention"] is True
 
 
 def test_observe_update_does_not_enqueue_duplicate_message(monkeypatch):
@@ -459,6 +476,14 @@ def test_classify_long_term_memory_rule_based_skips_subjective_ranking_directive
     )
 
 
+def _use_gemini_extractor(monkeypatch, *, mode: str = "gemini_candidate_only") -> MagicMock:
+    reserve_budget = MagicMock(return_value=True)
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_MODE", mode)
+    monkeypatch.setattr(group_memory_processor, "_reserve_extractor_llm_budget", reserve_budget)
+    return reserve_budget
+
+
 def test_process_group_memory_task_stores_only_important_memory(monkeypatch):
     repo = MagicMock()
     monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "rules")
@@ -499,6 +524,52 @@ def test_process_group_memory_task_skips_chatter(monkeypatch):
     repo.store_long_term_memory.assert_not_called()
 
 
+def test_process_group_memory_candidate_only_skips_non_candidate_without_gemini(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    reserve_budget = _use_gemini_extractor(monkeypatch)
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "yeah that sounds fine to me for now",
+        },
+        repo=repo,
+    )
+
+    reserve_budget.assert_not_called()
+    gemini.group_memory_extraction.assert_not_called()
+    repo.store_long_term_memory.assert_not_called()
+
+
+def test_extractor_llm_budget_uses_separate_global_and_chat_scopes(monkeypatch):
+    calls: list[tuple[str, int]] = []
+
+    class FakeRateLimitRepository:
+        def __init__(self, *, scope: str, rpd_limit: int) -> None:
+            self.scope = scope
+            self.rpd_limit = rpd_limit
+            calls.append((scope, rpd_limit))
+
+        def increment_and_check(self) -> tuple[int, bool]:
+            return 1, True
+
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT", 50)
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT", 20)
+    monkeypatch.setattr(group_memory_processor, "RateLimitRepository", FakeRateLimitRepository)
+
+    assert group_memory_processor._reserve_extractor_llm_budget(-100123, 11) is True
+
+    assert calls == [
+        ("group_memory_extractor_llm_chat_-100123", 20),
+        ("group_memory_extractor_llm", 50),
+    ]
+
+
 def test_process_group_memory_task_stores_llm_self_preference_as_user_fact(monkeypatch):
     repo = MagicMock()
     gemini = MagicMock()
@@ -516,7 +587,7 @@ def test_process_group_memory_task_stores_llm_self_preference_as_user_fact(monke
         },
         1,
     )
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_memory_processor, "get_chat_lang", lambda chat_id: "en")
 
@@ -560,7 +631,7 @@ def test_process_group_memory_task_does_not_store_third_party_user_fact(monkeypa
         },
         1,
     )
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch, mode="gemini_all")
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -575,6 +646,7 @@ def test_process_group_memory_task_does_not_store_third_party_user_fact(monkeypa
     )
 
     repo.store_long_term_memory.assert_not_called()
+    gemini.group_memory_extraction.assert_called_once()
 
 
 def test_process_group_memory_task_stores_llm_group_decision(monkeypatch):
@@ -594,7 +666,7 @@ def test_process_group_memory_task_stores_llm_group_decision(monkeypatch):
         },
         1,
     )
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -615,7 +687,7 @@ def test_process_group_memory_task_stores_llm_group_decision(monkeypatch):
 def test_process_group_memory_task_skips_sensitive_before_llm(monkeypatch):
     repo = MagicMock()
     gemini = MagicMock()
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -637,7 +709,7 @@ def test_process_group_memory_task_falls_back_to_rules_when_gemini_unavailable(m
     repo = MagicMock()
     gemini = MagicMock()
     gemini.group_memory_extraction.side_effect = gemini_client.GeminiUnavailableError("timeout")
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -675,7 +747,7 @@ def test_process_group_memory_task_skips_low_confidence_llm_memory(monkeypatch):
         },
         1,
     )
-    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+    _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -690,6 +762,92 @@ def test_process_group_memory_task_skips_low_confidence_llm_memory(monkeypatch):
     )
 
     repo.store_long_term_memory.assert_not_called()
+
+
+def test_process_group_memory_budget_exhausted_falls_back_to_rules_without_gemini(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    _use_gemini_extractor(monkeypatch)
+    monkeypatch.setattr(group_memory_processor, "_reserve_extractor_llm_budget", MagicMock(return_value=False))
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "username": "ada",
+            "text": "Tomorrow we deploy the group memory processor",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    gemini.group_memory_extraction.assert_not_called()
+    repo.store_long_term_memory.assert_called_once()
+    assert repo.store_long_term_memory.call_args.kwargs["kind"] == "event"
+    assert repo.store_long_term_memory.call_args.kwargs["extractor_source"] == "rules"
+
+
+def test_process_group_memory_without_gemini_does_not_consume_extractor_budget(monkeypatch):
+    repo = MagicMock()
+    reserve_budget = _use_gemini_extractor(monkeypatch)
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: None)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "username": "ada",
+            "text": "Tomorrow we deploy the group memory processor",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    reserve_budget.assert_not_called()
+    repo.store_long_term_memory.assert_called_once()
+    assert repo.store_long_term_memory.call_args.kwargs["kind"] == "event"
+    assert repo.store_long_term_memory.call_args.kwargs["extractor_source"] == "rules"
+
+
+def test_process_group_memory_gemini_all_bypasses_candidate_prefilter(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    gemini.group_memory_extraction.return_value = (
+        {
+            "should_store": True,
+            "kind": "group_fact",
+            "summary": "The group has a note from a forced extractor mode.",
+            "reason": "gemini_all mode",
+            "confidence": 0.85,
+            "subject_user_id": None,
+            "sensitivity": "public",
+            "expires_in_days": None,
+            "evidence_message_ids": [11],
+        },
+        1,
+    )
+    reserve_budget = _use_gemini_extractor(monkeypatch, mode="gemini_all")
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "ordinary sentence with no obvious durable memory signal",
+        },
+        repo=repo,
+    )
+
+    reserve_budget.assert_called_once_with(-100123, 11)
+    gemini.group_memory_extraction.assert_called_once()
+    repo.store_long_term_memory.assert_called_once()
 
 
 def test_build_daily_messages_context_redacts_sensitive_contact_details():
@@ -792,6 +950,8 @@ def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     assert payload["task_type"] == "PROCESS_GROUP_MEMORY"
     assert payload["chat_id"] == -100123
     assert payload["username"] == "ada"
+    assert payload["is_reply"] is False
+    assert payload["has_mention"] is False
 
 
 def test_sqs_client_sends_daily_group_summaries_task(monkeypatch):

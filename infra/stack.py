@@ -74,7 +74,12 @@ class ZerdeTelegramBotStack(Stack):
         group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
         group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650")
         group_memory_extractor_provider = os.environ.get("GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
+        group_memory_extractor_mode = os.environ.get("GROUP_MEMORY_EXTRACTOR_MODE", "gemini_candidate_only")
         group_memory_extractor_min_confidence = os.environ.get("GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", "0.65")
+        group_memory_extractor_daily_llm_limit = os.environ.get("GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT", "50")
+        group_memory_extractor_per_chat_daily_limit = os.environ.get(
+            "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT", "20"
+        )
         group_memory_daily_summary_days = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7")
         group_memory_daily_summary_message_limit = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500")
         agent_enabled = os.environ.get("AGENT_ENABLED", "true")
@@ -164,7 +169,10 @@ class ZerdeTelegramBotStack(Stack):
             group_memory_recent_limit=group_memory_recent_limit,
             group_memory_retention_days=group_memory_retention_days,
             group_memory_extractor_provider=group_memory_extractor_provider,
+            group_memory_extractor_mode=group_memory_extractor_mode,
             group_memory_extractor_min_confidence=group_memory_extractor_min_confidence,
+            group_memory_extractor_daily_llm_limit=group_memory_extractor_daily_llm_limit,
+            group_memory_extractor_per_chat_daily_limit=group_memory_extractor_per_chat_daily_limit,
             group_memory_daily_summary_days=group_memory_daily_summary_days,
             group_memory_daily_summary_message_limit=group_memory_daily_summary_message_limit,
             agent_enabled=agent_enabled,

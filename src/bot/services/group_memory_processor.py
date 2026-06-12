@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import hashlib
+import re
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
 from core.config import (
     GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT,
+    GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
     GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE,
+    GROUP_MEMORY_EXTRACTOR_MODE,
+    GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
     GROUP_MEMORY_EXTRACTOR_PROVIDER,
     get_chat_lang,
     get_gemini_api_key,
@@ -29,12 +34,33 @@ from services.memory_extractor import (
 )
 from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.rate_limit import RateLimitRepository
 from services.repositories.sqs import SQSClient
 from services.vector_memory import vector_memory_configured
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _summary_gemini: GeminiClient | None = None
+_EXTRACTOR_BUDGET_SCOPE = "group_memory_extractor_llm"
+_LONG_FORM_SAMPLE_MODULO = 20
+_CANDIDATE_CUE_RE = re.compile(
+    r"\b("
+    r"agreed|decided|decision|deadline|deploy(?:ed|ing)?|incident|issue|outage|postmortem|"
+    r"prefer|preference|my stack|i use|we use|workaround|root cause|migration|release|"
+    r"meme|joke|inside joke|open.?search|s3 vectors?|lambda|dynamodb|backfill|vector"
+    r")\b|"
+    r"(шештік|келістік|қолданам|ұнайды|мерзім|деплой|оқиға|мәселе|әзіл)|"
+    r"(решили|договорились|предпочитаю|использую|дедлайн|деплой|инцидент|проблема|мем|шутк)|"
+    r"(决定|同意|偏好|我用|截止|部署|事故|问题|梗|玩笑)",
+    re.IGNORECASE,
+)
+_TECH_TERM_RE = re.compile(
+    r"\b("
+    r"aws|api|cdk|ci|deploy|dynamodb|gemini|lambda|opensearch|postgres|python|rag|s3|sqs|"
+    r"vector|vectors|webhook|[a-z]+-\d+|[a-z]+\d{2,}"
+    r")\b",
+    re.IGNORECASE,
+)
 
 __all__ = [
     "DailySummaryWindow",
@@ -42,6 +68,7 @@ __all__ = [
     "build_daily_messages_context",
     "classify_long_term_memory",
     "classify_long_term_memory_rule_based",
+    "is_gemini_extraction_candidate",
     "process_daily_group_summaries_task",
     "process_daily_group_summary",
     "process_group_memory_task",
@@ -90,6 +117,104 @@ def _summary_window(summary_date: str | None = None) -> DailySummaryWindow:
 
 
 classify_long_term_memory = classify_long_term_memory_rule_based
+
+
+def _normalise_extractor_mode(provider: str, mode: str) -> str:
+    provider = provider.strip().lower()
+    mode = mode.strip().lower()
+    if provider == "rules" or mode in {"rules", "rule", "rules_only"}:
+        return "rules"
+    if mode in {"gemini_all", "all"}:
+        return "gemini_all"
+    if mode in {"gemini_candidate_only", "candidate", "candidate_only", ""}:
+        return "gemini_candidate_only"
+    logger.warning("Unknown group memory extractor mode; using gemini_candidate_only", extra={"mode": mode})
+    return "gemini_candidate_only"
+
+
+def _truthy(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _sample_long_form_candidate(text: str, message_id: int | str | None) -> bool:
+    seed = f"{message_id or ''}:{text[:240]}".encode("utf-8", "ignore")
+    digest = hashlib.blake2s(seed, digest_size=2).digest()
+    return int.from_bytes(digest, "big") % _LONG_FORM_SAMPLE_MODULO == 0
+
+
+def is_gemini_extraction_candidate(
+    text: str,
+    *,
+    rule_based: ExtractedMemory | None = None,
+    is_reply: bool = False,
+    has_mention: bool = False,
+    message_id: int | str | None = None,
+) -> tuple[bool, str]:
+    """Cheaply decide whether an ordinary group message deserves LLM extraction."""
+    cleaned = " ".join((text or "").split())
+    if rule_based is not None:
+        return True, f"rule_{rule_based.kind}"
+    if _CANDIDATE_CUE_RE.search(cleaned):
+        return True, "cue"
+    if (is_reply or has_mention) and len(cleaned) >= 40:
+        return True, "reply_or_mention"
+    if len(cleaned) >= 180 and _TECH_TERM_RE.search(cleaned) and _sample_long_form_candidate(cleaned, message_id):
+        return True, "long_form_technical_sample"
+    return False, "no_candidate_signal"
+
+
+def _budget_scope_part(value: int | str) -> str:
+    return re.sub(r"[^0-9A-Za-z_-]+", "_", str(value))[:80]
+
+
+def _reserve_extractor_llm_budget(chat_id: int | str, message_id: int | str) -> bool:
+    if GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT <= 0 or GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT <= 0:
+        logger.info(
+            "Group memory Gemini extraction skipped by disabled LLM budget",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "daily_limit": GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+                "per_chat_limit": GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
+            },
+        )
+        return False
+
+    chat_scope = f"{_EXTRACTOR_BUDGET_SCOPE}_chat_{_budget_scope_part(chat_id)}"
+    chat_count, chat_within_limit = RateLimitRepository(
+        scope=chat_scope,
+        rpd_limit=GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
+    ).increment_and_check()
+    if not chat_within_limit:
+        logger.info(
+            "Group memory Gemini extraction skipped by per-chat daily budget",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "extractor_llm_chat_count": chat_count,
+                "extractor_llm_chat_limit": GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
+            },
+        )
+        return False
+
+    daily_count, daily_within_limit = RateLimitRepository(
+        scope=_EXTRACTOR_BUDGET_SCOPE,
+        rpd_limit=GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+    ).increment_and_check()
+    if not daily_within_limit:
+        logger.info(
+            "Group memory Gemini extraction skipped by global daily budget",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "extractor_llm_daily_count": daily_count,
+                "extractor_llm_daily_limit": GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+            },
+        )
+        return False
+    return True
 
 
 def _fallback_daily_summary(
@@ -186,53 +311,85 @@ def _extract_long_term_memory(
     display_name: str,
     username: str | None,
     text: str,
+    is_reply: bool = False,
+    has_mention: bool = False,
 ) -> ExtractedMemory | None:
     cleaned = " ".join((text or "").split())
     if len(cleaned) < 12 or should_skip_for_privacy(cleaned) or not is_memory_learning_safe(cleaned):
         return None
 
     provider = GROUP_MEMORY_EXTRACTOR_PROVIDER.strip().lower()
-    if provider == "gemini":
-        gemini = _get_gemini()
-        if gemini:
-            try:
-                return extract_long_term_memory_llm(
-                    gemini=gemini,
-                    chat_id=chat_id,
-                    message_id=message_id,
-                    user_id=user_id,
-                    display_name=display_name,
-                    username=username,
-                    text=cleaned,
-                    lang=get_chat_lang(chat_id),
-                )
-            except GeminiRPDExhaustedError:
-                logger.info(
-                    "Group memory extraction using rules because Gemini RPD is exhausted",
-                    extra={"chat_id": chat_id, "message_id": message_id},
-                )
-            except GeminiUnavailableError:
-                logger.warning(
-                    "Group memory extraction using rules because Gemini is unavailable",
-                    extra={"chat_id": chat_id, "message_id": message_id},
-                )
-            except Exception:
-                logger.exception(
-                    "Group memory extraction using rules because Gemini extractor failed",
-                    extra={"chat_id": chat_id, "message_id": message_id},
-                )
-        else:
-            logger.info(
-                "Group memory extraction using rules because Gemini is not configured",
-                extra={"chat_id": chat_id, "message_id": message_id},
-            )
-    elif provider != "rules":
+    mode = _normalise_extractor_mode(provider, GROUP_MEMORY_EXTRACTOR_MODE)
+    rule_based = classify_long_term_memory_rule_based(cleaned, message_id=message_id, user_id=user_id)
+    if mode == "rules":
+        return rule_based
+    if provider != "gemini":
         logger.warning(
             "Unknown group memory extractor provider; using rules",
             extra={"chat_id": chat_id, "message_id": message_id, "provider": provider},
         )
+        return rule_based
 
-    return classify_long_term_memory_rule_based(cleaned, message_id=message_id, user_id=user_id)
+    candidate_reason = "gemini_all"
+    if mode == "gemini_candidate_only":
+        is_candidate, candidate_reason = is_gemini_extraction_candidate(
+            cleaned,
+            rule_based=rule_based,
+            is_reply=is_reply,
+            has_mention=has_mention,
+            message_id=message_id,
+        )
+        if not is_candidate:
+            logger.debug(
+                "Group memory extraction using rules because message is not an LLM candidate",
+                extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+            )
+            return rule_based
+
+    gemini = _get_gemini()
+    if not gemini:
+        logger.info(
+            "Group memory extraction using rules because Gemini is not configured",
+            extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+        )
+        return rule_based
+
+    if not _reserve_extractor_llm_budget(chat_id, message_id):
+        return rule_based
+
+    try:
+        extracted = extract_long_term_memory_llm(
+            gemini=gemini,
+            chat_id=chat_id,
+            message_id=message_id,
+            user_id=user_id,
+            display_name=display_name,
+            username=username,
+            text=cleaned,
+            lang=get_chat_lang(chat_id),
+        )
+        logger.info(
+            "Group memory extraction used Gemini",
+            extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+        )
+        return extracted
+    except GeminiRPDExhaustedError:
+        logger.info(
+            "Group memory extraction using rules because Gemini RPD is exhausted",
+            extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+        )
+    except GeminiUnavailableError:
+        logger.warning(
+            "Group memory extraction using rules because Gemini is unavailable",
+            extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+        )
+    except Exception:
+        logger.exception(
+            "Group memory extraction using rules because Gemini extractor failed",
+            extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
+        )
+
+    return rule_based
 
 
 def process_daily_group_summary(
@@ -376,6 +533,8 @@ def process_group_memory_task(
         display_name=display_name,
         username=str(username) if username else None,
         text=text,
+        is_reply=_truthy(body.get("is_reply")),
+        has_mention=_truthy(body.get("has_mention")),
     )
     if not is_storable_extracted_memory(
         extracted,
