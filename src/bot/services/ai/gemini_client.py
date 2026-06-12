@@ -526,6 +526,115 @@ class GeminiClient:
             )
             raise GeminiUnavailableError(f"Bad Gemini decision response: {exc}") from exc
 
+    def group_memory_extraction(
+        self,
+        *,
+        chat_id: int | str,
+        message_id: int | str,
+        user_id: int | str,
+        display_name: str,
+        username: str | None,
+        text: str,
+        lang: str = "kk",
+    ) -> tuple[dict[str, Any], int]:
+        """Extract one Telegram group message into the long-term memory schema."""
+        if _circuit_is_open():
+            logger.warning("Gemini circuit open, skipping memory extraction", extra={"model": self._model})
+            raise GeminiUnavailableError("Gemini circuit open")
+
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning(
+                "Gemini RPD limit reached (memory extraction)",
+                extra={"count": count, "limit": self.rpd_limit},
+            )
+            raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
+
+        system_prompt = (
+            "You extract long-term memory from Telegram group messages. "
+            "Store only information useful for future group-chat assistance. "
+            "Do not store secrets, contact details, medical/financial/identity data. "
+            "Do not store jokes as facts. "
+            "Do not store third-party claims about a person as user facts. "
+            "Return compact JSON matching schema: "
+            "should_store (boolean), kind (one of event,user_fact,group_fact,joke,boundary,preference,none), "
+            "summary (string), reason (string), confidence (0..1), subject_user_id (string or null), "
+            "sensitivity (one of public,personal,sensitive,secret), expires_in_days (integer or null), "
+            "evidence_message_ids (array of integers)."
+        )
+        generation_config: dict[str, Any] = {
+            "temperature": 0.1,
+            "maxOutputTokens": 500,
+            "responseMimeType": "application/json",
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
+        prompt = (
+            f"Preferred language code: {lang}\n"
+            f"Chat id: {chat_id}\n"
+            f"Message id: {message_id}\n"
+            f"Speaker user id: {user_id}\n"
+            f"Speaker display name: {display_name}\n"
+            f"Speaker username: @{username.lstrip('@') if username else ''}\n\n"
+            "Message text:\n"
+            f"{text[:4000]}\n\n"
+            "Extract long-term memory JSON. If this is low-value chatter, unsafe, third-party personal claim, "
+            "or too ambiguous, set should_store=false and kind=none."
+        )
+        payload: dict[str, Any] = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
+
+        logger.info(
+            "Gemini memory extraction request started",
+            extra={
+                "operation": "group_memory_extraction",
+                "model": self._model,
+                "lang": lang,
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "message_chars": len(text),
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+            },
+        )
+        resp_data = self._post_generate_content(
+            operation="group_memory_extraction",
+            url=url,
+            body=body,
+            headers=headers,
+        )
+
+        try:
+            data = json.loads(resp_data.decode("utf-8"))
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            response_text = _extract_gemini_text(data, operation="group_memory_extraction", model=self._model)
+            extracted = json.loads(response_text)
+            _record_success()
+            return extracted if isinstance(extracted, dict) else {}, count
+        except GeminiEmptyResponseError:
+            raise
+        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            logger.warning(
+                "Gemini memory extraction response parse failed",
+                extra={
+                    "operation": "group_memory_extraction",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
+            raise GeminiUnavailableError(f"Bad Gemini memory extraction response: {exc}") from exc
+
     def group_daily_summary(
         self,
         *,

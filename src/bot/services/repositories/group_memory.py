@@ -242,6 +242,23 @@ class GroupMemoryRepository:
     def _memory_item_lexical_terms(cls, item: dict[str, Any]) -> set[str]:
         return cls._normalise_lexical_terms(cls._memory_item_search_text(item))
 
+    @staticmethod
+    def _normalise_evidence_message_ids(value: list[int] | None, fallback_message_id: int | str) -> list[int]:
+        ids: list[int] = []
+        for item in value or []:
+            try:
+                ids.append(int(item))
+            except (TypeError, ValueError):
+                continue
+            if len(ids) >= 12:
+                break
+        if not ids:
+            try:
+                ids.append(int(fallback_message_id))
+            except (TypeError, ValueError):
+                pass
+        return ids
+
     def _matches_user_memory_item(self, item: dict[str, Any], user_id: int | str, cleanup_terms: set[str]) -> bool:
         user_id_str = str(user_id)
         sk = str(item.get("sk") or "")
@@ -596,12 +613,23 @@ class GroupMemoryRepository:
         reason: str,
         confidence: float,
         created_at: int | None = None,
+        extractor_source: str = "rules",
+        expires_in_days: int | None = None,
+        evidence_message_ids: list[int] | None = None,
+        sensitivity: str = "public",
     ) -> dict[str, Any]:
         """Store one trusted long-term memory extracted from a user's own message."""
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
-        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        retention_ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        expires_at = None
+        if expires_in_days is not None:
+            try:
+                expires_at = created_at + max(1, int(expires_in_days)) * 24 * 60 * 60
+            except (TypeError, ValueError):
+                expires_at = None
+        ttl = min(retention_ttl, expires_at) if expires_at else retention_ttl
         item = {
             "pk": self._chat_pk(chat_id),
             "sk": self._memory_sk(kind, created_at_ms, message_id, user_id),
@@ -615,8 +643,13 @@ class GroupMemoryRepository:
             "reason": reason[:240],
             "confidence": Decimal(str(max(0.0, min(1.0, confidence)))),
             "created_at": created_at,
+            "extractor_source": extractor_source[:40] if extractor_source else "rules",
+            "evidence_message_ids": self._normalise_evidence_message_ids(evidence_message_ids, message_id),
+            "sensitivity": sensitivity[:40] if sensitivity else "public",
             "ttl": ttl,
         }
+        if expires_at:
+            item["expires_at"] = expires_at
         if username:
             item["username"] = username
         self.table.put_item(Item=item)

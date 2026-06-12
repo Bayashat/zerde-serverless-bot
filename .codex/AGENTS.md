@@ -36,6 +36,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 
 - It observes opted-in group messages.
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
+- It extracts long-term memory with a structured Gemini schema and falls back to rule-based extraction when Gemini is unavailable or disabled.
 - It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
@@ -90,7 +91,8 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/sqs_task_router.py` — routes main and vector SQS task families and re-raises failures for retry/DLQ semantics.
 - `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
 - `services/memory_retrieval.py` — thin Memory Retrieval Pipeline V1 wrapper for query intent, candidate/source tracking, local scoring, dedupe, and context packing.
-- `services/group_memory_processor.py` — async long-term extraction and daily summaries.
+- `services/memory_extractor.py` — structured long-term memory schema, Gemini extraction normalisation, rule fallback, and storage guards.
+- `services/group_memory_processor.py` — async long-term extraction task orchestration and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters.
@@ -117,7 +119,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
 - `SPAM_CHECK` — async Groq spam decision.
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
-- `PROCESS_GROUP_MEMORY` — classify/store long-term memory from one message.
+- `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
 - `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.

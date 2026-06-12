@@ -2,15 +2,31 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
-from core.config import GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT, get_chat_lang, get_gemini_api_key
+from core.config import (
+    GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT,
+    GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE,
+    GROUP_MEMORY_EXTRACTOR_PROVIDER,
+    get_chat_lang,
+    get_gemini_api_key,
+)
 from core.logger import LoggerAdapter, get_logger
 from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
 from services.group_memory import format_long_term_memory_context
+from services.memory_extractor import (
+    ExtractedMemory,
+    MemoryClassification,
+    classify_long_term_memory_rule_based,
+    contains_secret_or_sensitive_cue,
+    extract_long_term_memory_llm,
+    is_storable_extracted_memory,
+    redact_sensitive_for_summary,
+    should_skip_for_privacy,
+    storage_memory_kind,
+)
 from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
@@ -20,108 +36,16 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 _summary_gemini: GeminiClient | None = None
 
-_EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}\b")
-_PHONE_RE = re.compile(r"(?<![\w+])(?:\+\d[\d\s().-]{7,}\d|\d{10,15})(?!\w)")
-_SECRET_CUES = (
-    "password",
-    "passwd",
-    "secret",
-    "api key",
-    "token",
-    "пароль",
-    "құпия",
-    "密码",
-    "令牌",
-)
-_SENSITIVE_CUES = (
-    "diagnosis",
-    "medical",
-    "salary",
-    "passport",
-    "credit card",
-    "диагноз",
-    "медицина",
-    "зарплата",
-    "паспорт",
-    "жалақы",
-    "ауырып",
-    "身份证",
-    "工资",
-    "银行卡",
-)
-_EVENT_CUES = (
-    "today",
-    "tomorrow",
-    "yesterday",
-    "meeting",
-    "deploy",
-    "release",
-    "incident",
-    "deadline",
-    "сегодня",
-    "завтра",
-    "вчера",
-    "релиз",
-    "созвон",
-    "бүгін",
-    "ертең",
-    "кеше",
-    "релиз",
-    "жиналыс",
-    "今天",
-    "明天",
-    "昨天",
-    "发布",
-)
-_GROUP_FACT_CUES = (
-    "we decided",
-    "we agreed",
-    "let's use",
-    "по договоренности",
-    "решили",
-    "договорились",
-    "келістік",
-    "шештік",
-    "用",
-    "决定",
-)
-_PREFERENCE_CUES = (
-    "i prefer",
-    "i like",
-    "i hate",
-    "i use",
-    "my stack",
-    "предпочитаю",
-    "люблю",
-    "ненавижу",
-    "использую",
-    "маған ұнайды",
-    "ұнатпаймын",
-    "қолданам",
-    "我喜欢",
-    "我不喜欢",
-    "我用",
-)
-_JOKE_CUES = (
-    "inside joke",
-    "meme",
-    "лол",
-    "хаха",
-    "ахах",
-    "әзіл",
-    "қалжың",
-    "мем",
-    "哈哈",
-    "梗",
-)
-
-
-@dataclass(frozen=True)
-class MemoryClassification:
-    kind: str
-    summary: str
-    reason: str
-    confidence: float
+__all__ = [
+    "DailySummaryWindow",
+    "MemoryClassification",
+    "build_daily_messages_context",
+    "classify_long_term_memory",
+    "classify_long_term_memory_rule_based",
+    "process_daily_group_summaries_task",
+    "process_daily_group_summary",
+    "process_group_memory_task",
+]
 
 
 @dataclass(frozen=True)
@@ -136,31 +60,6 @@ def _get_gemini() -> GeminiClient | None:
     if get_gemini_api_key() and _summary_gemini is None:
         _summary_gemini = GeminiClient()
     return _summary_gemini
-
-
-def _contains_any(text: str, cues: tuple[str, ...]) -> bool:
-    lowered = text.lower()
-    return any(cue in lowered for cue in cues)
-
-
-def _is_sensitive(text: str) -> bool:
-    lowered = text.lower()
-    return bool(_EMAIL_RE.search(text) or _PHONE_RE.search(text) or any(cue in lowered for cue in _SECRET_CUES))
-
-
-def _contains_secret_or_sensitive_cue(text: str) -> bool:
-    lowered = text.lower()
-    return any(cue in lowered for cue in _SECRET_CUES) or _contains_any(text, _SENSITIVE_CUES)
-
-
-def _should_skip_for_privacy(text: str) -> bool:
-    return _is_sensitive(text) or _contains_any(text, _SENSITIVE_CUES)
-
-
-def _redact_for_summary(text: str) -> str:
-    redacted = _EMAIL_RE.sub("[email]", text)
-    redacted = _PHONE_RE.sub("[phone]", redacted)
-    return redacted
 
 
 def _list_field(value: Any, *, limit: int = 12) -> list[str]:
@@ -190,41 +89,7 @@ def _summary_window(summary_date: str | None = None) -> DailySummaryWindow:
     )
 
 
-def classify_long_term_memory(text: str) -> MemoryClassification | None:
-    """Classify a message into a trusted long-term memory item, if worth keeping."""
-    cleaned = " ".join((text or "").split())
-    if len(cleaned) < 12 or _should_skip_for_privacy(cleaned) or not is_memory_learning_safe(cleaned):
-        return None
-
-    if _contains_any(cleaned, _GROUP_FACT_CUES):
-        return MemoryClassification(
-            kind="group_fact",
-            summary=cleaned[:280],
-            reason="group decision or shared preference",
-            confidence=0.72,
-        )
-    if _contains_any(cleaned, _PREFERENCE_CUES):
-        return MemoryClassification(
-            kind="user_fact",
-            summary=cleaned[:280],
-            reason="user stated a preference or recurring personal context",
-            confidence=0.7,
-        )
-    if _contains_any(cleaned, _EVENT_CUES):
-        return MemoryClassification(
-            kind="event",
-            summary=cleaned[:280],
-            reason="time-bound event or operational update",
-            confidence=0.66,
-        )
-    if _contains_any(cleaned, _JOKE_CUES):
-        return MemoryClassification(
-            kind="joke",
-            summary=cleaned[:280],
-            reason="possible recurring group joke or meme",
-            confidence=0.62,
-        )
-    return None
+classify_long_term_memory = classify_long_term_memory_rule_based
 
 
 def _fallback_daily_summary(
@@ -283,10 +148,10 @@ def _normalise_daily_summary(raw: dict[str, Any], *, summary_date: str, source: 
 def build_daily_messages_context(messages: list[dict[str, Any]]) -> str:
     lines: list[str] = []
     for item in messages:
-        if _contains_secret_or_sensitive_cue(str(item.get("text") or "")):
+        if contains_secret_or_sensitive_cue(str(item.get("text") or "")):
             continue
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
-        text = _redact_for_summary(str(item.get("text") or "")).replace("\n", " ").strip()
+        text = redact_sensitive_for_summary(str(item.get("text") or "")).replace("\n", " ").strip()
         if text and is_memory_learning_safe(text):
             lines.append(f"{name[:80]}: {text[:500]}")
     return "\n".join(lines)
@@ -311,6 +176,63 @@ def _enqueue_vector_memory_index(
             "Failed to enqueue vector memory indexing",
             extra={"chat_id": chat_id, "source_sk": source_sk},
         )
+
+
+def _extract_long_term_memory(
+    *,
+    chat_id: int | str,
+    message_id: int | str,
+    user_id: int | str,
+    display_name: str,
+    username: str | None,
+    text: str,
+) -> ExtractedMemory | None:
+    cleaned = " ".join((text or "").split())
+    if len(cleaned) < 12 or should_skip_for_privacy(cleaned) or not is_memory_learning_safe(cleaned):
+        return None
+
+    provider = GROUP_MEMORY_EXTRACTOR_PROVIDER.strip().lower()
+    if provider == "gemini":
+        gemini = _get_gemini()
+        if gemini:
+            try:
+                return extract_long_term_memory_llm(
+                    gemini=gemini,
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    user_id=user_id,
+                    display_name=display_name,
+                    username=username,
+                    text=cleaned,
+                    lang=get_chat_lang(chat_id),
+                )
+            except GeminiRPDExhaustedError:
+                logger.info(
+                    "Group memory extraction using rules because Gemini RPD is exhausted",
+                    extra={"chat_id": chat_id, "message_id": message_id},
+                )
+            except GeminiUnavailableError:
+                logger.warning(
+                    "Group memory extraction using rules because Gemini is unavailable",
+                    extra={"chat_id": chat_id, "message_id": message_id},
+                )
+            except Exception:
+                logger.exception(
+                    "Group memory extraction using rules because Gemini extractor failed",
+                    extra={"chat_id": chat_id, "message_id": message_id},
+                )
+        else:
+            logger.info(
+                "Group memory extraction using rules because Gemini is not configured",
+                extra={"chat_id": chat_id, "message_id": message_id},
+            )
+    elif provider != "rules":
+        logger.warning(
+            "Unknown group memory extractor provider; using rules",
+            extra={"chat_id": chat_id, "message_id": message_id, "provider": provider},
+        )
+
+    return classify_long_term_memory_rule_based(cleaned, message_id=message_id, user_id=user_id)
 
 
 def process_daily_group_summary(
@@ -447,26 +369,62 @@ def process_group_memory_task(
         logger.warning("PROCESS_GROUP_MEMORY missing required field", extra={"missing": str(exc)})
         return
 
-    classification = classify_long_term_memory(text)
-    if not classification:
-        logger.debug("PROCESS_GROUP_MEMORY skipped low-value or sensitive message", extra={"chat_id": chat_id})
-        return
-
-    item = repo.store_long_term_memory(
+    extracted = _extract_long_term_memory(
         chat_id=chat_id,
         message_id=message_id,
         user_id=user_id,
         display_name=display_name,
         username=str(username) if username else None,
         text=text,
-        kind=classification.kind,
-        summary=classification.summary,
-        reason=classification.reason,
-        confidence=classification.confidence,
+    )
+    if not is_storable_extracted_memory(
+        extracted,
+        min_confidence=GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE,
+        speaker_user_id=user_id,
+    ):
+        logger.debug(
+            "PROCESS_GROUP_MEMORY skipped low-value or sensitive message",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "extractor_source": extracted.extractor_source if extracted else "",
+                "kind": extracted.kind if extracted else "",
+                "sensitivity": extracted.sensitivity if extracted else "",
+                "confidence": extracted.confidence if extracted else 0.0,
+            },
+        )
+        return
+
+    assert extracted is not None
+    storage_kind = storage_memory_kind(extracted)
+    if storage_kind is None:
+        logger.debug("PROCESS_GROUP_MEMORY skipped unsupported memory kind", extra={"chat_id": chat_id})
+        return
+    store_user_id = extracted.subject_user_id if storage_kind == "user_fact" and extracted.subject_user_id else user_id
+    item = repo.store_long_term_memory(
+        chat_id=chat_id,
+        message_id=message_id,
+        user_id=store_user_id,
+        display_name=display_name,
+        username=str(username) if username else None,
+        text=text,
+        kind=storage_kind,
+        summary=extracted.summary,
+        reason=extracted.reason,
+        confidence=extracted.confidence,
         created_at=body.get("created_at"),
+        extractor_source=extracted.extractor_source,
+        expires_in_days=extracted.expires_in_days,
+        evidence_message_ids=extracted.evidence_message_ids,
+        sensitivity=extracted.sensitivity,
     )
     _enqueue_vector_memory_index(chat_id=chat_id, source_sk=str(item["sk"]), sqs_repo=sqs_repo)
     logger.info(
         "PROCESS_GROUP_MEMORY stored long-term memory",
-        extra={"chat_id": chat_id, "message_id": message_id, "kind": classification.kind},
+        extra={
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "kind": storage_kind,
+            "extractor_source": extracted.extractor_source,
+        },
     )

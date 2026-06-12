@@ -208,6 +208,20 @@ def test_vector_indexer_consumes_vector_queue(monkeypatch: Any) -> None:
     assert _role_has_action_on_queue(template, vector_role_id, {"sqs:SendMessage"}, vector_queue_id)
 
 
+def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
+    template = _dev_template(monkeypatch)
+    _, bot_lambda = _find_resource_by_property(
+        template,
+        "AWS::Lambda::Function",
+        "FunctionName",
+        "zerde-serverless-bot-dev",
+    )
+
+    env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
+    assert env_vars["GROUP_MEMORY_EXTRACTOR_PROVIDER"] == "gemini"
+    assert env_vars["GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE"] == "0.65"
+
+
 def test_vector_indexer_ssm_access_is_limited_to_gemini(monkeypatch: Any) -> None:
     template = _dev_template(monkeypatch)
     _, vector_indexer_lambda = _find_resource_by_property(
