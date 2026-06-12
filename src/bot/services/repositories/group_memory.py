@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -15,6 +16,41 @@ from services.repositories._common import get_dynamodb
 
 _VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
+_LEXICAL_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{1,}", re.IGNORECASE)
+_LEXICAL_STOP_TERMS = {
+    "about",
+    "and",
+    "are",
+    "bot",
+    "chat",
+    "for",
+    "from",
+    "how",
+    "the",
+    "this",
+    "what",
+    "who",
+    "why",
+    "zerde",
+    "бот",
+    "как",
+    "кто",
+    "про",
+    "что",
+    "чат",
+    "это",
+    "бір",
+    "деп",
+    "кім",
+    "мен",
+    "неге",
+    "осы",
+    "сол",
+    "үшін",
+    "什么",
+    "怎么",
+    "这个",
+}
 
 
 class GroupMemoryRepository:
@@ -168,6 +204,43 @@ class GroupMemoryRepository:
             str(part) for value in fields for part in (value if isinstance(value, list) else [value]) if part
         ).lower()
         return any(term in searchable for term in terms)
+
+    @staticmethod
+    def _normalise_lexical_terms(text: str) -> set[str]:
+        terms: set[str] = set()
+        for raw in _LEXICAL_TERM_RE.findall(text or ""):
+            term = raw.lower().lstrip("@#").strip("._-")
+            if not term or term in _LEXICAL_STOP_TERMS:
+                continue
+            if len(term) < 3 and not any(char.isdigit() for char in term):
+                continue
+            terms.add(term)
+        return terms
+
+    @staticmethod
+    def _memory_item_search_text(item: dict[str, Any]) -> str:
+        fields = [
+            item.get("summary"),
+            item.get("text"),
+            item.get("reason"),
+            item.get("topics"),
+            item.get("notable_events"),
+            item.get("inside_jokes"),
+            item.get("active_participants"),
+            item.get("tension_points"),
+            item.get("display_name"),
+            item.get("username"),
+            item.get("summary_date"),
+            item.get("source"),
+            item.get("kind"),
+        ]
+        return " ".join(
+            str(part) for value in fields for part in (value if isinstance(value, list) else [value]) if part
+        )
+
+    @classmethod
+    def _memory_item_lexical_terms(cls, item: dict[str, Any]) -> set[str]:
+        return cls._normalise_lexical_terms(cls._memory_item_search_text(item))
 
     def _matches_user_memory_item(self, item: dict[str, Any], user_id: int | str, cleanup_terms: set[str]) -> bool:
         user_id_str = str(user_id)
@@ -608,6 +681,56 @@ class GroupMemoryRepository:
         )
         items = resp.get("Items") or []
         return list(reversed(items))
+
+    def search_long_term_memories_by_terms(
+        self,
+        chat_id: int | str,
+        terms: set[str] | list[str] | tuple[str, ...],
+        *,
+        limit: int = 30,
+    ) -> list[dict[str, Any]]:
+        """Return exact-term long-term memory candidates without scanning raw messages."""
+        query_terms = self._normalise_lexical_terms(" ".join(str(term) for term in terms if term))
+        if not query_terms:
+            return []
+
+        fetch_limit = max(int(limit), 30)
+        candidates = [
+            *self.get_recent_daily_summaries(chat_id, limit=fetch_limit),
+            *self.get_recent_long_term_memories(chat_id, limit=fetch_limit),
+        ]
+        matched_items: list[dict[str, Any]] = []
+        seen_sks: set[str] = set()
+        for item in candidates:
+            sk = str(item.get("sk") or "")
+            if not sk or sk in seen_sks:
+                continue
+            seen_sks.add(sk)
+
+            searchable_text = self._memory_item_search_text(item)
+            if not searchable_text or not is_memory_learning_safe(searchable_text):
+                continue
+            matched_terms = sorted(query_terms & self._memory_item_lexical_terms(item))
+            if not matched_terms:
+                continue
+
+            copied = dict(item)
+            copied["_lexical_terms"] = matched_terms[:12]
+            copied["_lexical_match_count"] = len(matched_terms)
+            matched_items.append(copied)
+
+        def sort_key(item: dict[str, Any]) -> tuple[int, int]:
+            try:
+                match_count = int(item.get("_lexical_match_count") or 0)
+            except (TypeError, ValueError):
+                match_count = 0
+            try:
+                created_at = int(item.get("created_at") or 0)
+            except (TypeError, ValueError):
+                created_at = 0
+            return (match_count, created_at)
+
+        return sorted(matched_items, key=sort_key, reverse=True)[: max(1, int(limit))]
 
     def get_memory_item(self, chat_id: int | str, source_sk: str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": source_sk})
