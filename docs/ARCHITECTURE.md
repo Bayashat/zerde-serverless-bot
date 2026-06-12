@@ -95,7 +95,7 @@ The table is single-table by chat partition:
 | Key pattern | Meaning |
 |-------------|---------|
 | `pk=CHAT#<chat_id>, sk=SETTINGS` | Per-chat `memory_enabled` and `agent_enabled`. |
-| `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context. |
+| `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context, including reply-to ids, sender metadata, bot/self-bot flags, and simple thread root metadata when available. |
 | `sk=USER#<user_id>` | User profile derived only from that user's own messages. |
 | `sk=EVENT#...` | Time-bound event or operational memory. |
 | `sk=USER_FACT#<user_id>#...` | User-stated preference, boundary, or recurring personal context. |
@@ -127,7 +127,7 @@ The returned bundle still exposes separate prompt sections for Gemini, but their
 3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
 4. Long-term memory context filtered by current query terms, with exact-term lexical fallback candidates from DynamoDB when useful.
 5. Recent group context with speaker metadata.
-6. Reply-thread context when the user replies to the bot's previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
+6. Reply-thread context when the user replies to Zerde's own previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
 
 The local reranker treats requester profiles as highest trust for self-reference, target-user profiles above ordinary memory, user facts above daily summaries, and jokes as low priority unless the query explicitly asks for a joke or meme. Exact lexical matches boost codes, usernames, and technical terms such as `E1027`, `S3`, or `OpenSearch`; semantic distance, trust level, target-user match, recency, and memory confidence are also considered. Because selected candidates are what render prompt content, this ranking directly controls whether a semantic user fact, lexical exact match, daily summary, joke, old event, or recent message reaches Gemini. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
@@ -151,8 +151,8 @@ Proactive replies are conservative:
 
 Answer length is explicit:
 
-- Reply-to-bot follow-ups get a short budget.
-- Reply-to-bot follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent.
+- Reply-to-Zerde follow-ups get a short budget.
+- Reply-to-Zerde follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent. Replies to other bots are not treated as Zerde reply threads unless the user explicitly mentions Zerde.
 - Plain `/ask` explanations get a medium budget.
 - Detailed answers require explicit cues such as "подробно", "толық", or "deep dive".
 - `fit_llm_output` trims overly long responses before Telegram HTML normalization.

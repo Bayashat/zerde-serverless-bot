@@ -5,8 +5,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from core.config import GROUP_MEMORY_DAILY_SUMMARY_DAYS, GROUP_MEMORY_ENABLED, GROUP_MEMORY_RECENT_LIMIT
+from core.config import (
+    AGENT_BOT_ID,
+    AGENT_BOT_USERNAME,
+    GROUP_MEMORY_DAILY_SUMMARY_DAYS,
+    GROUP_MEMORY_ENABLED,
+    GROUP_MEMORY_RECENT_LIMIT,
+)
 from core.logger import LoggerAdapter, get_logger
+from services.bot_identity import is_self_bot_user
 from services.memory_safety import is_memory_learning_safe, is_profile_context_value_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
@@ -134,6 +141,66 @@ def format_message_reference(
     return f"{heading}:\n{speaker} {clipped_text}"
 
 
+def _reply_metadata(message: dict[str, Any]) -> dict[str, Any]:
+    reply = message.get("reply_to_message")
+    if not isinstance(reply, dict):
+        return {}
+
+    metadata: dict[str, Any] = {}
+    reply_message_id = reply.get("message_id")
+    if reply_message_id is not None:
+        metadata["reply_to_message_id"] = reply_message_id
+
+    sender = reply.get("from") if isinstance(reply.get("from"), dict) else {}
+    sender_chat = reply.get("sender_chat") if isinstance(reply.get("sender_chat"), dict) else {}
+    if sender:
+        sender_id = sender.get("id")
+        if sender_id is not None:
+            metadata["reply_to_user_id"] = sender_id
+        username = sender.get("username")
+        if username:
+            metadata["reply_to_sender_username"] = str(username).lstrip("@")[:160]
+        name = display_name(sender)
+        if name:
+            metadata["reply_to_sender_name"] = name[:160]
+        metadata["reply_to_sender_type"] = "user"
+        metadata["reply_to_bot"] = bool(sender.get("is_bot"))
+        metadata["reply_to_self_bot"] = is_self_bot_user(
+            sender,
+            bot_id=AGENT_BOT_ID,
+            bot_username=AGENT_BOT_USERNAME,
+        )
+    elif sender_chat:
+        sender_id = sender_chat.get("id")
+        if sender_id is not None:
+            metadata["reply_to_sender_id"] = sender_id
+        username = sender_chat.get("username")
+        if username:
+            metadata["reply_to_sender_username"] = str(username).lstrip("@")[:160]
+        title = sender_chat.get("title")
+        if title:
+            metadata["reply_to_sender_name"] = str(title)[:160]
+        sender_type = sender_chat.get("type")
+        metadata["reply_to_sender_type"] = str(sender_type or "sender_chat")[:80]
+        metadata["reply_to_bot"] = False
+        metadata["reply_to_self_bot"] = False
+
+    root_message_id = None
+    nested_reply = reply.get("reply_to_message")
+    if isinstance(nested_reply, dict):
+        root_message_id = nested_reply.get("message_id")
+    if root_message_id is None:
+        root_message_id = reply.get("message_thread_id") or message.get("message_thread_id")
+    if root_message_id is not None:
+        metadata["thread_root_message_id"] = root_message_id
+
+    message_thread_id = message.get("message_thread_id")
+    if message_thread_id is not None:
+        metadata["message_thread_id"] = message_thread_id
+
+    return metadata
+
+
 def is_storable_group_message(update: dict[str, Any]) -> bool:
     message = update.get("message")
     if not isinstance(message, dict):
@@ -181,6 +248,7 @@ def observe_update(
             username=username,
             text=text,
             created_at=message.get("date"),
+            reply_metadata=_reply_metadata(message),
             skip_if_exists=True,
         )
         logger.debug("Stored group memory message", extra={"chat_id": chat_id, "message_id": message_id})

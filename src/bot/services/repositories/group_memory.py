@@ -565,6 +565,7 @@ class GroupMemoryRepository:
         username: str | None,
         text: str,
         created_at: int | None = None,
+        reply_metadata: dict[str, Any] | None = None,
         touch_profile: bool = True,
         skip_if_exists: bool = False,
     ) -> bool:
@@ -586,6 +587,10 @@ class GroupMemoryRepository:
         }
         if username:
             item["username"] = username
+        if reply_metadata:
+            for key, value in reply_metadata.items():
+                if value is not None:
+                    item[key] = value
         kwargs: dict[str, Any] = {"Item": item}
         if skip_if_exists:
             kwargs["ConditionExpression"] = "attribute_not_exists(pk)"
