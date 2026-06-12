@@ -77,6 +77,15 @@ class S3VectorMemoryRepository:
         memory_kinds: tuple[str, ...] | list[str] | None = None,
     ) -> list[dict[str, Any]]:
         if not self.is_configured:
+            logger.info(
+                "S3 vector query skipped because repository is not configured",
+                extra={
+                    "chat_id": chat_id,
+                    "provider": VECTOR_MEMORY_PROVIDER,
+                    "bucket_configured": bool(self.vector_bucket_name),
+                    "index_configured": bool(self.index_name),
+                },
+            )
             return []
         filters: list[dict[str, Any]] = [{"chat_id": {"$eq": str(chat_id)}}]
         if user_id is not None:
@@ -85,10 +94,24 @@ class S3VectorMemoryRepository:
         if kinds:
             filters.append({"memory_kind": {"$in": kinds}})
         metadata_filter = filters[0] if len(filters) == 1 else {"$and": filters}
+        top_k = max(1, min(20, int(limit)))
+        logger.info(
+            "S3 vector query started",
+            extra={
+                "chat_id": chat_id,
+                "top_k": top_k,
+                "user_filter_applied": user_id is not None,
+                "memory_kinds": kinds,
+                "filter_clause_count": len(filters),
+                "vector_dimension_count": len(vector),
+                "vector_bucket_name": self.vector_bucket_name,
+                "index_name": self.index_name,
+            },
+        )
         resp = self.client.query_vectors(
             vectorBucketName=self.vector_bucket_name,
             indexName=self.index_name,
-            topK=max(1, min(20, int(limit))),
+            topK=top_k,
             queryVector={"float32": vector},
             filter=metadata_filter,
             returnMetadata=True,
@@ -104,6 +127,16 @@ class S3VectorMemoryRepository:
                     "metadata": metadata,
                 }
             )
+        logger.info(
+            "S3 vector query completed",
+            extra={
+                "chat_id": chat_id,
+                "top_k": top_k,
+                "result_count": len(results),
+                "user_filter_applied": user_id is not None,
+                "memory_kinds": kinds,
+            },
+        )
         return results
 
     def delete_vectors(self, keys: list[str]) -> int:

@@ -22,6 +22,7 @@ from core.config import (
     get_gemini_embedding_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
+from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.vector_memory import S3VectorMemoryRepository
 from urllib3.exceptions import HTTPError
@@ -186,6 +187,21 @@ def looks_sensitive_for_embedding(text: str) -> bool:
     )
 
 
+def _within_distance(row: dict[str, Any], *, max_distance: float) -> bool:
+    distance = row.get("distance")
+    return not isinstance(distance, int | float) or float(distance) <= max_distance
+
+
+def _distance_log_fields(rows: list[dict[str, Any]]) -> dict[str, float]:
+    distances = [float(row["distance"]) for row in rows if isinstance(row.get("distance"), int | float)]
+    if not distances:
+        return {}
+    return {
+        "min_distance": round(min(distances), 4),
+        "max_distance_seen": round(max(distances), 4),
+    }
+
+
 def build_embedding_document(item: dict[str, Any]) -> str:
     """Render a trusted memory item into compact text for embedding."""
     kind = str(item.get("kind") or "memory")
@@ -251,19 +267,41 @@ def index_memory_item(
     """Embed and index one long-term memory item by DynamoDB sort key."""
     repo = repo or GroupMemoryRepository()
     if not vector_memory_configured():
-        logger.debug("Vector memory indexing skipped because it is not configured", extra={"chat_id": chat_id})
+        logger.info(
+            "Vector memory indexing skipped",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "reason": "not_configured",
+                "provider": VECTOR_MEMORY_PROVIDER,
+            },
+        )
         return False
     if not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+        logger.info(
+            "Vector memory indexing skipped",
+            extra={"chat_id": chat_id, "sk": source_sk, "reason": "non_vectorizable_sk"},
+        )
         return False
 
     item = repo.get_memory_item(chat_id, source_sk)
     if not item:
-        logger.info("Vector memory indexing skipped missing source item", extra={"chat_id": chat_id, "sk": source_sk})
+        logger.info(
+            "Vector memory indexing skipped",
+            extra={"chat_id": chat_id, "sk": source_sk, "reason": "missing_source_item"},
+        )
         return False
 
     text = build_embedding_document(item)
     vector_key = str(item.get("vector_key") or memory_vector_key(chat_id, source_sk))
-    if not text or looks_sensitive_for_embedding(text):
+    skip_reason = ""
+    if not text:
+        skip_reason = "empty_document"
+    elif looks_sensitive_for_embedding(text):
+        skip_reason = "sensitive_document"
+    elif not is_memory_learning_safe(text):
+        skip_reason = "unsafe_memory"
+    if skip_reason:
         repo.mark_vector_status(
             chat_id,
             source_sk,
@@ -272,15 +310,47 @@ def index_memory_item(
             embedding_model=VECTOR_MEMORY_EMBEDDING_MODEL,
             dimensions=VECTOR_MEMORY_DIMENSIONS,
         )
-        logger.info("Vector memory indexing skipped sensitive item", extra={"chat_id": chat_id, "sk": source_sk})
+        logger.info(
+            "Vector memory indexing skipped",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "reason": skip_reason,
+                "vector_key": vector_key,
+                "memory_kind": str(item.get("kind") or ""),
+                "text_chars": len(text),
+            },
+        )
         return False
 
     vector_repo = vector_repo or S3VectorMemoryRepository()
     embedding_client = embedding_client or _get_embedding_client()
     try:
+        logger.info(
+            "Vector memory indexing started",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "vector_key": vector_key,
+                "memory_kind": str(item.get("kind") or ""),
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+                "dimensions": VECTOR_MEMORY_DIMENSIONS,
+                "text_chars": len(text),
+            },
+        )
         if VECTOR_MEMORY_INDEX_THROTTLE_SECONDS > 0:
             time.sleep(VECTOR_MEMORY_INDEX_THROTTLE_SECONDS)
         vector = embedding_client.embed(text, task_type="RETRIEVAL_DOCUMENT")
+        logger.info(
+            "Vector memory document embedding generated",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "vector_key": vector_key,
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+                "vector_dimension_count": len(vector),
+            },
+        )
         vector_repo.put_memory_vector(
             key=vector_key,
             vector=vector,
@@ -294,7 +364,17 @@ def index_memory_item(
             embedding_model=VECTOR_MEMORY_EMBEDDING_MODEL,
             dimensions=VECTOR_MEMORY_DIMENSIONS,
         )
-        logger.info("Vector memory indexed", extra={"chat_id": chat_id, "sk": source_sk})
+        logger.info(
+            "Vector memory indexed",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "vector_key": vector_key,
+                "memory_kind": str(item.get("kind") or ""),
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+                "dimensions": VECTOR_MEMORY_DIMENSIONS,
+            },
+        )
         return True
     except Exception as exc:
         repo.mark_vector_status(
@@ -310,13 +390,6 @@ def index_memory_item(
         raise
 
 
-def _within_distance(row: dict[str, Any], *, max_distance: float) -> bool:
-    distance = row.get("distance")
-    if not isinstance(distance, int | float):
-        return True
-    return float(distance) <= max_distance
-
-
 def retrieve_relevant_memories(
     chat_id: int | str,
     query: str,
@@ -327,10 +400,49 @@ def retrieve_relevant_memories(
     max_distance: float | None = None,
 ) -> list[dict[str, Any]]:
     """Return semantic long-term memories relevant to a query; failures fall back to empty context."""
-    if not vector_memory_configured() or not query.strip():
+    query_chars = len(query.strip())
+    if not vector_memory_configured():
+        logger.info(
+            "Vector memory retrieval skipped",
+            extra={
+                "chat_id": chat_id,
+                "reason": "not_configured",
+                "provider": VECTOR_MEMORY_PROVIDER,
+                "query_chars": query_chars,
+                "limit": limit,
+            },
+        )
         return []
+    if not query.strip():
+        logger.info(
+            "Vector memory retrieval skipped",
+            extra={"chat_id": chat_id, "reason": "empty_query", "limit": limit},
+        )
+        return []
+    threshold = VECTOR_MEMORY_MAX_DISTANCE if max_distance is None else max_distance
+    kinds = [str(kind) for kind in (memory_kinds or []) if str(kind)]
     try:
+        logger.info(
+            "Vector memory retrieval started",
+            extra={
+                "chat_id": chat_id,
+                "query_chars": query_chars,
+                "limit": limit,
+                "max_distance": threshold,
+                "user_filter_applied": user_id is not None,
+                "memory_kinds": kinds,
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+            },
+        )
         query_vector = _get_embedding_client().embed(query, task_type="RETRIEVAL_QUERY")
+        logger.info(
+            "Vector memory query embedding generated",
+            extra={
+                "chat_id": chat_id,
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+                "vector_dimension_count": len(query_vector),
+            },
+        )
         rows = S3VectorMemoryRepository().query(
             chat_id=chat_id,
             vector=query_vector,
@@ -338,10 +450,33 @@ def retrieve_relevant_memories(
             user_id=user_id,
             memory_kinds=memory_kinds,
         )
-        threshold = VECTOR_MEMORY_MAX_DISTANCE if max_distance is None else max_distance
-        return [row for row in rows if _within_distance(row, max_distance=threshold)]
+        filtered = [row for row in rows if _within_distance(row, max_distance=threshold)]
+        logger.info(
+            "Vector memory retrieval completed",
+            extra={
+                "chat_id": chat_id,
+                "raw_count": len(rows),
+                "returned_count": len(filtered),
+                "distance_filtered_count": len(rows) - len(filtered),
+                "max_distance": threshold,
+                "user_filter_applied": user_id is not None,
+                "memory_kinds": kinds,
+                **_distance_log_fields(rows),
+            },
+        )
+        return filtered
     except Exception:
-        logger.exception("Vector memory retrieval failed", extra={"chat_id": chat_id})
+        logger.exception(
+            "Vector memory retrieval failed",
+            extra={
+                "chat_id": chat_id,
+                "query_chars": query_chars,
+                "limit": limit,
+                "max_distance": threshold,
+                "user_filter_applied": user_id is not None,
+                "memory_kinds": kinds,
+            },
+        )
         return []
 
 
@@ -351,7 +486,7 @@ def format_semantic_memory_context(memories: list[dict[str, Any]]) -> str:
     for row in memories:
         metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
         text = _safe_text(metadata.get("text"), limit=900)
-        if not text:
+        if not text or not is_memory_learning_safe(text):
             continue
         kind = _safe_text(metadata.get("memory_kind") or "memory", limit=40)
         source_sk = _safe_text(metadata.get("source_sk"), limit=120)
