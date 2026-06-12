@@ -40,7 +40,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Feature | Description |
 |---------|-------------|
 | Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with requester, recent, profile, long-term, lexical, and semantic memory context. |
-| RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes it in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
+| RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in `AGENT_REPLY#...` items so follow-up replies know what the bot just said. |
 | Social timing | Proactive replies pass local heuristics, recent bot activity penalties, Gemini judgment, and per-chat daily limits. |
 | Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |

@@ -10,7 +10,7 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wrapper. The bot combines serverless community tooling with RAG memory and social agent behavior:
 
 - Recent group context, requester identity, and user profiles live in DynamoDB.
-- Long-term memory and daily summaries live in DynamoDB and are indexed in S3 Vectors.
+- Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
 - Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
 - Gemini handles agent answers, proactive timing decisions, summaries, and embeddings.
 - Groq handles async spam checks.
@@ -62,6 +62,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Keep structured Gemini extraction behind `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` and extractor LLM budgets by default, so ordinary safe chatter does not consume shared Gemini generate RPD.
 - Raw `MSG#...` records may keep audit context, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
 - Vector retrieval and indexing success paths should emit structured INFO logs with counts, filters, distance cutoffs, and vector dimensions. Avoid logging full prompts, full memory text, vectors, or secrets.
+- Do not vectorize fallback or empty structured live daily summaries; store them in DynamoDB only so low-information summaries do not pollute semantic retrieval.
 - Reply-to-bot follow-ups must include prior `AGENT_REPLY#...` answer context when available.
 - Reply-to-bot follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
 - Do not answer every reply to a bot message; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.

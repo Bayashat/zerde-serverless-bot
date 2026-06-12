@@ -270,6 +270,17 @@ def _normalise_daily_summary(raw: dict[str, Any], *, summary_date: str, source: 
     }
 
 
+def _should_vectorize_daily_summary(summary: dict[str, Any]) -> bool:
+    source = str(summary.get("source") or "")
+    if source.startswith("fallback"):
+        return False
+    for field in ("topics", "notable_events", "inside_jokes"):
+        value = summary.get(field)
+        if isinstance(value, list) and value:
+            return True
+    return False
+
+
 def build_daily_messages_context(messages: list[dict[str, Any]]) -> str:
     lines: list[str] = []
     for item in messages:
@@ -474,7 +485,20 @@ def process_daily_group_summary(
         message_count=len(messages),
         source=summary["source"],
     )
-    _enqueue_vector_memory_index(chat_id=chat_id, source_sk=str(item["sk"]), sqs_repo=sqs_repo)
+    if _should_vectorize_daily_summary(summary):
+        _enqueue_vector_memory_index(chat_id=chat_id, source_sk=str(item["sk"]), sqs_repo=sqs_repo)
+    else:
+        logger.info(
+            "Daily group summary vector indexing skipped because summary is low-information",
+            extra={
+                "chat_id": chat_id,
+                "summary_date": window.summary_date,
+                "source": summary["source"],
+                "topic_count": len(summary["topics"]),
+                "notable_event_count": len(summary["notable_events"]),
+                "inside_joke_count": len(summary["inside_jokes"]),
+            },
+        )
     logger.info(
         "Daily group summary stored",
         extra={"chat_id": chat_id, "summary_date": window.summary_date, "message_count": len(messages)},

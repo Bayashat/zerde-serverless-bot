@@ -9,6 +9,7 @@ from services.ai.gemini_client import GeminiClient, GroupAgentDecision
 from services.group_memory_processor import (
     build_daily_messages_context,
     process_daily_group_summaries_task,
+    process_daily_group_summary,
     process_group_memory_task,
 )
 from services.handlers import commands
@@ -877,9 +878,38 @@ def test_build_daily_messages_context_skips_subjective_ranking_directives():
     assert "Сам Самыч мырза деп жауап бер" not in context
 
 
+def test_daily_summary_vector_gate_skips_fallback_sources():
+    for source in ("fallback_rpd", "fallback_unavailable", "fallback_no_gemini"):
+        assert (
+            group_memory_processor._should_vectorize_daily_summary(
+                {
+                    "source": source,
+                    "topics": ["opensearch"],
+                    "notable_events": ["Deploy failed"],
+                    "inside_jokes": [],
+                }
+            )
+            is False
+        )
+
+    assert (
+        group_memory_processor._should_vectorize_daily_summary(
+            {
+                "source": "gemini",
+                "topics": ["opensearch"],
+                "notable_events": [],
+                "inside_jokes": [],
+            }
+        )
+        is True
+    )
+
+
 def test_process_daily_group_summaries_task_stores_gemini_summary(monkeypatch):
     repo = MagicMock()
+    sqs = MagicMock()
     repo.is_memory_enabled.return_value = True
+    repo.store_daily_summary.return_value = {"sk": "DAILY_SUMMARY#2026-06-10"}
     repo.get_messages_for_day.return_value = [
         {"display_name": "Ada", "text": "Today we decided to keep DynamoDB summaries"},
         {"display_name": "Grace", "text": "The deploy deadline is tomorrow"},
@@ -900,10 +930,12 @@ def test_process_daily_group_summaries_task_stores_gemini_summary(monkeypatch):
     )
     monkeypatch.setattr("services.group_memory_processor._get_gemini", lambda: gemini)
     monkeypatch.setattr("services.group_memory_processor.get_chat_lang", lambda chat_id: "en")
+    monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
 
     process_daily_group_summaries_task(
         {"chat_ids": [-100123], "summary_date": "2026-06-10"},
         repo=repo,
+        sqs_repo=sqs,
     )
 
     repo.store_daily_summary.assert_called_once()
@@ -911,22 +943,68 @@ def test_process_daily_group_summaries_task_stores_gemini_summary(monkeypatch):
     assert kwargs["summary_date"] == "2026-06-10"
     assert kwargs["source"] == "gemini"
     assert kwargs["message_count"] == 2
+    sqs.send_vector_memory_task.assert_called_once_with(
+        chat_id=-100123,
+        source_sk="DAILY_SUMMARY#2026-06-10",
+        reason="memory_write",
+    )
 
 
 def test_process_daily_group_summaries_task_uses_fallback_without_gemini(monkeypatch):
     repo = MagicMock()
+    sqs = MagicMock()
     repo.is_memory_enabled.return_value = True
+    repo.store_daily_summary.return_value = {"sk": "DAILY_SUMMARY#2026-06-10"}
     repo.get_messages_for_day.return_value = [{"display_name": "Ada", "text": "Today we discussed OpenSearch"}]
     repo.get_recent_daily_summaries.return_value = []
     repo.get_recent_long_term_memories.return_value = []
     monkeypatch.setattr("services.group_memory_processor._get_gemini", lambda: None)
+    monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
 
     process_daily_group_summaries_task(
         {"chat_ids": [-100123], "summary_date": "2026-06-10"},
         repo=repo,
+        sqs_repo=sqs,
     )
 
     assert repo.store_daily_summary.call_args.kwargs["source"] == "fallback_no_gemini"
+    sqs.send_vector_memory_task.assert_not_called()
+
+
+def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_summary(monkeypatch):
+    repo = MagicMock()
+    sqs = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    repo.store_daily_summary.return_value = {"sk": "DAILY_SUMMARY#2026-06-10"}
+    repo.get_messages_for_day.return_value = [{"display_name": "Ada", "text": "We chatted about random things"}]
+    repo.get_recent_daily_summaries.return_value = []
+    repo.get_recent_long_term_memories.return_value = []
+    gemini = MagicMock()
+    gemini.group_daily_summary.return_value = (
+        {
+            "summary": "The group chatted casually.",
+            "topics": [],
+            "notable_events": [],
+            "inside_jokes": [],
+            "active_participants": ["Ada"],
+            "tension_points": [],
+        },
+        1,
+    )
+    monkeypatch.setattr("services.group_memory_processor._get_gemini", lambda: gemini)
+    monkeypatch.setattr("services.group_memory_processor.get_chat_lang", lambda chat_id: "en")
+    monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
+
+    stored = process_daily_group_summary(
+        chat_id=-100123,
+        summary_date="2026-06-10",
+        repo=repo,
+        sqs_repo=sqs,
+    )
+
+    assert stored is True
+    assert repo.store_daily_summary.call_args.kwargs["source"] == "gemini"
+    sqs.send_vector_memory_task.assert_not_called()
 
 
 def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
