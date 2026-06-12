@@ -898,6 +898,57 @@ def test_agent_can_consider_telegram_bot_stack_question_when_enabled(monkeypatch
     assert "technical_relevance" in score.reasons
 
 
+def test_proactive_score_recognizes_multilingual_suggestion_requests():
+    cases = (
+        (
+            "Дипломдық проектіме идея іздеп жүрмін, тақырып ядролық физикаға жақын болу керек. "
+            "Қандай идея қоса аласыңдар?"
+        ),
+        "Подскажите, какие идеи можно взять для дипломного проекта по ядерной физике?",
+        "Any ideas for a graduation project close to nuclear physics?",
+        "毕业设计想做核物理方向，有什么建议？",
+    )
+
+    for text in cases:
+        score = group_agent.score_proactive_reply(
+            user_text=text,
+            recent_context="Ada: previous context",
+            long_term_memory_context="",
+        )
+
+        assert score.score >= group_agent.AGENT_PROACTIVE_SCORE_THRESHOLD
+        assert "asks_for_suggestions" in score.reasons
+
+
+def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_proactive_decision.return_value = (
+        GroupAgentDecision(False, 0.8, "useful ideation request, but humans may answer first", ""),
+        1,
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous context")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text=(
+            "Дипломдық проектіме идея іздеп жүрмін, тақырып ядролық физикаға жақын болу керек. "
+            "Қандай идея қоса аласыңдар?"
+        ),
+        lang="kk",
+    )
+
+    assert handled is False
+    gemini.group_chat_proactive_decision.assert_called_once()
+    repo.try_reserve_proactive_reply.assert_not_called()
+
+
 def test_agent_does_not_consider_bot_meta_question_for_proactive_reply(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")

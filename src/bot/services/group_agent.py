@@ -376,12 +376,27 @@ def _looks_like_open_question(text: str) -> bool:
         "how ",
         "why ",
         "what ",
+        "which ",
         "кто",
         "как",
+        "что",
+        "какой",
+        "какая",
+        "какие",
+        "где",
+        "когда",
+        "зачем",
         "почему",
         "怎么",
         "为什么",
+        "什么",
+        "哪",
         "қалай",
+        "қандай",
+        "қайсы",
+        "қайда",
+        "қашан",
+        "кім",
         "неге",
     )
     return len(text) >= 12 and (question_mark or any(word in lowered for word in cue_words))
@@ -418,6 +433,79 @@ _PROACTIVE_BOT_META_CUES = (
     "bot keeps replying",
     "бот жауап беріп жатыр",
     "бот отвечает",
+)
+
+_PROACTIVE_TECHNICAL_CUES = (
+    "aws",
+    "opensearch",
+    "dynamodb",
+    "lambda",
+    "python",
+    "telegram",
+    "телеграм",
+    "bot",
+    "бот",
+    "техникалық",
+    "стэк",
+    "стек",
+    "infra",
+    "deploy",
+    "api",
+    "database",
+    "serverless",
+    "llm",
+    "gemini",
+    "deepseek",
+    "groq",
+)
+
+_PROACTIVE_SUGGESTION_CUES = (
+    "idea",
+    "ideas",
+    "suggest",
+    "recommend",
+    "advice",
+    "topic",
+    "project idea",
+    "идея",
+    "идеи",
+    "идею",
+    "посовет",
+    "предлож",
+    "совет",
+    "тема",
+    "диплом",
+    "ұсын",
+    "кеңес",
+    "тақырып",
+    "жоба",
+    "проект",
+    "қоса аласың",
+    "毕业",
+    "论文",
+    "课题",
+    "建议",
+    "推荐",
+    "想法",
+)
+
+_PROACTIVE_GROUP_REQUEST_CUES = (
+    "anyone",
+    "any ideas",
+    "does anyone",
+    "what do you all",
+    "what would you",
+    "кто-нибудь",
+    "что посоветуете",
+    "какие идеи",
+    "біреу",
+    "ұсына аласыңдар",
+    "қоса аласыңдар",
+    "не дейсіңдер",
+    "有什么建议",
+    "有推荐",
+    "大家",
+    "有人",
 )
 
 
@@ -462,32 +550,13 @@ def score_proactive_reply(
         score += 0.34
         reasons.append("open_question")
 
-    technical_cues = (
-        "aws",
-        "opensearch",
-        "dynamodb",
-        "lambda",
-        "python",
-        "telegram",
-        "телеграм",
-        "bot",
-        "бот",
-        "техникалық",
-        "стэк",
-        "стек",
-        "infra",
-        "deploy",
-        "api",
-        "database",
-        "serverless",
-        "llm",
-        "gemini",
-        "deepseek",
-        "groq",
-    )
-    if any(cue in lowered for cue in technical_cues):
+    if any(cue in lowered for cue in _PROACTIVE_TECHNICAL_CUES):
         score += 0.22
         reasons.append("technical_relevance")
+
+    if any(cue in lowered for cue in _PROACTIVE_SUGGESTION_CUES):
+        score += 0.22
+        reasons.append("asks_for_suggestions")
 
     if long_term_memory_context:
         memory_terms = {
@@ -510,7 +579,7 @@ def score_proactive_reply(
         score += 0.05
         reasons.append("substantial_question")
 
-    if any(cue in lowered for cue in ("anyone", "кто-нибудь", "біреу", "有人", "does anyone")):
+    if any(cue in lowered for cue in _PROACTIVE_GROUP_REQUEST_CUES):
         score += 0.08
         reasons.append("asks_group")
 
