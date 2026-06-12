@@ -1,4 +1,4 @@
-"""Bot Lambda: API Gateway webhook and SQS consumer (single function, one warm path)."""
+"""Bot Lambda: API Gateway webhook and main SQS task consumer."""
 
 import time
 from typing import Any

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from aws_cdk import CfnOutput, Stack
-from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct
+from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from components.observability import (
     add_lambda_operational_alarms,
@@ -180,6 +180,21 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_index_name=vector_memory_index_name,
         )
 
+        vector_indexer = VectorIndexerConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}VectorIndexer",
+            shared_layer=zerde_layer,
+            env_name=env_name,
+            is_prod=is_prod,
+            ssm_secret_prefix=ssm_secret_prefix,
+            vector_queue=messaging.vector_queue,
+            memory_table=bot.memory_table,
+            stats_table=bot.stats_table,
+            vector_bucket=bot.vector_bucket,
+            vector_index=bot.vector_index,
+            environment=bot.bot_environment,
+        )
+
         news = NewsConstruct(
             self,
             f"{CONSTRUCT_PREFIX}News",
@@ -225,6 +240,13 @@ class ZerdeTelegramBotStack(Stack):
             logical_slug="bot",
             fn=bot.handler_lambda,
             duration_p95_threshold_ms=80_000,
+        )
+        add_lambda_operational_alarms(
+            self,
+            env_name=env_name,
+            logical_slug="vector-indexer",
+            fn=vector_indexer.handler_lambda,
+            duration_p95_threshold_ms=240_000,
         )
         add_lambda_operational_alarms(
             self,

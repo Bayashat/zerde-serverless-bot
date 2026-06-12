@@ -227,6 +227,11 @@ class BotConstruct(Construct):
         )
 
         self.handler_lambda = webhook_lambda
+        self.stats_table = stats_table
+        self.memory_table = memory_table
+        self.vector_bucket = vector_bucket
+        self.vector_index = vector_index
+        self.bot_environment = bot_environment
 
         # Grant least-privilege SSM read access for secrets under the env prefix.
         stack = Stack.of(self)
@@ -271,7 +276,6 @@ class BotConstruct(Construct):
         queue.grant_send_messages(webhook_lambda)
         queue.grant_consume_messages(webhook_lambda)
         vector_queue.grant_send_messages(webhook_lambda)
-        vector_queue.grant_consume_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
         memory_table.grant_read_write_data(webhook_lambda)
         if vector_bucket is not None and vector_index is not None:
@@ -299,15 +303,6 @@ class BotConstruct(Construct):
                 batch_size=1,
                 max_batching_window=Duration.seconds(0),
                 max_concurrency=10,
-            )
-        )
-
-        webhook_lambda.add_event_source(
-            lambda_event_sources.SqsEventSource(
-                vector_queue,
-                batch_size=1,
-                max_batching_window=Duration.seconds(0),
-                max_concurrency=3,
             )
         )
 

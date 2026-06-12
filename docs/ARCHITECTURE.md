@@ -22,7 +22,7 @@ flowchart LR
   TG["Telegram"] --> APIGW["HTTP API Gateway"]
   APIGW --> BOT["Bot Lambda<br/>src/bot/main.py"]
   MAINQ["SQS timeout/tasks queue"] --> BOT
-  VQ["SQS vector memory queue"] --> BOT
+  VQ["SQS vector memory queue"] --> VIDX["Vector indexer Lambda<br/>src/bot/vector_indexer_main.py"]
 
   BOT --> STATS[("DynamoDB stats table")]
   BOT --> MEMORY[("DynamoDB memory table")]
@@ -31,6 +31,11 @@ flowchart LR
   BOT --> S3V["S3 Vectors index"]
   BOT --> GEMINI["Gemini API"]
   BOT --> GROQ["Groq API"]
+  VIDX --> VQ
+  VIDX --> STATS
+  VIDX --> MEMORY
+  VIDX --> S3V
+  VIDX --> GEMINI
 
   EB["EventBridge"] --> NEWS["News Lambda"]
   EB --> QUIZ["Quiz Lambda"]
@@ -40,6 +45,7 @@ flowchart LR
   QUIZ --> TG
 
   LAYER["zerde_common Lambda layer"] -.-> BOT
+  LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
 ```
@@ -48,7 +54,8 @@ flowchart LR
 
 | Package | Entry | Main responsibilities |
 |---------|-------|-----------------------|
-| `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and SQS worker in one Lambda. Handles Telegram updates, captcha, voteban, spam checks, group memory, `/ask`, agent replies, vector indexing, and cleanup commands. |
+| `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and main SQS worker. Handles Telegram updates, captcha, voteban, spam checks, group memory, `/ask`, agent replies, semantic retrieval, and cleanup commands. |
+| `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory SQS worker for embedding/indexing and vector backfill paging. |
 | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest and Telegram delivery. |
 | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand multilingual developer quizzes. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared env helpers, SSM batch secret loading, provider errors, JSON logging, redaction, Telegram update log truncation. |
@@ -66,17 +73,17 @@ flowchart LR
 
 ## SQS Tasks
 
-The bot Lambda consumes both real-time and slower background tasks:
+The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lambda consumes slower embedding/backfill work from the vector queue:
 
 | Task type | Queue | Handler |
 |-----------|-------|---------|
-| `CHECK_TIMEOUT` | timeout/tasks queue | Captcha timeout enforcement. |
-| `SPAM_CHECK` | timeout/tasks queue | Groq-based async spam classification. |
-| `PROCESS_GROUP_ASK` | timeout/tasks queue | Async explicit agent answer with optional requester metadata. |
-| `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Extract one long-term memory item from a stored group message. |
-| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Build daily summaries for configured groups. |
-| `PROCESS_VECTOR_MEMORY` | vector memory queue | Embed and index one memory item in S3 Vectors. |
-| `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Page through historical vectorizable memory items and enqueue indexing. |
+| `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
+| `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
+| `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata. |
+| `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda extraction of one long-term memory item from a stored group message. |
+| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
+| `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
+| `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
 Failures re-raise in `services/sqs_task_router.py` so SQS retry and DLQ semantics apply.
 
@@ -151,6 +158,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory forget me` also removes daily summaries that mention the forgotten user's stored display name or username.
 - Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
+- Vector indexing runs in the dedicated vector-indexer Lambda, with its own log group and Lambda alarms. The bot Lambda can still query/delete vectors for retrieval and memory cleanup, but it no longer consumes the vector memory queue.
 
 When vector indexing is incomplete, the agent still works with recent context and query-filtered DynamoDB long-term memory. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 

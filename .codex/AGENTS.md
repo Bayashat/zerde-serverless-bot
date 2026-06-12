@@ -49,9 +49,9 @@ RAG is one capability inside the agent. Do not treat vector search as the only s
 ```mermaid
 flowchart LR
   Telegram[Telegram_groups] --> APIGW[HTTP_API_Gateway]
-  APIGW --> BotLambda[Bot_Lambda_webhook_and_SQS_worker]
+  APIGW --> BotLambda[Bot_Lambda_webhook_and_main_SQS_worker]
   MainQ[SQS_timeout_tasks_queue] --> BotLambda
-  VectorQ[SQS_vector_memory_queue] --> BotLambda
+  VectorQ[SQS_vector_memory_queue] --> VectorIndexer[Vector_Indexer_Lambda]
   BotLambda --> MainQ
   BotLambda --> VectorQ
   BotLambda --> Stats[(DynamoDB_stats)]
@@ -59,16 +59,23 @@ flowchart LR
   BotLambda --> S3Vectors[S3_Vectors_memory_index]
   BotLambda --> Gemini[Gemini]
   BotLambda --> Groq[Groq]
+  VectorIndexer --> VectorQ
+  VectorIndexer --> Stats
+  VectorIndexer --> Memory
+  VectorIndexer --> S3Vectors
+  VectorIndexer --> Gemini
   EventBridge[EventBridge_schedules] --> NewsLambda[News_Lambda]
   EventBridge --> QuizLambda[Quiz_Lambda]
   Layer[zerde_common_layer] -.-> BotLambda
+  Layer -.-> VectorIndexer
   Layer -.-> NewsLambda
   Layer -.-> QuizLambda
 ```
 
 | Lambda | Package | Entry | Purpose |
 |--------|---------|-------|---------|
-| Bot | `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and SQS worker. Handles captcha, voteban, spam, `/ask`, agent replies, group memory, vector indexing, and cleanup commands. |
+| Bot | `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and main SQS worker. Handles captcha, voteban, spam, `/ask`, agent replies, group memory, semantic retrieval, and cleanup commands. |
+| Vector indexer | `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory queue consumer for `PROCESS_VECTOR_MEMORY` and `PROCESS_VECTOR_MEMORY_BACKFILL`. |
 | News | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest. |
 | Quiz | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand quiz workflow. |
 
@@ -76,10 +83,11 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 
 ## Bot Package Map
 
-- `main.py` — detects SQS vs API Gateway and delegates.
+- `main.py` — detects API Gateway vs main SQS tasks and delegates.
+- `vector_indexer_main.py` — consumes only vector memory SQS tasks.
 - `app.py` — lazy wiring for Telegram client, dispatcher, captcha repo, and memory repo.
 - `webhook.py` — verifies Telegram secret, screens spam, observes memory, filters irrelevant events, routes agent/commands.
-- `services/sqs_task_router.py` — routes SQS tasks and re-raises failures for retry/DLQ semantics.
+- `services/sqs_task_router.py` — routes main and vector SQS task families and re-raises failures for retry/DLQ semantics.
 - `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
 - `services/group_memory_processor.py` — async long-term extraction and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
@@ -110,8 +118,8 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
 - `PROCESS_GROUP_MEMORY` — classify/store long-term memory from one message.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
-- `PROCESS_VECTOR_MEMORY` — embed/index one memory item.
-- `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing.
+- `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
+- `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.
 
 ## Secrets And Config
 
@@ -123,8 +131,8 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 ## Key Design Decisions
 
 - **No SnapStart**: low-frequency workloads and Python package trade-offs make SnapStart unnecessary here.
-- **One bot Lambda for webhook and SQS**: `/ask`, spam, captcha, memory, and vector tasks share warm containers and common wiring.
-- **Separate vector queue**: slower embedding/backfill work does not block real-time timeout/spam/ask tasks.
+- **Bot Lambda for webhook and main SQS only**: `/ask`, spam, captcha, and memory extraction share the bot warm path.
+- **Separate vector indexer Lambda and vector queue**: slower embedding/backfill/S3 Vectors work has independent concurrency, logs, alarms, and DLQ visibility so it does not block webhook or interactive `/ask` work.
 - **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.

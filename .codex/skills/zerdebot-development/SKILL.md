@@ -32,10 +32,11 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 
 ## Repository Map
 
-- `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing.
+- `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing entrypoints.
 - `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/group_memory_processor.py`: async long-term memory extraction and daily summaries.
+- `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, and proactive counters.
 - `src/news/`: scheduled news digest Lambda.
@@ -66,13 +67,16 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 
 ## SQS And Persistence
 
-SQS handler failures should re-raise when retry/DLQ semantics are intended. Current bot SQS task types:
+SQS handler failures should re-raise when retry/DLQ semantics are intended. Current main bot SQS task types:
 
 - `CHECK_TIMEOUT`
 - `SPAM_CHECK`
 - `PROCESS_GROUP_ASK`
 - `PROCESS_GROUP_MEMORY`
 - `PROCESS_DAILY_GROUP_SUMMARIES`
+
+Current vector-indexer SQS task types:
+
 - `PROCESS_VECTOR_MEMORY`
 - `PROCESS_VECTOR_MEMORY_BACKFILL`
 
