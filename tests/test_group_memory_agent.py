@@ -1114,6 +1114,38 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
 
 
+def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
+        "Gemini transport ReadTimeoutError: read timed out"
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="@zerde_kz_bot не білесің?",
+        lang="kk",
+    )
+
+    assert handled is True
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "😵 AI agent қазір қолжетімсіз.",
+        reply_to_message_id=99,
+    )
+    repo.record_agent_reply.assert_not_called()
+
+
 def test_answer_group_question_scopes_self_reference_to_requester(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()

@@ -495,8 +495,15 @@ def maybe_answer_proactively(
     except GeminiRPDExhaustedError:
         logger.info("Group agent proactive decision skipped by Gemini RPD limit", extra={"chat_id": chat_id})
         return False
-    except GeminiUnavailableError:
-        logger.warning("Group agent proactive decision unavailable", extra={"chat_id": chat_id})
+    except GeminiUnavailableError as exc:
+        logger.warning(
+            "Group agent proactive decision unavailable",
+            extra={
+                "chat_id": chat_id,
+                "error_type": exc.__class__.__name__,
+                "error_message": str(exc)[:500],
+            },
+        )
         return False
     except Exception:
         logger.exception("Group agent proactive decision failed", extra={"chat_id": chat_id})
@@ -648,11 +655,24 @@ def answer_group_question(
             reply_to_message_id=reply_to_message_id,
         )
         return True
-    except GeminiUnavailableError:
-        logger.warning("Group agent Gemini call unavailable", extra={"chat_id": chat_id})
+    except GeminiUnavailableError as exc:
+        logger.warning(
+            "Group agent Gemini call unavailable",
+            extra={
+                "chat_id": chat_id,
+                "reply_to_message_id": reply_to_message_id,
+                "error_type": exc.__class__.__name__,
+                "error_message": str(exc)[:500],
+            },
+        )
         if raise_on_unavailable:
             raise
-        return False
+        bot.send_message(
+            chat_id,
+            get_translated_text("ask_agent_unavailable", lang),
+            reply_to_message_id=reply_to_message_id,
+        )
+        return True
     except Exception:
         logger.exception("Group agent failed", extra={"chat_id": chat_id})
         if raise_on_unavailable:
