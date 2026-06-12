@@ -37,7 +37,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It observes opted-in group messages.
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
 - It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
-- It answers `/ask`, @mentions, and reply-to-bot follow-ups with requester, profile, recent, long-term, and semantic context.
+- It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
 - It may proactively answer only after conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
@@ -89,6 +89,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `webhook.py` — verifies Telegram secret, screens spam, observes memory, filters irrelevant events, routes agent/commands.
 - `services/sqs_task_router.py` — routes main and vector SQS task families and re-raises failures for retry/DLQ semantics.
 - `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
+- `services/memory_retrieval.py` — thin Memory Retrieval Pipeline V1 wrapper for query intent, candidate/source tracking, local scoring, dedupe, and context packing.
 - `services/group_memory_processor.py` — async long-term extraction and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
@@ -105,7 +106,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `USER#<user_id>` — profile from the user's own messages only.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and reason for reply-thread continuity and `/agent why`.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity and `/agent why`.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
@@ -136,6 +137,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
+- **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` wraps existing profile, semantic, long-term, and recent context builders, tracks candidate sources, scores/dedupes locally, and persists compact retrieval source metadata for future `/agent why` explanations.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.

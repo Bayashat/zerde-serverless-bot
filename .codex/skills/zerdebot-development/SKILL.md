@@ -35,6 +35,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing entrypoints.
 - `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
+- `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 wrapper for query intent, source tracking, local scoring/dedupe, and context packing around existing retrieval helpers.
 - `src/bot/services/group_memory_processor.py`: async long-term memory extraction and daily summaries.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.

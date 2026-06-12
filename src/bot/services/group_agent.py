@@ -36,6 +36,7 @@ from services.group_memory import (
     format_requester_profile_context,
     format_user_profile_context,
 )
+from services.memory_retrieval import build_agent_memory_context
 from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
@@ -47,25 +48,6 @@ from services.vector_memory import format_semantic_memory_context, retrieve_rele
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
-
-_SELF_REFERENCE_CUES = (
-    "who am i",
-    "who am i?",
-    "what do you know about me",
-    "what did i say",
-    "did i say",
-    "我是谁",
-    "你知道我",
-    "我说过",
-    "кто я",
-    "я кто",
-    "что ты знаешь обо мне",
-    "что я говорил",
-    "что я сказал",
-    "мен кім",
-    "мен кіммін",
-    "мен не дедім",
-)
 
 
 @dataclass(frozen=True)
@@ -111,12 +93,6 @@ def _mentions_bot(text: str) -> bool:
     if not AGENT_BOT_USERNAME:
         return False
     return re.search(rf"@{re.escape(AGENT_BOT_USERNAME)}\b", text, flags=re.IGNORECASE) is not None
-
-
-def _looks_like_self_reference(text: str) -> bool:
-    lowered = " ".join((text or "").lower().split())
-    compact = lowered.replace(" ", "")
-    return any(cue in lowered or cue.replace(" ", "") in compact for cue in _SELF_REFERENCE_CUES)
 
 
 def _replies_to_bot(message: dict[str, Any]) -> bool:
@@ -879,51 +855,49 @@ def answer_group_question(
     if not gemini:
         return False
 
-    recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
-    long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
-    self_reference = _looks_like_self_reference(user_text)
-    semantic_memories = retrieve_relevant_memories(
-        chat_id,
-        user_text,
-        limit=8,
-        user_id=requester_user_id if self_reference else None,
-    )
-    semantic_memory_context = format_semantic_memory_context(semantic_memories)
-    logger.info(
-        "Group agent semantic memory context prepared",
-        extra={
-            "chat_id": chat_id,
-            "retrieved_count": len(semantic_memories),
-            "context_item_count": len(semantic_memory_context.splitlines()) if semantic_memory_context else 0,
-            "context_chars": len(semantic_memory_context),
-            "self_reference": self_reference,
-            "requester_filter_applied": bool(self_reference and requester_user_id is not None),
-        },
-    )
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
-    user_profile_context = format_user_profile_context(
-        repo,
-        chat_id,
+    memory_bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=chat_id,
         user_text=user_text,
-        ignored_usernames=ignored_usernames,
-    )
-    requester_profile_context = format_requester_profile_context(
-        repo,
-        chat_id,
         requester_user_id=requester_user_id,
         requester_username=requester_username,
         requester_display_name=requester_display_name,
+        ignored_usernames=ignored_usernames,
+        recent_limit=AGENT_RECENT_CONTEXT_LIMIT,
+        semantic_limit=8,
+        recent_context_fn=format_recent_context,
+        long_term_context_fn=format_long_term_memory_context,
+        semantic_retrieval_fn=retrieve_relevant_memories,
+        semantic_context_fn=format_semantic_memory_context,
+        user_profile_context_fn=format_user_profile_context,
+        requester_profile_context_fn=format_requester_profile_context,
+    )
+    logger.info(
+        "Group agent memory retrieval context prepared",
+        extra={
+            "chat_id": chat_id,
+            "candidate_count": len(memory_bundle.candidates),
+            "retrieval_source_count": len(memory_bundle.retrieval_sources),
+            "semantic_context_item_count": (
+                len(memory_bundle.semantic_memory_context.splitlines()) if memory_bundle.semantic_memory_context else 0
+            ),
+            "semantic_context_chars": len(memory_bundle.semantic_memory_context),
+            "self_reference": memory_bundle.intent.is_self_reference,
+            "requester_filter_applied": bool(memory_bundle.intent.is_self_reference and requester_user_id is not None),
+            "target_username_count": len(memory_bundle.intent.target_usernames),
+        },
     )
     reply_policy = _reply_policy(user_text)
 
     try:
         answer, _ = gemini.group_chat_reply(
             user_message=user_text,
-            recent_context=recent_context,
-            long_term_memory_context=long_term_memory_context,
-            semantic_memory_context=semantic_memory_context,
-            user_profile_context=user_profile_context,
-            requester_profile_context=requester_profile_context,
+            recent_context=memory_bundle.recent_context,
+            long_term_memory_context=memory_bundle.long_term_memory_context,
+            semantic_memory_context=memory_bundle.semantic_memory_context,
+            user_profile_context=memory_bundle.user_profile_context,
+            requester_profile_context=memory_bundle.requester_profile_context,
             reply_instructions=reply_policy.instructions,
             max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
@@ -983,5 +957,6 @@ def answer_group_question(
             requester_user_id=requester_user_id,
             requester_username=requester_username,
             requester_display_name=requester_display_name,
+            retrieval_sources=memory_bundle.retrieval_sources,
         )
     return True

@@ -9,7 +9,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It observes opted-in group messages and stores recent context.
 - It extracts long-term memories and daily summaries.
 - It embeds long-term memory into S3 Vectors for semantic retrieval.
-- It answers explicit questions with requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
+- It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
 
@@ -55,6 +55,7 @@ flowchart LR
 | Package | Entry | Main responsibilities |
 |---------|-------|-----------------------|
 | `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and main SQS worker. Handles Telegram updates, captcha, voteban, spam checks, group memory, `/ask`, agent replies, semantic retrieval, and cleanup commands. |
+| `src/bot/services/memory_retrieval.py` | `build_agent_memory_context` | Memory Retrieval Pipeline V1: query intent, source tracking, local scoring/dedupe, and context packing around existing retrieval helpers. |
 | `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory SQS worker for embedding/indexing and vector backfill paging. |
 | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest and Telegram delivery. |
 | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand multilingual developer quizzes. |
@@ -101,7 +102,7 @@ The table is single-table by chat partition:
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, and requester metadata for reply-thread continuity. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
@@ -109,7 +110,9 @@ Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#..
 
 ## Agent Answer Context
 
-`services.group_agent.answer_group_question` builds these sections:
+`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves candidates, scores/dedupes them locally, packs context within a character budget, and returns compact `retrieval_sources` metadata for `AGENT_REPLY#...` records.
+
+The returned bundle keeps these prompt sections:
 
 1. Trusted requester profile context for the user who asked the question.
 2. Trusted target-user profile context, only for users explicitly mentioned in the user message.

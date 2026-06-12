@@ -795,6 +795,36 @@ class GroupMemoryRepository:
                 return False
             raise
 
+    @staticmethod
+    def _normalise_retrieval_sources(sources: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+        normalised: list[dict[str, Any]] = []
+        for source in (sources or [])[:20]:
+            if not isinstance(source, dict):
+                continue
+            source_name = str(source.get("source") or "").strip()[:80]
+            if not source_name:
+                continue
+            entry: dict[str, Any] = {"source": source_name}
+            if source.get("source_sk"):
+                entry["source_sk"] = str(source["source_sk"])[:180]
+            if source.get("memory_kind"):
+                entry["memory_kind"] = str(source["memory_kind"])[:60]
+            try:
+                entry["score"] = Decimal(str(round(float(source.get("score") or 0.0), 4)))
+            except (TypeError, ValueError):
+                entry["score"] = Decimal("0")
+            try:
+                entry["trust_level"] = int(source.get("trust_level") or 0)
+            except (TypeError, ValueError):
+                entry["trust_level"] = 0
+            if source.get("created_at") is not None:
+                try:
+                    entry["created_at"] = int(source["created_at"])
+                except (TypeError, ValueError):
+                    pass
+            normalised.append(entry)
+        return normalised
+
     def record_agent_reply(
         self,
         *,
@@ -812,6 +842,7 @@ class GroupMemoryRepository:
         requester_user_id: int | str | None = None,
         requester_username: str | None = None,
         requester_display_name: str | None = None,
+        retrieval_sources: list[dict[str, Any]] | None = None,
     ) -> None:
         now = int(time.time())
         ttl = now + 7 * 24 * 60 * 60
@@ -845,6 +876,9 @@ class GroupMemoryRepository:
             item["requester_username"] = requester_username[:160]
         if requester_display_name:
             item["requester_display_name"] = requester_display_name[:160]
+        normalised_sources = self._normalise_retrieval_sources(retrieval_sources)
+        if normalised_sources:
+            item["retrieval_sources"] = normalised_sources
         self.table.put_item(Item=item)
 
     def get_agent_reply_explanation(
