@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
+from urllib.parse import quote, urlsplit, urlunsplit
 
 import feedparser
 import urllib3
@@ -14,6 +15,19 @@ from core.logger import LoggerAdapter, get_logger
 logger = LoggerAdapter(get_logger(__name__), {})
 
 http = urllib3.PoolManager(timeout=urllib3.Timeout(total=10))
+
+
+def normalize_url(url: str) -> str:
+    """Return a request-safe URL, repairing common RSS whitespace glitches."""
+    cleaned = " ".join((url or "").strip().split())
+    if not cleaned:
+        return ""
+    parts = urlsplit(cleaned)
+    path = re.sub(r"\s+", "-", parts.path) if parts.netloc.endswith("aws.amazon.com") else parts.path
+    path = quote(path, safe="/:%")
+    query = quote(parts.query, safe="=&?/:,+%")
+    fragment = quote(parts.fragment, safe="=&?/:,+%")
+    return urlunsplit((parts.scheme, parts.netloc, path, query, fragment))
 
 
 class NewsFetcher:
@@ -72,7 +86,7 @@ class NewsFetcher:
                     local_news.append(
                         {
                             "title": entry.get("title", "No title"),
-                            "link": entry.get("link", ""),
+                            "link": normalize_url(entry.get("link", "")),
                             "summary": entry.get("summary", "")[:250],
                         }
                     )
@@ -97,6 +111,7 @@ class NewsFetcher:
 
     def fetch_deep_article_data(self, url: str) -> dict:
         """Scrape the article page for og:image (or first img) and main paragraph text."""
+        url = normalize_url(url)
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",

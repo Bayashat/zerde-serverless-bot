@@ -22,12 +22,29 @@ def sanitize_html(text: str) -> str:
     """Sanitize text for Telegram HTML parse mode without double-escaping."""
     if not text:
         return ""
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
     text = re.sub(r"&(?!\w+;|#[0-9]+;|#x[0-9a-fA-F]+;)", "&amp;", text)
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
-    for tag in ["b", "/b", "blockquote", "/blockquote"]:
+    for tag in [
+        "b",
+        "/b",
+        "i",
+        "/i",
+        "u",
+        "/u",
+        "s",
+        "/s",
+        "code",
+        "/code",
+        "pre",
+        "/pre",
+        "blockquote",
+        "/blockquote",
+    ]:
         text = text.replace(f"&lt;{tag}&gt;", f"<{tag}>")
     text = re.sub(r"&lt;a\s+href=\"([^\"]*)\"&gt;", r'<a href="\1">', text)
+    text = re.sub(r"&lt;a\s+href='([^']*)'&gt;", r'<a href="\1">', text)
     text = text.replace("&lt;/a&gt;", "</a>")
     return text
 
@@ -54,7 +71,7 @@ class TelegramSender:
     ) -> tuple[bool, Optional[int]]:
         """Send a message with truncation and exponential-backoff retry."""
         url = f"{self._base_url}/sendMessage"
-        safe_text = truncate_message(text)
+        safe_text = truncate_message(sanitize_html(text) if parse_mode == "HTML" else text)
         payload: dict = {
             "chat_id": chat_id,
             "text": safe_text,
@@ -124,7 +141,7 @@ class TelegramSender:
             return self.send_message(chat_id, message)[0]
 
         url = f"{self._base_url}/sendPhoto"
-        caption = truncate_message(message, TELEGRAM_CAPTION_MAX_LENGTH)
+        caption = truncate_message(sanitize_html(message), TELEGRAM_CAPTION_MAX_LENGTH)
         payload: dict = {
             "chat_id": chat_id,
             "photo": image_url,
