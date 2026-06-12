@@ -27,14 +27,14 @@ flowchart LR
   BOT --> STATS[("DynamoDB stats table")]
   BOT --> MEMORY[("DynamoDB memory table")]
   BOT --> MAINQ
-  BOT --> VQ
-  BOT --> S3V["S3 Vectors index"]
+  BOT -- "enqueue vector tasks" --> VQ
+  BOT -- "query/delete" --> S3V["S3 Vectors index"]
   BOT --> GEMINI["Gemini API"]
   BOT --> GROQ["Groq API"]
-  VIDX --> VQ
+  VIDX -- "backfill fan-out" --> VQ
   VIDX --> STATS
   VIDX --> MEMORY
-  VIDX --> S3V
+  VIDX -- "index/backfill" --> S3V
   VIDX --> GEMINI
 
   EB["EventBridge"] --> NEWS["News Lambda"]

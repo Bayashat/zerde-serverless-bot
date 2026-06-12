@@ -54,16 +54,16 @@ flowchart LR
   MainQ[SQS_timeout_tasks_queue] --> BotLambda
   VectorQ[SQS_vector_memory_queue] --> VectorIndexer[Vector_Indexer_Lambda]
   BotLambda --> MainQ
-  BotLambda --> VectorQ
+  BotLambda -- "enqueue vector tasks" --> VectorQ
   BotLambda --> Stats[(DynamoDB_stats)]
   BotLambda --> Memory[(DynamoDB_group_memory)]
-  BotLambda --> S3Vectors[S3_Vectors_memory_index]
+  BotLambda -- "query/delete" --> S3Vectors[S3_Vectors_memory_index]
   BotLambda --> Gemini[Gemini]
   BotLambda --> Groq[Groq]
-  VectorIndexer --> VectorQ
+  VectorIndexer -- "backfill fan-out" --> VectorQ
   VectorIndexer --> Stats
   VectorIndexer --> Memory
-  VectorIndexer --> S3Vectors
+  VectorIndexer -- "index/backfill" --> S3Vectors
   VectorIndexer --> Gemini
   EventBridge[EventBridge_schedules] --> NewsLambda[News_Lambda]
   EventBridge --> QuizLambda[Quiz_Lambda]
