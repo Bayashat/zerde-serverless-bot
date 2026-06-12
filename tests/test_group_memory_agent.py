@@ -654,6 +654,29 @@ def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
     assert payload["requester_display_name"] == "Ada"
 
 
+def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_group_ask_task(
+        update_id=123,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="thread prompt",
+        lang="en",
+        current_user_message="why?",
+        source_message_context="Original replied-to message:\n[speaker user_id=7] Python is slow?",
+        parent_bot_message_id=555,
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["current_user_message"] == "why?"
+    assert "Python is slow" in payload["source_message_context"]
+    assert payload["parent_bot_message_id"] == 555
+
+
 def test_sqs_client_sends_vector_memory_task(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -705,7 +728,11 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.get_agent_reply_explanation.return_value = {
-        "user_message": "The user asked about a replied-to group message.",
+        "current_user_message": "Who is the original author talking about?",
+        "source_message_context": (
+            "Original replied-to message:\n"
+            "[speaker user_id=7 username=@nurt name=Nurt message_id=8] We still need infra engineers."
+        ),
         "answer_text": "The previous answer explained that infra engineers are still needed.",
     }
     bot = MagicMock()
@@ -726,11 +753,118 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     assert handled is True
     user_text = answer.call_args.kwargs["user_text"]
     assert "continuing a thread" in user_text
+    assert "Original source message for the previous answer" in user_text
+    assert "We still need infra engineers" in user_text
     assert "infra engineers are still needed" in user_text
-    assert "The user asked about a replied-to group message" in user_text
+    assert "Who is the original author talking about?" in user_text
     assert "Поделись по братский" in user_text
+    assert answer.call_args.kwargs["current_user_message"] == "Поделись по братский"
+    assert "We still need infra engineers" in answer.call_args.kwargs["source_message_context"]
+    assert answer.call_args.kwargs["parent_bot_message_id"] == 10
     assert answer.call_args.kwargs["requester_user_id"] == 42
     assert answer.call_args.kwargs["requester_username"] == "ada"
+
+
+def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot is he joking?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 8,
+        "text": "Sure, deploying on Friday evening is always a great idea.",
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    user_text = answer.call_args.kwargs["user_text"]
+    assert "Original replied-to message" in user_text
+    assert "message_id=8" in user_text
+    assert "deploying on Friday evening" in user_text
+    assert "@ZerdeBot is he joking?" in user_text
+    assert answer.call_args.kwargs["current_user_message"] == "@ZerdeBot is he joking?"
+    assert "deploying on Friday evening" in answer.call_args.kwargs["source_message_context"]
+
+
+def test_agent_reply_to_bot_reaction_is_skipped(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("haha, interesting")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "Python is a general-purpose language.",
+        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is False
+    answer.assert_not_called()
+
+
+def test_agent_reply_to_bot_clear_followup_still_answers(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_agent_reply_explanation.return_value = {
+        "current_user_message": "What is Python?",
+        "answer_text": "Python is a general-purpose language.",
+    }
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("why?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "Python is a general-purpose language.",
+        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    assert "why?" in answer.call_args.kwargs["user_text"]
+
+
+def test_agent_reply_to_bot_with_explicit_mention_overrides_gate(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_agent_reply_explanation.return_value = {
+        "current_user_message": "What is Python?",
+        "answer_text": "Python is a general-purpose language.",
+    }
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot haha")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "Python is a general-purpose language.",
+        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    assert "@ZerdeBot haha" in answer.call_args.kwargs["user_text"]
 
 
 def test_agent_should_not_answer_plain_chatter(monkeypatch):
@@ -901,6 +1035,31 @@ def test_proactive_reservation_escapes_ttl_attribute():
     kwargs = repo.table.update_item.call_args.kwargs
     assert "#ttl = :ttl" in kwargs["UpdateExpression"]
     assert kwargs["ExpressionAttributeNames"]["#ttl"] == "ttl"
+
+
+def test_record_agent_reply_persists_thread_metadata():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.record_agent_reply(
+        chat_id=-100123,
+        bot_message_id=555,
+        trigger_message_id=99,
+        trigger_kind="explicit",
+        reason="answered a reply-thread question",
+        answer_text="Python is a language.",
+        user_message="full prompt with source",
+        current_user_message="why?",
+        source_message_context="Original replied-to message:\n[speaker user_id=7] What is Python?",
+        parent_bot_message_id=444,
+    )
+
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["sk"] == "AGENT_REPLY#0000000000555"
+    assert item["user_message"] == "full prompt with source"
+    assert item["current_user_message"] == "why?"
+    assert "What is Python" in item["source_message_context"]
+    assert item["parent_bot_message_id"] == 444
 
 
 def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypatch):
@@ -1208,6 +1367,9 @@ def test_handle_ask_enqueues_group_context_answer():
         requester_user_id=42,
         requester_username="ada",
         requester_display_name="Ada",
+        current_user_message="what happened yesterday?",
+        source_message_context="",
+        parent_bot_message_id=None,
     )
     ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
@@ -1235,7 +1397,11 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     ctx.chat_id = -100123
     ctx.message_id = 99
     ctx.lang_code = "en"
-    ctx.reply_to_message = {"text": "Sure, deploying on Friday evening is always a great idea."}
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "text": "Sure, deploying on Friday evening is always a great idea.",
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
+    }
     ctx.user_id = 42
     ctx.username = "ada"
     ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
@@ -1246,7 +1412,36 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     user_text = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"]
     assert "deploying on Friday evening" in user_text
     assert "is he being sarcastic?" in user_text
+    assert "message_id=8" in ctx.sqs_repo.send_group_ask_task.call_args.kwargs["source_message_context"]
+    assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["current_user_message"] == "is he being sarcastic?"
     ctx.reply.assert_not_called()
+
+
+def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(commands, "answer_group_question", answer)
+
+    commands.process_group_ask_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "reply_to_message_id": 99,
+            "user_text": "thread prompt",
+            "lang": "en",
+            "requester_user_id": 42,
+            "current_user_message": "why?",
+            "source_message_context": "Original replied-to message:\n[speaker user_id=7] What is Python?",
+            "parent_bot_message_id": 555,
+        },
+    )
+
+    answer.assert_called_once()
+    assert answer.call_args.kwargs["current_user_message"] == "why?"
+    assert "What is Python" in answer.call_args.kwargs["source_message_context"]
+    assert answer.call_args.kwargs["parent_bot_message_id"] == 555
 
 
 def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:

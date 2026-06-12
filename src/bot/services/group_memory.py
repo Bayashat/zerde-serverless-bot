@@ -83,6 +83,42 @@ def display_name(user: dict[str, Any]) -> str:
     return str(user.get("id") or "Unknown")
 
 
+def format_message_reference(
+    message: dict[str, Any],
+    *,
+    heading: str = "Original replied-to message",
+    max_text_chars: int = 1600,
+) -> str:
+    """Format a Telegram message as compact quoted context for agent prompts."""
+    if not isinstance(message, dict):
+        return ""
+    text = extract_message_text(message)
+    if not text:
+        return ""
+
+    sender = message.get("from") if isinstance(message.get("from"), dict) else {}
+    sender_chat = message.get("sender_chat") if isinstance(message.get("sender_chat"), dict) else {}
+    actor = sender or sender_chat
+
+    metadata: list[str] = []
+    actor_id = actor.get("id")
+    if actor_id is not None:
+        metadata.append(f"user_id={actor_id}")
+    username = (actor.get("username") or "").strip()
+    if username:
+        metadata.append(f"username=@{username}")
+    name = (actor.get("title") or "").strip() if sender_chat and not sender else display_name(actor)
+    if name:
+        metadata.append(f"name={name[:80]}")
+    message_id = message.get("message_id")
+    if message_id is not None:
+        metadata.append(f"message_id={message_id}")
+
+    speaker = f"[speaker {' '.join(metadata)}]" if metadata else "[speaker unknown]"
+    clipped_text = text[:max_text_chars]
+    return f"{heading}:\n{speaker} {clipped_text}"
+
+
 def is_storable_group_message(update: dict[str, Any]) -> bool:
     message = update.get("message")
     if not isinstance(message, dict):

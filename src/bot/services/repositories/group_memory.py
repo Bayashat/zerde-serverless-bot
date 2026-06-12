@@ -758,6 +758,9 @@ class GroupMemoryRepository:
         reason: str,
         answer_text: str | None = None,
         user_message: str | None = None,
+        current_user_message: str | None = None,
+        source_message_context: str | None = None,
+        parent_bot_message_id: int | str | None = None,
         confidence: float | None = None,
         requester_user_id: int | str | None = None,
         requester_username: str | None = None,
@@ -781,6 +784,12 @@ class GroupMemoryRepository:
             item["answer_text"] = answer_text[:3000]
         if user_message:
             item["user_message"] = user_message[:1500]
+        if current_user_message:
+            item["current_user_message"] = current_user_message[:1500]
+        if source_message_context:
+            item["source_message_context"] = source_message_context[:2200]
+        if parent_bot_message_id is not None:
+            item["parent_bot_message_id"] = int(parent_bot_message_id)
         if confidence is not None:
             item["confidence"] = Decimal(str(max(0.0, min(1.0, confidence))))
         if requester_user_id is not None:

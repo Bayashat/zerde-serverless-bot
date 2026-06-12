@@ -12,7 +12,7 @@ from core.config import (
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.group_agent import answer_group_question
+from services.group_agent import answer_group_question, build_explicit_question_context
 from services.group_memory import display_name
 from services.handlers.quiz import react_genquiz_processing
 from services.vector_memory import (
@@ -83,28 +83,11 @@ def _normalized_subcommand(args: str) -> str:
     return " ".join(args.replace("_", " ").lower().split())
 
 
-def _reply_text(ctx: Context) -> str:
-    if not isinstance(ctx.reply_to_message, dict):
-        return ""
-    return (ctx.reply_to_message.get("text") or ctx.reply_to_message.get("caption") or "").strip()
-
-
-def _build_ask_user_text(ctx: Context) -> str:
-    question = _command_args(ctx.text)
-    replied_text = _reply_text(ctx)
-    if question and replied_text:
-        return (
-            "The user is asking about this replied-to group message:\n"
-            f"{replied_text}\n\n"
-            "User question:\n"
-            f"{question}"
-        )
-    if replied_text:
-        return (
-            "The user replied to this group message and wants you to explain it or answer based on it:\n"
-            f"{replied_text}"
-        )
-    return question
+def _message_for_ask_context(ctx: Context, question: str) -> dict:
+    message = dict(ctx.message) if isinstance(ctx.message, dict) else {"text": question}
+    if isinstance(ctx.reply_to_message, dict):
+        message["reply_to_message"] = ctx.reply_to_message
+    return message
 
 
 def _parse_genquiz_args(text: str, chat_id: int | str) -> tuple[str, str, str] | None:
@@ -342,8 +325,14 @@ def handle_ask(ctx: Context) -> None:
     if not ctx.sqs_repo:
         ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
         return
-    question = _build_ask_user_text(ctx)
-    if not question:
+    question = _command_args(ctx.text)
+    question_context = build_explicit_question_context(
+        ctx.memory_repo,
+        ctx.chat_id,
+        _message_for_ask_context(ctx, question),
+        current_text=question,
+    )
+    if not question_context.user_text:
         ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
         return
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
@@ -361,11 +350,14 @@ def handle_ask(ctx: Context) -> None:
             update_id=ctx.update_id or ctx.message_id or 0,
             chat_id=ctx.chat_id,
             reply_to_message_id=ctx.message_id,
-            user_text=question,
+            user_text=question_context.user_text,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
             requester_username=ctx.username,
             requester_display_name=display_name(ctx.user_data),
+            current_user_message=question_context.current_user_message,
+            source_message_context=question_context.source_message_context,
+            parent_bot_message_id=question_context.parent_bot_message_id,
         )
     except Exception:
         logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
@@ -398,6 +390,9 @@ def process_group_ask_task(
         requester_user_id=requester_user_id,
         requester_username=str(body.get("requester_username") or "") or None,
         requester_display_name=str(body.get("requester_display_name") or "") or None,
+        current_user_message=str(body.get("current_user_message") or "") or None,
+        source_message_context=str(body.get("source_message_context") or "") or None,
+        parent_bot_message_id=body.get("parent_bot_message_id"),
         raise_on_unavailable=True,
     )
     if not handled:
