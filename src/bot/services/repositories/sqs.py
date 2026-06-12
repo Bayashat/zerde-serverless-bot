@@ -159,6 +159,8 @@ class SQSClient:
         username: str | None,
         text: str,
         created_at: int | None = None,
+        is_reply: bool = False,
+        has_mention: bool = False,
     ) -> None:
         """Enqueue a group message for async long-term memory processing."""
         payload: dict[str, object] = {
@@ -168,6 +170,8 @@ class SQSClient:
             "user_id": user_id,
             "display_name": display_name,
             "text": text,
+            "is_reply": bool(is_reply),
+            "has_mention": bool(has_mention),
         }
         if username:
             payload["username"] = username

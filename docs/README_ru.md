@@ -22,7 +22,7 @@ Zerde больше не просто отправляет последнее с�
 
 - **Recent memory**: не-command сообщения группы хранятся в DynamoDB как `MSG#...`.
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
-- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые по structured schema с rule fallback.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.

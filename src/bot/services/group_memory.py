@@ -70,6 +70,21 @@ def extract_message_text(message: dict[str, Any]) -> str:
     return ""
 
 
+def _message_has_mention(message: dict[str, Any], text: str) -> bool:
+    if _USERNAME_RE.search(text):
+        return True
+    for field in ("entities", "caption_entities"):
+        entities = message.get(field)
+        if not isinstance(entities, list):
+            continue
+        for entity in entities:
+            if not isinstance(entity, dict):
+                continue
+            if entity.get("type") in {"mention", "text_mention"}:
+                return True
+    return False
+
+
 def display_name(user: dict[str, Any]) -> str:
     """Build a compact display name for prompts and memory profiles."""
     first = (user.get("first_name") or "").strip()
@@ -178,6 +193,8 @@ def observe_update(
                 username=username,
                 text=text,
                 created_at=message.get("date"),
+                is_reply=bool(message.get("reply_to_message")),
+                has_mention=_message_has_mention(message, text),
             )
     except Exception:
         logger.exception("Failed to store group memory message", extra={"chat_id": chat_id, "message_id": message_id})

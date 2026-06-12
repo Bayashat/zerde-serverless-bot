@@ -36,7 +36,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 
 - It observes opted-in group messages.
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
-- It extracts long-term memory with a structured Gemini schema and falls back to rule-based extraction when Gemini is unavailable or disabled.
+- It extracts long-term memory with cheap local candidate gates, bounded structured Gemini extraction, and rule-based fallback when Gemini is unavailable, disabled, over budget, or not warranted.
 - It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
@@ -92,7 +92,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
 - `services/memory_retrieval.py` — thin Memory Retrieval Pipeline V1 wrapper for query intent, candidate/source tracking, local scoring, dedupe, and context packing.
 - `services/memory_extractor.py` — structured long-term memory schema, Gemini extraction normalisation, rule fallback, and storage guards.
-- `services/group_memory_processor.py` — async long-term extraction task orchestration and daily summaries.
+- `services/group_memory_processor.py` — async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
@@ -141,6 +141,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `D
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
 - **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` wraps existing profile, semantic, long-term, and recent context builders, tracks candidate sources, scores/dedupes locally, and persists compact retrieval source metadata for future `/agent why` explanations.
 - **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
+- **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
