@@ -103,6 +103,8 @@ DynamoDB memory key families:
 - `VECTOR_BACKFILL`
 - `PROACTIVE#...`
 
+Memory TTLs are type-specific. Use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` for `MSG#...`, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` for `AGENT_REPLY#...`, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` for `EVENT#...` / `USER_FACT#...` / `GROUP_FACT#...` / `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` for `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` for `PROACTIVE#...`. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Explicit long-term `expires_in_days` still sets `expires_at` and DynamoDB TTL takes the shorter expiry.
+
 ## Common Commands
 
 Use the repo's existing tooling:

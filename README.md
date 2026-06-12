@@ -128,6 +128,19 @@ uv run cdk synth -c env=dev
 uv run cdk diff -c env=dev
 ```
 
+Common group-memory retention settings:
+
+| Env var | Applies to | Default |
+|---------|------------|---------|
+| `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` | Raw recent `MSG#...` records | `30` |
+| `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` | `AGENT_REPLY#...` reply-thread metadata | `7` |
+| `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` | `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` | `3650` |
+| `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` | `DAILY_SUMMARY#...` records | `3650` |
+| `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` | `PROACTIVE#YYYYMMDD` counters | `3` |
+| `GROUP_MEMORY_RETENTION_DAYS` | Legacy fallback for broad memory retention settings when omitted | `3650` |
+
+`MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted. `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term memory still stores explicit `expires_at` metadata from `expires_in_days`; DynamoDB TTL uses the shorter of that explicit expiry and the configured long-term retention.
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a full AWS + Telegram walkthrough.
 
 ---

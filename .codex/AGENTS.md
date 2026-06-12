@@ -114,6 +114,8 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 
 Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
 
+Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memory, `DAILY_SUMMARY#...`, and `PROACTIVE#...` counters use their own retention env vars. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still records `expires_at` and uses the shorter DynamoDB TTL.
+
 ## SQS Tasks
 
 - `CHECK_TIMEOUT` — captcha timeout enforcement.

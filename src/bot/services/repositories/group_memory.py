@@ -10,10 +10,19 @@ from typing import Any
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from core.config import GROUP_MEMORY_RETENTION_DAYS, MEMORY_TABLE_NAME
+from core.config import (
+    GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS,
+    GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS,
+    GROUP_MEMORY_LONG_TERM_RETENTION_DAYS,
+    GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS,
+    GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS,
+    GROUP_MEMORY_RETENTION_DAYS,
+    MEMORY_TABLE_NAME,
+)
 from services.memory_safety import is_memory_learning_safe
 from services.repositories._common import get_dynamodb
 
+_SECONDS_PER_DAY = 24 * 60 * 60
 _VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
 _LEXICAL_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{1,}", re.IGNORECASE)
@@ -98,6 +107,10 @@ class GroupMemoryRepository:
     @staticmethod
     def _daily_summary_sk(summary_date: str) -> str:
         return f"DAILY_SUMMARY#{summary_date}"
+
+    @staticmethod
+    def _ttl_from_days(now: int, days: int) -> int:
+        return now + days * _SECONDS_PER_DAY
 
     @staticmethod
     def _vector_backfill_sk() -> str:
@@ -571,7 +584,7 @@ class GroupMemoryRepository:
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
-        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS)
         item = {
             "pk": self._chat_pk(chat_id),
             "sk": self._msg_sk(created_at_ms, message_id),
@@ -748,11 +761,11 @@ class GroupMemoryRepository:
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
-        retention_ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        retention_ttl = self._ttl_from_days(now, GROUP_MEMORY_LONG_TERM_RETENTION_DAYS)
         expires_at = None
         if expires_in_days is not None:
             try:
-                expires_at = created_at + max(1, int(expires_in_days)) * 24 * 60 * 60
+                expires_at = created_at + max(1, int(expires_in_days)) * _SECONDS_PER_DAY
             except (TypeError, ValueError):
                 expires_at = None
         ttl = min(retention_ttl, expires_at) if expires_at else retention_ttl
@@ -811,7 +824,7 @@ class GroupMemoryRepository:
     ) -> dict[str, Any]:
         """Store one daily compressed group memory summary."""
         now = int(time.time())
-        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS)
         item = {
             "pk": self._chat_pk(chat_id),
             "sk": self._daily_summary_sk(summary_date),
@@ -1056,7 +1069,7 @@ class GroupMemoryRepository:
             return False
         day = datetime.now(timezone.utc).strftime("%Y%m%d")
         now = int(time.time())
-        ttl = now + 3 * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS)
         try:
             self.table.update_item(
                 Key={"pk": self._chat_pk(chat_id), "sk": f"PROACTIVE#{day}"},
@@ -1127,7 +1140,7 @@ class GroupMemoryRepository:
         retrieval_sources: list[dict[str, Any]] | None = None,
     ) -> None:
         now = int(time.time())
-        ttl = now + 7 * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS)
         item: dict[str, Any] = {
             "pk": self._chat_pk(chat_id),
             "sk": self._agent_reply_sk(bot_message_id),
