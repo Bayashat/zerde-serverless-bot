@@ -69,7 +69,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
 - Keep `/memory about me` scoped to the requester profile derived from their own messages, and keep `/memory forget this` permission-scoped to own memory unless the caller is the group owner or bot owner.
-- Keep proactive participation conservative: local open-question prefilter, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
+- Keep proactive participation conservative: local open-question prefilter, delayed candidate queue, post-trigger human-answer check, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
 - Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese; local prefilter skips for open-question candidates should log structured reasons.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - If cleaning production memory, first back up exact DynamoDB items and vector keys locally, then delete narrowly.
@@ -81,6 +81,7 @@ SQS handler failures should re-raise when retry/DLQ semantics are intended. Curr
 - `CHECK_TIMEOUT`
 - `SPAM_CHECK`
 - `PROCESS_GROUP_ASK`
+- `PROCESS_PROACTIVE_CANDIDATE`
 - `PROCESS_GROUP_MEMORY`
 - `PROCESS_DAILY_GROUP_SUMMARIES`
 

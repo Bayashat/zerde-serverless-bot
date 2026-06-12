@@ -70,6 +70,7 @@ class BotConstruct(Construct):
         agent_bot_username: str,
         agent_recent_context_limit: str,
         agent_daily_proactive_limit: str,
+        agent_proactive_delay_seconds: str,
         agent_proactive_score_threshold: str,
         agent_proactive_final_threshold: str,
         vector_memory_enabled: str,
@@ -190,6 +191,7 @@ class BotConstruct(Construct):
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
             "AGENT_DAILY_PROACTIVE_LIMIT": agent_daily_proactive_limit,
+            "AGENT_PROACTIVE_DELAY_SECONDS": agent_proactive_delay_seconds,
             "AGENT_PROACTIVE_SCORE_THRESHOLD": agent_proactive_score_threshold,
             "AGENT_PROACTIVE_FINAL_THRESHOLD": agent_proactive_final_threshold,
             # -- Groq parameters (non-secret) ──────────────────────────────────

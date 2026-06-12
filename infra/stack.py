@@ -86,6 +86,7 @@ class ZerdeTelegramBotStack(Stack):
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
+        agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
         agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
         vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
@@ -179,6 +180,7 @@ class ZerdeTelegramBotStack(Stack):
             agent_bot_username=agent_bot_username,
             agent_recent_context_limit=agent_recent_context_limit,
             agent_daily_proactive_limit=agent_daily_proactive_limit,
+            agent_proactive_delay_seconds=agent_proactive_delay_seconds,
             agent_proactive_score_threshold=agent_proactive_score_threshold,
             agent_proactive_final_threshold=agent_proactive_final_threshold,
             vector_memory_enabled=vector_memory_enabled,

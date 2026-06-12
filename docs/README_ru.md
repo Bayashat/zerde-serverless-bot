@@ -24,7 +24,7 @@ Zerde больше не просто отправляет последнее с�
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, delayed conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
@@ -38,7 +38,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом requester/recent/profile/long-term/lexical/semantic memory. |
 | RAG memory | Group memory хранится в DynamoDB, long-term memory извлекается через structured Gemini schema + rule fallback, high-information memory индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
 | Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
-| Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
+| Social timing | Proactive replies ждут короткий delay, затем проходят human-answer check, local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
 | Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |

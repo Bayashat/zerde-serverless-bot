@@ -1070,6 +1070,36 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     assert payload["lang"] == "en"
 
 
+def test_sqs_client_sends_delayed_proactive_candidate_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_proactive_candidate_task(
+        update_id=123,
+        chat_id=-100123,
+        trigger_message_id=99,
+        trigger_user_id=42,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="en",
+        created_at=1_700_000_000,
+        delay_seconds=30,
+    )
+
+    kwargs = fake_client.send_message.call_args.kwargs
+    payload = json.loads(kwargs["MessageBody"])
+    assert kwargs["QueueUrl"] == "queue-url"
+    assert kwargs["DelaySeconds"] == 30
+    assert payload["task_type"] == "PROCESS_PROACTIVE_CANDIDATE"
+    assert payload["update_id"] == 123
+    assert payload["chat_id"] == -100123
+    assert payload["trigger_message_id"] == 99
+    assert payload["trigger_user_id"] == 42
+    assert payload["user_text"] == "does anyone know how OpenSearch pricing works?"
+    assert payload["created_at"] == 1_700_000_000
+
+
 def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -1229,6 +1259,7 @@ def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     bot = MagicMock()
+    sqs = MagicMock()
     answer = MagicMock(return_value=True)
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
@@ -1241,9 +1272,10 @@ def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
         "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
     }
 
-    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
 
     assert handled is True
+    sqs.send_proactive_candidate_task.assert_not_called()
     user_text = answer.call_args.kwargs["user_text"]
     assert "Original replied-to message" in user_text
     assert "message_id=8" in user_text
@@ -1445,36 +1477,121 @@ def test_agent_does_not_consider_stop_cue_for_proactive_reply(monkeypatch):
     assert group_agent.should_answer(_group_update("болды жазба енді?")) is False
 
 
-def test_proactive_agent_asks_social_decision_before_daily_reservation(monkeypatch):
+def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
-    repo.try_reserve_proactive_reply.return_value = False
+    sqs = MagicMock()
+    bot = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DELAY_SECONDS", 30)
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
+
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=bot,
+        update=_group_update("does anyone know how OpenSearch pricing works?"),
+        sqs_repo=sqs,
+    )
+
+    assert handled is True
+    sqs.send_proactive_candidate_task.assert_called_once_with(
+        update_id=None,
+        chat_id=-100123,
+        trigger_message_id=11,
+        trigger_user_id=42,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="kk",
+        created_at=1_700_000_000,
+        delay_seconds=30,
+    )
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = [
+        {
+            "message_id": 11,
+            "user_id": 42,
+            "text": "does anyone know how OpenSearch pricing works?",
+        },
+        {
+            "message_id": 12,
+            "user_id": 7,
+            "text": "You can use OpenSearch Serverless; pricing depends on capacity units.",
+        },
+    ]
+    bot = MagicMock()
+    gemini = MagicMock()
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": 42,
+            "user_text": "does anyone know how OpenSearch pricing works?",
+            "lang": "en",
+            "created_at": 1_700_000_000,
+        },
+    )
+
+    assert handled is False
+    gemini.group_chat_proactive_decision.assert_not_called()
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = []
+    repo.try_reserve_proactive_reply.return_value = True
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_proactive_decision.return_value = (
         GroupAgentDecision(
-            True, 0.9, "open technical question with no answer yet", "OpenSearch pricing depends on capacity."
+            True, 0.86, "open technical question with no answer yet", "OpenSearch pricing depends on shards."
         ),
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
-    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
-    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous context")
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
         "format_long_term_memory_context",
         lambda *args, **kwargs: "[event speaker=Ada] OpenSearch pricing discussion",
     )
 
-    handled = group_agent.handle_update(
+    handled = group_agent.process_proactive_candidate_task(
         repo=repo,
-        bot=MagicMock(),
-        update=_group_update("does anyone know how OpenSearch pricing works?"),
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": 42,
+            "user_text": "does anyone know how OpenSearch pricing works?",
+            "lang": "en",
+            "created_at": 1_700_000_000,
+        },
     )
 
-    assert handled is False
+    assert handled is True
     gemini.group_chat_proactive_decision.assert_called_once()
     repo.try_reserve_proactive_reply.assert_called_once()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "OpenSearch pricing depends on shards.",
+        reply_to_message_id=11,
+    )
 
 
 def test_reply_score_penalizes_recent_bot_activity():

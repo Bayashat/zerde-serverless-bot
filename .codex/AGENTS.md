@@ -40,7 +40,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It indexes long-term memory and high-information daily summaries in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
-- It may proactively answer only after conservative local and LLM social-timing gates.
+- It may proactively answer only after a short delayed candidate window plus conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
 
 RAG is one capability inside the agent. Do not treat vector search as the only source of truth; requester identity, recent context, target-user profiles, reply-thread context, and query-filtered long-term memory are also part of the answer path.
@@ -119,6 +119,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
 - `SPAM_CHECK` — async Groq spam decision.
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
+- `PROCESS_PROACTIVE_CANDIDATE` — delayed proactive final check after humans have had time to answer.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
@@ -145,7 +146,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
-- **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates.
+- **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates. Queue passing candidates with `AGENT_PROACTIVE_DELAY_SECONDS`, then re-read post-trigger context and stay silent if humans already answered sufficiently.
 - **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 - **Vector observability**: retrieval and indexing success paths emit INFO logs with counts, filters, distance cutoffs, and vector dimensions; do not rely only on ERROR logs to confirm vector health.
