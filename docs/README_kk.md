@@ -25,7 +25,7 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **Long-term memory**: candidate-gated және budgeted structured extraction арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, conservative proactive reply gating, жауап ұзындығын басқару, `/agent why` source summary.
-- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` related vector cleanup-пен, owner-only group cleanup.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup-пен, related vector cleanup және owner-only group cleanup.
 
 RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
 
@@ -103,7 +103,7 @@ flowchart LR
 | `/quizstats` | Барлығына | Жеке quiz score, streak, rank. |
 | `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады және “мен кіммін” сияқты сұрақтарды requester identity арқылы түсінеді. |
 | `/memory about me` | Барлығына | Current user-дің өз хабарламаларынан сақталған profile fields көрсету; басқа адамдардың бағасын көрсетпейді. |
-| `/memory on/off/status/forget ...` | Settings үшін group owner немесе bot owner; users өз memory өшіре алады | Group memory басқару және cleanup. `forget this` reply жасалған bot answer/source message-ке байланысты memory өшіреді, vector cleanup configured болса бірге жүреді. |
+| `/memory on/off/status/forget ...` | Settings үшін group owner немесе bot owner; users өз memory өшіре алады | Group memory басқару және cleanup. `forget this` bot answer-ден durable long-term memory ғана өшіреді немесе source message-ке тікелей reply болса raw/derived memory өшіреді; `USER#` profile өшірмейді. |
 | `/agent on/off/status/why` | Group owner немесе bot owner | Agent participation басқару және bot неге жауап бергенін көру; memory source түрлері/count көрсетіледі, толық memory text көрсетілмейді. `/agent off` proactive, mention және reply-thread қатысуын өшіреді; жад қосулы болса, `/ask` қолжетімді. |
 
 ---

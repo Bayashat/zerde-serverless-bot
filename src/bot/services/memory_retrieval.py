@@ -150,6 +150,17 @@ class RetrievalIntent:
     time_hint: str | None
 
 
+def _deletion_metadata_for_source(source: str, source_sk: str | None, memory_kind: str | None) -> dict[str, str]:
+    sk = str(source_sk or "").strip()
+    if sk and GroupMemoryRepository.is_vectorizable_sk(sk):
+        return {"deletion_policy": "durable_memory", "deletable_source_sk": sk}
+    if source in {"requester_profile", "target_profile"} or memory_kind == "profile" or sk.startswith("USER#"):
+        return {"deletion_policy": "profile"}
+    if sk.startswith("MSG#"):
+        return {"deletion_policy": "source_message"}
+    return {"deletion_policy": "context"}
+
+
 @dataclass(frozen=True)
 class MemoryCandidate:
     source: str
@@ -171,6 +182,7 @@ class MemoryCandidate:
             data["source_sk"] = self.source_sk
         if self.memory_kind:
             data["memory_kind"] = self.memory_kind
+        data.update(_deletion_metadata_for_source(self.source, self.source_sk, self.memory_kind))
         if self.created_at is not None:
             data["created_at"] = self.created_at
         return data

@@ -108,7 +108,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `USER#<user_id>` — profile from the user's own messages only.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata with deletion policy, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
@@ -140,7 +140,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
 - **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why`.
-- **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
+- **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes only durable long-term memory (`EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, allowed `DAILY_SUMMARY#`) from a replied bot answer, or raw/derived memory when replying directly to a source message, with vector cleanup when configured. It must not delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources. Regular users can delete only their own durable memory; the group owner or bot owner can delete group durable memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.

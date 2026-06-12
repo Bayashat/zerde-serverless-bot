@@ -1091,6 +1091,10 @@ class GroupMemoryRepository:
                 entry["source_sk"] = str(source["source_sk"])[:180]
             if source.get("memory_kind"):
                 entry["memory_kind"] = str(source["memory_kind"])[:60]
+            if source.get("deletion_policy"):
+                entry["deletion_policy"] = str(source["deletion_policy"])[:60]
+            if source.get("deletable_source_sk"):
+                entry["deletable_source_sk"] = str(source["deletable_source_sk"])[:180]
             try:
                 entry["score"] = Decimal(str(round(float(source.get("score") or 0.0), 4)))
             except (TypeError, ValueError):

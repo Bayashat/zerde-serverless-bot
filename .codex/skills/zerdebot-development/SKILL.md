@@ -68,7 +68,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Do not answer every reply to a bot message; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
-- Keep `/memory about me` scoped to the requester profile derived from their own messages, and keep `/memory forget this` permission-scoped to own memory unless the caller is the group owner or bot owner.
+- Keep `/memory about me` scoped to the requester profile derived from their own messages. Keep `/memory forget this` permission-scoped to own durable memory unless the caller is the group owner or bot owner, and never delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources.
 - Keep proactive participation conservative: local open-question prefilter, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
 - Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese; local prefilter skips for open-question candidates should log structured reasons.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.

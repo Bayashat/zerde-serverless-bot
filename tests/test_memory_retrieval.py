@@ -483,6 +483,8 @@ def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_in
             "trust_level": 60,
             "source_sk": "USER_FACT#42#7",
             "memory_kind": "user_fact",
+            "deletion_policy": "durable_memory",
+            "deletable_source_sk": "USER_FACT#42#7",
         }
     ]
 
