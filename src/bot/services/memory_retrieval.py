@@ -298,6 +298,32 @@ def _item_memory_text(item: dict[str, Any]) -> str:
     return text
 
 
+def _int_value(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _feedback_metadata_from_item(item: dict[str, Any]) -> dict[str, Any]:
+    metadata: dict[str, Any] = {}
+    wrong_feedback_count = _int_value(item.get("wrong_feedback_count"))
+    negative_feedback_count = _int_value(item.get("negative_feedback_count"))
+    if wrong_feedback_count:
+        metadata["wrong_feedback_count"] = wrong_feedback_count
+    if negative_feedback_count:
+        metadata["negative_feedback_count"] = negative_feedback_count
+    if item.get("last_feedback_at") is not None:
+        metadata["last_feedback_at"] = item.get("last_feedback_at")
+    feedback_status = str(item.get("feedback_status") or "").strip()
+    if feedback_status:
+        metadata["feedback_status"] = feedback_status
+    superseded_by = str(item.get("superseded_by") or "").strip()
+    if superseded_by:
+        metadata["superseded_by"] = superseded_by
+    return metadata
+
+
 def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCandidate | None:
     text = _item_memory_text(item)
     if not text or not is_memory_learning_safe(text):
@@ -319,6 +345,7 @@ def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCan
         "confidence": item.get("confidence"),
         "display_name": item.get("display_name"),
         "username": item.get("username"),
+        **_feedback_metadata_from_item(item),
     }
     return MemoryCandidate(
         source="lexical",
@@ -330,6 +357,25 @@ def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCan
         created_at=_item_created_at(item),
         metadata={key: value for key, value in metadata.items() if value is not None},
     )
+
+
+def _hydrate_candidate_feedback(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    candidate: MemoryCandidate,
+) -> MemoryCandidate:
+    if not candidate.source_sk:
+        return candidate
+    try:
+        item = repo.get_memory_item(chat_id, candidate.source_sk)
+    except Exception:
+        return candidate
+    if not isinstance(item, dict):
+        return candidate
+    feedback_metadata = _feedback_metadata_from_item(item)
+    if not feedback_metadata:
+        return candidate
+    return replace(candidate, metadata={**candidate.metadata, **feedback_metadata})
 
 
 def _format_lexical_memory_context(candidates: list[MemoryCandidate]) -> str:
@@ -456,7 +502,11 @@ def retrieve_candidates(
         limit=semantic_limit,
         user_id=requester_user_id if intent.is_self_reference else None,
     )
-    semantic_candidates = [candidate for row in semantic_rows if (candidate := _semantic_candidate(row)) is not None]
+    semantic_candidates = [
+        _hydrate_candidate_feedback(repo, chat_id, candidate)
+        for row in semantic_rows
+        if (candidate := _semantic_candidate(row)) is not None
+    ]
     lexical_terms = extract_lexical_terms(user_text)
     lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []
     lexical_candidates = [
@@ -581,6 +631,15 @@ def score_candidates(
             score += (confidence_value - 0.5) * 0.12
             if confidence_value < 0.4:
                 score -= 0.06
+        wrong_feedback_count = _int_value(candidate.metadata.get("wrong_feedback_count"))
+        negative_feedback_count = _int_value(candidate.metadata.get("negative_feedback_count"))
+        feedback_count = max(wrong_feedback_count, negative_feedback_count)
+        if feedback_count:
+            score -= min(0.36, 0.14 + feedback_count * 0.06)
+        if str(candidate.metadata.get("feedback_status") or "").strip().lower() == "wrong":
+            score -= 0.08
+        if str(candidate.metadata.get("superseded_by") or "").strip():
+            score -= 0.2
 
         scored.append(replace(candidate, score=max(0.0, min(1.0, score))))
     return sorted(scored, key=lambda item: (item.score, item.trust_level), reverse=True)
