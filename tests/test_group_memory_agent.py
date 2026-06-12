@@ -16,7 +16,7 @@ from services.handlers import commands
 from services.handlers.commands import handle_ask
 from services.memory_extractor import classify_long_term_memory_rule_based
 from services.repositories import sqs as sqs_module
-from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
 from services.repositories.sqs import SQSClient
 
 
@@ -148,8 +148,63 @@ def test_chat_settings_default_to_memory_and_agent_on():
 
     assert settings["memory_enabled"] is True
     assert settings["agent_enabled"] is True
+    assert settings["style_profile"] == normalise_chat_style_profile(None)
     assert repo.is_memory_enabled(-100123) is True
     assert repo.is_agent_enabled(-100123) is True
+
+
+def test_chat_settings_store_normalised_style_profile():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.set_chat_settings(
+        -100123,
+        style_profile={
+            "tone": "friendly",
+            "max_default_sentences": 12,
+            "max_proactive_sentences": 0,
+            "allow_light_humor": "true",
+            "low_confidence_behavior": "avoid_weak_memory",
+        },
+    )
+
+    values = repo.table.update_item.call_args.kwargs["ExpressionAttributeValues"]
+    assert values[":style_profile"] == {
+        "tone": "friendly",
+        "max_default_sentences": 8,
+        "max_proactive_sentences": 1,
+        "allow_light_humor": True,
+        "low_confidence_behavior": "avoid_weak_memory",
+    }
+
+
+def test_chat_style_defaults_preserve_concise_reply_policy():
+    profile = normalise_chat_style_profile(None)
+
+    policy = group_agent._reply_policy("what did we decide?", style_profile=profile)
+
+    assert policy.max_output_tokens == 300
+    assert policy.max_chars == 1800
+    assert "Answer in 2-5 concise sentences" in policy.instructions
+    assert "Tone: concise and direct" in policy.instructions
+
+
+def test_explicit_detailed_cue_allows_longer_answer_with_short_default_style():
+    profile = normalise_chat_style_profile({"max_default_sentences": 2})
+
+    policy = group_agent._reply_policy("please explain in detail what happened", style_profile=profile)
+
+    assert policy.max_output_tokens == 460
+    assert policy.max_chars == 2600
+    assert "up to 5 short paragraphs" in policy.instructions
+
+
+def test_proactive_style_policy_stays_short_by_default():
+    policy = group_agent._proactive_reply_policy(normalise_chat_style_profile(None))
+
+    assert policy.max_output_tokens == 300
+    assert policy.max_chars == 900
+    assert "up to 2 short sentences" in policy.instructions
 
 
 def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
@@ -1569,6 +1624,8 @@ def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
     assert handled is True
     repo.try_reserve_proactive_reply.assert_called_once()
     assert gemini.group_chat_proactive_decision.call_args.kwargs["long_term_memory_context"]
+    assert "up to 2 short sentences" in gemini.group_chat_proactive_decision.call_args.kwargs["reply_instructions"]
+    assert gemini.group_chat_proactive_decision.call_args.kwargs["max_output_tokens"] == 300
     bot.send_message.assert_called_once_with(
         -100123,
         "OpenSearch pricing depends on shards.",
@@ -1895,20 +1952,17 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     )
 
     assert handled is True
-    gemini.group_chat_reply.assert_called_once_with(
-        user_message="@zerde_kz_bot @bayashat кім",
-        recent_context="Nurt AI: @bayashat токсик",
-        long_term_memory_context="",
-        semantic_memory_context="[semantic_memory kind=event] OpenSearch was too expensive",
-        user_profile_context="Trusted profile: username=@bayashat own_topic_terms: opensearch",
-        requester_profile_context="Requester profile: username=@ada own_topic_terms: lambda",
-        reply_instructions=(
-            "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
-            "Do not write an essay by default."
-        ),
-        max_output_tokens=300,
-        lang="kk",
-    )
+    reply_kwargs = gemini.group_chat_reply.call_args.kwargs
+    assert reply_kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
+    assert reply_kwargs["recent_context"] == "Nurt AI: @bayashat токсик"
+    assert reply_kwargs["long_term_memory_context"] == ""
+    assert reply_kwargs["semantic_memory_context"] == "[semantic_memory kind=event] OpenSearch was too expensive"
+    assert reply_kwargs["user_profile_context"] == "Trusted profile: username=@bayashat own_topic_terms: opensearch"
+    assert reply_kwargs["requester_profile_context"] == "Requester profile: username=@ada own_topic_terms: lambda"
+    assert "Answer in 2-5 concise sentences" in reply_kwargs["reply_instructions"]
+    assert "Tone: concise and direct" in reply_kwargs["reply_instructions"]
+    assert reply_kwargs["max_output_tokens"] == 300
+    assert reply_kwargs["lang"] == "kk"
     bot.send_message.assert_called_once_with(
         -100123,
         "Баяшат OpenSearch жайлы жиі жазады.",
@@ -1999,6 +2053,50 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     assert handled is True
     assert gemini.group_chat_reply.call_args.kwargs["max_output_tokens"] == 180
     assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
+
+
+def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkeypatch):
+    repo = MagicMock()
+    repo.get_chat_settings.return_value = {"style_profile": normalise_chat_style_profile(None)}
+    repo.search_long_term_memories_by_terms.return_value = []
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("I may be remembering this imperfectly, but DynamoDB was mentioned.", 1)
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(
+        group_agent,
+        "retrieve_relevant_memories",
+        lambda *args, **kwargs: [
+            {
+                "metadata": {
+                    "source_sk": "EVENT#1",
+                    "memory_kind": "event",
+                    "text": "The group may have picked DynamoDB for the prototype.",
+                    "importance_score": 0.31,
+                },
+                "distance": 0.21,
+            }
+        ],
+    )
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="what did we pick for the prototype database?",
+        lang="en",
+    )
+
+    assert handled is True
+    instructions = gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
+    assert "I may be remembering this imperfectly" in instructions
+    assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"][0]["confidence"] == 0.31
 
 
 def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):

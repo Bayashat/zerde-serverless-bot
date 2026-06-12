@@ -24,10 +24,14 @@ Zerde больше не просто отправляет последнее с�
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины и style profile ответа, `/agent why` source summary.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
+
+### Chat style settings
+
+В `SETTINGS` каждой группы может быть `style_profile` для ответов agent-а: `tone`, `max_default_sentences`, `max_proactive_sentences`, `allow_light_humor` и `low_confidence_behavior`. Значения по умолчанию оставляют ответы короткими; если выбранная memory слабая, bot должен показывать неопределенность, например "могу помнить это неточно", а не говорить как о точном факте.
 
 ---
 

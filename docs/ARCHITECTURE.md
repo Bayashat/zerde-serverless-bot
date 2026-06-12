@@ -94,7 +94,7 @@ The table is single-table by chat partition:
 
 | Key pattern | Meaning |
 |-------------|---------|
-| `pk=CHAT#<chat_id>, sk=SETTINGS` | Per-chat `memory_enabled` and `agent_enabled`. |
+| `pk=CHAT#<chat_id>, sk=SETTINGS` | Per-chat `memory_enabled`, `agent_enabled`, and optional `style_profile` for agent reply tone/length/uncertainty behavior. |
 | `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context. |
 | `sk=USER#<user_id>` | User profile derived only from that user's own messages. |
 | `sk=EVENT#...` | Time-bound event or operational memory. |
@@ -155,6 +155,8 @@ Answer length is explicit:
 - Reply-to-bot follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent.
 - Plain `/ask` explanations get a medium budget.
 - Detailed answers require explicit cues such as "подробно", "толық", or "deep dive".
+- Per-chat `style_profile` settings can tune `tone`, `max_default_sentences`, `max_proactive_sentences`, `allow_light_humor`, and `low_confidence_behavior`; defaults keep concise answers and proactive replies short.
+- When selected semantic or lexical memory is low confidence or weakly matched, default `low_confidence_behavior=cautious` adds uncertainty instructions so the model does not present shaky memory as fact.
 - `fit_llm_output` trims overly long responses before Telegram HTML normalization.
 - Gemini `200 OK` responses with no candidate text are logged with safe response-shape metadata and treated as non-retryable for interactive `/ask` SQS work; the user gets the normal unavailable notice instead of a noisy retry loop.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from numbers import Number
 from typing import Any
@@ -41,7 +42,7 @@ from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
 )
-from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
 from services.telegram import TelegramClient
 from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
 
@@ -69,6 +70,10 @@ class ExplicitQuestionContext:
     current_user_message: str
     source_message_context: str = ""
     parent_bot_message_id: int | None = None
+
+
+_LOW_CONFIDENCE_MEMORY_THRESHOLD = 0.55
+_WEAK_RETRIEVAL_DISTANCE_THRESHOLD = 0.78
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -251,7 +256,128 @@ def _reply_to_bot_followup_skip_reason(text: str) -> str | None:
     return "no_clear_question_or_request"
 
 
-def _reply_policy(user_text: str) -> ReplyPolicy:
+def _load_chat_style_profile(repo: GroupMemoryRepository, chat_id: int | str) -> dict[str, Any]:
+    try:
+        settings = repo.get_chat_settings(chat_id)
+    except Exception:
+        logger.exception("Failed to load chat style profile; using defaults", extra={"chat_id": chat_id})
+        return normalise_chat_style_profile(None)
+    raw = settings.get("style_profile") if isinstance(settings, Mapping) else None
+    return normalise_chat_style_profile(raw)
+
+
+def _sentence_count(profile: Mapping[str, Any], key: str) -> int:
+    return int(normalise_chat_style_profile(profile).get(key, 1))
+
+
+def _style_instruction(style_profile: Mapping[str, Any]) -> str:
+    profile = normalise_chat_style_profile(style_profile)
+    tone = str(profile["tone"])
+    tone_text = {
+        "concise": "concise and direct",
+        "professional": "professional, calm, and precise",
+        "friendly": "friendly, natural, and respectful",
+    }.get(tone, "concise and direct")
+    humor = (
+        "Light humor is allowed only when it fits the chat and does not weaken factual clarity."
+        if profile["allow_light_humor"]
+        else "Do not add jokes or playful asides unless the user clearly asks for that tone."
+    )
+    return f"Tone: {tone_text}. {humor}"
+
+
+def _default_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 5:
+        return 300, 1800
+    tokens = max(140, min(460, 120 + max_sentences * 36))
+    chars = max(700, min(2600, 500 + max_sentences * 260))
+    return tokens, chars
+
+
+def _short_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences >= 3:
+        return 180, 900
+    tokens = max(100, 90 + max_sentences * 30)
+    chars = max(420, 300 + max_sentences * 200)
+    return tokens, chars
+
+
+def _ask_without_question_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 5:
+        return 260, 1400
+    tokens = max(130, min(300, 110 + max_sentences * 32))
+    chars = max(650, min(1600, 450 + max_sentences * 190))
+    return tokens, chars
+
+
+def _proactive_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 2:
+        return 300, 900
+    tokens = max(120, min(300, 90 + max_sentences * 70))
+    chars = max(420, min(1200, 280 + max_sentences * 310))
+    return tokens, chars
+
+
+def _low_confidence_instruction(style_profile: Mapping[str, Any]) -> str:
+    behavior = str(normalise_chat_style_profile(style_profile)["low_confidence_behavior"])
+    if behavior == "none":
+        return ""
+    if behavior == "avoid_weak_memory":
+        return (
+            "Some retrieved memory is weak. Prefer current and high-trust context; if you must use weak memory, "
+            "state uncertainty clearly instead of presenting it as fact."
+        )
+    return (
+        "Some retrieved memory is low confidence or weakly matched. Do not sound certain about it. "
+        "Use wording such as 'I may be remembering this imperfectly' or 'from weak memory' when relying on it."
+    )
+
+
+def _compose_reply_instructions(
+    base_instruction: str,
+    *,
+    style_profile: Mapping[str, Any],
+    low_confidence_retrieval: bool,
+) -> str:
+    parts = [base_instruction, _style_instruction(style_profile)]
+    if low_confidence_retrieval:
+        instruction = _low_confidence_instruction(style_profile)
+        if instruction:
+            parts.append(instruction)
+    return " ".join(part for part in parts if part)
+
+
+def _float_value(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _has_low_confidence_retrieval(retrieval_sources: list[dict[str, Any]]) -> bool:
+    memory_sources = {"semantic", "lexical", "long_term"}
+    for source in retrieval_sources:
+        if str(source.get("source") or "") not in memory_sources:
+            continue
+        confidence = _float_value(source.get("confidence"))
+        if confidence is not None and confidence < _LOW_CONFIDENCE_MEMORY_THRESHOLD:
+            return True
+        distance = _float_value(source.get("distance"))
+        if distance is not None and distance > _WEAK_RETRIEVAL_DISTANCE_THRESHOLD:
+            return True
+        score = _float_value(source.get("score"))
+        if confidence is None and distance is None and score is not None and 0 < score < 0.38:
+            return True
+    return False
+
+
+def _reply_policy(
+    user_text: str,
+    *,
+    style_profile: Mapping[str, Any] | None = None,
+    low_confidence_retrieval: bool = False,
+) -> ReplyPolicy:
+    style = normalise_chat_style_profile(style_profile)
     lowered = user_text.lower()
     explicit_long = any(
         cue in lowered
@@ -283,41 +409,81 @@ def _reply_policy(user_text: str) -> ReplyPolicy:
     )
     continuation = "user is continuing a thread with this previous bot answer" in lowered
     ask_without_question = "wants you to explain it or answer based on it" in lowered
+    max_default_sentences = _sentence_count(style, "max_default_sentences")
 
     if explicit_long:
         return ReplyPolicy(
-            instructions=(
-                "The user asked for detail. Answer with the minimum useful detail, up to 5 short paragraphs "
-                "or 6 bullets. Avoid repeating the full context."
+            instructions=_compose_reply_instructions(
+                (
+                    "The user asked for detail. Answer with the minimum useful detail, up to 5 short paragraphs "
+                    "or 6 bullets. Avoid repeating the full context."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
             max_output_tokens=460,
             max_chars=2600,
         )
     if explicit_short or continuation:
+        max_short_sentences = min(3, max_default_sentences)
+        tokens, chars = _short_reply_budget(max_short_sentences)
         return ReplyPolicy(
-            instructions=(
-                "This is a short follow-up. Answer directly in 1-3 short sentences. "
-                "Do not recap the whole previous answer unless the user asks."
+            instructions=_compose_reply_instructions(
+                (
+                    f"This is a short follow-up. Answer directly in 1-{max_short_sentences} short sentences. "
+                    "Do not recap the whole previous answer unless the user asks."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
-            max_output_tokens=180,
-            max_chars=900,
+            max_output_tokens=tokens,
+            max_chars=chars,
         )
     if ask_without_question:
+        min_sentences = 1 if max_default_sentences <= 2 else 3
+        tokens, chars = _ask_without_question_budget(max_default_sentences)
         return ReplyPolicy(
-            instructions=(
-                "The user asked about a replied-to message without a specific question. "
-                "Give the main point in 3-5 concise sentences or at most 3 bullets."
+            instructions=_compose_reply_instructions(
+                (
+                    "The user asked about a replied-to message without a specific question. "
+                    f"Give the main point in {min_sentences}-{max_default_sentences} concise sentences "
+                    "or at most 3 bullets."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
-            max_output_tokens=260,
-            max_chars=1400,
+            max_output_tokens=tokens,
+            max_chars=chars,
         )
+    min_sentences = 1 if max_default_sentences <= 2 else 2
+    tokens, chars = _default_reply_budget(max_default_sentences)
     return ReplyPolicy(
-        instructions=(
-            "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
-            "Do not write an essay by default."
+        instructions=_compose_reply_instructions(
+            (
+                f"Answer in {min_sentences}-{max_default_sentences} concise sentences. "
+                "Use bullets only when they make the answer easier to scan. "
+                "Do not write an essay by default."
+            ),
+            style_profile=style,
+            low_confidence_retrieval=low_confidence_retrieval,
         ),
-        max_output_tokens=300,
-        max_chars=1800,
+        max_output_tokens=tokens,
+        max_chars=chars,
+    )
+
+
+def _proactive_reply_policy(style_profile: Mapping[str, Any] | None = None) -> ReplyPolicy:
+    style = normalise_chat_style_profile(style_profile)
+    max_sentences = _sentence_count(style, "max_proactive_sentences")
+    tokens, chars = _proactive_reply_budget(max_sentences)
+    return ReplyPolicy(
+        instructions=_compose_reply_instructions(
+            f"If speaking, write up to {max_sentences} short sentences. Do not lecture or recap the whole chat.",
+            style_profile=style,
+            low_confidence_retrieval=False,
+        ),
+        max_output_tokens=tokens,
+        max_chars=chars,
     )
 
 
@@ -713,6 +879,8 @@ def maybe_answer_proactively(
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
+    style_profile = _load_chat_style_profile(repo, chat_id)
+    reply_policy = _proactive_reply_policy(style_profile)
     raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
     recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
     reply_score = score_proactive_reply(
@@ -739,6 +907,8 @@ def maybe_answer_proactively(
             recent_context=recent_context,
             long_term_memory_context=long_term_memory_context,
             lang=lang,
+            reply_instructions=reply_policy.instructions,
+            max_output_tokens=reply_policy.max_output_tokens,
         )
     except GeminiRPDExhaustedError:
         logger.info("Group agent proactive decision skipped by Gemini RPD limit", extra={"chat_id": chat_id})
@@ -779,7 +949,7 @@ def maybe_answer_proactively(
         )
         return False
 
-    answer_text = fit_llm_output(decision.reply_text, max_chars=900)
+    answer_text = fit_llm_output(decision.reply_text, max_chars=reply_policy.max_chars)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
@@ -888,7 +1058,12 @@ def answer_group_question(
             "target_username_count": len(memory_bundle.intent.target_usernames),
         },
     )
-    reply_policy = _reply_policy(user_text)
+    style_profile = _load_chat_style_profile(repo, chat_id)
+    reply_policy = _reply_policy(
+        user_text,
+        style_profile=style_profile,
+        low_confidence_retrieval=_has_low_confidence_retrieval(memory_bundle.retrieval_sources),
+    )
 
     try:
         answer, _ = gemini.group_chat_reply(

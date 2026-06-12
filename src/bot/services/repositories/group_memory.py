@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import time
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
@@ -16,6 +17,15 @@ from services.repositories._common import get_dynamodb
 
 _VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
+CHAT_STYLE_TONES = {"concise", "professional", "friendly"}
+CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS = {"cautious", "avoid_weak_memory", "none"}
+DEFAULT_CHAT_STYLE_PROFILE: dict[str, Any] = {
+    "tone": "concise",
+    "max_default_sentences": 5,
+    "max_proactive_sentences": 2,
+    "allow_light_humor": False,
+    "low_confidence_behavior": "cautious",
+}
 _LEXICAL_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{1,}", re.IGNORECASE)
 _LEXICAL_STOP_TERMS = {
     "about",
@@ -51,6 +61,58 @@ _LEXICAL_STOP_TERMS = {
     "怎么",
     "这个",
 }
+
+
+def _bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(minimum, min(maximum, parsed))
+
+
+def _bool_setting(value: Any, *, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+    return default
+
+
+def normalise_chat_style_profile(raw: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Return a safe chat-level style profile for agent replies."""
+    profile = dict(DEFAULT_CHAT_STYLE_PROFILE)
+    if not isinstance(raw, Mapping):
+        return profile
+
+    tone = str(raw.get("tone") or "").strip().lower()
+    if tone in CHAT_STYLE_TONES:
+        profile["tone"] = tone
+
+    profile["max_default_sentences"] = _bounded_int(
+        raw.get("max_default_sentences"),
+        default=profile["max_default_sentences"],
+        minimum=1,
+        maximum=8,
+    )
+    profile["max_proactive_sentences"] = _bounded_int(
+        raw.get("max_proactive_sentences"),
+        default=profile["max_proactive_sentences"],
+        minimum=1,
+        maximum=4,
+    )
+    profile["allow_light_humor"] = _bool_setting(
+        raw.get("allow_light_humor"),
+        default=profile["allow_light_humor"],
+    )
+    low_confidence_behavior = str(raw.get("low_confidence_behavior") or "").strip().lower()
+    if low_confidence_behavior in CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS:
+        profile["low_confidence_behavior"] = low_confidence_behavior
+    return profile
 
 
 class GroupMemoryRepository:
@@ -515,6 +577,7 @@ class GroupMemoryRepository:
         *,
         memory_enabled: bool | None = None,
         agent_enabled: bool | None = None,
+        style_profile: Mapping[str, Any] | None = None,
     ) -> None:
         names: dict[str, str] = {}
         values: dict[str, Any] = {":updated_at": int(time.time())}
@@ -529,6 +592,11 @@ class GroupMemoryRepository:
             names["#agent_enabled"] = "agent_enabled"
             values[":agent_enabled"] = agent_enabled
             sets.append("#agent_enabled = :agent_enabled")
+
+        if style_profile is not None:
+            names["#style_profile"] = "style_profile"
+            values[":style_profile"] = normalise_chat_style_profile(style_profile)
+            sets.append("#style_profile = :style_profile")
 
         kwargs: dict[str, Any] = {
             "Key": {"pk": self._chat_pk(chat_id), "sk": self._settings_sk()},
@@ -545,8 +613,12 @@ class GroupMemoryRepository:
         return {
             "memory_enabled": bool(item.get("memory_enabled", True)),
             "agent_enabled": bool(item.get("agent_enabled", True)),
+            "style_profile": normalise_chat_style_profile(item.get("style_profile")),
             "updated_at": item.get("updated_at"),
         }
+
+    def get_chat_style_profile(self, chat_id: int | str) -> dict[str, Any]:
+        return normalise_chat_style_profile(self.get_chat_settings(chat_id).get("style_profile"))
 
     def is_memory_enabled(self, chat_id: int | str) -> bool:
         return bool(self.get_chat_settings(chat_id).get("memory_enabled"))
@@ -1095,6 +1167,16 @@ class GroupMemoryRepository:
                 entry["score"] = Decimal(str(round(float(source.get("score") or 0.0), 4)))
             except (TypeError, ValueError):
                 entry["score"] = Decimal("0")
+            if source.get("confidence") is not None:
+                try:
+                    entry["confidence"] = Decimal(str(round(max(0.0, min(1.0, float(source["confidence"]))), 4)))
+                except (TypeError, ValueError):
+                    pass
+            if source.get("distance") is not None:
+                try:
+                    entry["distance"] = Decimal(str(round(max(0.0, float(source["distance"])), 4)))
+                except (TypeError, ValueError):
+                    pass
             try:
                 entry["trust_level"] = int(source.get("trust_level") or 0)
             except (TypeError, ValueError):

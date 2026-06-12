@@ -28,7 +28,7 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **User profiles**: lightweight per-user context derived from each user's own messages.
 - **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
-- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length budgeting, and `/agent why` source summaries.
+- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, and `/memory forget this` with related vector cleanup and owner-only group cleanup commands.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
@@ -109,6 +109,18 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/memory about me` | Everyone | Show the current user's own stored profile fields without showing other users' claims. |
 | `/memory on/off/status/forget ...` | Group owner or bot owner for settings; users can delete their own memory | Manage group memory and cleanup. `forget this` can delete memory tied to a replied bot answer or source message, with vector cleanup when configured. |
 | `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
+
+### Chat Style Settings
+
+Each chat `SETTINGS` item can include a `style_profile` map for agent replies:
+
+- `tone`: `concise`, `professional`, or `friendly`
+- `max_default_sentences`: default answer sentence cap, default `5`
+- `max_proactive_sentences`: proactive reply sentence cap, default `2`
+- `allow_light_humor`: default `false`
+- `low_confidence_behavior`: `cautious`, `avoid_weak_memory`, or `none`
+
+Defaults keep replies concise. When selected memory is low confidence or weakly matched, the default `cautious` behavior tells the model to avoid sounding certain and use wording such as "I may be remembering this imperfectly."
 
 ---
 
