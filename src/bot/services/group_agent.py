@@ -387,34 +387,63 @@ def _looks_like_open_question(text: str) -> bool:
     return len(text) >= 12 and (question_mark or any(word in lowered for word in cue_words))
 
 
-def _local_proactive_candidate(text: str) -> bool:
-    """Cheap social prefilter before spending an LLM call on timing judgment."""
+_PROACTIVE_STOP_CUES = (
+    "болды",
+    "жазба",
+    "жетеді",
+    "stop",
+    "don't reply",
+    "не отвечай",
+    "хватит",
+    "не пиши",
+    "别说",
+    "不要说",
+    "尴尬",
+)
+
+_PROACTIVE_BOT_META_CUES = (
+    "zerde",
+    "зерде",
+    "оқитын болған",
+    "оқып отыр",
+    "тыңдап отыр",
+    "читает чат",
+    "читает все",
+    "читает любые",
+    "слушает чат",
+    "reading every",
+    "reads every",
+    "listening to everything",
+    "why is the bot replying",
+    "bot keeps replying",
+    "бот жауап беріп жатыр",
+    "бот отвечает",
+)
+
+
+def _looks_like_bot_behavior_meta(text: str) -> bool:
+    """Return True for bot-behavior meta chatter, not generic bot-building questions."""
+    lowered = " ".join((text or "").lower().split())
+    return any(cue in lowered for cue in _PROACTIVE_BOT_META_CUES)
+
+
+def _local_proactive_skip_reason(text: str) -> str | None:
+    """Explain why a message is rejected before proactive score/model gating."""
     lowered = text.lower().strip()
     if not _looks_like_open_question(text):
-        return False
+        return "not_open_question"
     if len(text) > 500:
-        return False
-    awkward_cues = (
-        "болды",
-        "жазба",
-        "жетеді",
-        "stop",
-        "don't reply",
-        "не отвечай",
-        "хватит",
-        "не пиши",
-        "别说",
-        "不要说",
-        "尴尬",
-    )
-    if any(cue in lowered for cue in awkward_cues):
-        return False
-    # Meta questions about the bot's behavior are usually better left to humans
-    # unless the bot is explicitly addressed.
-    bot_meta_cues = ("bot", "бот", "zerde", "оқитын болған", "читает", "тыңдап отыр")
-    if any(cue in lowered for cue in bot_meta_cues):
-        return False
-    return True
+        return "too_long"
+    if any(cue in lowered for cue in _PROACTIVE_STOP_CUES):
+        return "stop_or_awkward_cue"
+    if _looks_like_bot_behavior_meta(text):
+        return "bot_meta"
+    return None
+
+
+def _local_proactive_candidate(text: str) -> bool:
+    """Cheap social prefilter before spending an LLM call on timing judgment."""
+    return _local_proactive_skip_reason(text) is None
 
 
 def score_proactive_reply(
@@ -440,7 +469,12 @@ def score_proactive_reply(
         "lambda",
         "python",
         "telegram",
+        "телеграм",
         "bot",
+        "бот",
+        "техникалық",
+        "стэк",
+        "стек",
         "infra",
         "deploy",
         "api",
@@ -526,6 +560,27 @@ def _log_skipped_reply_to_bot_followup(update: dict[str, Any]) -> None:
     )
 
 
+def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
+    if not AGENT_ENABLED or not _is_plain_text_message(update):
+        return
+    message = update["message"]
+    text = extract_message_text(message)
+    if _mentions_bot(text) or _replies_to_bot(message):
+        return
+    skip_reason = _local_proactive_skip_reason(text)
+    if not skip_reason or skip_reason == "not_open_question":
+        return
+    logger.info(
+        "Group agent proactive candidate skipped by local prefilter",
+        extra={
+            "chat_id": (message.get("chat") or {}).get("id"),
+            "message_id": message.get("message_id"),
+            "skip_reason": skip_reason,
+            "text_chars": len(text),
+        },
+    )
+
+
 def should_answer(update: dict[str, Any]) -> bool:
     """Return True when the agent policy allows considering an answer."""
     return _trigger_kind(update) is not None
@@ -545,6 +600,7 @@ def handle_update(
     trigger_kind = _trigger_kind(update)
     if trigger_kind is None:
         _log_skipped_reply_to_bot_followup(update)
+        _log_skipped_proactive_prefilter(update)
         return False
     if repo is None:
         return False

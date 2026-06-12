@@ -59,7 +59,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Reply-to-bot follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
 - Do not answer every reply to a bot message; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
-- Keep proactive participation conservative: local open-question prefilter, bot-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
+- Keep proactive participation conservative: local open-question prefilter, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
+- Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; local prefilter skips for open-question candidates should log structured reasons.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - If cleaning production memory, first back up exact DynamoDB items and vector keys locally, then delete narrowly.
 
