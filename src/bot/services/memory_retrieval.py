@@ -93,11 +93,16 @@ _TIME_HINT_RE = re.compile(
     flags=re.IGNORECASE,
 )
 
-_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё+#._-]{3,}", flags=re.IGNORECASE)
+_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{1,}", flags=re.IGNORECASE)
 _STOP_TERMS = {
+    "about",
     "the",
     "and",
+    "are",
+    "bot",
+    "chat",
     "for",
+    "from",
     "with",
     "what",
     "who",
@@ -107,9 +112,30 @@ _STOP_TERMS = {
     "как",
     "кто",
     "это",
+    "про",
     "мен",
     "кім",
     "не",
+    "осы",
+    "сол",
+}
+
+_SOURCE_BASE_SCORES = {
+    "requester_profile": 0.88,
+    "target_profile": 0.84,
+    "semantic": 0.16,
+    "lexical": 0.14,
+    "long_term": 0.08,
+    "recent": 0.02,
+}
+_MEMORY_KIND_BASE_SCORES = {
+    "profile": 0.0,
+    "user_fact": 0.42,
+    "group_fact": 0.36,
+    "event": 0.34,
+    "daily_summary": 0.24,
+    "joke": 0.08,
+    "memory": 0.22,
 }
 
 
@@ -194,8 +220,21 @@ def analyze_query_intent(
     )
 
 
+def extract_lexical_terms(text: str) -> set[str]:
+    """Extract exact-match retrieval terms while keeping codes and short mixed terms."""
+    terms: set[str] = set()
+    for raw in _TERM_RE.findall(text or ""):
+        term = raw.lower().lstrip("@#").strip("._-")
+        if not term or term in _STOP_TERMS:
+            continue
+        if len(term) < 3 and not any(char.isdigit() for char in term):
+            continue
+        terms.add(term)
+    return terms
+
+
 def _query_terms(text: str) -> set[str]:
-    return {term.lower().lstrip("@") for term in _TERM_RE.findall(text or "") if term.lower() not in _STOP_TERMS}
+    return extract_lexical_terms(text)
 
 
 def _line_kind(line: str) -> str | None:
@@ -227,6 +266,110 @@ def _semantic_candidate(row: dict[str, Any]) -> MemoryCandidate | None:
         created_at=created_at_int,
         metadata={**metadata, "distance": distance},
     )
+
+
+def _item_memory_kind(item: dict[str, Any]) -> str | None:
+    kind = str(item.get("kind") or "").strip()
+    if kind:
+        return kind
+    sk = str(item.get("sk") or "")
+    if sk.startswith("USER_FACT#"):
+        return "user_fact"
+    if sk.startswith("GROUP_FACT#"):
+        return "group_fact"
+    if sk.startswith("DAILY_SUMMARY#"):
+        return "daily_summary"
+    if sk.startswith("EVENT#"):
+        return "event"
+    if sk.startswith("JOKE#"):
+        return "joke"
+    return None
+
+
+def _item_created_at(item: dict[str, Any]) -> int | None:
+    try:
+        return int(item.get("created_at")) if item.get("created_at") is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _item_memory_text(item: dict[str, Any]) -> str:
+    text = str(item.get("summary") or item.get("text") or "").replace("\n", " ").strip()
+    return text
+
+
+def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCandidate | None:
+    text = _item_memory_text(item)
+    if not text or not is_memory_learning_safe(text):
+        return None
+    matched_terms = item.get("_lexical_terms")
+    if not isinstance(matched_terms, list):
+        matched_terms = sorted(term for term in query_terms if term in text.lower())
+    memory_kind = _item_memory_kind(item)
+    trust_level = {
+        "user_fact": 58,
+        "group_fact": 54,
+        "event": 54,
+        "daily_summary": 38,
+        "joke": 24,
+    }.get(memory_kind or "", 42)
+    score = min(0.72, 0.34 + len(matched_terms) * 0.08)
+    metadata = {
+        "matched_terms": matched_terms[:12],
+        "confidence": item.get("confidence"),
+        "display_name": item.get("display_name"),
+        "username": item.get("username"),
+    }
+    return MemoryCandidate(
+        source="lexical",
+        source_sk=str(item.get("sk") or "") or None,
+        memory_kind=memory_kind,
+        text=text,
+        score=score,
+        trust_level=trust_level,
+        created_at=_item_created_at(item),
+        metadata={key: value for key, value in metadata.items() if value is not None},
+    )
+
+
+def _format_lexical_memory_context(candidates: list[MemoryCandidate]) -> str:
+    lines: list[str] = []
+    for candidate in candidates:
+        if candidate.source != "lexical" or not candidate.text or not is_memory_learning_safe(candidate.text):
+            continue
+        bits = [f"kind={candidate.memory_kind or 'memory'}"]
+        if candidate.source_sk:
+            bits.append(f"source={candidate.source_sk}")
+        speaker = str(candidate.metadata.get("display_name") or candidate.metadata.get("username") or "").strip()
+        if speaker:
+            bits.append(f"speaker={speaker[:80]}")
+        matched_terms = candidate.metadata.get("matched_terms")
+        if isinstance(matched_terms, list) and matched_terms:
+            bits.append("matches=" + ",".join(str(term) for term in matched_terms[:6]))
+        lines.append(f"[lexical_memory {' '.join(bits)}] {candidate.text[:900]}")
+    return "\n".join(lines)
+
+
+def _merge_contexts(*contexts: str) -> str:
+    lines: list[str] = []
+    seen: set[str] = set()
+    for context in contexts:
+        for line in (context or "").splitlines():
+            normalized = " ".join(line.lower().split())
+            if not normalized or normalized in seen:
+                continue
+            seen.add(normalized)
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def _default_lexical_search(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    terms: set[str],
+    limit: int,
+) -> list[dict[str, Any]]:
+    return repo.search_long_term_memories_by_terms(chat_id, terms, limit=limit)
 
 
 def _context_line_candidates(source: str, context: str, *, trust_level: int) -> list[MemoryCandidate]:
@@ -262,10 +405,14 @@ def retrieve_candidates(
     ignored_usernames: set[str] | None = None,
     recent_limit: int | None = None,
     semantic_limit: int = 8,
+    lexical_limit: int = 30,
     recent_context_fn: Callable[..., str] = format_recent_context,
     long_term_context_fn: Callable[..., str] = format_long_term_memory_context,
     semantic_retrieval_fn: Callable[..., list[dict[str, Any]]] = retrieve_relevant_memories,
     semantic_context_fn: Callable[[list[dict[str, Any]]], str] = format_semantic_memory_context,
+    lexical_search_fn: Callable[[GroupMemoryRepository, int | str, set[str], int], list[dict[str, Any]]] = (
+        _default_lexical_search
+    ),
     user_profile_context_fn: Callable[..., str] = format_user_profile_context,
     requester_profile_context_fn: Callable[..., str] = format_requester_profile_context,
 ) -> tuple[dict[str, str], list[MemoryCandidate]]:
@@ -279,6 +426,17 @@ def retrieve_candidates(
         user_id=requester_user_id if intent.is_self_reference else None,
     )
     semantic_context = semantic_context_fn(semantic_rows)
+    semantic_candidates = [candidate for row in semantic_rows if (candidate := _semantic_candidate(row)) is not None]
+    semantic_source_sks = {candidate.source_sk for candidate in semantic_candidates if candidate.source_sk}
+    lexical_terms = extract_lexical_terms(user_text)
+    lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []
+    lexical_candidates = [
+        candidate for row in lexical_rows if (candidate := _lexical_candidate(row, lexical_terms)) is not None
+    ]
+    lexical_context = _format_lexical_memory_context(
+        [candidate for candidate in lexical_candidates if candidate.source_sk not in semantic_source_sks]
+    )
+    packed_long_term_context = _merge_contexts(long_term_context, lexical_context)
     user_profile_context = user_profile_context_fn(
         repo,
         chat_id,
@@ -320,16 +478,14 @@ def retrieve_candidates(
                 metadata={"target_usernames": sorted(intent.target_usernames)},
             )
         )
-    for row in semantic_rows:
-        candidate = _semantic_candidate(row)
-        if candidate:
-            candidates.append(candidate)
+    candidates.extend(semantic_candidates)
+    candidates.extend(lexical_candidates)
     candidates.extend(_context_line_candidates("long_term", long_term_context, trust_level=50))
     candidates.extend(_context_line_candidates("recent", recent_context, trust_level=20))
     return (
         {
             "recent_context": recent_context,
-            "long_term_memory_context": long_term_context,
+            "long_term_memory_context": packed_long_term_context,
             "semantic_memory_context": semantic_context,
             "user_profile_context": user_profile_context,
             "requester_profile_context": requester_profile_context,
@@ -350,27 +506,56 @@ def score_candidates(
     terms = _query_terms(user_text)
     scored: list[MemoryCandidate] = []
     for candidate in candidates:
-        score = candidate.score + candidate.trust_level / 120.0
+        score = _SOURCE_BASE_SCORES.get(candidate.source, 0.04)
+        score += _MEMORY_KIND_BASE_SCORES.get(candidate.memory_kind or "memory", 0.22)
+        if candidate.source in {"semantic", "lexical"}:
+            score += max(0.0, min(1.0, candidate.score)) * (0.24 if candidate.source == "semantic" else 0.18)
+        else:
+            score += max(0.0, min(1.0, candidate.score)) * 0.08
+        score += min(0.06, max(0, candidate.trust_level) / 1000.0)
+
         text_lower = candidate.text.lower()
-        exact_matches = sum(1 for term in terms if term in text_lower)
-        score += min(0.2, exact_matches * 0.04)
+        metadata_matches = candidate.metadata.get("matched_terms")
+        exact_matches: set[str] = set()
+        if isinstance(metadata_matches, list):
+            exact_matches.update(str(term).lower() for term in metadata_matches if str(term).strip())
+        exact_matches.update(term for term in terms if term in text_lower)
+        score += min(0.18, len(exact_matches) * 0.045)
 
         if intent.target_usernames and any(username in text_lower for username in intent.target_usernames):
-            score += 0.2
+            score += 0.12
         if candidate.source == "requester_profile" and intent.is_self_reference:
-            score += 0.25
+            score += 0.08
+        if candidate.source == "target_profile" and intent.target_usernames:
+            score += 0.05
         if candidate.memory_kind in {"event", "daily_summary"} and (
             intent.asks_group_decision or intent.asks_past_event
         ):
             score += 0.12
         if candidate.memory_kind == "joke":
-            score += 0.2 if intent.asks_joke_or_meme else -0.25
+            score += 0.2 if intent.asks_joke_or_meme else -0.22
         if candidate.created_at:
             age_days = max(0.0, (now - candidate.created_at) / 86_400)
-            score += max(-0.1, 0.08 - min(0.18, age_days / 365.0 * 0.18))
+            score += max(-0.08, 0.06 - min(0.14, age_days / 365.0 * 0.14))
+            if (
+                candidate.memory_kind == "event"
+                and age_days > 180
+                and not (intent.asks_group_decision or intent.asks_past_event)
+            ):
+                score -= 0.08
+            if candidate.memory_kind == "daily_summary" and age_days > 90 and not intent.asks_past_event:
+                score -= 0.06
+        if candidate.memory_kind == "daily_summary" and not (intent.asks_group_decision or intent.asks_past_event):
+            score -= 0.06
         confidence = candidate.metadata.get("confidence")
-        if isinstance(confidence, int | float):
-            score += (float(confidence) - 0.5) * 0.16
+        try:
+            confidence_value = float(confidence) if confidence is not None else None
+        except (TypeError, ValueError):
+            confidence_value = None
+        if confidence_value is not None:
+            score += (confidence_value - 0.5) * 0.12
+            if confidence_value < 0.4:
+                score -= 0.06
 
         scored.append(replace(candidate, score=max(0.0, min(1.0, score))))
     return sorted(scored, key=lambda item: (item.score, item.trust_level), reverse=True)
@@ -378,10 +563,10 @@ def score_candidates(
 
 def dedupe_candidates(candidates: list[MemoryCandidate]) -> list[MemoryCandidate]:
     """Keep the highest-scoring candidate for duplicated source/text pairs."""
-    deduped: dict[tuple[str | None, str], MemoryCandidate] = {}
+    deduped: dict[tuple[str, str], MemoryCandidate] = {}
     for candidate in candidates:
         normalized_text = " ".join(candidate.text.lower().split())[:500]
-        key = (candidate.source_sk, normalized_text)
+        key = ("source_sk", candidate.source_sk) if candidate.source_sk else (candidate.source, normalized_text)
         existing = deduped.get(key)
         if existing is None or (candidate.score, candidate.trust_level) > (existing.score, existing.trust_level):
             deduped[key] = candidate
@@ -447,11 +632,15 @@ def build_agent_memory_context(
     ignored_usernames: set[str] | None = None,
     recent_limit: int | None = None,
     semantic_limit: int = 8,
+    lexical_limit: int = 30,
     char_budget: int = 12_000,
     recent_context_fn: Callable[..., str] = format_recent_context,
     long_term_context_fn: Callable[..., str] = format_long_term_memory_context,
     semantic_retrieval_fn: Callable[..., list[dict[str, Any]]] = retrieve_relevant_memories,
     semantic_context_fn: Callable[[list[dict[str, Any]]], str] = format_semantic_memory_context,
+    lexical_search_fn: Callable[[GroupMemoryRepository, int | str, set[str], int], list[dict[str, Any]]] = (
+        _default_lexical_search
+    ),
     user_profile_context_fn: Callable[..., str] = format_user_profile_context,
     requester_profile_context_fn: Callable[..., str] = format_requester_profile_context,
 ) -> RetrievalBundle:
@@ -468,10 +657,12 @@ def build_agent_memory_context(
         ignored_usernames=ignored_usernames,
         recent_limit=recent_limit,
         semantic_limit=semantic_limit,
+        lexical_limit=lexical_limit,
         recent_context_fn=recent_context_fn,
         long_term_context_fn=long_term_context_fn,
         semantic_retrieval_fn=semantic_retrieval_fn,
         semantic_context_fn=semantic_context_fn,
+        lexical_search_fn=lexical_search_fn,
         user_profile_context_fn=user_profile_context_fn,
         requester_profile_context_fn=requester_profile_context_fn,
     )

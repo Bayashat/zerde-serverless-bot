@@ -110,20 +110,20 @@ Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#..
 
 ## Agent Answer Context
 
-`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves candidates, scores/dedupes them locally, packs context within a character budget, and returns compact `retrieval_sources` metadata for `AGENT_REPLY#...` records.
+`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, packs context within a character budget, and returns compact `retrieval_sources` metadata for `AGENT_REPLY#...` records.
 
 The returned bundle keeps these prompt sections:
 
 1. Trusted requester profile context for the user who asked the question.
 2. Trusted target-user profile context, only for users explicitly mentioned in the user message.
 3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
-4. Long-term memory context filtered by current query terms.
+4. Long-term memory context filtered by current query terms, with exact-term lexical fallback candidates from DynamoDB when useful.
 5. Recent group context with speaker metadata.
 6. Reply-thread context when the user replies to the bot's previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
 
-The Gemini prompt instructs the model to treat requester profiles as highest trust for self-reference, target-user profiles as higher trust than third-party chatter, semantic memory as lower trust than profiles, and to avoid turning one-off jokes into permanent facts. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
+The local reranker treats requester profiles as highest trust for self-reference, target-user profiles above ordinary memory, user facts above daily summaries, and jokes as low priority unless the query explicitly asks for a joke or meme. Exact lexical matches boost codes, usernames, and technical terms such as `E1027`, `S3`, or `OpenSearch`; semantic distance, trust level, target-user match, recency, and memory confidence are also considered. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
-Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, and semantic prompt context.
+Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, semantic prompt context, and lexical fallback context.
 
 ## Agent Timing And Length
 
@@ -163,7 +163,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
 - Vector indexing runs in the dedicated vector-indexer Lambda, with its own log group and Lambda alarms. The bot Lambda can still query/delete vectors for retrieval and memory cleanup, but it no longer consumes the vector memory queue.
 
-When vector indexing is incomplete, the agent still works with recent context and query-filtered DynamoDB long-term memory. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
+When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and prefix-specific lexical fallback over vectorizable long-term memory items. The lexical fallback does not scan raw `MSG#...` items. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 
 ## Important Operational Notes
 
