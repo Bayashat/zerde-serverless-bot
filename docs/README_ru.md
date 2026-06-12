@@ -24,8 +24,8 @@ Zerde больше не просто отправляет последнее с�
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые по structured schema с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why`.
-- **Memory controls**: `/memory`, `/agent`, `/memory forget me` с related vector/summary cleanup, owner-only group cleanup.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
 
@@ -102,8 +102,9 @@ flowchart LR
 | `/voteban` | Все | Начать голосование за ban, ответив на сообщение. |
 | `/quizstats` | Все | Личный quiz score, streak и rank. |
 | `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение, включая self-reference вроде “кто я”. |
-| `/memory on/off/status/forget ...` | Group owner или bot owner | Управление group memory и cleanup, включая user-related vectors и matching daily summaries. |
-| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
+| `/memory about me` | Все | Показать profile fields текущего пользователя, сохраненные из его собственных сообщений, без чужих оценок. |
+| `/memory on/off/status/forget ...` | Group owner или bot owner для settings; users могут удалить свою memory | Управление group memory и cleanup. `forget this` удаляет memory, связанную с replied bot answer или source message, с vector cleanup если настроен. |
+| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
 
 ---
 

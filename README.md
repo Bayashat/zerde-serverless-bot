@@ -28,8 +28,8 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **User profiles**: lightweight per-user context derived from each user's own messages.
 - **Long-term memory**: schema-based extracted `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
-- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length budgeting, and `/agent why`.
-- **Memory controls**: `/memory`, `/agent`, `/memory forget me` with related vector/summary cleanup, and owner-only group cleanup commands.
+- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, conservative proactive reply gating, reply-length budgeting, and `/agent why` source summaries.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, and `/memory forget this` with related vector cleanup and owner-only group cleanup commands.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
@@ -106,8 +106,9 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/voteban` | Everyone | Reply to a message to start a ban vote. |
 | `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
 | `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message and understands “who am I” from requester identity. |
-| `/memory on/off/status/forget ...` | Group owner or bot owner for settings | Manage group memory and cleanup, including user-related vectors and matching daily summaries. |
-| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
+| `/memory about me` | Everyone | Show the current user's own stored profile fields without showing other users' claims. |
+| `/memory on/off/status/forget ...` | Group owner or bot owner for settings; users can delete their own memory | Manage group memory and cleanup. `forget this` can delete memory tied to a replied bot answer or source message, with vector cleanup when configured. |
+| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
 
 ---
 

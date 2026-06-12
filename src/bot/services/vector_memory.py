@@ -544,10 +544,22 @@ def _vector_keys_for_items(chat_id: int | str, items: list[dict[str, Any]]) -> l
     keys: list[str] = []
     for item in items:
         source_sk = str(item.get("sk") or "")
-        if not source_sk:
+        if not source_sk or not GroupMemoryRepository.is_vectorizable_sk(source_sk):
             continue
         keys.append(str(item.get("vector_key") or memory_vector_key(chat_id, source_sk)))
     return keys
+
+
+def delete_memory_vectors_for_items(
+    chat_id: int | str,
+    items: list[dict[str, Any]],
+    *,
+    vector_repo: S3VectorMemoryRepository | None = None,
+) -> int:
+    if not vector_memory_configured():
+        return 0
+    vector_repo = vector_repo or S3VectorMemoryRepository()
+    return vector_repo.delete_vectors(_vector_keys_for_items(chat_id, items))
 
 
 def delete_chat_vectors(
