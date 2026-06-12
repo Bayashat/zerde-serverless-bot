@@ -120,6 +120,7 @@ Proactive replies are conservative:
 
 - The local prefilter only considers open questions or requests.
 - Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
+- The reply score recognizes multilingual technical, suggestion, and group-request cues in Kazakh, Russian, English, and Chinese.
 - Local prefilter skips for open-question candidates are logged with a structured skip reason before score/model gating.
 - Recent bot activity lowers the score.
 - Gemini must return a strong "should reply" decision.
