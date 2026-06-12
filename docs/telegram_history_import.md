@@ -50,9 +50,11 @@ Repeat once per group/export file.
 - `MSG#...` raw text records for non-sensitive messages, with `USER#...` profile updates derived from the speaker's own text.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...` long-term memory items.
 - `DAILY_SUMMARY#YYYY-MM-DD` summaries for each imported day.
-- `PROCESS_VECTOR_MEMORY` tasks for each long-term memory and daily summary.
+- `PROCESS_VECTOR_MEMORY` tasks for each long-term memory item.
 
-The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only long-term memory items and daily summaries go to S3 Vectors.
+The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only long-term memory items go to S3 Vectors by default.
+
+By default, imported `DAILY_SUMMARY#...` items are stored in DynamoDB but not vectorized, because generic import summaries are low-information retrieval candidates. Use `--vectorize-daily-summaries` only after inspecting summary quality.
 
 Imported long-term memory is later used by `/ask` and proactive agent replies through a mix of query-filtered DynamoDB reads and semantic vector retrieval. Keep joke-like or sarcastic memories narrow; a one-off roast should not become a permanent user fact.
 
@@ -61,18 +63,19 @@ Imported long-term memory is later used by `/ask` and proactive agent replies th
 - `--max-messages 1000` for a small smoke test.
 - `--until YYYY-MM-DD` to limit the date range.
 - `--no-vector-enqueue` to import DynamoDB memory without queueing embeddings.
+- `--vectorize-daily-summaries` to also enqueue imported `DAILY_SUMMARY#...` items for embeddings after inspection.
 - `--no-raw-messages` to skip raw `MSG#...` records and user profile updates.
 - `--no-long-term` to skip event/fact/joke extraction.
 - `--no-daily-summaries` to skip daily summaries.
 
-If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find that history.
+If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find long-term history. Imported daily summaries should stay out of semantic retrieval unless you have inspected them and decided they are useful.
 
 ## Cleanup And Pollution Control
 
 Before importing a large group, do a small `--max-messages` dry run and inspect whether user facts, group facts, and jokes look trustworthy. If polluted records are written, clean both sides of memory:
 
 - Delete the narrow DynamoDB keys for bad `USER#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, or `DAILY_SUMMARY#...` items.
-- Delete matching vector keys for vectorized long-term memory and daily summaries.
+- Delete matching vector keys for vectorized long-term memory and any explicitly vectorized daily summaries.
 - Back up the exact items and vector keys before production cleanup.
 
 Do not rely on vector backfill to fix bad source data. If DynamoDB memory is polluted, the agent can still retrieve it through non-vector long-term context.

@@ -65,6 +65,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--no-long-term", action="store_true", help="Do not extract EVENT/USER_FACT/GROUP_FACT/JOKE.")
     parser.add_argument("--no-daily-summaries", action="store_true", help="Do not create DAILY_SUMMARY items.")
     parser.add_argument("--no-vector-enqueue", action="store_true", help="Do not enqueue vector indexing tasks.")
+    parser.add_argument(
+        "--vectorize-daily-summaries",
+        action="store_true",
+        help="Also enqueue imported DAILY_SUMMARY items for vector indexing after inspecting summary quality.",
+    )
     return parser.parse_args()
 
 
@@ -102,6 +107,7 @@ def main() -> int:
         extract_long_term=not args.no_long_term,
         create_daily_summaries=not args.no_daily_summaries,
         enqueue_vectors=not args.no_vector_enqueue,
+        vectorize_daily_summaries=args.vectorize_daily_summaries,
         max_messages=args.max_messages,
     )
 

@@ -220,6 +220,37 @@ def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     assert repo.mark_vector_status.call_args.kwargs["status"] == "indexed"
 
 
+def test_index_memory_item_still_supports_explicit_daily_summary_vectorization(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.get_memory_item.return_value = {
+        "sk": "DAILY_SUMMARY#2026-01-01",
+        "kind": "daily_summary",
+        "summary_date": "2026-01-01",
+        "summary": "The group decided to use S3 Vectors for memory retrieval.",
+        "topics": ["s3", "vectors"],
+        "notable_events": ["S3 Vectors was selected"],
+    }
+    embedding = MagicMock()
+    embedding.embed.return_value = [0.1] * 768
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "DAILY_SUMMARY#2026-01-01",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is True
+    embedding.embed.assert_called_once()
+    assert "Daily group memory summary for 2026-01-01" in embedding.embed.call_args.args[0]
+    put_kwargs = vector_repo.put_memory_vector.call_args.kwargs
+    assert put_kwargs["metadata"]["source_sk"] == "DAILY_SUMMARY#2026-01-01"
+    assert put_kwargs["metadata"]["memory_kind"] == "daily_summary"
+
+
 def test_retrieve_relevant_memories_uses_query_embedding(monkeypatch):
     monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
     embedding = MagicMock()
