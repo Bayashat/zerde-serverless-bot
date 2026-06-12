@@ -97,11 +97,13 @@ The table is single-table by chat partition:
 | `pk=CHAT#<chat_id>, sk=SETTINGS` | Per-chat `memory_enabled` and `agent_enabled`. |
 | `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context. |
 | `sk=USER#<user_id>` | User profile derived only from that user's own messages. |
+| `sk=USERNAME#<lower_username>` | Per-chat username alias that maps Telegram handles to `USER#<user_id>` without paging all profiles. |
 | `sk=EVENT#...` | Time-bound event or operational memory. |
 | `sk=USER_FACT#<user_id>#...` | User-stated preference, boundary, or recurring personal context. |
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
+| `sk=TERM#<term>#<created_at_ms>#<source_sk>` | Lightweight exact-term lexical index row pointing back to a long-term memory or daily summary source item. |
 | `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, and `/memory forget this`. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
@@ -118,14 +120,14 @@ The extractor stores only memories above `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE`
 
 ## Agent Answer Context
 
-`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves raw profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, selects the top candidates within a character budget, renders prompt sections from those selected candidates, and returns compact `retrieval_sources` metadata for the sources that actually reached the prompt.
+`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves raw profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, selects the top candidates within a character budget, renders prompt sections from those selected candidates, and returns compact `retrieval_sources` metadata for the sources that actually reached the prompt. Target-user profile lookup resolves `@username` mentions through `USERNAME#...` aliases before fetching `USER#<user_id>` directly.
 
 The returned bundle still exposes separate prompt sections for Gemini, but their content is candidate-driven rather than copied wholesale from each retriever:
 
 1. Trusted requester profile context for the user who asked the question.
 2. Trusted target-user profile context, only for users explicitly mentioned in the user message.
 3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
-4. Long-term memory context filtered by current query terms, with exact-term lexical fallback candidates from DynamoDB when useful.
+4. Long-term memory context filtered by current query terms, with exact-term lexical candidates from `TERM#...` DynamoDB index rows when useful and a bounded recent fallback for legacy unindexed items.
 5. Recent group context with speaker metadata.
 6. Reply-thread context when the user replies to the bot's previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
 
@@ -174,7 +176,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
 - Vector indexing runs in the dedicated vector-indexer Lambda, with its own log group and Lambda alarms. The bot Lambda can still query/delete vectors for retrieval and memory cleanup, but it no longer consumes the vector memory queue.
 
-When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and prefix-specific lexical fallback over vectorizable long-term memory items. The lexical fallback does not scan raw `MSG#...` items. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
+When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and exact-term lexical lookup over `TERM#...` rows for vectorizable long-term memory items and daily summaries. The lexical path does not scan raw `MSG#...` items and only falls back to a bounded recent candidate set for older unindexed rows. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 
 ## Important Operational Notes
 

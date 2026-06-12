@@ -94,11 +94,13 @@ DynamoDB memory key families:
 - `SETTINGS`
 - `MSG#...`
 - `USER#...`
+- `USERNAME#...`
 - `EVENT#...`
 - `USER_FACT#...`
 - `GROUP_FACT#...`
 - `JOKE#...`
 - `DAILY_SUMMARY#...`
+- `TERM#...`
 - `AGENT_REPLY#...`
 - `VECTOR_BACKFILL`
 - `PROACTIVE#...`

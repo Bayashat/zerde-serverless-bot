@@ -50,13 +50,14 @@ Repeat once per group/export file.
 - `MSG#...` raw text records for non-sensitive messages, with `USER#...` profile updates derived from the speaker's own text.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...` long-term memory items.
 - `DAILY_SUMMARY#YYYY-MM-DD` summaries for each imported day.
+- `TERM#...` lexical index rows for a bounded set of exact terms on long-term memory items and daily summaries.
 - `PROCESS_VECTOR_MEMORY` tasks for each long-term memory item.
 
 The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only long-term memory items go to S3 Vectors by default.
 
 By default, imported `DAILY_SUMMARY#...` items are stored in DynamoDB but not vectorized, because generic import summaries are low-information retrieval candidates. Use `--vectorize-daily-summaries` only after inspecting summary quality.
 
-Imported long-term memory is later used by `/ask` and proactive agent replies through a mix of query-filtered DynamoDB reads and semantic vector retrieval. Keep joke-like or sarcastic memories narrow; a one-off roast should not become a permanent user fact.
+Imported long-term memory is later used by `/ask` and proactive agent replies through a mix of query-filtered DynamoDB reads, exact-term `TERM#...` lexical lookup, and semantic vector retrieval. Keep joke-like or sarcastic memories narrow; a one-off roast should not become a permanent user fact.
 
 ## Useful Options
 
