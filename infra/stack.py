@@ -244,6 +244,12 @@ class ZerdeTelegramBotStack(Stack):
             logical_slug="timeout-tasks",
             dlq=messaging.dlq,
         )
+        add_sqs_dlq_visible_alarm(
+            self,
+            env_name=env_name,
+            logical_slug="vector-memory-tasks",
+            dlq=messaging.vector_dlq,
+        )
 
         # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(
