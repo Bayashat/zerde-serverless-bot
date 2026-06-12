@@ -11,7 +11,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-from services.group_memory_processor import MemoryClassification, classify_long_term_memory
+from services.memory_extractor import MemoryClassification, classify_long_term_memory_rule_based
 from services.repositories.group_memory import GroupMemoryRepository
 from services.vector_memory import looks_sensitive_for_embedding
 
@@ -337,7 +337,7 @@ def import_telegram_history(
             else:
                 stats.duplicate_messages += 1
 
-        classification = classify_long_term_memory(message.text) if options.extract_long_term else None
+        classification = classify_long_term_memory_rule_based(message.text) if options.extract_long_term else None
         if not classification:
             continue
         classifications_by_day[message.summary_date].append((message, classification))

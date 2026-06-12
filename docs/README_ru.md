@@ -22,7 +22,7 @@ Zerde больше не просто отправляет последнее с�
 
 - **Recent memory**: не-command сообщения группы хранятся в DynamoDB как `MSG#...`.
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
-- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые по structured schema с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why`.
 - **Memory controls**: `/memory`, `/agent`, `/memory forget me` с related vector/summary cleanup, owner-only group cleanup.
@@ -36,7 +36,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Функция | Описание |
 |---------|----------|
 | Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом requester/recent/profile/long-term/lexical/semantic memory. |
-| RAG memory | Group memory хранится в DynamoDB, long-term memory индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
+| RAG memory | Group memory хранится в DynamoDB, long-term memory извлекается через structured Gemini schema + rule fallback, индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
 | Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
 | Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |

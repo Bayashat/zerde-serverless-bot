@@ -81,7 +81,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata. |
-| `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda extraction of one long-term memory item from a stored group message. |
+| `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
@@ -98,7 +98,7 @@ The table is single-table by chat partition:
 | `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context. |
 | `sk=USER#<user_id>` | User profile derived only from that user's own messages. |
 | `sk=EVENT#...` | Time-bound event or operational memory. |
-| `sk=USER_FACT#<user_id>#...` | User-stated preference or recurring personal context. |
+| `sk=USER_FACT#<user_id>#...` | User-stated preference, boundary, or recurring personal context. |
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
@@ -106,7 +106,13 @@ The table is single-table by chat partition:
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
-Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#...` items are prompt context, not vector memory.
+Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#...` items are prompt context, not vector memory.
+
+## Long-Term Memory Extraction
+
+`services.group_memory_processor.process_group_memory_task` uses `services.memory_extractor` for one-message extraction. The default provider is `GROUP_MEMORY_EXTRACTOR_PROVIDER=gemini`, which calls Gemini for compact JSON matching the `ExtractedMemory` schema: `should_store`, `kind`, `summary`, `reason`, `confidence`, `subject_user_id`, `sensitivity`, `expires_in_days`, and `evidence_message_ids`.
+
+The extractor stores only memories above `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE` (default `0.65`) and rejects `sensitive` or `secret` outputs. It also rejects third-party `user_fact` claims by requiring the extracted `subject_user_id` to match the speaker for personal memories. If Gemini is unavailable, quota-exhausted, unconfigured, or the provider is set to `rules`, the existing cue-based classifier runs as the fallback. The same safety filters still block secrets, contact details, medical/financial/identity data, future-answer directives, subjective people rankings, and jokes-as-facts.
 
 ## Agent Answer Context
 

@@ -22,7 +22,7 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 
 - **Recent memory**: command емес топ хабарламалары DynamoDB-де `MSG#...` ретінде сақталады.
 - **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
-- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`.
+- **Long-term memory**: structured schema арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, conservative proactive reply gating, жауап ұзындығын басқару, `/agent why`.
 - **Memory controls**: `/memory`, `/agent`, `/memory forget me` related vector/summary cleanup-пен, owner-only group cleanup.
@@ -36,7 +36,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Мүмкіндік | Сипаттама |
 |----------|-----------|
 | Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға requester/recent/profile/long-term/lexical/semantic memory контекстімен жауап береді. |
-| RAG memory | Group memory DynamoDB-де сақталады, long-term memory S3 Vectors арқылы semantic retrieval үшін индекстеледі және exact-term DynamoDB fallback + local reranking қолданылады. |
+| RAG memory | Group memory DynamoDB-де сақталады, long-term memory structured Gemini schema + rule fallback арқылы алынады, S3 Vectors semantic retrieval үшін индекстеледі және exact-term DynamoDB fallback + local reranking қолданылады. |
 | Reply thread continuity | Bot жауаптары `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі. |
 | Social timing | Proactive жауаптар local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. |
 | Captcha және anti-spam | Жаңа мүшелерді тексеру, rule-based және Groq арқылы spam тексеру. |
