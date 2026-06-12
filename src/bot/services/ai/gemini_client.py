@@ -71,6 +71,19 @@ class GeminiUnavailableError(Exception):
     the daily-quota user notice.
     """
 
+    retryable = True
+
+
+class GeminiEmptyResponseError(GeminiUnavailableError):
+    """Gemini returned HTTP 200 but no usable candidate text.
+
+    This usually means the response was blocked or otherwise completed without
+    text. Retrying the same interactive SQS task is unlikely to help and can
+    create noisy Lambda errors.
+    """
+
+    retryable = False
+
 
 def _elapsed_ms(started_at: float) -> int:
     return int((time.monotonic() - started_at) * 1000)
@@ -84,6 +97,75 @@ def _redact(text: str, api_key: str) -> str:
 
 def _decode_preview(data: bytes, *, limit: int = 300) -> str:
     return data.decode("utf-8", errors="replace")[:limit]
+
+
+def _extract_gemini_text(data: dict[str, Any], *, operation: str, model: str) -> str:
+    """Extract the first text part from a Gemini response with useful empty-shape logging."""
+    candidates = data.get("candidates")
+    if not isinstance(candidates, list) or not candidates:
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="missing_candidates")
+
+    candidate = candidates[0]
+    if not isinstance(candidate, dict):
+        raise TypeError("candidate is not an object")
+
+    content = candidate.get("content")
+    parts = content.get("parts") if isinstance(content, dict) else None
+    if isinstance(parts, list):
+        for part in parts:
+            if isinstance(part, dict):
+                text = part.get("text")
+                if isinstance(text, str) and text.strip():
+                    return text.strip()
+
+    _raise_empty_response(
+        data,
+        operation=operation,
+        model=model,
+        empty_reason="missing_text",
+        finish_reason=str(candidate.get("finishReason") or ""),
+        candidate_safety_count=len(candidate.get("safetyRatings") or []),
+    )
+    raise AssertionError("_raise_empty_response should always raise")
+
+
+def _raise_empty_response(
+    data: dict[str, Any],
+    *,
+    operation: str,
+    model: str,
+    empty_reason: str,
+    finish_reason: str = "",
+    candidate_safety_count: int = 0,
+) -> None:
+    prompt_feedback = data.get("promptFeedback")
+    prompt_feedback = prompt_feedback if isinstance(prompt_feedback, dict) else {}
+    prompt_safety = prompt_feedback.get("safetyRatings")
+    candidates = data.get("candidates")
+    candidates_count = len(candidates) if isinstance(candidates, list) else 0
+    prompt_block_reason = str(prompt_feedback.get("blockReason") or "")
+    prompt_block_message = str(prompt_feedback.get("blockReasonMessage") or "")
+    logger.warning(
+        "Gemini response had no candidate text",
+        extra={
+            "operation": operation,
+            "model": model,
+            "empty_reason": empty_reason,
+            "response_keys": ",".join(sorted(str(key) for key in data.keys())),
+            "candidates_count": candidates_count,
+            "finish_reason": finish_reason,
+            "prompt_block_reason": prompt_block_reason,
+            "prompt_block_message": prompt_block_message[:300],
+            "prompt_safety_ratings_count": len(prompt_safety) if isinstance(prompt_safety, list) else 0,
+            "candidate_safety_ratings_count": candidate_safety_count,
+        },
+    )
+    details = [empty_reason]
+    if prompt_block_reason:
+        details.append(f"prompt_block_reason={prompt_block_reason}")
+    if finish_reason:
+        details.append(f"finish_reason={finish_reason}")
+    raise GeminiEmptyResponseError("Gemini response had no candidate text: " + "; ".join(details))
 
 
 @dataclass(frozen=True)
@@ -312,10 +394,13 @@ class GeminiClient:
 
         try:
             data = json.loads(resp_data.decode("utf-8"))
-            candidate = data["candidates"][0]
-            text = candidate["content"]["parts"][0]["text"].strip()
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            text = _extract_gemini_text(data, operation="group_chat_reply", model=self._model)
             _record_success()
             return text, count
+        except GeminiEmptyResponseError:
+            raise
         except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 "Gemini group agent response parse failed",
@@ -415,8 +500,9 @@ class GeminiClient:
 
         try:
             data = json.loads(resp_data.decode("utf-8"))
-            candidate = data["candidates"][0]
-            text = candidate["content"]["parts"][0]["text"].strip()
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            text = _extract_gemini_text(data, operation="group_chat_proactive_decision", model=self._model)
             raw_decision = json.loads(text)
             decision = GroupAgentDecision(
                 should_reply=bool(raw_decision.get("should_reply")),
@@ -426,6 +512,8 @@ class GeminiClient:
             )
             _record_success()
             return decision, count
+        except GeminiEmptyResponseError:
+            raise
         except (KeyError, IndexError, json.JSONDecodeError, TypeError, ValueError) as exc:
             logger.warning(
                 "Gemini group agent decision response parse failed",
@@ -515,11 +603,14 @@ class GeminiClient:
 
         try:
             data = json.loads(resp_data.decode("utf-8"))
-            candidate = data["candidates"][0]
-            text = candidate["content"]["parts"][0]["text"].strip()
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            text = _extract_gemini_text(data, operation="group_daily_summary", model=self._model)
             summary = json.loads(text)
             _record_success()
             return summary if isinstance(summary, dict) else {}, count
+        except GeminiEmptyResponseError:
+            raise
         except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 "Gemini daily summary response parse failed",

@@ -20,7 +20,12 @@ from core.config import (
 )
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
+from services.ai.gemini_client import (
+    GeminiClient,
+    GeminiEmptyResponseError,
+    GeminiRPDExhaustedError,
+    GeminiUnavailableError,
+)
 from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
 from services.group_memory import (
     display_name,
@@ -927,6 +932,7 @@ def answer_group_question(
         )
         return True
     except GeminiUnavailableError as exc:
+        retryable = getattr(exc, "retryable", True)
         logger.warning(
             "Group agent Gemini call unavailable",
             extra={
@@ -934,9 +940,10 @@ def answer_group_question(
                 "reply_to_message_id": reply_to_message_id,
                 "error_type": exc.__class__.__name__,
                 "error_message": str(exc)[:500],
+                "retryable": retryable,
             },
         )
-        if raise_on_unavailable:
+        if raise_on_unavailable and retryable and not isinstance(exc, GeminiEmptyResponseError):
             raise
         bot.send_message(
             chat_id,
