@@ -1164,6 +1164,16 @@ def test_record_agent_reply_persists_thread_metadata():
         current_user_message="why?",
         source_message_context="Original replied-to message:\n[speaker user_id=7] What is Python?",
         parent_bot_message_id=444,
+        retrieval_sources=[
+            {
+                "source": "semantic",
+                "source_sk": "USER_FACT#42#1#2",
+                "memory_kind": "user_fact",
+                "score": 0.82,
+                "trust_level": 60,
+            },
+            {"source": "requester_profile", "source_sk": "USER#42", "score": 1.0, "trust_level": 100},
+        ],
     )
 
     item = repo.table.put_item.call_args.kwargs["Item"]
@@ -1172,6 +1182,10 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["current_user_message"] == "why?"
     assert "What is Python" in item["source_message_context"]
     assert item["parent_bot_message_id"] == 444
+    assert item["retrieval_sources"][0]["source"] == "semantic"
+    assert item["retrieval_sources"][0]["source_sk"] == "USER_FACT#42#1#2"
+    assert str(item["retrieval_sources"][0]["score"]) == "0.82"
+    assert item["retrieval_sources"][1]["source"] == "requester_profile"
 
 
 def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypatch):
@@ -1342,6 +1356,10 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert repo.record_agent_reply.call_args.kwargs["answer_text"] == "Баяшат OpenSearch жайлы жиі жазады."
     assert repo.record_agent_reply.call_args.kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
     assert repo.record_agent_reply.call_args.kwargs["requester_user_id"] == 42
+    retrieval_sources = repo.record_agent_reply.call_args.kwargs["retrieval_sources"]
+    assert any(source["source"] == "semantic" for source in retrieval_sources)
+    assert any(source["source"] == "target_profile" for source in retrieval_sources)
+    assert any(source["source"] == "requester_profile" for source in retrieval_sources)
 
 
 def test_answer_group_question_blocks_subjective_ranking_without_gemini(monkeypatch):
