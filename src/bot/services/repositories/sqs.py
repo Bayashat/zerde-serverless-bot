@@ -74,6 +74,7 @@ class SQSClient:
         reply_to_message_id: int,
         user_text: str,
         lang: str,
+        retrieval_query: str | None = None,
         requester_user_id: int | str | None = None,
         requester_username: str | None = None,
         requester_display_name: str | None = None,
@@ -90,6 +91,8 @@ class SQSClient:
             "user_text": user_text,
             "lang": lang,
         }
+        if retrieval_query:
+            payload["retrieval_query"] = retrieval_query
         if requester_user_id is not None:
             payload["requester_user_id"] = requester_user_id
         if requester_username:

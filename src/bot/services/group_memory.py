@@ -260,6 +260,7 @@ def format_long_term_memory_context(
     *,
     limit: int = 12,
     query_text: str | None = None,
+    memory_kinds: tuple[str, ...] | list[str] | None = None,
 ) -> str:
     """Render recent important memories extracted by the async memory processor."""
     daily_summaries = repo.get_recent_daily_summaries(chat_id, limit=GROUP_MEMORY_DAILY_SUMMARY_DAYS)
@@ -267,8 +268,11 @@ def format_long_term_memory_context(
     query_terms = _relevance_terms(query_text or "")
     if query_text is not None and not query_terms:
         return ""
+    allowed_kinds = {str(kind) for kind in (memory_kinds or []) if str(kind)}
     lines: list[str] = []
     for item in daily_summaries:
+        if allowed_kinds and "daily_summary" not in allowed_kinds:
+            continue
         if not _memory_matches_query(item, query_terms):
             continue
         summary_date = str(item.get("summary_date") or "").strip()
@@ -281,9 +285,11 @@ def format_long_term_memory_context(
             topic_suffix = f" topics={topic_text}" if topic_text else ""
             lines.append(f"[daily_summary date={summary_date}{topic_suffix}] {summary[:900]}")
     for item in memories:
+        kind = str(item.get("kind") or "memory")
+        if allowed_kinds and kind not in allowed_kinds:
+            continue
         if not _memory_matches_query(item, query_terms):
             continue
-        kind = str(item.get("kind") or "memory")
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
         summary = str(item.get("summary") or item.get("text") or "").replace("\n", " ").strip()
         reason = str(item.get("reason") or "").strip()

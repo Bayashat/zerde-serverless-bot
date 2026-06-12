@@ -1201,6 +1201,7 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     assert payload["reply_to_message_id"] == 99
     assert payload["user_text"] == "what did we decide?"
     assert payload["lang"] == "en"
+    assert "retrieval_query" not in payload
 
 
 def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
@@ -1237,6 +1238,7 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
         chat_id=-100123,
         reply_to_message_id=99,
         user_text="thread prompt",
+        retrieval_query="why? Previous user request: explain Python",
         lang="en",
         current_user_message="why?",
         source_message_context="Original replied-to message:\n[speaker user_id=7] Python is slow?",
@@ -1244,6 +1246,7 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["retrieval_query"] == "why? Previous user request: explain Python"
     assert payload["current_user_message"] == "why?"
     assert "Python is slow" in payload["source_message_context"]
     assert payload["parent_bot_message_id"] == 555
@@ -1786,6 +1789,37 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["retrieval_sources"][1]["source"] == "requester_profile"
 
 
+def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query():
+    repo = MagicMock()
+    repo.get_agent_reply_explanation.return_value = {
+        "current_user_message": "what did we decide about S3 Vectors?",
+        "answer_text": "We decided to use S3 Vectors because the previous answer needs continuity.",
+        "source_message_context": (
+            "Original replied-to message:\n"
+            "[speaker user_id=7 username=@nurt name=Nurt] S3 Vectors is cheaper for semantic memory."
+        ),
+    }
+    message = {
+        "message_id": 99,
+        "text": "why?",
+        "reply_to_message": {
+            "message_id": 555,
+            "text": "We decided to use S3 Vectors because the previous answer needs continuity.",
+            "from": {"id": 1000, "is_bot": True, "username": "zerde_kz_bot"},
+        },
+    }
+
+    context = group_agent.build_explicit_question_context(repo, -100123, message)
+
+    assert "Previous bot answer:" in context.user_text
+    assert "We decided to use S3 Vectors because the previous answer needs continuity." in context.user_text
+    assert "Current follow-up: why?" in context.retrieval_query
+    assert "Previous user request: what did we decide about S3 Vectors?" in context.retrieval_query
+    assert "Original source message:" in context.retrieval_query
+    assert "previous answer needs continuity" not in context.retrieval_query
+    assert context.parent_bot_message_id == 555
+
+
 def test_store_long_term_memory_persists_extractor_metadata(monkeypatch):
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
@@ -2161,6 +2195,59 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
 
 
+def test_answer_group_question_retrieves_with_compact_query_but_generates_from_full_prompt(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("Because S3 Vectors matched the constraints.", 1)
+    retrieve = MagicMock(
+        return_value=[
+            {
+                "metadata": {
+                    "memory_kind": "group_fact",
+                    "source_sk": "GROUP_FACT#1#2",
+                    "text": "The group decided to use S3 Vectors for memory retrieval.",
+                }
+            }
+        ]
+    )
+    full_prompt = (
+        "The user is continuing a thread with this previous bot answer:\n\n"
+        "Previous user request:\nwhat did we decide about memory retrieval?\n\n"
+        "Previous bot answer:\nWe chose S3 Vectors after comparing several options.\n\n"
+        "User follow-up:\nwhy?"
+    )
+    retrieval_query = (
+        "Current follow-up: why?\n\n"
+        "Previous user request: what did we decide about memory retrieval?\n\n"
+        "Original source message: [speaker user_id=7] S3 Vectors fits the current AWS stack."
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", retrieve)
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text=full_prompt,
+        retrieval_query=retrieval_query,
+        lang="en",
+    )
+
+    assert handled is True
+    assert retrieve.call_args.args[1] == retrieval_query
+    assert retrieve.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
+    assert "Previous bot answer" not in retrieve.call_args.args[1]
+    assert gemini.group_chat_reply.call_args.kwargs["user_message"] == full_prompt
+    assert "Previous bot answer" in gemini.group_chat_reply.call_args.kwargs["user_message"]
+
+
 def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
@@ -2313,6 +2400,7 @@ def test_handle_ask_enqueues_group_context_answer():
         chat_id=-100123,
         reply_to_message_id=99,
         user_text="what happened yesterday?",
+        retrieval_query="what happened yesterday?",
         lang="en",
         requester_user_id=42,
         requester_username="ada",
@@ -2401,8 +2489,12 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     handle_ask(ctx)
 
     user_text = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"]
+    retrieval_query = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["retrieval_query"]
     assert "deploying on Friday evening" in user_text
     assert "is he being sarcastic?" in user_text
+    assert "deploying on Friday evening" in retrieval_query
+    assert "is he being sarcastic?" in retrieval_query
+    assert "The user is asking about this replied-to group message" not in retrieval_query
     assert "message_id=8" in ctx.sqs_repo.send_group_ask_task.call_args.kwargs["source_message_context"]
     assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["current_user_message"] == "is he being sarcastic?"
     ctx.reply.assert_not_called()
@@ -2421,6 +2513,7 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
             "chat_id": -100123,
             "reply_to_message_id": 99,
             "user_text": "thread prompt",
+            "retrieval_query": "why? Previous user request: explain Python",
             "lang": "en",
             "requester_user_id": 42,
             "current_user_message": "why?",
@@ -2431,6 +2524,7 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
 
     answer.assert_called_once()
     assert answer.call_args.kwargs["current_user_message"] == "why?"
+    assert answer.call_args.kwargs["retrieval_query"] == "why? Previous user request: explain Python"
     assert "What is Python" in answer.call_args.kwargs["source_message_context"]
     assert answer.call_args.kwargs["parent_bot_message_id"] == 555
 
