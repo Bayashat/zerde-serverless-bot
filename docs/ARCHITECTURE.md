@@ -11,6 +11,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It embeds long-term memory and high-information daily summaries into S3 Vectors for semantic retrieval.
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
+- It stores normal bot answers only as short-term reply-thread metadata, not as long-term semantic memory.
 - It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
@@ -102,11 +103,13 @@ The table is single-table by chat partition:
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
 | `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, and `/memory forget this`. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, and `/memory forget this`. These rows are not long-term semantic memory. |
+| `sk=BOT_COMMITMENT#...` | Reserved durable bot-authored commitment key family for a future explicit command/admin flow. Normal answer generation must not write this. |
+| `sk=BOT_CORRECTION#...` | Reserved durable bot-authored correction key family for a future explicit user/admin correction flow. Normal answer generation must not write this. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
-Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items are prompt context, not vector memory.
+Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items and normal bot answer `AGENT_REPLY#...` items are prompt/thread context, not vector memory. The reserved `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` families are placeholders for explicit future durable bot memory flows and are not vectorizable until such flows add review/permission checks and tests.
 
 ## Long-Term Memory Extraction
 
@@ -132,6 +135,8 @@ The returned bundle still exposes separate prompt sections for Gemini, but their
 The local reranker treats requester profiles as highest trust for self-reference, target-user profiles above ordinary memory, user facts above daily summaries, and jokes as low priority unless the query explicitly asks for a joke or meme. Exact lexical matches boost codes, usernames, and technical terms such as `E1027`, `S3`, or `OpenSearch`; semantic distance, trust level, target-user match, recency, and memory confidence are also considered. Because selected candidates are what render prompt content, this ranking directly controls whether a semantic user fact, lexical exact match, daily summary, joke, old event, or recent message reaches Gemini. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
 `/agent why` reads the latest or replied `AGENT_REPLY#...` item and shows trigger, reason, confidence, and only memory source types/counts such as requester profile, semantic memory, lexical memory, long-term group memory, and recent context. It intentionally does not print full memory text.
+
+`AGENT_REPLY#...` is deliberately short-term reply-thread continuity, not a durable claim that the bot should learn from itself. Normal answers are not sent through long-term memory extraction, are not listed by vector backfill, and are rejected by vector indexing if a bad task references them. If the bot later needs to remember its own explicit commitment or a user/admin correction, that should use a deliberate `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` write path rather than reusing ordinary answer metadata.
 
 Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, semantic prompt context, and lexical fallback context.
 
@@ -167,7 +172,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Dimensions: `VECTOR_MEMORY_DIMENSIONS` (default `768`).
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
 - Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`) filters out distant vector matches before prompt injection.
-- Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`.
+- Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`. `AGENT_REPLY#` is excluded so normal bot answers do not become semantic memory by accident.
 - Live `DAILY_SUMMARY#...` items are stored in DynamoDB but are not vectorized when they come from fallback summary paths (`fallback_rpd`, `fallback_unavailable`, `fallback_no_gemini`) or when Gemini returns no topics, notable events, or inside jokes. This keeps generic "observed N messages" summaries out of semantic retrieval.
 - Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory about me` shows only the current user's profile derived from their own messages. `/memory forget me` removes that user's profile, raw messages, user facts, and matching daily summaries. `/memory forget this` can be used as a reply to a bot answer to delete recorded retrieval-source memory, or as a reply to a source message to delete the stored raw `MSG#...` item and long-term memory derived from that message. Regular users can delete only memory tied to their own messages; the group owner or bot owner can delete group memory.
 - Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.

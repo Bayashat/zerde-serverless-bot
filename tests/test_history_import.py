@@ -5,6 +5,8 @@ from botocore.exceptions import ClientError
 from services.group_memory_processor import MemoryClassification
 from services.history_import import (
     HistoryImportOptions,
+    HistoryImportStats,
+    _enqueue_vector,
     build_history_daily_summary,
     import_telegram_history,
     normalise_export_user_id,
@@ -244,6 +246,21 @@ def test_import_telegram_history_vectorizes_daily_summary_when_enabled(tmp_path)
         "DAILY_SUMMARY#2026-01-01",
     ]
     assert result.stats.vector_tasks == 2
+
+
+def test_history_import_skips_non_vectorizable_agent_reply_enqueue():
+    vector_enqueue = MagicMock()
+    stats = HistoryImportStats()
+
+    _enqueue_vector(
+        HistoryImportOptions(chat_id=-100123, export_path=MagicMock(), since=date(2026, 1, 1)),
+        vector_enqueue,
+        "AGENT_REPLY#0000000000555",
+        stats,
+    )
+
+    vector_enqueue.assert_not_called()
+    assert stats.vector_tasks == 0
 
 
 def test_store_message_skip_if_exists_does_not_touch_profile():

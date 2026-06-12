@@ -5,6 +5,7 @@ import json
 import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
+from services.repositories.group_memory import GroupMemoryRepository
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -223,6 +224,12 @@ class SQSClient:
         reason: str | None = None,
     ) -> None:
         """Enqueue vector indexing for one already-stored long-term memory item."""
+        if not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+            logger.info(
+                "Skipped vector memory task for non-vectorizable key",
+                extra={"chat_id": chat_id, "source_sk": source_sk},
+            )
+            return
         payload: dict[str, object] = {
             "task_type": "PROCESS_VECTOR_MEMORY",
             "chat_id": chat_id,

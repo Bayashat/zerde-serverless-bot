@@ -25,6 +25,7 @@ Zerde больше не просто отправляет последнее с�
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
+- **Bot output boundary**: обычные ответы бота хранятся только как short-term `AGENT_REPLY#...` thread metadata и не эмбеддятся в semantic memory. Durable bot-authored memory зарезервирована для future explicit `BOT_COMMITMENT#...` или `BOT_CORRECTION#...` flows.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
@@ -37,7 +38,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 |---------|----------|
 | Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом requester/recent/profile/long-term/lexical/semantic memory. |
 | RAG memory | Group memory хранится в DynamoDB, long-term memory извлекается через structured Gemini schema + rule fallback, high-information memory индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
-| Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
+| Reply thread continuity | Ответы бота сохраняются как short-term `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ; эти записи не являются semantic/vector memory. |
 | Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |

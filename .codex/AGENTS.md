@@ -40,6 +40,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It indexes long-term memory and high-information daily summaries in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
+- Normal bot answers stay in short-term `AGENT_REPLY#...` metadata for thread continuity only; they are not embedded into semantic memory.
 - It may proactively answer only after conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
 
@@ -108,11 +109,13 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `USER#<user_id>` — profile from the user's own messages only.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`.
+- `AGENT_REPLY#<bot_message_id>` — short-term bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`; not long-term semantic memory.
+- `BOT_COMMITMENT#...` — reserved future durable bot commitment rows for explicit command/admin flows only.
+- `BOT_CORRECTION#...` — reserved future durable bot correction rows for explicit user/admin correction flows only.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
-Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
+Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. `AGENT_REPLY#` is excluded so normal bot answers never become long-term vector memory by accident. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
 
 ## SQS Tasks
 
@@ -139,6 +142,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
+- **Bot-output memory boundary**: ordinary `AGENT_REPLY#...` rows are short-term thread/explainability metadata only. Use a deliberate `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flow with permission/review checks before any bot-authored commitment or correction becomes durable memory.
 - **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why`.
 - **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.

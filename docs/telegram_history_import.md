@@ -50,9 +50,9 @@ Repeat once per group/export file.
 - `MSG#...` raw text records for non-sensitive messages, with `USER#...` profile updates derived from the speaker's own text.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...` long-term memory items.
 - `DAILY_SUMMARY#YYYY-MM-DD` summaries for each imported day.
-- `PROCESS_VECTOR_MEMORY` tasks for each long-term memory item.
+- `PROCESS_VECTOR_MEMORY` tasks for each vectorizable long-term memory item.
 
-The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only long-term memory items go to S3 Vectors by default.
+The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only vectorizable long-term memory items go to S3 Vectors by default. Bot answer metadata such as `AGENT_REPLY#...` is not imported or enqueued as semantic memory.
 
 By default, imported `DAILY_SUMMARY#...` items are stored in DynamoDB but not vectorized, because generic import summaries are low-information retrieval candidates. Use `--vectorize-daily-summaries` only after inspecting summary quality.
 
