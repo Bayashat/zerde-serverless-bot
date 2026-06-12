@@ -110,6 +110,7 @@ class HistoryImportOptions:
     extract_long_term: bool = True
     create_daily_summaries: bool = True
     enqueue_vectors: bool = True
+    vectorize_daily_summaries: bool = False
     max_messages: int | None = None
 
 
@@ -381,7 +382,8 @@ def import_telegram_history(
                 message_count=len(by_day[summary_date]),
                 source=daily["source"],
             )
-            _enqueue_vector(options, vector_enqueue, item["sk"], stats)
+            if options.vectorize_daily_summaries:
+                _enqueue_vector(options, vector_enqueue, item["sk"], stats)
 
     first_day = min(by_day) if by_day else None
     last_day = max(by_day) if by_day else None
