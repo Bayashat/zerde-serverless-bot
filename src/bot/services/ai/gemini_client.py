@@ -72,6 +72,20 @@ class GeminiUnavailableError(Exception):
     """
 
 
+def _elapsed_ms(started_at: float) -> int:
+    return int((time.monotonic() - started_at) * 1000)
+
+
+def _redact(text: str, api_key: str) -> str:
+    if api_key:
+        text = text.replace(api_key, "[REDACTED]")
+    return text[:500]
+
+
+def _decode_preview(data: bytes, *, limit: int = 300) -> str:
+    return data.decode("utf-8", errors="replace")[:limit]
+
+
 @dataclass(frozen=True)
 class GroupAgentDecision:
     """LLM decision for whether ZerdeBot should proactively join a group chat."""
@@ -103,6 +117,78 @@ class GeminiClient:
     @property
     def rpd_limit(self) -> int:
         return self._rate_repo.rpd_limit
+
+    def _post_generate_content(
+        self,
+        *,
+        operation: str,
+        url: str,
+        body: str,
+        headers: dict[str, str],
+    ) -> bytes:
+        started_at = time.monotonic()
+        try:
+            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
+        except (HTTPError, OSError) as exc:
+            _record_transient_failure()
+            error_message = _redact(str(exc), self._api_key)
+            logger.warning(
+                "Gemini request transport failed",
+                extra={
+                    "operation": operation,
+                    "model": self._model,
+                    "latency_ms": _elapsed_ms(started_at),
+                    "error_type": exc.__class__.__name__,
+                    "error_message": error_message,
+                },
+            )
+            raise GeminiUnavailableError(f"Gemini transport {exc.__class__.__name__}: {error_message}") from exc
+
+        latency_ms = _elapsed_ms(started_at)
+        response_chars = len(resp.data or b"")
+        if resp.status == 429 or resp.status >= 500:
+            _record_transient_failure()
+            preview = _redact(_decode_preview(resp.data or b""), self._api_key)
+            logger.warning(
+                "Gemini request failed",
+                extra={
+                    "operation": operation,
+                    "model": self._model,
+                    "error_type": "http_status",
+                    "status_code": resp.status,
+                    "latency_ms": latency_ms,
+                    "response_chars": response_chars,
+                    "response_preview": preview,
+                },
+            )
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {preview}")
+        if resp.status >= 400:
+            preview = _redact(_decode_preview(resp.data or b""), self._api_key)
+            logger.warning(
+                "Gemini request rejected",
+                extra={
+                    "operation": operation,
+                    "model": self._model,
+                    "error_type": "http_status",
+                    "status_code": resp.status,
+                    "latency_ms": latency_ms,
+                    "response_chars": response_chars,
+                    "response_preview": preview,
+                },
+            )
+            raise GeminiUnavailableError(f"Gemini API {resp.status}: {preview}")
+
+        logger.info(
+            "Gemini request completed",
+            extra={
+                "operation": operation,
+                "model": self._model,
+                "status_code": resp.status,
+                "latency_ms": latency_ms,
+                "response_chars": response_chars,
+            },
+        )
+        return resp.data or b""
 
     def group_chat_reply(
         self,
@@ -217,25 +303,29 @@ class GeminiClient:
                 "rpd_limit": self.rpd_limit,
             },
         )
-        try:
-            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
-        except (HTTPError, OSError) as exc:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
-
-        if resp.status == 429 or resp.status >= 500:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
-        if resp.status >= 400:
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+        resp_data = self._post_generate_content(
+            operation="group_chat_reply",
+            url=url,
+            body=body,
+            headers=headers,
+        )
 
         try:
-            data = json.loads(resp.data.decode("utf-8"))
+            data = json.loads(resp_data.decode("utf-8"))
             candidate = data["candidates"][0]
             text = candidate["content"]["parts"][0]["text"].strip()
             _record_success()
             return text, count
         except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            logger.warning(
+                "Gemini group agent response parse failed",
+                extra={
+                    "operation": "group_chat_reply",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
             raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
 
     def group_chat_proactive_decision(
@@ -316,20 +406,15 @@ class GeminiClient:
                 "rpd_limit": self.rpd_limit,
             },
         )
-        try:
-            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
-        except (HTTPError, OSError) as exc:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
-
-        if resp.status == 429 or resp.status >= 500:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
-        if resp.status >= 400:
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+        resp_data = self._post_generate_content(
+            operation="group_chat_proactive_decision",
+            url=url,
+            body=body,
+            headers=headers,
+        )
 
         try:
-            data = json.loads(resp.data.decode("utf-8"))
+            data = json.loads(resp_data.decode("utf-8"))
             candidate = data["candidates"][0]
             text = candidate["content"]["parts"][0]["text"].strip()
             raw_decision = json.loads(text)
@@ -342,6 +427,15 @@ class GeminiClient:
             _record_success()
             return decision, count
         except (KeyError, IndexError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            logger.warning(
+                "Gemini group agent decision response parse failed",
+                extra={
+                    "operation": "group_chat_proactive_decision",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
             raise GeminiUnavailableError(f"Bad Gemini decision response: {exc}") from exc
 
     def group_daily_summary(
@@ -412,24 +506,28 @@ class GeminiClient:
                 "rpd_limit": self.rpd_limit,
             },
         )
-        try:
-            resp = _http.request("POST", url, body=body, headers=headers, retries=False)
-        except (HTTPError, OSError) as exc:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini unreachable: {exc}") from exc
-
-        if resp.status == 429 or resp.status >= 500:
-            _record_transient_failure()
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
-        if resp.status >= 400:
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {resp.data.decode('utf-8')[:200]}")
+        resp_data = self._post_generate_content(
+            operation="group_daily_summary",
+            url=url,
+            body=body,
+            headers=headers,
+        )
 
         try:
-            data = json.loads(resp.data.decode("utf-8"))
+            data = json.loads(resp_data.decode("utf-8"))
             candidate = data["candidates"][0]
             text = candidate["content"]["parts"][0]["text"].strip()
             summary = json.loads(text)
             _record_success()
             return summary if isinstance(summary, dict) else {}, count
         except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            logger.warning(
+                "Gemini daily summary response parse failed",
+                extra={
+                    "operation": "group_daily_summary",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
             raise GeminiUnavailableError(f"Bad Gemini daily summary response: {exc}") from exc
