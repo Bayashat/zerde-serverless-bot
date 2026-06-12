@@ -8,7 +8,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 
 - It observes opted-in group messages and stores recent context.
 - It extracts long-term memories and daily summaries.
-- It embeds long-term memory into S3 Vectors for semantic retrieval.
+- It embeds long-term memory and high-information daily summaries into S3 Vectors for semantic retrieval.
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
@@ -106,7 +106,7 @@ The table is single-table by chat partition:
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
-Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Only long-term memory prefixes and daily summaries are vectorizable. Raw `MSG#...` items are prompt context, not vector memory.
+Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items are prompt context, not vector memory.
 
 ## Long-Term Memory Extraction
 
@@ -168,6 +168,7 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
 - Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`) filters out distant vector matches before prompt injection.
 - Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`.
+- Live `DAILY_SUMMARY#...` items are stored in DynamoDB but are not vectorized when they come from fallback summary paths (`fallback_rpd`, `fallback_unavailable`, `fallback_no_gemini`) or when Gemini returns no topics, notable events, or inside jokes. This keeps generic "observed N messages" summaries out of semantic retrieval.
 - Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory about me` shows only the current user's profile derived from their own messages. `/memory forget me` removes that user's profile, raw messages, user facts, and matching daily summaries. `/memory forget this` can be used as a reply to a bot answer to delete recorded retrieval-source memory, or as a reply to a source message to delete the stored raw `MSG#...` item and long-term memory derived from that message. Regular users can delete only memory tied to their own messages; the group owner or bot owner can delete group memory.
 - Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.

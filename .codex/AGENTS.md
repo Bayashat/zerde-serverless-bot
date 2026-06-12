@@ -37,7 +37,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It observes opted-in group messages.
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
 - It extracts long-term memory with cheap local candidate gates, bounded structured Gemini extraction, and rule-based fallback when Gemini is unavailable, disabled, over budget, or not warranted.
-- It indexes long-term memory in S3 Vectors for semantic RAG retrieval.
+- It indexes long-term memory and high-information daily summaries in S3 Vectors for semantic RAG retrieval.
 - It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available.
 - It may proactively answer only after conservative local and LLM social-timing gates.
@@ -112,7 +112,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
 
-Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and `DAILY_SUMMARY#`.
+Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
 
 ## SQS Tasks
 
