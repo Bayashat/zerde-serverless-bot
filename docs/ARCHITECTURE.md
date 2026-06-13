@@ -68,10 +68,11 @@ flowchart LR
 2. Private chats get a fixed response; non-whitelisted groups are ignored.
 3. Spam screening runs before normal handling unless a captcha is pending.
 4. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
-5. Irrelevant group chatter exits early.
-6. Relevant events route to the group agent or the command dispatcher.
-7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
-8. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+5. If ambient reactions are enabled, eligible group text messages are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
+6. Irrelevant group chatter exits early.
+7. Relevant events route to the group agent or the command dispatcher.
+8. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
+9. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
 
 ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including proactive candidates, daily summaries, memory extraction, and vector indexing.
 
@@ -85,14 +86,16 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata and optional metadata-only `media_ref`. Media bytes are downloaded only in this worker. |
 | `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. |
+| `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for sampled normal group text messages; may call `setMessageReaction` and stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
-Failures re-raise in `services/sqs_task_router.py` so SQS retry and DLQ semantics apply. The main
-task queue defaults to 1 day of message retention, the vector-memory queue defaults to 4 days, and
-both DLQs default to 14 days for incident inspection and redrive. CDK deploy-time env vars
+Most task failures re-raise in `services/sqs_task_router.py` so SQS retry and DLQ semantics apply.
+Ambient reaction classifier/API failures are logged and skipped because reactions must never disturb
+normal bot processing. The main task queue defaults to 1 day of message retention, the vector-memory
+queue defaults to 4 days, and both DLQs default to 14 days for incident inspection and redrive. CDK deploy-time env vars
 `MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
 `VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS` can tune these values
 within SQS's 1-14 day range.
@@ -114,12 +117,13 @@ The table is single-table by chat partition:
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
 | `sk=TERM#<term>#<created_at_ms>#<source_sk>` | Lightweight exact-term lexical index row pointing back to a long-term memory or daily summary source item. |
 | `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, optional compact media metadata/summary, parent bot message id, requester metadata, and compact retrieval source metadata, including deletion policy, for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`. These rows are not long-term semantic memory. |
+| `sk=AMBIENT_REACTION#<created_at_ms>#<message_id>` | Seven-day reaction metadata for cooldowns/debugging: chat id, user id, message id, emoji, category, confidence, and TTL. These rows are not semantic/vector memory. |
 | `sk=BOT_COMMITMENT#...` | Reserved durable bot-authored commitment key family for a future explicit command/admin flow. Normal answer generation must not write this. |
 | `sk=BOT_CORRECTION#...` | Reserved durable bot-authored correction key family for a future explicit user/admin correction flow. Normal answer generation must not write this. |
 | `sk=VECTOR_BACKFILL` | Cumulative vector backfill status for a chat. Tracks `processed_total`, `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and continuation tokens. Legacy `vector_backfill_*` attributes are still written for compatibility. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
-Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, feedback metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, a `superseded_by` placeholder for future consolidation, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items and normal bot answer `AGENT_REPLY#...` items are prompt/thread context, not vector memory. The reserved `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` families are placeholders for explicit future durable bot memory flows and are not vectorizable until such flows add review/permission checks and tests.
+Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, feedback metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, a `superseded_by` placeholder for future consolidation, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items, normal bot answer `AGENT_REPLY#...` items, and `AMBIENT_REACTION#...` rows are not vector memory. The reserved `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` families are placeholders for explicit future durable bot memory flows and are not vectorizable until such flows add review/permission checks and tests.
 
 Memory retention is type-specific. `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` controls raw `MSG#...` records, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` controls `AGENT_REPLY#...` thread metadata, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` controls `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` controls `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` controls `PROACTIVE#...` counters. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still stores `expires_at`; the DynamoDB `ttl` is the shorter of explicit expiry and configured long-term retention.
 
@@ -182,6 +186,20 @@ Answer length is explicit:
 - When selected semantic or lexical memory is low confidence or weakly matched, default `low_confidence_behavior=cautious` adds uncertainty instructions so the model does not present shaky memory as fact.
 - `fit_llm_output` trims overly long responses before Telegram HTML normalization.
 - Gemini `200 OK` responses with no candidate text are logged with safe response-shape metadata and treated as non-retryable for interactive `/ask` SQS work; the user gets the normal unavailable notice instead of a noisy retry loop.
+
+## Ambient Reactions
+
+Ambient reactions are a presence feature controlled by `AMBIENT_REACTIONS_ENABLED`, enabled by default.
+The webhook samples eligible normal group text messages and queues `PROCESS_AMBIENT_REACTION`; the SQS
+worker applies cooldowns, gathers limited recent context, asks Gemini for strict JSON, validates the
+emoji/confidence contract, and calls Telegram `setMessageReaction`. Reaction failures are logged and
+do not affect normal message handling.
+
+The classifier receives only recent short-term context: up to 10 previous stored `MSG#...` text rows,
+the current message, and for replies a bounded reply chain from the Telegram update payload
+(`MAX_REPLY_CHAIN_DEPTH=3`, `MAX_CONTEXT_MESSAGES_TOTAL=15`). It does not use long-term memory, S3
+Vectors, media download/analysis, profile context, or memory retrieval. The only stored output is
+short-lived `AMBIENT_REACTION#...` metadata for cooldowns and debugging.
 
 ## Vector Memory
 

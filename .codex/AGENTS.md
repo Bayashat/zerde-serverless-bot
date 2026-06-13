@@ -96,6 +96,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/memory_extractor.py` — structured long-term memory schema, Gemini extraction normalisation, rule fallback, and storage guards.
 - `services/group_memory_processor.py` — async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer length/style policy.
+- `services/ambient_reactions.py` — ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, and `setMessageReaction` task processing.
 - `services/telegram_media.py` — explicit `/ask` media detection, metadata-only references, bounded worker download preparation, and Gemini media part construction.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
@@ -115,6 +116,7 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
 - `TERM#<term>#<created_at_ms>#<source_sk>` — bounded exact-term lexical index rows for long-term memories and daily summaries.
 - `AGENT_REPLY#<bot_message_id>` — short-term bot answer text, triggering/current user message, optional quoted source-message context, optional compact media metadata/summary, parent bot message id, requester metadata, retrieval source metadata with deletion policy, and reason for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`; not long-term semantic memory.
+- `AMBIENT_REACTION#<created_at_ms>#<message_id>` — seven-day reaction metadata for cooldowns/debugging only; not long-term semantic memory.
 - `BOT_COMMITMENT#...` — reserved future durable bot commitment rows for explicit command/admin flows only.
 - `BOT_CORRECTION#...` — reserved future durable bot correction rows for explicit user/admin correction flows only.
 - `VECTOR_BACKFILL` — cumulative vector backfill status with processed/enqueued/failure totals,
@@ -136,6 +138,7 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 - `SPAM_CHECK` — async Groq spam decision.
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
 - `PROCESS_PROACTIVE_CANDIDATE` — delayed proactive final check after humans have had time to answer.
+- `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
@@ -167,6 +170,7 @@ both DLQs default to 14 days for incident inspection and redrive. Tune these at 
 - **Bot-output memory boundary**: ordinary `AGENT_REPLY#...` rows are short-term thread/explainability metadata only. Use a deliberate `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flow with permission/review checks before any bot-authored commitment or correction becomes durable memory.
 - **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates from `retrieval_query`, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why` and wrong-source feedback. Username target profiles use `USERNAME#...` aliases, exact lexical retrieval uses `TERM#...` index rows before falling back to recent legacy candidates, and negative feedback on a source lowers its future retrieval score.
 - **Explicit multimodal boundary**: ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked through `/ask` or an explicit mention/reply path, sends only `media_ref` metadata through SQS, downloads media in the async worker, and stores only compact media metadata/summary in `AGENT_REPLY#...`. Raw bytes, downloaded files, OCR/transcripts, and media-derived facts are not long-term memory and are not indexed in S3 Vectors by default.
+- **Ambient reaction boundary**: ambient reactions are enabled by default and must stay ephemeral. They may use bounded recent/reply text context for classification, but must not use long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context. Only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed.
 - **Intent-aware retrieval filters**: obvious self-reference and target-user questions narrow semantic/lexical memory to user facts; group-decision questions narrow to group facts and daily summaries; past-event questions narrow to events and daily summaries; joke/meme questions narrow to jokes and daily summaries.
 - **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes only durable long-term memory (`EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, allowed `DAILY_SUMMARY#`) from a replied bot answer, or raw/derived memory when replying directly to a source message, with vector cleanup when configured. It must not delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources. `/agent wrong` and `/memory wrong` mark a replied bot answer's recorded memory sources as wrong without deleting them. Regular users can delete only their own durable memory; the group owner or bot owner can delete group durable memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.

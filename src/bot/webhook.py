@@ -13,6 +13,7 @@ from core.config import (
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.ambient_reactions import maybe_enqueue_ambient_reaction
 from services.group_agent import handle_update as handle_group_agent_update
 from services.group_memory import observe_update as observe_group_memory_update
 from services.handlers import process_timeout_task
@@ -102,6 +103,7 @@ def _handle_api_gateway(
 
         if not has_pending_captcha:
             observe_group_memory_update(dispatcher.memory_repo, body, sqs_repo=_sqs_client)
+            maybe_enqueue_ambient_reaction(repo=dispatcher.memory_repo, update=body, sqs_repo=_sqs_client)
 
         if not is_event_relevant_to_bot(body):
             logger.info("Event not relevant to bot, ignoring")

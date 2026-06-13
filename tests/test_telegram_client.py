@@ -53,6 +53,24 @@ def test_download_file_raises_api_error_safely(monkeypatch):
     assert exc_info.value.status == 404
 
 
+def test_set_message_reaction_posts_single_emoji(monkeypatch):
+    fake_http = _FakeHttp([_Response(status=200, data=b'{"ok":true,"result":true}')])
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+
+    client.set_message_reaction(-100123, 11, "👍")
+
+    request = fake_http.requests[0]
+    payload = json.loads(request["body"])
+    assert request["method"] == "POST"
+    assert request["url"].endswith("/setMessageReaction")
+    assert payload == {
+        "chat_id": -100123,
+        "message_id": 11,
+        "reaction": [{"type": "emoji", "emoji": "👍"}],
+    }
+
+
 class _Response:
     def __init__(self, *, status, data=b"", headers=None, chunks=None):
         self.status = status

@@ -558,6 +558,121 @@ class GeminiClient:
             )
             raise GeminiUnavailableError(f"Bad Gemini decision response: {exc}") from exc
 
+    def ambient_reaction_decision(
+        self,
+        *,
+        current_message: str,
+        previous_context: str = "",
+        reply_context: str = "",
+        allowed_emojis: tuple[str, ...] = ("🤣", "👍", "🤔", "❤️", "👀"),
+        lang: str = "kk",
+    ) -> tuple[str, int]:
+        """Return raw strict-JSON classifier text for an ambient message reaction."""
+        if _circuit_is_open():
+            logger.warning("Gemini circuit open, skipping ambient reaction decision", extra={"model": self._model})
+            raise GeminiUnavailableError("Gemini circuit open")
+
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning(
+                "Gemini RPD limit reached (ambient reaction decision)",
+                extra={"count": count, "limit": self.rpd_limit},
+            )
+            raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
+
+        allowed = " ".join(allowed_emojis)
+        system_prompt = (
+            "You classify whether ZerdeBot should add one quiet emoji reaction to a Telegram group message. "
+            "Most messages should receive no reaction. The correct default is should_react=false. "
+            "React only when the signal is strong, natural, and harmless. Do not be overly enthusiastic. "
+            "Never react to sensitive, serious, hostile, sad, ambiguous, medical, legal, financial crisis, "
+            "political, religious, ethnic conflict, insult, harassment, or argument content. "
+            f"Use only these allowed emoji exactly: {allowed}. "
+            "Emoji meanings: 🤣 humor/meme/joke; 👍 useful or high-quality technical/practical message; "
+            "🤔 thoughtful technical question or complex reasoning; ❤️ warm, positive, thankful, or congratulatory; "
+            "👀 interesting, surprising, worth noticing, but harmless. "
+            "Return strict JSON only with keys: should_react (boolean), emoji (allowed emoji string or null), "
+            "confidence (0..1), category (humor,useful,thoughtful,warm,interesting,none), reason (short string). "
+            "If should_react=false, emoji must be null."
+        )
+        generation_config: dict[str, Any] = {
+            "temperature": 0.1,
+            "maxOutputTokens": 220,
+            "responseMimeType": "application/json",
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
+        prompt = (
+            f"Preferred language code: {lang}\n\n"
+            "Allowed emojis:\n"
+            f"{allowed}\n\n"
+            "Skip rules:\n"
+            "- Most messages get no reaction.\n"
+            "- React only on a strong signal.\n"
+            "- Skip sensitive, serious, hostile, sad, ambiguous, crisis, political, religious, ethnic conflict, "
+            "medical, legal, or financial content.\n"
+            "- Do not analyze media; this task receives text only.\n\n"
+            "Previous local group context, oldest to newest:\n"
+            f"{previous_context or '(no previous context)'}\n\n"
+            "Reply context, immediate reply first when available:\n"
+            f"{reply_context or '(not a reply or no reply text available)'}\n\n"
+            "Current message to classify:\n"
+            f"{current_message}\n\n"
+            "Return the JSON decision now."
+        )
+        payload: dict[str, Any] = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
+
+        logger.info(
+            "Gemini ambient reaction decision request started",
+            extra={
+                "operation": "ambient_reaction_decision",
+                "model": self._model,
+                "lang": lang,
+                "previous_context_chars": len(previous_context),
+                "reply_context_chars": len(reply_context),
+                "current_message_chars": len(current_message),
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+            },
+        )
+        resp_data = self._post_generate_content(
+            operation="ambient_reaction_decision",
+            url=url,
+            body=body,
+            headers=headers,
+        )
+
+        try:
+            data = json.loads(resp_data.decode("utf-8"))
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            text = _extract_gemini_text(data, operation="ambient_reaction_decision", model=self._model)
+            _record_success()
+            return text, count
+        except GeminiEmptyResponseError:
+            raise
+        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+            logger.warning(
+                "Gemini ambient reaction response parse failed",
+                extra={
+                    "operation": "ambient_reaction_decision",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
+            raise GeminiUnavailableError(f"Bad Gemini ambient reaction response: {exc}") from exc
+
     def group_memory_extraction(
         self,
         *,

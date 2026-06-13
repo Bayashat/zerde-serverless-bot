@@ -141,6 +141,13 @@ AGENT_ENABLED=true
 AGENT_BOT_USERNAME=@your_bot_username
 AGENT_BOT_ID=
 AGENT_RECENT_CONTEXT_LIMIT=100
+AMBIENT_REACTIONS_ENABLED=true
+AMBIENT_REACTIONS_SAMPLE_RATE=0.10
+AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD=0.80
+AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS=300
+AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS=1200
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR=3
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY=25
 MULTIMODAL_ENABLED=true
 MULTIMODAL_MAX_DOWNLOAD_BYTES=12000000
 MULTIMODAL_INLINE_MAX_BYTES=8000000
@@ -224,6 +231,7 @@ curl -F "url=https://abc123.execute-api.eu-central-1.amazonaws.com/dev/webhook" 
 8. Reply to a photo/screenshot, voice/audio message, PDF, or supported text/code/log file with `/ask` to test explicit multimodal analysis. The webhook should enqueue a metadata-only `media_ref`; the SQS worker should download the file and the answer should still use RAG context.
 9. Post the same media without `/ask` and confirm the bot does not download or analyze it.
 10. Reply to the bot's answer with a follow-up question to test `AGENT_REPLY#...` thread continuity. This should create short-term reply metadata only, not a vector memory task. For multimodal answers, only compact media metadata/summary should be stored.
+11. With `AMBIENT_REACTIONS_ENABLED=true`, post several ordinary group text messages and confirm reactions are rare, rate-limited, and stored only as short-lived `AMBIENT_REACTION#...` rows. Set it to `false` when you want to disable ambient reactions for a local run.
 
 **To test the Quiz Lambda manually:**
 
