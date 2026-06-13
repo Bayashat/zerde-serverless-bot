@@ -11,6 +11,9 @@ from services.repositories._common import get_dynamodb
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _KEY_PREFIX = "captcha_pending#"
+_STATUS_PENDING = "pending"
+_STATUS_VERIFIED = "verified"
+_STATE_TTL_BUFFER_SECONDS = 24 * 60 * 60
 
 
 def _key(chat_id: int | str, user_id: int | str) -> str:
@@ -35,15 +38,20 @@ class CaptchaRepository:
         join_msg_id: int,
         verify_msg_id: int,
     ) -> None:
-        ttl = int(time.time()) + CAPTCHA_TIMEOUT_SECONDS + 60  # grace buffer
+        now = int(time.time())
+        expires_at = now + CAPTCHA_TIMEOUT_SECONDS
+        ttl = expires_at + _STATE_TTL_BUFFER_SECONDS
         try:
             self._table.put_item(
                 Item={
                     "stat_key": _key(chat_id, user_id),
+                    "status": _STATUS_PENDING,
                     "expected": expected,
                     "join_msg_id": join_msg_id,
                     "verify_msg_id": verify_msg_id,
                     "attempts": 0,
+                    "created_at": now,
+                    "expires_at": expires_at,
                     "ttl": ttl,
                 }
             )
@@ -51,7 +59,21 @@ class CaptchaRepository:
             logger.exception("Failed to save pending captcha: %s", e)
             raise
 
-    def get_pending(self, chat_id: int | str, user_id: int | str) -> dict[str, Any] | None:
+    def _format_item(self, item: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "status": item.get("status", _STATUS_PENDING),
+            "expected": item["expected"],
+            "join_msg_id": int(item["join_msg_id"]),
+            "verify_msg_id": int(item["verify_msg_id"]),
+            "attempts": int(item.get("attempts", 0)),
+            "wrong_msg_ids": [int(m) for m in item.get("wrong_msg_ids", [])],
+            "created_at": int(item.get("created_at", 0)),
+            "expires_at": int(item.get("expires_at", item.get("ttl", 0))),
+            "ttl": int(item.get("ttl", 0)),
+        }
+
+    def get_challenge(self, chat_id: int | str, user_id: int | str) -> dict[str, Any] | None:
+        """Return captcha state regardless of pending/verified status."""
         try:
             resp = self._table.get_item(
                 Key={"stat_key": _key(chat_id, user_id)},
@@ -60,19 +82,37 @@ class CaptchaRepository:
             item = resp.get("Item")
             if not item:
                 return None
-            # Guard against expired items not yet removed by DynamoDB TTL sweep
-            if int(item.get("ttl", 0)) < int(time.time()):
-                return None
-            return {
-                "expected": item["expected"],
-                "join_msg_id": int(item["join_msg_id"]),
-                "verify_msg_id": int(item["verify_msg_id"]),
-                "attempts": int(item.get("attempts", 0)),
-                "wrong_msg_ids": [int(m) for m in item.get("wrong_msg_ids", [])],
-            }
+            return self._format_item(item)
         except ClientError as e:
-            logger.exception("Failed to get pending captcha: %s", e)
+            logger.exception("Failed to get captcha challenge: %s", e)
             return None
+
+    def get_pending(self, chat_id: int | str, user_id: int | str) -> dict[str, Any] | None:
+        challenge = self.get_challenge(chat_id, user_id)
+        if not challenge:
+            return None
+        if challenge.get("status") != _STATUS_PENDING:
+            return None
+        # Guard against expired challenges not yet enforced by the delayed timeout task.
+        if int(challenge.get("expires_at", 0)) < int(time.time()):
+            return None
+        return challenge
+
+    def mark_verified(self, chat_id: int | str, user_id: int | str) -> None:
+        now = int(time.time())
+        try:
+            self._table.update_item(
+                Key={"stat_key": _key(chat_id, user_id)},
+                UpdateExpression="SET #status = :verified, verified_at = :now",
+                ConditionExpression="attribute_exists(stat_key)",
+                ExpressionAttributeNames={"#status": "status"},
+                ExpressionAttributeValues={":verified": _STATUS_VERIFIED, ":now": now},
+            )
+        except ClientError as e:
+            if e.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+                logger.warning("mark_verified: captcha entry no longer exists for user %s", user_id)
+                return None
+            logger.warning("Failed to mark captcha verified: %s", e)
 
     def append_wrong_message(self, chat_id: int | str, user_id: int | str, msg_id: int) -> None:
         """Append a wrong-answer message ID to the tracked list for later cleanup."""
