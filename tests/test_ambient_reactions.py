@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 from services import ambient_reactions
 from services.ai import gemini_client
+from services.ai.ambient_reaction_classifier import FallbackAmbientReactionClassifier
 from services.ai.gemini_client import GeminiClient
 from services.ambient_reactions import (
     evaluate_ambient_reaction_rate_limit,
@@ -15,6 +16,7 @@ from services.ambient_reactions import (
 from services.repositories import sqs as sqs_module
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
+from zerde_common.ai_errors import ProviderTransportError
 
 
 def _update(text: str = "This DynamoDB migration note is actually useful") -> dict:
@@ -41,11 +43,11 @@ def test_ambient_reaction_eligibility_filters_non_candidates() -> None:
     bot_update["message"]["from"]["is_bot"] = True
     assert is_ambient_reaction_eligible(bot_update) is False
 
-    assert is_ambient_reaction_eligible(_update("/ask what is S3 Vectors?")) is False
+    assert is_ambient_reaction_eligible(_update("/ask what is S3 Vectors?")) is True
     assert is_ambient_reaction_eligible(_update("😂😂😂")) is False
     assert is_ambient_reaction_eligible(_update("https://example.com/path")) is False
-    assert is_ambient_reaction_eligible(_update("I need a lawyer for this court case")) is False
-    assert is_ambient_reaction_eligible(_update("you are an idiot and should shut up")) is False
+    assert is_ambient_reaction_eligible(_update("I need a lawyer for this court case")) is True
+    assert is_ambient_reaction_eligible(_update("you are an idiot and should shut up")) is True
 
     media_update = _update("This Terraform note is practical and useful")
     media_update["message"]["photo"] = [{"file_id": "photo"}]
@@ -199,8 +201,8 @@ def test_process_ambient_reaction_task_sets_reaction_and_records_event(monkeypat
     repo.get_recent_ambient_reactions.return_value = []
     repo.get_recent_messages.return_value = []
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.ambient_reaction_decision.return_value = (
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
         json.dumps(
             {
                 "should_react": True,
@@ -210,9 +212,9 @@ def test_process_ambient_reaction_task_sets_reaction_and_records_event(monkeypat
                 "reason": "High-quality practical message.",
             }
         ),
-        1,
+        "gemini",
     )
-    monkeypatch.setattr(ambient_reactions, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
     monkeypatch.setattr(ambient_reactions.time, "time", lambda: 1_700_000_100)
 
     handled = process_ambient_reaction_task(
@@ -233,6 +235,47 @@ def test_process_ambient_reaction_task_sets_reaction_and_records_event(monkeypat
     bot.set_message_reaction.assert_called_once_with(-100123, 11, "👍")
     repo.record_ambient_reaction.assert_called_once()
     assert repo.record_ambient_reaction.call_args.kwargs["emoji"] == "👍"
+
+
+def test_process_ambient_reaction_task_allows_command_and_sensitive_text(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": True,
+                "emoji": "🤔",
+                "confidence": 0.91,
+                "category": "thoughtful",
+                "reason": "The command text asks a thoughtful practical question.",
+            }
+        ),
+        "deepseek",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    monkeypatch.setattr(ambient_reactions.time, "time", lambda: 1_700_000_100)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 12,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "/ask I need a lawyer for this court case architecture note",
+            "lang": "en",
+            "created_at": 1_700_000_000,
+        },
+    )
+
+    assert handled is True
+    bot.set_message_reaction.assert_called_once_with(-100123, 12, "🤔")
+    classifier.ambient_reaction_decision.assert_called_once()
 
 
 def test_sqs_client_sends_ambient_reaction_task(monkeypatch) -> None:
@@ -323,7 +366,8 @@ def test_gemini_ambient_reaction_prompt_returns_json_text(monkeypatch) -> None:
     assert payload["generationConfig"]["responseMimeType"] == "application/json"
     assert "Most messages should receive no reaction" in system_prompt
     assert "Use only these allowed emoji exactly: 🤣 👍 🤔 ❤️ 👀" in system_prompt
-    assert "sensitive, serious, hostile" in system_prompt
+    assert "not automatic skips" in system_prompt
+    assert "Commands may be considered" in user_prompt
     assert "Previous local group context" in user_prompt
     assert "Reply context" in user_prompt
 
@@ -334,9 +378,9 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     repo.get_recent_ambient_reactions.return_value = []
     repo.get_recent_messages.return_value = []
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.ambient_reaction_decision.return_value = ("not json", 1)
-    monkeypatch.setattr(ambient_reactions, "_get_gemini", lambda: gemini)
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = ("not json", "gemini")
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
 
     handled = process_ambient_reaction_task(
         repo=repo,
@@ -354,6 +398,36 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     assert handled is False
     bot.set_message_reaction.assert_not_called()
     repo.record_ambient_reaction.assert_not_called()
+
+
+def test_ambient_reaction_classifier_falls_back_to_secondary_provider() -> None:
+    primary = MagicMock()
+    primary.provider_name = "gemini"
+    primary.ambient_reaction_decision.side_effect = ProviderTransportError("gemini unavailable")
+    secondary = MagicMock()
+    secondary.provider_name = "deepseek"
+    secondary.ambient_reaction_decision.return_value = json.dumps(
+        {
+            "should_react": False,
+            "emoji": None,
+            "confidence": 0.2,
+            "category": "none",
+            "reason": "No strong signal.",
+        }
+    )
+    classifier = FallbackAmbientReactionClassifier([primary, secondary])
+
+    raw, provider = classifier.ambient_reaction_decision(
+        current_message="[speaker user_id=42] ordinary update",
+        previous_context="",
+        reply_context="",
+        lang="kk",
+    )
+
+    assert json.loads(raw)["should_react"] is False
+    assert provider == "deepseek"
+    primary.ambient_reaction_decision.assert_called_once()
+    secondary.ambient_reaction_decision.assert_called_once()
 
 
 def test_record_ambient_reaction_persists_short_ttl(monkeypatch) -> None:

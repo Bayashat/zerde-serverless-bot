@@ -16,6 +16,7 @@ from typing import Any
 import urllib3
 from core.config import GEMINI_API_BASE, GEMINI_MODEL, get_gemini_api_key
 from core.logger import LoggerAdapter, get_logger
+from services.ai.ambient_reaction_prompt import build_ambient_reaction_prompts
 from services.repositories.rate_limit import RateLimitRepository
 from urllib3.exceptions import HTTPError
 
@@ -580,20 +581,12 @@ class GeminiClient:
             )
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
-        allowed = " ".join(allowed_emojis)
-        system_prompt = (
-            "You classify whether ZerdeBot should add one quiet emoji reaction to a Telegram group message. "
-            "Most messages should receive no reaction. The correct default is should_react=false. "
-            "React only when the signal is strong, natural, and harmless. Do not be overly enthusiastic. "
-            "Never react to sensitive, serious, hostile, sad, ambiguous, medical, legal, financial crisis, "
-            "political, religious, ethnic conflict, insult, harassment, or argument content. "
-            f"Use only these allowed emoji exactly: {allowed}. "
-            "Emoji meanings: 🤣 humor/meme/joke; 👍 useful or high-quality technical/practical message; "
-            "🤔 thoughtful technical question or complex reasoning; ❤️ warm, positive, thankful, or congratulatory; "
-            "👀 interesting, surprising, worth noticing, but harmless. "
-            "Return strict JSON only with keys: should_react (boolean), emoji (allowed emoji string or null), "
-            "confidence (0..1), category (humor,useful,thoughtful,warm,interesting,none), reason (short string). "
-            "If should_react=false, emoji must be null."
+        system_prompt, prompt = build_ambient_reaction_prompts(
+            current_message=current_message,
+            previous_context=previous_context,
+            reply_context=reply_context,
+            allowed_emojis=allowed_emojis,
+            lang=lang,
         )
         generation_config: dict[str, Any] = {
             "temperature": 0.1,
@@ -604,24 +597,6 @@ class GeminiClient:
         if thinking_config is not None:
             generation_config["thinkingConfig"] = thinking_config
 
-        prompt = (
-            f"Preferred language code: {lang}\n\n"
-            "Allowed emojis:\n"
-            f"{allowed}\n\n"
-            "Skip rules:\n"
-            "- Most messages get no reaction.\n"
-            "- React only on a strong signal.\n"
-            "- Skip sensitive, serious, hostile, sad, ambiguous, crisis, political, religious, ethnic conflict, "
-            "medical, legal, or financial content.\n"
-            "- Do not analyze media; this task receives text only.\n\n"
-            "Previous local group context, oldest to newest:\n"
-            f"{previous_context or '(no previous context)'}\n\n"
-            "Reply context, immediate reply first when available:\n"
-            f"{reply_context or '(not a reply or no reply text available)'}\n\n"
-            "Current message to classify:\n"
-            f"{current_message}\n\n"
-            "Return the JSON decision now."
-        )
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],

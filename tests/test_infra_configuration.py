@@ -337,6 +337,8 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
         "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
         "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
         "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+        "DEEPSEEK_API_BASE",
+        "DEEPSEEK_MODEL",
     ):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
@@ -363,12 +365,14 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
     assert env_vars["AGENT_PROACTIVE_DELAY_SECONDS"] == "45"
     assert env_vars["AMBIENT_REACTIONS_ENABLED"] == "true"
-    assert env_vars["AMBIENT_REACTIONS_SAMPLE_RATE"] == "0.10"
+    assert env_vars["AMBIENT_REACTIONS_SAMPLE_RATE"] == "0.80"
     assert env_vars["AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD"] == "0.80"
-    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS"] == "300"
-    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS"] == "1200"
-    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR"] == "3"
-    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY"] == "25"
+    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS"] == "60"
+    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS"] == "300"
+    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR"] == "12"
+    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY"] == "100"
+    assert env_vars["DEEPSEEK_API_BASE"] == "https://api.deepseek.com"
+    assert env_vars["DEEPSEEK_MODEL"] == "deepseek-chat"
     assert env_vars["MULTIMODAL_ENABLED"] == "true"
     assert env_vars["MULTIMODAL_MAX_DOWNLOAD_BYTES"] == "12000000"
     assert env_vars["MULTIMODAL_INLINE_MAX_BYTES"] == "8000000"

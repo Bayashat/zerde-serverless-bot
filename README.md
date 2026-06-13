@@ -29,7 +29,7 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, delayed conservative proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
-- **Ambient reactions**: optional emoji reactions to rare high-signal group messages, processed asynchronously without writing long-term memory.
+- **Ambient reactions**: optional emoji reactions to sampled high-signal group messages, classified through Gemini with DeepSeek/Groq fallback and processed asynchronously without writing long-term memory.
 - **Explicit media understanding**: `/ask` can be used as a reply to photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Zerde does not automatically analyze every group media message.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
@@ -49,7 +49,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
 | Social timing | Proactive replies are delayed briefly, then pass local heuristics, human-answer checks, recent bot activity penalties, Gemini judgment, and per-chat daily limits. |
-| Ambient reactions | Optional `setMessageReaction` presence feature for rare funny, useful, thoughtful, warm, or interesting text messages; enabled by default and rate-limited. |
+| Ambient reactions | Optional `setMessageReaction` presence feature for funny, useful, thoughtful, warm, or interesting text messages; enabled by default, sampled, and rate-limited. |
 | Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |
 | Community voteban | Lets communities vote to ban or forgive by replying with `/voteban`. |
 | Daily AI news | EventBridge-triggered news Lambda summarizes tech news through Gemini/DeepSeek-compatible provider paths. |
@@ -79,6 +79,7 @@ flowchart LR
   BOT --> GEMINI["Gemini<br/>agent replies / summaries"]
   VIDX --> GEMINI_EMB["Gemini<br/>embeddings"]
   BOT --> GROQ["Groq<br/>spam checks"]
+  BOT --> DEEPSEEK["DeepSeek<br/>ambient fallback"]
 
   EB["EventBridge schedules"] --> NEWS["News Lambda"]
   EB --> QUIZ["Quiz Lambda"]
@@ -172,12 +173,12 @@ Ambient reaction settings:
 | Env var | Applies to | Default |
 |---------|------------|---------|
 | `AMBIENT_REACTIONS_ENABLED` | Enables async ambient emoji reactions | `true` |
-| `AMBIENT_REACTIONS_SAMPLE_RATE` | Fraction of eligible messages sampled before SQS enqueue | `0.10` |
+| `AMBIENT_REACTIONS_SAMPLE_RATE` | Fraction of eligible messages sampled before SQS enqueue | `0.80` |
 | `AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD` | Minimum classifier confidence before reacting | `0.80` |
-| `AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS` | Minimum seconds between reactions in one chat | `300` |
-| `AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS` | Minimum seconds between reactions to one user's messages in a chat | `1200` |
-| `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR` | Per-chat hourly reaction cap | `3` |
-| `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY` | Per-chat daily reaction cap | `25` |
+| `AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS` | Minimum seconds between reactions in one chat | `60` |
+| `AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS` | Minimum seconds between reactions to one user's messages in a chat | `300` |
+| `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR` | Per-chat hourly reaction cap | `12` |
+| `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY` | Per-chat daily reaction cap | `100` |
 
 Explicit multimodal `/ask` settings:
 

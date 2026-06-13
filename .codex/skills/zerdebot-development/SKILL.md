@@ -12,8 +12,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Recent group context, requester identity, and user profiles live in DynamoDB.
 - Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
 - Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
-- Gemini handles agent answers, proactive timing decisions, summaries, and embeddings.
-- Groq handles async spam checks.
+- Gemini handles agent answers, proactive timing decisions, summaries, embeddings, and is the primary ambient reaction classifier.
+- DeepSeek and Groq can serve as ambient reaction fallback classifiers; Groq also handles async spam checks.
 - The bot should answer only when useful, keep reply length appropriate, and avoid prompt pollution from irrelevant memories.
 
 ## First Steps
@@ -39,7 +39,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
-- `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, and `setMessageReaction` task processing.
+- `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
+- `src/bot/services/ai/ambient_reaction_classifier.py`: Gemini primary plus DeepSeek/Groq OpenAI-compatible fallback chain for ambient reaction strict-JSON classification.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
@@ -60,7 +61,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
 - Keep explicit multimodal `/ask` media ephemeral. Only explicit `/ask` or explicit mention/reply paths may analyze media; normal group media, proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. SQS carries metadata-only `media_ref`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
-- Keep ambient reactions ephemeral and low-noise: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed.
+- Keep ambient reactions ephemeral: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed. Command text and sensitive/hostile/serious text may reach the classifier, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
 - Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
@@ -165,6 +166,7 @@ Treat AI behavior as user-facing reliability work:
 - Keep Lambda cold-start cost low: use lazy wiring and avoid unnecessary runtime dependencies.
 - Use `zerde_common` for shared provider errors, config helpers, redaction, and structured logging.
 - Keep Lambda env names consistent with code: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`.
+- When adding or changing non-secret runtime/CDK env vars, wire them through `.env.example`, `infra/stack.py`, relevant construct environment maps, `.github/workflows/deploy.yml`, `.github/workflows/pr_check.yml`, docs, and GitHub repo Actions variables with `gh variable set <NAME> --repo Bayashat/zerde-serverless-bot --body <value>`. Do this before declaring deployment config complete; repo variables alone are ignored if workflow env mappings are missing.
 - Use `CONSTRUCT_PREFIX` and `RESOURCE_PREFIX` from `infra/components/constants.py`; do not duplicate those string literals in constructs.
 - S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy. Keep Bot Lambda permissions limited to query/get/delete/get-index; reserve `s3vectors:PutVectors` and `s3vectors:ListVectors` for the vector-indexer Lambda.
 - If editing Telegram HTML output, normalize/escape LLM output before sending and respect Telegram length constraints.

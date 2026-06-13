@@ -32,6 +32,7 @@ flowchart LR
   BOT -- "query/delete" --> S3V["S3 Vectors index"]
   BOT --> GEMINI["Gemini API"]
   BOT --> GROQ["Groq API"]
+  BOT --> DEEPSEEK["DeepSeek API"]
   VIDX -- "backfill fan-out" --> VQ
   VIDX --> STATS
   VIDX --> MEMORY
@@ -68,7 +69,7 @@ flowchart LR
 2. Private chats get a fixed response; non-whitelisted groups are ignored.
 3. Spam screening runs before normal handling unless a captcha is pending.
 4. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
-5. If ambient reactions are enabled, eligible group text messages are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
+5. If ambient reactions are enabled, eligible group text messages, including command text, are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
 6. Irrelevant group chatter exits early.
 7. Relevant events route to the group agent or the command dispatcher.
 8. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
@@ -190,16 +191,20 @@ Answer length is explicit:
 ## Ambient Reactions
 
 Ambient reactions are a presence feature controlled by `AMBIENT_REACTIONS_ENABLED`, enabled by default.
-The webhook samples eligible normal group text messages and queues `PROCESS_AMBIENT_REACTION`; the SQS
-worker applies cooldowns, gathers limited recent context, asks Gemini for strict JSON, validates the
-emoji/confidence contract, and calls Telegram `setMessageReaction`. Reaction failures are logged and
-do not affect normal message handling.
+The webhook samples eligible group text messages and queues `PROCESS_AMBIENT_REACTION`; the SQS
+worker applies cooldowns, gathers limited recent context, asks the ambient classifier provider chain
+(Gemini → DeepSeek → Groq when configured) for strict JSON, validates the emoji/confidence contract,
+and calls Telegram `setMessageReaction`. Reaction failures are logged and do not affect normal
+message handling.
 
 The classifier receives only recent short-term context: up to 10 previous stored `MSG#...` text rows,
 the current message, and for replies a bounded reply chain from the Telegram update payload
 (`MAX_REPLY_CHAIN_DEPTH=3`, `MAX_CONTEXT_MESSAGES_TOTAL=15`). It does not use long-term memory, S3
 Vectors, media download/analysis, profile context, or memory retrieval. The only stored output is
 short-lived `AMBIENT_REACTION#...` metadata for cooldowns and debugging.
+Command text and sensitive/hostile/serious text are not locally filtered before classification; the
+LLM prompt still requires a strong, context-safe reaction and forbids reactions that trivialize, mock,
+endorse, or escalate harm.
 
 ## Vector Memory
 
