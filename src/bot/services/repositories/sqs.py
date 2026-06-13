@@ -9,6 +9,7 @@ from core.logger import LoggerAdapter, get_logger
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _SQS_CLIENT = None
+_MAX_SQS_DELAY_SECONDS = 900
 
 
 def _get_sqs_client():
@@ -120,6 +121,56 @@ class SQSClient:
             )
         except Exception as e:
             logger.exception("Failed to send group ask task to SQS", extra={"error": e, "update_id": update_id})
+            raise
+
+    def send_proactive_candidate_task(
+        self,
+        *,
+        update_id: int | None = None,
+        chat_id: int,
+        trigger_message_id: int,
+        trigger_user_id: int | str | None = None,
+        user_text: str,
+        lang: str,
+        created_at: int | None = None,
+        delay_seconds: int = 45,
+    ) -> None:
+        """Enqueue a delayed proactive candidate for final social-timing evaluation."""
+        delay_seconds = max(0, min(_MAX_SQS_DELAY_SECONDS, int(delay_seconds)))
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": chat_id,
+            "trigger_message_id": trigger_message_id,
+            "user_text": user_text,
+            "lang": lang,
+        }
+        if update_id is not None:
+            payload["update_id"] = update_id
+        if trigger_user_id is not None:
+            payload["trigger_user_id"] = trigger_user_id
+        if created_at:
+            payload["created_at"] = created_at
+
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+                DelaySeconds=delay_seconds,
+            )
+            logger.info(
+                "Queued proactive candidate task",
+                extra={
+                    "update_id": update_id,
+                    "chat_id": chat_id,
+                    "trigger_message_id": trigger_message_id,
+                    "delay": delay_seconds,
+                },
+            )
+        except Exception as e:
+            logger.exception(
+                "Failed to send proactive candidate task to SQS",
+                extra={"error": e, "update_id": update_id, "chat_id": chat_id},
+            )
             raise
 
     def send_spam_check_task(
