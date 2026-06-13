@@ -3,6 +3,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 import pytest
+from botocore.exceptions import ClientError
 from services import group_agent, group_memory, group_memory_processor
 from services.ai import gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
@@ -187,6 +188,80 @@ def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
     assert values[":topics"]["opensearch"] == Decimal(1)
     assert "uses-cyrillic" in values[":language_style"]
     assert "opensearch" in values[":interests"]
+
+
+def test_touch_user_profile_writes_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="@Bayashat",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#bayashat"
+    assert alias_item["username"] == "bayashat"
+    assert alias_item["user_id"] == "202"
+    assert alias_item["target_sk"] == "USER#202"
+
+
+def test_get_user_profiles_by_usernames_uses_alias_items_without_user_scan():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    def get_item(*, Key):
+        if Key["sk"] == "USERNAME#bayashat":
+            return {"Item": {"user_id": "202", "username": "bayashat", "target_sk": "USER#202"}}
+        if Key["sk"] == "USER#202":
+            return {
+                "Item": {
+                    "sk": "USER#202",
+                    "user_id": "202",
+                    "username": "bayashat",
+                    "display_name": "Bayashat",
+                }
+            }
+        return {}
+
+    repo.table.get_item.side_effect = get_item
+
+    profiles = repo.get_user_profiles_by_usernames(-100123, {"@Bayashat"})
+
+    assert [profile["sk"] for profile in profiles] == ["USER#202"]
+    repo.table.query.assert_not_called()
+    assert [call.kwargs["Key"]["sk"] for call in repo.table.get_item.call_args_list] == [
+        "USERNAME#bayashat",
+        "USER#202",
+    ]
+
+
+def test_touch_user_profile_replaces_stale_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {"username": "oldhandle"}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="newhandle",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#newhandle"
+    repo.table.delete_item.assert_called_once_with(
+        Key={"pk": "CHAT#-100123", "sk": "USERNAME#oldhandle"},
+        ConditionExpression="user_id = :user_id",
+        ExpressionAttributeValues={":user_id": "202"},
+    )
 
 
 def test_touch_user_profile_extracts_structured_self_stated_profile_fields():
@@ -523,6 +598,64 @@ def test_process_group_memory_task_skips_chatter(monkeypatch):
     )
 
     repo.store_long_term_memory.assert_not_called()
+
+
+def test_process_group_memory_task_skips_one_off_rule_joke_even_with_low_threshold(monkeypatch):
+    repo = MagicMock()
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "rules")
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", 0.5)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "lol the banana meme is funny",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_not_called()
+
+
+def test_process_group_memory_task_stores_high_confidence_llm_joke(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    gemini.group_memory_extraction.return_value = (
+        {
+            "should_store": True,
+            "kind": "joke",
+            "summary": "The banana deploy phrase is a recurring group meme.",
+            "reason": "speaker named it as an inside joke",
+            "confidence": 0.9,
+            "subject_user_id": None,
+            "sensitivity": "public",
+            "expires_in_days": None,
+            "evidence_message_ids": [11],
+        },
+        1,
+    )
+    _use_gemini_extractor(monkeypatch, mode="gemini_all")
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "The banana deploy phrase is our inside joke.",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_called_once()
+    kwargs = repo.store_long_term_memory.call_args.kwargs
+    assert kwargs["kind"] == "joke"
+    assert kwargs["extractor_source"] == "gemini"
 
 
 def test_process_group_memory_candidate_only_skips_non_candidate_without_gemini(monkeypatch):
@@ -2437,6 +2570,17 @@ def test_memory_command_routes_forget_this(monkeypatch):
     forget_this.assert_called_once_with(ctx)
 
 
+def test_memory_command_routes_wrong_feedback(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/memory wrong"
+    wrong = MagicMock()
+    monkeypatch.setattr(commands, "handle_wrong_memory_feedback", wrong)
+
+    commands.handle_memory(ctx)
+
+    wrong.assert_called_once_with(ctx)
+
+
 def test_agent_command_routes_why(monkeypatch):
     ctx = _command_ctx(user_id=42)
     ctx.text = "/agent why"
@@ -2446,6 +2590,17 @@ def test_agent_command_routes_why(monkeypatch):
     commands.handle_agent(ctx)
 
     why.assert_called_once_with(ctx)
+
+
+def test_agent_command_routes_wrong_feedback(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/agent wrong"
+    wrong = MagicMock()
+    monkeypatch.setattr(commands, "handle_wrong_memory_feedback", wrong)
+
+    commands.handle_agent(ctx)
+
+    wrong.assert_called_once_with(ctx)
 
 
 def test_forget_group_allows_only_bot_owner(monkeypatch):
@@ -2789,6 +2944,31 @@ def test_forget_this_bot_answer_group_owner_deletes_group_sources(monkeypatch):
     assert "1" in ctx.reply.call_args.args[0]
 
 
+def test_wrong_feedback_marks_replied_agent_reply_sources():
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "retrieval_sources": [
+            {"source": "semantic", "source_sk": "USER_FACT#42#0000000001000#8"},
+            {"source": "lexical", "source_sk": "USER_FACT#42#0000000001000#8"},
+            {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#9"},
+            {"source": "recent"},
+        ]
+    }
+    ctx.memory_repo.mark_memory_items_wrong.return_value = 2
+
+    commands.handle_wrong_memory_feedback(ctx)
+
+    ctx.memory_repo.get_agent_reply_explanation.assert_called_once_with(-100123, bot_message_id=999)
+    ctx.memory_repo.mark_memory_items_wrong.assert_called_once_with(
+        -100123,
+        ["USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
+        user_id=42,
+        agent_reply_message_id=999,
+    )
+    assert "Marked 2 memory source" in ctx.reply.call_args.args[0]
+
+
 def test_delete_memory_for_message_deletes_raw_and_derived_memory():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.list_message_items_by_message_id = MagicMock(
@@ -2814,6 +2994,45 @@ def test_delete_memory_for_message_deletes_raw_and_derived_memory():
         -100123,
         ["MSG#0000000001000#8", "USER_FACT#42#0000000001000#8"],
     )
+
+
+def test_mark_memory_items_wrong_increments_feedback_metadata():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    marked = repo.mark_memory_items_wrong(
+        -100123,
+        ["USER_FACT#42#0000000001000#8", "USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
+        user_id=42,
+        agent_reply_message_id=999,
+    )
+
+    assert marked == 2
+    assert repo.table.update_item.call_count == 2
+    kwargs = repo.table.update_item.call_args_list[0].kwargs
+    assert kwargs["Key"] == {"pk": "CHAT#-100123", "sk": "USER_FACT#42#0000000001000#8"}
+    assert "wrong_feedback_count = if_not_exists(wrong_feedback_count, :zero) + :one" in kwargs["UpdateExpression"]
+    assert (
+        "negative_feedback_count = if_not_exists(negative_feedback_count, :zero) + :one" in kwargs["UpdateExpression"]
+    )
+    assert "superseded_by = if_not_exists(superseded_by, :empty)" in kwargs["UpdateExpression"]
+    values = kwargs["ExpressionAttributeValues"]
+    assert values[":feedback_kind"] == "wrong"
+    assert values[":feedback_user_id"] == "42"
+    assert values[":agent_reply_message_id"] == 999
+
+
+def test_mark_memory_items_wrong_skips_missing_items():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.update_item.side_effect = ClientError(
+        {"Error": {"Code": "ConditionalCheckFailedException", "Message": "missing"}},
+        "UpdateItem",
+    )
+
+    marked = repo.mark_memory_items_wrong(-100123, ["MISSING#1"], user_id=42)
+
+    assert marked == 0
 
 
 def test_list_long_term_memory_items_by_message_id_queries_vector_prefixes():
@@ -2864,6 +3083,32 @@ def test_delete_memory_items_by_sks_deletes_existing_unique_items():
     assert deleted == [item]
     assert repo.table.get_item.call_count == 2
     batch.delete_item.assert_called_once_with(Key={"pk": "CHAT#-100123", "sk": "USER#42"})
+
+
+def test_delete_memory_items_by_sks_deletes_lexical_index_rows():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    batch = MagicMock()
+    repo.table.batch_writer.return_value.__enter__.return_value = batch
+    item = {
+        "pk": "CHAT#-100123",
+        "sk": "GROUP_FACT#0001700000000000#8",
+        "kind": "group_fact",
+        "summary": "The group saw E1027 in boto3 uploads.",
+        "created_at": 1_700_000_000,
+        "lexical_index_terms": ["e1027", "boto3"],
+    }
+    repo.table.get_item.return_value = {"Item": item}
+
+    deleted = repo.delete_memory_items_by_sks(-100123, [item["sk"]])
+
+    assert deleted == [item]
+    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
+    assert deleted_sks == [
+        "GROUP_FACT#0001700000000000#8",
+        "TERM#e1027#1700000000000#GROUP_FACT#0001700000000000#8",
+        "TERM#boto3#1700000000000#GROUP_FACT#0001700000000000#8",
+    ]
 
 
 def test_why_reply_uses_replied_bot_message_reason():
