@@ -23,13 +23,21 @@ from core.config import (
 )
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.ai.channel_post_comment import (
+    FallbackChannelPostCommentProvider,
+    create_channel_post_comment_fallback_provider,
+)
 from services.ai.gemini_client import (
     GeminiClient,
     GeminiEmptyResponseError,
     GeminiRPDExhaustedError,
     GeminiUnavailableError,
+    GroupAgentDecision,
 )
-from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
+from services.ai.telegram_html import (
+    fit_llm_output,
+    normalize_llm_output_for_telegram_html,
+)
 from services.bot_identity import is_self_bot_user
 from services.group_memory import (
     display_name,
@@ -45,7 +53,10 @@ from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
 )
-from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
+from services.repositories.group_memory import (
+    GroupMemoryRepository,
+    normalise_chat_style_profile,
+)
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
 from services.telegram_actor import (
@@ -65,11 +76,19 @@ from services.telegram_media import (
     media_reference_log_extra,
     prepare_media_for_gemini,
 )
-from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
+from services.vector_memory import (
+    format_semantic_memory_context,
+    retrieve_relevant_memories,
+)
+from zerde_common.ai_errors import ProviderResponseError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
+_channel_post_comment_fallback: FallbackChannelPostCommentProvider | None = None
+
+CHANNEL_POST_GEMINI_MAX_ATTEMPTS = 3
+CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
 
 
 @dataclass(frozen=True)
@@ -103,6 +122,13 @@ def _get_gemini() -> GeminiClient | None:
     if get_gemini_api_key() and _agent_gemini is None:
         _agent_gemini = GeminiClient()
     return _agent_gemini
+
+
+def _get_channel_post_comment_fallback() -> FallbackChannelPostCommentProvider | None:
+    global _channel_post_comment_fallback
+    if _channel_post_comment_fallback is None:
+        _channel_post_comment_fallback = create_channel_post_comment_fallback_provider()
+    return _channel_post_comment_fallback
 
 
 def _is_plain_text_message(update: dict[str, Any]) -> bool:
@@ -194,7 +220,13 @@ def _agent_reply_media_context(item: dict[str, Any]) -> str:
     media_type = str(metadata.get("media_type") or "").strip()
     if media_type:
         lines.append(f"media_type={media_type}")
-    for key in ("mime_type", "file_name", "caption", "source_message_id", "source_display_name"):
+    for key in (
+        "mime_type",
+        "file_name",
+        "caption",
+        "source_message_id",
+        "source_display_name",
+    ):
         value = metadata.get(key)
         if value not in (None, ""):
             lines.append(f"{key}={str(value)[:500]}")
@@ -290,7 +322,7 @@ def build_explicit_question_context(
                 telegram_reply_text=replied_text,
             ),
             source_message_context=source_context,
-            parent_bot_message_id=int(parent_bot_message_id) if parent_bot_message_id is not None else None,
+            parent_bot_message_id=(int(parent_bot_message_id) if parent_bot_message_id is not None else None),
         )
 
     source_context = format_message_reference(reply)
@@ -372,7 +404,10 @@ def _load_chat_style_profile(repo: GroupMemoryRepository, chat_id: int | str) ->
     try:
         settings = repo.get_chat_settings(chat_id)
     except Exception:
-        logger.exception("Failed to load chat style profile; using defaults", extra={"chat_id": chat_id})
+        logger.exception(
+            "Failed to load chat style profile; using defaults",
+            extra={"chat_id": chat_id},
+        )
         return normalise_chat_style_profile(None)
     raw = settings.get("style_profile") if isinstance(settings, Mapping) else None
     return normalise_chat_style_profile(raw)
@@ -584,7 +619,9 @@ def _reply_policy(
     )
 
 
-def _proactive_reply_policy(style_profile: Mapping[str, Any] | None = None) -> ReplyPolicy:
+def _proactive_reply_policy(
+    style_profile: Mapping[str, Any] | None = None,
+) -> ReplyPolicy:
     style = normalise_chat_style_profile(style_profile)
     max_sentences = _sentence_count(style, "max_proactive_sentences")
     tokens, chars = _proactive_reply_budget(max_sentences)
@@ -944,7 +981,11 @@ def _log_proactive_silent(
     message_id: int | str | None = None,
     **extra: Any,
 ) -> None:
-    payload = {"chat_id": chat_id, "message_id": message_id, "silent_reason": silent_reason}
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "silent_reason": silent_reason,
+    }
     payload.update(extra)
     logger.info("Group agent proactive candidate stayed silent", extra=payload)
 
@@ -1144,7 +1185,11 @@ def handle_update(
         if sqs_repo is None:
             logger.warning(
                 "Group agent proactive candidate could not be queued",
-                extra={"chat_id": chat_id, "message_id": message_id, "reason": "missing_sqs_repo"},
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "reason": "missing_sqs_repo",
+                },
             )
             return False
         sqs_repo.send_proactive_candidate_task(
@@ -1229,7 +1274,11 @@ def handle_update(
     if handled:
         logger.info(
             "Group agent handled update",
-            extra={"chat_id": chat_id, "message_id": message_id, "trigger_kind": trigger_kind},
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "trigger_kind": trigger_kind,
+            },
         )
     return handled
 
@@ -1377,6 +1426,141 @@ def _format_channel_post_task_for_prompt(
     return f"{speaker} {text}"
 
 
+def _ensure_channel_post_comment_decision(
+    decision: GroupAgentDecision,
+    *,
+    provider_name: str,
+) -> GroupAgentDecision:
+    if not decision.should_reply or not decision.reply_text:
+        raise ProviderResponseError(f"{provider_name} returned no usable channel-post comment")
+    return decision
+
+
+def _channel_post_gemini_retry_delay(attempt: int) -> float:
+    index = attempt - 1
+    if 0 <= index < len(CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS):
+        return max(0.0, float(CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS[index]))
+    return 0.0
+
+
+def _try_gemini_channel_post_comment(
+    *,
+    channel_post: str,
+    recent_context: str,
+    lang: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    chat_id: int,
+    message_id: int,
+) -> tuple[GroupAgentDecision, str] | None:
+    gemini = _get_gemini()
+    if not gemini:
+        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=message_id)
+        return None
+
+    max_attempts = max(1, int(CHANNEL_POST_GEMINI_MAX_ATTEMPTS))
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            decision, _ = gemini.group_chat_channel_post_comment_decision(
+                channel_post=channel_post,
+                recent_context=recent_context,
+                lang=lang,
+                reply_instructions=reply_instructions,
+                max_output_tokens=max_output_tokens,
+                media_parts=media_parts,
+                media_context=media_context,
+            )
+            return (
+                _ensure_channel_post_comment_decision(decision, provider_name="gemini"),
+                "gemini",
+            )
+        except GeminiRPDExhaustedError as exc:
+            _log_proactive_silent(
+                "gemini_rpd_limit",
+                chat_id=chat_id,
+                message_id=message_id,
+                candidate_kind="channel_post",
+            )
+            logger.warning(
+                "Gemini channel post comment hit RPD limit; trying text-only fallback",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                },
+            )
+            last_error = exc
+            break
+        except (GeminiUnavailableError, ProviderResponseError) as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini channel post comment attempt failed",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+            )
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini channel post comment attempt failed unexpectedly",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+                exc_info=True,
+            )
+
+        if attempt < max_attempts:
+            delay = _channel_post_gemini_retry_delay(attempt)
+            if delay > 0:
+                time.sleep(delay)
+
+    logger.warning(
+        "Gemini channel post comment exhausted; trying text-only fallback",
+        extra={
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "attempts": max_attempts,
+            "error_type": last_error.__class__.__name__ if last_error else "",
+        },
+    )
+    return None
+
+
+def _fallback_channel_post_comment(
+    *,
+    channel_post: str,
+    recent_context: str,
+    lang: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+) -> tuple[GroupAgentDecision, str]:
+    fallback = _get_channel_post_comment_fallback()
+    if fallback is None:
+        raise ProviderResponseError("No channel-post comment providers configured")
+    decision, provider_name = fallback.comment_decision(
+        channel_post=channel_post,
+        recent_context=recent_context,
+        lang=lang,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+    )
+    return (
+        _ensure_channel_post_comment_decision(decision, provider_name=provider_name),
+        provider_name,
+    )
+
+
 def maybe_comment_on_channel_post(
     *,
     repo: GroupMemoryRepository,
@@ -1392,11 +1576,6 @@ def maybe_comment_on_channel_post(
     media_ref: Mapping[str, Any] | None = None,
 ) -> bool:
     """Generate a follow-up comment under a linked-channel post."""
-    gemini = _get_gemini()
-    if not gemini:
-        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
-        return False
-
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     style = normalise_chat_style_profile(_load_chat_style_profile(repo, chat_id))
     reply_instructions = _compose_reply_instructions(
@@ -1430,7 +1609,12 @@ def maybe_comment_on_channel_post(
                     "media_context_chars": len(media_context),
                 },
             )
-        except (MediaDisabledError, MediaUnsupportedError, MediaTooLargeError, MediaUnavailableError) as exc:
+        except (
+            MediaDisabledError,
+            MediaUnsupportedError,
+            MediaTooLargeError,
+            MediaUnavailableError,
+        ) as exc:
             media_context = (
                 "Attached media metadata is available, but the media content could not be analyzed. "
                 "Do not claim visual/audio/file details that are not in the text."
@@ -1463,45 +1647,26 @@ def maybe_comment_on_channel_post(
         trigger_display_name=trigger_display_name,
         trigger_sender_type=trigger_sender_type,
     )
-    try:
-        decision, _ = gemini.group_chat_channel_post_comment_decision(
+    decision_provider = _try_gemini_channel_post_comment(
+        channel_post=channel_post,
+        recent_context=recent_context,
+        lang=lang,
+        reply_instructions=reply_instructions,
+        max_output_tokens=360,
+        media_parts=media_parts,
+        media_context=media_context,
+        chat_id=chat_id,
+        message_id=reply_to_message_id,
+    )
+    if decision_provider is None:
+        decision_provider = _fallback_channel_post_comment(
             channel_post=channel_post,
             recent_context=recent_context,
             lang=lang,
             reply_instructions=reply_instructions,
             max_output_tokens=360,
-            media_parts=media_parts,
-            media_context=media_context,
         )
-    except GeminiRPDExhaustedError:
-        _log_proactive_silent(
-            "gemini_rpd_limit", chat_id=chat_id, message_id=reply_to_message_id, candidate_kind="channel_post"
-        )
-        return False
-    except GeminiUnavailableError as exc:
-        _log_proactive_silent(
-            "gemini_unavailable",
-            chat_id=chat_id,
-            message_id=reply_to_message_id,
-            error_type=exc.__class__.__name__,
-            error_message=str(exc)[:500],
-            candidate_kind="channel_post",
-        )
-        return False
-    except Exception:
-        logger.exception("Group agent channel post comment decision failed", extra={"chat_id": chat_id})
-        return False
-
-    if not decision.reply_text:
-        _log_proactive_silent(
-            "empty_model_comment",
-            chat_id=chat_id,
-            message_id=reply_to_message_id,
-            confidence=decision.confidence,
-            reason=decision.reason,
-            candidate_kind="channel_post",
-        )
-        return False
+    decision, provider_name = decision_provider
 
     answer_text = fit_llm_output(decision.reply_text, max_chars=900)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
@@ -1527,6 +1692,7 @@ def maybe_comment_on_channel_post(
             "message_id": reply_to_message_id,
             "trigger_kind": "channel_post",
             "confidence": decision.confidence,
+            "provider": provider_name,
             "reason": decision.reason,
         },
     )
@@ -1544,7 +1710,10 @@ def process_proactive_candidate_task(
         chat_id = int(body["chat_id"])
         trigger_message_id = int(body["trigger_message_id"])
     except (KeyError, TypeError, ValueError) as exc:
-        logger.warning("PROCESS_PROACTIVE_CANDIDATE missing required field", extra={"error": str(exc)})
+        logger.warning(
+            "PROCESS_PROACTIVE_CANDIDATE missing required field",
+            extra={"error": str(exc)},
+        )
         return False
 
     user_text = str(body.get("user_text") or "").strip()
@@ -1585,8 +1754,15 @@ def process_proactive_candidate_task(
                 candidate_kind=candidate_kind,
             )
         except Exception:
-            logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
-            _log_proactive_silent("post_trigger_context_unavailable", chat_id=chat_id, message_id=trigger_message_id)
+            logger.exception(
+                "Failed to read post-trigger context for proactive candidate",
+                extra={"chat_id": chat_id},
+            )
+            _log_proactive_silent(
+                "post_trigger_context_unavailable",
+                chat_id=chat_id,
+                message_id=trigger_message_id,
+            )
             return False
         if human_answer:
             _log_proactive_silent(

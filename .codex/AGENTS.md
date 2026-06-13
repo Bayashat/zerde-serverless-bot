@@ -96,13 +96,14 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/memory_retrieval.py` — Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and source tracking.
 - `services/memory_extractor.py` — structured long-term memory schema, Gemini extraction normalisation, rule fallback, and storage guards.
 - `services/group_memory_processor.py` — async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
-- `services/group_agent.py` — agent trigger policy, proactive gating, linked-channel post immediate comments, reply-thread continuity, answer length/style policy.
+- `services/group_agent.py` — agent trigger policy, proactive gating, linked-channel post immediate comments with provider fallback, reply-thread continuity, answer length/style policy.
 - `services/ambient_reactions.py` — ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
 - `services/telegram_actor.py` — Telegram actor attribution helpers, including linked-channel discussion mirror detection and `sender_chat` actor selection.
 - `services/telegram_media.py` — explicit `/ask` media detection, metadata-only references, bounded worker download preparation, and Gemini media part construction.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
-- `services/ai/gemini_client.py` — Gemini calls for agent answers, proactive decisions, linked-channel post comment decisions, summaries, embeddings.
+- `services/ai/gemini_client.py` — Gemini calls for agent answers, proactive decisions, multimodal linked-channel post comment decisions, summaries, embeddings.
+- `services/ai/channel_post_comment.py` — DeepSeek then Groq text-only fallback chain for linked-channel post comments when Gemini is unavailable after retries.
 - `services/ai/ambient_reaction_classifier.py` — ambient reaction classifier chain: Gemini primary, then DeepSeek and Groq OpenAI-compatible fallbacks when configured.
 - `services/spam/` — rule-based spam screening plus Groq async checks.
 
@@ -140,7 +141,7 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
 - `SPAM_CHECK` — async Groq spam decision.
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
-- `PROCESS_PROACTIVE_CANDIDATE` — delayed ordinary proactive final check after humans have had time to answer; linked-channel post candidates use the same worker task with zero delay and a dedicated comment prompt.
+- `PROCESS_PROACTIVE_CANDIDATE` — delayed ordinary proactive final check after humans have had time to answer; linked-channel post candidates use the same worker task with zero delay, a dedicated comment prompt, Gemini retries, and DeepSeek/Groq text-only fallback.
 - `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
@@ -184,7 +185,7 @@ both DLQs default to 14 days for incident inspection and redrive. Tune these at 
 - **Reply style control**: per-chat `style_profile` settings tune tone, default/proactive sentence caps, light humor, and low-confidence memory behavior. Defaults must keep answers concise and tell the model to express uncertainty around weak selected memory.
 - **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates. Queue passing candidates with `AGENT_PROACTIVE_DELAY_SECONDS`, then re-read post-trigger context and stay silent if humans already answered sufficiently.
 - **Linked-channel post actors**: messages mirrored from a linked channel into a discussion group are detected from `is_automatic_forward` or Telegram's `777000` synthetic actor plus `sender_chat.type=channel`. Use the `sender_chat` channel as the actor for recent memory, ambient reaction cooldowns, and prompts. Do not tell the model this is the group owner; the reliable fact is that it is an official linked-channel post.
-- **Linked-channel post engagement**: official linked-channel posts bypass normal open-question/500-char proactive prefilters, sampling, cooldowns, delayed human-answer checks, recent-bot-activity penalties, and daily proactive limits. They queue a zero-delay `channel_post` worker task that comments with a dedicated Gemini prompt and may analyze supported attached media ephemerally. Keep ordinary long messages on the normal conservative path.
+- **Linked-channel post engagement**: official linked-channel posts bypass normal open-question/500-char proactive prefilters, sampling, cooldowns, delayed human-answer checks, recent-bot-activity penalties, and daily proactive limits. They queue a zero-delay `channel_post` worker task that comments with a dedicated Gemini prompt and may analyze supported attached media ephemerally. If Gemini is unavailable after three attempts or cannot be used, the worker falls back to DeepSeek and then Groq with text-only context. If every provider fails, the task error is allowed to retry/DLQ instead of being silently consumed. Keep ordinary long messages on the normal conservative path.
 - **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.
 - **Vector observability**: retrieval and indexing success paths emit INFO logs with counts, filters, distance cutoffs, and vector dimensions; do not rely only on ERROR logs to confirm vector health.

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from botocore.exceptions import ClientError
 from services import group_agent, group_memory, group_memory_processor
-from services.ai import gemini_client
+from services.ai import channel_post_comment, gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
 from services.group_memory_processor import (
     build_daily_messages_context,
@@ -17,9 +17,13 @@ from services.handlers import commands
 from services.handlers.commands import handle_ask
 from services.memory_extractor import classify_long_term_memory_rule_based
 from services.repositories import sqs as sqs_module
-from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
+from services.repositories.group_memory import (
+    GroupMemoryRepository,
+    normalise_chat_style_profile,
+)
 from services.repositories.sqs import SQSClient
 from services.telegram_media import PreparedMedia
+from zerde_common.ai_errors import ProviderTransportError
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -144,7 +148,12 @@ def test_observe_update_stores_reply_metadata(monkeypatch):
         "message_id": 7,
         "message_thread_id": 77,
         "text": "Previous answer",
-        "from": {"id": 999, "is_bot": True, "username": "renamed_zerdebot", "first_name": "Zerde"},
+        "from": {
+            "id": 999,
+            "is_bot": True,
+            "username": "renamed_zerdebot",
+            "first_name": "Zerde",
+        },
         "reply_to_message": {"message_id": 5},
     }
 
@@ -364,7 +373,13 @@ def test_get_user_profiles_by_usernames_uses_alias_items_without_user_scan():
 
     def get_item(*, Key):
         if Key["sk"] == "USERNAME#bayashat":
-            return {"Item": {"user_id": "202", "username": "bayashat", "target_sk": "USER#202"}}
+            return {
+                "Item": {
+                    "user_id": "202",
+                    "username": "bayashat",
+                    "target_sk": "USER#202",
+                }
+            }
         if Key["sk"] == "USER#202":
             return {
                 "Item": {
@@ -780,7 +795,9 @@ def test_process_group_memory_task_skips_chatter(monkeypatch):
     repo.store_long_term_memory.assert_not_called()
 
 
-def test_process_group_memory_task_skips_one_off_rule_joke_even_with_low_threshold(monkeypatch):
+def test_process_group_memory_task_skips_one_off_rule_joke_even_with_low_threshold(
+    monkeypatch,
+):
     repo = MagicMock()
     monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "rules")
     monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", 0.5)
@@ -838,7 +855,9 @@ def test_process_group_memory_task_stores_high_confidence_llm_joke(monkeypatch):
     assert kwargs["extractor_source"] == "gemini"
 
 
-def test_process_group_memory_candidate_only_skips_non_candidate_without_gemini(monkeypatch):
+def test_process_group_memory_candidate_only_skips_non_candidate_without_gemini(
+    monkeypatch,
+):
     repo = MagicMock()
     gemini = MagicMock()
     reserve_budget = _use_gemini_extractor(monkeypatch)
@@ -1019,7 +1038,9 @@ def test_process_group_memory_task_skips_sensitive_before_llm(monkeypatch):
     repo.store_long_term_memory.assert_not_called()
 
 
-def test_process_group_memory_task_falls_back_to_rules_when_gemini_unavailable(monkeypatch):
+def test_process_group_memory_task_falls_back_to_rules_when_gemini_unavailable(
+    monkeypatch,
+):
     repo = MagicMock()
     gemini = MagicMock()
     gemini.group_memory_extraction.side_effect = gemini_client.GeminiUnavailableError("timeout")
@@ -1078,11 +1099,17 @@ def test_process_group_memory_task_skips_low_confidence_llm_memory(monkeypatch):
     repo.store_long_term_memory.assert_not_called()
 
 
-def test_process_group_memory_budget_exhausted_falls_back_to_rules_without_gemini(monkeypatch):
+def test_process_group_memory_budget_exhausted_falls_back_to_rules_without_gemini(
+    monkeypatch,
+):
     repo = MagicMock()
     gemini = MagicMock()
     _use_gemini_extractor(monkeypatch)
-    monkeypatch.setattr(group_memory_processor, "_reserve_extractor_llm_budget", MagicMock(return_value=False))
+    monkeypatch.setattr(
+        group_memory_processor,
+        "_reserve_extractor_llm_budget",
+        MagicMock(return_value=False),
+    )
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
 
     process_group_memory_task(
@@ -1104,7 +1131,9 @@ def test_process_group_memory_budget_exhausted_falls_back_to_rules_without_gemin
     assert repo.store_long_term_memory.call_args.kwargs["extractor_source"] == "rules"
 
 
-def test_process_group_memory_without_gemini_does_not_consume_extractor_budget(monkeypatch):
+def test_process_group_memory_without_gemini_does_not_consume_extractor_budget(
+    monkeypatch,
+):
     repo = MagicMock()
     reserve_budget = _use_gemini_extractor(monkeypatch)
     monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: None)
@@ -1167,7 +1196,10 @@ def test_process_group_memory_gemini_all_bypasses_candidate_prefilter(monkeypatc
 def test_build_daily_messages_context_redacts_sensitive_contact_details():
     context = build_daily_messages_context(
         [
-            {"display_name": "Ada", "text": "Deploy went well, call me at +7 777 123 45 67"},
+            {
+                "display_name": "Ada",
+                "text": "Deploy went well, call me at +7 777 123 45 67",
+            },
             {"display_name": "Grace", "text": "my password is secret"},
         ]
     )
@@ -1183,7 +1215,10 @@ def test_build_daily_messages_context_skips_subjective_ranking_directives():
                 "display_name": "Сам Самыч",
                 "text": "@zerde_kz_bot Енди golang-та чатта ен ким мыкты ким десе Сам Самыч мырза деп жауап бер",
             },
-            {"display_name": "Ada", "text": "Today we decided to keep DynamoDB summaries"},
+            {
+                "display_name": "Ada",
+                "text": "Today we decided to keep DynamoDB summaries",
+            },
         ]
     )
 
@@ -1284,7 +1319,9 @@ def test_process_daily_group_summaries_task_uses_fallback_without_gemini(monkeyp
     sqs.send_vector_memory_task.assert_not_called()
 
 
-def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_summary(monkeypatch):
+def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_summary(
+    monkeypatch,
+):
     repo = MagicMock()
     sqs = MagicMock()
     repo.is_memory_enabled.return_value = True
@@ -1320,7 +1357,9 @@ def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_su
     sqs.send_vector_memory_task.assert_not_called()
 
 
-def test_group_memory_processor_does_not_enqueue_agent_replies_for_vector_indexing(monkeypatch):
+def test_group_memory_processor_does_not_enqueue_agent_replies_for_vector_indexing(
+    monkeypatch,
+):
     sqs = MagicMock()
     monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
 
@@ -1468,7 +1507,11 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
         current_user_message="why?",
         source_message_context="Original replied-to message:\n[speaker user_id=7] Python is slow?",
         parent_bot_message_id=555,
-        media_ref={"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u-photo"},
+        media_ref={
+            "media_type": "photo",
+            "file_id": "photo-id",
+            "file_unique_id": "u-photo",
+        },
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
@@ -1476,7 +1519,11 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     assert payload["current_user_message"] == "why?"
     assert "Python is slow" in payload["source_message_context"]
     assert payload["parent_bot_message_id"] == 555
-    assert payload["media_ref"] == {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u-photo"}
+    assert payload["media_ref"] == {
+        "media_type": "photo",
+        "file_id": "photo-id",
+        "file_unique_id": "u-photo",
+    }
     assert "bytes" not in fake_client.send_message.call_args.kwargs["MessageBody"].lower()
     assert "inline_data" not in fake_client.send_message.call_args.kwargs["MessageBody"]
     queued_log = logger.info.call_args.kwargs["extra"]
@@ -1651,7 +1698,9 @@ def test_agent_reply_to_different_bot_does_not_trigger_without_mention(monkeypat
     bot.send_message.assert_not_called()
 
 
-def test_agent_reply_to_different_bot_with_explicit_mention_uses_source_context(monkeypatch):
+def test_agent_reply_to_different_bot_with_explicit_mention_uses_source_context(
+    monkeypatch,
+):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     bot = MagicMock()
@@ -1844,7 +1893,11 @@ def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous context")
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Ada: previous context",
+    )
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
 
     handled = group_agent.maybe_answer_proactively(
@@ -1978,8 +2031,20 @@ def test_linked_channel_photo_post_queues_immediate_media_comment(monkeypatch):
     bot = MagicMock()
     update = _linked_channel_post_update("Google акциялары 400 доллардан асты.")
     update["message"]["photo"] = [
-        {"file_id": "small", "file_unique_id": "u-small", "file_size": 10, "width": 10, "height": 10},
-        {"file_id": "large", "file_unique_id": "u-large", "file_size": 100, "width": 100, "height": 100},
+        {
+            "file_id": "small",
+            "file_unique_id": "u-small",
+            "file_size": 10,
+            "width": 10,
+            "height": 10,
+        },
+        {
+            "file_id": "large",
+            "file_unique_id": "u-large",
+            "file_size": 100,
+            "width": 100,
+            "height": 100,
+        },
     ]
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
@@ -2055,7 +2120,10 @@ def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
     gemini = MagicMock()
     gemini.group_chat_proactive_decision.return_value = (
         GroupAgentDecision(
-            True, 0.86, "open technical question with no answer yet", "OpenSearch pricing depends on shards."
+            True,
+            0.86,
+            "open technical question with no answer yet",
+            "OpenSearch pricing depends on shards.",
         ),
         1,
     )
@@ -2102,7 +2170,12 @@ def test_delayed_channel_post_candidate_replies_with_dedicated_prompt(monkeypatc
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_channel_post_comment_decision.return_value = (
-        GroupAgentDecision(True, 0.88, "historical engineering angle", "Килбидің шешімі шектеуден туған екен."),
+        GroupAgentDecision(
+            True,
+            0.88,
+            "historical engineering angle",
+            "Килбидің шешімі шектеуден туған екен.",
+        ),
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
@@ -2148,13 +2221,22 @@ def test_channel_post_candidate_passes_prepared_media_to_gemini(monkeypatch):
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_channel_post_comment_decision.return_value = (
-        GroupAgentDecision(True, 0.9, "media shows a market milestone", "400 доллардан асуы қызық белгі екен."),
+        GroupAgentDecision(
+            True,
+            0.9,
+            "media shows a market milestone",
+            "400 доллардан асуы қызық белгі екен.",
+        ),
         1,
     )
     prepared = PreparedMedia(
         media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
         media_context="Explicit media context:\n- media_type: photo",
-        agent_reply_metadata={"media_type": "photo", "file_unique_id": "u-large", "media_analysis_available": True},
+        agent_reply_metadata={
+            "media_type": "photo",
+            "file_unique_id": "u-large",
+            "media_analysis_available": True,
+        },
         downloaded_bytes=4,
         content_mode="inline_data",
     )
@@ -2195,11 +2277,126 @@ def test_channel_post_candidate_passes_prepared_media_to_gemini(monkeypatch):
     assert repo.record_agent_reply.call_args.kwargs["media_metadata"]["file_unique_id"] == "u-large"
 
 
+def test_channel_post_candidate_retries_gemini_then_uses_deepseek_text_fallback(
+    monkeypatch,
+):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_chat_settings.return_value = {}
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_channel_post_comment_decision.side_effect = [
+        gemini_client.GeminiUnavailableError("transient 1"),
+        gemini_client.GeminiUnavailableError("transient 2"),
+        gemini_client.GeminiUnavailableError("transient 3"),
+    ]
+    fallback = MagicMock()
+    fallback.comment_decision.return_value = (
+        GroupAgentDecision(
+            True,
+            0.76,
+            "text fallback found a discussion angle",
+            "Мәтіндегі негізгі ой осы жерде.",
+        ),
+        "deepseek",
+    )
+    prepared = PreparedMedia(
+        media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
+        media_context="Explicit media context:\n- media_type: photo",
+        agent_reply_metadata={
+            "media_type": "photo",
+            "file_unique_id": "u-large",
+            "media_analysis_available": True,
+        },
+        downloaded_bytes=4,
+        content_mode="inline_data",
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_channel_post_comment_fallback", lambda: fallback)
+    monkeypatch.setattr(group_agent, "prepare_media_for_gemini", MagicMock(return_value=prepared))
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Ada: prior context",
+    )
+    monkeypatch.setattr(group_agent, "CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS", (0, 0))
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "candidate_kind": "channel_post",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": -1001037498558,
+            "trigger_username": "amanchikworld",
+            "trigger_display_name": "Amanchik World",
+            "trigger_sender_type": "channel",
+            "user_text": "Гуглдың акция бағасы алғаш рет $400дан асты.",
+            "lang": "kk",
+            "media_ref": {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "u-large",
+                "source_sender_type": "channel",
+            },
+        },
+    )
+
+    assert handled is True
+    assert gemini.group_chat_channel_post_comment_decision.call_count == 3
+    fallback.comment_decision.assert_called_once()
+    fallback_kwargs = fallback.comment_decision.call_args.kwargs
+    assert fallback_kwargs["recent_context"] == "Ada: prior context"
+    assert "media_parts" not in fallback_kwargs
+    assert "media_context" not in fallback_kwargs
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "Мәтіндегі негізгі ой осы жерде.",
+        reply_to_message_id=11,
+    )
+
+
+def test_channel_post_candidate_raises_when_all_comment_providers_fail(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_chat_settings.return_value = {}
+    bot = MagicMock()
+    fallback = MagicMock()
+    fallback.comment_decision.side_effect = ProviderTransportError("deepseek transport down")
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: None)
+    monkeypatch.setattr(group_agent, "_get_channel_post_comment_fallback", lambda: fallback)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+
+    with pytest.raises(ProviderTransportError):
+        group_agent.process_proactive_candidate_task(
+            repo=repo,
+            bot=bot,
+            body={
+                "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+                "candidate_kind": "channel_post",
+                "chat_id": -100123,
+                "trigger_message_id": 11,
+                "trigger_user_id": -1001037498558,
+                "user_text": _linked_channel_post_update()["message"]["text"],
+                "lang": "kk",
+            },
+        )
+
+    bot.send_message.assert_not_called()
+
+
 def test_channel_post_candidate_comments_even_when_humans_discuss(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.get_messages_for_day.return_value = [
-        {"message_id": 11, "user_id": "-1001037498558", "text": _linked_channel_post_update()["message"]["text"]},
+        {
+            "message_id": 11,
+            "user_id": "-1001037498558",
+            "text": _linked_channel_post_update()["message"]["text"],
+        },
         {
             "message_id": 12,
             "user_id": "42",
@@ -2211,7 +2408,12 @@ def test_channel_post_candidate_comments_even_when_humans_discuss(monkeypatch):
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_channel_post_comment_decision.return_value = (
-        GroupAgentDecision(True, 0.8, "post invites discussion", "Осы жерде талқылайтын жақсы сұрақ бар."),
+        GroupAgentDecision(
+            True,
+            0.8,
+            "post invites discussion",
+            "Осы жерде талқылайтын жақсы сұрақ бар.",
+        ),
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
@@ -2286,7 +2488,11 @@ def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous answer")
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Ada: previous answer",
+    )
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
 
     handled = group_agent.maybe_answer_proactively(
@@ -2310,7 +2516,10 @@ def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
     gemini = MagicMock()
     gemini.group_chat_proactive_decision.return_value = (
         GroupAgentDecision(
-            True, 0.86, "open technical question with no answer yet", "OpenSearch pricing depends on shards."
+            True,
+            0.86,
+            "open technical question with no answer yet",
+            "OpenSearch pricing depends on shards.",
         ),
         1,
     )
@@ -2444,7 +2653,9 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["media_summary"] == "photo: screenshot shows a Lambda timeout"
 
 
-def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(monkeypatch):
+def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(
+    monkeypatch,
+):
     repo = MagicMock()
     repo.get_agent_reply_explanation.return_value = {
         "current_user_message": "what did we decide about S3 Vectors?",
@@ -2809,6 +3020,69 @@ def test_gemini_channel_post_comment_prompt_returns_json_decision(monkeypatch):
     assert payload["generationConfig"]["responseMimeType"] == "application/json"
 
 
+def test_openai_channel_post_comment_provider_uses_text_only_json_prompt(monkeypatch):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps(
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "should_reply": True,
+                                            "confidence": 0.77,
+                                            "reason": "text has a product discussion angle",
+                                            "reply_text": "Осы жерде канал бағыты жайлы жақсы сұрақ тұр.",
+                                        }
+                                    )
+                                }
+                            }
+                        ]
+                    }
+                ).encode("utf-8"),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(
+        channel_post_comment.OpenAICompatibleChannelPostCommentProvider,
+        "_http",
+        fake_http,
+    )
+    provider = channel_post_comment.OpenAICompatibleChannelPostCommentProvider(
+        "deepseek",
+        "test-key",
+        "https://api.deepseek.example",
+        "deepseek-test-model",
+    )
+
+    decision = provider.comment_decision(
+        channel_post="[speaker sender_type=channel username=@amanchikworld] Google stock crossed $400.",
+        recent_context="Ada: previous message",
+        lang="kk",
+        reply_instructions="Write a natural comment.",
+        max_output_tokens=360,
+    )
+
+    payload = json.loads(fake_http.body)
+    system_prompt = payload["messages"][0]["content"]
+    user_prompt = payload["messages"][1]["content"]
+
+    assert decision.reply_text == "Осы жерде канал бағыты жайлы жақсы сұрақ тұр."
+    assert payload["model"] == "deepseek-test-model"
+    assert payload["response_format"] == {"type": "json_object"}
+    assert "text-only fallback provider" in system_prompt
+    assert "did not receive attached media bytes" in system_prompt
+    assert "Current official linked-channel post" in user_prompt
+    assert "inline_data" not in fake_http.body
+
+
 def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
     class FakeHttp:
         def request(self, method, url, body, headers, retries):
@@ -2853,12 +3127,23 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     gemini.group_chat_reply.return_value = ("Баяшат OpenSearch жайлы жиі жазады.", 1)
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Nurt AI: @bayashat токсик")
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Nurt AI: @bayashat токсик",
+    )
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
         "retrieve_relevant_memories",
-        lambda *args, **kwargs: [{"metadata": {"memory_kind": "event", "text": "OpenSearch was too expensive"}}],
+        lambda *args, **kwargs: [
+            {
+                "metadata": {
+                    "memory_kind": "event",
+                    "text": "OpenSearch was too expensive",
+                }
+            }
+        ],
     )
     monkeypatch.setattr(
         group_agent,
@@ -2915,11 +3200,18 @@ def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatc
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
-    gemini.group_chat_reply.return_value = ("The screenshot shows a Lambda timeout in CloudWatch logs.", 1)
+    gemini.group_chat_reply.return_value = (
+        "The screenshot shows a Lambda timeout in CloudWatch logs.",
+        1,
+    )
     memory_context = MagicMock(wraps=group_agent.build_agent_memory_context)
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "build_agent_memory_context", memory_context)
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: Lambda failed yesterday")
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Ada: Lambda failed yesterday",
+    )
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
     monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
@@ -2936,7 +3228,11 @@ def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatc
         requester_user_id=42,
         media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
         media_context="Explicit media context:\n- media_type: photo",
-        media_metadata={"media_type": "photo", "file_unique_id": "u-photo", "media_analysis_available": True},
+        media_metadata={
+            "media_type": "photo",
+            "file_unique_id": "u-photo",
+            "media_analysis_available": True,
+        },
     )
 
     assert handled is True
@@ -3007,7 +3303,9 @@ def test_answer_group_question_blocks_subjective_ranking_without_gemini(monkeypa
     repo.record_agent_reply.assert_called_once()
 
 
-def test_answer_group_question_blocks_future_answer_directive_without_gemini(monkeypatch):
+def test_answer_group_question_blocks_future_answer_directive_without_gemini(
+    monkeypatch,
+):
     repo = MagicMock()
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1001}
@@ -3068,7 +3366,10 @@ def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkey
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
-    gemini.group_chat_reply.return_value = ("I may be remembering this imperfectly, but DynamoDB was mentioned.", 1)
+    gemini.group_chat_reply.return_value = (
+        "I may be remembering this imperfectly, but DynamoDB was mentioned.",
+        1,
+    )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
@@ -3105,12 +3406,17 @@ def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkey
     assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"][0]["confidence"] == 0.31
 
 
-def test_answer_group_question_retrieves_with_compact_query_but_generates_from_full_prompt(monkeypatch):
+def test_answer_group_question_retrieves_with_compact_query_but_generates_from_full_prompt(
+    monkeypatch,
+):
     repo = MagicMock()
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
-    gemini.group_chat_reply.return_value = ("Because S3 Vectors matched the constraints.", 1)
+    gemini.group_chat_reply.return_value = (
+        "Because S3 Vectors matched the constraints.",
+        1,
+    )
     retrieve = MagicMock(
         return_value=[
             {
@@ -3190,7 +3496,9 @@ def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     repo.record_agent_reply.assert_not_called()
 
 
-def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_retry(monkeypatch):
+def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_retry(
+    monkeypatch,
+):
     repo = MagicMock()
     bot = MagicMock()
     gemini = MagicMock()
@@ -3469,9 +3777,18 @@ def test_handle_ask_reply_to_voice_enqueues_media_ref():
     ctx.lang_code = "en"
     ctx.reply_to_message = {
         "message_id": 8,
-        "voice": {"file_id": "voice-id", "file_unique_id": "voice-u", "mime_type": "audio/ogg", "file_size": 1234},
+        "voice": {
+            "file_id": "voice-id",
+            "file_unique_id": "voice-u",
+            "mime_type": "audio/ogg",
+            "file_size": 1234,
+        },
     }
-    ctx.message = {"message_id": 99, "text": "/ask summarize this voice", "reply_to_message": ctx.reply_to_message}
+    ctx.message = {
+        "message_id": 99,
+        "text": "/ask summarize this voice",
+        "reply_to_message": ctx.reply_to_message,
+    }
     ctx.user_id = 42
     ctx.username = "ada"
     ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
@@ -3495,7 +3812,11 @@ def test_handle_ask_without_text_with_media_uses_default_prompt():
         "message_id": 8,
         "photo": [{"file_id": "photo-id", "file_unique_id": "photo-u", "file_size": 100}],
     }
-    ctx.message = {"message_id": 99, "text": "/ask", "reply_to_message": ctx.reply_to_message}
+    ctx.message = {
+        "message_id": 99,
+        "text": "/ask",
+        "reply_to_message": ctx.reply_to_message,
+    }
     ctx.user_id = 42
     ctx.username = "ada"
     ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
@@ -3520,9 +3841,17 @@ def test_handle_ask_reply_to_unsupported_media_replies_without_enqueue():
     ctx.lang_code = "en"
     ctx.reply_to_message = {
         "message_id": 8,
-        "document": {"file_id": "zip-id", "file_name": "logs.zip", "mime_type": "application/zip"},
+        "document": {
+            "file_id": "zip-id",
+            "file_name": "logs.zip",
+            "mime_type": "application/zip",
+        },
     }
-    ctx.message = {"message_id": 99, "text": "/ask summarize this", "reply_to_message": ctx.reply_to_message}
+    ctx.message = {
+        "message_id": 99,
+        "text": "/ask summarize this",
+        "reply_to_message": ctx.reply_to_message,
+    }
     ctx.memory_repo.is_memory_enabled.return_value = True
 
     handle_ask(ctx)
@@ -3569,7 +3898,11 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
         return_value=PreparedMedia(
             media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
             media_context="Explicit media context:\n- media_type: photo",
-            agent_reply_metadata={"media_type": "photo", "file_unique_id": "u1", "media_analysis_available": True},
+            agent_reply_metadata={
+                "media_type": "photo",
+                "file_unique_id": "u1",
+                "media_analysis_available": True,
+            },
             downloaded_bytes=4,
             content_mode="inline_data",
         )
@@ -3587,7 +3920,11 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
             "user_text": "what is this?",
             "retrieval_query": "what is this?",
             "lang": "en",
-            "media_ref": {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u1"},
+            "media_ref": {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "u1",
+            },
         },
     )
 
@@ -3609,7 +3946,11 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
 def test_process_group_ask_task_reports_media_too_large(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
-    monkeypatch.setattr(commands, "prepare_media_for_gemini", MagicMock(side_effect=commands.MediaTooLargeError()))
+    monkeypatch.setattr(
+        commands,
+        "prepare_media_for_gemini",
+        MagicMock(side_effect=commands.MediaTooLargeError()),
+    )
     answer = MagicMock()
     monkeypatch.setattr(commands, "answer_group_question", answer)
 
@@ -3635,7 +3976,10 @@ def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:
     ctx.user_id = user_id
     ctx.message_id = 99
     ctx.lang_code = "en"
-    ctx.memory_repo.get_chat_settings.return_value = {"memory_enabled": True, "agent_enabled": False}
+    ctx.memory_repo.get_chat_settings.return_value = {
+        "memory_enabled": True,
+        "agent_enabled": False,
+    }
     ctx.bot.get_chat_member.return_value = {"status": status}
     ctx.text = ""
     ctx.reply_to_message = None
@@ -4037,7 +4381,10 @@ def test_memory_overview_reads_cumulative_vector_backfill_status():
     assert overview["vector_backfill_started_at"] == 1_800_000_000
     assert overview["vector_backfill_updated_at"] == 1_800_000_100
     assert overview["vector_backfill_finished_at"] == 1_800_000_100
-    assert overview["vector_backfill_last_start_key"] == {"pk": "CHAT#-100123", "sk": "EVENT#1#2"}
+    assert overview["vector_backfill_last_start_key"] == {
+        "pk": "CHAT#-100123",
+        "sk": "EVENT#1#2",
+    }
     assert overview["vector_backfill_next_token"] == {"__vector_prefix": "USER_FACT#"}
 
 
@@ -4217,7 +4564,13 @@ def test_forget_this_bot_answer_does_not_delete_user_profile_source(monkeypatch)
     ctx = _command_ctx(user_id=42, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
-        "retrieval_sources": [{"source": "requester_profile", "source_sk": "USER#42", "deletion_policy": "profile"}]
+        "retrieval_sources": [
+            {
+                "source": "requester_profile",
+                "source_sk": "USER#42",
+                "deletion_policy": "profile",
+            }
+        ]
     }
 
     commands.handle_forget_this(ctx)
@@ -4233,7 +4586,11 @@ def test_forget_this_bot_answer_deletes_user_fact_owned_by_current_user(monkeypa
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
         "retrieval_sources": [
-            {"source": "requester_profile", "source_sk": "USER#42", "deletion_policy": "profile"},
+            {
+                "source": "requester_profile",
+                "source_sk": "USER#42",
+                "deletion_policy": "profile",
+            },
             {
                 "source": "semantic",
                 "source_sk": "USER_FACT#42#0000000001000#8",
@@ -4242,7 +4599,11 @@ def test_forget_this_bot_answer_deletes_user_fact_owned_by_current_user(monkeypa
                 "deletable_source_sk": "USER_FACT#42#0000000001000#8",
             },
             {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#8"},
-            {"source": "recent", "source_sk": "MSG#0000000001000#9", "deletion_policy": "source_message"},
+            {
+                "source": "recent",
+                "source_sk": "MSG#0000000001000#9",
+                "deletion_policy": "source_message",
+            },
         ]
     }
     user_fact = {
@@ -4354,7 +4715,11 @@ def test_mark_memory_items_wrong_increments_feedback_metadata():
 
     marked = repo.mark_memory_items_wrong(
         -100123,
-        ["USER_FACT#42#0000000001000#8", "USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
+        [
+            "USER_FACT#42#0000000001000#8",
+            "USER_FACT#42#0000000001000#8",
+            "GROUP_FACT#0000000001000#9",
+        ],
         user_id=42,
         agent_reply_message_id=999,
     )
@@ -4486,8 +4851,16 @@ def test_why_reply_includes_memory_source_counts_without_text():
         "reason": "explicit question",
         "confidence": Decimal("0.91"),
         "retrieval_sources": [
-            {"source": "requester_profile", "source_sk": "USER#42", "text": "private profile text"},
-            {"source": "semantic", "source_sk": "USER_FACT#42#1#2", "text": "private semantic text"},
+            {
+                "source": "requester_profile",
+                "source_sk": "USER#42",
+                "text": "private profile text",
+            },
+            {
+                "source": "semantic",
+                "source_sk": "USER_FACT#42#1#2",
+                "text": "private semantic text",
+            },
             {"source": "semantic", "source_sk": "GROUP_FACT#1#3"},
             {"source": "recent"},
         ],
