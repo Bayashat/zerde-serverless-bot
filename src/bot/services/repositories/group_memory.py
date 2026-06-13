@@ -23,7 +23,15 @@ from services.memory_safety import is_memory_learning_safe
 from services.repositories._common import get_dynamodb
 
 _SECONDS_PER_DAY = 24 * 60 * 60
-_VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
+_LONG_TERM_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#")
+_DAILY_SUMMARY_PREFIX = "DAILY_SUMMARY#"
+_VECTOR_MEMORY_PREFIXES = (*_LONG_TERM_MEMORY_PREFIXES, _DAILY_SUMMARY_PREFIX)
+_AGENT_REPLY_PREFIX = "AGENT_REPLY#"
+_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND = {
+    "bot_commitment": "BOT_COMMITMENT#",
+    "bot_correction": "BOT_CORRECTION#",
+}
+_DURABLE_BOT_MEMORY_PREFIXES = tuple(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.values())
 _USERNAME_ALIAS_PREFIX = "USERNAME#"
 _LEXICAL_INDEX_PREFIX = "TERM#"
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
@@ -118,11 +126,11 @@ class GroupMemoryRepository:
 
     @staticmethod
     def _agent_reply_sk(message_id: int | str) -> str:
-        return f"AGENT_REPLY#{int(message_id):013d}"
+        return f"{_AGENT_REPLY_PREFIX}{int(message_id):013d}"
 
     @staticmethod
     def _daily_summary_sk(summary_date: str) -> str:
-        return f"DAILY_SUMMARY#{summary_date}"
+        return f"{_DAILY_SUMMARY_PREFIX}{summary_date}"
 
     @staticmethod
     def _lexical_index_sk(term: str, created_at_ms: int, source_sk: str) -> str:
@@ -142,7 +150,29 @@ class GroupMemoryRepository:
 
     @staticmethod
     def is_vectorizable_sk(sk: str) -> bool:
+        """Return whether a row is allowed to enter long-term semantic vector memory."""
         return sk.startswith(_VECTOR_MEMORY_PREFIXES)
+
+    @staticmethod
+    def is_agent_reply_sk(sk: str) -> bool:
+        return sk.startswith(_AGENT_REPLY_PREFIX)
+
+    @staticmethod
+    def is_durable_bot_memory_sk(sk: str) -> bool:
+        return sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES)
+
+    @staticmethod
+    def durable_bot_memory_sk(kind: str, created_at_ms: int, source_message_id: int | str) -> str:
+        """Reserved key format for explicit bot commitments/corrections.
+
+        These rows are not written by normal answer generation. A future command
+        or admin correction flow must call this deliberately and add its own
+        review/permission checks before any bot-authored text becomes durable.
+        """
+        prefix = _DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.get(kind)
+        if not prefix:
+            raise ValueError(f"Unsupported durable bot memory kind: {kind}")
+        return f"{prefix}{int(created_at_ms):013d}#{source_message_id}"
 
     @staticmethod
     def _vector_prefix_for_start_key(start_key: dict[str, Any] | None) -> str:
@@ -1086,7 +1116,7 @@ class GroupMemoryRepository:
         """Return recent important memories across long-term memory item types."""
         items: list[dict[str, Any]] = []
         per_kind_limit = max(1, limit // 2)
-        for prefix in ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#"):
+        for prefix in _LONG_TERM_MEMORY_PREFIXES:
             resp = self.table.query(
                 KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(prefix),
                 ScanIndexForward=False,
@@ -1140,7 +1170,7 @@ class GroupMemoryRepository:
 
     def get_recent_daily_summaries(self, chat_id: int | str, *, limit: int = 7) -> list[dict[str, Any]]:
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("DAILY_SUMMARY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_DAILY_SUMMARY_PREFIX),
             ScanIndexForward=False,
             Limit=limit,
         )
@@ -1535,7 +1565,7 @@ class GroupMemoryRepository:
             return resp.get("Item") or {}
 
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_AGENT_REPLY_PREFIX),
             ScanIndexForward=False,
             Limit=1,
         )
@@ -1544,7 +1574,7 @@ class GroupMemoryRepository:
 
     def count_recent_agent_replies(self, chat_id: int | str, *, since_epoch: int, limit: int = 25) -> int:
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_AGENT_REPLY_PREFIX),
             ScanIndexForward=False,
             Limit=limit,
         )
@@ -1568,6 +1598,8 @@ class GroupMemoryRepository:
             "jokes": 0,
             "daily_summaries": 0,
             "agent_replies": 0,
+            "bot_commitments": 0,
+            "bot_corrections": 0,
             "vector_total": 0,
             "vector_indexed": 0,
             "vector_failed": 0,
@@ -1605,10 +1637,14 @@ class GroupMemoryRepository:
                     counts["group_facts"] += 1
                 elif sk.startswith("JOKE#"):
                     counts["jokes"] += 1
-                elif sk.startswith("DAILY_SUMMARY#"):
+                elif sk.startswith(_DAILY_SUMMARY_PREFIX):
                     counts["daily_summaries"] += 1
-                elif sk.startswith("AGENT_REPLY#"):
+                elif sk.startswith(_AGENT_REPLY_PREFIX):
                     counts["agent_replies"] += 1
+                elif sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND["bot_commitment"]):
+                    counts["bot_commitments"] += 1
+                elif sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND["bot_correction"]):
+                    counts["bot_corrections"] += 1
                 elif sk == self._vector_backfill_sk():
                     counts["vector_backfill_status"] = str(item.get("vector_backfill_status") or "")
                     counts["vector_backfill_updated_at"] = item.get("vector_backfill_updated_at") or ""

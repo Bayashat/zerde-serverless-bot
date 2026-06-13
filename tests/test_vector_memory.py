@@ -426,6 +426,27 @@ def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     assert repo.mark_vector_status.call_args.kwargs["schema_version"] == vector_memory.VECTOR_MEMORY_SCHEMA_VERSION
 
 
+def test_index_memory_item_skips_agent_reply_before_loading_item(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    embedding = MagicMock()
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "AGENT_REPLY#0000000000555",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is False
+    repo.get_memory_item.assert_not_called()
+    repo.mark_vector_status.assert_not_called()
+    embedding.embed.assert_not_called()
+    vector_repo.put_memory_vector.assert_not_called()
+
+
 def test_index_memory_item_marks_failed_when_embedding_quota_exhausted(monkeypatch):
     monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
     repo = MagicMock()

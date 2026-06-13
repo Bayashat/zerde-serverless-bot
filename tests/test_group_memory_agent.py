@@ -1202,6 +1202,19 @@ def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_su
     sqs.send_vector_memory_task.assert_not_called()
 
 
+def test_group_memory_processor_does_not_enqueue_agent_replies_for_vector_indexing(monkeypatch):
+    sqs = MagicMock()
+    monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
+
+    group_memory_processor._enqueue_vector_memory_index(
+        chat_id=-100123,
+        source_sk="AGENT_REPLY#0000000000555",
+        sqs_repo=sqs,
+    )
+
+    sqs.send_vector_memory_task.assert_not_called()
+
+
 def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -1361,6 +1374,18 @@ def test_sqs_client_sends_vector_memory_task(monkeypatch):
         "source_sk": "EVENT#1#2",
         "reason": "memory_write",
     }
+
+
+def test_sqs_client_skips_vector_task_for_agent_reply(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+    sqs.vector_queue_url = "vector-queue-url"
+
+    sqs.send_vector_memory_task(chat_id=-100123, source_sk="AGENT_REPLY#0000000000555", reason="memory_write")
+
+    fake_client.send_message.assert_not_called()
 
 
 def test_sqs_client_sends_vector_memory_backfill_task(monkeypatch):
@@ -2982,6 +3007,29 @@ def _memory_query_prefixes(repo: GroupMemoryRepository) -> list[str]:
         assert begins_with["operator"] == "begins_with"
         prefixes.append(begins_with["values"][1])
     return prefixes
+
+
+def test_bot_output_key_families_are_not_vectorizable_memory():
+    commitment_sk = GroupMemoryRepository.durable_bot_memory_sk(
+        "bot_commitment",
+        1_700_000_000_000,
+        555,
+    )
+    correction_sk = GroupMemoryRepository.durable_bot_memory_sk(
+        "bot_correction",
+        1_700_000_000_000,
+        556,
+    )
+
+    assert GroupMemoryRepository.is_agent_reply_sk("AGENT_REPLY#0000000000555") is True
+    assert GroupMemoryRepository.is_vectorizable_sk("AGENT_REPLY#0000000000555") is False
+    assert GroupMemoryRepository.is_durable_bot_memory_sk(commitment_sk) is True
+    assert GroupMemoryRepository.is_durable_bot_memory_sk(correction_sk) is True
+    assert GroupMemoryRepository.is_vectorizable_sk(commitment_sk) is False
+    assert GroupMemoryRepository.is_vectorizable_sk(correction_sk) is False
+
+    with pytest.raises(ValueError, match="Unsupported durable bot memory kind"):
+        GroupMemoryRepository.durable_bot_memory_sk("agent_reply", 1_700_000_000_000, 557)
 
 
 def test_vectorizable_memory_items_query_vector_prefixes_not_full_partition():
