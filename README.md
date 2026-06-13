@@ -56,18 +56,21 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 ```mermaid
 flowchart LR
   TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
-  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + main SQS worker"]
 
   BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
   BOT --> MEMORY[("DynamoDB<br/>group memory")]
   BOT --> MAINQ["SQS timeout/tasks queue"]
   MAINQ --> BOT
 
-  BOT --> VQ["SQS vector memory queue"]
-  VQ --> BOT
-  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
+  BOT -- "enqueue vector tasks" --> VQ["SQS vector memory queue"]
+  VQ --> VIDX["Vector indexer Lambda"]
+  BOT -- "query/delete" --> S3V["S3 Vectors<br/>semantic memory index"]
+  VIDX -- "index/backfill" --> S3V
+  VIDX --> MEMORY
 
-  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries"]
+  VIDX --> GEMINI_EMB["Gemini<br/>embeddings"]
   BOT --> GROQ["Groq<br/>spam checks"]
 
   EB["EventBridge schedules"] --> NEWS["News Lambda"]
@@ -78,17 +81,21 @@ flowchart LR
   QUIZ --> TG
 
   LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
 ```
 
 | Component | Trigger | Responsibility |
 |-----------|---------|----------------|
-| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/bot/main.py` | API Gateway + main SQS queue | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, group memory extraction, daily summaries, semantic retrieval, and vector cleanup/enqueue. |
+| `src/bot/vector_indexer_main.py` | Vector memory SQS queue | Dedicated consumer for `PROCESS_VECTOR_MEMORY` and `PROCESS_VECTOR_MEMORY_BACKFILL`; embeds/indexes memory in S3 Vectors and fans out backfill pages. |
 | `src/news/` | EventBridge | Scheduled multilingual IT news digest. |
 | `src/quiz/` | EventBridge + bot invoke | Scheduled and on-demand developer quizzes. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared config, secret loading, logging, redaction, and provider error helpers. |
 | `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, and Lambda wiring. |
+
+The Bot Lambda can query and delete S3 Vectors for retrieval and memory cleanup, but it does not consume the vector memory queue.
 
 For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -127,6 +134,19 @@ cd infra
 uv run cdk synth -c env=dev
 uv run cdk diff -c env=dev
 ```
+
+Common group-memory retention settings:
+
+| Env var | Applies to | Default |
+|---------|------------|---------|
+| `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` | Raw recent `MSG#...` records | `30` |
+| `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` | `AGENT_REPLY#...` reply-thread metadata | `7` |
+| `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` | `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` | `3650` |
+| `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` | `DAILY_SUMMARY#...` records | `3650` |
+| `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` | `PROACTIVE#YYYYMMDD` counters | `3` |
+| `GROUP_MEMORY_RETENTION_DAYS` | Legacy fallback for broad memory retention settings when omitted | `3650` |
+
+`MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted. `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term memory still stores explicit `expires_at` metadata from `expires_in_days`; DynamoDB TTL uses the shorter of that explicit expiry and the configured long-term retention.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a full AWS + Telegram walkthrough.
 

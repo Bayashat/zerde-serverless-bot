@@ -54,16 +54,16 @@ flowchart LR
   MainQ[SQS_timeout_tasks_queue] --> BotLambda
   VectorQ[SQS_vector_memory_queue] --> VectorIndexer[Vector_Indexer_Lambda]
   BotLambda --> MainQ
-  BotLambda --> VectorQ
+  BotLambda -- "enqueue vector tasks" --> VectorQ
   BotLambda --> Stats[(DynamoDB_stats)]
   BotLambda --> Memory[(DynamoDB_group_memory)]
-  BotLambda --> S3Vectors[S3_Vectors_memory_index]
+  BotLambda -- "query/delete" --> S3Vectors[S3_Vectors_memory_index]
   BotLambda --> Gemini[Gemini]
   BotLambda --> Groq[Groq]
-  VectorIndexer --> VectorQ
+  VectorIndexer -- "backfill fan-out" --> VectorQ
   VectorIndexer --> Stats
   VectorIndexer --> Memory
-  VectorIndexer --> S3Vectors
+  VectorIndexer -- "index/backfill" --> S3Vectors
   VectorIndexer --> Gemini
   EventBridge[EventBridge_schedules] --> NewsLambda[News_Lambda]
   EventBridge --> QuizLambda[Quiz_Lambda]
@@ -116,6 +116,8 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 
 Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
 
+Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memory, `DAILY_SUMMARY#...`, and `PROACTIVE#...` counters use their own retention env vars. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still records `expires_at` and uses the shorter DynamoDB TTL.
+
 ## SQS Tasks
 
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
@@ -145,7 +147,7 @@ Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and hi
 - **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
-- **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`.
+- **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`. Bot Lambda can query, get index metadata, and delete vectors for cleanup; `PutVectors` and `ListVectors` stay scoped to the vector-indexer Lambda.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
 - **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates.
 - **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.

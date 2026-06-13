@@ -7,7 +7,7 @@ Example:
     --export ~/Downloads/Telegram/result.json \
     --since 2026-01-01 \
     --table-name zerde-serverless-bot-memory-dev \
-    --queue-url https://sqs.eu-central-1.amazonaws.com/123/zerde-serverless-timeout-tasks-queue-dev \
+    --queue-url https://sqs.eu-central-1.amazonaws.com/123/zerde-serverless-vector-memory-tasks-queue-dev \
     --apply
 """
 
@@ -36,7 +36,7 @@ def _seed_required_env(args: argparse.Namespace) -> None:
     if args.table_name:
         os.environ["MEMORY_TABLE_NAME"] = args.table_name
     if args.queue_url:
-        os.environ["QUEUE_URL"] = args.queue_url
+        os.environ["VECTOR_MEMORY_QUEUE_URL"] = args.queue_url
     os.environ.setdefault("AWS_DEFAULT_REGION", args.aws_region)
     os.environ.setdefault("QUEUE_URL", "https://sqs.eu-central-1.amazonaws.com/000000000000/history-import-dry-run")
     os.environ.setdefault("STATS_TABLE_NAME", "unused-history-import")
@@ -57,7 +57,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--since", default="2026-01-01", help="Import messages from this date, YYYY-MM-DD")
     parser.add_argument("--until", help="Optional inclusive end date, YYYY-MM-DD")
     parser.add_argument("--table-name", help="Memory DynamoDB table name. Required with --apply.")
-    parser.add_argument("--queue-url", help="SQS queue URL for vector indexing tasks.")
+    parser.add_argument("--queue-url", help="Vector-memory SQS queue URL for vector indexing tasks.")
     parser.add_argument("--aws-region", default=os.environ.get("AWS_DEFAULT_REGION", "eu-central-1"))
     parser.add_argument("--apply", action="store_true", help="Write to DynamoDB. Default is dry-run only.")
     parser.add_argument("--max-messages", type=int, help="Limit parsed messages for a small test run.")
