@@ -110,6 +110,9 @@ _JOKE_CUES = (
 )
 _ALLOWED_KINDS: set[str] = {"event", "user_fact", "group_fact", "joke", "boundary", "preference", "none"}
 _ALLOWED_SENSITIVITIES: set[str] = {"public", "personal", "sensitive", "secret"}
+_MIN_JOKE_GEMINI_CONFIDENCE = 0.82
+_MIN_JOKE_REPEATED_EVIDENCE_CONFIDENCE = 0.74
+_MIN_REPEATED_JOKE_EVIDENCE = 2
 
 
 @dataclass(frozen=True)
@@ -291,6 +294,26 @@ def storage_memory_kind(memory: ExtractedMemory) -> StorageMemoryKind | None:
     return None
 
 
+def _unique_evidence_count(evidence_message_ids: list[int]) -> int:
+    unique_ids: set[int] = set()
+    for raw_id in evidence_message_ids:
+        try:
+            unique_ids.add(int(raw_id))
+        except (TypeError, ValueError):
+            continue
+    return len(unique_ids)
+
+
+def _is_storable_joke_memory(memory: ExtractedMemory, *, min_confidence: float) -> bool:
+    """Only persist jokes when the extractor has stronger-than-one-off evidence."""
+    evidence_count = _unique_evidence_count(memory.evidence_message_ids)
+    if evidence_count >= _MIN_REPEATED_JOKE_EVIDENCE and memory.confidence >= max(
+        min_confidence, _MIN_JOKE_REPEATED_EVIDENCE_CONFIDENCE
+    ):
+        return True
+    return memory.extractor_source == "gemini" and memory.confidence >= max(min_confidence, _MIN_JOKE_GEMINI_CONFIDENCE)
+
+
 def is_storable_extracted_memory(
     memory: ExtractedMemory | None,
     *,
@@ -303,11 +326,14 @@ def is_storable_extracted_memory(
         return False
     if memory.sensitivity in {"sensitive", "secret"}:
         return False
-    if not storage_memory_kind(memory):
+    storage_kind = storage_memory_kind(memory)
+    if not storage_kind:
         return False
     if not memory.summary or not is_memory_learning_safe(memory.summary):
         return False
-    if storage_memory_kind(memory) == "user_fact" and memory.subject_user_id not in (None, str(speaker_user_id)):
+    if storage_kind == "user_fact" and memory.subject_user_id not in (None, str(speaker_user_id)):
+        return False
+    if storage_kind == "joke" and not _is_storable_joke_memory(memory, min_confidence=min_confidence):
         return False
     return True
 

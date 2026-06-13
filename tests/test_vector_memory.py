@@ -265,16 +265,140 @@ def test_rate_limit_repository_uses_independent_scope_keys(monkeypatch):
     ]
 
 
-def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
-    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
-    repo = MagicMock()
-    repo.get_memory_item.return_value = {
+def _indexable_event_item(summary: str = "We decided to use S3 Vectors for memory retrieval.") -> dict:
+    return {
         "sk": "EVENT#1#2",
         "kind": "event",
-        "summary": "We decided to use S3 Vectors for memory retrieval.",
+        "summary": summary,
         "display_name": "Ada",
         "created_at": 1_700_000_000,
     }
+
+
+def _with_current_vector_metadata(item: dict, *, status: str = "indexed") -> dict:
+    current = dict(item)
+    current.update(
+        {
+            "vector_status": status,
+            "vector_key": "memory/existing",
+            "vector_document_hash": vector_memory.embedding_document_hash(vector_memory.build_embedding_document(item)),
+            "vector_schema_version": vector_memory.VECTOR_MEMORY_SCHEMA_VERSION,
+            "vector_embedding_model": vector_memory.VECTOR_MEMORY_EMBEDDING_MODEL,
+            "vector_dimensions": vector_memory.VECTOR_MEMORY_DIMENSIONS,
+        }
+    )
+    return current
+
+
+def test_index_memory_item_skips_duplicate_current_index(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.get_memory_item.return_value = _with_current_vector_metadata(_indexable_event_item())
+    embedding = MagicMock()
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "EVENT#1#2",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is False
+    embedding.embed.assert_not_called()
+    vector_repo.put_memory_vector.assert_not_called()
+    repo.mark_vector_status.assert_not_called()
+
+
+def test_index_memory_item_reindexes_changed_document(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    previous = _indexable_event_item("We decided to use DynamoDB for memory retrieval.")
+    current = _with_current_vector_metadata(_indexable_event_item())
+    current["vector_document_hash"] = vector_memory.embedding_document_hash(
+        vector_memory.build_embedding_document(previous)
+    )
+    repo = MagicMock()
+    repo.get_memory_item.return_value = current
+    embedding = MagicMock()
+    embedding.embed.return_value = [0.1] * 768
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "EVENT#1#2",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is True
+    embedding.embed.assert_called_once()
+    repo.mark_vector_status.assert_called_once()
+    assert repo.mark_vector_status.call_args.kwargs["status"] == "indexed"
+    assert repo.mark_vector_status.call_args.kwargs["document_hash"] == vector_memory.embedding_document_hash(
+        vector_memory.build_embedding_document(current)
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "stale_value"),
+    [
+        ("vector_embedding_model", f"{vector_memory.VECTOR_MEMORY_EMBEDDING_MODEL}-old"),
+        ("vector_dimensions", vector_memory.VECTOR_MEMORY_DIMENSIONS + 1),
+        ("vector_schema_version", f"{vector_memory.VECTOR_MEMORY_SCHEMA_VERSION}-old"),
+    ],
+)
+def test_index_memory_item_reindexes_when_vector_metadata_changes(monkeypatch, field, stale_value):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    item = _with_current_vector_metadata(_indexable_event_item())
+    item[field] = stale_value
+    repo = MagicMock()
+    repo.get_memory_item.return_value = item
+    embedding = MagicMock()
+    embedding.embed.return_value = [0.1] * 768
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "EVENT#1#2",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is True
+    embedding.embed.assert_called_once()
+    vector_repo.put_memory_vector.assert_called_once()
+    repo.mark_vector_status.assert_called_once()
+
+
+def test_index_memory_item_retries_failed_status_even_when_metadata_matches(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.get_memory_item.return_value = _with_current_vector_metadata(_indexable_event_item(), status="failed")
+    embedding = MagicMock()
+    embedding.embed.return_value = [0.1] * 768
+    vector_repo = MagicMock()
+
+    indexed = vector_memory.index_memory_item(
+        -100123,
+        "EVENT#1#2",
+        repo=repo,
+        vector_repo=vector_repo,
+        embedding_client=embedding,
+    )
+
+    assert indexed is True
+    embedding.embed.assert_called_once()
+    vector_repo.put_memory_vector.assert_called_once()
+    assert repo.mark_vector_status.call_args.kwargs["status"] == "indexed"
+
+
+def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
+    monkeypatch.setattr(vector_memory, "vector_memory_configured", lambda: True)
+    repo = MagicMock()
+    repo.get_memory_item.return_value = _indexable_event_item()
     embedding = MagicMock()
     embedding.embed.return_value = [0.1] * 768
     vector_repo = MagicMock()
@@ -296,6 +420,10 @@ def test_index_memory_item_puts_gemini_embedding_to_vector_store(monkeypatch):
     assert put_kwargs["metadata"]["memory_kind"] == "event"
     repo.mark_vector_status.assert_called_once()
     assert repo.mark_vector_status.call_args.kwargs["status"] == "indexed"
+    assert repo.mark_vector_status.call_args.kwargs["document_hash"] == vector_memory.embedding_document_hash(
+        vector_memory.build_embedding_document(repo.get_memory_item.return_value)
+    )
+    assert repo.mark_vector_status.call_args.kwargs["schema_version"] == vector_memory.VECTOR_MEMORY_SCHEMA_VERSION
 
 
 def test_index_memory_item_marks_failed_when_embedding_quota_exhausted(monkeypatch):
