@@ -1720,6 +1720,33 @@ def test_proactive_reservation_escapes_ttl_attribute():
     assert kwargs["ExpressionAttributeNames"]["#ttl"] == "ttl"
 
 
+def test_mark_vector_status_persists_index_freshness_metadata():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.mark_vector_status(
+        -100123,
+        "EVENT#1#2",
+        status="indexed",
+        vector_key="memory/key",
+        embedding_model="gemini-embedding-2",
+        dimensions=768,
+        document_hash="abc123",
+        schema_version="2",
+    )
+
+    kwargs = repo.table.update_item.call_args.kwargs
+    values = kwargs["ExpressionAttributeValues"]
+    assert "vector_document_hash = :document_hash" in kwargs["UpdateExpression"]
+    assert "vector_schema_version = :schema_version" in kwargs["UpdateExpression"]
+    assert "vector_embedding_model = :model" in kwargs["UpdateExpression"]
+    assert "vector_dimensions = :dimensions" in kwargs["UpdateExpression"]
+    assert values[":document_hash"] == "abc123"
+    assert values[":schema_version"] == "2"
+    assert values[":model"] == "gemini-embedding-2"
+    assert values[":dimensions"] == Decimal(768)
+
+
 def test_record_agent_reply_persists_thread_metadata():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()

@@ -1300,6 +1300,8 @@ class GroupMemoryRepository:
         error: str | None = None,
         embedding_model: str | None = None,
         dimensions: int | None = None,
+        document_hash: str | None = None,
+        schema_version: str | None = None,
     ) -> None:
         now = int(time.time())
         values: dict[str, Any] = {
@@ -1317,6 +1319,12 @@ class GroupMemoryRepository:
         if dimensions:
             values[":dimensions"] = Decimal(dimensions)
             sets.append("vector_dimensions = :dimensions")
+        if document_hash:
+            values[":document_hash"] = document_hash
+            sets.append("vector_document_hash = :document_hash")
+        if schema_version:
+            values[":schema_version"] = schema_version
+            sets.append("vector_schema_version = :schema_version")
         if error:
             values[":error"] = error[:300]
             sets.append("vector_error = :error")
