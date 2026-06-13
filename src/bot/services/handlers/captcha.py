@@ -40,6 +40,8 @@ _TEXT_ONLY_PERMISSIONS: dict[str, bool] = {
     "can_add_web_page_previews": False,
 }
 
+_CAPTCHA_BLOCKED_PERMISSIONS = tuple(key for key, value in _TEXT_ONLY_PERMISSIONS.items() if value is False)
+
 
 def _delete_timeout_messages(
     bot: TelegramClient,
@@ -54,6 +56,33 @@ def _delete_timeout_messages(
         logger.warning("Failed to delete join/verification messages: %s", e)
 
 
+def _challenge_matches_timeout_task(
+    challenge: dict[str, Any],
+    join_message_id: int,
+    verification_message_id: int,
+) -> bool:
+    return int(challenge.get("join_msg_id", 0)) == int(join_message_id) and int(
+        challenge.get("verify_msg_id", 0)
+    ) == int(verification_message_id)
+
+
+def _is_captcha_text_only_restricted(member: dict[str, Any]) -> bool:
+    if (member.get("status") or "").lower() != "restricted":
+        return False
+    if member.get("can_send_messages") is not True:
+        return False
+    return all(member.get(permission) is False for permission in _CAPTCHA_BLOCKED_PERMISSIONS)
+
+
+def _delete_pending_state(captcha_repo: Any, chat_id: int | str, user_id: int) -> None:
+    if not captcha_repo:
+        return
+    try:
+        captcha_repo.delete_pending(chat_id, user_id)
+    except Exception as e:
+        logger.warning("Failed to clean up captcha state on timeout: %s", e)
+
+
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
     """Process CHECK_TIMEOUT task: kick user if still restricted, clean up captcha state."""
     chat_id = task_data.get("chat_id")
@@ -65,23 +94,39 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
     if not all([chat_id, user_id, join_message_id, verification_message_id]):
         logger.warning("Timeout task missing required fields", task_data=task_data)
         return
+    should_cleanup_state = False
     try:
-        # Use DynamoDB state as the fast path, but do not treat a missing/expired
-        # pending entry as proof of verification. Timeout tasks can be delayed by
-        # SQS backlog, while the pending captcha record has a short TTL buffer.
+        challenge = None
         if captcha_repo:
-            pending = captcha_repo.get_pending(chat_id, user_id)
-            if pending is None:
-                member = bot.get_chat_member(chat_id, user_id)
-                status = (member.get("status") or "").lower()
-                if status != "restricted":
-                    _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
-                    logger.info("User %s already verified. Ignoring timeout.", user_id)
-                    return
+            challenge = captcha_repo.get_challenge(chat_id, user_id)
+            if challenge is None:
+                should_cleanup_state = True
+                logger.info("Captcha timeout state missing. Ignoring timeout.", extra={"user_id": user_id})
+                return
+            if not _challenge_matches_timeout_task(challenge, join_message_id, verification_message_id):
+                logger.info(
+                    "Stale captcha timeout task ignored",
+                    extra={
+                        "user_id": user_id,
+                        "task_join_message_id": join_message_id,
+                        "task_verification_message_id": verification_message_id,
+                    },
+                )
+                return
+            should_cleanup_state = True
+            if challenge.get("status") == "verified":
+                _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
+                logger.info("User %s already verified. Ignoring timeout.", user_id)
+                return
+            if challenge.get("status") != "pending":
+                logger.warning(
+                    "Captcha timeout state has unexpected status; ignoring timeout",
+                    extra={"user_id": user_id, "captcha_status": challenge.get("status")},
+                )
+                return
         else:
             member = bot.get_chat_member(chat_id, user_id)
-            status = (member.get("status") or "").lower()
-            if status != "restricted":
+            if not _is_captcha_text_only_restricted(member):
                 return
 
         logger.info("User %s timed out. Kicking.", user_id)
@@ -90,11 +135,8 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
     except Exception as e:
         logger.exception("Timeout task error (user may have left or message deleted): %s", e)
     finally:
-        if captcha_repo:
-            try:
-                captcha_repo.delete_pending(chat_id, user_id)
-            except Exception as e:
-                logger.warning("Failed to clean up captcha state on timeout: %s", e)
+        if should_cleanup_state:
+            _delete_pending_state(captcha_repo, chat_id, user_id)
 
 
 def handle_new_member(ctx: Context) -> None:
@@ -212,7 +254,7 @@ def handle_captcha_answer(ctx: Context) -> None:
     if answer == expected:
         # ── Correct ─────────────────────────────────────────────────────────
         ctx.bot.restrict_chat_member(ctx.chat_id, ctx.user_id, _FULL_PERMISSIONS)
-        ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
+        ctx.captcha_repo.mark_verified(ctx.chat_id, ctx.user_id)
 
         # Delete captcha image, wrong-answer messages, and user's answer — keep system join message
         ids_to_delete = [pending["verify_msg_id"], ctx.message_id] + pending.get("wrong_msg_ids", [])

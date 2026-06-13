@@ -36,7 +36,8 @@ def test_correct_answer_unrestricts_user():
     handle_captcha_answer(ctx)
 
     ctx.bot.restrict_chat_member.assert_called_once()
-    captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
+    captcha_repo.mark_verified.assert_called_once_with(-100123, 42)
+    captcha_repo.delete_pending.assert_not_called()
 
 
 def test_wrong_answer_increments_attempts():
@@ -118,13 +119,16 @@ def test_no_pending_captcha_ignored():
     ctx.bot.kick_chat_member.assert_not_called()
 
 
-def test_timeout_with_expired_pending_still_kicks_restricted_user():
+def test_timeout_with_matching_pending_challenge_kicks_user():
     from services.handlers.captcha import process_timeout_task
 
     bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "restricted"}
     captcha_repo = MagicMock()
-    captcha_repo.get_pending.return_value = None
+    captcha_repo.get_challenge.return_value = {
+        "status": "pending",
+        "join_msg_id": 5,
+        "verify_msg_id": 6,
+    }
 
     process_timeout_task(
         bot,
@@ -138,18 +142,22 @@ def test_timeout_with_expired_pending_still_kicks_restricted_user():
     )
 
     bot.kick_chat_member.assert_called_once_with(-100123, 42)
+    bot.get_chat_member.assert_not_called()
     bot.delete_message.assert_any_call(-100123, 5)
     bot.delete_message.assert_any_call(-100123, 6)
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
 
 
-def test_timeout_with_expired_pending_cleans_up_unrestricted_user():
+def test_timeout_with_verified_challenge_does_not_kick_user():
     from services.handlers.captcha import process_timeout_task
 
     bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member"}
     captcha_repo = MagicMock()
-    captcha_repo.get_pending.return_value = None
+    captcha_repo.get_challenge.return_value = {
+        "status": "verified",
+        "join_msg_id": 5,
+        "verify_msg_id": 6,
+    }
 
     process_timeout_task(
         bot,
@@ -163,6 +171,113 @@ def test_timeout_with_expired_pending_cleans_up_unrestricted_user():
     )
 
     bot.kick_chat_member.assert_not_called()
+    bot.get_chat_member.assert_not_called()
     bot.delete_message.assert_any_call(-100123, 5)
     bot.delete_message.assert_any_call(-100123, 6)
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
+
+
+def test_timeout_with_missing_challenge_state_does_not_kick_user():
+    from services.handlers.captcha import process_timeout_task
+
+    bot = MagicMock()
+    captcha_repo = MagicMock()
+    captcha_repo.get_challenge.return_value = None
+
+    process_timeout_task(
+        bot,
+        {
+            "chat_id": -100123,
+            "user_id": 42,
+            "join_message_id": 5,
+            "verification_message_id": 6,
+            "_captcha_repo": captcha_repo,
+        },
+    )
+
+    bot.kick_chat_member.assert_not_called()
+    bot.get_chat_member.assert_not_called()
+    bot.delete_message.assert_not_called()
+    captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
+
+
+def test_timeout_with_stale_challenge_ids_does_not_kick_current_pending_user():
+    from services.handlers.captcha import process_timeout_task
+
+    bot = MagicMock()
+    captcha_repo = MagicMock()
+    captcha_repo.get_challenge.return_value = {
+        "status": "pending",
+        "join_msg_id": 50,
+        "verify_msg_id": 60,
+    }
+
+    process_timeout_task(
+        bot,
+        {
+            "chat_id": -100123,
+            "user_id": 42,
+            "join_message_id": 5,
+            "verification_message_id": 6,
+            "_captcha_repo": captcha_repo,
+        },
+    )
+
+    bot.kick_chat_member.assert_not_called()
+    bot.get_chat_member.assert_not_called()
+    bot.delete_message.assert_not_called()
+    captcha_repo.delete_pending.assert_not_called()
+
+
+def test_timeout_without_repo_requires_exact_text_only_restriction():
+    from services.handlers.captcha import process_timeout_task
+
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {
+        "status": "restricted",
+        "can_send_messages": True,
+        "can_send_audios": False,
+        "can_send_documents": False,
+        "can_send_photos": False,
+        "can_send_videos": False,
+        "can_send_video_notes": False,
+        "can_send_voice_notes": False,
+        "can_send_polls": False,
+        "can_send_other_messages": False,
+        "can_add_web_page_previews": False,
+    }
+
+    process_timeout_task(
+        bot,
+        {
+            "chat_id": -100123,
+            "user_id": 42,
+            "join_message_id": 5,
+            "verification_message_id": 6,
+        },
+    )
+
+    bot.kick_chat_member.assert_called_once_with(-100123, 42)
+
+
+def test_timeout_without_repo_does_not_kick_generic_restricted_member():
+    from services.handlers.captcha import process_timeout_task
+
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {
+        "status": "restricted",
+        "can_send_messages": True,
+        "can_send_photos": True,
+    }
+
+    process_timeout_task(
+        bot,
+        {
+            "chat_id": -100123,
+            "user_id": 42,
+            "join_message_id": 5,
+            "verification_message_id": 6,
+        },
+    )
+
+    bot.kick_chat_member.assert_not_called()
