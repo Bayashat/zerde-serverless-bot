@@ -362,7 +362,7 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT"] == "50"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
     assert env_vars["AGENT_PROACTIVE_DELAY_SECONDS"] == "45"
-    assert env_vars["AMBIENT_REACTIONS_ENABLED"] == "false"
+    assert env_vars["AMBIENT_REACTIONS_ENABLED"] == "true"
     assert env_vars["AMBIENT_REACTIONS_SAMPLE_RATE"] == "0.10"
     assert env_vars["AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD"] == "0.80"
     assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS"] == "300"

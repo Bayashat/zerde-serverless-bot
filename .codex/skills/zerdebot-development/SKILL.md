@@ -39,7 +39,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
-- `src/bot/services/ambient_reactions.py`: disabled-by-default ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, and `setMessageReaction` task processing.
+- `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, and `setMessageReaction` task processing.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.

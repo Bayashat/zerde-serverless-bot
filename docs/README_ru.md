@@ -25,7 +25,7 @@ Zerde больше не просто отправляет последнее с�
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, delayed conservative proactive reply gating, контроль длины и style profile ответа, `/agent why` source summary.
-- **Ambient reactions**: optional и по умолчанию off emoji reactions; редкие high-signal group text сообщения обрабатываются async через `setMessageReaction` без записи long-term memory.
+- **Ambient reactions**: optional emoji reactions; редкие high-signal group text сообщения обрабатываются async через `setMessageReaction` без записи long-term memory.
 - **Explicit media understanding**: `/ask` можно использовать reply на фото/screenshot, voice/audio, PDF и supported text/code/log файлы. Zerde не анализирует автоматически каждое медиа в группе.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` для durable source cleanup, `/agent wrong` / `/memory wrong` feedback с related vector cleanup, owner-only group cleanup.
 - **Bot output boundary**: обычные ответы бота хранятся только как short-term `AGENT_REPLY#...` thread metadata и не эмбеддятся в semantic memory. Durable bot-authored memory зарезервирована для future explicit `BOT_COMMITMENT#...` или `BOT_CORRECTION#...` flows.
@@ -49,7 +49,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | RAG memory | Group memory хранится в DynamoDB, long-term memory извлекается через structured Gemini schema + rule fallback, high-information memory индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
 | Reply thread continuity | Ответы бота сохраняются как short-term `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ; эти записи не являются semantic/vector memory. |
 | Social timing | Proactive replies ждут короткий delay, затем проходят human-answer check, local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
-| Ambient reactions | Optional `setMessageReaction` presence feature; редкие funny/useful/thoughtful/warm/interesting text messages получают rate-limited emoji reaction, default off. |
+| Ambient reactions | Optional `setMessageReaction` presence feature; редкие funny/useful/thoughtful/warm/interesting text messages получают rate-limited emoji reaction, default on. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
 | Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |

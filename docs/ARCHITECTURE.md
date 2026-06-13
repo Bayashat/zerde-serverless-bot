@@ -189,7 +189,7 @@ Answer length is explicit:
 
 ## Ambient Reactions
 
-Ambient reactions are a disabled-by-default presence feature controlled by `AMBIENT_REACTIONS_ENABLED`.
+Ambient reactions are a presence feature controlled by `AMBIENT_REACTIONS_ENABLED`, enabled by default.
 The webhook samples eligible normal group text messages and queues `PROCESS_AMBIENT_REACTION`; the SQS
 worker applies cooldowns, gathers limited recent context, asks Gemini for strict JSON, validates the
 emoji/confidence contract, and calls Telegram `setMessageReaction`. Reaction failures are logged and
