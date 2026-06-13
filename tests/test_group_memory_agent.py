@@ -556,6 +556,9 @@ def test_extractor_llm_budget_uses_separate_global_and_chat_scopes(monkeypatch):
             self.rpd_limit = rpd_limit
             calls.append((scope, rpd_limit))
 
+        def get_today_count(self) -> int:
+            return 0
+
         def increment_and_check(self) -> tuple[int, bool]:
             return 1, True
 
@@ -566,9 +569,57 @@ def test_extractor_llm_budget_uses_separate_global_and_chat_scopes(monkeypatch):
     assert group_memory_processor._reserve_extractor_llm_budget(-100123, 11) is True
 
     assert calls == [
-        ("group_memory_extractor_llm_chat_-100123", 20),
         ("group_memory_extractor_llm", 50),
+        ("group_memory_extractor_llm_chat_-100123", 20),
     ]
+
+
+def test_extractor_llm_budget_skips_per_chat_when_global_budget_is_exhausted(monkeypatch):
+    class FakeRateLimitRepository:
+        def __init__(self, *, scope: str, rpd_limit: int) -> None:
+            self.scope = scope
+            self.rpd_limit = rpd_limit
+
+        def get_today_count(self) -> int:
+            return self.rpd_limit if self.scope == "group_memory_extractor_llm" else 0
+
+        def increment_and_check(self) -> tuple[int, bool]:
+            raise AssertionError("increment_and_check should not run when global budget is exhausted")
+
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT", 50)
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT", 20)
+    monkeypatch.setattr(group_memory_processor, "RateLimitRepository", FakeRateLimitRepository)
+
+    assert group_memory_processor._reserve_extractor_llm_budget(-100123, 11) is False
+
+
+def test_process_group_memory_budget_exhausted_stores_cue_candidate_without_rule_match(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    _use_gemini_extractor(monkeypatch)
+    monkeypatch.setattr(group_memory_processor, "_reserve_extractor_llm_budget", MagicMock(return_value=False))
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "username": "ada",
+            "text": (
+                "Please review the vector backfill approach for our indexing pipeline configuration details"
+            ),
+            "created_at": 1_700_000_000,
+            "is_reply": True,
+        },
+        repo=repo,
+    )
+
+    gemini.group_memory_extraction.assert_not_called()
+    repo.store_long_term_memory.assert_called_once()
+    assert repo.store_long_term_memory.call_args.kwargs["kind"] == "event"
+    assert repo.store_long_term_memory.call_args.kwargs["extractor_source"] == "rules"
 
 
 def test_process_group_memory_task_stores_llm_self_preference_as_user_fact(monkeypatch):

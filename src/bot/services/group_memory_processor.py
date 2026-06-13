@@ -169,6 +169,53 @@ def _budget_scope_part(value: int | str) -> str:
     return re.sub(r"[^0-9A-Za-z_-]+", "_", str(value))[:80]
 
 
+def _extractor_candidate_fallback_memory(
+    text: str,
+    *,
+    message_id: int | str,
+    user_id: int | str,
+    candidate_reason: str,
+) -> ExtractedMemory:
+    """Store cue-marked candidates when the extractor LLM path is unavailable."""
+    evidence: list[int] = []
+    try:
+        evidence = [int(message_id)]
+    except (TypeError, ValueError):
+        pass
+    return ExtractedMemory(
+        should_store=True,
+        kind="event",
+        summary=text[:280],
+        reason=f"cue-marked memory ({candidate_reason}) stored after extractor LLM unavailable",
+        confidence=0.66,
+        subject_user_id=str(user_id),
+        sensitivity="public",
+        evidence_message_ids=evidence,
+        extractor_source="rules",
+    )
+
+
+def _extractor_fallback_memory(
+    *,
+    rule_based: ExtractedMemory | None,
+    is_candidate: bool,
+    candidate_reason: str,
+    cleaned: str,
+    message_id: int | str,
+    user_id: int | str,
+) -> ExtractedMemory | None:
+    if rule_based is not None:
+        return rule_based
+    if is_candidate:
+        return _extractor_candidate_fallback_memory(
+            cleaned,
+            message_id=message_id,
+            user_id=user_id,
+            candidate_reason=candidate_reason,
+        )
+    return None
+
+
 def _reserve_extractor_llm_budget(chat_id: int | str, message_id: int | str) -> bool:
     if GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT <= 0 or GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT <= 0:
         logger.info(
@@ -183,26 +230,38 @@ def _reserve_extractor_llm_budget(chat_id: int | str, message_id: int | str) -> 
         return False
 
     chat_scope = f"{_EXTRACTOR_BUDGET_SCOPE}_chat_{_budget_scope_part(chat_id)}"
-    chat_count, chat_within_limit = RateLimitRepository(
+    daily_repo = RateLimitRepository(
+        scope=_EXTRACTOR_BUDGET_SCOPE,
+        rpd_limit=GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+    )
+    chat_repo = RateLimitRepository(
         scope=chat_scope,
         rpd_limit=GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
-    ).increment_and_check()
-    if not chat_within_limit:
+    )
+    if daily_repo.get_today_count() >= GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT:
+        logger.info(
+            "Group memory Gemini extraction skipped by global daily budget",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "extractor_llm_daily_count": daily_repo.get_today_count(),
+                "extractor_llm_daily_limit": GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+            },
+        )
+        return False
+    if chat_repo.get_today_count() >= GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT:
         logger.info(
             "Group memory Gemini extraction skipped by per-chat daily budget",
             extra={
                 "chat_id": chat_id,
                 "message_id": message_id,
-                "extractor_llm_chat_count": chat_count,
+                "extractor_llm_chat_count": chat_repo.get_today_count(),
                 "extractor_llm_chat_limit": GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
             },
         )
         return False
 
-    daily_count, daily_within_limit = RateLimitRepository(
-        scope=_EXTRACTOR_BUDGET_SCOPE,
-        rpd_limit=GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
-    ).increment_and_check()
+    daily_count, daily_within_limit = daily_repo.increment_and_check()
     if not daily_within_limit:
         logger.info(
             "Group memory Gemini extraction skipped by global daily budget",
@@ -211,6 +270,19 @@ def _reserve_extractor_llm_budget(chat_id: int | str, message_id: int | str) -> 
                 "message_id": message_id,
                 "extractor_llm_daily_count": daily_count,
                 "extractor_llm_daily_limit": GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT,
+            },
+        )
+        return False
+
+    chat_count, chat_within_limit = chat_repo.increment_and_check()
+    if not chat_within_limit:
+        logger.info(
+            "Group memory Gemini extraction skipped by per-chat daily budget",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "extractor_llm_chat_count": chat_count,
+                "extractor_llm_chat_limit": GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT,
             },
         )
         return False
@@ -341,6 +413,7 @@ def _extract_long_term_memory(
         )
         return rule_based
 
+    is_candidate = mode == "gemini_all"
     candidate_reason = "gemini_all"
     if mode == "gemini_candidate_only":
         is_candidate, candidate_reason = is_gemini_extraction_candidate(
@@ -357,16 +430,26 @@ def _extract_long_term_memory(
             )
             return rule_based
 
+    def _fallback_memory() -> ExtractedMemory | None:
+        return _extractor_fallback_memory(
+            rule_based=rule_based,
+            is_candidate=is_candidate,
+            candidate_reason=candidate_reason,
+            cleaned=cleaned,
+            message_id=message_id,
+            user_id=user_id,
+        )
+
     gemini = _get_gemini()
     if not gemini:
         logger.info(
             "Group memory extraction using rules because Gemini is not configured",
             extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
         )
-        return rule_based
+        return _fallback_memory()
 
     if not _reserve_extractor_llm_budget(chat_id, message_id):
-        return rule_based
+        return _fallback_memory()
 
     try:
         extracted = extract_long_term_memory_llm(
@@ -400,7 +483,7 @@ def _extract_long_term_memory(
             extra={"chat_id": chat_id, "message_id": message_id, "candidate_reason": candidate_reason},
         )
 
-    return rule_based
+    return _fallback_memory()
 
 
 def process_daily_group_summary(
