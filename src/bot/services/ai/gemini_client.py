@@ -567,8 +567,10 @@ class GeminiClient:
         lang: str = "kk",
         reply_instructions: str = "",
         max_output_tokens: int = 220,
+        media_parts: list[dict[str, Any]] | None = None,
+        media_context: str = "",
     ) -> tuple[GroupAgentDecision, int]:
-        """Decide whether to add a short discussion-starter reply to a linked channel post."""
+        """Generate a comment for an official linked-channel post mirrored into a discussion group."""
         if _circuit_is_open():
             logger.warning("Gemini circuit open, skipping channel post comment decision", extra={"model": self._model})
             raise GeminiUnavailableError("Gemini circuit open")
@@ -584,38 +586,49 @@ class GeminiClient:
         system_prompt = (
             "You are the social timing layer for ZerdeBot, a Telegram group chat member in an IT community. "
             "This is an official linked-channel post mirrored into the group discussion. "
-            "Decide whether ZerdeBot should add one short discussion-starter comment. "
-            "The goal is to help the group start a useful conversation, not to answer a direct question and not "
-            "to summarize the whole post. Stay silent unless the post has a clear technical, historical, practical, "
-            "engineering, product, or surprising angle worth discussing. "
+            "Write one natural follow-up comment from ZerdeBot under the post. Do not decide to stay silent. "
+            "The goal is to continue the conversation under the post, not to answer a direct question and not "
+            "to summarize the whole post. Pick one specific angle from the text or attached media: technical, "
+            "historical, practical, product, personal productivity, finance, learning, or a surprising detail. "
+            "If attached media is provided, analyze it only for this comment and do not claim that it was stored. "
             "Do not praise the channel owner, do not say generic thanks, and do not sound promotional. "
-            "If speaking, write 1-2 concise natural sentences in the group's language, preferably ending with a "
-            "natural discussion question. "
+            "The comment may be short or a few concise sentences depending on the post, but it must feel like a "
+            "real group participant replying under the post. Prefer the group's language. "
             "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
-            "reply_text (string, empty when silent)."
+            "reply_text (string). Set should_reply=true."
         )
         generation_config: dict[str, Any] = {
             "temperature": 0.25,
-            "maxOutputTokens": max(80, min(220, int(max_output_tokens))),
+            "maxOutputTokens": max(80, min(420, int(max_output_tokens))),
             "responseMimeType": "application/json",
         }
         thinking_config = _thinking_config_for_model(self._model)
         if thinking_config is not None:
             generation_config["thinkingConfig"] = thinking_config
 
+        media_prompt_section = (
+            "Attached media metadata for this channel post:\n"
+            f"{media_context or '(media parts attached without extra metadata)'}\n\n"
+            if media_parts or media_context
+            else ""
+        )
         prompt = (
             f"Preferred language code: {lang}\n\n"
             "Recent group context, oldest to newest:\n"
             f"{recent_context or '(no recent context available)'}\n\n"
+            f"{media_prompt_section}"
             "Current official linked-channel post:\n"
             f"{channel_post}\n\n"
             "Reply style instructions:\n"
-            f"{reply_instructions or 'Write one concise natural discussion-starter if speaking.'}\n\n"
-            "Should ZerdeBot add a short discussion-starter comment now?"
+            f"{reply_instructions or 'Write a natural comment under this post.'}\n\n"
+            "Write the JSON comment now."
         )
+        content_parts: list[dict[str, Any]] = [{"text": prompt}]
+        if media_parts:
+            content_parts.extend(media_parts)
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "contents": [{"role": "user", "parts": content_parts}],
             "generationConfig": generation_config,
         }
 
@@ -630,6 +643,8 @@ class GeminiClient:
                 "lang": lang,
                 "context_chars": len(recent_context),
                 "message_chars": len(channel_post),
+                "media_context_chars": len(media_context),
+                "media_part_count": len(media_parts or []),
                 "rpd_count": count,
                 "rpd_limit": self.rpd_limit,
             },
@@ -652,7 +667,7 @@ class GeminiClient:
             )
             raw_decision = json.loads(text)
             decision = GroupAgentDecision(
-                should_reply=bool(raw_decision.get("should_reply")),
+                should_reply=bool(raw_decision.get("should_reply", True)),
                 confidence=max(0.0, min(1.0, float(raw_decision.get("confidence", 0)))),
                 reason=str(raw_decision.get("reason") or "")[:200],
                 reply_text=str(raw_decision.get("reply_text") or "").strip(),

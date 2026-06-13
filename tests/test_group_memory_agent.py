@@ -1964,9 +1964,37 @@ def test_linked_channel_post_candidate_queues_with_channel_actor(monkeypatch):
         trigger_username="timurdaninfo",
         trigger_display_name="Тимурдан Инфо | it&tech",
         trigger_sender_type="channel",
+        media_ref=None,
         created_at=1_700_000_000,
-        delay_seconds=30,
+        delay_seconds=0,
     )
+    bot.send_message.assert_not_called()
+
+
+def test_linked_channel_photo_post_queues_immediate_media_comment(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    sqs = MagicMock()
+    bot = MagicMock()
+    update = _linked_channel_post_update("Google акциялары 400 доллардан асты.")
+    update["message"]["photo"] = [
+        {"file_id": "small", "file_unique_id": "u-small", "file_size": 10, "width": 10, "height": 10},
+        {"file_id": "large", "file_unique_id": "u-large", "file_size": 100, "width": 100, "height": 100},
+    ]
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    kwargs = sqs.send_proactive_candidate_task.call_args.kwargs
+    assert kwargs["candidate_kind"] == "channel_post"
+    assert kwargs["delay_seconds"] == 0
+    assert kwargs["media_ref"]["media_type"] == "photo"
+    assert kwargs["media_ref"]["file_id"] == "large"
+    assert kwargs["media_ref"]["file_unique_id"] == "u-large"
+    assert kwargs["media_ref"]["source_user_id"] == -1001037498558
+    assert kwargs["media_ref"]["source_sender_type"] == "channel"
     bot.send_message.assert_not_called()
 
 
@@ -2102,8 +2130,9 @@ def test_delayed_channel_post_candidate_replies_with_dedicated_prompt(monkeypatc
     gemini.group_chat_channel_post_comment_decision.assert_called_once()
     call_kwargs = gemini.group_chat_channel_post_comment_decision.call_args.kwargs
     assert "sender_type=channel username=@timurdaninfo name=Тимурдан Инфо | it&tech" in call_kwargs["channel_post"]
-    assert "discussion-starter" in call_kwargs["reply_instructions"]
+    assert "natural comment under the official linked-channel post" in call_kwargs["reply_instructions"]
     gemini.group_chat_proactive_decision.assert_not_called()
+    repo.try_reserve_proactive_reply.assert_not_called()
     bot.send_message.assert_called_once_with(
         -100123,
         "Килбидің шешімі шектеуден туған екен.",
@@ -2111,7 +2140,62 @@ def test_delayed_channel_post_candidate_replies_with_dedicated_prompt(monkeypatc
     )
 
 
-def test_delayed_channel_post_candidate_stays_silent_when_humans_discuss(monkeypatch):
+def test_channel_post_candidate_passes_prepared_media_to_gemini(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_chat_settings.return_value = {}
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_channel_post_comment_decision.return_value = (
+        GroupAgentDecision(True, 0.9, "media shows a market milestone", "400 доллардан асуы қызық белгі екен."),
+        1,
+    )
+    prepared = PreparedMedia(
+        media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
+        media_context="Explicit media context:\n- media_type: photo",
+        agent_reply_metadata={"media_type": "photo", "file_unique_id": "u-large", "media_analysis_available": True},
+        downloaded_bytes=4,
+        content_mode="inline_data",
+    )
+    prepare = MagicMock(return_value=prepared)
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "prepare_media_for_gemini", prepare)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "candidate_kind": "channel_post",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": -1001037498558,
+            "trigger_username": "amanchikworld",
+            "trigger_display_name": "Amanchik World",
+            "trigger_sender_type": "channel",
+            "user_text": "Гуглдың акция бағасы алғаш рет $400дан асты.",
+            "lang": "kk",
+            "media_ref": {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "u-large",
+                "source_sender_type": "channel",
+            },
+        },
+    )
+
+    assert handled is True
+    prepare.assert_called_once()
+    call_kwargs = gemini.group_chat_channel_post_comment_decision.call_args.kwargs
+    assert call_kwargs["media_parts"] == [{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}]
+    assert "media_type: photo" in call_kwargs["media_context"]
+    repo.record_agent_reply.assert_called_once()
+    assert repo.record_agent_reply.call_args.kwargs["media_metadata"]["file_unique_id"] == "u-large"
+
+
+def test_channel_post_candidate_comments_even_when_humans_discuss(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.get_messages_for_day.return_value = [
@@ -2122,9 +2206,16 @@ def test_delayed_channel_post_candidate_stays_silent_when_humans_discuss(monkeyp
             "text": "Килбидің интегралды схемаға келген жолы қызық екен, шектеу кейде жақсы идея береді.",
         },
     ]
+    repo.get_chat_settings.return_value = {}
     bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
+    gemini.group_chat_channel_post_comment_decision.return_value = (
+        GroupAgentDecision(True, 0.8, "post invites discussion", "Осы жерде талқылайтын жақсы сұрақ бар."),
+        1,
+    )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
 
     handled = group_agent.process_proactive_candidate_task(
         repo=repo,
@@ -2141,9 +2232,14 @@ def test_delayed_channel_post_candidate_stays_silent_when_humans_discuss(monkeyp
         },
     )
 
-    assert handled is False
-    gemini.group_chat_channel_post_comment_decision.assert_not_called()
-    bot.send_message.assert_not_called()
+    assert handled is True
+    repo.get_messages_for_day.assert_not_called()
+    gemini.group_chat_channel_post_comment_decision.assert_called_once()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "Осы жерде талқылайтын жақсы сұрақ бар.",
+        reply_to_message_id=11,
+    )
 
 
 def test_reply_score_penalizes_recent_bot_activity():
@@ -2693,17 +2789,23 @@ def test_gemini_channel_post_comment_prompt_returns_json_decision(monkeypatch):
         recent_context="",
         lang="kk",
         reply_instructions="Write one short comment.",
+        media_context="Explicit media context:\n- media_type: photo",
+        media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
     )
 
     payload = json.loads(fake_http.body)
     system_prompt = payload["systemInstruction"]["parts"][0]["text"]
-    user_prompt = payload["contents"][0]["parts"][0]["text"]
+    parts = payload["contents"][0]["parts"]
+    user_prompt = parts[0]["text"]
 
     assert count == 1
     assert decision.should_reply is True
     assert "official linked-channel post" in system_prompt
-    assert "not to summarize the whole post" in system_prompt
+    assert "Do not decide to stay silent" in system_prompt
+    assert "attached media" in system_prompt
     assert "Current official linked-channel post" in user_prompt
+    assert "Attached media metadata" in user_prompt
+    assert parts[1]["inline_data"] == {"mime_type": "image/jpeg", "data": "AAAA"}
     assert payload["generationConfig"]["responseMimeType"] == "application/json"
 
 

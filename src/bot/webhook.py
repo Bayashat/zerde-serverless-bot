@@ -20,6 +20,7 @@ from services.handlers import process_timeout_task
 from services.repositories.sqs import SQSClient
 from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
+from services.telegram_actor import is_linked_channel_discussion_post
 from zerde_common.logging_utils import telegram_update_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -234,9 +235,11 @@ def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
         msg = body["message"]
         if "new_chat_members" in msg:
             return True
+        if is_linked_channel_discussion_post(msg):
+            return True
         if msg.get("document"):
             return True
-        text_content = msg.get("text") or ""
+        text_content = msg.get("text") or msg.get("caption") or ""
         if text_content.strip():
             return True
 

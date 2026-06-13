@@ -55,6 +55,16 @@ from services.telegram_actor import (
     is_linked_channel_discussion_post,
     message_actor,
 )
+from services.telegram_media import (
+    MediaDisabledError,
+    MediaError,
+    MediaTooLargeError,
+    MediaUnavailableError,
+    MediaUnsupportedError,
+    detect_media_reference,
+    media_reference_log_extra,
+    prepare_media_for_gemini,
+)
 from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -86,7 +96,6 @@ class ExplicitQuestionContext:
 
 _LOW_CONFIDENCE_MEMORY_THRESHOLD = 0.55
 _WEAK_RETRIEVAL_DISTANCE_THRESHOLD = 0.78
-_LINKED_CHANNEL_POST_MAX_CHARS = 3000
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -956,15 +965,6 @@ def _local_proactive_skip_reason(text: str) -> str | None:
 
 def _channel_post_proactive_skip_reason(text: str) -> str | None:
     """Explain why a linked-channel post should not become a discussion-starter candidate."""
-    lowered = text.lower().strip()
-    if len(text) > _LINKED_CHANNEL_POST_MAX_CHARS:
-        return "channel_post_too_long"
-    if len(_compact_query_text(text, limit=200)) < 80:
-        return "channel_post_too_short"
-    if any(cue in lowered for cue in _PROACTIVE_STOP_CUES):
-        return "stop_or_awkward_cue"
-    if _looks_like_bot_behavior_meta(text):
-        return "bot_meta"
     return None
 
 
@@ -1035,9 +1035,18 @@ def score_proactive_reply(
 
 
 def _trigger_kind(update: dict[str, Any]) -> str | None:
-    if not AGENT_ENABLED or not _is_plain_text_message(update):
+    if not AGENT_ENABLED:
         return None
-    message = update["message"]
+    message = update.get("message")
+    if not isinstance(message, dict):
+        return None
+    chat = message.get("chat") or {}
+    if chat.get("type") not in {"group", "supergroup"}:
+        return None
+    if is_linked_channel_discussion_post(message):
+        return "channel_post"
+    if not _is_plain_text_message(update):
+        return None
     text = extract_message_text(message)
     if _mentions_bot(text):
         return "explicit"
@@ -1045,8 +1054,6 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return "explicit"
     if _replies_to_any_bot(message):
         return None
-    if is_linked_channel_discussion_post(message):
-        return "channel_post" if _channel_post_proactive_skip_reason(text) is None else None
     if _local_proactive_candidate(text):
         return "proactive"
     return None
@@ -1164,6 +1171,7 @@ def handle_update(
         return True
     if trigger_kind == "channel_post":
         actor = message_actor(message)
+        media_ref = detect_media_reference(message, prefer_reply=False)
         if sqs_repo is None:
             logger.warning(
                 "Group agent proactive candidate could not be queued",
@@ -1186,15 +1194,18 @@ def handle_update(
             trigger_username=actor_username(actor),
             trigger_display_name=actor_display_name(actor) if actor else None,
             trigger_sender_type=actor_sender_type(actor),
+            media_ref=media_ref.to_dict() if media_ref else None,
             created_at=message.get("date"),
-            delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
+            delay_seconds=0,
         )
         logger.info(
             "Group agent linked channel post candidate queued",
             extra={
                 "chat_id": chat_id,
                 "message_id": message_id,
-                "delay_seconds": AGENT_PROACTIVE_DELAY_SECONDS,
+                "delay_seconds": 0,
+                "has_media": bool(media_ref),
+                **(media_reference_log_extra(media_ref) if media_ref else {}),
             },
         )
         return True
@@ -1362,7 +1373,8 @@ def _format_channel_post_task_for_prompt(
         bits.append(f"name={str(trigger_display_name)[:80]}")
     bits.append(f"message_id={message_id}")
     speaker = f"[speaker {' '.join(bits)}]" if bits else "[speaker unknown]"
-    return f"{speaker} {_compact_query_text(user_text, limit=2200)}"
+    text = _compact_query_text(user_text, limit=5000) if user_text else "No text caption was included."
+    return f"{speaker} {text}"
 
 
 def maybe_comment_on_channel_post(
@@ -1377,27 +1389,71 @@ def maybe_comment_on_channel_post(
     trigger_username: str | None = None,
     trigger_display_name: str | None = None,
     trigger_sender_type: str | None = None,
+    media_ref: Mapping[str, Any] | None = None,
 ) -> bool:
-    """Ask the model whether to add a concise discussion starter to a linked-channel post."""
+    """Generate a follow-up comment under a linked-channel post."""
     gemini = _get_gemini()
     if not gemini:
         _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
-    style_profile = _load_chat_style_profile(repo, chat_id)
-    reply_policy = _proactive_reply_policy(style_profile)
-    raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
-    recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
-    if recent_bot_replies >= 2:
-        _log_proactive_silent(
-            "recent_bot_activity",
-            chat_id=chat_id,
-            message_id=reply_to_message_id,
-            recent_bot_replies=recent_bot_replies,
-            candidate_kind="channel_post",
-        )
-        return False
+    style = normalise_chat_style_profile(_load_chat_style_profile(repo, chat_id))
+    reply_instructions = _compose_reply_instructions(
+        (
+            "Write a natural comment under the official linked-channel post. "
+            "Use 1-4 concise sentences depending on the post. It can be a concrete observation, "
+            "a light opinion, or a natural question that helps discussion continue. "
+            "Do not recap the whole post and do not write a generic thank-you."
+        ),
+        style_profile=style,
+        low_confidence_retrieval=False,
+    )
+    media_parts: list[dict[str, Any]] | None = None
+    media_context = ""
+    media_metadata: dict[str, Any] | None = None
+    if isinstance(media_ref, Mapping):
+        try:
+            prepared_media = prepare_media_for_gemini(bot, media_ref)
+            media_parts = prepared_media.media_parts
+            media_context = prepared_media.media_context
+            media_metadata = prepared_media.agent_reply_metadata
+            logger.info(
+                "Linked channel post media prepared",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    **media_reference_log_extra(media_ref),
+                    "downloaded_bytes": prepared_media.downloaded_bytes,
+                    "content_mode": prepared_media.content_mode,
+                    "media_part_count": len(media_parts or []),
+                    "media_context_chars": len(media_context),
+                },
+            )
+        except (MediaDisabledError, MediaUnsupportedError, MediaTooLargeError, MediaUnavailableError) as exc:
+            media_context = (
+                "Attached media metadata is available, but the media content could not be analyzed. "
+                "Do not claim visual/audio/file details that are not in the text."
+            )
+            logger.info(
+                "Linked channel post media unavailable; continuing text-only",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "error_type": exc.__class__.__name__,
+                    **media_reference_log_extra(media_ref),
+                },
+            )
+        except MediaError as exc:
+            logger.info(
+                "Linked channel post media failed safely; continuing text-only",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "error_type": exc.__class__.__name__,
+                    **media_reference_log_extra(media_ref),
+                },
+            )
 
     channel_post = _format_channel_post_task_for_prompt(
         message_id=reply_to_message_id,
@@ -1412,11 +1468,10 @@ def maybe_comment_on_channel_post(
             channel_post=channel_post,
             recent_context=recent_context,
             lang=lang,
-            reply_instructions=(
-                f"{reply_policy.instructions} For linked-channel posts, do not summarize the whole post; "
-                "add one short discussion-starter angle or question that invites discussion."
-            ),
-            max_output_tokens=min(reply_policy.max_output_tokens, 180),
+            reply_instructions=reply_instructions,
+            max_output_tokens=360,
+            media_parts=media_parts,
+            media_context=media_context,
         )
     except GeminiRPDExhaustedError:
         _log_proactive_silent(
@@ -1437,9 +1492,9 @@ def maybe_comment_on_channel_post(
         logger.exception("Group agent channel post comment decision failed", extra={"chat_id": chat_id})
         return False
 
-    if not decision.should_reply or decision.confidence < AGENT_PROACTIVE_FINAL_THRESHOLD or not decision.reply_text:
+    if not decision.reply_text:
         _log_proactive_silent(
-            "model_said_no",
+            "empty_model_comment",
             chat_id=chat_id,
             message_id=reply_to_message_id,
             confidence=decision.confidence,
@@ -1448,17 +1503,7 @@ def maybe_comment_on_channel_post(
         )
         return False
 
-    if not repo.try_reserve_proactive_reply(chat_id, daily_limit=AGENT_DAILY_PROACTIVE_LIMIT):
-        _log_proactive_silent(
-            "daily_limit",
-            chat_id=chat_id,
-            message_id=reply_to_message_id,
-            reason=decision.reason,
-            candidate_kind="channel_post",
-        )
-        return False
-
-    answer_text = fit_llm_output(decision.reply_text, max_chars=min(reply_policy.max_chars, 320))
+    answer_text = fit_llm_output(decision.reply_text, max_chars=900)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
@@ -1473,6 +1518,7 @@ def maybe_comment_on_channel_post(
             user_message=user_text,
             current_user_message=user_text,
             confidence=decision.confidence,
+            media_metadata=media_metadata,
         )
     logger.info(
         "Group agent handled linked channel post",
@@ -1502,10 +1548,11 @@ def process_proactive_candidate_task(
         return False
 
     user_text = str(body.get("user_text") or "").strip()
-    if not user_text:
+    candidate_kind = str(body.get("candidate_kind") or "proactive")
+    media_ref = body.get("media_ref") if isinstance(body.get("media_ref"), dict) else None
+    if not user_text and not (candidate_kind == "channel_post" and media_ref):
         _log_proactive_silent("missing_user_text", chat_id=chat_id, message_id=trigger_message_id)
         return False
-    candidate_kind = str(body.get("candidate_kind") or "proactive")
 
     if not repo.is_agent_enabled(chat_id):
         _log_proactive_silent("agent_disabled", chat_id=chat_id, message_id=trigger_message_id)
@@ -1526,31 +1573,32 @@ def process_proactive_candidate_task(
         )
         return False
 
-    try:
-        human_answer = _human_answer_after_trigger(
-            repo,
-            chat_id,
-            trigger_message_id=trigger_message_id,
-            trigger_user_id=body.get("trigger_user_id"),
-            trigger_created_at=_safe_int(body.get("created_at")),
-            user_text=user_text,
-            candidate_kind=candidate_kind,
-        )
-    except Exception:
-        logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
-        _log_proactive_silent("post_trigger_context_unavailable", chat_id=chat_id, message_id=trigger_message_id)
-        return False
-    if human_answer:
-        _log_proactive_silent(
-            "human_answered",
-            chat_id=chat_id,
-            message_id=trigger_message_id,
-            answer_message_id=human_answer.get("message_id"),
-            answer_user_id=human_answer.get("user_id"),
-            answer_text_chars=human_answer.get("text_chars"),
-            candidate_kind=candidate_kind,
-        )
-        return False
+    if candidate_kind != "channel_post":
+        try:
+            human_answer = _human_answer_after_trigger(
+                repo,
+                chat_id,
+                trigger_message_id=trigger_message_id,
+                trigger_user_id=body.get("trigger_user_id"),
+                trigger_created_at=_safe_int(body.get("created_at")),
+                user_text=user_text,
+                candidate_kind=candidate_kind,
+            )
+        except Exception:
+            logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
+            _log_proactive_silent("post_trigger_context_unavailable", chat_id=chat_id, message_id=trigger_message_id)
+            return False
+        if human_answer:
+            _log_proactive_silent(
+                "human_answered",
+                chat_id=chat_id,
+                message_id=trigger_message_id,
+                answer_message_id=human_answer.get("message_id"),
+                answer_user_id=human_answer.get("user_id"),
+                answer_text_chars=human_answer.get("text_chars"),
+                candidate_kind=candidate_kind,
+            )
+            return False
 
     if candidate_kind == "channel_post":
         return maybe_comment_on_channel_post(
@@ -1564,6 +1612,7 @@ def process_proactive_candidate_task(
             trigger_username=body.get("trigger_username"),
             trigger_display_name=body.get("trigger_display_name"),
             trigger_sender_type=body.get("trigger_sender_type"),
+            media_ref=media_ref,
         )
 
     return maybe_answer_proactively(

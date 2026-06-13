@@ -15,6 +15,7 @@ from core.config import (
 )
 from core.logger import LoggerAdapter, get_logger
 from services.telegram import TelegramAPIError, TelegramFileTooLargeError
+from services.telegram_actor import actor_display_name, actor_sender_type, actor_username, message_actor
 from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -117,6 +118,7 @@ class MediaReference:
     source_user_id: int | str | None = None
     source_username: str | None = None
     source_display_name: str | None = None
+    source_sender_type: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a compact JSON-serializable representation."""
@@ -137,6 +139,7 @@ class MediaReference:
             source_user_id=value.get("source_user_id"),
             source_username=_optional_str(value.get("source_username")),
             source_display_name=_optional_str(value.get("source_display_name")),
+            source_sender_type=_optional_str(value.get("source_sender_type")),
         )
 
 
@@ -188,14 +191,13 @@ def _display_name(actor: Mapping[str, Any]) -> str | None:
 
 
 def _source_fields(message: Mapping[str, Any]) -> dict[str, Any]:
-    sender = message.get("from") if isinstance(message.get("from"), Mapping) else {}
-    sender_chat = message.get("sender_chat") if isinstance(message.get("sender_chat"), Mapping) else {}
-    actor: Mapping[str, Any] = sender or sender_chat or {}
+    actor = message_actor(message)
     return {
         "source_message_id": _optional_int(message.get("message_id")),
         "source_user_id": actor.get("id"),
-        "source_username": _optional_str(actor.get("username"), limit=160),
-        "source_display_name": _display_name(actor),
+        "source_username": _optional_str(actor_username(actor), limit=160),
+        "source_display_name": _optional_str(actor_display_name(actor) or _display_name(actor), limit=80),
+        "source_sender_type": actor_sender_type(actor),
     }
 
 
@@ -387,6 +389,7 @@ def media_reference_log_extra(ref: Mapping[str, Any] | MediaReference) -> dict[s
         "source_user_id",
         "source_username",
         "source_display_name",
+        "source_sender_type",
     ):
         value = getattr(media, key)
         if value not in (None, ""):
@@ -421,6 +424,8 @@ def media_reference_context(ref: MediaReference) -> str:
         lines.append(f"- source_username: @{ref.source_username.lstrip('@')}")
     if ref.source_display_name:
         lines.append(f"- source_display_name: {ref.source_display_name[:80]}")
+    if ref.source_sender_type:
+        lines.append(f"- source_sender_type: {ref.source_sender_type[:80]}")
     return "\n".join(lines)
 
 
@@ -440,6 +445,7 @@ def agent_reply_media_metadata(ref: MediaReference, *, media_summary: str | None
         "source_user_id",
         "source_username",
         "source_display_name",
+        "source_sender_type",
     ):
         value = getattr(ref, key)
         if value not in (None, ""):

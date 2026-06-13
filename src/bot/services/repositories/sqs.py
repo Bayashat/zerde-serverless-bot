@@ -143,6 +143,7 @@ class SQSClient:
         trigger_username: str | None = None,
         trigger_display_name: str | None = None,
         trigger_sender_type: str | None = None,
+        media_ref: dict[str, object] | None = None,
         created_at: int | None = None,
         delay_seconds: int = 45,
     ) -> None:
@@ -166,10 +167,13 @@ class SQSClient:
             payload["trigger_display_name"] = trigger_display_name
         if trigger_sender_type:
             payload["trigger_sender_type"] = trigger_sender_type
+        if media_ref:
+            payload["media_ref"] = media_ref
         if created_at:
             payload["created_at"] = created_at
 
         try:
+            media_log = media_reference_log_extra(media_ref) if media_ref else {}
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
                 MessageBody=json.dumps(payload),
@@ -183,6 +187,8 @@ class SQSClient:
                     "trigger_message_id": trigger_message_id,
                     "candidate_kind": candidate_kind,
                     "delay": delay_seconds,
+                    "has_media": bool(media_ref),
+                    **media_log,
                 },
             )
         except Exception as e:
@@ -206,6 +212,7 @@ class SQSClient:
         username: str | None = None,
         created_at: int | None = None,
         reply_chain: list[dict[str, object]] | None = None,
+        force_reaction: bool = False,
     ) -> None:
         """Enqueue a sampled ambient reaction candidate for async classification."""
         payload: dict[str, object] = {
@@ -227,6 +234,8 @@ class SQSClient:
             payload["created_at"] = created_at
         if reply_chain:
             payload["reply_chain"] = reply_chain
+        if force_reaction:
+            payload["force_reaction"] = True
 
         try:
             self.sqs_client.send_message(
