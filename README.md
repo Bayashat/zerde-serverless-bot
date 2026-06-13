@@ -26,10 +26,10 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 
 - **Recent memory**: non-command group messages stored in DynamoDB as `MSG#...`.
 - **User profiles**: lightweight per-user context derived from each user's own messages.
-- **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
+- **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, delayed conservative proactive reply gating, reply-length budgeting, and `/agent why` source summaries.
-- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, and `/memory forget this` with related vector cleanup and owner-only group cleanup commands.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this`, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
@@ -56,18 +56,21 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 ```mermaid
 flowchart LR
   TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
-  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + main SQS worker"]
 
   BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
   BOT --> MEMORY[("DynamoDB<br/>group memory")]
   BOT --> MAINQ["SQS timeout/tasks queue"]
   MAINQ --> BOT
 
-  BOT --> VQ["SQS vector memory queue"]
-  VQ --> BOT
-  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
+  BOT -- "enqueue vector tasks" --> VQ["SQS vector memory queue"]
+  VQ --> VIDX["Vector indexer Lambda"]
+  BOT -- "query/delete" --> S3V["S3 Vectors<br/>semantic memory index"]
+  VIDX -- "index/backfill" --> S3V
+  VIDX --> MEMORY
 
-  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries"]
+  VIDX --> GEMINI_EMB["Gemini<br/>embeddings"]
   BOT --> GROQ["Groq<br/>spam checks"]
 
   EB["EventBridge schedules"] --> NEWS["News Lambda"]
@@ -78,17 +81,21 @@ flowchart LR
   QUIZ --> TG
 
   LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
 ```
 
 | Component | Trigger | Responsibility |
 |-----------|---------|----------------|
-| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/bot/main.py` | API Gateway + main SQS queue | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, group memory extraction, daily summaries, semantic retrieval, and vector cleanup/enqueue. |
+| `src/bot/vector_indexer_main.py` | Vector memory SQS queue | Dedicated consumer for `PROCESS_VECTOR_MEMORY` and `PROCESS_VECTOR_MEMORY_BACKFILL`; embeds/indexes memory in S3 Vectors and fans out backfill pages. |
 | `src/news/` | EventBridge | Scheduled multilingual IT news digest. |
 | `src/quiz/` | EventBridge + bot invoke | Scheduled and on-demand developer quizzes. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared config, secret loading, logging, redaction, and provider error helpers. |
 | `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, and Lambda wiring. |
+
+The Bot Lambda can query and delete S3 Vectors for retrieval and memory cleanup, but it does not consume the vector memory queue.
 
 For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -107,8 +114,8 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
 | `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message and understands “who am I” from requester identity. |
 | `/memory about me` | Everyone | Show the current user's own stored profile fields without showing other users' claims. |
-| `/memory on/off/status/forget ...` | Group owner or bot owner for settings; users can delete their own memory | Manage group memory and cleanup. `forget this` can delete memory tied to a replied bot answer or source message, with vector cleanup when configured. |
-| `/agent on/off/status/why` | Group owner or bot owner for settings | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
+| `/memory on/off/status/forget .../wrong` | Group owner or bot owner for settings; users can delete their own memory or mark answer sources wrong | Manage group memory and cleanup. `forget this` can delete memory tied to a replied bot answer or source message, with vector cleanup when configured. `wrong` marks a replied bot answer's memory sources as wrong without deleting them. |
+| `/agent on/off/status/why/wrong` | Group owner or bot owner for settings; everyone can inspect or mark replied answer sources | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent wrong` marks a replied bot answer's memory sources as wrong. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
 
 ---
 
@@ -127,6 +134,19 @@ cd infra
 uv run cdk synth -c env=dev
 uv run cdk diff -c env=dev
 ```
+
+Common group-memory retention settings:
+
+| Env var | Applies to | Default |
+|---------|------------|---------|
+| `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` | Raw recent `MSG#...` records | `30` |
+| `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` | `AGENT_REPLY#...` reply-thread metadata | `7` |
+| `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` | `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` | `3650` |
+| `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` | `DAILY_SUMMARY#...` records | `3650` |
+| `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` | `PROACTIVE#YYYYMMDD` counters | `3` |
+| `GROUP_MEMORY_RETENTION_DAYS` | Legacy fallback for broad memory retention settings when omitted | `3650` |
+
+`MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted. `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term memory still stores explicit `expires_at` metadata from `expires_in_days`; DynamoDB TTL uses the shorter of that explicit expiry and the configured long-term retention.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a full AWS + Telegram walkthrough.
 

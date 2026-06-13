@@ -69,6 +69,7 @@ class ReplyPolicy:
 class ExplicitQuestionContext:
     user_text: str
     current_user_message: str
+    retrieval_query: str
     source_message_context: str = ""
     parent_bot_message_id: int | None = None
 
@@ -146,6 +147,48 @@ def _agent_reply_thread_context(
     return "\n\n".join(parts)
 
 
+def _compact_query_text(text: str, *, limit: int) -> str:
+    return " ".join((text or "").split())[:limit]
+
+
+def _reply_source_retrieval_query(*, current_question: str, source_context: str) -> str:
+    question = _compact_query_text(current_question, limit=600)
+    source = _compact_query_text(source_context, limit=700)
+    if question and source:
+        return f"{question}\n\nReplied source message: {source}"
+    if question:
+        return question
+    if source:
+        return f"Explain replied source message: {source}"
+    return ""
+
+
+def _agent_reply_thread_retrieval_query(
+    item: dict[str, Any],
+    *,
+    followup: str,
+    telegram_reply_text: str,
+) -> str:
+    source_context = _compact_query_text(str(item.get("source_message_context") or ""), limit=700)
+    previous_user = _compact_query_text(
+        str(item.get("current_user_message") or item.get("user_message") or ""),
+        limit=600,
+    )
+    followup_text = _compact_query_text(followup, limit=300)
+    parts: list[str] = []
+    if followup_text:
+        parts.append(f"Current follow-up: {followup_text}")
+    if previous_user:
+        parts.append(f"Previous user request: {previous_user}")
+    if source_context:
+        parts.append(f"Original source message: {source_context}")
+    if len(parts) <= 1:
+        fallback_answer = _compact_query_text(str(item.get("answer_text") or telegram_reply_text or ""), limit=400)
+        if fallback_answer:
+            parts.append(f"Previous bot answer: {fallback_answer}")
+    return "\n\n".join(parts)
+
+
 def build_explicit_question_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
@@ -156,7 +199,7 @@ def build_explicit_question_context(
     text = (current_text if current_text is not None else extract_message_text(message)).strip()
     reply = message.get("reply_to_message")
     if not isinstance(reply, dict):
-        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+        return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
 
     if _replies_to_bot(message):
         replied_text = _reply_text(message)
@@ -175,13 +218,18 @@ def build_explicit_question_context(
         return ExplicitQuestionContext(
             user_text=f"{thread_context}\n\nUser follow-up:\n{followup}",
             current_user_message=text,
+            retrieval_query=_agent_reply_thread_retrieval_query(
+                item,
+                followup=followup,
+                telegram_reply_text=replied_text,
+            ),
             source_message_context=source_context,
             parent_bot_message_id=int(parent_bot_message_id) if parent_bot_message_id is not None else None,
         )
 
     source_context = format_message_reference(reply)
     if not source_context:
-        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+        return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
     if text:
         user_text = (
             "The user is asking about this replied-to group message:\n"
@@ -197,6 +245,7 @@ def build_explicit_question_context(
     return ExplicitQuestionContext(
         user_text=user_text,
         current_user_message=text,
+        retrieval_query=_reply_source_retrieval_query(current_question=text, source_context=source_context),
         source_message_context=source_context,
     )
 
@@ -858,6 +907,7 @@ def handle_update(
         chat_id=chat_id,
         reply_to_message_id=message_id,
         user_text=question_context.user_text,
+        retrieval_query=question_context.retrieval_query,
         lang=get_chat_lang(chat_id),
         requester_user_id=(message.get("from") or {}).get("id"),
         requester_username=(message.get("from") or {}).get("username"),
@@ -1063,6 +1113,7 @@ def answer_group_question(
     reply_to_message_id: int,
     user_text: str,
     lang: str,
+    retrieval_query: str | None = None,
     requester_user_id: int | str | None = None,
     requester_username: str | None = None,
     requester_display_name: str | None = None,
@@ -1102,6 +1153,7 @@ def answer_group_question(
         repo=repo,
         chat_id=chat_id,
         user_text=user_text,
+        retrieval_query=retrieval_query,
         requester_user_id=requester_user_id,
         requester_username=requester_username,
         requester_display_name=requester_display_name,
@@ -1128,6 +1180,7 @@ def answer_group_question(
             "self_reference": memory_bundle.intent.is_self_reference,
             "requester_filter_applied": bool(memory_bundle.intent.is_self_reference and requester_user_id is not None),
             "target_username_count": len(memory_bundle.intent.target_usernames),
+            "retrieval_query_chars": len((retrieval_query or user_text).strip()),
         },
     )
     reply_policy = _reply_policy(user_text)

@@ -118,6 +118,7 @@ TRANSLATIONS = {
             "• <code>/memory about me</code> — show what I know from your own messages\n"
             "• <code>/memory forget me</code> — delete your memory in this group\n"
             "• <code>/memory forget this</code> — reply to a bot answer or source message and delete related memory\n"
+            "• <code>/memory wrong</code> — reply to a bot answer and mark its memory sources as wrong\n"
             "• <code>/memory forget group</code> — delete all group memory"
         ),
         "agent_usage": (
@@ -125,7 +126,8 @@ TRANSLATIONS = {
             "• <code>/agent on</code> — let me answer and occasionally join in\n"
             "• <code>/agent off</code> — stop proactive, mention, and reply-thread participation\n"
             "• <code>/agent status</code> — show agent and memory status\n"
-            "• <code>/agent why</code> — explain why I replied"
+            "• <code>/agent why</code> — explain why I replied\n"
+            "• <code>/agent wrong</code> — reply to my answer and down-rank wrong memory sources"
         ),
         "memory_storage_not_configured": "⚙️ Group memory storage is not configured for this deployment.",
         "memory_deployment_disabled": "⚙️ Group memory is disabled by deployment config.",
@@ -182,6 +184,9 @@ TRANSLATIONS = {
         "forget_this_no_sources": "🧠 That bot answer has no deletable recorded memory sources.",
         "forget_this_nothing_deleted": "🧠 I did not find stored memory for that message.",
         "forget_this_done": "🧹 Deleted {deleted} related memory item(s).\n{vector_note}",
+        "wrong_memory_usage": "Reply to a bot answer with <code>/agent wrong</code> or <code>/memory wrong</code>.",
+        "wrong_memory_no_sources": "🧠 That answer has no stored memory sources I can mark.",
+        "wrong_memory_done": "🧠 Marked {marked} memory source(s) as wrong. I will rank them lower in future answers.",
         "vector_configured_yes": "yes",
         "vector_configured_no": "no",
         "vector_backfill_none": "-",
@@ -370,6 +375,7 @@ TRANSLATIONS = {
             "• <code>/memory about me</code> — өз хабарламаларыңыздан не білгенімді көрсету\n"
             "• <code>/memory forget me</code> — осы топтағы өз жадыңызды өшіру\n"
             "• <code>/memory forget this</code> — bot жауабына не source хабарламаға reply жасап қатысты жадты өшіру\n"
+            "• <code>/memory wrong</code> — bot жауабына reply жасап оның memory source-тарын қате деп белгілеу\n"
             "• <code>/memory forget group</code> — топтың барлық жадын өшіру"
         ),
         "agent_usage": (
@@ -377,7 +383,8 @@ TRANSLATIONS = {
             "• <code>/agent on</code> — жауап беруге және қажет жерде чатқа қосылуға рұқсат беру\n"
             "• <code>/agent off</code> — proactive, mention және reply-thread қатысуын өшіру\n"
             "• <code>/agent status</code> — agent пен жад күйін көрсету\n"
-            "• <code>/agent why</code> — неге жауап бергенімді түсіндіру"
+            "• <code>/agent why</code> — неге жауап бергенімді түсіндіру\n"
+            "• <code>/agent wrong</code> — жауабыма reply жасап қате memory source-тарды төмендету"
         ),
         "memory_storage_not_configured": "⚙️ Бұл deployment үшін топ жады қоймасы бапталмаған.",
         "memory_deployment_disabled": "⚙️ Топ жады deployment конфигінде өшірілген.",
@@ -436,6 +443,11 @@ TRANSLATIONS = {
         "forget_this_no_sources": "🧠 Бұл bot жауабында өшіруге болатын жазылған memory source жоқ.",
         "forget_this_nothing_deleted": "🧠 Ол хабарлама үшін сақталған жад таппадым.",
         "forget_this_done": "🧹 Қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
+        "wrong_memory_usage": (
+            "Bot жауабына reply жасап <code>/agent wrong</code> немесе <code>/memory wrong</code> жіберіңіз."
+        ),
+        "wrong_memory_no_sources": "🧠 Бұл жауапта белгілей алатын сақталған memory source жоқ.",
+        "wrong_memory_done": "🧠 {marked} memory source қате деп белгіленді. Келесі жауаптарда төменірек ранктеледі.",
         "vector_configured_yes": "иә",
         "vector_configured_no": "жоқ",
         "vector_backfill_none": "-",
@@ -616,6 +628,7 @@ TRANSLATIONS = {
             "• <code>/memory about me</code> — 查看我从你自己的消息中记住了什么\n"
             "• <code>/memory forget me</code> — 删除你在本群的记忆\n"
             "• <code>/memory forget this</code> — 回复 bot 答案或来源消息并删除相关记忆\n"
+            "• <code>/memory wrong</code> — 回复 bot 答案并标记其记忆来源有误\n"
             "• <code>/memory forget group</code> — 删除整个群的记忆"
         ),
         "agent_usage": (
@@ -623,7 +636,8 @@ TRANSLATIONS = {
             "• <code>/agent on</code> — 允许我回答并在合适时加入聊天\n"
             "• <code>/agent off</code> — 关闭主动、mention 和 reply-thread 参与\n"
             "• <code>/agent status</code> — 查看 agent 和记忆状态\n"
-            "• <code>/agent why</code> — 解释我为什么回复"
+            "• <code>/agent why</code> — 解释我为什么回复\n"
+            "• <code>/agent wrong</code> — 回复我的答案并降低错误记忆来源的优先级"
         ),
         "memory_storage_not_configured": "⚙️ 当前部署未配置群记忆存储。",
         "memory_deployment_disabled": "⚙️ 群记忆已被部署配置关闭。",
@@ -675,6 +689,9 @@ TRANSLATIONS = {
         "forget_this_no_sources": "🧠 那条 bot 答案没有可删除的已记录记忆来源。",
         "forget_this_nothing_deleted": "🧠 我没有找到那条消息对应的已存记忆。",
         "forget_this_done": "🧹 已删除 {deleted} 条相关记忆。\n{vector_note}",
+        "wrong_memory_usage": "请回复一条 bot 答案，并发送 <code>/agent wrong</code> 或 <code>/memory wrong</code>。",
+        "wrong_memory_no_sources": "🧠 那条答案没有可标记的已存记忆来源。",
+        "wrong_memory_done": "🧠 已标记 {marked} 条记忆来源有误。之后回答时会降低其优先级。",
         "vector_configured_yes": "是",
         "vector_configured_no": "否",
         "vector_backfill_none": "-",
@@ -853,6 +870,7 @@ TRANSLATIONS = {
             "• <code>/memory forget me</code> — удалить вашу память в этой группе\n"
             "• <code>/memory forget this</code> — ответьте на ответ бота или source-сообщение "
             "и удалите связанную память\n"
+            "• <code>/memory wrong</code> — ответьте на ответ бота и отметьте его источники памяти как ошибочные\n"
             "• <code>/memory forget group</code> — удалить всю память группы"
         ),
         "agent_usage": (
@@ -860,7 +878,8 @@ TRANSLATIONS = {
             "• <code>/agent on</code> — разрешить мне отвечать и иногда подключаться к чату\n"
             "• <code>/agent off</code> — выключить proactive, mention и reply-thread участие\n"
             "• <code>/agent status</code> — показать статус agent-а и памяти\n"
-            "• <code>/agent why</code> — объяснить, почему я ответил"
+            "• <code>/agent why</code> — объяснить, почему я ответил\n"
+            "• <code>/agent wrong</code> — ответьте на мой ответ и понизьте ошибочные memory sources"
         ),
         "memory_storage_not_configured": "⚙️ Хранилище памяти группы не настроено для этого deployment.",
         "memory_deployment_disabled": "⚙️ Память группы выключена в deployment-конфиге.",
@@ -919,6 +938,13 @@ TRANSLATIONS = {
         "forget_this_no_sources": "🧠 У этого ответа бота нет записанных источников памяти, которые можно удалить.",
         "forget_this_nothing_deleted": "🧠 Я не нашел сохраненную память для этого сообщения.",
         "forget_this_done": "🧹 Удалено связанных элементов памяти: {deleted}.\n{vector_note}",
+        "wrong_memory_usage": (
+            "Ответьте на ответ бота командой <code>/agent wrong</code> или <code>/memory wrong</code>."
+        ),
+        "wrong_memory_no_sources": "🧠 У этого ответа нет сохраненных источников памяти, которые можно отметить.",
+        "wrong_memory_done": (
+            "🧠 Источники памяти отмечены как ошибочные: {marked}. В будущих ответах они будут ранжироваться ниже."
+        ),
         "vector_configured_yes": "да",
         "vector_configured_no": "нет",
         "vector_backfill_none": "-",

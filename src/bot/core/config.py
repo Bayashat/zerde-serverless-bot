@@ -131,11 +131,34 @@ VOTEBAN_FORGIVE_THRESHOLD: int = require_int("VOTEBAN_FORGIVE_THRESHOLD")
 # ── Captcha settings ────────────────────────────────────────────────────────
 CAPTCHA_MAX_ATTEMPTS: int = require_int("CAPTCHA_MAX_ATTEMPTS")
 
+
 # ── Group memory / agent MVP ────────────────────────────────────────────────
+def _memory_retention_days(name: str, default_days: int, *, legacy_fallback: bool = True) -> int:
+    value = os.environ.get(name)
+    if value is None and legacy_fallback:
+        value = os.environ.get("GROUP_MEMORY_RETENTION_DAYS")
+    if value is None:
+        return default_days
+    return int(value)
+
+
 MEMORY_TABLE_NAME: str | None = os.environ.get("MEMORY_TABLE_NAME")
 GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", True)
 GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "80"))
 GROUP_MEMORY_RETENTION_DAYS: int = int(os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650"))
+GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS: int = _memory_retention_days("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", 30)
+GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", 7, legacy_fallback=False
+)
+GROUP_MEMORY_LONG_TERM_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", GROUP_MEMORY_RETENTION_DAYS
+)
+GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS", GROUP_MEMORY_RETENTION_DAYS
+)
+GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS", 3, legacy_fallback=False
+)
 GROUP_MEMORY_EXTRACTOR_PROVIDER: str = os.environ.get("GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini").strip().lower()
 GROUP_MEMORY_EXTRACTOR_MODE: str = (
     os.environ.get("GROUP_MEMORY_EXTRACTOR_MODE", "gemini_candidate_only").strip().lower()
@@ -162,6 +185,7 @@ VECTOR_MEMORY_VECTOR_BUCKET_NAME: str | None = os.environ.get("VECTOR_MEMORY_VEC
 VECTOR_MEMORY_INDEX_NAME: str | None = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 VECTOR_MEMORY_DIMENSIONS: int = int(os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768"))
 VECTOR_MEMORY_EMBEDDING_MODEL: str = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
+VECTOR_MEMORY_SCHEMA_VERSION: str = os.environ.get("VECTOR_MEMORY_SCHEMA_VERSION", "1").strip() or "1"
 VECTOR_MEMORY_BACKFILL_BATCH_SIZE: int = int(os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50"))
 VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: float = float(os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "0"))
 VECTOR_MEMORY_MAX_DISTANCE: float = float(os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85"))

@@ -70,9 +70,30 @@ class ZerdeTelegramBotStack(Stack):
         deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
         # ── Group memory / agent MVP ─────────────────────────────────────────
+        legacy_group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS")
+
+        def _memory_retention_days_env(name: str, default_days: str, *, legacy_fallback: bool = True) -> str:
+            fallback = legacy_group_memory_retention_days if legacy_fallback else None
+            return os.environ.get(name, fallback or default_days)
+
         group_memory_enabled = os.environ.get("GROUP_MEMORY_ENABLED", "true")
         group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
-        group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650")
+        group_memory_retention_days = legacy_group_memory_retention_days or "3650"
+        group_memory_raw_message_retention_days = _memory_retention_days_env(
+            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30"
+        )
+        group_memory_agent_reply_retention_days = _memory_retention_days_env(
+            "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", "7", legacy_fallback=False
+        )
+        group_memory_long_term_retention_days = _memory_retention_days_env(
+            "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", group_memory_retention_days
+        )
+        group_memory_daily_summary_retention_days = _memory_retention_days_env(
+            "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS", group_memory_retention_days
+        )
+        group_memory_proactive_counter_retention_days = _memory_retention_days_env(
+            "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS", "3", legacy_fallback=False
+        )
         group_memory_extractor_provider = os.environ.get("GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
         group_memory_extractor_mode = os.environ.get("GROUP_MEMORY_EXTRACTOR_MODE", "gemini_candidate_only")
         group_memory_extractor_min_confidence = os.environ.get("GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", "0.65")
@@ -93,6 +114,7 @@ class ZerdeTelegramBotStack(Stack):
         vector_memory_provider = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors")
         vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
         vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
+        vector_memory_schema_version = os.environ.get("VECTOR_MEMORY_SCHEMA_VERSION", "1")
         vector_memory_index_throttle_seconds = os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3")
         vector_memory_backfill_batch_size = os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50")
         vector_memory_max_distance = os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85")
@@ -169,6 +191,11 @@ class ZerdeTelegramBotStack(Stack):
             group_memory_enabled=group_memory_enabled,
             group_memory_recent_limit=group_memory_recent_limit,
             group_memory_retention_days=group_memory_retention_days,
+            group_memory_raw_message_retention_days=group_memory_raw_message_retention_days,
+            group_memory_agent_reply_retention_days=group_memory_agent_reply_retention_days,
+            group_memory_long_term_retention_days=group_memory_long_term_retention_days,
+            group_memory_daily_summary_retention_days=group_memory_daily_summary_retention_days,
+            group_memory_proactive_counter_retention_days=group_memory_proactive_counter_retention_days,
             group_memory_extractor_provider=group_memory_extractor_provider,
             group_memory_extractor_mode=group_memory_extractor_mode,
             group_memory_extractor_min_confidence=group_memory_extractor_min_confidence,
@@ -187,6 +214,7 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_provider=vector_memory_provider,
             vector_memory_dimensions=vector_memory_dimensions,
             vector_memory_embedding_model=vector_memory_embedding_model,
+            vector_memory_schema_version=vector_memory_schema_version,
             vector_memory_index_throttle_seconds=vector_memory_index_throttle_seconds,
             vector_memory_backfill_batch_size=vector_memory_backfill_batch_size,
             vector_memory_max_distance=vector_memory_max_distance,
