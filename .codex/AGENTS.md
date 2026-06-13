@@ -38,7 +38,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It stores recent context, user profiles, long-term memory, daily summaries, and agent reply metadata in DynamoDB.
 - It extracts long-term memory with cheap local candidate gates, bounded structured Gemini extraction, and rule-based fallback when Gemini is unavailable, disabled, over budget, or not warranted.
 - It indexes long-term memory and high-information daily summaries in S3 Vectors for semantic RAG retrieval.
-- It answers `/ask`, @mentions, and reply-to-bot follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context from a compact retrieval query that is separate from the full Gemini generation prompt.
+- It answers `/ask`, @mentions, and reply-to-Zerde follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context from a compact retrieval query that is separate from the full Gemini generation prompt.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available for generation, while semantic retrieval uses a shorter query based on the current follow-up, previous user request, and original source message.
 - It may proactively answer only after a short delayed candidate window plus conservative local and LLM social-timing gates.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
@@ -104,7 +104,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 Single table partitioned by `pk=CHAT#<chat_id>`:
 
 - `SETTINGS` — memory/agent flags.
-- `MSG#<created_at_ms>#<message_id>` — recent non-command group messages.
+- `MSG#<created_at_ms>#<message_id>` — recent non-command group messages, with reply-to ids, sender metadata, bot/self-bot flags, and simple thread root metadata when available.
 - `USER#<user_id>` — profile from the user's own messages only.
 - `USERNAME#<lower_username>` — per-chat username alias pointing to `USER#<user_id>` for direct target-profile lookup.
 - `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories. Durable `JOKE#`
@@ -155,7 +155,7 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`. Bot Lambda can query, get index metadata, and delete vectors for cleanup; `PutVectors` and `ListVectors` stay scoped to the vector-indexer Lambda.
-- **Reply-thread control**: follow-up replies should stay short and should only continue when the reply-to-bot message is a clear question or request; reactions, thanks, laughter, and short comments stay silent.
+- **Reply-thread control**: follow-up replies should stay short and should only continue when the user replies to Zerde's own bot message with a clear question or request; reactions, thanks, laughter, and short comments stay silent. Replies to other bots are not Zerde reply threads unless the user explicitly mentions Zerde.
 - **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates. Queue passing candidates with `AGENT_PROACTIVE_DELAY_SECONDS`, then re-read post-trigger context and stay silent if humans already answered sufficiently.
 - **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.

@@ -69,6 +69,35 @@ def test_observe_update_enqueues_reply_and_mention_hints(monkeypatch):
     assert kwargs["has_mention"] is True
 
 
+def test_observe_update_stores_reply_metadata(monkeypatch):
+    repo = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+    monkeypatch.setattr(group_memory, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_memory, "AGENT_BOT_USERNAME", "zerdebot")
+    update = _group_update("why?")
+    update["message"]["message_thread_id"] = 77
+    update["message"]["reply_to_message"] = {
+        "message_id": 7,
+        "message_thread_id": 77,
+        "text": "Previous answer",
+        "from": {"id": 999, "is_bot": True, "username": "renamed_zerdebot", "first_name": "Zerde"},
+        "reply_to_message": {"message_id": 5},
+    }
+
+    group_memory.observe_update(repo, update)
+
+    metadata = repo.store_message.call_args.kwargs["reply_metadata"]
+    assert metadata["reply_to_message_id"] == 7
+    assert metadata["reply_to_user_id"] == 999
+    assert metadata["reply_to_sender_username"] == "renamed_zerdebot"
+    assert metadata["reply_to_sender_name"] == "Zerde"
+    assert metadata["reply_to_bot"] is True
+    assert metadata["reply_to_self_bot"] is True
+    assert metadata["thread_root_message_id"] == 5
+    assert metadata["message_thread_id"] == 77
+
+
 def test_observe_update_does_not_enqueue_duplicate_message(monkeypatch):
     repo = MagicMock()
     sqs = MagicMock()
@@ -321,6 +350,39 @@ def test_touch_user_profile_does_not_learn_subjective_ranking_directive():
     assert "last_sample = :sample" not in kwargs["UpdateExpression"]
     assert "#count = if_not_exists(#count, :zero) + :one" in kwargs["UpdateExpression"]
     assert values[":display_name"] == "Сам Самыч"
+
+
+def test_store_message_persists_reply_metadata_on_msg_item():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.store_message(
+        chat_id=-100123,
+        message_id=11,
+        user_id=42,
+        display_name="Ada",
+        username="ada",
+        text="why?",
+        created_at=1_700_000_000,
+        reply_metadata={
+            "reply_to_message_id": 7,
+            "reply_to_user_id": 999,
+            "reply_to_sender_username": "zerdebot",
+            "reply_to_bot": True,
+            "reply_to_self_bot": True,
+            "thread_root_message_id": 5,
+        },
+        touch_profile=False,
+    )
+
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["sk"] == "MSG#1700000000000#11"
+    assert item["reply_to_message_id"] == 7
+    assert item["reply_to_user_id"] == 999
+    assert item["reply_to_sender_username"] == "zerdebot"
+    assert item["reply_to_bot"] is True
+    assert item["reply_to_self_bot"] is True
+    assert item["thread_root_message_id"] == 5
 
 
 def test_format_user_profile_context_uses_target_profile_not_third_party_label():
@@ -1364,6 +1426,7 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     bot = MagicMock()
     answer = MagicMock(return_value=True)
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
     monkeypatch.setattr(group_agent, "answer_group_question", answer)
 
@@ -1371,7 +1434,7 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     update["message"]["reply_to_message"] = {
         "message_id": 10,
         "text": "Кто такой, о ком речь? Рассказывай, просвещусь.",
-        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+        "from": {"id": 999, "is_bot": True, "username": "renamed_zerdebot"},
     }
 
     handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
@@ -1389,6 +1452,58 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     assert answer.call_args.kwargs["parent_bot_message_id"] == 10
     assert answer.call_args.kwargs["requester_user_id"] == 42
     assert answer.call_args.kwargs["requester_username"] == "ada"
+
+
+def test_agent_reply_to_different_bot_does_not_trigger_without_mention(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("Can you explain this OpenSearch answer in more detail?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "OpenSearch pricing depends on capacity.",
+        "from": {"id": 123, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is False
+    repo.is_agent_enabled.assert_not_called()
+    answer.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_agent_reply_to_different_bot_with_explicit_mention_uses_source_context(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot can you check this answer?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "OpenSearch always costs exactly one dollar.",
+        "from": {"id": 123, "is_bot": True, "username": "otherbot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    user_text = answer.call_args.kwargs["user_text"]
+    assert "Original replied-to message" in user_text
+    assert "OpenSearch always costs exactly one dollar" in user_text
+    assert "continuing a thread" not in user_text
+    assert answer.call_args.kwargs["parent_bot_message_id"] is None
 
 
 def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
@@ -1906,7 +2021,7 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["retrieval_sources"][1]["source"] == "requester_profile"
 
 
-def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query():
+def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(monkeypatch):
     repo = MagicMock()
     repo.get_agent_reply_explanation.return_value = {
         "current_user_message": "what did we decide about S3 Vectors?",
@@ -1925,6 +2040,8 @@ def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval
             "from": {"id": 1000, "is_bot": True, "username": "zerde_kz_bot"},
         },
     }
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 1000)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
 
     context = group_agent.build_explicit_question_context(repo, -100123, message)
 
@@ -2614,6 +2731,7 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     assert "The user is asking about this replied-to group message" not in retrieval_query
     assert "message_id=8" in ctx.sqs_repo.send_group_ask_task.call_args.kwargs["source_message_context"]
     assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["current_user_message"] == "is he being sarcastic?"
+    assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["parent_bot_message_id"] is None
     ctx.reply.assert_not_called()
 
 

@@ -113,6 +113,16 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_optional_int(name: str) -> int | None:
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
 def is_configured_group_chat(chat_id: int | str | None) -> bool:
     """True when ``chat_id`` is allowed (present in the configured group → language map)."""
     if chat_id is None:
@@ -170,6 +180,7 @@ GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT: int = int(
 )
 AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", True)
 AGENT_BOT_USERNAME: str = os.environ.get("AGENT_BOT_USERNAME", "").lstrip("@").lower()
+AGENT_BOT_ID: int | None = _env_optional_int("AGENT_BOT_ID")
 AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
 AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
 AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45"))

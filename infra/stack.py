@@ -105,6 +105,7 @@ class ZerdeTelegramBotStack(Stack):
         group_memory_daily_summary_message_limit = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500")
         agent_enabled = os.environ.get("AGENT_ENABLED", "true")
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
+        agent_bot_id = os.environ.get("AGENT_BOT_ID", "")
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
         agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
@@ -205,6 +206,7 @@ class ZerdeTelegramBotStack(Stack):
             group_memory_daily_summary_message_limit=group_memory_daily_summary_message_limit,
             agent_enabled=agent_enabled,
             agent_bot_username=agent_bot_username,
+            agent_bot_id=agent_bot_id,
             agent_recent_context_limit=agent_recent_context_limit,
             agent_daily_proactive_limit=agent_daily_proactive_limit,
             agent_proactive_delay_seconds=agent_proactive_delay_seconds,

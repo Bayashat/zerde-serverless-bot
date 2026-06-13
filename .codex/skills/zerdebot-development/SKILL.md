@@ -62,13 +62,13 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
 - Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
 - Keep structured Gemini extraction behind `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` and extractor LLM budgets by default, so ordinary safe chatter does not consume shared Gemini generate RPD.
-- Raw `MSG#...` records may keep audit context, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
+- Raw `MSG#...` records may keep audit context and available reply metadata such as reply-to ids, sender info, bot/self-bot flags, and simple thread roots, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
 - Vector retrieval and indexing success paths should emit structured INFO logs with counts, filters, distance cutoffs, and vector dimensions. Avoid logging full prompts, full memory text, vectors, or secrets.
 - Vector indexing should be idempotent for duplicate SQS deliveries: successful items store the rendered-document hash, schema version, embedding model, and dimensions, and only skip when all of those still match.
 - Do not vectorize fallback or empty structured live daily summaries; store them in DynamoDB only so low-information summaries do not pollute semantic retrieval.
-- Reply-to-bot follow-ups must include prior `AGENT_REPLY#...` answer context when available.
-- Reply-to-bot follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
-- Do not answer every reply to a bot message; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
+- Reply-to-Zerde follow-ups must include prior `AGENT_REPLY#...` answer context when available.
+- Reply-to-Zerde follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
+- Do not treat replies to other bots as Zerde reply threads; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
 - Keep `/agent wrong` and `/memory wrong` non-destructive: mark a replied bot answer's recorded memory sources with negative feedback metadata and lower future retrieval priority.

@@ -9,6 +9,7 @@ from numbers import Number
 from typing import Any
 
 from core.config import (
+    AGENT_BOT_ID,
     AGENT_BOT_USERNAME,
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
@@ -28,6 +29,7 @@ from services.ai.gemini_client import (
     GeminiUnavailableError,
 )
 from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
+from services.bot_identity import is_self_bot_user
 from services.group_memory import (
     display_name,
     extract_message_text,
@@ -103,7 +105,15 @@ def _replies_to_bot(message: dict[str, Any]) -> bool:
     if not isinstance(reply, dict):
         return False
     sender = reply.get("from") or {}
-    return bool(sender.get("is_bot"))
+    return is_self_bot_user(sender, bot_id=AGENT_BOT_ID, bot_username=AGENT_BOT_USERNAME)
+
+
+def _replies_to_any_bot(message: dict[str, Any]) -> bool:
+    reply = message.get("reply_to_message")
+    if not isinstance(reply, dict):
+        return False
+    sender = reply.get("from") or {}
+    return bool(isinstance(sender, dict) and sender.get("is_bot"))
 
 
 def _reply_text(message: dict[str, Any]) -> str:
@@ -792,6 +802,8 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return "explicit"
     if _replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None:
         return "explicit"
+    if _replies_to_any_bot(message):
+        return None
     if _local_proactive_candidate(text):
         return "proactive"
     return None
@@ -822,7 +834,7 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
         return
     message = update["message"]
     text = extract_message_text(message)
-    if _mentions_bot(text) or _replies_to_bot(message):
+    if _mentions_bot(text) or _replies_to_any_bot(message):
         return
     skip_reason = _local_proactive_skip_reason(text)
     if not skip_reason or skip_reason == "not_open_question":
