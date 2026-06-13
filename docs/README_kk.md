@@ -24,11 +24,15 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
 - **Long-term memory**: candidate-gated және budgeted structured extraction арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, delayed conservative proactive reply gating, жауап ұзындығын басқару, `/agent why` source summary.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, delayed conservative proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this`, `/agent wrong` / `/memory wrong` feedback related vector cleanup-пен, owner-only group cleanup.
 - **Bot output boundary**: кәдімгі bot жауаптары тек short-term `AGENT_REPLY#...` thread metadata ретінде сақталады, semantic memory-ге embed жасалмайды. Durable bot-authored memory үшін future explicit `BOT_COMMITMENT#...` немесе `BOT_CORRECTION#...` flow қажет.
 
 RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
+
+### Chat style settings
+
+Әр чаттың `SETTINGS` жазбасында agent жауаптарына арналған `style_profile` map бола алады: `tone`, `max_default_sentences`, `max_proactive_sentences`, `allow_light_humor`, және `low_confidence_behavior`. Default мәндер жауапты қысқа ұстайды; weak memory қолданылса, bot нақты факт сияқты сөйлемей, "қате есте сақтаған болуым мүмкін" сияқты uncertainty көрсетуі керек.
 
 ---
 

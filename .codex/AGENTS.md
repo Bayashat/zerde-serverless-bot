@@ -94,7 +94,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/memory_retrieval.py` — Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and source tracking.
 - `services/memory_extractor.py` — structured long-term memory schema, Gemini extraction normalisation, rule fallback, and storage guards.
 - `services/group_memory_processor.py` — async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
-- `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer-length policy.
+- `services/group_agent.py` — agent trigger policy, proactive gating, reply-thread continuity, answer length/style policy.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
 - `services/ai/gemini_client.py` — Gemini calls for agent answers, proactive decisions, summaries, embeddings.
@@ -104,7 +104,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 
 Single table partitioned by `pk=CHAT#<chat_id>`:
 
-- `SETTINGS` — memory/agent flags.
+- `SETTINGS` — memory/agent flags and optional chat `style_profile`.
 - `MSG#<created_at_ms>#<message_id>` — recent non-command group messages, with reply-to ids, sender metadata, bot/self-bot flags, and simple thread root metadata when available.
 - `USER#<user_id>` — profile from the user's own messages only.
 - `USERNAME#<lower_username>` — per-chat username alias pointing to `USER#<user_id>` for direct target-profile lookup.
@@ -161,6 +161,7 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`. Bot Lambda can query, get index metadata, and delete vectors for cleanup; `PutVectors` and `ListVectors` stay scoped to the vector-indexer Lambda.
 - **Reply-thread control**: follow-up replies should stay short and should only continue when the user replies to Zerde's own bot message with a clear question or request; reactions, thanks, laughter, and short comments stay silent. Replies to other bots are not Zerde reply threads unless the user explicitly mentions Zerde.
+- **Reply style control**: per-chat `style_profile` settings tune tone, default/proactive sentence caps, light humor, and low-confidence memory behavior. Defaults must keep answers concise and tell the model to express uncertainty around weak selected memory.
 - **Proactive prefiltering**: suppress bot-behavior meta chatter and stop cues, but do not treat generic technical/product mentions of "bot"/"бот" as bot-meta. Score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese, and log structured local prefilter skips for open-question candidates. Queue passing candidates with `AGENT_PROACTIVE_DELAY_SECONDS`, then re-read post-trigger context and stay silent if humans already answered sufficiently.
 - **Gemini empty responses**: HTTP 200 responses without candidate text are non-retryable for interactive `/ask`; log safe response-shape fields such as block reason, finish reason, and candidate counts, then notify the user without requeueing.
 - **Structured logging**: use `zerde_common` and avoid logging full prompts, model responses, API keys, Telegram files, or user secrets.

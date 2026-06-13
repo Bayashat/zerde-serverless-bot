@@ -173,6 +173,18 @@ class MemoryCandidate:
             data["memory_kind"] = self.memory_kind
         if self.created_at is not None:
             data["created_at"] = self.created_at
+        confidence = self.metadata.get("confidence")
+        if confidence is not None:
+            try:
+                data["confidence"] = round(max(0.0, min(1.0, float(confidence))), 4)
+            except (TypeError, ValueError):
+                pass
+        distance = self.metadata.get("distance")
+        if distance is not None:
+            try:
+                data["distance"] = round(max(0.0, float(distance)), 4)
+            except (TypeError, ValueError):
+                pass
         return data
 
 
@@ -288,7 +300,11 @@ def _semantic_candidate(row: dict[str, Any]) -> MemoryCandidate | None:
         score=similarity_score,
         trust_level=60,
         created_at=created_at_int,
-        metadata={**metadata, "distance": distance},
+        metadata={
+            **metadata,
+            "confidence": metadata.get("confidence", metadata.get("importance_score")),
+            "distance": distance,
+        },
     )
 
 
