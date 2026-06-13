@@ -70,8 +70,10 @@ flowchart LR
 4. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
 5. Irrelevant group chatter exits early.
 6. Relevant events route to the group agent or the command dispatcher.
-7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded.
+7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
 8. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+
+ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including proactive candidates, daily summaries, memory extraction, and vector indexing.
 
 ## SQS Tasks
 
@@ -81,7 +83,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 |-----------|-------|---------|
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
-| `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata. |
+| `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata and optional metadata-only `media_ref`. Media bytes are downloaded only in this worker. |
 | `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
@@ -111,7 +113,7 @@ The table is single-table by chat partition:
 | `sk=JOKE#...` | Possible recurring joke or meme. Stored only from high-confidence Gemini extraction or repeated evidence because jokes are easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
 | `sk=TERM#<term>#<created_at_ms>#<source_sk>` | Lightweight exact-term lexical index row pointing back to a long-term memory or daily summary source item. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata, including deletion policy, for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`. These rows are not long-term semantic memory. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, optional compact media metadata/summary, parent bot message id, requester metadata, and compact retrieval source metadata, including deletion policy, for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`. These rows are not long-term semantic memory. |
 | `sk=BOT_COMMITMENT#...` | Reserved durable bot-authored commitment key family for a future explicit command/admin flow. Normal answer generation must not write this. |
 | `sk=BOT_CORRECTION#...` | Reserved durable bot-authored correction key family for a future explicit user/admin correction flow. Normal answer generation must not write this. |
 | `sk=VECTOR_BACKFILL` | Cumulative vector backfill status for a chat. Tracks `processed_total`, `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and continuation tokens. Legacy `vector_backfill_*` attributes are still written for compatibility. |
@@ -146,7 +148,9 @@ The local reranker treats requester profiles as highest trust for self-reference
 
 `/agent why` reads the latest or replied `AGENT_REPLY#...` item and shows trigger, reason, confidence, and only memory source types/counts such as requester profile, semantic memory, lexical memory, long-term group memory, and recent context. It intentionally does not print full memory text. Retrieval source metadata also records a deletion policy: only durable long-term source keys such as `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, and allowed `DAILY_SUMMARY#...` items are deletable through a replied bot answer. Profile sources such as `USER#...`, raw `MSG#...`, and recent context are not bot-answer deletable sources.
 
-`AGENT_REPLY#...` is deliberately short-term reply-thread continuity, not a durable claim that the bot should learn from itself. Normal answers are not sent through long-term memory extraction, are not listed by vector backfill, and are rejected by vector indexing if a bad task references them. If the bot later needs to remember its own explicit commitment or a user/admin correction, that should use a deliberate `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` write path rather than reusing ordinary answer metadata.
+Explicit multimodal `/ask` adds media as another current input to the same RAG answer path. The retrieval query is built from the user's question plus compact safe media metadata such as caption, file name, and source speaker; raw binary content, OCR output, and transcripts are not used for semantic retrieval or vector indexing. Supported first-version media includes Telegram photos, image documents, voice/audio, PDFs, and text/code/log files under the configured limits. Binary media is sent to Gemini as inline data when it is below `MULTIMODAL_INLINE_MAX_BYTES`; text/code/log files are decoded as bounded UTF-8 text up to `MULTIMODAL_TEXT_FILE_MAX_CHARS`.
+
+`AGENT_REPLY#...` is deliberately short-term reply-thread continuity, not a durable claim that the bot should learn from itself. Normal answers are not sent through long-term memory extraction, are not listed by vector backfill, and are rejected by vector indexing if a bad task references them. Multimodal answers may store only compact media metadata and an answer-derived media summary in `AGENT_REPLY#...` so a follow-up like "what should I do next?" can continue the thread. They do not store raw media bytes, downloaded files, full transcripts/OCR, or media-derived long-term facts. If the bot later needs to remember its own explicit commitment, a user/admin correction, or durable media-derived memory, that should use a deliberate explicit command/admin flow such as `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` rather than reusing ordinary answer metadata.
 
 `/agent wrong` and `/memory wrong` can be used as a reply to a bot answer to mark its recorded memory sources as wrong. This increments negative feedback metadata on the source items and lowers their future retrieval priority; it does not delete memory immediately.
 

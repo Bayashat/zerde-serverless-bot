@@ -284,6 +284,8 @@ class GeminiClient:
         reply_instructions: str = "",
         max_output_tokens: int = 320,
         lang: str = "kk",
+        media_parts: list[dict[str, Any]] | None = None,
+        media_context: str = "",
     ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
         if _circuit_is_open():
@@ -295,6 +297,18 @@ class GeminiClient:
             logger.warning("Gemini RPD limit reached (group agent)", extra={"count": count, "limit": self.rpd_limit})
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
+        media_instructions = (
+            "When attached media is provided, it is present only because the user explicitly asked about it. "
+            "Analyze the media only for the current answer. Do not claim that media has been stored as memory. "
+            "Do not infer private facts beyond what is visible, audible, or present in the attached file. "
+            "If OCR, transcription, visual details, or file content are unclear, say that briefly. "
+            "For screenshots, logs, and errors, focus on visible evidence and next debugging steps. "
+            "For architecture diagrams, explain components, data flow, risks, and likely improvements. "
+            "For voice or audio, transcribe, summarize, or explain according to the user's request. "
+            "For files, summarize or explain the content according to the user's question. "
+            if media_parts or media_context
+            else ""
+        )
         system_prompt = (
             "You are ZerdeBot, a Telegram group chat member for an IT community. "
             "Answer like a helpful, socially aware participant, not a corporate assistant. "
@@ -318,6 +332,7 @@ class GeminiClient:
             "requester because it is derived from that requester's own messages. "
             "Semantic long-term memory retrieval is query-matched historical context; use it when relevant, "
             "but do not let it override the trusted requester or target-user profile or clear recent evidence. "
+            f"{media_instructions}"
             "Decide the answer style from the user's wording and the replied-to context: "
             "for IT terms or technical concepts, give a clear technical explanation; "
             "for questions about a replied-to group message, explain the message in context; "
@@ -340,6 +355,12 @@ class GeminiClient:
         if thinking_config is not None:
             generation_config["thinkingConfig"] = thinking_config
 
+        media_prompt_section = (
+            "Explicitly attached media metadata:\n"
+            f"{media_context or '(attached media provided without extra metadata)'}\n\n"
+            if media_parts or media_context
+            else ""
+        )
         prompt = (
             f"Preferred language code: {lang}\n\n"
             "Trusted current requester profile context:\n"
@@ -354,15 +375,19 @@ class GeminiClient:
             "Each context line includes speaker metadata. Use it to distinguish a person's own messages "
             "from another user's opinion about them.\n"
             f"{recent_context or '(no recent context available)'}\n\n"
+            f"{media_prompt_section}"
             "Response length and style instructions:\n"
             f"{reply_instructions or 'Answer in 2-5 concise sentences unless the user asks for more detail.'}\n\n"
             "Current message directed at you:\n"
             f"{user_message}\n\n"
             "Reply to the current message."
         )
+        content_parts: list[dict[str, Any]] = [{"text": prompt}]
+        if media_parts:
+            content_parts.extend(media_parts)
         payload: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "contents": [{"role": "user", "parts": content_parts}],
             "generationConfig": generation_config,
         }
 
@@ -380,6 +405,8 @@ class GeminiClient:
                 "semantic_memory_chars": len(semantic_memory_context),
                 "profile_context_chars": len(user_profile_context),
                 "requester_profile_context_chars": len(requester_profile_context),
+                "media_context_chars": len(media_context),
+                "media_part_count": len(media_parts or []),
                 "message_chars": len(user_message),
                 "rpd_count": count,
                 "rpd_limit": self.rpd_limit,

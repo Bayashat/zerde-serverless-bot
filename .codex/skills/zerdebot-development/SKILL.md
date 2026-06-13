@@ -58,6 +58,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
+- Keep explicit multimodal `/ask` media ephemeral. Only explicit `/ask` or explicit mention/reply paths may analyze media; normal group media, proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. SQS carries metadata-only `media_ref`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
 - Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
@@ -116,6 +117,7 @@ DynamoDB memory key families:
 - `DAILY_SUMMARY#...`
 - `TERM#...`
 - `AGENT_REPLY#...`
+  - Optional compact media metadata/summary for explicit multimodal `/ask` continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
 - `BOT_COMMITMENT#...`
 - `BOT_CORRECTION#...`
 - `VECTOR_BACKFILL` with cumulative `processed_total`, `enqueued_total`, `failures_total`,

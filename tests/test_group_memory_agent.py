@@ -19,6 +19,7 @@ from services.memory_extractor import classify_long_term_memory_rule_based
 from services.repositories import sqs as sqs_module
 from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
 from services.repositories.sqs import SQSClient
+from services.telegram_media import PreparedMedia
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -67,6 +68,27 @@ def test_observe_update_enqueues_reply_and_mention_hints(monkeypatch):
     kwargs = sqs.send_group_memory_task.call_args.kwargs
     assert kwargs["is_reply"] is True
     assert kwargs["has_mention"] is True
+
+
+def test_observe_update_ignores_normal_media_without_text(monkeypatch):
+    repo = MagicMock()
+    sqs = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+    update = {
+        "message": {
+            "message_id": 11,
+            "date": 1_700_000_000,
+            "photo": [{"file_id": "photo-id", "file_size": 100}],
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 42, "first_name": "Ada", "username": "ada", "is_bot": False},
+        }
+    }
+
+    group_memory.observe_update(repo, update, sqs_repo=sqs)
+
+    repo.store_message.assert_not_called()
+    sqs.send_group_memory_task.assert_not_called()
 
 
 def test_observe_update_stores_reply_metadata(monkeypatch):
@@ -1389,7 +1411,9 @@ def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
 
 def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     fake_client = MagicMock()
+    logger = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    monkeypatch.setattr(sqs_module, "logger", logger)
     sqs = SQSClient.__new__(SQSClient)
     sqs.queue_url = "queue-url"
 
@@ -1403,6 +1427,7 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
         current_user_message="why?",
         source_message_context="Original replied-to message:\n[speaker user_id=7] Python is slow?",
         parent_bot_message_id=555,
+        media_ref={"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u-photo"},
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
@@ -1410,6 +1435,14 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     assert payload["current_user_message"] == "why?"
     assert "Python is slow" in payload["source_message_context"]
     assert payload["parent_bot_message_id"] == 555
+    assert payload["media_ref"] == {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u-photo"}
+    assert "bytes" not in fake_client.send_message.call_args.kwargs["MessageBody"].lower()
+    assert "inline_data" not in fake_client.send_message.call_args.kwargs["MessageBody"]
+    queued_log = logger.info.call_args.kwargs["extra"]
+    assert queued_log["has_media"] is True
+    assert queued_log["media_type"] == "photo"
+    assert queued_log["file_unique_id"] == "u-photo"
+    assert "file_id" not in queued_log
 
 
 def test_sqs_client_sends_vector_memory_task(monkeypatch):
@@ -1469,6 +1502,24 @@ def test_agent_should_answer_mention_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
     assert group_agent.should_answer(_group_update("hey @ZerdeBot what did we decide?")) is True
+
+
+def test_agent_proactive_path_does_not_download_media(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    sqs = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    update = _group_update("does anyone know why Lambda timed out?")
+    update["message"]["photo"] = [{"file_id": "photo-id", "file_size": 100}]
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    sqs.send_proactive_candidate_task.assert_called_once()
+    bot.get_file.assert_not_called()
+    bot.download_file.assert_not_called()
 
 
 def test_agent_off_does_not_answer_mentions(monkeypatch):
@@ -2097,6 +2148,14 @@ def test_record_agent_reply_persists_thread_metadata():
                 "trust_level": 100,
             },
         ],
+        media_metadata={
+            "media_type": "photo",
+            "file_id": "do-not-store-downloadable-id",
+            "file_unique_id": "safe-unique-id",
+            "mime_type": "image/jpeg",
+            "media_summary": "photo: screenshot shows a Lambda timeout",
+            "media_analysis_available": True,
+        },
     )
 
     item = repo.table.put_item.call_args.kwargs["Item"]
@@ -2112,6 +2171,11 @@ def test_record_agent_reply_persists_thread_metadata():
     assert str(item["retrieval_sources"][0]["score"]) == "0.82"
     assert item["retrieval_sources"][1]["source"] == "requester_profile"
     assert item["retrieval_sources"][1]["deletion_policy"] == "profile"
+    assert item["media_metadata"]["media_type"] == "photo"
+    assert item["media_metadata"]["file_unique_id"] == "safe-unique-id"
+    assert item["media_metadata"]["media_summary"] == "photo: screenshot shows a Lambda timeout"
+    assert "file_id" not in item["media_metadata"]
+    assert item["media_summary"] == "photo: screenshot shows a Lambda timeout"
 
 
 def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(monkeypatch):
@@ -2270,6 +2334,76 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
     assert "own_topic_terms: opensearch, python" in user_prompt
     assert "distinguish a person's own messages from another user's opinion" in user_prompt
     assert "username=@bayashat" in user_prompt
+
+
+def test_group_chat_reply_text_only_keeps_single_text_part(monkeypatch):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "plain answer"}]}}]}).encode("utf-8"),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(gemini_client, "_http", fake_http)
+    monkeypatch.setattr(gemini_client, "_circuit_open_until", 0.0)
+
+    client = GeminiClient.__new__(GeminiClient)
+    client._api_key = "test-key"
+    client._model = "test-gemini-model"
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+
+    client.group_chat_reply(user_message="/ask hello", recent_context="", lang="en")
+
+    payload = json.loads(fake_http.body)
+    parts = payload["contents"][0]["parts"]
+    assert len(parts) == 1
+    assert "Explicitly attached media metadata" not in parts[0]["text"]
+    assert "attached media is provided" not in payload["systemInstruction"]["parts"][0]["text"]
+
+
+def test_group_chat_reply_multimodal_includes_inline_data_part(monkeypatch, caplog):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "image answer"}]}}]}).encode("utf-8"),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(gemini_client, "_http", fake_http)
+    monkeypatch.setattr(gemini_client, "_circuit_open_until", 0.0)
+
+    client = GeminiClient.__new__(GeminiClient)
+    client._api_key = "test-key"
+    client._model = "test-gemini-model"
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+
+    client.group_chat_reply(
+        user_message="/ask what is wrong?",
+        recent_context="",
+        lang="en",
+        media_context="Explicit media context:\n- media_type: photo",
+        media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "dGVzdA=="}}],
+    )
+
+    payload = json.loads(fake_http.body)
+    parts = payload["contents"][0]["parts"]
+    assert len(parts) == 2
+    assert "Explicitly attached media metadata" in parts[0]["text"]
+    assert parts[1]["inline_data"] == {"mime_type": "image/jpeg", "data": "dGVzdA=="}
+    assert "attached media is provided" in payload["systemInstruction"]["parts"][0]["text"]
+    assert "dGVzdA==" not in caplog.text
 
 
 def test_group_memory_extraction_prompt_returns_structured_json(monkeypatch):
@@ -2440,6 +2574,80 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert any(source["source"] == "semantic" for source in retrieval_sources)
     assert any(source["source"] == "target_profile" for source in retrieval_sources)
     assert any(source["source"] == "requester_profile" for source in retrieval_sources)
+
+
+def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("The screenshot shows a Lambda timeout in CloudWatch logs.", 1)
+    memory_context = MagicMock(wraps=group_agent.build_agent_memory_context)
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "build_agent_memory_context", memory_context)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: Lambda failed yesterday")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="what is wrong in this screenshot?",
+        retrieval_query="what is wrong in this screenshot?",
+        lang="en",
+        requester_user_id=42,
+        media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
+        media_context="Explicit media context:\n- media_type: photo",
+        media_metadata={"media_type": "photo", "file_unique_id": "u-photo", "media_analysis_available": True},
+    )
+
+    assert handled is True
+    memory_context.assert_called_once()
+    assert gemini.group_chat_reply.call_args.kwargs["media_parts"] == [
+        {"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}
+    ]
+    assert "media_type: photo" in gemini.group_chat_reply.call_args.kwargs["media_context"]
+    media_metadata = repo.record_agent_reply.call_args.kwargs["media_metadata"]
+    assert media_metadata["media_type"] == "photo"
+    assert media_metadata["file_unique_id"] == "u-photo"
+    assert "Lambda timeout" in media_metadata["media_summary"]
+
+
+def test_followup_to_bot_answer_includes_previous_media_summary():
+    repo = MagicMock()
+    repo.get_agent_reply_explanation.return_value = {
+        "current_user_message": "what is wrong in this screenshot?",
+        "answer_text": "The screenshot shows a Lambda timeout.",
+        "media_metadata": {
+            "media_type": "photo",
+            "file_unique_id": "u-photo",
+            "media_summary": "photo: screenshot shows Lambda timeout in CloudWatch",
+        },
+    }
+    message = {
+        "message_id": 101,
+        "text": "what should I do next?",
+        "reply_to_message": {
+            "message_id": 1000,
+            "text": "The screenshot shows a Lambda timeout.",
+            "from": {"id": 123, "is_bot": True, "username": "zerde_kz_bot"},
+        },
+    }
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 123)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
+    try:
+        context = group_agent.build_explicit_question_context(repo, -100123, message)
+    finally:
+        monkeypatch.undo()
+
+    assert "Previous explicit media context" in context.user_text
+    assert "Lambda timeout in CloudWatch" in context.user_text
+    assert "Previous media summary" in context.retrieval_query
 
 
 def test_answer_group_question_blocks_subjective_ranking_without_gemini(monkeypatch):
@@ -2776,6 +2984,7 @@ def test_handle_ask_enqueues_group_context_answer():
         current_user_message="what happened yesterday?",
         source_message_context="",
         parent_bot_message_id=None,
+        media_ref=None,
     )
     ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
@@ -2869,6 +3078,125 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     ctx.reply.assert_not_called()
 
 
+def test_handle_ask_reply_to_photo_enqueues_media_ref_without_bytes(monkeypatch):
+    ctx = MagicMock()
+    logger = MagicMock()
+    monkeypatch.setattr(commands, "logger", logger)
+    ctx.text = "/ask what is wrong in this screenshot?"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "photo": [
+            {"file_id": "small", "file_unique_id": "u-small", "file_size": 100},
+            {"file_id": "large", "file_unique_id": "u-large", "file_size": 200},
+        ],
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
+    }
+    ctx.message = {
+        "message_id": 99,
+        "text": "/ask what is wrong in this screenshot?",
+        "reply_to_message": ctx.reply_to_message,
+    }
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+
+    handle_ask(ctx)
+
+    kwargs = ctx.sqs_repo.send_group_ask_task.call_args.kwargs
+    assert kwargs["media_ref"]["media_type"] == "photo"
+    assert kwargs["media_ref"]["file_id"] == "large"
+    assert kwargs["media_ref"]["file_unique_id"] == "u-large"
+    assert kwargs["media_ref"]["source_message_id"] == 8
+    assert "bytes" not in json.dumps(kwargs["media_ref"]).lower()
+    assert "inline_data" not in json.dumps(kwargs["media_ref"]).lower()
+    assert "data" not in kwargs["media_ref"]
+    ctx.bot.get_file.assert_not_called()
+    ctx.bot.download_file.assert_not_called()
+    ctx.reply.assert_not_called()
+    detected_log = logger.info.call_args.kwargs["extra"]
+    assert detected_log["media_source"] == "reply_to_message"
+    assert detected_log["media_type"] == "photo"
+    assert detected_log["file_unique_id"] == "u-large"
+    assert detected_log["file_size"] == 200
+    assert "file_id" not in detected_log
+
+
+def test_handle_ask_reply_to_voice_enqueues_media_ref():
+    ctx = MagicMock()
+    ctx.text = "/ask summarize this voice"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "voice": {"file_id": "voice-id", "file_unique_id": "voice-u", "mime_type": "audio/ogg", "file_size": 1234},
+    }
+    ctx.message = {"message_id": 99, "text": "/ask summarize this voice", "reply_to_message": ctx.reply_to_message}
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+
+    handle_ask(ctx)
+
+    media_ref = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["media_ref"]
+    assert media_ref["media_type"] == "voice"
+    assert media_ref["mime_type"] == "audio/ogg"
+
+
+def test_handle_ask_without_text_with_media_uses_default_prompt():
+    ctx = MagicMock()
+    ctx.text = "/ask"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "photo": [{"file_id": "photo-id", "file_unique_id": "photo-u", "file_size": 100}],
+    }
+    ctx.message = {"message_id": 99, "text": "/ask", "reply_to_message": ctx.reply_to_message}
+    ctx.user_id = 42
+    ctx.username = "ada"
+    ctx.user_data = {"id": 42, "first_name": "Ada", "username": "ada"}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+
+    handle_ask(ctx)
+
+    kwargs = ctx.sqs_repo.send_group_ask_task.call_args.kwargs
+    assert "Explain what is shown in this image" in kwargs["user_text"]
+    assert "Explain what is shown in this image" in kwargs["retrieval_query"]
+    assert kwargs["current_user_message"].startswith("Explain what is shown in this image")
+    assert kwargs["media_ref"]["media_type"] == "photo"
+    ctx.reply.assert_not_called()
+
+
+def test_handle_ask_reply_to_unsupported_media_replies_without_enqueue():
+    ctx = MagicMock()
+    ctx.text = "/ask summarize this"
+    ctx.update_id = 12345
+    ctx.chat_id = -100123
+    ctx.message_id = 99
+    ctx.lang_code = "en"
+    ctx.reply_to_message = {
+        "message_id": 8,
+        "document": {"file_id": "zip-id", "file_name": "logs.zip", "mime_type": "application/zip"},
+    }
+    ctx.message = {"message_id": 99, "text": "/ask summarize this", "reply_to_message": ctx.reply_to_message}
+    ctx.memory_repo.is_memory_enabled.return_value = True
+
+    handle_ask(ctx)
+
+    ctx.sqs_repo.send_group_ask_task.assert_not_called()
+    assert "not this media type" in ctx.reply.call_args.args[0]
+
+
 def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
@@ -2896,6 +3224,75 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
     assert answer.call_args.kwargs["retrieval_query"] == "why? Previous user request: explain Python"
     assert "What is Python" in answer.call_args.kwargs["source_message_context"]
     assert answer.call_args.kwargs["parent_bot_message_id"] == 555
+
+
+def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    logger = MagicMock()
+    prepare = MagicMock(
+        return_value=PreparedMedia(
+            media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
+            media_context="Explicit media context:\n- media_type: photo",
+            agent_reply_metadata={"media_type": "photo", "file_unique_id": "u1", "media_analysis_available": True},
+            downloaded_bytes=4,
+            content_mode="inline_data",
+        )
+    )
+    monkeypatch.setattr(commands, "answer_group_question", answer)
+    monkeypatch.setattr(commands, "prepare_media_for_gemini", prepare)
+    monkeypatch.setattr(commands, "logger", logger)
+
+    commands.process_group_ask_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "reply_to_message_id": 99,
+            "user_text": "what is this?",
+            "retrieval_query": "what is this?",
+            "lang": "en",
+            "media_ref": {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u1"},
+        },
+    )
+
+    prepare.assert_called_once_with(bot, {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u1"})
+    assert answer.call_args.kwargs["media_parts"] == [{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}]
+    assert "media_type: photo" in answer.call_args.kwargs["media_context"]
+    assert answer.call_args.kwargs["media_metadata"]["file_unique_id"] == "u1"
+    prepared_log = logger.info.call_args.kwargs["extra"]
+    assert prepared_log["media_type"] == "photo"
+    assert prepared_log["file_unique_id"] == "u1"
+    assert prepared_log["downloaded_bytes"] == 4
+    assert prepared_log["content_mode"] == "inline_data"
+    assert prepared_log["media_part_count"] == 1
+    assert prepared_log["media_context_chars"] == len("Explicit media context:\n- media_type: photo")
+    assert "file_id" not in prepared_log
+    assert "AAAA" not in json.dumps(prepared_log)
+
+
+def test_process_group_ask_task_reports_media_too_large(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    monkeypatch.setattr(commands, "prepare_media_for_gemini", MagicMock(side_effect=commands.MediaTooLargeError()))
+    answer = MagicMock()
+    monkeypatch.setattr(commands, "answer_group_question", answer)
+
+    commands.process_group_ask_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "reply_to_message_id": 99,
+            "user_text": "summarize this",
+            "lang": "en",
+            "media_ref": {"media_type": "pdf", "file_id": "pdf-id"},
+        },
+    )
+
+    answer.assert_not_called()
+    assert "too large" in bot.send_message.call_args.args[1]
 
 
 def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:

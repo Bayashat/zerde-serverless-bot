@@ -6,6 +6,7 @@ import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.group_memory import GroupMemoryRepository
+from services.telegram_media import media_reference_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -83,6 +84,7 @@ class SQSClient:
         current_user_message: str | None = None,
         source_message_context: str | None = None,
         parent_bot_message_id: int | str | None = None,
+        media_ref: dict[str, object] | None = None,
     ) -> None:
         """Enqueue an explicit /ask request for async group-agent answering."""
         payload: dict[str, object] = {
@@ -107,6 +109,8 @@ class SQSClient:
             payload["source_message_context"] = source_message_context
         if parent_bot_message_id is not None:
             payload["parent_bot_message_id"] = parent_bot_message_id
+        if media_ref:
+            payload["media_ref"] = media_ref
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
@@ -118,6 +122,8 @@ class SQSClient:
                     "update_id": update_id,
                     "chat_id": chat_id,
                     "reply_to_message_id": reply_to_message_id,
+                    "has_media": bool(media_ref),
+                    **(media_reference_log_extra(media_ref) if media_ref else {}),
                 },
             )
         except Exception as e:

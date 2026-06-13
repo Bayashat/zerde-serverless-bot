@@ -1630,6 +1630,40 @@ class GroupMemoryRepository:
             normalised.append(entry)
         return normalised
 
+    @staticmethod
+    def _normalise_agent_reply_media_metadata(metadata: dict[str, Any] | None) -> dict[str, Any]:
+        if not isinstance(metadata, dict):
+            return {}
+        allowed_string_limits = {
+            "media_type": 40,
+            "mime_type": 120,
+            "file_unique_id": 160,
+            "file_name": 180,
+            "caption": 500,
+            "source_username": 160,
+            "source_display_name": 160,
+            "media_summary": 900,
+        }
+        item: dict[str, Any] = {}
+        for key, limit in allowed_string_limits.items():
+            value = metadata.get(key)
+            if value not in (None, ""):
+                item[key] = str(value)[:limit]
+        for key in ("file_size", "source_message_id"):
+            value = metadata.get(key)
+            if value is None:
+                continue
+            try:
+                item[key] = int(value)
+            except (TypeError, ValueError):
+                pass
+        source_user_id = metadata.get("source_user_id")
+        if source_user_id not in (None, ""):
+            item["source_user_id"] = str(source_user_id)[:80]
+        if metadata.get("media_analysis_available") is not None:
+            item["media_analysis_available"] = bool(metadata.get("media_analysis_available"))
+        return item
+
     def record_agent_reply(
         self,
         *,
@@ -1648,6 +1682,7 @@ class GroupMemoryRepository:
         requester_username: str | None = None,
         requester_display_name: str | None = None,
         retrieval_sources: list[dict[str, Any]] | None = None,
+        media_metadata: dict[str, Any] | None = None,
     ) -> None:
         now = int(time.time())
         ttl = self._ttl_from_days(now, GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS)
@@ -1685,6 +1720,11 @@ class GroupMemoryRepository:
         normalised_sources = self._normalise_retrieval_sources(retrieval_sources)
         if normalised_sources:
             item["retrieval_sources"] = normalised_sources
+        normalised_media = self._normalise_agent_reply_media_metadata(media_metadata)
+        if normalised_media:
+            item["media_metadata"] = normalised_media
+            if normalised_media.get("media_summary"):
+                item["media_summary"] = normalised_media["media_summary"]
         self.table.put_item(Item=item)
 
     def get_agent_reply_explanation(
