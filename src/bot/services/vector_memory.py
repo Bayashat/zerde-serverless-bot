@@ -20,6 +20,7 @@ from core.config import (
     VECTOR_MEMORY_INDEX_THROTTLE_SECONDS,
     VECTOR_MEMORY_MAX_DISTANCE,
     VECTOR_MEMORY_PROVIDER,
+    VECTOR_MEMORY_SCHEMA_VERSION,
     get_gemini_embedding_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
@@ -188,10 +189,32 @@ def memory_vector_key(chat_id: int | str, source_sk: str) -> str:
     return f"memory/{digest}"
 
 
+def embedding_document_hash(document: str) -> str:
+    """Return a stable hash for the exact rendered document sent for embedding."""
+    return hashlib.sha256((document or "").encode("utf-8")).hexdigest()
+
+
 def _plain(value: Any) -> Any:
     if isinstance(value, Decimal):
         return float(value)
     return value
+
+
+def _int_or_none(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_current_indexed_item(item: dict[str, Any], *, document_hash: str) -> bool:
+    return (
+        str(item.get("vector_status") or "") == "indexed"
+        and str(item.get("vector_document_hash") or "") == document_hash
+        and str(item.get("vector_embedding_model") or "") == VECTOR_MEMORY_EMBEDDING_MODEL
+        and _int_or_none(item.get("vector_dimensions")) == VECTOR_MEMORY_DIMENSIONS
+        and str(item.get("vector_schema_version") or "") == VECTOR_MEMORY_SCHEMA_VERSION
+    )
 
 
 def _safe_text(value: Any, *, limit: int) -> str:
@@ -328,7 +351,26 @@ def index_memory_item(
         return False
 
     text = build_embedding_document(item)
+    document_hash = embedding_document_hash(text)
     vector_key = str(item.get("vector_key") or memory_vector_key(chat_id, source_sk))
+    if _is_current_indexed_item(item, document_hash=document_hash):
+        logger.info(
+            "Vector memory indexing skipped",
+            extra={
+                "chat_id": chat_id,
+                "sk": source_sk,
+                "reason": "already_indexed_current",
+                "vector_key": vector_key,
+                "memory_kind": str(item.get("kind") or ""),
+                "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
+                "dimensions": VECTOR_MEMORY_DIMENSIONS,
+                "schema_version": VECTOR_MEMORY_SCHEMA_VERSION,
+                "document_hash": document_hash,
+                "text_chars": len(text),
+            },
+        )
+        return False
+
     skip_reason = ""
     if not text:
         skip_reason = "empty_document"
@@ -398,6 +440,8 @@ def index_memory_item(
             vector_key=vector_key,
             embedding_model=VECTOR_MEMORY_EMBEDDING_MODEL,
             dimensions=VECTOR_MEMORY_DIMENSIONS,
+            document_hash=document_hash,
+            schema_version=VECTOR_MEMORY_SCHEMA_VERSION,
         )
         logger.info(
             "Vector memory indexed",
@@ -408,6 +452,8 @@ def index_memory_item(
                 "memory_kind": str(item.get("kind") or ""),
                 "embedding_model": VECTOR_MEMORY_EMBEDDING_MODEL,
                 "dimensions": VECTOR_MEMORY_DIMENSIONS,
+                "schema_version": VECTOR_MEMORY_SCHEMA_VERSION,
+                "document_hash": document_hash,
             },
         )
         return True

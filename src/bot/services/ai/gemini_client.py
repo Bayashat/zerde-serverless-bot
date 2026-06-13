@@ -420,6 +420,8 @@ class GeminiClient:
         recent_context: str,
         long_term_memory_context: str = "",
         lang: str = "kk",
+        reply_instructions: str = "",
+        max_output_tokens: int = 300,
     ) -> tuple[GroupAgentDecision, int]:
         """Decide whether to proactively join a group chat, optionally returning the reply.
 
@@ -445,14 +447,15 @@ class GeminiClient:
             "clear value and will not interrupt human conversation. Stay silent for rhetorical questions, jokes, "
             "complaints about the bot, commands to stop, short follow-ups, private interpersonal moments, "
             "unclear context, or cases where humans are already answering. "
-            "If speaking, write one concise natural reply in the group's language. "
+            "If speaking, write one concise natural reply in the group's language and follow the reply style "
+            "instructions in the prompt. "
             "Never claim private knowledge or personality facts that are not in context. "
             "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
             "reply_text (string, empty when silent)."
         )
         generation_config: dict[str, Any] = {
             "temperature": 0.2,
-            "maxOutputTokens": 300,
+            "maxOutputTokens": max(80, min(300, int(max_output_tokens))),
             "responseMimeType": "application/json",
         }
         thinking_config = _thinking_config_for_model(self._model)
@@ -467,6 +470,8 @@ class GeminiClient:
             f"{recent_context or '(no recent context available)'}\n\n"
             "Current message:\n"
             f"{user_message}\n\n"
+            "Reply style instructions:\n"
+            f"{reply_instructions or 'Write one concise natural reply if speaking.'}\n\n"
             "Should ZerdeBot proactively speak now?"
         )
         payload: dict[str, Any] = {

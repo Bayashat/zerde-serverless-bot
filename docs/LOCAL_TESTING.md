@@ -119,6 +119,12 @@ VECTOR_MEMORY_DLQ_RETENTION_DAYS=14
 
 # Optional — group memory / agent
 GROUP_MEMORY_ENABLED=true
+GROUP_MEMORY_RETENTION_DAYS=3650
+GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS=30
+GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS=7
+GROUP_MEMORY_LONG_TERM_RETENTION_DAYS=3650
+GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS=3650
+GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS=3
 GROUP_MEMORY_EXTRACTOR_PROVIDER=gemini
 GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only
 GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE=0.65
@@ -126,11 +132,14 @@ GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT=50
 GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT=20
 VECTOR_MEMORY_ENABLED=true
 VECTOR_MEMORY_PROVIDER=s3_vectors
+VECTOR_MEMORY_SCHEMA_VERSION=1
 VECTOR_MEMORY_MAX_DISTANCE=0.85
 GEMINI_EMBEDDING_RPD_LIMIT=1000
 AGENT_DAILY_PROACTIVE_LIMIT=3
+AGENT_PROACTIVE_DELAY_SECONDS=45
 AGENT_ENABLED=true
 AGENT_BOT_USERNAME=@your_bot_username
+AGENT_BOT_ID=
 AGENT_RECENT_CONTEXT_LIMIT=100
 ```
 
@@ -155,12 +164,14 @@ When prompted to approve IAM changes, type `y`.
 After a successful deploy, the terminal prints an **ApiEndpoint** URL (e.g. `https://xxxx.execute-api.eu-central-1.amazonaws.com/dev/`). Copy it.
 
 The deploy creates:
-- **Bot Lambda** — API Gateway webhook endpoint + SQS worker for captcha, spam, `/ask`, memory, and vector tasks
+- **Bot Lambda** — API Gateway webhook endpoint + main SQS worker for captcha, spam, `/ask`, group memory extraction, daily summaries, semantic retrieval, and vector cleanup/enqueue
+- **Vector-indexer Lambda** — vector-memory SQS worker for `PROCESS_VECTOR_MEMORY` and `PROCESS_VECTOR_MEMORY_BACKFILL`
 - **News Lambda** — EventBridge rules (only active in `prod` env)
 - **Quiz Lambda** — EventBridge rule at 08:00 UTC + DynamoDB quiz table (only active in `prod` env)
 - **DynamoDB** — stats table, group-memory table, and quiz table
-- **SQS** — timeout/tasks queue plus vector-memory queue, each with DLQ. Defaults retain main
-  tasks for 1 day, vector-memory tasks for 4 days, and DLQ messages for 14 days; tune with
+- **SQS** — timeout/tasks queue consumed by the Bot Lambda plus vector-memory queue consumed by
+  the Vector-indexer Lambda, each with DLQ. Defaults retain main tasks for 1 day, vector-memory
+  tasks for 4 days, and DLQ messages for 14 days; tune with
   `MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
   `VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS`.
 - **S3 Vectors** — vector bucket/index when `VECTOR_MEMORY_ENABLED=true` and provider is `s3_vectors`
@@ -206,7 +217,7 @@ curl -F "url=https://abc123.execute-api.eu-central-1.amazonaws.com/dev/webhook" 
 5. Reply to any message with `/voteban` to test the vote-to-ban flow.
 6. In a group, run `/memory status` to confirm memory and vector status.
 7. Run `/ask what is this chat discussing?` or reply to a message with `/ask` to test the group agent.
-8. Reply to the bot's answer with a follow-up question to test `AGENT_REPLY#...` thread continuity.
+8. Reply to the bot's answer with a follow-up question to test `AGENT_REPLY#...` thread continuity. This should create short-term reply metadata only, not a vector memory task.
 
 **To test the Quiz Lambda manually:**
 
@@ -220,6 +231,7 @@ In the AWS Console → Lambda → `zerde-serverless-quiz-dev` → Test, use this
 
 - AWS Console → **CloudWatch** → **Log groups**
 - `/aws/lambda/zerde-serverless-bot-dev` — Bot Lambda
+- `/aws/lambda/zerde-serverless-vector-indexer-dev` — Vector-indexer Lambda
 - `/aws/lambda/zerde-serverless-news-dev` — News Lambda
 - `/aws/lambda/zerde-serverless-quiz-dev` — Quiz Lambda
 

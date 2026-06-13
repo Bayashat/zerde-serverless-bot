@@ -299,6 +299,12 @@ def _enqueue_vector_memory_index(
     source_sk: str,
     sqs_repo: SQSClient | None = None,
 ) -> None:
+    if not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+        logger.info(
+            "Vector memory enqueue skipped",
+            extra={"chat_id": chat_id, "source_sk": source_sk, "reason": "non_vectorizable_sk"},
+        )
+        return
     if not vector_memory_configured():
         return
     try:

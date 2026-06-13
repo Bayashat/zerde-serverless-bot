@@ -53,6 +53,25 @@ def test_process_group_ask_routes() -> None:
     mock_pa.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
 
 
+def test_process_proactive_candidate_routes() -> None:
+    body = {
+        "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+        "chat_id": -1001,
+        "trigger_message_id": 3,
+        "trigger_user_id": 42,
+        "user_text": "does anyone know how k8s pricing works?",
+        "lang": "en",
+    }
+    memory_repo = MagicMock()
+    bot = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_proactive_candidate_task") as mock_pc,
+    ):
+        process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
+    mock_pc.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
+
+
 def test_spam_check_routes() -> None:
     body = {
         "task_type": "SPAM_CHECK",

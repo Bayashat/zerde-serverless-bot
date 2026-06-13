@@ -22,12 +22,17 @@ Zerde больше не просто отправляет последнее с�
 
 - **Recent memory**: не-command сообщения группы хранятся в DynamoDB как `MSG#...`.
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
-- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
-- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, delayed conservative proactive reply gating, контроль длины и style profile ответа, `/agent why` source summary.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` для durable source cleanup, `/agent wrong` / `/memory wrong` feedback с related vector cleanup, owner-only group cleanup.
+- **Bot output boundary**: обычные ответы бота хранятся только как short-term `AGENT_REPLY#...` thread metadata и не эмбеддятся в semantic memory. Durable bot-authored memory зарезервирована для future explicit `BOT_COMMITMENT#...` или `BOT_CORRECTION#...` flows.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
+
+### Chat style settings
+
+В `SETTINGS` каждой группы может быть `style_profile` для ответов agent-а: `tone`, `max_default_sentences`, `max_proactive_sentences`, `allow_light_humor` и `low_confidence_behavior`. Значения по умолчанию оставляют ответы короткими; если выбранная memory слабая, bot должен показывать неопределенность, например "могу помнить это неточно", а не говорить как о точном факте.
 
 ---
 
@@ -37,8 +42,8 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 |---------|----------|
 | Group-chat agent | Отвечает на `/ask`, @mentions и replies на сообщения бота с учетом requester/recent/profile/long-term/lexical/semantic memory. |
 | RAG memory | Group memory хранится в DynamoDB, long-term memory извлекается через structured Gemini schema + rule fallback, high-information memory индексируется в S3 Vectors для semantic retrieval, а exact-term DynamoDB fallback и local reranking улучшают точные запросы. |
-| Reply thread continuity | Ответы бота сохраняются как `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ. |
-| Social timing | Proactive replies проходят local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
+| Reply thread continuity | Ответы бота сохраняются как short-term `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ; эти записи не являются semantic/vector memory. |
+| Social timing | Proactive replies ждут короткий delay, затем проходят human-answer check, local heuristics, штраф за недавнюю активность бота, Gemini decision и daily limit. |
 | Captcha и anti-spam | Проверка новых участников, rule-based spam screening и Groq checks. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
 | Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |
@@ -52,18 +57,21 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 ```mermaid
 flowchart LR
   TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
-  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + main SQS worker"]
 
   BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
   BOT --> MEMORY[("DynamoDB<br/>group memory")]
   BOT --> MAINQ["SQS timeout/tasks queue"]
   MAINQ --> BOT
 
-  BOT --> VQ["SQS vector memory queue"]
-  VQ --> BOT
-  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
+  BOT -- "enqueue vector tasks" --> VQ["SQS vector memory queue"]
+  VQ --> VIDX["Vector indexer Lambda"]
+  BOT -- "query/delete" --> S3V["S3 Vectors<br/>semantic memory index"]
+  VIDX -- "index/backfill" --> S3V
+  VIDX --> MEMORY
 
-  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries"]
+  VIDX --> GEMINI_EMB["Gemini<br/>embeddings"]
   BOT --> GROQ["Groq<br/>spam checks"]
 
   EB["EventBridge schedules"] --> NEWS["News Lambda"]
@@ -74,17 +82,21 @@ flowchart LR
   QUIZ --> TG
 
   LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
 ```
 
 | Компонент | Trigger | Ответственность |
 |-----------|---------|-----------------|
-| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/bot/main.py` | API Gateway + main SQS queue | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, group memory extraction, daily summaries, semantic retrieval, vector cleanup/enqueue. |
+| `src/bot/vector_indexer_main.py` | Vector memory SQS queue | Dedicated consumer для `PROCESS_VECTOR_MEMORY` и `PROCESS_VECTOR_MEMORY_BACKFILL`; делает embeddings/indexing в S3 Vectors и fan-out backfill pages. |
 | `src/news/` | EventBridge | Мультиязычный IT news digest. |
 | `src/quiz/` | EventBridge + bot invoke | Scheduled и on-demand developer quizzes. |
 | `src/shared/python/zerde_common/` | Lambda layer | Общие config, secret loading, logging, redaction, provider error helpers. |
 | `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, Lambda wiring. |
+
+Bot Lambda может query/delete S3 Vectors для retrieval и memory cleanup, но не потребляет сообщения из vector memory queue.
 
 Подробная карта для разработки: [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -103,8 +115,8 @@ flowchart LR
 | `/quizstats` | Все | Личный quiz score, streak и rank. |
 | `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение, включая self-reference вроде “кто я”. |
 | `/memory about me` | Все | Показать profile fields текущего пользователя, сохраненные из его собственных сообщений, без чужих оценок. |
-| `/memory on/off/status/forget ...` | Group owner или bot owner для settings; users могут удалить свою memory | Управление group memory и cleanup. `forget this` удаляет memory, связанную с replied bot answer или source message, с vector cleanup если настроен. |
-| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
+| `/memory on/off/status/forget .../wrong` | Group owner или bot owner для settings; users могут удалить свою memory или отметить answer sources как wrong | Управление group memory и cleanup. `forget this` удаляет durable long-term memory из replied bot answer или raw/derived memory при прямом reply на source message; `USER#` profile не удаляется. `wrong` помечает источники памяти replied bot answer как ошибочные без удаления. |
+| `/agent on/off/status/why/wrong` | Group owner или bot owner для settings; users могут inspect или отметить replied answer sources | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent wrong` помечает источники памяти replied bot answer как ошибочные. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
 
 ---
 

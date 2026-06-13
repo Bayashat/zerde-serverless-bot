@@ -8,6 +8,7 @@ from typing import Any
 
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
+from services.group_agent import process_proactive_candidate_task
 from services.group_memory_processor import process_daily_group_summaries_task, process_group_memory_task
 from services.handlers import process_group_ask_task, process_timeout_task
 from services.repositories.captcha import CaptchaRepository
@@ -86,6 +87,10 @@ def process_sqs_event(
                 if memory_repo is None:
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")
                 process_group_ask_task(repo=memory_repo, bot=bot, body=body)
+            elif task_type == "PROCESS_PROACTIVE_CANDIDATE":
+                if memory_repo is None:
+                    raise RuntimeError("PROCESS_PROACTIVE_CANDIDATE requires memory_repo")
+                process_proactive_candidate_task(repo=memory_repo, bot=bot, body=body)
             elif task_type == "PROCESS_GROUP_MEMORY":
                 process_group_memory_task(body, repo=memory_repo)
             elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":

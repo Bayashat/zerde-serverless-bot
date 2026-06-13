@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import re
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from numbers import Number
 from typing import Any
 
 from core.config import (
+    AGENT_BOT_ID,
     AGENT_BOT_USERNAME,
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
+    AGENT_PROACTIVE_DELAY_SECONDS,
     AGENT_PROACTIVE_FINAL_THRESHOLD,
     AGENT_PROACTIVE_SCORE_THRESHOLD,
     AGENT_RECENT_CONTEXT_LIMIT,
@@ -27,6 +30,7 @@ from services.ai.gemini_client import (
     GeminiUnavailableError,
 )
 from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
+from services.bot_identity import is_self_bot_user
 from services.group_memory import (
     display_name,
     extract_message_text,
@@ -41,7 +45,8 @@ from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
 )
-from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
+from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
 from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
 
@@ -67,8 +72,13 @@ class ReplyPolicy:
 class ExplicitQuestionContext:
     user_text: str
     current_user_message: str
+    retrieval_query: str
     source_message_context: str = ""
     parent_bot_message_id: int | None = None
+
+
+_LOW_CONFIDENCE_MEMORY_THRESHOLD = 0.55
+_WEAK_RETRIEVAL_DISTANCE_THRESHOLD = 0.78
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -100,7 +110,15 @@ def _replies_to_bot(message: dict[str, Any]) -> bool:
     if not isinstance(reply, dict):
         return False
     sender = reply.get("from") or {}
-    return bool(sender.get("is_bot"))
+    return is_self_bot_user(sender, bot_id=AGENT_BOT_ID, bot_username=AGENT_BOT_USERNAME)
+
+
+def _replies_to_any_bot(message: dict[str, Any]) -> bool:
+    reply = message.get("reply_to_message")
+    if not isinstance(reply, dict):
+        return False
+    sender = reply.get("from") or {}
+    return bool(isinstance(sender, dict) and sender.get("is_bot"))
 
 
 def _reply_text(message: dict[str, Any]) -> str:
@@ -144,6 +162,48 @@ def _agent_reply_thread_context(
     return "\n\n".join(parts)
 
 
+def _compact_query_text(text: str, *, limit: int) -> str:
+    return " ".join((text or "").split())[:limit]
+
+
+def _reply_source_retrieval_query(*, current_question: str, source_context: str) -> str:
+    question = _compact_query_text(current_question, limit=600)
+    source = _compact_query_text(source_context, limit=700)
+    if question and source:
+        return f"{question}\n\nReplied source message: {source}"
+    if question:
+        return question
+    if source:
+        return f"Explain replied source message: {source}"
+    return ""
+
+
+def _agent_reply_thread_retrieval_query(
+    item: dict[str, Any],
+    *,
+    followup: str,
+    telegram_reply_text: str,
+) -> str:
+    source_context = _compact_query_text(str(item.get("source_message_context") or ""), limit=700)
+    previous_user = _compact_query_text(
+        str(item.get("current_user_message") or item.get("user_message") or ""),
+        limit=600,
+    )
+    followup_text = _compact_query_text(followup, limit=300)
+    parts: list[str] = []
+    if followup_text:
+        parts.append(f"Current follow-up: {followup_text}")
+    if previous_user:
+        parts.append(f"Previous user request: {previous_user}")
+    if source_context:
+        parts.append(f"Original source message: {source_context}")
+    if len(parts) <= 1:
+        fallback_answer = _compact_query_text(str(item.get("answer_text") or telegram_reply_text or ""), limit=400)
+        if fallback_answer:
+            parts.append(f"Previous bot answer: {fallback_answer}")
+    return "\n\n".join(parts)
+
+
 def build_explicit_question_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
@@ -154,7 +214,7 @@ def build_explicit_question_context(
     text = (current_text if current_text is not None else extract_message_text(message)).strip()
     reply = message.get("reply_to_message")
     if not isinstance(reply, dict):
-        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+        return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
 
     if _replies_to_bot(message):
         replied_text = _reply_text(message)
@@ -173,13 +233,18 @@ def build_explicit_question_context(
         return ExplicitQuestionContext(
             user_text=f"{thread_context}\n\nUser follow-up:\n{followup}",
             current_user_message=text,
+            retrieval_query=_agent_reply_thread_retrieval_query(
+                item,
+                followup=followup,
+                telegram_reply_text=replied_text,
+            ),
             source_message_context=source_context,
             parent_bot_message_id=int(parent_bot_message_id) if parent_bot_message_id is not None else None,
         )
 
     source_context = format_message_reference(reply)
     if not source_context:
-        return ExplicitQuestionContext(user_text=text, current_user_message=text)
+        return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
     if text:
         user_text = (
             "The user is asking about this replied-to group message:\n"
@@ -195,6 +260,7 @@ def build_explicit_question_context(
     return ExplicitQuestionContext(
         user_text=user_text,
         current_user_message=text,
+        retrieval_query=_reply_source_retrieval_query(current_question=text, source_context=source_context),
         source_message_context=source_context,
     )
 
@@ -251,7 +317,128 @@ def _reply_to_bot_followup_skip_reason(text: str) -> str | None:
     return "no_clear_question_or_request"
 
 
-def _reply_policy(user_text: str) -> ReplyPolicy:
+def _load_chat_style_profile(repo: GroupMemoryRepository, chat_id: int | str) -> dict[str, Any]:
+    try:
+        settings = repo.get_chat_settings(chat_id)
+    except Exception:
+        logger.exception("Failed to load chat style profile; using defaults", extra={"chat_id": chat_id})
+        return normalise_chat_style_profile(None)
+    raw = settings.get("style_profile") if isinstance(settings, Mapping) else None
+    return normalise_chat_style_profile(raw)
+
+
+def _sentence_count(profile: Mapping[str, Any], key: str) -> int:
+    return int(normalise_chat_style_profile(profile).get(key, 1))
+
+
+def _style_instruction(style_profile: Mapping[str, Any]) -> str:
+    profile = normalise_chat_style_profile(style_profile)
+    tone = str(profile["tone"])
+    tone_text = {
+        "concise": "concise and direct",
+        "professional": "professional, calm, and precise",
+        "friendly": "friendly, natural, and respectful",
+    }.get(tone, "concise and direct")
+    humor = (
+        "Light humor is allowed only when it fits the chat and does not weaken factual clarity."
+        if profile["allow_light_humor"]
+        else "Do not add jokes or playful asides unless the user clearly asks for that tone."
+    )
+    return f"Tone: {tone_text}. {humor}"
+
+
+def _default_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 5:
+        return 300, 1800
+    tokens = max(140, min(460, 120 + max_sentences * 36))
+    chars = max(700, min(2600, 500 + max_sentences * 260))
+    return tokens, chars
+
+
+def _short_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences >= 3:
+        return 180, 900
+    tokens = max(100, 90 + max_sentences * 30)
+    chars = max(420, 300 + max_sentences * 200)
+    return tokens, chars
+
+
+def _ask_without_question_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 5:
+        return 260, 1400
+    tokens = max(130, min(300, 110 + max_sentences * 32))
+    chars = max(650, min(1600, 450 + max_sentences * 190))
+    return tokens, chars
+
+
+def _proactive_reply_budget(max_sentences: int) -> tuple[int, int]:
+    if max_sentences == 2:
+        return 300, 900
+    tokens = max(120, min(300, 90 + max_sentences * 70))
+    chars = max(420, min(1200, 280 + max_sentences * 310))
+    return tokens, chars
+
+
+def _low_confidence_instruction(style_profile: Mapping[str, Any]) -> str:
+    behavior = str(normalise_chat_style_profile(style_profile)["low_confidence_behavior"])
+    if behavior == "none":
+        return ""
+    if behavior == "avoid_weak_memory":
+        return (
+            "Some retrieved memory is weak. Prefer current and high-trust context; if you must use weak memory, "
+            "state uncertainty clearly instead of presenting it as fact."
+        )
+    return (
+        "Some retrieved memory is low confidence or weakly matched. Do not sound certain about it. "
+        "Use wording such as 'I may be remembering this imperfectly' or 'from weak memory' when relying on it."
+    )
+
+
+def _compose_reply_instructions(
+    base_instruction: str,
+    *,
+    style_profile: Mapping[str, Any],
+    low_confidence_retrieval: bool,
+) -> str:
+    parts = [base_instruction, _style_instruction(style_profile)]
+    if low_confidence_retrieval:
+        instruction = _low_confidence_instruction(style_profile)
+        if instruction:
+            parts.append(instruction)
+    return " ".join(part for part in parts if part)
+
+
+def _float_value(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _has_low_confidence_retrieval(retrieval_sources: list[dict[str, Any]]) -> bool:
+    memory_sources = {"semantic", "lexical", "long_term"}
+    for source in retrieval_sources:
+        if str(source.get("source") or "") not in memory_sources:
+            continue
+        confidence = _float_value(source.get("confidence"))
+        if confidence is not None and confidence < _LOW_CONFIDENCE_MEMORY_THRESHOLD:
+            return True
+        distance = _float_value(source.get("distance"))
+        if distance is not None and distance > _WEAK_RETRIEVAL_DISTANCE_THRESHOLD:
+            return True
+        score = _float_value(source.get("score"))
+        if confidence is None and distance is None and score is not None and 0 < score < 0.38:
+            return True
+    return False
+
+
+def _reply_policy(
+    user_text: str,
+    *,
+    style_profile: Mapping[str, Any] | None = None,
+    low_confidence_retrieval: bool = False,
+) -> ReplyPolicy:
+    style = normalise_chat_style_profile(style_profile)
     lowered = user_text.lower()
     explicit_long = any(
         cue in lowered
@@ -283,41 +470,81 @@ def _reply_policy(user_text: str) -> ReplyPolicy:
     )
     continuation = "user is continuing a thread with this previous bot answer" in lowered
     ask_without_question = "wants you to explain it or answer based on it" in lowered
+    max_default_sentences = _sentence_count(style, "max_default_sentences")
 
     if explicit_long:
         return ReplyPolicy(
-            instructions=(
-                "The user asked for detail. Answer with the minimum useful detail, up to 5 short paragraphs "
-                "or 6 bullets. Avoid repeating the full context."
+            instructions=_compose_reply_instructions(
+                (
+                    "The user asked for detail. Answer with the minimum useful detail, up to 5 short paragraphs "
+                    "or 6 bullets. Avoid repeating the full context."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
             max_output_tokens=460,
             max_chars=2600,
         )
     if explicit_short or continuation:
+        max_short_sentences = min(3, max_default_sentences)
+        tokens, chars = _short_reply_budget(max_short_sentences)
         return ReplyPolicy(
-            instructions=(
-                "This is a short follow-up. Answer directly in 1-3 short sentences. "
-                "Do not recap the whole previous answer unless the user asks."
+            instructions=_compose_reply_instructions(
+                (
+                    f"This is a short follow-up. Answer directly in 1-{max_short_sentences} short sentences. "
+                    "Do not recap the whole previous answer unless the user asks."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
-            max_output_tokens=180,
-            max_chars=900,
+            max_output_tokens=tokens,
+            max_chars=chars,
         )
     if ask_without_question:
+        min_sentences = 1 if max_default_sentences <= 2 else 3
+        tokens, chars = _ask_without_question_budget(max_default_sentences)
         return ReplyPolicy(
-            instructions=(
-                "The user asked about a replied-to message without a specific question. "
-                "Give the main point in 3-5 concise sentences or at most 3 bullets."
+            instructions=_compose_reply_instructions(
+                (
+                    "The user asked about a replied-to message without a specific question. "
+                    f"Give the main point in {min_sentences}-{max_default_sentences} concise sentences "
+                    "or at most 3 bullets."
+                ),
+                style_profile=style,
+                low_confidence_retrieval=low_confidence_retrieval,
             ),
-            max_output_tokens=260,
-            max_chars=1400,
+            max_output_tokens=tokens,
+            max_chars=chars,
         )
+    min_sentences = 1 if max_default_sentences <= 2 else 2
+    tokens, chars = _default_reply_budget(max_default_sentences)
     return ReplyPolicy(
-        instructions=(
-            "Answer in 2-5 concise sentences. Use bullets only when they make the answer easier to scan. "
-            "Do not write an essay by default."
+        instructions=_compose_reply_instructions(
+            (
+                f"Answer in {min_sentences}-{max_default_sentences} concise sentences. "
+                "Use bullets only when they make the answer easier to scan. "
+                "Do not write an essay by default."
+            ),
+            style_profile=style,
+            low_confidence_retrieval=low_confidence_retrieval,
         ),
-        max_output_tokens=300,
-        max_chars=1800,
+        max_output_tokens=tokens,
+        max_chars=chars,
+    )
+
+
+def _proactive_reply_policy(style_profile: Mapping[str, Any] | None = None) -> ReplyPolicy:
+    style = normalise_chat_style_profile(style_profile)
+    max_sentences = _sentence_count(style, "max_proactive_sentences")
+    tokens, chars = _proactive_reply_budget(max_sentences)
+    return ReplyPolicy(
+        instructions=_compose_reply_instructions(
+            f"If speaking, write up to {max_sentences} short sentences. Do not lecture or recap the whole chat.",
+            style_profile=style,
+            low_confidence_retrieval=False,
+        ),
+        max_output_tokens=tokens,
+        max_chars=chars,
     )
 
 
@@ -489,11 +716,167 @@ _PROACTIVE_GROUP_REQUEST_CUES = (
     "有人",
 )
 
+_PROACTIVE_HUMAN_ANSWER_CUES = (
+    "you can",
+    "you should",
+    "use ",
+    "try ",
+    "depends",
+    "because",
+    "i think",
+    "i'd ",
+    "i would",
+    "better to",
+    "лучше",
+    "можно",
+    "нужно",
+    "надо",
+    "попроб",
+    "потому",
+    "думаю",
+    "болады",
+    "керек",
+    "қолдан",
+    "себебі",
+    "меніңше",
+    "可以",
+    "建议",
+    "因为",
+    "用",
+)
+_PROACTIVE_HUMAN_SOLVED_CUES = (
+    "solved",
+    "figured it out",
+    "got it",
+    "нашел",
+    "нашла",
+    "решил",
+    "решили",
+    "понял",
+    "таптым",
+    "шешілді",
+    "түсіндім",
+    "解决了",
+    "懂了",
+)
+_PROACTIVE_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{2,}", re.IGNORECASE)
+_PROACTIVE_TERM_STOPWORDS = {
+    "any",
+    "are",
+    "can",
+    "does",
+    "for",
+    "how",
+    "know",
+    "the",
+    "what",
+    "when",
+    "where",
+    "which",
+    "who",
+    "why",
+    "есть",
+    "как",
+    "кто",
+    "что",
+    "это",
+    "бар",
+    "бір",
+    "деп",
+    "кім",
+    "не",
+    "осы",
+}
+
 
 def _looks_like_bot_behavior_meta(text: str) -> bool:
     """Return True for bot-behavior meta chatter, not generic bot-building questions."""
     lowered = " ".join((text or "").lower().split())
     return any(cue in lowered for cue in _PROACTIVE_BOT_META_CUES)
+
+
+def _proactive_terms(text: str) -> set[str]:
+    return {
+        term.lstrip("@").lower()
+        for term in _PROACTIVE_TERM_RE.findall(text or "")
+        if term and term.lower() not in _PROACTIVE_TERM_STOPWORDS and not term.isdigit()
+    }
+
+
+def _safe_int(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _looks_like_sufficient_human_answer(text: str, *, trigger_terms: set[str]) -> bool:
+    lowered = " ".join((text or "").lower().split())
+    if not lowered or lowered.startswith("/"):
+        return False
+    if any(cue in lowered for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
+        return True
+
+    answer_cue = any(cue in lowered for cue in _PROACTIVE_HUMAN_ANSWER_CUES)
+    response_terms = _proactive_terms(lowered)
+    overlaps_trigger = bool(trigger_terms & response_terms)
+    open_question = _looks_like_open_question(text)
+
+    if open_question and not answer_cue:
+        return False
+    if answer_cue and (overlaps_trigger or len(text) >= 24):
+        return True
+    return overlaps_trigger and len(text) >= 40 and not open_question
+
+
+def _human_answer_after_trigger(
+    repo: GroupMemoryRepository,
+    chat_id: int,
+    *,
+    trigger_message_id: int,
+    trigger_user_id: int | str | None,
+    trigger_created_at: int | None,
+    user_text: str,
+) -> dict[str, Any] | None:
+    start_epoch = int(trigger_created_at or 0)
+    end_epoch = int(time.time()) + 1
+    if start_epoch > 0:
+        messages = repo.get_messages_for_day(chat_id, start_epoch=start_epoch, end_epoch=end_epoch, limit=25)
+    else:
+        messages = repo.get_recent_messages(chat_id, limit=25)
+
+    trigger_terms = _proactive_terms(user_text)
+    trigger_user = str(trigger_user_id) if trigger_user_id is not None else ""
+    for item in messages:
+        message_id = _safe_int(item.get("message_id"))
+        if message_id is not None and message_id <= trigger_message_id:
+            continue
+        text = str(item.get("text") or "").strip()
+        if not text or text == user_text:
+            continue
+        user_id = item.get("user_id")
+        same_user = trigger_user and str(user_id) == trigger_user
+        if same_user and not any(cue in text.lower() for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
+            continue
+        if _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms):
+            return {
+                "message_id": message_id,
+                "user_id": user_id,
+                "text_chars": len(text),
+            }
+    return None
+
+
+def _log_proactive_silent(
+    silent_reason: str,
+    *,
+    chat_id: int | str,
+    message_id: int | str | None = None,
+    **extra: Any,
+) -> None:
+    payload = {"chat_id": chat_id, "message_id": message_id, "silent_reason": silent_reason}
+    payload.update(extra)
+    logger.info("Group agent proactive candidate stayed silent", extra=payload)
 
 
 def _local_proactive_skip_reason(text: str) -> str | None:
@@ -585,6 +968,8 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return "explicit"
     if _replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None:
         return "explicit"
+    if _replies_to_any_bot(message):
+        return None
     if _local_proactive_candidate(text):
         return "proactive"
     return None
@@ -615,7 +1000,7 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
         return
     message = update["message"]
     text = extract_message_text(message)
-    if _mentions_bot(text) or _replies_to_bot(message):
+    if _mentions_bot(text) or _replies_to_any_bot(message):
         return
     skip_reason = _local_proactive_skip_reason(text)
     if not skip_reason or skip_reason == "not_open_question":
@@ -641,12 +1026,14 @@ def handle_update(
     repo: GroupMemoryRepository | None,
     bot: TelegramClient,
     update: dict[str, Any],
+    sqs_repo: SQSClient | None = None,
 ) -> bool:
-    """Answer non-/ask group prompts when agent participation is enabled.
+    """Handle non-/ask group prompts when agent participation is enabled.
 
     ``agent_enabled`` gates proactive, @mention, and reply-to-bot
     participation. Explicit ``/ask`` requests are handled by the command path
-    and remain available while group memory is enabled.
+    and remain available while group memory is enabled. Proactive candidates
+    are queued for a delayed final decision; explicit triggers answer now.
 
     Returns True when the agent handled the update and the dispatcher should not
     continue routing it as a plain message.
@@ -665,14 +1052,31 @@ def handle_update(
         return False
     message_id = message["message_id"]
     if trigger_kind == "proactive":
-        return maybe_answer_proactively(
-            repo=repo,
-            bot=bot,
+        if sqs_repo is None:
+            logger.warning(
+                "Group agent proactive candidate could not be queued",
+                extra={"chat_id": chat_id, "message_id": message_id, "reason": "missing_sqs_repo"},
+            )
+            return False
+        sqs_repo.send_proactive_candidate_task(
+            update_id=update.get("update_id"),
             chat_id=chat_id,
-            reply_to_message_id=message_id,
+            trigger_message_id=message_id,
+            trigger_user_id=(message.get("from") or {}).get("id"),
             user_text=extract_message_text(message),
             lang=get_chat_lang(chat_id),
+            created_at=message.get("date"),
+            delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
         )
+        logger.info(
+            "Group agent proactive candidate queued",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "delay_seconds": AGENT_PROACTIVE_DELAY_SECONDS,
+            },
+        )
+        return True
 
     question_context = build_explicit_question_context(repo, chat_id, message)
     handled = answer_group_question(
@@ -681,6 +1085,7 @@ def handle_update(
         chat_id=chat_id,
         reply_to_message_id=message_id,
         user_text=question_context.user_text,
+        retrieval_query=question_context.retrieval_query,
         lang=get_chat_lang(chat_id),
         requester_user_id=(message.get("from") or {}).get("id"),
         requester_username=(message.get("from") or {}).get("username"),
@@ -709,10 +1114,13 @@ def maybe_answer_proactively(
     """Ask the model whether speaking is socially useful; speak only on a strong yes."""
     gemini = _get_gemini()
     if not gemini:
+        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
+    style_profile = _load_chat_style_profile(repo, chat_id)
+    reply_policy = _proactive_reply_policy(style_profile)
     raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
     recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
     reply_score = score_proactive_reply(
@@ -722,14 +1130,12 @@ def maybe_answer_proactively(
         recent_bot_replies=recent_bot_replies,
     )
     if reply_score.score < AGENT_PROACTIVE_SCORE_THRESHOLD:
-        logger.info(
-            "Group agent proactive candidate skipped by reply score",
-            extra={
-                "chat_id": chat_id,
-                "message_id": reply_to_message_id,
-                "reply_score": reply_score.score,
-                "reasons": ",".join(reply_score.reasons),
-            },
+        _log_proactive_silent(
+            "low_reply_score",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            reply_score=reply_score.score,
+            reasons=",".join(reply_score.reasons),
         )
         return False
 
@@ -739,18 +1145,19 @@ def maybe_answer_proactively(
             recent_context=recent_context,
             long_term_memory_context=long_term_memory_context,
             lang=lang,
+            reply_instructions=reply_policy.instructions,
+            max_output_tokens=reply_policy.max_output_tokens,
         )
     except GeminiRPDExhaustedError:
-        logger.info("Group agent proactive decision skipped by Gemini RPD limit", extra={"chat_id": chat_id})
+        _log_proactive_silent("gemini_rpd_limit", chat_id=chat_id, message_id=reply_to_message_id)
         return False
     except GeminiUnavailableError as exc:
-        logger.warning(
-            "Group agent proactive decision unavailable",
-            extra={
-                "chat_id": chat_id,
-                "error_type": exc.__class__.__name__,
-                "error_message": str(exc)[:500],
-            },
+        _log_proactive_silent(
+            "gemini_unavailable",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            error_type=exc.__class__.__name__,
+            error_message=str(exc)[:500],
         )
         return False
     except Exception:
@@ -759,27 +1166,27 @@ def maybe_answer_proactively(
 
     final_score = reply_score.score * 0.45 + decision.confidence * 0.55
     if not decision.should_reply or final_score < AGENT_PROACTIVE_FINAL_THRESHOLD or not decision.reply_text:
-        logger.info(
-            "Group agent stayed silent",
-            extra={
-                "chat_id": chat_id,
-                "message_id": reply_to_message_id,
-                "confidence": decision.confidence,
-                "reply_score": reply_score.score,
-                "final_score": final_score,
-                "reason": decision.reason,
-            },
+        _log_proactive_silent(
+            "model_said_no",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            confidence=decision.confidence,
+            reply_score=reply_score.score,
+            final_score=final_score,
+            reason=decision.reason,
         )
         return False
 
     if not repo.try_reserve_proactive_reply(chat_id, daily_limit=AGENT_DAILY_PROACTIVE_LIMIT):
-        logger.info(
-            "Group agent proactive reply skipped by daily limit",
-            extra={"chat_id": chat_id, "message_id": reply_to_message_id, "reason": decision.reason},
+        _log_proactive_silent(
+            "daily_limit",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            reason=decision.reason,
         )
         return False
 
-    answer_text = fit_llm_output(decision.reply_text, max_chars=900)
+    answer_text = fit_llm_output(decision.reply_text, max_chars=reply_policy.max_chars)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
@@ -813,6 +1220,73 @@ def maybe_answer_proactively(
     return True
 
 
+def process_proactive_candidate_task(
+    *,
+    repo: GroupMemoryRepository,
+    bot: TelegramClient,
+    body: dict[str, Any],
+) -> bool:
+    """Finalize a delayed proactive candidate after humans had time to answer."""
+    try:
+        chat_id = int(body["chat_id"])
+        trigger_message_id = int(body["trigger_message_id"])
+    except (KeyError, TypeError, ValueError) as exc:
+        logger.warning("PROCESS_PROACTIVE_CANDIDATE missing required field", extra={"error": str(exc)})
+        return False
+
+    user_text = str(body.get("user_text") or "").strip()
+    if not user_text:
+        _log_proactive_silent("missing_user_text", chat_id=chat_id, message_id=trigger_message_id)
+        return False
+
+    if not repo.is_agent_enabled(chat_id):
+        _log_proactive_silent("agent_disabled", chat_id=chat_id, message_id=trigger_message_id)
+        return False
+
+    skip_reason = _local_proactive_skip_reason(user_text)
+    if skip_reason is not None:
+        _log_proactive_silent(
+            "original_no_longer_useful",
+            chat_id=chat_id,
+            message_id=trigger_message_id,
+            original_skip_reason=skip_reason,
+        )
+        return False
+
+    try:
+        human_answer = _human_answer_after_trigger(
+            repo,
+            chat_id,
+            trigger_message_id=trigger_message_id,
+            trigger_user_id=body.get("trigger_user_id"),
+            trigger_created_at=_safe_int(body.get("created_at")),
+            user_text=user_text,
+        )
+    except Exception:
+        logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
+        _log_proactive_silent("post_trigger_context_unavailable", chat_id=chat_id, message_id=trigger_message_id)
+        return False
+    if human_answer:
+        _log_proactive_silent(
+            "human_answered",
+            chat_id=chat_id,
+            message_id=trigger_message_id,
+            answer_message_id=human_answer.get("message_id"),
+            answer_user_id=human_answer.get("user_id"),
+            answer_text_chars=human_answer.get("text_chars"),
+        )
+        return False
+
+    return maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=chat_id,
+        reply_to_message_id=trigger_message_id,
+        user_text=user_text,
+        lang=str(body.get("lang") or get_chat_lang(chat_id)),
+    )
+
+
 def answer_group_question(
     *,
     repo: GroupMemoryRepository,
@@ -821,6 +1295,7 @@ def answer_group_question(
     reply_to_message_id: int,
     user_text: str,
     lang: str,
+    retrieval_query: str | None = None,
     requester_user_id: int | str | None = None,
     requester_username: str | None = None,
     requester_display_name: str | None = None,
@@ -860,6 +1335,7 @@ def answer_group_question(
         repo=repo,
         chat_id=chat_id,
         user_text=user_text,
+        retrieval_query=retrieval_query,
         requester_user_id=requester_user_id,
         requester_username=requester_username,
         requester_display_name=requester_display_name,
@@ -886,9 +1362,15 @@ def answer_group_question(
             "self_reference": memory_bundle.intent.is_self_reference,
             "requester_filter_applied": bool(memory_bundle.intent.is_self_reference and requester_user_id is not None),
             "target_username_count": len(memory_bundle.intent.target_usernames),
+            "retrieval_query_chars": len((retrieval_query or user_text).strip()),
         },
     )
-    reply_policy = _reply_policy(user_text)
+    style_profile = _load_chat_style_profile(repo, chat_id)
+    reply_policy = _reply_policy(
+        user_text,
+        style_profile=style_profile,
+        low_confidence_retrieval=_has_low_confidence_retrieval(memory_bundle.retrieval_sources),
+    )
 
     try:
         answer, _ = gemini.group_chat_reply(
