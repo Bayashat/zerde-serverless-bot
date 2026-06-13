@@ -11,7 +11,8 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It embeds long-term memory and high-information daily summaries into S3 Vectors for semantic retrieval.
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
-- It may proactively join a discussion, but only after local gating, model timing judgment, recent-bot-activity penalty, and daily limits.
+- It stores normal bot answers only as short-term reply-thread metadata, not as long-term semantic memory.
+- It may proactively join a discussion, but only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
 
@@ -27,14 +28,14 @@ flowchart LR
   BOT --> STATS[("DynamoDB stats table")]
   BOT --> MEMORY[("DynamoDB memory table")]
   BOT --> MAINQ
-  BOT --> VQ
-  BOT --> S3V["S3 Vectors index"]
+  BOT -- "enqueue vector tasks" --> VQ
+  BOT -- "query/delete" --> S3V["S3 Vectors index"]
   BOT --> GEMINI["Gemini API"]
   BOT --> GROQ["Groq API"]
-  VIDX --> VQ
+  VIDX -- "backfill fan-out" --> VQ
   VIDX --> STATS
   VIDX --> MEMORY
-  VIDX --> S3V
+  VIDX -- "index/backfill" --> S3V
   VIDX --> GEMINI
 
   EB["EventBridge"] --> NEWS["News Lambda"]
@@ -70,7 +71,7 @@ flowchart LR
 5. Irrelevant group chatter exits early.
 6. Relevant events route to the group agent or the command dispatcher.
 7. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded.
-8. `agent_enabled` gates non-command group agent participation: proactive replies, @mentions, and reply-to-bot follow-ups. Explicit `/ask` remains available while `memory_enabled` is true.
+8. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
 
 ## SQS Tasks
 
@@ -81,6 +82,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata. |
+| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
@@ -95,18 +97,24 @@ The table is single-table by chat partition:
 | Key pattern | Meaning |
 |-------------|---------|
 | `pk=CHAT#<chat_id>, sk=SETTINGS` | Per-chat `memory_enabled`, `agent_enabled`, and optional `style_profile` for agent reply tone/length/uncertainty behavior. |
-| `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context. |
+| `sk=MSG#<created_at_ms>#<message_id>` | Recent raw group message for prompt context, including reply-to ids, sender metadata, bot/self-bot flags, and simple thread root metadata when available. |
 | `sk=USER#<user_id>` | User profile derived only from that user's own messages. |
+| `sk=USERNAME#<lower_username>` | Per-chat username alias that maps Telegram handles to `USER#<user_id>` without paging all profiles. |
 | `sk=EVENT#...` | Time-bound event or operational memory. |
 | `sk=USER_FACT#<user_id>#...` | User-stated preference, boundary, or recurring personal context. |
 | `sk=GROUP_FACT#...` | Group decision or shared preference. |
-| `sk=JOKE#...` | Possible recurring joke or meme. Use carefully; this is easy to over-retrieve. |
+| `sk=JOKE#...` | Possible recurring joke or meme. Stored only from high-confidence Gemini extraction or repeated evidence because jokes are easy to over-retrieve. |
 | `sk=DAILY_SUMMARY#YYYY-MM-DD` | Daily compressed memory for imported or observed messages. |
-| `sk=AGENT_REPLY#<bot_message_id>` | Bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, and `/memory forget this`. |
+| `sk=TERM#<term>#<created_at_ms>#<source_sk>` | Lightweight exact-term lexical index row pointing back to a long-term memory or daily summary source item. |
+| `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, and compact retrieval source metadata for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`. These rows are not long-term semantic memory. |
+| `sk=BOT_COMMITMENT#...` | Reserved durable bot-authored commitment key family for a future explicit command/admin flow. Normal answer generation must not write this. |
+| `sk=BOT_CORRECTION#...` | Reserved durable bot-authored correction key family for a future explicit user/admin correction flow. Normal answer generation must not write this. |
 | `sk=VECTOR_BACKFILL` | Last vector backfill status for a chat. |
 | `sk=PROACTIVE#YYYYMMDD` | Daily proactive reply reservation counter. |
 
-Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items are prompt context, not vector memory.
+Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, feedback metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, a `superseded_by` placeholder for future consolidation, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items and normal bot answer `AGENT_REPLY#...` items are prompt/thread context, not vector memory. The reserved `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` families are placeholders for explicit future durable bot memory flows and are not vectorizable until such flows add review/permission checks and tests.
+
+Memory retention is type-specific. `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` controls raw `MSG#...` records, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` controls `AGENT_REPLY#...` thread metadata, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` controls `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` controls `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` controls `PROACTIVE#...` counters. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still stores `expires_at`; the DynamoDB `ttl` is the shorter of explicit expiry and configured long-term retention.
 
 ## Long-Term Memory Extraction
 
@@ -114,24 +122,28 @@ Long-term memory items include `extractor_source`, `sensitivity`, `evidence_mess
 
 Extractor modes are `rules`, `gemini_candidate_only`, and `gemini_all`. `gemini_all` preserves the original "try Gemini for every safe message" behavior, but it is still bounded by the extractor LLM budgets. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` (default `50`) and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` (default `20`) use independent DynamoDB rate-limit scopes before Gemini is called, so background memory extraction cannot consume the full shared Gemini generate RPD used by `/ask`, proactive decisions, and summaries.
 
-The extractor stores only memories above `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE` (default `0.65`) and rejects `sensitive` or `secret` outputs. It also rejects third-party `user_fact` claims by requiring the extracted `subject_user_id` to match the speaker for personal memories. If Gemini is unavailable, quota-exhausted, unconfigured, not selected by candidate-only mode, or over the extractor budget, the existing cue-based classifier runs as the fallback. The same safety filters still block secrets, contact details, medical/financial/identity data, future-answer directives, subjective people rankings, and jokes-as-facts.
+The extractor stores only memories above `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE` (default `0.65`) and rejects `sensitive` or `secret` outputs. It also rejects third-party `user_fact` claims by requiring the extracted `subject_user_id` to match the speaker for personal memories. `JOKE#` storage is stricter than ordinary memory: a one-message rule fallback joke is not durable, while high-confidence Gemini joke extraction or repeated evidence can be stored. If Gemini is unavailable, quota-exhausted, unconfigured, not selected by candidate-only mode, or over the extractor budget, the existing cue-based classifier runs as the fallback. The same safety filters still block secrets, contact details, medical/financial/identity data, future-answer directives, subjective people rankings, and jokes-as-facts.
 
 ## Agent Answer Context
 
-`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The pipeline analyzes query intent, retrieves raw profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, selects the top candidates within a character budget, renders prompt sections from those selected candidates, and returns compact `retrieval_sources` metadata for the sources that actually reached the prompt.
+`services.group_agent.answer_group_question` calls `services.memory_retrieval.build_agent_memory_context`, which wraps the existing retrievers into Memory Retrieval Pipeline V1. The agent keeps the full `user_text` generation prompt for Gemini, but passes a separate compact `retrieval_query` into memory retrieval. For reply threads, that query keeps the current follow-up plus the relevant previous user/source context while avoiding the full previous bot answer unless no better thread context is available. The pipeline analyzes retrieval-query intent, retrieves raw profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, selects the top candidates within a character budget, renders prompt sections from those selected candidates, and returns compact `retrieval_sources` metadata for the sources that actually reached the prompt. Target-user profile lookup resolves `@username` mentions through `USERNAME#...` aliases before fetching `USER#<user_id>` directly.
 
 The returned bundle still exposes separate prompt sections for Gemini, but their content is candidate-driven rather than copied wholesale from each retriever:
 
 1. Trusted requester profile context for the user who asked the question.
 2. Trusted target-user profile context, only for users explicitly mentioned in the user message.
-3. Semantic memory context from S3 Vectors, query-matched by current user text and optionally requester-filtered for self-reference.
-4. Long-term memory context filtered by current query terms, with exact-term lexical fallback candidates from DynamoDB when useful.
+3. Semantic memory context from S3 Vectors, query-matched by `retrieval_query`, optionally requester-filtered for self-reference, and optionally narrowed by memory kind for obvious query intent.
+4. Long-term memory context filtered by `retrieval_query` terms and intent memory kinds, with exact-term lexical candidates from `TERM#...` DynamoDB index rows when useful and a bounded recent fallback for legacy unindexed items.
 5. Recent group context with speaker metadata.
-6. Reply-thread context when the user replies to the bot's previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
+6. Reply-thread context when the user replies to Zerde's own previous answer, including the captured original quoted message, previous user request, previous bot answer, and current follow-up when available.
 
-The local reranker treats requester profiles as highest trust for self-reference, target-user profiles above ordinary memory, user facts above daily summaries, and jokes as low priority unless the query explicitly asks for a joke or meme. Exact lexical matches boost codes, usernames, and technical terms such as `E1027`, `S3`, or `OpenSearch`; semantic distance, trust level, target-user match, recency, and memory confidence are also considered. Because selected candidates are what render prompt content, this ranking directly controls whether a semantic user fact, lexical exact match, daily summary, joke, old event, or recent message reaches Gemini. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
+The local reranker treats requester profiles as highest trust for self-reference, target-user profiles above ordinary memory, user facts above daily summaries, and jokes as low priority unless the query explicitly asks for a joke or meme. Exact lexical matches boost codes, usernames, and technical terms such as `E1027`, `S3`, or `OpenSearch`; semantic distance, trust level, target-user match, recency, memory confidence, and wrong-source feedback are also considered. Obvious intents narrow memory kinds before ranking: self-reference and target-user questions search user facts, group decisions search group facts and daily summaries, past events search events and daily summaries, and joke/meme questions search jokes and daily summaries. Because selected candidates are what render prompt content, this ranking directly controls whether a semantic user fact, lexical exact match, daily summary, joke, old event, or recent message reaches Gemini. If a query has no usable relevance terms, lexical long-term memory is not injected into the answer path.
 
 `/agent why` reads the latest or replied `AGENT_REPLY#...` item and shows trigger, reason, confidence, and only memory source types/counts such as requester profile, semantic memory, lexical memory, long-term group memory, and recent context. It intentionally does not print full memory text.
+
+`AGENT_REPLY#...` is deliberately short-term reply-thread continuity, not a durable claim that the bot should learn from itself. Normal answers are not sent through long-term memory extraction, are not listed by vector backfill, and are rejected by vector indexing if a bad task references them. If the bot later needs to remember its own explicit commitment or a user/admin correction, that should use a deliberate `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` write path rather than reusing ordinary answer metadata.
+
+`/agent wrong` and `/memory wrong` can be used as a reply to a bot answer to mark its recorded memory sources as wrong. This increments negative feedback metadata on the source items and lowers their future retrieval priority; it does not delete memory immediately.
 
 Memory safety filters apply before context reaches the model. Raw `MSG#...` items can remain in DynamoDB for audit/recent history, but messages that look like future-answer directives ("when someone asks X, answer Y"), self-promotion, or subjective people rankings ("best in the chat", "strongest developer", "ең мықты") are excluded from profile learning, long-term memory classification, daily summaries, vector indexing, recent prompt context, semantic prompt context, and lexical fallback context.
 
@@ -142,6 +154,8 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 Proactive replies are conservative:
 
 - The local prefilter only considers open questions or requests.
+- Candidates that pass the local prefilter are queued with `AGENT_PROACTIVE_DELAY_SECONDS` before final evaluation, so humans can answer first.
+- The delayed task re-reads messages after the trigger and stays silent when a later human reply looks sufficient.
 - Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
 - The reply score recognizes multilingual technical, suggestion, and group-request cues in Kazakh, Russian, English, and Chinese.
 - Local prefilter skips for open-question candidates are logged with a structured skip reason before score/model gating.
@@ -151,8 +165,8 @@ Proactive replies are conservative:
 
 Answer length is explicit:
 
-- Reply-to-bot follow-ups get a short budget.
-- Reply-to-bot follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent.
+- Reply-to-Zerde follow-ups get a short budget.
+- Reply-to-Zerde follow-ups must pass a conservative local gate; clear questions or requests continue the thread, while pure reactions, thanks, laughter, and short comments stay silent. Replies to other bots are not treated as Zerde reply threads unless the user explicitly mentions Zerde.
 - Plain `/ask` explanations get a medium budget.
 - Detailed answers require explicit cues such as "подробно", "толық", or "deep dive".
 - Per-chat `style_profile` settings can tune `tone`, `max_default_sentences`, `max_proactive_sentences`, `allow_light_humor`, and `low_confidence_behavior`; defaults keep concise answers and proactive replies short.
@@ -167,16 +181,18 @@ S3 Vectors is used for semantic retrieval over trusted long-term memory:
 - Embedding model: `VECTOR_MEMORY_EMBEDDING_MODEL` (default `gemini-embedding-2`).
 - Embedding API calls use a shared DynamoDB RPD counter scoped as `gemini_embedding`; configure it with `GEMINI_EMBEDDING_RPD_LIMIT` (default `1000`).
 - Dimensions: `VECTOR_MEMORY_DIMENSIONS` (default `768`).
+- Schema version: `VECTOR_MEMORY_SCHEMA_VERSION` (default `1`) identifies the rendered embedding document schema for migrations.
 - Provider: `VECTOR_MEMORY_PROVIDER=s3_vectors`.
 - Retrieval distance cutoff: `VECTOR_MEMORY_MAX_DISTANCE` (default `0.85`) filters out distant vector matches before prompt injection.
-- Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`.
+- Vectorizable items: `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, `DAILY_SUMMARY#`. `AGENT_REPLY#` is excluded so normal bot answers do not become semantic memory by accident.
+- Successful indexing stores `vector_document_hash`, `vector_schema_version`, `vector_embedding_model`, and `vector_dimensions` on the DynamoDB memory item. Duplicate SQS deliveries skip embedding when all four values still match the current rendered document and config; changed text, model, dimensions, or schema version re-indexes the item.
 - Live `DAILY_SUMMARY#...` items are stored in DynamoDB but are not vectorized when they come from fallback summary paths (`fallback_rpd`, `fallback_unavailable`, `fallback_no_gemini`) or when Gemini returns no topics, notable events, or inside jokes. This keeps generic "observed N messages" summaries out of semantic retrieval.
-- Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory about me` shows only the current user's profile derived from their own messages. `/memory forget me` removes that user's profile, raw messages, user facts, and matching daily summaries. `/memory forget this` can be used as a reply to a bot answer to delete recorded retrieval-source memory, or as a reply to a source message to delete the stored raw `MSG#...` item and long-term memory derived from that message. Regular users can delete only memory tied to their own messages; the group owner or bot owner can delete group memory.
-- Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata.
+- Cleanup commands should delete both DynamoDB memory and associated vector keys when available. `/memory about me` shows only the current user's profile derived from their own messages. `/memory forget me` removes that user's profile, raw messages, user facts, and matching daily summaries. `/memory forget this` can be used as a reply to a bot answer to delete recorded retrieval-source memory, or as a reply to a source message to delete the stored raw `MSG#...` item and long-term memory derived from that message. `/agent wrong` and `/memory wrong` mark a replied bot answer's recorded memory sources as wrong without deleting them. Regular users can delete only memory tied to their own messages; the group owner or bot owner can delete group memory.
+- Runtime IAM must include `s3vectors:GetVectors` together with `s3vectors:QueryVectors` because retrieval uses metadata filters and asks S3 Vectors to return metadata. Bot Lambda has query/get/delete/get-index permissions for retrieval and cleanup; `s3vectors:PutVectors` and `s3vectors:ListVectors` are limited to the vector-indexer Lambda.
 - Retrieval, S3 query, context injection, and indexing success paths emit INFO logs with safe operational fields such as counts, filters, distance cutoffs, and vector dimensions.
 - Vector indexing runs in the dedicated vector-indexer Lambda, with its own log group and Lambda alarms. The bot Lambda can still query/delete vectors for retrieval and memory cleanup, but it no longer consumes the vector memory queue.
 
-When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and prefix-specific lexical fallback over vectorizable long-term memory items. The lexical fallback does not scan raw `MSG#...` items. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
+When vector indexing is incomplete, the agent still works with recent context, query-filtered DynamoDB long-term memory, and exact-term lexical lookup over `TERM#...` rows for vectorizable long-term memory items and daily summaries. The lexical path does not scan raw `MSG#...` items and only falls back to a bounded recent candidate set for older unindexed rows. Do not assume vector backfill will fix prompt pollution by itself. Vector retrieval uses metadata filters where available, including requester user filters for self-reference questions.
 
 ## Important Operational Notes
 

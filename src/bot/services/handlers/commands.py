@@ -380,6 +380,8 @@ def handle_memory(ctx: Context) -> None:
         handle_forget_this(ctx)
     elif action == "forget group":
         handle_forget_group(ctx)
+    elif action == "wrong":
+        handle_wrong_memory_feedback(ctx)
     else:
         ctx.reply(get_translated_text("memory_usage", ctx.lang_code), ctx.message_id)
 
@@ -398,6 +400,8 @@ def handle_agent(ctx: Context) -> None:
         handle_agent_status(ctx)
     elif action == "why":
         handle_why_reply(ctx)
+    elif action == "wrong":
+        handle_wrong_memory_feedback(ctx)
     else:
         ctx.reply(get_translated_text("agent_usage", ctx.lang_code), ctx.message_id)
 
@@ -434,6 +438,7 @@ def handle_ask(ctx: Context) -> None:
             chat_id=ctx.chat_id,
             reply_to_message_id=ctx.message_id,
             user_text=question_context.user_text,
+            retrieval_query=question_context.retrieval_query,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
             requester_username=ctx.username,
@@ -458,6 +463,7 @@ def process_group_ask_task(
     chat_id = int(body["chat_id"])
     reply_to_message_id = int(body["reply_to_message_id"])
     user_text = str(body["user_text"]).strip()
+    retrieval_query = str(body.get("retrieval_query") or "").strip() or None
     lang = str(body.get("lang") or "kk")
     requester_user_id = body.get("requester_user_id")
     if not user_text:
@@ -469,6 +475,7 @@ def process_group_ask_task(
         chat_id=chat_id,
         reply_to_message_id=reply_to_message_id,
         user_text=user_text,
+        retrieval_query=retrieval_query,
         lang=lang,
         requester_user_id=requester_user_id,
         requester_username=str(body.get("requester_username") or "") or None,
@@ -637,6 +644,41 @@ def handle_forget_this(ctx: Context) -> None:
         _handle_forget_this_bot_answer(ctx, ctx.reply_to_message.get("message_id"))
         return
     _handle_forget_this_source_message(ctx, ctx.reply_to_message)
+
+
+def handle_wrong_memory_feedback(ctx: Context) -> None:
+    if not _require_memory_repo(ctx):
+        return
+    if not ctx.user_id:
+        ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
+        return
+    if not isinstance(ctx.reply_to_message, dict) or not _is_reply_to_bot_message(ctx.reply_to_message):
+        ctx.reply(get_translated_text("wrong_memory_usage", ctx.lang_code), ctx.message_id)
+        return
+
+    bot_message_id = ctx.reply_to_message.get("message_id")
+    if bot_message_id is None:
+        ctx.reply(get_translated_text("wrong_memory_usage", ctx.lang_code), ctx.message_id)
+        return
+    item = ctx.memory_repo.get_agent_reply_explanation(ctx.chat_id, bot_message_id=bot_message_id)
+    if not item:
+        ctx.reply(get_translated_text("why_reply_missing", ctx.lang_code), ctx.message_id)
+        return
+    source_sks = _source_sk_values(item.get("retrieval_sources"))
+    if not source_sks:
+        ctx.reply(get_translated_text("wrong_memory_no_sources", ctx.lang_code), ctx.message_id)
+        return
+
+    marked = ctx.memory_repo.mark_memory_items_wrong(
+        ctx.chat_id,
+        source_sks,
+        user_id=ctx.user_id,
+        agent_reply_message_id=bot_message_id,
+    )
+    if marked <= 0:
+        ctx.reply(get_translated_text("wrong_memory_no_sources", ctx.lang_code), ctx.message_id)
+        return
+    ctx.reply(get_translated_text("wrong_memory_done", ctx.lang_code, marked=marked), ctx.message_id)
 
 
 def _delete_chat_vectors_note(ctx: Context) -> str:

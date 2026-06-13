@@ -3,6 +3,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 import pytest
+from botocore.exceptions import ClientError
 from services import group_agent, group_memory, group_memory_processor
 from services.ai import gemini_client
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
@@ -66,6 +67,35 @@ def test_observe_update_enqueues_reply_and_mention_hints(monkeypatch):
     kwargs = sqs.send_group_memory_task.call_args.kwargs
     assert kwargs["is_reply"] is True
     assert kwargs["has_mention"] is True
+
+
+def test_observe_update_stores_reply_metadata(monkeypatch):
+    repo = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+    monkeypatch.setattr(group_memory, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_memory, "AGENT_BOT_USERNAME", "zerdebot")
+    update = _group_update("why?")
+    update["message"]["message_thread_id"] = 77
+    update["message"]["reply_to_message"] = {
+        "message_id": 7,
+        "message_thread_id": 77,
+        "text": "Previous answer",
+        "from": {"id": 999, "is_bot": True, "username": "renamed_zerdebot", "first_name": "Zerde"},
+        "reply_to_message": {"message_id": 5},
+    }
+
+    group_memory.observe_update(repo, update)
+
+    metadata = repo.store_message.call_args.kwargs["reply_metadata"]
+    assert metadata["reply_to_message_id"] == 7
+    assert metadata["reply_to_user_id"] == 999
+    assert metadata["reply_to_sender_username"] == "renamed_zerdebot"
+    assert metadata["reply_to_sender_name"] == "Zerde"
+    assert metadata["reply_to_bot"] is True
+    assert metadata["reply_to_self_bot"] is True
+    assert metadata["thread_root_message_id"] == 5
+    assert metadata["message_thread_id"] == 77
 
 
 def test_observe_update_does_not_enqueue_duplicate_message(monkeypatch):
@@ -244,6 +274,80 @@ def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
     assert "opensearch" in values[":interests"]
 
 
+def test_touch_user_profile_writes_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="@Bayashat",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#bayashat"
+    assert alias_item["username"] == "bayashat"
+    assert alias_item["user_id"] == "202"
+    assert alias_item["target_sk"] == "USER#202"
+
+
+def test_get_user_profiles_by_usernames_uses_alias_items_without_user_scan():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    def get_item(*, Key):
+        if Key["sk"] == "USERNAME#bayashat":
+            return {"Item": {"user_id": "202", "username": "bayashat", "target_sk": "USER#202"}}
+        if Key["sk"] == "USER#202":
+            return {
+                "Item": {
+                    "sk": "USER#202",
+                    "user_id": "202",
+                    "username": "bayashat",
+                    "display_name": "Bayashat",
+                }
+            }
+        return {}
+
+    repo.table.get_item.side_effect = get_item
+
+    profiles = repo.get_user_profiles_by_usernames(-100123, {"@Bayashat"})
+
+    assert [profile["sk"] for profile in profiles] == ["USER#202"]
+    repo.table.query.assert_not_called()
+    assert [call.kwargs["Key"]["sk"] for call in repo.table.get_item.call_args_list] == [
+        "USERNAME#bayashat",
+        "USER#202",
+    ]
+
+
+def test_touch_user_profile_replaces_stale_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {"username": "oldhandle"}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="newhandle",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#newhandle"
+    repo.table.delete_item.assert_called_once_with(
+        Key={"pk": "CHAT#-100123", "sk": "USERNAME#oldhandle"},
+        ConditionExpression="user_id = :user_id",
+        ExpressionAttributeValues={":user_id": "202"},
+    )
+
+
 def test_touch_user_profile_extracts_structured_self_stated_profile_fields():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
@@ -301,6 +405,39 @@ def test_touch_user_profile_does_not_learn_subjective_ranking_directive():
     assert "last_sample = :sample" not in kwargs["UpdateExpression"]
     assert "#count = if_not_exists(#count, :zero) + :one" in kwargs["UpdateExpression"]
     assert values[":display_name"] == "Сам Самыч"
+
+
+def test_store_message_persists_reply_metadata_on_msg_item():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.store_message(
+        chat_id=-100123,
+        message_id=11,
+        user_id=42,
+        display_name="Ada",
+        username="ada",
+        text="why?",
+        created_at=1_700_000_000,
+        reply_metadata={
+            "reply_to_message_id": 7,
+            "reply_to_user_id": 999,
+            "reply_to_sender_username": "zerdebot",
+            "reply_to_bot": True,
+            "reply_to_self_bot": True,
+            "thread_root_message_id": 5,
+        },
+        touch_profile=False,
+    )
+
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["sk"] == "MSG#1700000000000#11"
+    assert item["reply_to_message_id"] == 7
+    assert item["reply_to_user_id"] == 999
+    assert item["reply_to_sender_username"] == "zerdebot"
+    assert item["reply_to_bot"] is True
+    assert item["reply_to_self_bot"] is True
+    assert item["thread_root_message_id"] == 5
 
 
 def test_format_user_profile_context_uses_target_profile_not_third_party_label():
@@ -578,6 +715,64 @@ def test_process_group_memory_task_skips_chatter(monkeypatch):
     )
 
     repo.store_long_term_memory.assert_not_called()
+
+
+def test_process_group_memory_task_skips_one_off_rule_joke_even_with_low_threshold(monkeypatch):
+    repo = MagicMock()
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_PROVIDER", "rules")
+    monkeypatch.setattr(group_memory_processor, "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", 0.5)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "lol the banana meme is funny",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_not_called()
+
+
+def test_process_group_memory_task_stores_high_confidence_llm_joke(monkeypatch):
+    repo = MagicMock()
+    gemini = MagicMock()
+    gemini.group_memory_extraction.return_value = (
+        {
+            "should_store": True,
+            "kind": "joke",
+            "summary": "The banana deploy phrase is a recurring group meme.",
+            "reason": "speaker named it as an inside joke",
+            "confidence": 0.9,
+            "subject_user_id": None,
+            "sensitivity": "public",
+            "expires_in_days": None,
+            "evidence_message_ids": [11],
+        },
+        1,
+    )
+    _use_gemini_extractor(monkeypatch, mode="gemini_all")
+    monkeypatch.setattr(group_memory_processor, "_get_gemini", lambda: gemini)
+
+    process_group_memory_task(
+        {
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "The banana deploy phrase is our inside joke.",
+            "created_at": 1_700_000_000,
+        },
+        repo=repo,
+    )
+
+    repo.store_long_term_memory.assert_called_once()
+    kwargs = repo.store_long_term_memory.call_args.kwargs
+    assert kwargs["kind"] == "joke"
+    assert kwargs["extractor_source"] == "gemini"
 
 
 def test_process_group_memory_candidate_only_skips_non_candidate_without_gemini(monkeypatch):
@@ -1062,6 +1257,19 @@ def test_process_daily_group_summary_skips_vector_for_empty_structured_gemini_su
     sqs.send_vector_memory_task.assert_not_called()
 
 
+def test_group_memory_processor_does_not_enqueue_agent_replies_for_vector_indexing(monkeypatch):
+    sqs = MagicMock()
+    monkeypatch.setattr("services.group_memory_processor.vector_memory_configured", lambda: True)
+
+    group_memory_processor._enqueue_vector_memory_index(
+        chat_id=-100123,
+        source_sk="AGENT_REPLY#0000000000555",
+        sqs_repo=sqs,
+    )
+
+    sqs.send_vector_memory_task.assert_not_called()
+
+
 def test_sqs_client_sends_group_memory_task_payload(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -1123,6 +1331,37 @@ def test_sqs_client_sends_group_ask_task(monkeypatch):
     assert payload["reply_to_message_id"] == 99
     assert payload["user_text"] == "what did we decide?"
     assert payload["lang"] == "en"
+    assert "retrieval_query" not in payload
+
+
+def test_sqs_client_sends_delayed_proactive_candidate_task(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+
+    sqs.send_proactive_candidate_task(
+        update_id=123,
+        chat_id=-100123,
+        trigger_message_id=99,
+        trigger_user_id=42,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="en",
+        created_at=1_700_000_000,
+        delay_seconds=30,
+    )
+
+    kwargs = fake_client.send_message.call_args.kwargs
+    payload = json.loads(kwargs["MessageBody"])
+    assert kwargs["QueueUrl"] == "queue-url"
+    assert kwargs["DelaySeconds"] == 30
+    assert payload["task_type"] == "PROCESS_PROACTIVE_CANDIDATE"
+    assert payload["update_id"] == 123
+    assert payload["chat_id"] == -100123
+    assert payload["trigger_message_id"] == 99
+    assert payload["trigger_user_id"] == 42
+    assert payload["user_text"] == "does anyone know how OpenSearch pricing works?"
+    assert payload["created_at"] == 1_700_000_000
 
 
 def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
@@ -1159,6 +1398,7 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
         chat_id=-100123,
         reply_to_message_id=99,
         user_text="thread prompt",
+        retrieval_query="why? Previous user request: explain Python",
         lang="en",
         current_user_message="why?",
         source_message_context="Original replied-to message:\n[speaker user_id=7] Python is slow?",
@@ -1166,6 +1406,7 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     )
 
     payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["retrieval_query"] == "why? Previous user request: explain Python"
     assert payload["current_user_message"] == "why?"
     assert "Python is slow" in payload["source_message_context"]
     assert payload["parent_bot_message_id"] == 555
@@ -1188,6 +1429,18 @@ def test_sqs_client_sends_vector_memory_task(monkeypatch):
         "source_sk": "EVENT#1#2",
         "reason": "memory_write",
     }
+
+
+def test_sqs_client_skips_vector_task_for_agent_reply(monkeypatch):
+    fake_client = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+    sqs.vector_queue_url = "vector-queue-url"
+
+    sqs.send_vector_memory_task(chat_id=-100123, source_sk="AGENT_REPLY#0000000000555", reason="memory_write")
+
+    fake_client.send_message.assert_not_called()
 
 
 def test_sqs_client_sends_vector_memory_backfill_task(monkeypatch):
@@ -1253,6 +1506,7 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     bot = MagicMock()
     answer = MagicMock(return_value=True)
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
     monkeypatch.setattr(group_agent, "answer_group_question", answer)
 
@@ -1260,7 +1514,7 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     update["message"]["reply_to_message"] = {
         "message_id": 10,
         "text": "Кто такой, о ком речь? Рассказывай, просвещусь.",
-        "from": {"id": 999, "is_bot": True, "username": "zerdebot"},
+        "from": {"id": 999, "is_bot": True, "username": "renamed_zerdebot"},
     }
 
     handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
@@ -1280,10 +1534,63 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     assert answer.call_args.kwargs["requester_username"] == "ada"
 
 
+def test_agent_reply_to_different_bot_does_not_trigger_without_mention(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("Can you explain this OpenSearch answer in more detail?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "OpenSearch pricing depends on capacity.",
+        "from": {"id": 123, "is_bot": True, "username": "zerdebot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is False
+    repo.is_agent_enabled.assert_not_called()
+    answer.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_agent_reply_to_different_bot_with_explicit_mention_uses_source_context(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 999)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot can you check this answer?")
+    update["message"]["reply_to_message"] = {
+        "message_id": 10,
+        "text": "OpenSearch always costs exactly one dollar.",
+        "from": {"id": 123, "is_bot": True, "username": "otherbot"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+
+    assert handled is True
+    user_text = answer.call_args.kwargs["user_text"]
+    assert "Original replied-to message" in user_text
+    assert "OpenSearch always costs exactly one dollar" in user_text
+    assert "continuing a thread" not in user_text
+    assert answer.call_args.kwargs["parent_bot_message_id"] is None
+
+
 def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     bot = MagicMock()
+    sqs = MagicMock()
     answer = MagicMock(return_value=True)
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
@@ -1296,9 +1603,10 @@ def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
         "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
     }
 
-    handled = group_agent.handle_update(repo=repo, bot=bot, update=update)
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
 
     assert handled is True
+    sqs.send_proactive_candidate_task.assert_not_called()
     user_text = answer.call_args.kwargs["user_text"]
     assert "Original replied-to message" in user_text
     assert "message_id=8" in user_text
@@ -1500,36 +1808,121 @@ def test_agent_does_not_consider_stop_cue_for_proactive_reply(monkeypatch):
     assert group_agent.should_answer(_group_update("болды жазба енді?")) is False
 
 
-def test_proactive_agent_asks_social_decision_before_daily_reservation(monkeypatch):
+def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
-    repo.try_reserve_proactive_reply.return_value = False
+    sqs = MagicMock()
+    bot = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DELAY_SECONDS", 30)
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
+
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=bot,
+        update=_group_update("does anyone know how OpenSearch pricing works?"),
+        sqs_repo=sqs,
+    )
+
+    assert handled is True
+    sqs.send_proactive_candidate_task.assert_called_once_with(
+        update_id=None,
+        chat_id=-100123,
+        trigger_message_id=11,
+        trigger_user_id=42,
+        user_text="does anyone know how OpenSearch pricing works?",
+        lang="kk",
+        created_at=1_700_000_000,
+        delay_seconds=30,
+    )
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = [
+        {
+            "message_id": 11,
+            "user_id": 42,
+            "text": "does anyone know how OpenSearch pricing works?",
+        },
+        {
+            "message_id": 12,
+            "user_id": 7,
+            "text": "You can use OpenSearch Serverless; pricing depends on capacity units.",
+        },
+    ]
+    bot = MagicMock()
+    gemini = MagicMock()
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": 42,
+            "user_text": "does anyone know how OpenSearch pricing works?",
+            "lang": "en",
+            "created_at": 1_700_000_000,
+        },
+    )
+
+    assert handled is False
+    gemini.group_chat_proactive_decision.assert_not_called()
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
+def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = []
+    repo.try_reserve_proactive_reply.return_value = True
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_proactive_decision.return_value = (
         GroupAgentDecision(
-            True, 0.9, "open technical question with no answer yet", "OpenSearch pricing depends on capacity."
+            True, 0.86, "open technical question with no answer yet", "OpenSearch pricing depends on shards."
         ),
         1,
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
-    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
-    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
-    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "Ada: previous context")
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
         "format_long_term_memory_context",
         lambda *args, **kwargs: "[event speaker=Ada] OpenSearch pricing discussion",
     )
 
-    handled = group_agent.handle_update(
+    handled = group_agent.process_proactive_candidate_task(
         repo=repo,
-        bot=MagicMock(),
-        update=_group_update("does anyone know how OpenSearch pricing works?"),
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": 42,
+            "user_text": "does anyone know how OpenSearch pricing works?",
+            "lang": "en",
+            "created_at": 1_700_000_000,
+        },
     )
 
-    assert handled is False
+    assert handled is True
     gemini.group_chat_proactive_decision.assert_called_once()
     repo.try_reserve_proactive_reply.assert_called_once()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "OpenSearch pricing depends on shards.",
+        reply_to_message_id=11,
+    )
 
 
 def test_reply_score_penalizes_recent_bot_activity():
@@ -1644,6 +2037,33 @@ def test_proactive_reservation_escapes_ttl_attribute():
     assert kwargs["ExpressionAttributeNames"]["#ttl"] == "ttl"
 
 
+def test_mark_vector_status_persists_index_freshness_metadata():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    repo.mark_vector_status(
+        -100123,
+        "EVENT#1#2",
+        status="indexed",
+        vector_key="memory/key",
+        embedding_model="gemini-embedding-2",
+        dimensions=768,
+        document_hash="abc123",
+        schema_version="2",
+    )
+
+    kwargs = repo.table.update_item.call_args.kwargs
+    values = kwargs["ExpressionAttributeValues"]
+    assert "vector_document_hash = :document_hash" in kwargs["UpdateExpression"]
+    assert "vector_schema_version = :schema_version" in kwargs["UpdateExpression"]
+    assert "vector_embedding_model = :model" in kwargs["UpdateExpression"]
+    assert "vector_dimensions = :dimensions" in kwargs["UpdateExpression"]
+    assert values[":document_hash"] == "abc123"
+    assert values[":schema_version"] == "2"
+    assert values[":model"] == "gemini-embedding-2"
+    assert values[":dimensions"] == Decimal(768)
+
+
 def test_record_agent_reply_persists_thread_metadata():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
@@ -1681,6 +2101,39 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["retrieval_sources"][0]["source_sk"] == "USER_FACT#42#1#2"
     assert str(item["retrieval_sources"][0]["score"]) == "0.82"
     assert item["retrieval_sources"][1]["source"] == "requester_profile"
+
+
+def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(monkeypatch):
+    repo = MagicMock()
+    repo.get_agent_reply_explanation.return_value = {
+        "current_user_message": "what did we decide about S3 Vectors?",
+        "answer_text": "We decided to use S3 Vectors because the previous answer needs continuity.",
+        "source_message_context": (
+            "Original replied-to message:\n"
+            "[speaker user_id=7 username=@nurt name=Nurt] S3 Vectors is cheaper for semantic memory."
+        ),
+    }
+    message = {
+        "message_id": 99,
+        "text": "why?",
+        "reply_to_message": {
+            "message_id": 555,
+            "text": "We decided to use S3 Vectors because the previous answer needs continuity.",
+            "from": {"id": 1000, "is_bot": True, "username": "zerde_kz_bot"},
+        },
+    }
+    monkeypatch.setattr(group_agent, "AGENT_BOT_ID", 1000)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
+
+    context = group_agent.build_explicit_question_context(repo, -100123, message)
+
+    assert "Previous bot answer:" in context.user_text
+    assert "We decided to use S3 Vectors because the previous answer needs continuity." in context.user_text
+    assert "Current follow-up: why?" in context.retrieval_query
+    assert "Previous user request: what did we decide about S3 Vectors?" in context.retrieval_query
+    assert "Original source message:" in context.retrieval_query
+    assert "previous answer needs continuity" not in context.retrieval_query
+    assert context.parent_bot_message_id == 555
 
 
 def test_store_long_term_memory_persists_extractor_metadata(monkeypatch):
@@ -2099,6 +2552,59 @@ def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkey
     assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"][0]["confidence"] == 0.31
 
 
+def test_answer_group_question_retrieves_with_compact_query_but_generates_from_full_prompt(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_reply.return_value = ("Because S3 Vectors matched the constraints.", 1)
+    retrieve = MagicMock(
+        return_value=[
+            {
+                "metadata": {
+                    "memory_kind": "group_fact",
+                    "source_sk": "GROUP_FACT#1#2",
+                    "text": "The group decided to use S3 Vectors for memory retrieval.",
+                }
+            }
+        ]
+    )
+    full_prompt = (
+        "The user is continuing a thread with this previous bot answer:\n\n"
+        "Previous user request:\nwhat did we decide about memory retrieval?\n\n"
+        "Previous bot answer:\nWe chose S3 Vectors after comparing several options.\n\n"
+        "User follow-up:\nwhy?"
+    )
+    retrieval_query = (
+        "Current follow-up: why?\n\n"
+        "Previous user request: what did we decide about memory retrieval?\n\n"
+        "Original source message: [speaker user_id=7] S3 Vectors fits the current AWS stack."
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", retrieve)
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text=full_prompt,
+        retrieval_query=retrieval_query,
+        lang="en",
+    )
+
+    assert handled is True
+    assert retrieve.call_args.args[1] == retrieval_query
+    assert retrieve.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
+    assert "Previous bot answer" not in retrieve.call_args.args[1]
+    assert gemini.group_chat_reply.call_args.kwargs["user_message"] == full_prompt
+    assert "Previous bot answer" in gemini.group_chat_reply.call_args.kwargs["user_message"]
+
+
 def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
@@ -2251,6 +2757,7 @@ def test_handle_ask_enqueues_group_context_answer():
         chat_id=-100123,
         reply_to_message_id=99,
         user_text="what happened yesterday?",
+        retrieval_query="what happened yesterday?",
         lang="en",
         requester_user_id=42,
         requester_username="ada",
@@ -2339,10 +2846,15 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     handle_ask(ctx)
 
     user_text = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"]
+    retrieval_query = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["retrieval_query"]
     assert "deploying on Friday evening" in user_text
     assert "is he being sarcastic?" in user_text
+    assert "deploying on Friday evening" in retrieval_query
+    assert "is he being sarcastic?" in retrieval_query
+    assert "The user is asking about this replied-to group message" not in retrieval_query
     assert "message_id=8" in ctx.sqs_repo.send_group_ask_task.call_args.kwargs["source_message_context"]
     assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["current_user_message"] == "is he being sarcastic?"
+    assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["parent_bot_message_id"] is None
     ctx.reply.assert_not_called()
 
 
@@ -2359,6 +2871,7 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
             "chat_id": -100123,
             "reply_to_message_id": 99,
             "user_text": "thread prompt",
+            "retrieval_query": "why? Previous user request: explain Python",
             "lang": "en",
             "requester_user_id": 42,
             "current_user_message": "why?",
@@ -2369,6 +2882,7 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
 
     answer.assert_called_once()
     assert answer.call_args.kwargs["current_user_message"] == "why?"
+    assert answer.call_args.kwargs["retrieval_query"] == "why? Previous user request: explain Python"
     assert "What is Python" in answer.call_args.kwargs["source_message_context"]
     assert answer.call_args.kwargs["parent_bot_message_id"] == 555
 
@@ -2508,6 +3022,17 @@ def test_memory_command_routes_forget_this(monkeypatch):
     forget_this.assert_called_once_with(ctx)
 
 
+def test_memory_command_routes_wrong_feedback(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/memory wrong"
+    wrong = MagicMock()
+    monkeypatch.setattr(commands, "handle_wrong_memory_feedback", wrong)
+
+    commands.handle_memory(ctx)
+
+    wrong.assert_called_once_with(ctx)
+
+
 def test_agent_command_routes_why(monkeypatch):
     ctx = _command_ctx(user_id=42)
     ctx.text = "/agent why"
@@ -2517,6 +3042,17 @@ def test_agent_command_routes_why(monkeypatch):
     commands.handle_agent(ctx)
 
     why.assert_called_once_with(ctx)
+
+
+def test_agent_command_routes_wrong_feedback(monkeypatch):
+    ctx = _command_ctx(user_id=42)
+    ctx.text = "/agent wrong"
+    wrong = MagicMock()
+    monkeypatch.setattr(commands, "handle_wrong_memory_feedback", wrong)
+
+    commands.handle_agent(ctx)
+
+    wrong.assert_called_once_with(ctx)
 
 
 def test_forget_group_allows_only_bot_owner(monkeypatch):
@@ -2569,6 +3105,29 @@ def _memory_query_prefixes(repo: GroupMemoryRepository) -> list[str]:
         assert begins_with["operator"] == "begins_with"
         prefixes.append(begins_with["values"][1])
     return prefixes
+
+
+def test_bot_output_key_families_are_not_vectorizable_memory():
+    commitment_sk = GroupMemoryRepository.durable_bot_memory_sk(
+        "bot_commitment",
+        1_700_000_000_000,
+        555,
+    )
+    correction_sk = GroupMemoryRepository.durable_bot_memory_sk(
+        "bot_correction",
+        1_700_000_000_000,
+        556,
+    )
+
+    assert GroupMemoryRepository.is_agent_reply_sk("AGENT_REPLY#0000000000555") is True
+    assert GroupMemoryRepository.is_vectorizable_sk("AGENT_REPLY#0000000000555") is False
+    assert GroupMemoryRepository.is_durable_bot_memory_sk(commitment_sk) is True
+    assert GroupMemoryRepository.is_durable_bot_memory_sk(correction_sk) is True
+    assert GroupMemoryRepository.is_vectorizable_sk(commitment_sk) is False
+    assert GroupMemoryRepository.is_vectorizable_sk(correction_sk) is False
+
+    with pytest.raises(ValueError, match="Unsupported durable bot memory kind"):
+        GroupMemoryRepository.durable_bot_memory_sk("agent_reply", 1_700_000_000_000, 557)
 
 
 def test_vectorizable_memory_items_query_vector_prefixes_not_full_partition():
@@ -2860,6 +3419,31 @@ def test_forget_this_bot_answer_group_owner_deletes_group_sources(monkeypatch):
     assert "1" in ctx.reply.call_args.args[0]
 
 
+def test_wrong_feedback_marks_replied_agent_reply_sources():
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "retrieval_sources": [
+            {"source": "semantic", "source_sk": "USER_FACT#42#0000000001000#8"},
+            {"source": "lexical", "source_sk": "USER_FACT#42#0000000001000#8"},
+            {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#9"},
+            {"source": "recent"},
+        ]
+    }
+    ctx.memory_repo.mark_memory_items_wrong.return_value = 2
+
+    commands.handle_wrong_memory_feedback(ctx)
+
+    ctx.memory_repo.get_agent_reply_explanation.assert_called_once_with(-100123, bot_message_id=999)
+    ctx.memory_repo.mark_memory_items_wrong.assert_called_once_with(
+        -100123,
+        ["USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
+        user_id=42,
+        agent_reply_message_id=999,
+    )
+    assert "Marked 2 memory source" in ctx.reply.call_args.args[0]
+
+
 def test_delete_memory_for_message_deletes_raw_and_derived_memory():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.list_message_items_by_message_id = MagicMock(
@@ -2885,6 +3469,45 @@ def test_delete_memory_for_message_deletes_raw_and_derived_memory():
         -100123,
         ["MSG#0000000001000#8", "USER_FACT#42#0000000001000#8"],
     )
+
+
+def test_mark_memory_items_wrong_increments_feedback_metadata():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    marked = repo.mark_memory_items_wrong(
+        -100123,
+        ["USER_FACT#42#0000000001000#8", "USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
+        user_id=42,
+        agent_reply_message_id=999,
+    )
+
+    assert marked == 2
+    assert repo.table.update_item.call_count == 2
+    kwargs = repo.table.update_item.call_args_list[0].kwargs
+    assert kwargs["Key"] == {"pk": "CHAT#-100123", "sk": "USER_FACT#42#0000000001000#8"}
+    assert "wrong_feedback_count = if_not_exists(wrong_feedback_count, :zero) + :one" in kwargs["UpdateExpression"]
+    assert (
+        "negative_feedback_count = if_not_exists(negative_feedback_count, :zero) + :one" in kwargs["UpdateExpression"]
+    )
+    assert "superseded_by = if_not_exists(superseded_by, :empty)" in kwargs["UpdateExpression"]
+    values = kwargs["ExpressionAttributeValues"]
+    assert values[":feedback_kind"] == "wrong"
+    assert values[":feedback_user_id"] == "42"
+    assert values[":agent_reply_message_id"] == 999
+
+
+def test_mark_memory_items_wrong_skips_missing_items():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.update_item.side_effect = ClientError(
+        {"Error": {"Code": "ConditionalCheckFailedException", "Message": "missing"}},
+        "UpdateItem",
+    )
+
+    marked = repo.mark_memory_items_wrong(-100123, ["MISSING#1"], user_id=42)
+
+    assert marked == 0
 
 
 def test_list_long_term_memory_items_by_message_id_queries_vector_prefixes():
@@ -2935,6 +3558,32 @@ def test_delete_memory_items_by_sks_deletes_existing_unique_items():
     assert deleted == [item]
     assert repo.table.get_item.call_count == 2
     batch.delete_item.assert_called_once_with(Key={"pk": "CHAT#-100123", "sk": "USER#42"})
+
+
+def test_delete_memory_items_by_sks_deletes_lexical_index_rows():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    batch = MagicMock()
+    repo.table.batch_writer.return_value.__enter__.return_value = batch
+    item = {
+        "pk": "CHAT#-100123",
+        "sk": "GROUP_FACT#0001700000000000#8",
+        "kind": "group_fact",
+        "summary": "The group saw E1027 in boto3 uploads.",
+        "created_at": 1_700_000_000,
+        "lexical_index_terms": ["e1027", "boto3"],
+    }
+    repo.table.get_item.return_value = {"Item": item}
+
+    deleted = repo.delete_memory_items_by_sks(-100123, [item["sk"]])
+
+    assert deleted == [item]
+    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
+    assert deleted_sks == [
+        "GROUP_FACT#0001700000000000#8",
+        "TERM#e1027#1700000000000#GROUP_FACT#0001700000000000#8",
+        "TERM#boto3#1700000000000#GROUP_FACT#0001700000000000#8",
+    ]
 
 
 def test_why_reply_uses_replied_bot_message_reason():

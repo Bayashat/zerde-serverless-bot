@@ -1,3 +1,5 @@
+import os
+from argparse import Namespace
 from datetime import UTC, date, datetime
 from unittest.mock import MagicMock
 
@@ -5,6 +7,8 @@ from botocore.exceptions import ClientError
 from services.group_memory_processor import MemoryClassification
 from services.history_import import (
     HistoryImportOptions,
+    HistoryImportStats,
+    _enqueue_vector,
     build_history_daily_summary,
     import_telegram_history,
     normalise_export_user_id,
@@ -132,6 +136,37 @@ def test_import_cli_parses_vectorize_daily_summaries_flag(monkeypatch):
     assert args.vectorize_daily_summaries is True
 
 
+def test_import_cli_seeds_vector_queue_url(monkeypatch):
+    for env_name in [
+        "MEMORY_TABLE_NAME",
+        "VECTOR_MEMORY_QUEUE_URL",
+        "AWS_DEFAULT_REGION",
+        "QUEUE_URL",
+        "STATS_TABLE_NAME",
+        "ADMIN_USER_ID",
+        "GEMINI_RPD_LIMIT",
+        "CHAT_LANG_MAP",
+        "CAPTCHA_TIMEOUT_SECONDS",
+        "KICK_BAN_DURATION_SECONDS",
+        "VOTEBAN_THRESHOLD",
+        "VOTEBAN_FORGIVE_THRESHOLD",
+        "CAPTCHA_MAX_ATTEMPTS",
+    ]:
+        monkeypatch.delenv(env_name, raising=False)
+
+    import_tool._seed_required_env(
+        Namespace(
+            table_name="memory-table",
+            queue_url="https://sqs.example/vector-memory",
+            aws_region="eu-central-1",
+        )
+    )
+
+    assert os.environ["MEMORY_TABLE_NAME"] == "memory-table"
+    assert os.environ["VECTOR_MEMORY_QUEUE_URL"] == "https://sqs.example/vector-memory"
+    assert os.environ["QUEUE_URL"].endswith("/history-import-dry-run")
+
+
 def test_import_telegram_history_dry_run_does_not_write(tmp_path):
     export_path = tmp_path / "result.json"
     export_path.write_text(
@@ -244,6 +279,21 @@ def test_import_telegram_history_vectorizes_daily_summary_when_enabled(tmp_path)
         "DAILY_SUMMARY#2026-01-01",
     ]
     assert result.stats.vector_tasks == 2
+
+
+def test_history_import_skips_non_vectorizable_agent_reply_enqueue():
+    vector_enqueue = MagicMock()
+    stats = HistoryImportStats()
+
+    _enqueue_vector(
+        HistoryImportOptions(chat_id=-100123, export_path=MagicMock(), since=date(2026, 1, 1)),
+        vector_enqueue,
+        "AGENT_REPLY#0000000000555",
+        stats,
+    )
+
+    vector_enqueue.assert_not_called()
+    assert stats.vector_tasks == 0
 
 
 def test_store_message_skip_if_exists_does_not_touch_profile():

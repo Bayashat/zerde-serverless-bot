@@ -117,14 +117,55 @@ def _role_has_action_on_queue(
     return False
 
 
-def test_vector_policies_allow_metadata_query_dependencies() -> None:
-    source = Path("infra/components/bot.py").read_text()
-    vector_indexer_source = Path("infra/components/vector_indexer.py").read_text()
+def _role_actions_for_service(template: Template, role_logical_id: str, service_prefix: str) -> set[str]:
+    actions: set[str] = set()
+    for statement in _role_statements(template, role_logical_id):
+        for action in _as_list(statement.get("Action", [])):
+            if isinstance(action, str) and action.startswith(f"{service_prefix}:"):
+                actions.add(action)
+    return actions
 
-    assert '"s3vectors:QueryVectors"' in source
-    assert '"s3vectors:GetVectors"' in source
-    assert '"s3vectors:QueryVectors"' in vector_indexer_source
-    assert '"s3vectors:GetVectors"' in vector_indexer_source
+
+def test_s3_vectors_permissions_are_scoped_by_lambda_role(monkeypatch: Any) -> None:
+    monkeypatch.setenv("VECTOR_MEMORY_ENABLED", "true")
+    monkeypatch.setenv("VECTOR_MEMORY_PROVIDER", "s3_vectors")
+    template = _dev_template(monkeypatch)
+    _, bot_lambda = _find_resource_by_property(
+        template,
+        "AWS::Lambda::Function",
+        "FunctionName",
+        "zerde-serverless-bot-dev",
+    )
+    _, vector_indexer_lambda = _find_resource_by_property(
+        template,
+        "AWS::Lambda::Function",
+        "FunctionName",
+        "zerde-serverless-vector-indexer-dev",
+    )
+
+    bot_actions = _role_actions_for_service(template, _function_role_id(bot_lambda), "s3vectors")
+    vector_indexer_actions = _role_actions_for_service(
+        template,
+        _function_role_id(vector_indexer_lambda),
+        "s3vectors",
+    )
+
+    assert {
+        "s3vectors:QueryVectors",
+        "s3vectors:GetVectors",
+        "s3vectors:DeleteVectors",
+        "s3vectors:GetIndex",
+    }.issubset(bot_actions)
+    assert "s3vectors:PutVectors" not in bot_actions
+    assert "s3vectors:ListVectors" not in bot_actions
+    assert {
+        "s3vectors:PutVectors",
+        "s3vectors:QueryVectors",
+        "s3vectors:GetVectors",
+        "s3vectors:DeleteVectors",
+        "s3vectors:ListVectors",
+        "s3vectors:GetIndex",
+    }.issubset(vector_indexer_actions)
 
 
 def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any) -> None:
@@ -209,6 +250,16 @@ def test_vector_indexer_consumes_vector_queue(monkeypatch: Any) -> None:
 
 
 def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
+    for key in (
+        "GROUP_MEMORY_RETENTION_DAYS",
+        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
+        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
+        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
+        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
+        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
     template = _dev_template(monkeypatch)
     _, bot_lambda = _find_resource_by_property(
         template,
@@ -218,11 +269,46 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     )
 
     env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
+    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
+    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
+    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PROVIDER"] == "gemini"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_MODE"] == "gemini_candidate_only"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE"] == "0.65"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT"] == "50"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
+    assert env_vars["AGENT_PROACTIVE_DELAY_SECONDS"] == "45"
+
+
+def test_broad_memory_type_retention_envs_fallback_to_legacy_retention(monkeypatch: Any) -> None:
+    monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "42")
+    for key in (
+        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
+        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
+        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
+        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
+        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    template = _dev_template(monkeypatch)
+    _, bot_lambda = _find_resource_by_property(
+        template,
+        "AWS::Lambda::Function",
+        "FunctionName",
+        "zerde-serverless-bot-dev",
+    )
+
+    env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
+    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
+    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
 
 
 def test_vector_indexer_ssm_access_is_limited_to_gemini(monkeypatch: Any) -> None:

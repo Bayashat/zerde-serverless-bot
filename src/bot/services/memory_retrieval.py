@@ -191,6 +191,7 @@ class MemoryCandidate:
 @dataclass(frozen=True)
 class RetrievalBundle:
     intent: RetrievalIntent
+    retrieval_query: str
     recent_context: str
     long_term_memory_context: str
     semantic_memory_context: str
@@ -230,6 +231,29 @@ def analyze_query_intent(
         asks_joke_or_meme=_contains_any(user_text, _JOKE_CUES),
         time_hint=time_match.group(0) if time_match else None,
     )
+
+
+def memory_kinds_for_intent(intent: RetrievalIntent) -> tuple[str, ...] | None:
+    """Return semantic memory kinds worth searching for an obvious query intent."""
+    if intent.is_self_reference:
+        return ("user_fact",)
+    if intent.target_usernames or intent.target_user_ids:
+        return ("user_fact",)
+
+    kinds: list[str] = []
+
+    def add(*values: str) -> None:
+        for value in values:
+            if value not in kinds:
+                kinds.append(value)
+
+    if intent.asks_group_decision:
+        add("group_fact", "daily_summary")
+    if intent.asks_past_event:
+        add("event", "daily_summary")
+    if intent.asks_joke_or_meme:
+        add("joke", "daily_summary")
+    return tuple(kinds) or None
 
 
 def extract_lexical_terms(text: str) -> set[str]:
@@ -314,6 +338,32 @@ def _item_memory_text(item: dict[str, Any]) -> str:
     return text
 
 
+def _int_value(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _feedback_metadata_from_item(item: dict[str, Any]) -> dict[str, Any]:
+    metadata: dict[str, Any] = {}
+    wrong_feedback_count = _int_value(item.get("wrong_feedback_count"))
+    negative_feedback_count = _int_value(item.get("negative_feedback_count"))
+    if wrong_feedback_count:
+        metadata["wrong_feedback_count"] = wrong_feedback_count
+    if negative_feedback_count:
+        metadata["negative_feedback_count"] = negative_feedback_count
+    if item.get("last_feedback_at") is not None:
+        metadata["last_feedback_at"] = item.get("last_feedback_at")
+    feedback_status = str(item.get("feedback_status") or "").strip()
+    if feedback_status:
+        metadata["feedback_status"] = feedback_status
+    superseded_by = str(item.get("superseded_by") or "").strip()
+    if superseded_by:
+        metadata["superseded_by"] = superseded_by
+    return metadata
+
+
 def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCandidate | None:
     text = _item_memory_text(item)
     if not text or not is_memory_learning_safe(text):
@@ -335,6 +385,7 @@ def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCan
         "confidence": item.get("confidence"),
         "display_name": item.get("display_name"),
         "username": item.get("username"),
+        **_feedback_metadata_from_item(item),
     }
     return MemoryCandidate(
         source="lexical",
@@ -346,6 +397,25 @@ def _lexical_candidate(item: dict[str, Any], query_terms: set[str]) -> MemoryCan
         created_at=_item_created_at(item),
         metadata={key: value for key, value in metadata.items() if value is not None},
     )
+
+
+def _hydrate_candidate_feedback(
+    repo: GroupMemoryRepository,
+    chat_id: int | str,
+    candidate: MemoryCandidate,
+) -> MemoryCandidate:
+    if not candidate.source_sk:
+        return candidate
+    try:
+        item = repo.get_memory_item(chat_id, candidate.source_sk)
+    except Exception:
+        return candidate
+    if not isinstance(item, dict):
+        return candidate
+    feedback_metadata = _feedback_metadata_from_item(item)
+    if not feedback_metadata:
+        return candidate
+    return replace(candidate, metadata={**candidate.metadata, **feedback_metadata})
 
 
 def _format_lexical_memory_context(candidates: list[MemoryCandidate]) -> str:
@@ -465,16 +535,25 @@ def retrieve_candidates(
 ) -> tuple[dict[str, str], list[MemoryCandidate]]:
     """Call existing retrievers/formatters and convert their output to candidates."""
     recent_context = recent_context_fn(repo, chat_id, limit=recent_limit)
-    long_term_context = long_term_context_fn(repo, chat_id, query_text=user_text)
+    memory_kinds = memory_kinds_for_intent(intent)
+    long_term_context = long_term_context_fn(repo, chat_id, query_text=user_text, memory_kinds=memory_kinds)
     semantic_rows = semantic_retrieval_fn(
         chat_id,
         user_text,
         limit=semantic_limit,
         user_id=requester_user_id if intent.is_self_reference else None,
+        memory_kinds=memory_kinds,
     )
-    semantic_candidates = [candidate for row in semantic_rows if (candidate := _semantic_candidate(row)) is not None]
+    semantic_candidates = [
+        _hydrate_candidate_feedback(repo, chat_id, candidate)
+        for row in semantic_rows
+        if (candidate := _semantic_candidate(row)) is not None
+    ]
     lexical_terms = extract_lexical_terms(user_text)
     lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []
+    if memory_kinds:
+        allowed_memory_kinds = set(memory_kinds)
+        lexical_rows = [row for row in lexical_rows if _item_memory_kind(row) in allowed_memory_kinds]
     lexical_candidates = [
         candidate for row in lexical_rows if (candidate := _lexical_candidate(row, lexical_terms)) is not None
     ]
@@ -597,6 +676,15 @@ def score_candidates(
             score += (confidence_value - 0.5) * 0.12
             if confidence_value < 0.4:
                 score -= 0.06
+        wrong_feedback_count = _int_value(candidate.metadata.get("wrong_feedback_count"))
+        negative_feedback_count = _int_value(candidate.metadata.get("negative_feedback_count"))
+        feedback_count = max(wrong_feedback_count, negative_feedback_count)
+        if feedback_count:
+            score -= min(0.36, 0.14 + feedback_count * 0.06)
+        if str(candidate.metadata.get("feedback_status") or "").strip().lower() == "wrong":
+            score -= 0.08
+        if str(candidate.metadata.get("superseded_by") or "").strip():
+            score -= 0.2
 
         scored.append(replace(candidate, score=max(0.0, min(1.0, score))))
     return sorted(scored, key=lambda item: (item.score, item.trust_level), reverse=True)
@@ -634,6 +722,7 @@ def pack_context(
     intent: RetrievalIntent,
     contexts: dict[str, str],
     candidates: list[MemoryCandidate],
+    retrieval_query: str = "",
     char_budget: int = 12_000,
     source_limit: int = 16,
 ) -> RetrievalBundle:
@@ -665,6 +754,7 @@ def pack_context(
     selected_sources = [candidate.source_metadata() for candidate in selected_candidates]
     return RetrievalBundle(
         intent=intent,
+        retrieval_query=retrieval_query,
         recent_context="\n".join(packed_lines["recent_context"]),
         long_term_memory_context="\n".join(packed_lines["long_term_memory_context"]),
         semantic_memory_context="\n".join(packed_lines["semantic_memory_context"]),
@@ -680,6 +770,7 @@ def build_agent_memory_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
     user_text: str,
+    retrieval_query: str | None = None,
     requester_user_id: int | str | None = None,
     requester_username: str | None = None,
     requester_display_name: str | None = None,
@@ -699,11 +790,12 @@ def build_agent_memory_context(
     requester_profile_context_fn: Callable[..., str] = format_requester_profile_context,
 ) -> RetrievalBundle:
     """Build agent prompt contexts plus retrieval source metadata."""
-    intent = analyze_query_intent(user_text, requester_user_id, ignored_usernames=ignored_usernames)
+    query_text = (retrieval_query or user_text).strip()
+    intent = analyze_query_intent(query_text, requester_user_id, ignored_usernames=ignored_usernames)
     contexts, candidates = retrieve_candidates(
         repo=repo,
         chat_id=chat_id,
-        user_text=user_text,
+        user_text=query_text,
         intent=intent,
         requester_user_id=requester_user_id,
         requester_username=requester_username,
@@ -720,5 +812,11 @@ def build_agent_memory_context(
         user_profile_context_fn=user_profile_context_fn,
         requester_profile_context_fn=requester_profile_context_fn,
     )
-    scored = dedupe_candidates(score_candidates(candidates, intent=intent, user_text=user_text))
-    return pack_context(intent=intent, contexts=contexts, candidates=scored, char_budget=char_budget)
+    scored = dedupe_candidates(score_candidates(candidates, intent=intent, user_text=query_text))
+    return pack_context(
+        intent=intent,
+        retrieval_query=query_text,
+        contexts=contexts,
+        candidates=scored,
+        char_budget=char_budget,
+    )

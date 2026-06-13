@@ -33,7 +33,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 
 ## Repository Map
 
-- `src/bot/`: Telegram webhook, dispatcher, SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector indexing entrypoints.
+- `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
 - `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length/style policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
@@ -57,19 +57,25 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - User profile context must be derived from the target user's own messages; third-party roasts or labels are low trust.
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
+- Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
+- Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
-- Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available.
+- Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
 - Keep structured Gemini extraction behind `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` and extractor LLM budgets by default, so ordinary safe chatter does not consume shared Gemini generate RPD.
-- Raw `MSG#...` records may keep audit context, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
+- Raw `MSG#...` records may keep audit context and available reply metadata such as reply-to ids, sender info, bot/self-bot flags, and simple thread roots, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
 - Vector retrieval and indexing success paths should emit structured INFO logs with counts, filters, distance cutoffs, and vector dimensions. Avoid logging full prompts, full memory text, vectors, or secrets.
+- Vector indexing should be idempotent for duplicate SQS deliveries: successful items store the rendered-document hash, schema version, embedding model, and dimensions, and only skip when all of those still match.
 - Do not vectorize fallback or empty structured live daily summaries; store them in DynamoDB only so low-information summaries do not pollute semantic retrieval.
-- Reply-to-bot follow-ups must include prior `AGENT_REPLY#...` answer context when available.
-- Reply-to-bot follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
-- Do not answer every reply to a bot message; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
+- Do not vectorize `AGENT_REPLY#...`; normal bot answers are short-term reply-thread metadata only, not durable semantic memory.
+- Reserve `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` for explicit future command/admin correction flows with permission/review checks before any bot-authored text becomes durable memory.
+- Reply-to-Zerde follow-ups must include prior `AGENT_REPLY#...` answer context when available.
+- Reply-to-Zerde follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
+- Do not treat replies to other bots as Zerde reply threads; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
 - Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
 - Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
+- Keep `/agent wrong` and `/memory wrong` non-destructive: mark a replied bot answer's recorded memory sources with negative feedback metadata and lower future retrieval priority.
 - Keep `/memory about me` scoped to the requester profile derived from their own messages, and keep `/memory forget this` permission-scoped to own memory unless the caller is the group owner or bot owner.
-- Keep proactive participation conservative: local open-question prefilter, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
+- Keep proactive participation conservative: local open-question prefilter, delayed candidate queue, post-trigger human-answer check, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
 - Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese; local prefilter skips for open-question candidates should log structured reasons.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - Keep chat-level `style_profile` defaults concise and socially safe. Weak selected memory should add uncertainty instructions instead of letting the model sound certain.
@@ -82,6 +88,7 @@ SQS handler failures should re-raise when retry/DLQ semantics are intended. Curr
 - `CHECK_TIMEOUT`
 - `SPAM_CHECK`
 - `PROCESS_GROUP_ASK`
+- `PROCESS_PROACTIVE_CANDIDATE`
 - `PROCESS_GROUP_MEMORY`
 - `PROCESS_DAILY_GROUP_SUMMARIES`
 
@@ -95,14 +102,22 @@ DynamoDB memory key families:
 - `SETTINGS` with memory/agent flags and optional chat `style_profile`
 - `MSG#...`
 - `USER#...`
+- `USERNAME#...`
 - `EVENT#...`
 - `USER_FACT#...`
 - `GROUP_FACT#...`
 - `JOKE#...`
 - `DAILY_SUMMARY#...`
+- `TERM#...`
 - `AGENT_REPLY#...`
+- `BOT_COMMITMENT#...`
+- `BOT_CORRECTION#...`
 - `VECTOR_BACKFILL`
 - `PROACTIVE#...`
+
+Memory items may carry feedback/consolidation metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, and `superseded_by`.
+
+Memory TTLs are type-specific. Use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` for `MSG#...`, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` for `AGENT_REPLY#...`, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` for `EVENT#...` / `USER_FACT#...` / `GROUP_FACT#...` / `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` for `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` for `PROACTIVE#...`. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Explicit long-term `expires_in_days` still sets `expires_at` and DynamoDB TTL takes the shorter expiry.
 
 ## Common Commands
 
@@ -136,7 +151,7 @@ Treat AI behavior as user-facing reliability work:
 - Use `zerde_common` for shared provider errors, config helpers, redaction, and structured logging.
 - Keep Lambda env names consistent with code: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`.
 - Use `CONSTRUCT_PREFIX` and `RESOURCE_PREFIX` from `infra/components/constants.py`; do not duplicate those string literals in constructs.
-- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy.
+- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy. Keep Bot Lambda permissions limited to query/get/delete/get-index; reserve `s3vectors:PutVectors` and `s3vectors:ListVectors` for the vector-indexer Lambda.
 - If editing Telegram HTML output, normalize/escape LLM output before sending and respect Telegram length constraints.
 
 ## Documentation Maintenance
