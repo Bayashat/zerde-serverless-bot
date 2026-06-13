@@ -25,8 +25,11 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **Long-term memory**: candidate-gated және budgeted structured extraction арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, delayed conservative proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
+- **Explicit media understanding**: `/ask` фото/screenshot, voice/audio, PDF және supported text/code/log файлдарға reply ретінде жұмыс істейді. Zerde топтағы әр медианы автоматты талдамайды.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, `/agent wrong` / `/memory wrong` feedback related vector cleanup-пен, owner-only group cleanup.
 - **Bot output boundary**: кәдімгі bot жауаптары тек short-term `AGENT_REPLY#...` thread metadata ретінде сақталады, semantic memory-ге embed жасалмайды. Durable bot-authored memory үшін future explicit `BOT_COMMITMENT#...` немесе `BOT_CORRECTION#...` flow қажет.
+
+Media analysis explicit және ephemeral: bot медианы тек user `/ask` немесе explicit mention/reply path арқылы сұрағанда жүктеп талдайды, raw bytes/downloaded file сақтамайды және media-derived фактілерді long-term memory немесе S3 Vectors-ке жазбайды. Follow-up continuity үшін short-lived `AGENT_REPLY#...` ішінде тек compact media metadata/summary сақталуы мүмкін.
 
 RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
 
@@ -41,6 +44,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Мүмкіндік | Сипаттама |
 |----------|-----------|
 | Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға requester/recent/profile/long-term/lexical/semantic memory контекстімен жауап береді. |
+| Explicit multimodal `/ask` | Фото/screenshot, voice/audio, PDF немесе supported text/code/log файлға reply жасап `/ask` жіберуге болады; async worker медианы тек сол жауап үшін оқиды. |
 | RAG memory | Group memory DynamoDB-де сақталады, long-term memory structured Gemini schema + rule fallback арқылы алынады, high-information memory S3 Vectors semantic retrieval үшін индекстеледі және exact-term DynamoDB fallback + local reranking қолданылады. |
 | Reply thread continuity | Bot жауаптары short-term `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі; бұл semantic/vector memory емес. |
 | Social timing | Proactive жауаптар қысқа delay-ден кейін human-answer check, local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. |
@@ -113,7 +117,7 @@ Bot Lambda retrieval және memory cleanup үшін S3 Vectors query/delete ж
 | `/stats` | Admins | Community статистикасы. |
 | `/voteban` | Барлығына | Reply арқылы ban vote бастау. |
 | `/quizstats` | Барлығына | Жеке quiz score, streak, rank. |
-| `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға reply ретінде де қолдануға болады және “мен кіммін” сияқты сұрақтарды requester identity арқылы түсінеді. |
+| `/ask <question>` | Memory қосылған топтарда | Agent-ке сұрақ қою; басқа хабарламаға, image/screenshot, voice/audio, PDF немесе supported text/code/log файлға reply ретінде де қолдануға болады. Media тек explicit жауап үшін талданады және default бойынша long-term/vector memory емес. |
 | `/memory about me` | Барлығына | Current user-дің өз хабарламаларынан сақталған profile fields көрсету; басқа адамдардың бағасын көрсетпейді. |
 | `/memory on/off/status/forget .../wrong` | Settings үшін group owner немесе bot owner; users өз memory өшіре алады немесе answer source-тарын wrong деп белгілей алады | Group memory басқару және cleanup. `forget this` bot answer-ден durable long-term memory ғана өшіреді немесе source message-ке тікелей reply болса raw/derived memory өшіреді; `USER#` profile өшірмейді. `wrong` reply жасалған bot answer memory source-тарын өшірмей қате деп белгілейді. |
 | `/agent on/off/status/why/wrong` | Settings үшін group owner немесе bot owner; users replied answer source-тарын тексере/белгілей алады | Agent participation басқару және bot неге жауап бергенін көру; memory source түрлері/count көрсетіледі, толық memory text көрсетілмейді. `/agent wrong` reply жасалған bot answer memory source-тарын қате деп белгілейді. `/agent off` proactive, mention және reply-thread қатысуын өшіреді; жад қосулы болса, `/ask` қолжетімді. |

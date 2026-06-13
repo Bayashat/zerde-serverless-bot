@@ -20,6 +20,17 @@ from services.group_agent import answer_group_question, build_explicit_question_
 from services.group_memory import display_name
 from services.handlers.quiz import react_genquiz_processing
 from services.repositories.group_memory import GroupMemoryRepository
+from services.telegram_media import (
+    MediaDisabledError,
+    MediaTooLargeError,
+    MediaUnavailableError,
+    MediaUnsupportedError,
+    default_question_for_media,
+    detect_media_reference,
+    has_any_media,
+    media_retrieval_query,
+    prepare_media_for_gemini,
+)
 from services.vector_memory import (
     delete_chat_vectors,
     delete_memory_vectors_for_items,
@@ -425,15 +436,25 @@ def handle_ask(ctx: Context) -> None:
         ctx.reply(get_translated_text("ask_agent_unavailable", ctx.lang_code), ctx.message_id)
         return
     question = _command_args(ctx.text)
+    ask_message = _message_for_ask_context(ctx, question)
+    media_ref = detect_media_reference(ask_message)
+    if not media_ref and has_any_media(ask_message):
+        ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
+        return
+    effective_question = question or (default_question_for_media(media_ref) if media_ref else "")
+    ask_message = _message_for_ask_context(ctx, effective_question)
     question_context = build_explicit_question_context(
         ctx.memory_repo,
         ctx.chat_id,
-        _message_for_ask_context(ctx, question),
-        current_text=question,
+        ask_message,
+        current_text=effective_question,
     )
     if not question_context.user_text:
         ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
         return
+    retrieval_query = question_context.retrieval_query
+    if media_ref:
+        retrieval_query = media_retrieval_query(retrieval_query, media_ref)
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
         ctx.reply(get_translated_text("ask_memory_off", ctx.lang_code), ctx.message_id)
         return
@@ -450,7 +471,7 @@ def handle_ask(ctx: Context) -> None:
             chat_id=ctx.chat_id,
             reply_to_message_id=ctx.message_id,
             user_text=question_context.user_text,
-            retrieval_query=question_context.retrieval_query,
+            retrieval_query=retrieval_query,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
             requester_username=ctx.username,
@@ -458,6 +479,7 @@ def handle_ask(ctx: Context) -> None:
             current_user_message=question_context.current_user_message,
             source_message_context=question_context.source_message_context,
             parent_bot_message_id=question_context.parent_bot_message_id,
+            media_ref=media_ref.to_dict() if media_ref else None,
         )
     except Exception:
         logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
@@ -481,6 +503,46 @@ def process_group_ask_task(
     if not user_text:
         logger.warning("PROCESS_GROUP_ASK received empty user_text", extra={"chat_id": chat_id})
         return
+    media_parts = None
+    media_context = ""
+    media_metadata = None
+    media_ref = body.get("media_ref")
+    if isinstance(media_ref, dict):
+        try:
+            prepared_media = prepare_media_for_gemini(bot, media_ref)
+            media_parts = prepared_media.media_parts
+            media_context = prepared_media.media_context
+            media_metadata = prepared_media.agent_reply_metadata
+        except MediaDisabledError:
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_multimodal_unavailable", lang),
+                reply_to_message_id=reply_to_message_id,
+            )
+            return
+        except MediaUnsupportedError:
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_media_unsupported", lang),
+                reply_to_message_id=reply_to_message_id,
+            )
+            return
+        except MediaTooLargeError:
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_media_too_large", lang),
+                reply_to_message_id=reply_to_message_id,
+            )
+            return
+        except MediaUnavailableError as exc:
+            if exc.retryable:
+                raise
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_media_unavailable", lang),
+                reply_to_message_id=reply_to_message_id,
+            )
+            return
     handled = answer_group_question(
         repo=repo,
         bot=bot,
@@ -495,6 +557,9 @@ def process_group_ask_task(
         current_user_message=str(body.get("current_user_message") or "") or None,
         source_message_context=str(body.get("source_message_context") or "") or None,
         parent_bot_message_id=body.get("parent_bot_message_id"),
+        media_parts=media_parts,
+        media_context=media_context,
+        media_metadata=media_metadata,
         raise_on_unavailable=True,
     )
     if not handled:

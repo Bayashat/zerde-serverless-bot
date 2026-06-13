@@ -148,11 +148,14 @@ def _agent_reply_thread_context(
     telegram_reply_text: str,
 ) -> str:
     source_context = str(item.get("source_message_context") or "").strip()
+    media_context = _agent_reply_media_context(item)
     previous_user = str(item.get("current_user_message") or item.get("user_message") or "").strip()
     previous_answer = str(item.get("answer_text") or telegram_reply_text or "").strip()
     parts = ["The user is continuing a thread with this previous bot answer:"]
     if source_context:
         parts.append(f"Original source message for the previous answer:\n{source_context[:1800]}")
+    if media_context:
+        parts.append(f"Previous explicit media context for the prior answer:\n{media_context}")
     if previous_user:
         parts.append(f"Previous user request:\n{previous_user[:1200]}")
     if previous_answer:
@@ -164,6 +167,34 @@ def _agent_reply_thread_context(
 
 def _compact_query_text(text: str, *, limit: int) -> str:
     return " ".join((text or "").split())[:limit]
+
+
+def _agent_reply_media_context(item: dict[str, Any]) -> str:
+    metadata = item.get("media_metadata")
+    if not isinstance(metadata, Mapping):
+        return ""
+    lines: list[str] = []
+    media_type = str(metadata.get("media_type") or "").strip()
+    if media_type:
+        lines.append(f"media_type={media_type}")
+    for key in ("mime_type", "file_name", "caption", "source_message_id", "source_display_name"):
+        value = metadata.get(key)
+        if value not in (None, ""):
+            lines.append(f"{key}={str(value)[:500]}")
+    summary = str(metadata.get("media_summary") or item.get("media_summary") or "").strip()
+    if summary:
+        lines.append(f"media_summary={summary[:900]}")
+    return "\n".join(lines)
+
+
+def _media_summary_from_metadata(answer_text: str, metadata: Mapping[str, Any]) -> str:
+    media_type = str(metadata.get("media_type") or "media").replace("_", " ")
+    file_name = str(metadata.get("file_name") or "").strip()
+    answer = " ".join((answer_text or "").split())
+    prefix = f"{media_type} {file_name[:120]}".strip()
+    if not answer:
+        return prefix[:180]
+    return f"{prefix}: {answer[:760]}"
 
 
 def _reply_source_retrieval_query(*, current_question: str, source_context: str) -> str:
@@ -185,6 +216,7 @@ def _agent_reply_thread_retrieval_query(
     telegram_reply_text: str,
 ) -> str:
     source_context = _compact_query_text(str(item.get("source_message_context") or ""), limit=700)
+    media_context = _compact_query_text(_agent_reply_media_context(item), limit=700)
     previous_user = _compact_query_text(
         str(item.get("current_user_message") or item.get("user_message") or ""),
         limit=600,
@@ -197,6 +229,8 @@ def _agent_reply_thread_retrieval_query(
         parts.append(f"Previous user request: {previous_user}")
     if source_context:
         parts.append(f"Original source message: {source_context}")
+    if media_context:
+        parts.append(f"Previous media summary: {media_context}")
     if len(parts) <= 1:
         fallback_answer = _compact_query_text(str(item.get("answer_text") or telegram_reply_text or ""), limit=400)
         if fallback_answer:
@@ -1302,6 +1336,9 @@ def answer_group_question(
     current_user_message: str | None = None,
     source_message_context: str | None = None,
     parent_bot_message_id: int | str | None = None,
+    media_parts: list[dict[str, Any]] | None = None,
+    media_context: str = "",
+    media_metadata: dict[str, Any] | None = None,
     raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
@@ -1323,6 +1360,7 @@ def answer_group_question(
                 current_user_message=current_user_message,
                 source_message_context=source_message_context,
                 parent_bot_message_id=parent_bot_message_id,
+                media_metadata=media_metadata,
             )
         return True
 
@@ -1383,6 +1421,8 @@ def answer_group_question(
             reply_instructions=reply_policy.instructions,
             max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
+            media_parts=media_parts,
+            media_context=media_context,
         )
     except GeminiRPDExhaustedError:
         bot.send_message(
@@ -1422,6 +1462,9 @@ def answer_group_question(
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
     if bot_message_id:
+        media_reply_metadata = dict(media_metadata or {})
+        if media_reply_metadata and not media_reply_metadata.get("media_summary"):
+            media_reply_metadata["media_summary"] = _media_summary_from_metadata(answer_text, media_reply_metadata)
         repo.record_agent_reply(
             chat_id=chat_id,
             bot_message_id=bot_message_id,
@@ -1440,5 +1483,6 @@ def answer_group_question(
             requester_username=requester_username,
             requester_display_name=requester_display_name,
             retrieval_sources=memory_bundle.retrieval_sources,
+            media_metadata=media_reply_metadata or None,
         )
     return True

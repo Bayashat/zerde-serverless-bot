@@ -159,9 +159,16 @@ TRANSLATIONS = {
             "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
             "🧾 <b>Recorded agent replies:</b> {agent_replies}"
         ),
-        "ask_usage": "💬 Usage: <code>/ask question</code> or reply to a message with <code>/ask</code>.",
+        "ask_usage": ("💬 Usage: <code>/ask question</code> or reply to a message/media with <code>/ask</code>."),
         "ask_memory_off": "🧠 Group memory is off. Ask the group owner to run <code>/memory on</code> first.",
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
+        "ask_multimodal_unavailable": "😵 Media understanding is not available right now.",
+        "ask_media_unsupported": (
+            "I can read images, voice/audio, PDFs, and text/code/log files through /ask, "
+            "but not this media type yet."
+        ),
+        "ask_media_too_large": "I could not read this media because it is too large.",
+        "ask_media_unavailable": "I could not read this media. It may be unavailable, expired, or not downloadable.",
         "ask_daily_quota_exhausted": "⚠️ AI daily quota is exhausted for today.",
         "forget_group_done": "🧹 Deleted {deleted} memory items for this group.\n{vector_note}",
         "forget_me_no_user": "❌ I could not identify your Telegram user id.",
@@ -418,10 +425,20 @@ TRANSLATIONS = {
             "🧾 <b>Жазылған agent жауаптары:</b> {agent_replies}"
         ),
         "ask_usage": (
-            "💬 Қолданылуы: <code>/ask сұрақ</code> немесе хабарламаға reply жасап <code>/ask</code> жіберіңіз."
+            "💬 Қолданылуы: <code>/ask сұрақ</code> немесе хабарлама/медиаға reply жасап "
+            "<code>/ask</code> жіберіңіз."
         ),
         "ask_memory_off": "🧠 Топ жады өшірулі. Топ иесінен алдымен <code>/memory on</code> жіберуді сұраңыз.",
         "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
+        "ask_multimodal_unavailable": "😵 Медиа түсіну қазір қолжетімсіз.",
+        "ask_media_unsupported": (
+            "Мен /ask арқылы сурет, voice/audio, PDF және text/code/log файлдарын оқи аламын, "
+            "бірақ бұл медиа түрі әзірше қолдау таппайды."
+        ),
+        "ask_media_too_large": "Бұл медианы оқи алмадым: файл тым үлкен.",
+        "ask_media_unavailable": (
+            "Бұл медианы оқи алмадым. Ол қолжетімсіз, мерзімі өткен немесе жүктелмейтін болуы мүмкін."
+        ),
         "ask_daily_quota_exhausted": "⚠️ Бүгінгі AI күндік лимиті таусылды.",
         "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.\n{vector_note}",
         "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
@@ -673,9 +690,13 @@ TRANSLATIONS = {
             "🧵 <b>向量回填：</b>{vector_backfill}\n"
             "🧾 <b>已记录 agent 回复：</b>{agent_replies}"
         ),
-        "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复一条消息并发送 <code>/ask</code>。",
+        "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复消息/媒体并发送 <code>/ask</code>。",
         "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
+        "ask_multimodal_unavailable": "😵 媒体理解功能现在不可用。",
+        "ask_media_unsupported": "我可以通过 /ask 读取图片、语音/音频、PDF 和文本/代码/日志文件，但暂不支持这种媒体类型。",
+        "ask_media_too_large": "我无法读取这个媒体：文件太大。",
+        "ask_media_unavailable": "我无法读取这个媒体。它可能不可用、已过期，或无法下载。",
         "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
         "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。\n{vector_note}",
         "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
@@ -918,11 +939,22 @@ TRANSLATIONS = {
             "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
             "🧾 <b>Записанные ответы agent-а:</b> {agent_replies}"
         ),
-        "ask_usage": "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение командой <code>/ask</code>.",
+        "ask_usage": (
+            "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение/медиа командой " "<code>/ask</code>."
+        ),
         "ask_memory_off": (
             "🧠 Память группы выключена. Попросите владельца группы сначала выполнить <code>/memory on</code>."
         ),
         "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
+        "ask_multimodal_unavailable": "😵 Понимание медиа сейчас недоступно.",
+        "ask_media_unsupported": (
+            "Я могу читать изображения, voice/audio, PDF и text/code/log файлы через /ask, "
+            "но этот тип медиа пока не поддерживается."
+        ),
+        "ask_media_too_large": "Я не смог прочитать это медиа: файл слишком большой.",
+        "ask_media_unavailable": (
+            "Я не смог прочитать это медиа. Оно может быть недоступно, просрочено или не скачиваться."
+        ),
         "ask_daily_quota_exhausted": "⚠️ Дневная квота AI на сегодня исчерпана.",
         "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.\n{vector_note}",
         "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",

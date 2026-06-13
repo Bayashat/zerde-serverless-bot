@@ -23,12 +23,18 @@ class TelegramAPIError(Exception):
         super().__init__(status, body)
 
 
+class TelegramFileTooLargeError(Exception):
+    """Raised when a Telegram file exceeds the configured download limit."""
+
+
 class TelegramClient:
     """HTTP wrapper around the Telegram Bot API."""
 
     def __init__(self) -> None:
         self.bot_token = get_bot_token()
         self.api_base = f"{TELEGRAM_API_BASE}{self.bot_token}"
+        file_base = TELEGRAM_API_BASE.replace("/bot", "/file/bot", 1)
+        self.file_api_base = f"{file_base}{self.bot_token}"
         logger.info("TelegramClient initialized", extra={"api_base": TELEGRAM_API_BASE})
 
     def _post(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -251,6 +257,45 @@ class TelegramClient:
                 extra={"user_id": user_id, "error": str(e)},
             )
             raise
+
+    def get_file(self, file_id: str) -> dict[str, Any]:
+        """Return Telegram file metadata from ``getFile`` for a file id."""
+        result = self._post("getFile", {"file_id": file_id})
+        file_info = result.get("result", {})
+        if not isinstance(file_info, dict):
+            raise TelegramAPIError(502, "Telegram getFile returned an invalid result")
+        return file_info
+
+    def download_file(self, file_path: str, *, max_bytes: int) -> bytes:
+        """Download a Telegram file into memory, enforcing a hard byte limit."""
+        safe_path = str(file_path or "").lstrip("/")
+        if not safe_path:
+            raise TelegramAPIError(400, "Missing Telegram file_path")
+        url = f"{self.file_api_base}/{safe_path}"
+        resp = http.request("GET", url, preload_content=False)
+        try:
+            if resp.status >= 400:
+                body = resp.read(4096).decode("utf-8", errors="replace")
+                raise TelegramAPIError(resp.status, body)
+            content_length = resp.headers.get("Content-Length")
+            if content_length:
+                try:
+                    if int(content_length) > max_bytes:
+                        raise TelegramFileTooLargeError(f"Telegram file exceeds {max_bytes} bytes")
+                except ValueError:
+                    pass
+            chunks: list[bytes] = []
+            total = 0
+            for chunk in resp.stream(64 * 1024):
+                if not chunk:
+                    continue
+                total += len(chunk)
+                if total > max_bytes:
+                    raise TelegramFileTooLargeError(f"Telegram file exceeds {max_bytes} bytes")
+                chunks.append(chunk)
+            return b"".join(chunks)
+        finally:
+            resp.release_conn()
 
     def delete_message(self, chat_id: int | str, message_id: int) -> None:
         """Delete a message from Telegram."""

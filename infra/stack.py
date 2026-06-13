@@ -150,6 +150,10 @@ class ZerdeTelegramBotStack(Stack):
         agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
         agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
+        multimodal_enabled = os.environ.get("MULTIMODAL_ENABLED", "true")
+        multimodal_max_download_bytes = os.environ.get("MULTIMODAL_MAX_DOWNLOAD_BYTES", "12000000")
+        multimodal_inline_max_bytes = os.environ.get("MULTIMODAL_INLINE_MAX_BYTES", "8000000")
+        multimodal_text_file_max_chars = os.environ.get("MULTIMODAL_TEXT_FILE_MAX_CHARS", "20000")
         vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
         vector_memory_provider = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors")
         vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
@@ -255,6 +259,10 @@ class ZerdeTelegramBotStack(Stack):
             agent_proactive_delay_seconds=agent_proactive_delay_seconds,
             agent_proactive_score_threshold=agent_proactive_score_threshold,
             agent_proactive_final_threshold=agent_proactive_final_threshold,
+            multimodal_enabled=multimodal_enabled,
+            multimodal_max_download_bytes=multimodal_max_download_bytes,
+            multimodal_inline_max_bytes=multimodal_inline_max_bytes,
+            multimodal_text_file_max_chars=multimodal_text_file_max_chars,
             vector_memory_enabled=vector_memory_enabled,
             vector_memory_provider=vector_memory_provider,
             vector_memory_dimensions=vector_memory_dimensions,
