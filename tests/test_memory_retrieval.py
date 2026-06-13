@@ -272,6 +272,8 @@ def test_lexical_results_do_not_bypass_memory_safety_filter():
 
 def test_repository_lexical_search_uses_long_term_prefixes_and_filters_unsafe_rows():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.return_value = {"Items": []}
     repo.get_recent_daily_summaries = MagicMock(
         return_value=[
             {
@@ -303,6 +305,51 @@ def test_repository_lexical_search_uses_long_term_prefixes_and_filters_unsafe_ro
 
     assert [item["sk"] for item in results] == ["EVENT#0000000000200#1", "DAILY_SUMMARY#2026-06-12"]
     assert results[0]["_lexical_terms"] == ["e1027", "opensearch"]
+
+
+def test_repository_lexical_index_finds_older_exact_term_memory():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    source_sk = "GROUP_FACT#0001600000000000#77"
+    repo.table.query.return_value = {
+        "Items": [
+            {
+                "sk": f"TERM#e1027#1600000000000#{source_sk}",
+                "term": "e1027",
+                "source_sk": source_sk,
+                "source_kind": "group_fact",
+            }
+        ]
+    }
+    repo.table.get_item.return_value = {
+        "Item": {
+            "pk": "CHAT#-100123",
+            "sk": source_sk,
+            "kind": "group_fact",
+            "summary": "Imported history captured E1027 in the legacy payment worker.",
+            "created_at": 1_600_000_000,
+            "lexical_index_terms": ["e1027", "legacy", "payment"],
+        }
+    }
+    repo.get_recent_daily_summaries = MagicMock(return_value=[])
+    repo.get_recent_long_term_memories = MagicMock(
+        return_value=[
+            {
+                "sk": "EVENT#0001700000000000#1",
+                "kind": "event",
+                "summary": "Recent unrelated OpenSearch note.",
+                "created_at": 1_700_000_000,
+            }
+        ]
+    )
+
+    results = repo.search_long_term_memories_by_terms("-100123", {"E1027"}, limit=5)
+
+    assert [item["sk"] for item in results] == [source_sk]
+    assert results[0]["_lexical_terms"] == ["e1027"]
+    expression = repo.table.query.call_args.kwargs["KeyConditionExpression"]
+    begins_with = expression.get_expression()["values"][1].get_expression()
+    assert begins_with["values"][1] == "TERM#e1027#"
 
 
 def test_local_reranker_orders_profiles_user_facts_daily_summaries_and_jokes():
