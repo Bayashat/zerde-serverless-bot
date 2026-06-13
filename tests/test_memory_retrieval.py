@@ -484,6 +484,84 @@ def test_joke_intent_preserves_joke_candidate_and_non_joke_query_penalizes_it():
     assert joke_score < event_score
 
 
+def test_wrong_feedback_penalizes_memory_candidate_score():
+    intent = analyze_query_intent("OpenSearch indexing")
+    flagged = MemoryCandidate(
+        source="semantic",
+        source_sk="USER_FACT#42#1#2",
+        memory_kind="user_fact",
+        text="Ada owns OpenSearch indexing.",
+        score=0.92,
+        trust_level=60,
+        created_at=None,
+        metadata={"confidence": 0.9, "wrong_feedback_count": 2, "feedback_status": "wrong"},
+    )
+    clean = MemoryCandidate(
+        source="semantic",
+        source_sk="GROUP_FACT#1#3",
+        memory_kind="group_fact",
+        text="The group chose OpenSearch indexing.",
+        score=0.72,
+        trust_level=54,
+        created_at=None,
+        metadata={"confidence": 0.72},
+    )
+
+    scored = score_candidates([flagged, clean], intent=intent, user_text="OpenSearch indexing")
+
+    assert scored[0].source_sk == "GROUP_FACT#1#3"
+    assert scored[1].source_sk == "USER_FACT#42#1#2"
+
+
+def test_semantic_candidate_hydrates_feedback_metadata_for_ranking():
+    repo = MagicMock()
+    repo.get_memory_item.side_effect = [
+        {
+            "sk": "USER_FACT#42#1#2",
+            "wrong_feedback_count": 2,
+            "negative_feedback_count": 2,
+            "feedback_status": "wrong",
+        },
+        {},
+    ]
+    semantic_rows = [
+        {
+            "distance": 0.02,
+            "metadata": {
+                "source_sk": "USER_FACT#42#1#2",
+                "memory_kind": "user_fact",
+                "text": "Ada owns OpenSearch indexing.",
+                "confidence": 0.95,
+            },
+        },
+        {
+            "distance": 0.18,
+            "metadata": {
+                "source_sk": "GROUP_FACT#1#3",
+                "memory_kind": "group_fact",
+                "text": "The group chose OpenSearch indexing.",
+                "confidence": 0.8,
+            },
+        },
+    ]
+
+    bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=-100123,
+        user_text="OpenSearch indexing",
+        recent_context_fn=_empty_context,
+        long_term_context_fn=_empty_context,
+        semantic_retrieval_fn=MagicMock(return_value=semantic_rows),
+        semantic_context_fn=lambda rows: "\n".join(row["metadata"]["text"] for row in rows),
+        lexical_search_fn=MagicMock(return_value=[]),
+        user_profile_context_fn=_empty_context,
+        requester_profile_context_fn=_empty_context,
+    )
+
+    assert bundle.retrieval_sources[0]["source_sk"] == "GROUP_FACT#1#3"
+    assert bundle.retrieval_sources[1]["source_sk"] == "USER_FACT#42#1#2"
+
+
 def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_injection():
     repo = MagicMock()
     semantic_rows = [

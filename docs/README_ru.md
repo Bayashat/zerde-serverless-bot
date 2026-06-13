@@ -22,10 +22,10 @@ Zerde больше не просто отправляет последнее с�
 
 - **Recent memory**: не-command сообщения группы хранятся в DynamoDB как `MSG#...`.
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
-- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
+- **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, conservative proactive reply gating, контроль длины ответа, `/agent why` source summary.
-- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` с related vector cleanup, owner-only group cleanup.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this`, `/agent wrong` / `/memory wrong` feedback с related vector cleanup, owner-only group cleanup.
 
 RAG означает **Retrieval-Augmented Generation**: сначала найти релевантную память или документы, затем дать LLM этот контекст для ответа. В Zerde RAG — один слой внутри более широкой agentic bot архитектуры.
 
@@ -110,8 +110,8 @@ Bot Lambda может query/delete S3 Vectors для retrieval и memory cleanup
 | `/quizstats` | Все | Личный quiz score, streak и rank. |
 | `/ask <question>` | В memory-enabled группах | Задать вопрос agent-у; можно использовать reply на сообщение, включая self-reference вроде “кто я”. |
 | `/memory about me` | Все | Показать profile fields текущего пользователя, сохраненные из его собственных сообщений, без чужих оценок. |
-| `/memory on/off/status/forget ...` | Group owner или bot owner для settings; users могут удалить свою memory | Управление group memory и cleanup. `forget this` удаляет memory, связанную с replied bot answer или source message, с vector cleanup если настроен. |
-| `/agent on/off/status/why` | Group owner или bot owner | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
+| `/memory on/off/status/forget .../wrong` | Group owner или bot owner для settings; users могут удалить свою memory или отметить answer sources как wrong | Управление group memory и cleanup. `forget this` удаляет memory, связанную с replied bot answer или source message, с vector cleanup если настроен. `wrong` помечает источники памяти replied bot answer как ошибочные без удаления. |
+| `/agent on/off/status/why/wrong` | Group owner или bot owner для settings; users могут inspect или отметить replied answer sources | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent wrong` помечает источники памяти replied bot answer как ошибочные. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
 
 ---
 

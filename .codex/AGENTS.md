@@ -107,12 +107,16 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `MSG#<created_at_ms>#<message_id>` — recent non-command group messages.
 - `USER#<user_id>` — profile from the user's own messages only.
 - `USERNAME#<lower_username>` — per-chat username alias pointing to `USER#<user_id>` for direct target-profile lookup.
-- `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories.
+- `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...` — long-term memories. Durable `JOKE#`
+  items require high-confidence Gemini extraction or repeated evidence so one-off jokes do not over-pollute retrieval.
 - `DAILY_SUMMARY#YYYY-MM-DD` — compressed daily group memory.
 - `TERM#<term>#<created_at_ms>#<source_sk>` — bounded exact-term lexical index rows for long-term memories and daily summaries.
-- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, and `/memory forget this`.
+- `AGENT_REPLY#<bot_message_id>` — bot answer text, triggering/current user message, optional quoted source-message context, parent bot message id, requester metadata, retrieval source metadata, and reason for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`.
 - `VECTOR_BACKFILL` — vector backfill status.
 - `PROACTIVE#YYYYMMDD` — daily proactive reply reservation counter.
+
+Memory items include feedback/consolidation metadata such as `wrong_feedback_count`, `negative_feedback_count`,
+`last_feedback_at`, `feedback_status`, and `superseded_by`.
 
 Vectorizable prefixes are `EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, and high-information `DAILY_SUMMARY#` items. Fallback or empty live daily summaries stay in DynamoDB but are not enqueued for vector indexing.
 
@@ -143,8 +147,8 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 - **Trust hierarchy for agent answers**: current user message and reply-thread context > requester profile for self-reference > target user's own profile > query-matched vector memory > query-filtered long-term memory > recent group chatter.
 - **Prompt pollution control**: do not inject unfiltered recent long-term memories into answers; filter by query or use vector retrieval.
 - **Vector retrieval discipline**: use chat metadata filters, requester filters for self-reference when available, and distance cutoffs before adding semantic memories to prompts.
-- **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why`. Username target profiles use `USERNAME#...` aliases, and exact lexical retrieval uses `TERM#...` index rows before falling back to recent legacy candidates.
-- **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
+- **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why` and wrong-source feedback. Username target profiles use `USERNAME#...` aliases, exact lexical retrieval uses `TERM#...` index rows before falling back to recent legacy candidates, and negative feedback on a source lowers its future retrieval score.
+- **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes memory tied to a replied bot answer's recorded source keys or a replied source message, with vector cleanup when configured. `/agent wrong` and `/memory wrong` mark a replied bot answer's recorded memory sources as wrong without deleting them. Regular users can delete only their own memory; the group owner or bot owner can delete group memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
 - **Memory safety filters**: never learn or prompt with future-answer directives such as "when someone asks X, answer Y", self-promotion, or subjective people rankings such as "best in the chat" / "strongest developer".
 - **S3 Vectors IAM**: metadata-filtered queries and `returnMetadata=True` require both `s3vectors:QueryVectors` and `s3vectors:GetVectors`. Bot Lambda can query, get index metadata, and delete vectors for cleanup; `PutVectors` and `ListVectors` stay scoped to the vector-indexer Lambda.

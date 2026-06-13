@@ -451,6 +451,14 @@ class GroupMemoryRepository:
         return sk.startswith(_USERNAME_ALIAS_PREFIX) or sk.startswith(_LEXICAL_INDEX_PREFIX)
 
     @staticmethod
+    def _feedback_metadata_defaults() -> dict[str, Any]:
+        return {
+            "wrong_feedback_count": Decimal(0),
+            "negative_feedback_count": Decimal(0),
+            "superseded_by": "",
+        }
+
+    @staticmethod
     def _normalise_evidence_message_ids(value: list[int] | None, fallback_message_id: int | str) -> list[int]:
         ids: list[int] = []
         for item in value or []:
@@ -605,6 +613,66 @@ class GroupMemoryRepository:
         ]
         source_sks = [str(item.get("sk") or "") for item in candidates if item.get("sk")]
         return self.delete_memory_items_by_sks(chat_id, source_sks)
+
+    def mark_memory_items_wrong(
+        self,
+        chat_id: int | str,
+        source_sks: list[str],
+        *,
+        user_id: int | str | None = None,
+        agent_reply_message_id: int | str | None = None,
+    ) -> int:
+        """Record negative feedback on retrieval sources without deleting them."""
+        unique_sks: list[str] = []
+        seen: set[str] = set()
+        for source_sk in source_sks:
+            sk = str(source_sk or "").strip()
+            if sk and sk not in seen:
+                seen.add(sk)
+                unique_sks.append(sk)
+        if not unique_sks:
+            return 0
+
+        now = int(time.time())
+        values: dict[str, Any] = {
+            ":zero": Decimal(0),
+            ":one": Decimal(1),
+            ":now": now,
+            ":feedback_kind": "wrong",
+            ":feedback_status": "wrong",
+            ":empty": "",
+        }
+        sets = [
+            "wrong_feedback_count = if_not_exists(wrong_feedback_count, :zero) + :one",
+            "negative_feedback_count = if_not_exists(negative_feedback_count, :zero) + :one",
+            "last_feedback_at = :now",
+            "last_feedback_kind = :feedback_kind",
+            "feedback_status = :feedback_status",
+            "superseded_by = if_not_exists(superseded_by, :empty)",
+        ]
+        if user_id is not None:
+            values[":feedback_user_id"] = str(user_id)
+            sets.append("last_feedback_user_id = :feedback_user_id")
+        if agent_reply_message_id is not None:
+            values[":agent_reply_message_id"] = int(agent_reply_message_id)
+            sets.append("last_feedback_agent_reply_id = :agent_reply_message_id")
+
+        marked = 0
+        for sk in unique_sks:
+            try:
+                self.table.update_item(
+                    Key={"pk": self._chat_pk(chat_id), "sk": sk},
+                    UpdateExpression="SET " + ", ".join(sets),
+                    ConditionExpression="attribute_exists(pk) AND attribute_exists(sk)",
+                    ExpressionAttributeValues=values,
+                )
+                marked += 1
+            except ClientError as exc:
+                code = exc.response.get("Error", {}).get("Code")
+                if code == "ConditionalCheckFailedException":
+                    continue
+                raise
+        return marked
 
     @staticmethod
     def _profile_terms(text: str) -> list[str]:
@@ -996,6 +1064,7 @@ class GroupMemoryRepository:
             "evidence_message_ids": self._normalise_evidence_message_ids(evidence_message_ids, message_id),
             "sensitivity": sensitivity[:40] if sensitivity else "public",
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
         if expires_at:
             item["expires_at"] = expires_at
@@ -1055,6 +1124,7 @@ class GroupMemoryRepository:
             "source": source,
             "created_at": now,
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
         index_terms = self._memory_item_lexical_index_terms(item)
         if index_terms:
@@ -1416,6 +1486,7 @@ class GroupMemoryRepository:
             "reason": reason[:500],
             "created_at": now,
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
         if answer_text:
             item["answer_text"] = answer_text[:3000]
