@@ -29,7 +29,7 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, delayed conservative proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
-- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this`, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
+- **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
@@ -115,7 +115,7 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/quizstats` | Everyone | Personal quiz score, streak, and rank. |
 | `/ask <question>` | Everyone in memory-enabled groups | Ask the agent; can be used as a reply to another message and understands “who am I” from requester identity. |
 | `/memory about me` | Everyone | Show the current user's own stored profile fields without showing other users' claims. |
-| `/memory on/off/status/forget .../wrong` | Group owner or bot owner for settings; users can delete their own memory or mark answer sources wrong | Manage group memory and cleanup. `forget this` can delete memory tied to a replied bot answer or source message, with vector cleanup when configured. `wrong` marks a replied bot answer's memory sources as wrong without deleting them. |
+| `/memory on/off/status/forget .../wrong` | Group owner or bot owner for settings; users can delete their own memory or mark answer sources wrong | Manage group memory and cleanup. `forget this` deletes durable long-term memory from a replied bot answer, or raw/derived memory when replying directly to a source message; it does not delete `USER#` profiles. `wrong` marks a replied bot answer's memory sources as wrong without deleting them. |
 | `/agent on/off/status/why/wrong` | Group owner or bot owner for settings; everyone can inspect or mark replied answer sources | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent wrong` marks a replied bot answer's memory sources as wrong. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
 
 ### Chat Style Settings

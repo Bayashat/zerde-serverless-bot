@@ -2084,10 +2084,18 @@ def test_record_agent_reply_persists_thread_metadata():
                 "source": "semantic",
                 "source_sk": "USER_FACT#42#1#2",
                 "memory_kind": "user_fact",
+                "deletion_policy": "durable_memory",
+                "deletable_source_sk": "USER_FACT#42#1#2",
                 "score": 0.82,
                 "trust_level": 60,
             },
-            {"source": "requester_profile", "source_sk": "USER#42", "score": 1.0, "trust_level": 100},
+            {
+                "source": "requester_profile",
+                "source_sk": "USER#42",
+                "deletion_policy": "profile",
+                "score": 1.0,
+                "trust_level": 100,
+            },
         ],
     )
 
@@ -2099,8 +2107,11 @@ def test_record_agent_reply_persists_thread_metadata():
     assert item["parent_bot_message_id"] == 444
     assert item["retrieval_sources"][0]["source"] == "semantic"
     assert item["retrieval_sources"][0]["source_sk"] == "USER_FACT#42#1#2"
+    assert item["retrieval_sources"][0]["deletion_policy"] == "durable_memory"
+    assert item["retrieval_sources"][0]["deletable_source_sk"] == "USER_FACT#42#1#2"
     assert str(item["retrieval_sources"][0]["score"]) == "0.82"
     assert item["retrieval_sources"][1]["source"] == "requester_profile"
+    assert item["retrieval_sources"][1]["deletion_policy"] == "profile"
 
 
 def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval_query(monkeypatch):
@@ -3368,40 +3379,73 @@ def test_forget_this_group_owner_can_delete_group_source_message(monkeypatch):
     assert "Deleted 1 related memory" in ctx.reply.call_args.args[0]
 
 
-def test_forget_this_bot_answer_deletes_only_current_users_sources(monkeypatch):
+def test_forget_this_bot_answer_does_not_delete_user_profile_source(monkeypatch):
+    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
+    ctx = _command_ctx(user_id=42, status="member")
+    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
+    ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "retrieval_sources": [{"source": "requester_profile", "source_sk": "USER#42", "deletion_policy": "profile"}]
+    }
+
+    commands.handle_forget_this(ctx)
+
+    ctx.memory_repo.get_memory_item.assert_not_called()
+    ctx.memory_repo.delete_memory_items_by_sks.assert_not_called()
+    assert "no deletable recorded memory sources" in ctx.reply.call_args.args[0]
+
+
+def test_forget_this_bot_answer_deletes_user_fact_owned_by_current_user(monkeypatch):
     monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
     ctx = _command_ctx(user_id=42, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
         "retrieval_sources": [
-            {"source": "requester_profile", "source_sk": "USER#42"},
+            {"source": "requester_profile", "source_sk": "USER#42", "deletion_policy": "profile"},
+            {
+                "source": "semantic",
+                "source_sk": "USER_FACT#42#0000000001000#8",
+                "memory_kind": "user_fact",
+                "deletion_policy": "durable_memory",
+                "deletable_source_sk": "USER_FACT#42#0000000001000#8",
+            },
             {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#8"},
+            {"source": "recent", "source_sk": "MSG#0000000001000#9", "deletion_policy": "source_message"},
         ]
     }
-    items = {
-        "USER#42": {"pk": "CHAT#-100123", "sk": "USER#42", "user_id": "42"},
-        "GROUP_FACT#0000000001000#8": {
-            "pk": "CHAT#-100123",
-            "sk": "GROUP_FACT#0000000001000#8",
-            "user_id": "7",
-        },
+    user_fact = {
+        "pk": "CHAT#-100123",
+        "sk": "USER_FACT#42#0000000001000#8",
+        "user_id": "42",
     }
+    group_fact = {
+        "pk": "CHAT#-100123",
+        "sk": "GROUP_FACT#0000000001000#8",
+        "user_id": "7",
+    }
+    items = {user_fact["sk"]: user_fact, group_fact["sk"]: group_fact}
     ctx.memory_repo.get_memory_item.side_effect = lambda chat_id, sk: items[sk]
     ctx.memory_repo.is_memory_item_related_to_user.side_effect = GroupMemoryRepository.is_memory_item_related_to_user
-    ctx.memory_repo.delete_memory_items_by_sks.return_value = [items["USER#42"]]
+    ctx.memory_repo.delete_memory_items_by_sks.return_value = [user_fact]
 
     commands.handle_forget_this(ctx)
 
-    ctx.memory_repo.delete_memory_items_by_sks.assert_called_once_with(-100123, ["USER#42"])
+    assert [call.args[1] for call in ctx.memory_repo.get_memory_item.call_args_list] == [
+        "USER_FACT#42#0000000001000#8",
+        "GROUP_FACT#0000000001000#8",
+    ]
+    ctx.memory_repo.delete_memory_items_by_sks.assert_called_once_with(
+        -100123,
+        ["USER_FACT#42#0000000001000#8"],
+    )
     assert "Deleted 1 related memory" in ctx.reply.call_args.args[0]
 
 
-def test_forget_this_bot_answer_group_owner_deletes_group_sources(monkeypatch):
+def test_forget_this_bot_answer_bot_owner_deletes_group_sources(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
     monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
     delete_vectors = MagicMock(return_value=1)
     monkeypatch.setattr(commands, "delete_memory_vectors_for_items", delete_vectors)
-    ctx = _command_ctx(user_id=42, status="creator")
+    ctx = _command_ctx(user_id=1, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     item = {"pk": "CHAT#-100123", "sk": "GROUP_FACT#0000000001000#8"}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {

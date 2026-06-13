@@ -19,6 +19,7 @@ from core.translations import get_translated_text
 from services.group_agent import answer_group_question, build_explicit_question_context
 from services.group_memory import display_name
 from services.handlers.quiz import react_genquiz_processing
+from services.repositories.group_memory import GroupMemoryRepository
 from services.vector_memory import (
     delete_chat_vectors,
     delete_memory_vectors_for_items,
@@ -553,6 +554,31 @@ def _source_sk_values(retrieval_sources: Any) -> list[str]:
     return source_sks
 
 
+def _deletable_source_sk_from_retrieval_source(source: dict[str, Any]) -> str:
+    deletion_policy = str(source.get("deletion_policy") or "").strip()
+    source_sk = str(source.get("deletable_source_sk") or source.get("source_sk") or "").strip()
+    if not source_sk or not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+        return ""
+    if deletion_policy and deletion_policy != "durable_memory":
+        return ""
+    return source_sk
+
+
+def _deletable_source_sk_values(retrieval_sources: Any) -> list[str]:
+    if not isinstance(retrieval_sources, list):
+        return []
+    source_sks: list[str] = []
+    seen: set[str] = set()
+    for source in retrieval_sources:
+        if not isinstance(source, dict):
+            continue
+        source_sk = _deletable_source_sk_from_retrieval_source(source)
+        if source_sk and source_sk not in seen:
+            seen.add(source_sk)
+            source_sks.append(source_sk)
+    return source_sks
+
+
 def _deletable_source_sks_for_user(ctx: Context, source_sks: list[str], *, can_delete_group_memory: bool) -> list[str]:
     if can_delete_group_memory:
         return source_sks
@@ -572,7 +598,7 @@ def _handle_forget_this_bot_answer(ctx: Context, bot_message_id: int | str | Non
     if not item:
         ctx.reply(get_translated_text("why_reply_missing", ctx.lang_code), ctx.message_id)
         return
-    source_sks = _source_sk_values(item.get("retrieval_sources"))
+    source_sks = _deletable_source_sk_values(item.get("retrieval_sources"))
     if not source_sks:
         ctx.reply(get_translated_text("forget_this_no_sources", ctx.lang_code), ctx.message_id)
         return
