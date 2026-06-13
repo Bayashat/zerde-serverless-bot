@@ -6,6 +6,7 @@ import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.group_memory import GroupMemoryRepository
+from services.telegram_media import media_reference_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -121,6 +122,8 @@ class SQSClient:
                     "update_id": update_id,
                     "chat_id": chat_id,
                     "reply_to_message_id": reply_to_message_id,
+                    "has_media": bool(media_ref),
+                    **(media_reference_log_extra(media_ref) if media_ref else {}),
                 },
             )
         except Exception as e:

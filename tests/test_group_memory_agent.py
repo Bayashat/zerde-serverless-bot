@@ -1411,7 +1411,9 @@ def test_sqs_client_sends_group_ask_task_with_requester(monkeypatch):
 
 def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     fake_client = MagicMock()
+    logger = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    monkeypatch.setattr(sqs_module, "logger", logger)
     sqs = SQSClient.__new__(SQSClient)
     sqs.queue_url = "queue-url"
 
@@ -1436,6 +1438,11 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     assert payload["media_ref"] == {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u-photo"}
     assert "bytes" not in fake_client.send_message.call_args.kwargs["MessageBody"].lower()
     assert "inline_data" not in fake_client.send_message.call_args.kwargs["MessageBody"]
+    queued_log = logger.info.call_args.kwargs["extra"]
+    assert queued_log["has_media"] is True
+    assert queued_log["media_type"] == "photo"
+    assert queued_log["file_unique_id"] == "u-photo"
+    assert "file_id" not in queued_log
 
 
 def test_sqs_client_sends_vector_memory_task(monkeypatch):
@@ -3071,8 +3078,10 @@ def test_handle_ask_reply_with_question_enqueues_replied_text_and_question():
     ctx.reply.assert_not_called()
 
 
-def test_handle_ask_reply_to_photo_enqueues_media_ref_without_bytes():
+def test_handle_ask_reply_to_photo_enqueues_media_ref_without_bytes(monkeypatch):
     ctx = MagicMock()
+    logger = MagicMock()
+    monkeypatch.setattr(commands, "logger", logger)
     ctx.text = "/ask what is wrong in this screenshot?"
     ctx.update_id = 12345
     ctx.chat_id = -100123
@@ -3109,6 +3118,12 @@ def test_handle_ask_reply_to_photo_enqueues_media_ref_without_bytes():
     ctx.bot.get_file.assert_not_called()
     ctx.bot.download_file.assert_not_called()
     ctx.reply.assert_not_called()
+    detected_log = logger.info.call_args.kwargs["extra"]
+    assert detected_log["media_source"] == "reply_to_message"
+    assert detected_log["media_type"] == "photo"
+    assert detected_log["file_unique_id"] == "u-large"
+    assert detected_log["file_size"] == 200
+    assert "file_id" not in detected_log
 
 
 def test_handle_ask_reply_to_voice_enqueues_media_ref():
@@ -3215,15 +3230,19 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
     answer = MagicMock(return_value=True)
+    logger = MagicMock()
     prepare = MagicMock(
         return_value=PreparedMedia(
             media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
             media_context="Explicit media context:\n- media_type: photo",
             agent_reply_metadata={"media_type": "photo", "file_unique_id": "u1", "media_analysis_available": True},
+            downloaded_bytes=4,
+            content_mode="inline_data",
         )
     )
     monkeypatch.setattr(commands, "answer_group_question", answer)
     monkeypatch.setattr(commands, "prepare_media_for_gemini", prepare)
+    monkeypatch.setattr(commands, "logger", logger)
 
     commands.process_group_ask_task(
         repo=repo,
@@ -3242,6 +3261,15 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
     assert answer.call_args.kwargs["media_parts"] == [{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}]
     assert "media_type: photo" in answer.call_args.kwargs["media_context"]
     assert answer.call_args.kwargs["media_metadata"]["file_unique_id"] == "u1"
+    prepared_log = logger.info.call_args.kwargs["extra"]
+    assert prepared_log["media_type"] == "photo"
+    assert prepared_log["file_unique_id"] == "u1"
+    assert prepared_log["downloaded_bytes"] == 4
+    assert prepared_log["content_mode"] == "inline_data"
+    assert prepared_log["media_part_count"] == 1
+    assert prepared_log["media_context_chars"] == len("Explicit media context:\n- media_type: photo")
+    assert "file_id" not in prepared_log
+    assert "AAAA" not in json.dumps(prepared_log)
 
 
 def test_process_group_ask_task_reports_media_too_large(monkeypatch):

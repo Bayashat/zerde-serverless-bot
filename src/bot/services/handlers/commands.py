@@ -28,6 +28,7 @@ from services.telegram_media import (
     default_question_for_media,
     detect_media_reference,
     has_any_media,
+    media_reference_log_extra,
     media_retrieval_query,
     prepare_media_for_gemini,
 )
@@ -438,7 +439,24 @@ def handle_ask(ctx: Context) -> None:
     question = _command_args(ctx.text)
     ask_message = _message_for_ask_context(ctx, question)
     media_ref = detect_media_reference(ask_message)
+    if media_ref:
+        logger.info(
+            "Explicit ask media detected",
+            extra={
+                "chat_id": ctx.chat_id,
+                "message_id": ctx.message_id,
+                "update_id": ctx.update_id,
+                "media_source": (
+                    "current_message" if media_ref.source_message_id == ctx.message_id else "reply_to_message"
+                ),
+                **media_reference_log_extra(media_ref),
+            },
+        )
     if not media_ref and has_any_media(ask_message):
+        logger.info(
+            "Explicit ask media unsupported",
+            extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id, "update_id": ctx.update_id},
+        )
         ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
         return
     effective_question = question or (default_question_for_media(media_ref) if media_ref else "")
@@ -513,6 +531,18 @@ def process_group_ask_task(
             media_parts = prepared_media.media_parts
             media_context = prepared_media.media_context
             media_metadata = prepared_media.agent_reply_metadata
+            logger.info(
+                "Explicit ask media prepared",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    **media_reference_log_extra(media_ref),
+                    "downloaded_bytes": prepared_media.downloaded_bytes,
+                    "content_mode": prepared_media.content_mode,
+                    "media_part_count": len(media_parts or []),
+                    "media_context_chars": len(media_context),
+                },
+            )
         except MediaDisabledError:
             bot.send_message(
                 chat_id,

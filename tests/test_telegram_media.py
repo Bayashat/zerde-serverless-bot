@@ -93,6 +93,8 @@ def test_prepare_media_for_gemini_builds_bounded_text_part(monkeypatch):
         }
     ]
     assert "bounded_text" in prepared.media_context
+    assert prepared.content_mode == "bounded_text"
+    assert prepared.downloaded_bytes == len(b"line one\nline two\nline three")
     assert prepared.agent_reply_metadata["file_name"] == "deploy.log"
     assert "file_id" not in agent_reply_media_metadata(ref)
 
@@ -106,6 +108,8 @@ def test_prepare_media_for_gemini_builds_inline_data(monkeypatch):
 
     assert prepared.media_parts == [{"inline_data": {"mime_type": "image/jpeg", "data": "dGVzdA=="}}]
     assert "inline_data" in prepared.media_context
+    assert prepared.content_mode == "inline_data"
+    assert prepared.downloaded_bytes == 4
     assert prepared.agent_reply_metadata["file_unique_id"] == "u1"
     assert "file_id" not in prepared.agent_reply_metadata
 

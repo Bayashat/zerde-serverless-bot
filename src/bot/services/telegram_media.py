@@ -147,6 +147,8 @@ class PreparedMedia:
     media_parts: list[dict[str, Any]]
     media_context: str
     agent_reply_metadata: dict[str, Any]
+    downloaded_bytes: int = 0
+    content_mode: str = ""
 
 
 def _optional_str(value: Any, *, limit: int | None = None) -> str | None:
@@ -364,6 +366,39 @@ def media_retrieval_query(base_query: str, ref: MediaReference) -> str:
     return "\n\n".join(part for part in parts if part)
 
 
+def media_reference_log_extra(ref: Mapping[str, Any] | MediaReference) -> dict[str, Any]:
+    """Return safe structured log fields for a media reference.
+
+    Telegram ``file_id`` is intentionally excluded because it can be used to
+    download the media again. Captions are represented only by length/presence.
+    """
+    media = ref if isinstance(ref, MediaReference) else MediaReference.from_mapping(ref)
+    fields: dict[str, Any] = {
+        "media_type": media.media_type,
+        "has_caption": bool(media.caption),
+        "caption_chars": len(media.caption or ""),
+    }
+    for key in (
+        "file_unique_id",
+        "file_size",
+        "mime_type",
+        "file_name",
+        "source_message_id",
+        "source_user_id",
+        "source_username",
+        "source_display_name",
+    ):
+        value = getattr(media, key)
+        if value not in (None, ""):
+            if key == "file_name":
+                fields[key] = str(value)[:180]
+            elif key == "source_display_name":
+                fields[key] = str(value)[:80]
+            else:
+                fields[key] = value
+    return fields
+
+
 def media_reference_context(ref: MediaReference) -> str:
     """Render compact media metadata for the Gemini text prompt."""
     lines = [
@@ -449,14 +484,18 @@ def _decode_text_file(data: bytes, *, max_chars: int) -> tuple[str, bool]:
     return text[:max_chars], truncated
 
 
-def _gemini_parts_for_download(ref: MediaReference, data: bytes) -> tuple[list[dict[str, Any]], str]:
+def _gemini_parts_for_download(ref: MediaReference, data: bytes) -> tuple[list[dict[str, Any]], str, str]:
     context = media_reference_context(ref)
     if ref.media_type in TEXT_MEDIA_TYPES:
         text, truncated = _decode_text_file(data, max_chars=MULTIMODAL_TEXT_FILE_MAX_CHARS)
         truncation_note = "\nThe file content is truncated to the configured character limit." if truncated else ""
         file_label = ref.file_name or ref.media_type
         part_text = f"Attached {ref.media_type.replace('_', ' ')} content ({file_label}):\n" f"{text}{truncation_note}"
-        return [{"text": part_text}], f"{context}\n- content_mode: bounded_text\n- truncated: {str(truncated).lower()}"
+        return (
+            [{"text": part_text}],
+            f"{context}\n- content_mode: bounded_text\n- truncated: {str(truncated).lower()}",
+            "bounded_text",
+        )
 
     if len(data) > MULTIMODAL_INLINE_MAX_BYTES:
         raise MediaTooLargeError(f"Media exceeds inline Gemini limit of {MULTIMODAL_INLINE_MAX_BYTES} bytes")
@@ -467,7 +506,7 @@ def _gemini_parts_for_download(ref: MediaReference, data: bytes) -> tuple[list[d
             "data": base64.b64encode(data).decode("ascii"),
         }
     }
-    return [inline_part], f"{context}\n- content_mode: inline_data"
+    return [inline_part], f"{context}\n- content_mode: inline_data", "inline_data"
 
 
 def prepare_media_for_gemini(bot: Any, media_ref: Mapping[str, Any] | MediaReference) -> PreparedMedia:
@@ -503,9 +542,11 @@ def prepare_media_for_gemini(bot: Any, media_ref: Mapping[str, Any] | MediaRefer
 
     if len(data) > MULTIMODAL_MAX_DOWNLOAD_BYTES:
         raise MediaTooLargeError(f"Media exceeds {MULTIMODAL_MAX_DOWNLOAD_BYTES} bytes")
-    parts, context = _gemini_parts_for_download(ref, data)
+    parts, context, content_mode = _gemini_parts_for_download(ref, data)
     return PreparedMedia(
         media_parts=parts,
         media_context=context,
         agent_reply_metadata=agent_reply_media_metadata(ref),
+        downloaded_bytes=len(data),
+        content_mode=content_mode,
     )
