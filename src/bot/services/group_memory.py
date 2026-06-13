@@ -17,6 +17,13 @@ from services.bot_identity import is_self_bot_user
 from services.memory_safety import is_memory_learning_safe, is_profile_context_value_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
+from services.telegram_actor import (
+    actor_display_name,
+    actor_sender_type,
+    actor_username,
+    is_linked_channel_discussion_post,
+    message_actor,
+)
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -94,15 +101,7 @@ def _message_has_mention(message: dict[str, Any], text: str) -> bool:
 
 def display_name(user: dict[str, Any]) -> str:
     """Build a compact display name for prompts and memory profiles."""
-    first = (user.get("first_name") or "").strip()
-    last = (user.get("last_name") or "").strip()
-    username = (user.get("username") or "").strip()
-    full = " ".join(part for part in (first, last) if part)
-    if full:
-        return full[:80]
-    if username:
-        return f"@{username}"[:80]
-    return str(user.get("id") or "Unknown")
+    return actor_display_name(user)
 
 
 def format_message_reference(
@@ -118,18 +117,19 @@ def format_message_reference(
     if not text:
         return ""
 
-    sender = message.get("from") if isinstance(message.get("from"), dict) else {}
-    sender_chat = message.get("sender_chat") if isinstance(message.get("sender_chat"), dict) else {}
-    actor = sender or sender_chat
+    actor = message_actor(message)
+    sender_type = actor_sender_type(actor)
 
     metadata: list[str] = []
-    actor_id = actor.get("id")
-    if actor_id is not None:
+    actor_id = actor.get("id") if actor else None
+    if sender_type != "user":
+        metadata.append(f"sender_type={sender_type}")
+    elif actor_id is not None:
         metadata.append(f"user_id={actor_id}")
-    username = (actor.get("username") or "").strip()
+    username = (actor.get("username") or "").strip() if actor else ""
     if username:
         metadata.append(f"username=@{username}")
-    name = (actor.get("title") or "").strip() if sender_chat and not sender else display_name(actor)
+    name = actor_display_name(actor)
     if name:
         metadata.append(f"name={name[:80]}")
     message_id = message.get("message_id")
@@ -151,37 +151,36 @@ def _reply_metadata(message: dict[str, Any]) -> dict[str, Any]:
     if reply_message_id is not None:
         metadata["reply_to_message_id"] = reply_message_id
 
-    sender = reply.get("from") if isinstance(reply.get("from"), dict) else {}
-    sender_chat = reply.get("sender_chat") if isinstance(reply.get("sender_chat"), dict) else {}
-    if sender:
-        sender_id = sender.get("id")
+    actor = message_actor(reply)
+    sender_type = actor_sender_type(actor)
+    if sender_type == "user":
+        sender_id = actor.get("id")
         if sender_id is not None:
             metadata["reply_to_user_id"] = sender_id
-        username = sender.get("username")
+        username = actor.get("username")
         if username:
             metadata["reply_to_sender_username"] = str(username).lstrip("@")[:160]
-        name = display_name(sender)
+        name = actor_display_name(actor)
         if name:
             metadata["reply_to_sender_name"] = name[:160]
         metadata["reply_to_sender_type"] = "user"
-        metadata["reply_to_bot"] = bool(sender.get("is_bot"))
+        metadata["reply_to_bot"] = bool(actor.get("is_bot"))
         metadata["reply_to_self_bot"] = is_self_bot_user(
-            sender,
+            actor,
             bot_id=AGENT_BOT_ID,
             bot_username=AGENT_BOT_USERNAME,
         )
-    elif sender_chat:
-        sender_id = sender_chat.get("id")
+    elif actor:
+        sender_id = actor.get("id")
         if sender_id is not None:
             metadata["reply_to_sender_id"] = sender_id
-        username = sender_chat.get("username")
+        username = actor.get("username")
         if username:
             metadata["reply_to_sender_username"] = str(username).lstrip("@")[:160]
-        title = sender_chat.get("title")
-        if title:
-            metadata["reply_to_sender_name"] = str(title)[:160]
-        sender_type = sender_chat.get("type")
-        metadata["reply_to_sender_type"] = str(sender_type or "sender_chat")[:80]
+        name = actor_display_name(actor)
+        if name:
+            metadata["reply_to_sender_name"] = name[:160]
+        metadata["reply_to_sender_type"] = sender_type
         metadata["reply_to_bot"] = False
         metadata["reply_to_self_bot"] = False
 
@@ -230,16 +229,18 @@ def observe_update(
     if not repo.is_memory_enabled(chat_id):
         return
 
-    user = message.get("from") or {}
-    user_id = user.get("id")
+    actor = message_actor(message)
+    user_id = actor.get("id") if actor else None
     message_id = message.get("message_id")
     text = extract_message_text(message)
     if not all([chat_id, user_id, message_id, text]):
         return
 
     try:
-        sender_name = display_name(user)
-        username = user.get("username")
+        sender_name = actor_display_name(actor)
+        username = actor_username(actor)
+        sender_type = actor_sender_type(actor)
+        linked_channel_post = is_linked_channel_discussion_post(message)
         stored = repo.store_message(
             chat_id=chat_id,
             message_id=message_id,
@@ -247,8 +248,10 @@ def observe_update(
             display_name=sender_name,
             username=username,
             text=text,
+            sender_type=sender_type,
             created_at=message.get("date"),
             reply_metadata=_reply_metadata(message),
+            touch_profile=not linked_channel_post and sender_type == "user",
             skip_if_exists=True,
         )
         logger.debug("Stored group memory message", extra={"chat_id": chat_id, "message_id": message_id})
@@ -280,12 +283,15 @@ def format_recent_context(repo: GroupMemoryRepository, chat_id: int | str, *, li
         name = str(item.get("display_name") or item.get("username") or item.get("user_id") or "Unknown")
         username = str(item.get("username") or "").strip()
         user_id = str(item.get("user_id") or "").strip()
+        sender_type = str(item.get("sender_type") or "user").strip().lower()
         text = str(item.get("text") or "").replace("\n", " ").strip()
         if text and not is_memory_learning_safe(text):
             continue
         if text:
             speaker_bits = []
-            if user_id:
+            if sender_type and sender_type != "user":
+                speaker_bits.append(f"sender_type={sender_type[:80]}")
+            elif user_id:
                 speaker_bits.append(f"user_id={user_id}")
             if username:
                 speaker_bits.append(f"username=@{username.lstrip('@')}")

@@ -139,6 +139,10 @@ class SQSClient:
         trigger_user_id: int | str | None = None,
         user_text: str,
         lang: str,
+        candidate_kind: str = "proactive",
+        trigger_username: str | None = None,
+        trigger_display_name: str | None = None,
+        trigger_sender_type: str | None = None,
         created_at: int | None = None,
         delay_seconds: int = 45,
     ) -> None:
@@ -150,11 +154,18 @@ class SQSClient:
             "trigger_message_id": trigger_message_id,
             "user_text": user_text,
             "lang": lang,
+            "candidate_kind": candidate_kind,
         }
         if update_id is not None:
             payload["update_id"] = update_id
         if trigger_user_id is not None:
             payload["trigger_user_id"] = trigger_user_id
+        if trigger_username:
+            payload["trigger_username"] = trigger_username
+        if trigger_display_name:
+            payload["trigger_display_name"] = trigger_display_name
+        if trigger_sender_type:
+            payload["trigger_sender_type"] = trigger_sender_type
         if created_at:
             payload["created_at"] = created_at
 
@@ -170,6 +181,7 @@ class SQSClient:
                     "update_id": update_id,
                     "chat_id": chat_id,
                     "trigger_message_id": trigger_message_id,
+                    "candidate_kind": candidate_kind,
                     "delay": delay_seconds,
                 },
             )
@@ -189,6 +201,7 @@ class SQSClient:
         display_name: str,
         text: str,
         lang: str,
+        sender_type: str | None = None,
         update_id: int | None = None,
         username: str | None = None,
         created_at: int | None = None,
@@ -204,6 +217,8 @@ class SQSClient:
             "text": text,
             "lang": lang,
         }
+        if sender_type:
+            payload["sender_type"] = sender_type
         if update_id is not None:
             payload["update_id"] = update_id
         if username:

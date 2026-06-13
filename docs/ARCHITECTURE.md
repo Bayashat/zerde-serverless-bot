@@ -12,7 +12,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It stores normal bot answers only as short-term reply-thread metadata, not as long-term semantic memory.
-- It may proactively join a discussion, but only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits.
+- It may proactively join a discussion, but only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits. Linked channel posts mirrored into discussion groups use a separate short discussion-starter path.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
 
@@ -73,7 +73,7 @@ flowchart LR
 6. Irrelevant group chatter exits early.
 7. Relevant events route to the group agent or the command dispatcher.
 8. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
-9. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+9. `agent_enabled` gates non-command group agent participation: proactive candidates and linked-channel post discussion-starter candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
 
 ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including proactive candidates, daily summaries, memory extraction, and vector indexing.
 
@@ -86,7 +86,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata and optional metadata-only `media_ref`. Media bytes are downloaded only in this worker. |
-| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. |
+| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. Linked-channel post candidates use a separate discussion-starter prompt instead of the open-question prompt. |
 | `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for sampled normal group text messages; may call `setMessageReaction` and stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
@@ -168,6 +168,7 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 Proactive replies are conservative:
 
 - The local prefilter only considers open questions or requests.
+- Linked channel posts mirrored into discussion groups are detected from `is_automatic_forward` or the Telegram `777000` actor plus `sender_chat.type=channel`; these may pass a separate longer text limit and discussion-starter prompt without weakening the normal open-question prefilter.
 - Candidates that pass the local prefilter are queued with `AGENT_PROACTIVE_DELAY_SECONDS` before final evaluation, so humans can answer first.
 - The delayed task re-reads messages after the trigger and stays silent when a later human reply looks sufficient.
 - Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
@@ -205,6 +206,9 @@ short-lived `AMBIENT_REACTION#...` metadata for cooldowns and debugging.
 Command text and sensitive/hostile/serious text are not locally filtered before classification; the
 LLM prompt still requires a strong, context-safe reaction and forbids reactions that trivialize, mock,
 endorse, or escalate harm.
+Linked channel posts mirrored into discussion groups are eligible as text messages; their actor is the
+source `sender_chat` channel rather than Telegram's synthetic `777000` user, so reaction cooldowns and
+prompt speaker metadata are scoped to the channel identity.
 
 ## Vector Memory
 

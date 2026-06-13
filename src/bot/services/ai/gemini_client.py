@@ -559,6 +559,120 @@ class GeminiClient:
             )
             raise GeminiUnavailableError(f"Bad Gemini decision response: {exc}") from exc
 
+    def group_chat_channel_post_comment_decision(
+        self,
+        *,
+        channel_post: str,
+        recent_context: str,
+        lang: str = "kk",
+        reply_instructions: str = "",
+        max_output_tokens: int = 220,
+    ) -> tuple[GroupAgentDecision, int]:
+        """Decide whether to add a short discussion-starter reply to a linked channel post."""
+        if _circuit_is_open():
+            logger.warning("Gemini circuit open, skipping channel post comment decision", extra={"model": self._model})
+            raise GeminiUnavailableError("Gemini circuit open")
+
+        count, within_limit = self._rate_repo.increment_and_check()
+        if not within_limit:
+            logger.warning(
+                "Gemini RPD limit reached (channel post comment decision)",
+                extra={"count": count, "limit": self.rpd_limit},
+            )
+            raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
+
+        system_prompt = (
+            "You are the social timing layer for ZerdeBot, a Telegram group chat member in an IT community. "
+            "This is an official linked-channel post mirrored into the group discussion. "
+            "Decide whether ZerdeBot should add one short discussion-starter comment. "
+            "The goal is to help the group start a useful conversation, not to answer a direct question and not "
+            "to summarize the whole post. Stay silent unless the post has a clear technical, historical, practical, "
+            "engineering, product, or surprising angle worth discussing. "
+            "Do not praise the channel owner, do not say generic thanks, and do not sound promotional. "
+            "If speaking, write 1-2 concise natural sentences in the group's language, preferably ending with a "
+            "natural discussion question. "
+            "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
+            "reply_text (string, empty when silent)."
+        )
+        generation_config: dict[str, Any] = {
+            "temperature": 0.25,
+            "maxOutputTokens": max(80, min(220, int(max_output_tokens))),
+            "responseMimeType": "application/json",
+        }
+        thinking_config = _thinking_config_for_model(self._model)
+        if thinking_config is not None:
+            generation_config["thinkingConfig"] = thinking_config
+
+        prompt = (
+            f"Preferred language code: {lang}\n\n"
+            "Recent group context, oldest to newest:\n"
+            f"{recent_context or '(no recent context available)'}\n\n"
+            "Current official linked-channel post:\n"
+            f"{channel_post}\n\n"
+            "Reply style instructions:\n"
+            f"{reply_instructions or 'Write one concise natural discussion-starter if speaking.'}\n\n"
+            "Should ZerdeBot add a short discussion-starter comment now?"
+        )
+        payload: dict[str, Any] = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": generation_config,
+        }
+
+        url = f"{GEMINI_API_BASE}/{self._model}:generateContent?key={self._api_key}"
+        body = json.dumps(payload)
+        headers = {"Content-Type": "application/json"}
+
+        logger.info(
+            "Gemini channel post comment decision request started",
+            extra={
+                "model": self._model,
+                "lang": lang,
+                "context_chars": len(recent_context),
+                "message_chars": len(channel_post),
+                "rpd_count": count,
+                "rpd_limit": self.rpd_limit,
+            },
+        )
+        resp_data = self._post_generate_content(
+            operation="group_chat_channel_post_comment_decision",
+            url=url,
+            body=body,
+            headers=headers,
+        )
+
+        try:
+            data = json.loads(resp_data.decode("utf-8"))
+            if not isinstance(data, dict):
+                raise TypeError("Gemini response JSON was not an object")
+            text = _extract_gemini_text(
+                data,
+                operation="group_chat_channel_post_comment_decision",
+                model=self._model,
+            )
+            raw_decision = json.loads(text)
+            decision = GroupAgentDecision(
+                should_reply=bool(raw_decision.get("should_reply")),
+                confidence=max(0.0, min(1.0, float(raw_decision.get("confidence", 0)))),
+                reason=str(raw_decision.get("reason") or "")[:200],
+                reply_text=str(raw_decision.get("reply_text") or "").strip(),
+            )
+            _record_success()
+            return decision, count
+        except GeminiEmptyResponseError:
+            raise
+        except (KeyError, IndexError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            logger.warning(
+                "Gemini channel post comment decision response parse failed",
+                extra={
+                    "operation": "group_chat_channel_post_comment_decision",
+                    "model": self._model,
+                    "error_type": exc.__class__.__name__,
+                    "error_message": str(exc)[:300],
+                },
+            )
+            raise GeminiUnavailableError(f"Bad Gemini channel post decision response: {exc}") from exc
+
     def ambient_reaction_decision(
         self,
         *,

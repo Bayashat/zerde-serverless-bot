@@ -24,7 +24,7 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
 - **Long-term memory**: candidate-gated және budgeted structured extraction арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, delayed conservative proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, linked-channel post discussion starter, delayed conservative proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
 - **Ambient reactions**: optional emoji reactions; sampled high-signal топ text хабарламаларына async `setMessageReaction` жасайды, long-term memory жазбайды.
 - **Explicit media understanding**: `/ask` фото/screenshot, voice/audio, PDF және supported text/code/log файлдарға reply ретінде жұмыс істейді. Zerde топтағы әр медианы автоматты талдамайды.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, `/agent wrong` / `/memory wrong` feedback related vector cleanup-пен, owner-only group cleanup.

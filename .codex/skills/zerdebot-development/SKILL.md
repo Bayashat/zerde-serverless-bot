@@ -12,7 +12,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Recent group context, requester identity, and user profiles live in DynamoDB.
 - Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
 - Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
-- Gemini handles agent answers, proactive timing decisions, summaries, embeddings, and is the primary ambient reaction classifier.
+- Gemini handles agent answers, proactive timing decisions, linked-channel post comment decisions, summaries, embeddings, and is the primary ambient reaction classifier.
 - DeepSeek and Groq can serve as ambient reaction fallback classifiers; Groq also handles async spam checks.
 - The bot should answer only when useful, keep reply length appropriate, and avoid prompt pollution from irrelevant memories.
 
@@ -34,13 +34,14 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 ## Repository Map
 
 - `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
-- `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, reply-thread continuity, response length/style policy.
+- `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, linked-channel post discussion starters, reply-thread continuity, response length/style policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
 - `src/bot/services/ai/ambient_reaction_classifier.py`: Gemini primary plus DeepSeek/Groq OpenAI-compatible fallback chain for ambient reaction strict-JSON classification.
+- `src/bot/services/telegram_actor.py`: shared Telegram actor attribution, including linked-channel discussion mirror detection and `sender_chat` actor selection.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
@@ -80,6 +81,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Keep `/agent wrong` and `/memory wrong` non-destructive: mark a replied bot answer's recorded memory sources with negative feedback metadata and lower future retrieval priority.
 - Keep `/memory about me` scoped to the requester profile derived from their own messages. Keep `/memory forget this` permission-scoped to own durable memory unless the caller is the group owner or bot owner, and never delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources.
 - Keep proactive participation conservative: local open-question prefilter, delayed candidate queue, post-trigger human-answer check, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
+- Keep linked-channel post participation separate from ordinary proactive replies: detect official linked channel discussion mirrors via `is_automatic_forward` or Telegram `777000` plus `sender_chat.type=channel`, use `sender_chat` as the actor, queue a `channel_post` candidate, re-check for human discussion, and use the short discussion-starter prompt. Do not relax the normal long-message proactive prefilter.
 - Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese; local prefilter skips for open-question candidates should log structured reasons.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - Keep chat-level `style_profile` defaults concise and socially safe. Weak selected memory should add uncertainty instructions instead of letting the model sound certain.

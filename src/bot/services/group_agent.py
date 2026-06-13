@@ -48,6 +48,13 @@ from services.memory_safety import (
 from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
+from services.telegram_actor import (
+    actor_display_name,
+    actor_sender_type,
+    actor_username,
+    is_linked_channel_discussion_post,
+    message_actor,
+)
 from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -79,6 +86,7 @@ class ExplicitQuestionContext:
 
 _LOW_CONFIDENCE_MEMORY_THRESHOLD = 0.55
 _WEAK_RETRIEVAL_DISTANCE_THRESHOLD = 0.78
+_LINKED_CHANNEL_POST_MAX_CHARS = 3000
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -863,6 +871,19 @@ def _looks_like_sufficient_human_answer(text: str, *, trigger_terms: set[str]) -
     return overlaps_trigger and len(text) >= 40 and not open_question
 
 
+def _looks_like_channel_post_discussion(text: str, *, trigger_terms: set[str]) -> bool:
+    lowered = " ".join((text or "").lower().split())
+    if not lowered or lowered.startswith("/"):
+        return False
+    response_terms = _proactive_terms(lowered)
+    overlaps_trigger = bool(trigger_terms & response_terms)
+    if overlaps_trigger and len(text) >= 24:
+        return True
+    if _looks_like_open_question(text) and len(text) >= 30:
+        return True
+    return len(text) >= 60
+
+
 def _human_answer_after_trigger(
     repo: GroupMemoryRepository,
     chat_id: int,
@@ -871,6 +892,7 @@ def _human_answer_after_trigger(
     trigger_user_id: int | str | None,
     trigger_created_at: int | None,
     user_text: str,
+    candidate_kind: str = "proactive",
 ) -> dict[str, Any] | None:
     start_epoch = int(trigger_created_at or 0)
     end_epoch = int(time.time()) + 1
@@ -892,7 +914,12 @@ def _human_answer_after_trigger(
         same_user = trigger_user and str(user_id) == trigger_user
         if same_user and not any(cue in text.lower() for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
             continue
-        if _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms):
+        discussed = (
+            _looks_like_channel_post_discussion(text, trigger_terms=trigger_terms)
+            if candidate_kind == "channel_post"
+            else _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms)
+        )
+        if discussed:
             return {
                 "message_id": message_id,
                 "user_id": user_id,
@@ -920,6 +947,20 @@ def _local_proactive_skip_reason(text: str) -> str | None:
         return "not_open_question"
     if len(text) > 500:
         return "too_long"
+    if any(cue in lowered for cue in _PROACTIVE_STOP_CUES):
+        return "stop_or_awkward_cue"
+    if _looks_like_bot_behavior_meta(text):
+        return "bot_meta"
+    return None
+
+
+def _channel_post_proactive_skip_reason(text: str) -> str | None:
+    """Explain why a linked-channel post should not become a discussion-starter candidate."""
+    lowered = text.lower().strip()
+    if len(text) > _LINKED_CHANNEL_POST_MAX_CHARS:
+        return "channel_post_too_long"
+    if len(_compact_query_text(text, limit=200)) < 80:
+        return "channel_post_too_short"
     if any(cue in lowered for cue in _PROACTIVE_STOP_CUES):
         return "stop_or_awkward_cue"
     if _looks_like_bot_behavior_meta(text):
@@ -1004,6 +1045,8 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return "explicit"
     if _replies_to_any_bot(message):
         return None
+    if is_linked_channel_discussion_post(message):
+        return "channel_post" if _channel_post_proactive_skip_reason(text) is None else None
     if _local_proactive_candidate(text):
         return "proactive"
     return None
@@ -1036,7 +1079,10 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
     text = extract_message_text(message)
     if _mentions_bot(text) or _replies_to_any_bot(message):
         return
-    skip_reason = _local_proactive_skip_reason(text)
+    linked_channel_post = is_linked_channel_discussion_post(message)
+    skip_reason = (
+        _channel_post_proactive_skip_reason(text) if linked_channel_post else _local_proactive_skip_reason(text)
+    )
     if not skip_reason or skip_reason == "not_open_question":
         return
     logger.info(
@@ -1045,6 +1091,7 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
             "chat_id": (message.get("chat") or {}).get("id"),
             "message_id": message.get("message_id"),
             "skip_reason": skip_reason,
+            "candidate_kind": "channel_post" if linked_channel_post else "proactive",
             "text_chars": len(text),
         },
     )
@@ -1086,6 +1133,7 @@ def handle_update(
         return False
     message_id = message["message_id"]
     if trigger_kind == "proactive":
+        actor = message_actor(message)
         if sqs_repo is None:
             logger.warning(
                 "Group agent proactive candidate could not be queued",
@@ -1096,14 +1144,53 @@ def handle_update(
             update_id=update.get("update_id"),
             chat_id=chat_id,
             trigger_message_id=message_id,
-            trigger_user_id=(message.get("from") or {}).get("id"),
+            trigger_user_id=actor.get("id") if actor else None,
             user_text=extract_message_text(message),
             lang=get_chat_lang(chat_id),
+            trigger_username=actor_username(actor),
+            trigger_display_name=actor_display_name(actor) if actor else None,
+            trigger_sender_type=actor_sender_type(actor),
             created_at=message.get("date"),
             delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
         )
         logger.info(
             "Group agent proactive candidate queued",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "delay_seconds": AGENT_PROACTIVE_DELAY_SECONDS,
+            },
+        )
+        return True
+    if trigger_kind == "channel_post":
+        actor = message_actor(message)
+        if sqs_repo is None:
+            logger.warning(
+                "Group agent proactive candidate could not be queued",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "reason": "missing_sqs_repo",
+                    "candidate_kind": "channel_post",
+                },
+            )
+            return False
+        sqs_repo.send_proactive_candidate_task(
+            update_id=update.get("update_id"),
+            chat_id=chat_id,
+            trigger_message_id=message_id,
+            trigger_user_id=actor.get("id") if actor else None,
+            user_text=extract_message_text(message),
+            lang=get_chat_lang(chat_id),
+            candidate_kind="channel_post",
+            trigger_username=actor_username(actor),
+            trigger_display_name=actor_display_name(actor) if actor else None,
+            trigger_sender_type=actor_sender_type(actor),
+            created_at=message.get("date"),
+            delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
+        )
+        logger.info(
+            "Group agent linked channel post candidate queued",
             extra={
                 "chat_id": chat_id,
                 "message_id": message_id,
@@ -1254,6 +1341,152 @@ def maybe_answer_proactively(
     return True
 
 
+def _format_channel_post_task_for_prompt(
+    *,
+    message_id: int,
+    user_text: str,
+    trigger_user_id: int | str | None,
+    trigger_username: str | None,
+    trigger_display_name: str | None,
+    trigger_sender_type: str | None,
+) -> str:
+    bits: list[str] = []
+    sender_type = str(trigger_sender_type or "channel").strip()
+    if sender_type and sender_type != "user":
+        bits.append(f"sender_type={sender_type[:80]}")
+    elif trigger_user_id is not None:
+        bits.append(f"user_id={trigger_user_id}")
+    if trigger_username:
+        bits.append(f"username=@{str(trigger_username).lstrip('@')[:80]}")
+    if trigger_display_name:
+        bits.append(f"name={str(trigger_display_name)[:80]}")
+    bits.append(f"message_id={message_id}")
+    speaker = f"[speaker {' '.join(bits)}]" if bits else "[speaker unknown]"
+    return f"{speaker} {_compact_query_text(user_text, limit=2200)}"
+
+
+def maybe_comment_on_channel_post(
+    *,
+    repo: GroupMemoryRepository,
+    bot: TelegramClient,
+    chat_id: int,
+    reply_to_message_id: int,
+    user_text: str,
+    lang: str,
+    trigger_user_id: int | str | None = None,
+    trigger_username: str | None = None,
+    trigger_display_name: str | None = None,
+    trigger_sender_type: str | None = None,
+) -> bool:
+    """Ask the model whether to add a concise discussion starter to a linked-channel post."""
+    gemini = _get_gemini()
+    if not gemini:
+        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
+        return False
+
+    recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
+    style_profile = _load_chat_style_profile(repo, chat_id)
+    reply_policy = _proactive_reply_policy(style_profile)
+    raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
+    recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
+    if recent_bot_replies >= 2:
+        _log_proactive_silent(
+            "recent_bot_activity",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            recent_bot_replies=recent_bot_replies,
+            candidate_kind="channel_post",
+        )
+        return False
+
+    channel_post = _format_channel_post_task_for_prompt(
+        message_id=reply_to_message_id,
+        user_text=user_text,
+        trigger_user_id=trigger_user_id,
+        trigger_username=trigger_username,
+        trigger_display_name=trigger_display_name,
+        trigger_sender_type=trigger_sender_type,
+    )
+    try:
+        decision, _ = gemini.group_chat_channel_post_comment_decision(
+            channel_post=channel_post,
+            recent_context=recent_context,
+            lang=lang,
+            reply_instructions=(
+                f"{reply_policy.instructions} For linked-channel posts, do not summarize the whole post; "
+                "add one short discussion-starter angle or question that invites discussion."
+            ),
+            max_output_tokens=min(reply_policy.max_output_tokens, 180),
+        )
+    except GeminiRPDExhaustedError:
+        _log_proactive_silent(
+            "gemini_rpd_limit", chat_id=chat_id, message_id=reply_to_message_id, candidate_kind="channel_post"
+        )
+        return False
+    except GeminiUnavailableError as exc:
+        _log_proactive_silent(
+            "gemini_unavailable",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            error_type=exc.__class__.__name__,
+            error_message=str(exc)[:500],
+            candidate_kind="channel_post",
+        )
+        return False
+    except Exception:
+        logger.exception("Group agent channel post comment decision failed", extra={"chat_id": chat_id})
+        return False
+
+    if not decision.should_reply or decision.confidence < AGENT_PROACTIVE_FINAL_THRESHOLD or not decision.reply_text:
+        _log_proactive_silent(
+            "model_said_no",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            confidence=decision.confidence,
+            reason=decision.reason,
+            candidate_kind="channel_post",
+        )
+        return False
+
+    if not repo.try_reserve_proactive_reply(chat_id, daily_limit=AGENT_DAILY_PROACTIVE_LIMIT):
+        _log_proactive_silent(
+            "daily_limit",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            reason=decision.reason,
+            candidate_kind="channel_post",
+        )
+        return False
+
+    answer_text = fit_llm_output(decision.reply_text, max_chars=min(reply_policy.max_chars, 320))
+    answer_html = normalize_llm_output_for_telegram_html(answer_text)
+    sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
+    if bot_message_id:
+        repo.record_agent_reply(
+            chat_id=chat_id,
+            bot_message_id=bot_message_id,
+            trigger_message_id=reply_to_message_id,
+            trigger_kind="channel_post",
+            reason=f"{decision.reason or 'I judged this linked-channel post as worth a short discussion starter.'}",
+            answer_text=answer_text,
+            user_message=user_text,
+            current_user_message=user_text,
+            confidence=decision.confidence,
+        )
+    logger.info(
+        "Group agent handled linked channel post",
+        extra={
+            "chat_id": chat_id,
+            "message_id": reply_to_message_id,
+            "trigger_kind": "channel_post",
+            "confidence": decision.confidence,
+            "reason": decision.reason,
+        },
+    )
+    return True
+
+
 def process_proactive_candidate_task(
     *,
     repo: GroupMemoryRepository,
@@ -1272,18 +1505,24 @@ def process_proactive_candidate_task(
     if not user_text:
         _log_proactive_silent("missing_user_text", chat_id=chat_id, message_id=trigger_message_id)
         return False
+    candidate_kind = str(body.get("candidate_kind") or "proactive")
 
     if not repo.is_agent_enabled(chat_id):
         _log_proactive_silent("agent_disabled", chat_id=chat_id, message_id=trigger_message_id)
         return False
 
-    skip_reason = _local_proactive_skip_reason(user_text)
+    skip_reason = (
+        _channel_post_proactive_skip_reason(user_text)
+        if candidate_kind == "channel_post"
+        else _local_proactive_skip_reason(user_text)
+    )
     if skip_reason is not None:
         _log_proactive_silent(
             "original_no_longer_useful",
             chat_id=chat_id,
             message_id=trigger_message_id,
             original_skip_reason=skip_reason,
+            candidate_kind=candidate_kind,
         )
         return False
 
@@ -1295,6 +1534,7 @@ def process_proactive_candidate_task(
             trigger_user_id=body.get("trigger_user_id"),
             trigger_created_at=_safe_int(body.get("created_at")),
             user_text=user_text,
+            candidate_kind=candidate_kind,
         )
     except Exception:
         logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
@@ -1308,8 +1548,23 @@ def process_proactive_candidate_task(
             answer_message_id=human_answer.get("message_id"),
             answer_user_id=human_answer.get("user_id"),
             answer_text_chars=human_answer.get("text_chars"),
+            candidate_kind=candidate_kind,
         )
         return False
+
+    if candidate_kind == "channel_post":
+        return maybe_comment_on_channel_post(
+            repo=repo,
+            bot=bot,
+            chat_id=chat_id,
+            reply_to_message_id=trigger_message_id,
+            user_text=user_text,
+            lang=str(body.get("lang") or get_chat_lang(chat_id)),
+            trigger_user_id=body.get("trigger_user_id"),
+            trigger_username=body.get("trigger_username"),
+            trigger_display_name=body.get("trigger_display_name"),
+            trigger_sender_type=body.get("trigger_sender_type"),
+        )
 
     return maybe_answer_proactively(
         repo=repo,

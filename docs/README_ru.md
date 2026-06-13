@@ -24,7 +24,7 @@ Zerde больше не просто отправляет последнее с�
 - **User profiles**: легкий профиль пользователя, построенный только из его собственных сообщений.
 - **Long-term memory**: `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, извлекаемые через candidate-gated и budgeted structured extraction с rule fallback.
 - **Hybrid RAG**: long-term memory эмбеддится через Gemini для S3 Vectors semantic retrieval, плюс DynamoDB lexical fallback и local reranking.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, delayed conservative proactive reply gating, контроль длины и style profile ответа, `/agent why` source summary.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, follow-up через reply на ответ бота, linked-channel post discussion starter, delayed conservative proactive reply gating, контроль длины и style profile ответа, `/agent why` source summary.
 - **Ambient reactions**: optional emoji reactions; sampled high-signal group text сообщения обрабатываются async через `setMessageReaction` без записи long-term memory.
 - **Explicit media understanding**: `/ask` можно использовать reply на фото/screenshot, voice/audio, PDF и supported text/code/log файлы. Zerde не анализирует автоматически каждое медиа в группе.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` для durable source cleanup, `/agent wrong` / `/memory wrong` feedback с related vector cleanup, owner-only group cleanup.

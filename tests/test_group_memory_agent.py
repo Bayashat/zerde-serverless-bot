@@ -34,6 +34,30 @@ def _group_update(text: str = "hello @ZerdeBot") -> dict:
     }
 
 
+def _linked_channel_post_update(text: str | None = None) -> dict:
+    return {
+        "update_id": 123,
+        "message": {
+            "message_id": 11,
+            "date": 1_700_000_000,
+            "text": text
+            or (
+                "1958 жылдың жазы. Texas Instruments зертханасында Джек Килби монолитті идеяны ойлап тапты. "
+                "Бірнеше компонентті бір материалдың ішінде жасау кейін интегралды схемаларға жол ашты."
+            ),
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 777000, "is_bot": False, "first_name": "Telegram"},
+            "sender_chat": {
+                "id": -1001037498558,
+                "title": "Тимурдан Инфо | it&tech",
+                "username": "timurdaninfo",
+                "type": "channel",
+            },
+            "is_automatic_forward": True,
+        },
+    }
+
+
 def test_observe_update_stores_opted_in_group_message(monkeypatch):
     repo = MagicMock()
     sqs = MagicMock()
@@ -53,6 +77,23 @@ def test_observe_update_stores_opted_in_group_message(monkeypatch):
     assert sqs.send_group_memory_task.call_args.kwargs["text"] == "we discussed OpenSearch today"
     assert sqs.send_group_memory_task.call_args.kwargs["is_reply"] is False
     assert sqs.send_group_memory_task.call_args.kwargs["has_mention"] is False
+
+
+def test_observe_update_stores_linked_channel_post_with_channel_actor(monkeypatch):
+    repo = MagicMock()
+    sqs = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(group_memory, "GROUP_MEMORY_ENABLED", True)
+
+    group_memory.observe_update(repo, _linked_channel_post_update(), sqs_repo=sqs)
+
+    kwargs = repo.store_message.call_args.kwargs
+    assert kwargs["user_id"] == -1001037498558
+    assert kwargs["display_name"] == "Тимурдан Инфо | it&tech"
+    assert kwargs["username"] == "timurdaninfo"
+    assert kwargs["sender_type"] == "channel"
+    assert kwargs["touch_profile"] is False
+    assert sqs.send_group_memory_task.call_args.kwargs["user_id"] == -1001037498558
 
 
 def test_observe_update_enqueues_reply_and_mention_hints(monkeypatch):
@@ -1884,11 +1925,57 @@ def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch)
         trigger_user_id=42,
         user_text="does anyone know how OpenSearch pricing works?",
         lang="kk",
+        trigger_username="ada",
+        trigger_display_name="Ada",
+        trigger_sender_type="user",
         created_at=1_700_000_000,
         delay_seconds=30,
     )
     repo.try_reserve_proactive_reply.assert_not_called()
     bot.send_message.assert_not_called()
+
+
+def test_linked_channel_post_candidate_queues_with_channel_actor(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    sqs = MagicMock()
+    bot = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DELAY_SECONDS", 30)
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
+
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=bot,
+        update=_linked_channel_post_update(),
+        sqs_repo=sqs,
+    )
+
+    assert handled is True
+    sqs.send_proactive_candidate_task.assert_called_once_with(
+        update_id=123,
+        chat_id=-100123,
+        trigger_message_id=11,
+        trigger_user_id=-1001037498558,
+        user_text=_linked_channel_post_update()["message"]["text"],
+        lang="kk",
+        candidate_kind="channel_post",
+        trigger_username="timurdaninfo",
+        trigger_display_name="Тимурдан Инфо | it&tech",
+        trigger_sender_type="channel",
+        created_at=1_700_000_000,
+        delay_seconds=30,
+    )
+    bot.send_message.assert_not_called()
+
+
+def test_normal_long_message_still_skips_proactive_prefilter(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    long_question = "does anyone know " + ("how OpenSearch pricing works " * 40)
+
+    assert group_agent._local_proactive_skip_reason(long_question) == "too_long"
+    assert group_agent.should_answer(_group_update(long_question)) is False
 
 
 def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypatch):
@@ -1974,6 +2061,89 @@ def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
         "OpenSearch pricing depends on shards.",
         reply_to_message_id=11,
     )
+
+
+def test_delayed_channel_post_candidate_replies_with_dedicated_prompt(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = []
+    repo.count_recent_agent_replies.return_value = 0
+    repo.get_chat_settings.return_value = {}
+    repo.try_reserve_proactive_reply.return_value = True
+    bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
+    gemini = MagicMock()
+    gemini.group_chat_channel_post_comment_decision.return_value = (
+        GroupAgentDecision(True, 0.88, "historical engineering angle", "Килбидің шешімі шектеуден туған екен."),
+        1,
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "candidate_kind": "channel_post",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": -1001037498558,
+            "trigger_username": "timurdaninfo",
+            "trigger_display_name": "Тимурдан Инфо | it&tech",
+            "trigger_sender_type": "channel",
+            "user_text": _linked_channel_post_update()["message"]["text"],
+            "lang": "kk",
+            "created_at": 1_700_000_000,
+        },
+    )
+
+    assert handled is True
+    gemini.group_chat_channel_post_comment_decision.assert_called_once()
+    call_kwargs = gemini.group_chat_channel_post_comment_decision.call_args.kwargs
+    assert "sender_type=channel username=@timurdaninfo name=Тимурдан Инфо | it&tech" in call_kwargs["channel_post"]
+    assert "discussion-starter" in call_kwargs["reply_instructions"]
+    gemini.group_chat_proactive_decision.assert_not_called()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        "Килбидің шешімі шектеуден туған екен.",
+        reply_to_message_id=11,
+    )
+
+
+def test_delayed_channel_post_candidate_stays_silent_when_humans_discuss(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_messages_for_day.return_value = [
+        {"message_id": 11, "user_id": "-1001037498558", "text": _linked_channel_post_update()["message"]["text"]},
+        {
+            "message_id": 12,
+            "user_id": "42",
+            "text": "Килбидің интегралды схемаға келген жолы қызық екен, шектеу кейде жақсы идея береді.",
+        },
+    ]
+    bot = MagicMock()
+    gemini = MagicMock()
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+
+    handled = group_agent.process_proactive_candidate_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "candidate_kind": "channel_post",
+            "chat_id": -100123,
+            "trigger_message_id": 11,
+            "trigger_user_id": -1001037498558,
+            "user_text": _linked_channel_post_update()["message"]["text"],
+            "lang": "kk",
+            "created_at": 1_700_000_000,
+        },
+    )
+
+    assert handled is False
+    gemini.group_chat_channel_post_comment_decision.assert_not_called()
+    bot.send_message.assert_not_called()
 
 
 def test_reply_score_penalizes_recent_bot_activity():
@@ -2473,6 +2643,68 @@ def test_group_memory_extraction_prompt_returns_structured_json(monkeypatch):
     assert "Do not store secrets" in system_prompt
     assert "Do not store third-party claims about a person as user facts" in system_prompt
     assert generation_config["responseMimeType"] == "application/json"
+
+
+def test_gemini_channel_post_comment_prompt_returns_json_decision(monkeypatch):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps(
+                    {
+                        "candidates": [
+                            {
+                                "content": {
+                                    "parts": [
+                                        {
+                                            "text": json.dumps(
+                                                {
+                                                    "should_reply": True,
+                                                    "confidence": 0.89,
+                                                    "reason": "clear technical history angle",
+                                                    "reply_text": "Бұл жерде шектеу инженерлік идеяға айналғаны қызық.",
+                                                }
+                                            )
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ).encode("utf-8"),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(gemini_client, "_http", fake_http)
+    monkeypatch.setattr(gemini_client, "_circuit_open_until", 0.0)
+
+    client = GeminiClient.__new__(GeminiClient)
+    client._api_key = "test-key"
+    client._model = "test-gemini-model"
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+
+    decision, count = client.group_chat_channel_post_comment_decision(
+        channel_post="[speaker sender_type=channel username=@timurdaninfo name=Тимурдан Инфо] IC history",
+        recent_context="",
+        lang="kk",
+        reply_instructions="Write one short comment.",
+    )
+
+    payload = json.loads(fake_http.body)
+    system_prompt = payload["systemInstruction"]["parts"][0]["text"]
+    user_prompt = payload["contents"][0]["parts"][0]["text"]
+
+    assert count == 1
+    assert decision.should_reply is True
+    assert "official linked-channel post" in system_prompt
+    assert "not to summarize the whole post" in system_prompt
+    assert "Current official linked-channel post" in user_prompt
+    assert payload["generationConfig"]["responseMimeType"] == "application/json"
 
 
 def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
