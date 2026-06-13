@@ -1,3 +1,5 @@
+import os
+from argparse import Namespace
 from datetime import UTC, date, datetime
 from unittest.mock import MagicMock
 
@@ -130,6 +132,37 @@ def test_import_cli_parses_vectorize_daily_summaries_flag(monkeypatch):
     args = import_tool._parse_args()
 
     assert args.vectorize_daily_summaries is True
+
+
+def test_import_cli_seeds_vector_queue_url(monkeypatch):
+    for env_name in [
+        "MEMORY_TABLE_NAME",
+        "VECTOR_MEMORY_QUEUE_URL",
+        "AWS_DEFAULT_REGION",
+        "QUEUE_URL",
+        "STATS_TABLE_NAME",
+        "ADMIN_USER_ID",
+        "GEMINI_RPD_LIMIT",
+        "CHAT_LANG_MAP",
+        "CAPTCHA_TIMEOUT_SECONDS",
+        "KICK_BAN_DURATION_SECONDS",
+        "VOTEBAN_THRESHOLD",
+        "VOTEBAN_FORGIVE_THRESHOLD",
+        "CAPTCHA_MAX_ATTEMPTS",
+    ]:
+        monkeypatch.delenv(env_name, raising=False)
+
+    import_tool._seed_required_env(
+        Namespace(
+            table_name="memory-table",
+            queue_url="https://sqs.example/vector-memory",
+            aws_region="eu-central-1",
+        )
+    )
+
+    assert os.environ["MEMORY_TABLE_NAME"] == "memory-table"
+    assert os.environ["VECTOR_MEMORY_QUEUE_URL"] == "https://sqs.example/vector-memory"
+    assert os.environ["QUEUE_URL"].endswith("/history-import-dry-run")
 
 
 def test_import_telegram_history_dry_run_does_not_write(tmp_path):

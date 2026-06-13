@@ -56,18 +56,21 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 ```mermaid
 flowchart LR
   TG["Telegram groups"] --> APIGW["HTTP API Gateway"]
-  APIGW --> BOT["Bot Lambda<br/>webhook + SQS worker"]
+  APIGW --> BOT["Bot Lambda<br/>webhook + main SQS worker"]
 
   BOT --> STATS[("DynamoDB<br/>stats / captcha / votes")]
   BOT --> MEMORY[("DynamoDB<br/>group memory")]
   BOT --> MAINQ["SQS timeout/tasks queue"]
   MAINQ --> BOT
 
-  BOT --> VQ["SQS vector memory queue"]
-  VQ --> BOT
-  BOT --> S3V["S3 Vectors<br/>semantic memory index"]
+  BOT -- "enqueue vector tasks" --> VQ["SQS vector memory queue"]
+  VQ --> VIDX["Vector indexer Lambda"]
+  BOT -- "query/delete" --> S3V["S3 Vectors<br/>semantic memory index"]
+  VIDX -- "index/backfill" --> S3V
+  VIDX --> MEMORY
 
-  BOT --> GEMINI["Gemini<br/>agent replies / summaries / embeddings"]
+  BOT --> GEMINI["Gemini<br/>agent replies / summaries"]
+  VIDX --> GEMINI_EMB["Gemini<br/>embeddings"]
   BOT --> GROQ["Groq<br/>spam checks"]
 
   EB["EventBridge schedules"] --> NEWS["News Lambda"]
@@ -78,17 +81,21 @@ flowchart LR
   QUIZ --> TG
 
   LAYER["Shared Lambda layer<br/>zerde_common"] -.-> BOT
+  LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
 ```
 
 | Component | Trigger | Responsibility |
 |-----------|---------|----------------|
-| `src/bot/` | API Gateway + SQS | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, memory writes, vector indexing tasks. |
+| `src/bot/main.py` | API Gateway + main SQS queue | Telegram webhook, captcha, voteban, spam screening, `/ask`, agent replies, group memory extraction, daily summaries, semantic retrieval, and vector cleanup/enqueue. |
+| `src/bot/vector_indexer_main.py` | Vector memory SQS queue | Dedicated consumer for `PROCESS_VECTOR_MEMORY` and `PROCESS_VECTOR_MEMORY_BACKFILL`; embeds/indexes memory in S3 Vectors and fans out backfill pages. |
 | `src/news/` | EventBridge | Scheduled multilingual IT news digest. |
 | `src/quiz/` | EventBridge + bot invoke | Scheduled and on-demand developer quizzes. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared config, secret loading, logging, redaction, and provider error helpers. |
 | `infra/` | CDK | Serverless infrastructure, queues, tables, vector bucket/index, alarms, and Lambda wiring. |
+
+The Bot Lambda can query and delete S3 Vectors for retrieval and memory cleanup, but it does not consume the vector memory queue.
 
 For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
