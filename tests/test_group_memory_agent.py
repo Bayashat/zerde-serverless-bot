@@ -190,6 +190,80 @@ def test_touch_user_profile_tracks_only_speakers_own_samples_and_topics():
     assert "opensearch" in values[":interests"]
 
 
+def test_touch_user_profile_writes_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="@Bayashat",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#bayashat"
+    assert alias_item["username"] == "bayashat"
+    assert alias_item["user_id"] == "202"
+    assert alias_item["target_sk"] == "USER#202"
+
+
+def test_get_user_profiles_by_usernames_uses_alias_items_without_user_scan():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+
+    def get_item(*, Key):
+        if Key["sk"] == "USERNAME#bayashat":
+            return {"Item": {"user_id": "202", "username": "bayashat", "target_sk": "USER#202"}}
+        if Key["sk"] == "USER#202":
+            return {
+                "Item": {
+                    "sk": "USER#202",
+                    "user_id": "202",
+                    "username": "bayashat",
+                    "display_name": "Bayashat",
+                }
+            }
+        return {}
+
+    repo.table.get_item.side_effect = get_item
+
+    profiles = repo.get_user_profiles_by_usernames(-100123, {"@Bayashat"})
+
+    assert [profile["sk"] for profile in profiles] == ["USER#202"]
+    repo.table.query.assert_not_called()
+    assert [call.kwargs["Key"]["sk"] for call in repo.table.get_item.call_args_list] == [
+        "USERNAME#bayashat",
+        "USER#202",
+    ]
+
+
+def test_touch_user_profile_replaces_stale_username_alias():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.get_item.return_value = {"Item": {"username": "oldhandle"}}
+
+    repo._touch_user_profile(
+        chat_id=-100123,
+        user_id=202,
+        display_name="Bayashat",
+        username="newhandle",
+        sample_text="OpenSearch пен Python индексациясын қарап жүрмін",
+        now=1_700_000_100,
+    )
+
+    alias_item = repo.table.put_item.call_args.kwargs["Item"]
+    assert alias_item["sk"] == "USERNAME#newhandle"
+    repo.table.delete_item.assert_called_once_with(
+        Key={"pk": "CHAT#-100123", "sk": "USERNAME#oldhandle"},
+        ConditionExpression="user_id = :user_id",
+        ExpressionAttributeValues={":user_id": "202"},
+    )
+
+
 def test_touch_user_profile_extracts_structured_self_stated_profile_fields():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
@@ -2982,6 +3056,32 @@ def test_delete_memory_items_by_sks_deletes_existing_unique_items():
     assert deleted == [item]
     assert repo.table.get_item.call_count == 2
     batch.delete_item.assert_called_once_with(Key={"pk": "CHAT#-100123", "sk": "USER#42"})
+
+
+def test_delete_memory_items_by_sks_deletes_lexical_index_rows():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    batch = MagicMock()
+    repo.table.batch_writer.return_value.__enter__.return_value = batch
+    item = {
+        "pk": "CHAT#-100123",
+        "sk": "GROUP_FACT#0001700000000000#8",
+        "kind": "group_fact",
+        "summary": "The group saw E1027 in boto3 uploads.",
+        "created_at": 1_700_000_000,
+        "lexical_index_terms": ["e1027", "boto3"],
+    }
+    repo.table.get_item.return_value = {"Item": item}
+
+    deleted = repo.delete_memory_items_by_sks(-100123, [item["sk"]])
+
+    assert deleted == [item]
+    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
+    assert deleted_sks == [
+        "GROUP_FACT#0001700000000000#8",
+        "TERM#e1027#1700000000000#GROUP_FACT#0001700000000000#8",
+        "TERM#boto3#1700000000000#GROUP_FACT#0001700000000000#8",
+    ]
 
 
 def test_why_reply_uses_replied_bot_message_reason():
