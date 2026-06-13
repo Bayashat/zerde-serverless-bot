@@ -438,6 +438,7 @@ def handle_ask(ctx: Context) -> None:
             chat_id=ctx.chat_id,
             reply_to_message_id=ctx.message_id,
             user_text=question_context.user_text,
+            retrieval_query=question_context.retrieval_query,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
             requester_username=ctx.username,
@@ -462,6 +463,7 @@ def process_group_ask_task(
     chat_id = int(body["chat_id"])
     reply_to_message_id = int(body["reply_to_message_id"])
     user_text = str(body["user_text"]).strip()
+    retrieval_query = str(body.get("retrieval_query") or "").strip() or None
     lang = str(body.get("lang") or "kk")
     requester_user_id = body.get("requester_user_id")
     if not user_text:
@@ -473,6 +475,7 @@ def process_group_ask_task(
         chat_id=chat_id,
         reply_to_message_id=reply_to_message_id,
         user_text=user_text,
+        retrieval_query=retrieval_query,
         lang=lang,
         requester_user_id=requester_user_id,
         requester_username=str(body.get("requester_username") or "") or None,

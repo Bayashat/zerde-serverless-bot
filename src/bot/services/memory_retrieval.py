@@ -179,6 +179,7 @@ class MemoryCandidate:
 @dataclass(frozen=True)
 class RetrievalBundle:
     intent: RetrievalIntent
+    retrieval_query: str
     recent_context: str
     long_term_memory_context: str
     semantic_memory_context: str
@@ -218,6 +219,29 @@ def analyze_query_intent(
         asks_joke_or_meme=_contains_any(user_text, _JOKE_CUES),
         time_hint=time_match.group(0) if time_match else None,
     )
+
+
+def memory_kinds_for_intent(intent: RetrievalIntent) -> tuple[str, ...] | None:
+    """Return semantic memory kinds worth searching for an obvious query intent."""
+    if intent.is_self_reference:
+        return ("user_fact",)
+    if intent.target_usernames or intent.target_user_ids:
+        return ("user_fact",)
+
+    kinds: list[str] = []
+
+    def add(*values: str) -> None:
+        for value in values:
+            if value not in kinds:
+                kinds.append(value)
+
+    if intent.asks_group_decision:
+        add("group_fact", "daily_summary")
+    if intent.asks_past_event:
+        add("event", "daily_summary")
+    if intent.asks_joke_or_meme:
+        add("joke", "daily_summary")
+    return tuple(kinds) or None
 
 
 def extract_lexical_terms(text: str) -> set[str]:
@@ -495,12 +519,14 @@ def retrieve_candidates(
 ) -> tuple[dict[str, str], list[MemoryCandidate]]:
     """Call existing retrievers/formatters and convert their output to candidates."""
     recent_context = recent_context_fn(repo, chat_id, limit=recent_limit)
-    long_term_context = long_term_context_fn(repo, chat_id, query_text=user_text)
+    memory_kinds = memory_kinds_for_intent(intent)
+    long_term_context = long_term_context_fn(repo, chat_id, query_text=user_text, memory_kinds=memory_kinds)
     semantic_rows = semantic_retrieval_fn(
         chat_id,
         user_text,
         limit=semantic_limit,
         user_id=requester_user_id if intent.is_self_reference else None,
+        memory_kinds=memory_kinds,
     )
     semantic_candidates = [
         _hydrate_candidate_feedback(repo, chat_id, candidate)
@@ -509,6 +535,9 @@ def retrieve_candidates(
     ]
     lexical_terms = extract_lexical_terms(user_text)
     lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []
+    if memory_kinds:
+        allowed_memory_kinds = set(memory_kinds)
+        lexical_rows = [row for row in lexical_rows if _item_memory_kind(row) in allowed_memory_kinds]
     lexical_candidates = [
         candidate for row in lexical_rows if (candidate := _lexical_candidate(row, lexical_terms)) is not None
     ]
@@ -677,6 +706,7 @@ def pack_context(
     intent: RetrievalIntent,
     contexts: dict[str, str],
     candidates: list[MemoryCandidate],
+    retrieval_query: str = "",
     char_budget: int = 12_000,
     source_limit: int = 16,
 ) -> RetrievalBundle:
@@ -708,6 +738,7 @@ def pack_context(
     selected_sources = [candidate.source_metadata() for candidate in selected_candidates]
     return RetrievalBundle(
         intent=intent,
+        retrieval_query=retrieval_query,
         recent_context="\n".join(packed_lines["recent_context"]),
         long_term_memory_context="\n".join(packed_lines["long_term_memory_context"]),
         semantic_memory_context="\n".join(packed_lines["semantic_memory_context"]),
@@ -723,6 +754,7 @@ def build_agent_memory_context(
     repo: GroupMemoryRepository,
     chat_id: int | str,
     user_text: str,
+    retrieval_query: str | None = None,
     requester_user_id: int | str | None = None,
     requester_username: str | None = None,
     requester_display_name: str | None = None,
@@ -742,11 +774,12 @@ def build_agent_memory_context(
     requester_profile_context_fn: Callable[..., str] = format_requester_profile_context,
 ) -> RetrievalBundle:
     """Build agent prompt contexts plus retrieval source metadata."""
-    intent = analyze_query_intent(user_text, requester_user_id, ignored_usernames=ignored_usernames)
+    query_text = (retrieval_query or user_text).strip()
+    intent = analyze_query_intent(query_text, requester_user_id, ignored_usernames=ignored_usernames)
     contexts, candidates = retrieve_candidates(
         repo=repo,
         chat_id=chat_id,
-        user_text=user_text,
+        user_text=query_text,
         intent=intent,
         requester_user_id=requester_user_id,
         requester_username=requester_username,
@@ -763,5 +796,11 @@ def build_agent_memory_context(
         user_profile_context_fn=user_profile_context_fn,
         requester_profile_context_fn=requester_profile_context_fn,
     )
-    scored = dedupe_candidates(score_candidates(candidates, intent=intent, user_text=user_text))
-    return pack_context(intent=intent, contexts=contexts, candidates=scored, char_budget=char_budget)
+    scored = dedupe_candidates(score_candidates(candidates, intent=intent, user_text=query_text))
+    return pack_context(
+        intent=intent,
+        retrieval_query=query_text,
+        contexts=contexts,
+        candidates=scored,
+        char_budget=char_budget,
+    )

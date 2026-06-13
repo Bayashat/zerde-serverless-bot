@@ -7,6 +7,7 @@ from services.memory_retrieval import (
     build_agent_memory_context,
     dedupe_candidates,
     extract_lexical_terms,
+    memory_kinds_for_intent,
     pack_context,
     score_candidates,
 )
@@ -51,6 +52,7 @@ def test_build_agent_memory_context_scopes_self_reference_semantic_to_requester(
 
     semantic_retrieval.assert_called_once()
     assert semantic_retrieval.call_args.kwargs["user_id"] == 42
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("user_fact",)
     assert bundle.requester_profile_context == "Requester profile: username=@ada"
     assert bundle.retrieval_sources[0]["source"] == "requester_profile"
 
@@ -73,6 +75,7 @@ def test_build_agent_memory_context_does_not_scope_non_self_reference_semantic_q
     )
 
     assert semantic_retrieval.call_args.kwargs["user_id"] is None
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
 
 
 def test_build_agent_memory_context_injects_target_profile_context():
@@ -93,6 +96,59 @@ def test_build_agent_memory_context_injects_target_profile_context():
     assert bundle.intent.target_usernames == {"bayashat"}
     assert bundle.user_profile_context == "Trusted profile: username=@bayashat"
     assert any(source["source"] == "target_profile" for source in bundle.retrieval_sources)
+
+
+def test_memory_kind_filters_for_obvious_intents():
+    assert memory_kinds_for_intent(analyze_query_intent("what do you know about me", requester_user_id=42)) == (
+        "user_fact",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("@ada кім?", ignored_usernames={"zerde_kz_bot"})) == (
+        "user_fact",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what did we decide about S3 Vectors?")) == (
+        "group_fact",
+        "daily_summary",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what happened yesterday?")) == (
+        "event",
+        "daily_summary",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what is the banana meme?")) == (
+        "joke",
+        "daily_summary",
+    )
+
+
+def test_build_agent_memory_context_uses_retrieval_query_for_semantic_and_intent():
+    repo = MagicMock()
+    semantic_retrieval = MagicMock(return_value=[])
+    long_term_context = MagicMock(return_value="")
+    retrieval_query = (
+        "Current follow-up: why?\n\n"
+        "Previous user request: what did we decide about S3 Vectors?\n\n"
+        "Original source message: [speaker user_id=7] S3 Vectors is cheaper for our memory index."
+    )
+
+    bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=-100123,
+        user_text=(
+            "The user is continuing a thread with this previous bot answer:\n"
+            "Previous bot answer:\nThis long answer should not be embedded for retrieval."
+        ),
+        retrieval_query=retrieval_query,
+        recent_context_fn=_empty_context,
+        long_term_context_fn=long_term_context,
+        semantic_retrieval_fn=semantic_retrieval,
+        semantic_context_fn=lambda rows: "",
+        user_profile_context_fn=_empty_context,
+        requester_profile_context_fn=_empty_context,
+    )
+
+    assert semantic_retrieval.call_args.args[1] == retrieval_query
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
+    assert long_term_context.call_args.kwargs["query_text"] == retrieval_query
+    assert bundle.retrieval_query == retrieval_query
 
 
 def test_extract_lexical_terms_keeps_error_codes_and_short_mixed_terms():
