@@ -402,5 +402,7 @@ def _enqueue_vector(
 ) -> None:
     if not options.enqueue_vectors or vector_enqueue is None:
         return
+    if not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+        return
     vector_enqueue(chat_id=options.chat_id, source_sk=source_sk, reason="telegram_history_import")
     stats.vector_tasks += 1

@@ -114,6 +114,7 @@ def _handle_api_gateway(
             repo=dispatcher.memory_repo,
             bot=bot,
             update=body,
+            sqs_repo=_sqs_client,
         ):
             pass
         else:

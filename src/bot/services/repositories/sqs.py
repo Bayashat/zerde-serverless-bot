@@ -5,10 +5,12 @@ import json
 import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
+from services.repositories.group_memory import GroupMemoryRepository
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _SQS_CLIENT = None
+_MAX_SQS_DELAY_SECONDS = 900
 
 
 def _get_sqs_client():
@@ -74,6 +76,7 @@ class SQSClient:
         reply_to_message_id: int,
         user_text: str,
         lang: str,
+        retrieval_query: str | None = None,
         requester_user_id: int | str | None = None,
         requester_username: str | None = None,
         requester_display_name: str | None = None,
@@ -90,6 +93,8 @@ class SQSClient:
             "user_text": user_text,
             "lang": lang,
         }
+        if retrieval_query:
+            payload["retrieval_query"] = retrieval_query
         if requester_user_id is not None:
             payload["requester_user_id"] = requester_user_id
         if requester_username:
@@ -117,6 +122,56 @@ class SQSClient:
             )
         except Exception as e:
             logger.exception("Failed to send group ask task to SQS", extra={"error": e, "update_id": update_id})
+            raise
+
+    def send_proactive_candidate_task(
+        self,
+        *,
+        update_id: int | None = None,
+        chat_id: int,
+        trigger_message_id: int,
+        trigger_user_id: int | str | None = None,
+        user_text: str,
+        lang: str,
+        created_at: int | None = None,
+        delay_seconds: int = 45,
+    ) -> None:
+        """Enqueue a delayed proactive candidate for final social-timing evaluation."""
+        delay_seconds = max(0, min(_MAX_SQS_DELAY_SECONDS, int(delay_seconds)))
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_PROACTIVE_CANDIDATE",
+            "chat_id": chat_id,
+            "trigger_message_id": trigger_message_id,
+            "user_text": user_text,
+            "lang": lang,
+        }
+        if update_id is not None:
+            payload["update_id"] = update_id
+        if trigger_user_id is not None:
+            payload["trigger_user_id"] = trigger_user_id
+        if created_at:
+            payload["created_at"] = created_at
+
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+                DelaySeconds=delay_seconds,
+            )
+            logger.info(
+                "Queued proactive candidate task",
+                extra={
+                    "update_id": update_id,
+                    "chat_id": chat_id,
+                    "trigger_message_id": trigger_message_id,
+                    "delay": delay_seconds,
+                },
+            )
+        except Exception as e:
+            logger.exception(
+                "Failed to send proactive candidate task to SQS",
+                extra={"error": e, "update_id": update_id, "chat_id": chat_id},
+            )
             raise
 
     def send_spam_check_task(
@@ -223,6 +278,12 @@ class SQSClient:
         reason: str | None = None,
     ) -> None:
         """Enqueue vector indexing for one already-stored long-term memory item."""
+        if not GroupMemoryRepository.is_vectorizable_sk(source_sk):
+            logger.info(
+                "Skipped vector memory task for non-vectorizable key",
+                extra={"chat_id": chat_id, "source_sk": source_sk},
+            )
+            return
         payload: dict[str, object] = {
             "task_type": "PROCESS_VECTOR_MEMORY",
             "chat_id": chat_id,

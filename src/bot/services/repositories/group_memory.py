@@ -4,18 +4,50 @@ from __future__ import annotations
 
 import re
 import time
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from core.config import GROUP_MEMORY_RETENTION_DAYS, MEMORY_TABLE_NAME
+from core.config import (
+    GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS,
+    GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS,
+    GROUP_MEMORY_LONG_TERM_RETENTION_DAYS,
+    GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS,
+    GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS,
+    GROUP_MEMORY_RETENTION_DAYS,
+    MEMORY_TABLE_NAME,
+)
 from services.memory_safety import is_memory_learning_safe
 from services.repositories._common import get_dynamodb
 
-_VECTOR_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#", "DAILY_SUMMARY#")
+_SECONDS_PER_DAY = 24 * 60 * 60
+_LONG_TERM_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#")
+_DAILY_SUMMARY_PREFIX = "DAILY_SUMMARY#"
+_VECTOR_MEMORY_PREFIXES = (*_LONG_TERM_MEMORY_PREFIXES, _DAILY_SUMMARY_PREFIX)
+_AGENT_REPLY_PREFIX = "AGENT_REPLY#"
+_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND = {
+    "bot_commitment": "BOT_COMMITMENT#",
+    "bot_correction": "BOT_CORRECTION#",
+}
+_DURABLE_BOT_MEMORY_PREFIXES = tuple(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.values())
+_USERNAME_ALIAS_PREFIX = "USERNAME#"
+_LEXICAL_INDEX_PREFIX = "TERM#"
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
+CHAT_STYLE_TONES = {"concise", "professional", "friendly"}
+CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS = {"cautious", "avoid_weak_memory", "none"}
+DEFAULT_CHAT_STYLE_PROFILE: dict[str, Any] = {
+    "tone": "concise",
+    "max_default_sentences": 5,
+    "max_proactive_sentences": 2,
+    "allow_light_humor": False,
+    "low_confidence_behavior": "cautious",
+}
+_MAX_LEXICAL_INDEX_TERMS = 24
+_MAX_LEXICAL_QUERY_TERMS = 8
+_MAX_LEXICAL_INDEX_ROWS_PER_TERM = 100
 _LEXICAL_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{1,}", re.IGNORECASE)
 _LEXICAL_STOP_TERMS = {
     "about",
@@ -53,6 +85,58 @@ _LEXICAL_STOP_TERMS = {
 }
 
 
+def _bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(minimum, min(maximum, parsed))
+
+
+def _bool_setting(value: Any, *, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+    return default
+
+
+def normalise_chat_style_profile(raw: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Return a safe chat-level style profile for agent replies."""
+    profile = dict(DEFAULT_CHAT_STYLE_PROFILE)
+    if not isinstance(raw, Mapping):
+        return profile
+
+    tone = str(raw.get("tone") or "").strip().lower()
+    if tone in CHAT_STYLE_TONES:
+        profile["tone"] = tone
+
+    profile["max_default_sentences"] = _bounded_int(
+        raw.get("max_default_sentences"),
+        default=profile["max_default_sentences"],
+        minimum=1,
+        maximum=8,
+    )
+    profile["max_proactive_sentences"] = _bounded_int(
+        raw.get("max_proactive_sentences"),
+        default=profile["max_proactive_sentences"],
+        minimum=1,
+        maximum=4,
+    )
+    profile["allow_light_humor"] = _bool_setting(
+        raw.get("allow_light_humor"),
+        default=profile["allow_light_humor"],
+    )
+    low_confidence_behavior = str(raw.get("low_confidence_behavior") or "").strip().lower()
+    if low_confidence_behavior in CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS:
+        profile["low_confidence_behavior"] = low_confidence_behavior
+    return profile
+
+
 class GroupMemoryRepository:
     """Store opt-in group memory in a single-table DynamoDB layout."""
 
@@ -75,6 +159,17 @@ class GroupMemoryRepository:
         return f"USER#{user_id}"
 
     @staticmethod
+    def _normalise_username(username: str | None) -> str:
+        return str(username or "").strip().lower().lstrip("@")
+
+    @classmethod
+    def _username_alias_sk(cls, username: str) -> str:
+        normalised = cls._normalise_username(username)
+        if not normalised:
+            raise ValueError("username must not be empty")
+        return f"{_USERNAME_ALIAS_PREFIX}{normalised}"
+
+    @staticmethod
     def _msg_sk(created_at_ms: int, message_id: int | str) -> str:
         return f"MSG#{created_at_ms:013d}#{message_id}"
 
@@ -93,11 +188,23 @@ class GroupMemoryRepository:
 
     @staticmethod
     def _agent_reply_sk(message_id: int | str) -> str:
-        return f"AGENT_REPLY#{int(message_id):013d}"
+        return f"{_AGENT_REPLY_PREFIX}{int(message_id):013d}"
 
     @staticmethod
     def _daily_summary_sk(summary_date: str) -> str:
-        return f"DAILY_SUMMARY#{summary_date}"
+        return f"{_DAILY_SUMMARY_PREFIX}{summary_date}"
+
+    @staticmethod
+    def _lexical_index_sk(term: str, created_at_ms: int, source_sk: str) -> str:
+        return f"{_LEXICAL_INDEX_PREFIX}{term}#{created_at_ms:013d}#{source_sk}"
+
+    @staticmethod
+    def _lexical_index_prefix(term: str) -> str:
+        return f"{_LEXICAL_INDEX_PREFIX}{term}#"
+
+    @staticmethod
+    def _ttl_from_days(now: int, days: int) -> int:
+        return now + days * _SECONDS_PER_DAY
 
     @staticmethod
     def _vector_backfill_sk() -> str:
@@ -105,7 +212,29 @@ class GroupMemoryRepository:
 
     @staticmethod
     def is_vectorizable_sk(sk: str) -> bool:
+        """Return whether a row is allowed to enter long-term semantic vector memory."""
         return sk.startswith(_VECTOR_MEMORY_PREFIXES)
+
+    @staticmethod
+    def is_agent_reply_sk(sk: str) -> bool:
+        return sk.startswith(_AGENT_REPLY_PREFIX)
+
+    @staticmethod
+    def is_durable_bot_memory_sk(sk: str) -> bool:
+        return sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES)
+
+    @staticmethod
+    def durable_bot_memory_sk(kind: str, created_at_ms: int, source_message_id: int | str) -> str:
+        """Reserved key format for explicit bot commitments/corrections.
+
+        These rows are not written by normal answer generation. A future command
+        or admin correction flow must call this deliberately and add its own
+        review/permission checks before any bot-authored text becomes durable.
+        """
+        prefix = _DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.get(kind)
+        if not prefix:
+            raise ValueError(f"Unsupported durable bot memory kind: {kind}")
+        return f"{prefix}{int(created_at_ms):013d}#{source_message_id}"
 
     @staticmethod
     def _vector_prefix_for_start_key(start_key: dict[str, Any] | None) -> str:
@@ -206,16 +335,29 @@ class GroupMemoryRepository:
         return any(term in searchable for term in terms)
 
     @staticmethod
-    def _normalise_lexical_terms(text: str) -> set[str]:
-        terms: set[str] = set()
+    def _normalise_lexical_term(raw: str) -> str:
+        term = str(raw or "").lower().lstrip("@#").strip("._-")
+        if not term or term in _LEXICAL_STOP_TERMS:
+            return ""
+        if len(term) < 3 and not any(char.isdigit() for char in term):
+            return ""
+        return term[:80]
+
+    @classmethod
+    def _ordered_lexical_terms(cls, text: str) -> list[str]:
+        terms: list[str] = []
+        seen: set[str] = set()
         for raw in _LEXICAL_TERM_RE.findall(text or ""):
-            term = raw.lower().lstrip("@#").strip("._-")
-            if not term or term in _LEXICAL_STOP_TERMS:
+            term = cls._normalise_lexical_term(raw)
+            if not term or term in seen:
                 continue
-            if len(term) < 3 and not any(char.isdigit() for char in term):
-                continue
-            terms.add(term)
+            seen.add(term)
+            terms.append(term)
         return terms
+
+    @classmethod
+    def _normalise_lexical_terms(cls, text: str) -> set[str]:
+        return set(cls._ordered_lexical_terms(text))
 
     @staticmethod
     def _memory_item_search_text(item: dict[str, Any]) -> str:
@@ -242,6 +384,172 @@ class GroupMemoryRepository:
     def _memory_item_lexical_terms(cls, item: dict[str, Any]) -> set[str]:
         return cls._normalise_lexical_terms(cls._memory_item_search_text(item))
 
+    @classmethod
+    def _memory_item_lexical_index_terms(cls, item: dict[str, Any]) -> list[str]:
+        stored_terms = item.get("lexical_index_terms")
+        if isinstance(stored_terms, list):
+            terms: list[str] = []
+            seen: set[str] = set()
+            for raw in stored_terms:
+                term = cls._normalise_lexical_term(str(raw))
+                if term and term not in seen:
+                    seen.add(term)
+                    terms.append(term)
+            if terms:
+                return terms[:_MAX_LEXICAL_INDEX_TERMS]
+        return cls._ordered_lexical_terms(cls._memory_item_search_text(item))[:_MAX_LEXICAL_INDEX_TERMS]
+
+    @staticmethod
+    def _source_created_at_ms(item: dict[str, Any]) -> int:
+        try:
+            created_at = int(item.get("created_at") or 0)
+        except (TypeError, ValueError):
+            created_at = 0
+        if created_at > 0:
+            return created_at * 1000
+
+        sk = str(item.get("sk") or "")
+        for part in sk.split("#"):
+            if not part.isdigit():
+                continue
+            if len(part) >= 13:
+                return int(part)
+            if len(part) >= 10:
+                return int(part) * 1000
+        return 0
+
+    @classmethod
+    def _lexical_index_sks_for_item(cls, item: dict[str, Any]) -> list[str]:
+        source_sk = str(item.get("sk") or "")
+        if not source_sk or not cls.is_vectorizable_sk(source_sk):
+            return []
+        stored_terms = item.get("lexical_index_terms")
+        if not isinstance(stored_terms, list):
+            return []
+        terms: list[str] = []
+        seen: set[str] = set()
+        for raw in stored_terms:
+            term = cls._normalise_lexical_term(str(raw))
+            if term and term not in seen:
+                seen.add(term)
+                terms.append(term)
+        if not terms:
+            return []
+        created_at_ms = cls._source_created_at_ms(item)
+        return [cls._lexical_index_sk(term, created_at_ms, source_sk) for term in terms[:_MAX_LEXICAL_INDEX_TERMS]]
+
+    def _lexical_index_items_for_source(self, item: dict[str, Any]) -> list[dict[str, Any]]:
+        source_sk = str(item.get("sk") or "")
+        if not source_sk or not self.is_vectorizable_sk(source_sk):
+            return []
+        terms = self._memory_item_lexical_index_terms(item)
+        if not terms:
+            return []
+
+        created_at_ms = self._source_created_at_ms(item)
+        source_created_at = item.get("created_at")
+        rows: list[dict[str, Any]] = []
+        for term in terms:
+            row: dict[str, Any] = {
+                "pk": item.get("pk") or self._chat_pk(item.get("chat_id") or ""),
+                "sk": self._lexical_index_sk(term, created_at_ms, source_sk),
+                "kind": "lexical_index",
+                "chat_id": str(item.get("chat_id") or ""),
+                "term": term,
+                "source_sk": source_sk,
+                "source_kind": str(item.get("kind") or ""),
+                "source_created_at": source_created_at if source_created_at is not None else 0,
+            }
+            if item.get("user_id") is not None:
+                row["source_user_id"] = str(item["user_id"])
+            if item.get("ttl") is not None:
+                row["ttl"] = item["ttl"]
+            rows.append(row)
+        return rows
+
+    def _put_lexical_index_items(self, item: dict[str, Any]) -> None:
+        rows = self._lexical_index_items_for_source(item)
+        if not rows:
+            return
+        with self.table.batch_writer() as batch:
+            for row in rows:
+                batch.put_item(Item=row)
+
+    def _put_username_alias(
+        self,
+        *,
+        chat_id: int | str,
+        user_id: int | str,
+        username: str,
+        display_name: str,
+        now: int,
+    ) -> None:
+        normalised = self._normalise_username(username)
+        if not normalised:
+            return
+        item = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._username_alias_sk(normalised),
+            "kind": "username_alias",
+            "chat_id": str(chat_id),
+            "username": normalised,
+            "user_id": str(user_id),
+            "target_sk": self._user_sk(user_id),
+            "updated_at": now,
+        }
+        if display_name:
+            item["display_name"] = display_name[:160]
+        self.table.put_item(Item=item)
+
+    def _delete_username_alias(self, chat_id: int | str, username: str, *, user_id: int | str) -> None:
+        normalised = self._normalise_username(username)
+        if not normalised:
+            return
+        try:
+            self.table.delete_item(
+                Key={"pk": self._chat_pk(chat_id), "sk": self._username_alias_sk(normalised)},
+                ConditionExpression="user_id = :user_id",
+                ExpressionAttributeValues={":user_id": str(user_id)},
+            )
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code")
+            if code != "ConditionalCheckFailedException":
+                raise
+
+    @classmethod
+    def _delete_sks_for_item(cls, item: dict[str, Any]) -> list[str]:
+        sk = str(item.get("sk") or "")
+        if not sk:
+            return []
+
+        keys = [sk]
+        seen = {sk}
+        if sk.startswith("USER#"):
+            username = cls._normalise_username(str(item.get("username") or ""))
+            if username:
+                alias_sk = cls._username_alias_sk(username)
+                if alias_sk not in seen:
+                    seen.add(alias_sk)
+                    keys.append(alias_sk)
+
+        for index_sk in cls._lexical_index_sks_for_item(item):
+            if index_sk not in seen:
+                seen.add(index_sk)
+                keys.append(index_sk)
+        return keys
+
+    @staticmethod
+    def _is_internal_index_sk(sk: str) -> bool:
+        return sk.startswith(_USERNAME_ALIAS_PREFIX) or sk.startswith(_LEXICAL_INDEX_PREFIX)
+
+    @staticmethod
+    def _feedback_metadata_defaults() -> dict[str, Any]:
+        return {
+            "wrong_feedback_count": Decimal(0),
+            "negative_feedback_count": Decimal(0),
+            "superseded_by": "",
+        }
+
     @staticmethod
     def _normalise_evidence_message_ids(value: list[int] | None, fallback_message_id: int | str) -> list[int]:
         ids: list[int] = []
@@ -264,6 +572,7 @@ class GroupMemoryRepository:
         sk = str(item.get("sk") or "")
         return bool(
             str(item.get("user_id") or "") == user_id_str
+            or str(item.get("source_user_id") or "") == user_id_str
             or sk == self._user_sk(user_id)
             or sk.startswith(f"USER_FACT#{user_id_str}#")
             or (sk.startswith("DAILY_SUMMARY#") and self._daily_summary_mentions_terms(item, cleanup_terms))
@@ -383,7 +692,9 @@ class GroupMemoryRepository:
 
         with self.table.batch_writer() as batch:
             for item in items:
-                batch.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
+                pk = item.get("pk") or self._chat_pk(chat_id)
+                for sk in self._delete_sks_for_item(item):
+                    batch.delete_item(Key={"pk": pk, "sk": sk})
         return items
 
     def delete_memory_for_message(self, chat_id: int | str, message_id: int | str) -> list[dict[str, Any]]:
@@ -394,6 +705,66 @@ class GroupMemoryRepository:
         ]
         source_sks = [str(item.get("sk") or "") for item in candidates if item.get("sk")]
         return self.delete_memory_items_by_sks(chat_id, source_sks)
+
+    def mark_memory_items_wrong(
+        self,
+        chat_id: int | str,
+        source_sks: list[str],
+        *,
+        user_id: int | str | None = None,
+        agent_reply_message_id: int | str | None = None,
+    ) -> int:
+        """Record negative feedback on retrieval sources without deleting them."""
+        unique_sks: list[str] = []
+        seen: set[str] = set()
+        for source_sk in source_sks:
+            sk = str(source_sk or "").strip()
+            if sk and sk not in seen:
+                seen.add(sk)
+                unique_sks.append(sk)
+        if not unique_sks:
+            return 0
+
+        now = int(time.time())
+        values: dict[str, Any] = {
+            ":zero": Decimal(0),
+            ":one": Decimal(1),
+            ":now": now,
+            ":feedback_kind": "wrong",
+            ":feedback_status": "wrong",
+            ":empty": "",
+        }
+        sets = [
+            "wrong_feedback_count = if_not_exists(wrong_feedback_count, :zero) + :one",
+            "negative_feedback_count = if_not_exists(negative_feedback_count, :zero) + :one",
+            "last_feedback_at = :now",
+            "last_feedback_kind = :feedback_kind",
+            "feedback_status = :feedback_status",
+            "superseded_by = if_not_exists(superseded_by, :empty)",
+        ]
+        if user_id is not None:
+            values[":feedback_user_id"] = str(user_id)
+            sets.append("last_feedback_user_id = :feedback_user_id")
+        if agent_reply_message_id is not None:
+            values[":agent_reply_message_id"] = int(agent_reply_message_id)
+            sets.append("last_feedback_agent_reply_id = :agent_reply_message_id")
+
+        marked = 0
+        for sk in unique_sks:
+            try:
+                self.table.update_item(
+                    Key={"pk": self._chat_pk(chat_id), "sk": sk},
+                    UpdateExpression="SET " + ", ".join(sets),
+                    ConditionExpression="attribute_exists(pk) AND attribute_exists(sk)",
+                    ExpressionAttributeValues=values,
+                )
+                marked += 1
+            except ClientError as exc:
+                code = exc.response.get("Error", {}).get("Code")
+                if code == "ConditionalCheckFailedException":
+                    continue
+                raise
+        return marked
 
     @staticmethod
     def _profile_terms(text: str) -> list[str]:
@@ -515,6 +886,7 @@ class GroupMemoryRepository:
         *,
         memory_enabled: bool | None = None,
         agent_enabled: bool | None = None,
+        style_profile: Mapping[str, Any] | None = None,
     ) -> None:
         names: dict[str, str] = {}
         values: dict[str, Any] = {":updated_at": int(time.time())}
@@ -529,6 +901,11 @@ class GroupMemoryRepository:
             names["#agent_enabled"] = "agent_enabled"
             values[":agent_enabled"] = agent_enabled
             sets.append("#agent_enabled = :agent_enabled")
+
+        if style_profile is not None:
+            names["#style_profile"] = "style_profile"
+            values[":style_profile"] = normalise_chat_style_profile(style_profile)
+            sets.append("#style_profile = :style_profile")
 
         kwargs: dict[str, Any] = {
             "Key": {"pk": self._chat_pk(chat_id), "sk": self._settings_sk()},
@@ -545,8 +922,12 @@ class GroupMemoryRepository:
         return {
             "memory_enabled": bool(item.get("memory_enabled", True)),
             "agent_enabled": bool(item.get("agent_enabled", True)),
+            "style_profile": normalise_chat_style_profile(item.get("style_profile")),
             "updated_at": item.get("updated_at"),
         }
+
+    def get_chat_style_profile(self, chat_id: int | str) -> dict[str, Any]:
+        return normalise_chat_style_profile(self.get_chat_settings(chat_id).get("style_profile"))
 
     def is_memory_enabled(self, chat_id: int | str) -> bool:
         return bool(self.get_chat_settings(chat_id).get("memory_enabled"))
@@ -565,13 +946,14 @@ class GroupMemoryRepository:
         username: str | None,
         text: str,
         created_at: int | None = None,
+        reply_metadata: dict[str, Any] | None = None,
         touch_profile: bool = True,
         skip_if_exists: bool = False,
     ) -> bool:
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
-        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS)
         item = {
             "pk": self._chat_pk(chat_id),
             "sk": self._msg_sk(created_at_ms, message_id),
@@ -586,6 +968,10 @@ class GroupMemoryRepository:
         }
         if username:
             item["username"] = username
+        if reply_metadata:
+            for key, value in reply_metadata.items():
+                if value is not None:
+                    item[key] = value
         kwargs: dict[str, Any] = {"Item": item}
         if skip_if_exists:
             kwargs["ConditionExpression"] = "attribute_not_exists(pk)"
@@ -660,6 +1046,8 @@ class GroupMemoryRepository:
         if username:
             values[":username"] = username
             sets.append("username = :username")
+        old_username = self._normalise_username(str(profile.get("username") or ""))
+        new_username = self._normalise_username(username)
 
         self.table.update_item(
             Key={"pk": self._chat_pk(chat_id), "sk": self._user_sk(user_id)},
@@ -667,6 +1055,16 @@ class GroupMemoryRepository:
             ExpressionAttributeNames=names,
             ExpressionAttributeValues=values,
         )
+        if new_username:
+            self._put_username_alias(
+                chat_id=chat_id,
+                user_id=user_id,
+                username=new_username,
+                display_name=display_name,
+                now=now,
+            )
+            if old_username and old_username != new_username:
+                self._delete_username_alias(chat_id, old_username, user_id=user_id)
 
     def _updated_profile_samples(self, profile: dict[str, Any], sample_text: str) -> list[str]:
         samples = self._normalise_profile_samples(profile.get("recent_samples"))
@@ -748,11 +1146,11 @@ class GroupMemoryRepository:
         now = int(time.time())
         created_at = created_at or now
         created_at_ms = created_at * 1000
-        retention_ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        retention_ttl = self._ttl_from_days(now, GROUP_MEMORY_LONG_TERM_RETENTION_DAYS)
         expires_at = None
         if expires_in_days is not None:
             try:
-                expires_at = created_at + max(1, int(expires_in_days)) * 24 * 60 * 60
+                expires_at = created_at + max(1, int(expires_in_days)) * _SECONDS_PER_DAY
             except (TypeError, ValueError):
                 expires_at = None
         ttl = min(retention_ttl, expires_at) if expires_at else retention_ttl
@@ -773,19 +1171,24 @@ class GroupMemoryRepository:
             "evidence_message_ids": self._normalise_evidence_message_ids(evidence_message_ids, message_id),
             "sensitivity": sensitivity[:40] if sensitivity else "public",
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
         if expires_at:
             item["expires_at"] = expires_at
         if username:
             item["username"] = username
+        index_terms = self._memory_item_lexical_index_terms(item)
+        if index_terms:
+            item["lexical_index_terms"] = index_terms
         self.table.put_item(Item=item)
+        self._put_lexical_index_items(item)
         return item
 
     def get_recent_long_term_memories(self, chat_id: int | str, *, limit: int = 12) -> list[dict[str, Any]]:
         """Return recent important memories across long-term memory item types."""
         items: list[dict[str, Any]] = []
         per_kind_limit = max(1, limit // 2)
-        for prefix in ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#"):
+        for prefix in _LONG_TERM_MEMORY_PREFIXES:
             resp = self.table.query(
                 KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(prefix),
                 ScanIndexForward=False,
@@ -811,7 +1214,7 @@ class GroupMemoryRepository:
     ) -> dict[str, Any]:
         """Store one daily compressed group memory summary."""
         now = int(time.time())
-        ttl = now + GROUP_MEMORY_RETENTION_DAYS * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS)
         item = {
             "pk": self._chat_pk(chat_id),
             "sk": self._daily_summary_sk(summary_date),
@@ -828,13 +1231,18 @@ class GroupMemoryRepository:
             "source": source,
             "created_at": now,
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
+        index_terms = self._memory_item_lexical_index_terms(item)
+        if index_terms:
+            item["lexical_index_terms"] = index_terms
         self.table.put_item(Item=item)
+        self._put_lexical_index_items(item)
         return item
 
     def get_recent_daily_summaries(self, chat_id: int | str, *, limit: int = 7) -> list[dict[str, Any]]:
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("DAILY_SUMMARY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_DAILY_SUMMARY_PREFIX),
             ScanIndexForward=False,
             Limit=limit,
         )
@@ -853,30 +1261,58 @@ class GroupMemoryRepository:
         if not query_terms:
             return []
 
+        matched_items: list[dict[str, Any]] = []
+        seen_sks: set[str] = set()
+        source_matches: dict[str, set[str]] = {}
+        rows_per_term = max(max(int(limit), 1) * 3, 30)
+        rows_per_term = min(_MAX_LEXICAL_INDEX_ROWS_PER_TERM, rows_per_term)
+
+        for term in sorted(query_terms)[:_MAX_LEXICAL_QUERY_TERMS]:
+            seen_rows = 0
+            start_key: dict[str, Any] | None = None
+            while seen_rows < rows_per_term:
+                kwargs: dict[str, Any] = {
+                    "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id))
+                    & Key("sk").begins_with(self._lexical_index_prefix(term)),
+                    "ScanIndexForward": False,
+                    "Limit": min(100, rows_per_term - seen_rows),
+                }
+                if start_key:
+                    kwargs["ExclusiveStartKey"] = start_key
+                resp = self.table.query(**kwargs)
+                rows = resp.get("Items") or []
+                seen_rows += len(rows)
+                for row in rows:
+                    source_sk = str(row.get("source_sk") or "")
+                    if source_sk:
+                        source_matches.setdefault(source_sk, set()).add(term)
+                start_key = resp.get("LastEvaluatedKey")
+                if not start_key:
+                    break
+
+        for source_sk, matched_terms_hint in source_matches.items():
+            item = self.get_memory_item(chat_id, source_sk)
+            if not item:
+                continue
+            copied = self._copy_lexical_match(item, query_terms, matched_terms_hint=matched_terms_hint)
+            if not copied:
+                continue
+            matched_items.append(copied)
+            seen_sks.add(source_sk)
+
         fetch_limit = max(int(limit), 30)
-        candidates = [
+        fallback_candidates = [
             *self.get_recent_daily_summaries(chat_id, limit=fetch_limit),
             *self.get_recent_long_term_memories(chat_id, limit=fetch_limit),
         ]
-        matched_items: list[dict[str, Any]] = []
-        seen_sks: set[str] = set()
-        for item in candidates:
+        for item in fallback_candidates:
             sk = str(item.get("sk") or "")
             if not sk or sk in seen_sks:
                 continue
             seen_sks.add(sk)
-
-            searchable_text = self._memory_item_search_text(item)
-            if not searchable_text or not is_memory_learning_safe(searchable_text):
-                continue
-            matched_terms = sorted(query_terms & self._memory_item_lexical_terms(item))
-            if not matched_terms:
-                continue
-
-            copied = dict(item)
-            copied["_lexical_terms"] = matched_terms[:12]
-            copied["_lexical_match_count"] = len(matched_terms)
-            matched_items.append(copied)
+            copied = self._copy_lexical_match(item, query_terms, matched_terms_hint=set())
+            if copied:
+                matched_items.append(copied)
 
         def sort_key(item: dict[str, Any]) -> tuple[int, int]:
             try:
@@ -890,6 +1326,27 @@ class GroupMemoryRepository:
             return (match_count, created_at)
 
         return sorted(matched_items, key=sort_key, reverse=True)[: max(1, int(limit))]
+
+    def _copy_lexical_match(
+        self,
+        item: dict[str, Any],
+        query_terms: set[str],
+        *,
+        matched_terms_hint: set[str],
+    ) -> dict[str, Any] | None:
+        searchable_text = self._memory_item_search_text(item)
+        if not searchable_text or not is_memory_learning_safe(searchable_text):
+            return None
+        matched_terms = sorted(query_terms & self._memory_item_lexical_terms(item))
+        if not matched_terms:
+            matched_terms = sorted(query_terms & matched_terms_hint)
+        if not matched_terms:
+            return None
+
+        copied = dict(item)
+        copied["_lexical_terms"] = matched_terms[:12]
+        copied["_lexical_match_count"] = len(matched_terms)
+        return copied
 
     def get_memory_item(self, chat_id: int | str, source_sk: str) -> dict[str, Any]:
         resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": source_sk})
@@ -950,6 +1407,8 @@ class GroupMemoryRepository:
         error: str | None = None,
         embedding_model: str | None = None,
         dimensions: int | None = None,
+        document_hash: str | None = None,
+        schema_version: str | None = None,
     ) -> None:
         now = int(time.time())
         values: dict[str, Any] = {
@@ -967,6 +1426,12 @@ class GroupMemoryRepository:
         if dimensions:
             values[":dimensions"] = Decimal(dimensions)
             sets.append("vector_dimensions = :dimensions")
+        if document_hash:
+            values[":document_hash"] = document_hash
+            sets.append("vector_document_hash = :document_hash")
+        if schema_version:
+            values[":schema_version"] = schema_version
+            sets.append("vector_schema_version = :schema_version")
         if error:
             values[":error"] = error[:300]
             sets.append("vector_error = :error")
@@ -1020,34 +1485,31 @@ class GroupMemoryRepository:
         *,
         scan_limit: int = 500,
     ) -> list[dict[str, Any]]:
-        wanted = {username.lower().lstrip("@") for username in usernames if username}
+        del scan_limit
+        wanted = {self._normalise_username(username) for username in usernames if username}
+        wanted.discard("")
         if not wanted:
             return []
 
         profiles: list[dict[str, Any]] = []
-        seen = 0
-        start_key: dict[str, Any] | None = None
-        while seen < scan_limit:
-            kwargs: dict[str, Any] = {
-                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("USER#"),
-                "ScanIndexForward": False,
-                "Limit": min(100, scan_limit - seen),
-            }
-            if start_key:
-                kwargs["ExclusiveStartKey"] = start_key
-            resp = self.table.query(**kwargs)
-            items = resp.get("Items") or []
-            seen += len(items)
-            for item in items:
-                username = str(item.get("username") or "").lower().lstrip("@")
-                if username in wanted:
-                    profiles.append(item)
-                    wanted.remove(username)
-                    if not wanted:
-                        return profiles
-            start_key = resp.get("LastEvaluatedKey")
-            if not start_key:
-                return profiles
+        seen_user_ids: set[str] = set()
+        for username in sorted(wanted):
+            alias_resp = self.table.get_item(
+                Key={"pk": self._chat_pk(chat_id), "sk": self._username_alias_sk(username)}
+            )
+            alias = alias_resp.get("Item") or {}
+            user_id = str(alias.get("user_id") or "").strip()
+            if not user_id or user_id in seen_user_ids:
+                continue
+            profile = self.get_user_profile(chat_id, user_id)
+            if not profile:
+                continue
+            if not profile.get("username"):
+                profile = {**profile, "username": alias.get("username") or username}
+            if alias.get("display_name") and not profile.get("display_name"):
+                profile = {**profile, "display_name": alias["display_name"]}
+            profiles.append(profile)
+            seen_user_ids.add(user_id)
         return profiles
 
     def try_reserve_proactive_reply(self, chat_id: int | str, *, daily_limit: int) -> bool:
@@ -1056,7 +1518,7 @@ class GroupMemoryRepository:
             return False
         day = datetime.now(timezone.utc).strftime("%Y%m%d")
         now = int(time.time())
-        ttl = now + 3 * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS)
         try:
             self.table.update_item(
                 Key={"pk": self._chat_pk(chat_id), "sk": f"PROACTIVE#{day}"},
@@ -1099,6 +1561,16 @@ class GroupMemoryRepository:
                 entry["score"] = Decimal(str(round(float(source.get("score") or 0.0), 4)))
             except (TypeError, ValueError):
                 entry["score"] = Decimal("0")
+            if source.get("confidence") is not None:
+                try:
+                    entry["confidence"] = Decimal(str(round(max(0.0, min(1.0, float(source["confidence"]))), 4)))
+                except (TypeError, ValueError):
+                    pass
+            if source.get("distance") is not None:
+                try:
+                    entry["distance"] = Decimal(str(round(max(0.0, float(source["distance"])), 4)))
+                except (TypeError, ValueError):
+                    pass
             try:
                 entry["trust_level"] = int(source.get("trust_level") or 0)
             except (TypeError, ValueError):
@@ -1131,7 +1603,7 @@ class GroupMemoryRepository:
         retrieval_sources: list[dict[str, Any]] | None = None,
     ) -> None:
         now = int(time.time())
-        ttl = now + 7 * 24 * 60 * 60
+        ttl = self._ttl_from_days(now, GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS)
         item: dict[str, Any] = {
             "pk": self._chat_pk(chat_id),
             "sk": self._agent_reply_sk(bot_message_id),
@@ -1143,6 +1615,7 @@ class GroupMemoryRepository:
             "reason": reason[:500],
             "created_at": now,
             "ttl": ttl,
+            **self._feedback_metadata_defaults(),
         }
         if answer_text:
             item["answer_text"] = answer_text[:3000]
@@ -1178,7 +1651,7 @@ class GroupMemoryRepository:
             return resp.get("Item") or {}
 
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_AGENT_REPLY_PREFIX),
             ScanIndexForward=False,
             Limit=1,
         )
@@ -1187,7 +1660,7 @@ class GroupMemoryRepository:
 
     def count_recent_agent_replies(self, chat_id: int | str, *, since_epoch: int, limit: int = 25) -> int:
         resp = self.table.query(
-            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with("AGENT_REPLY#"),
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id)) & Key("sk").begins_with(_AGENT_REPLY_PREFIX),
             ScanIndexForward=False,
             Limit=limit,
         )
@@ -1211,6 +1684,8 @@ class GroupMemoryRepository:
             "jokes": 0,
             "daily_summaries": 0,
             "agent_replies": 0,
+            "bot_commitments": 0,
+            "bot_corrections": 0,
             "vector_total": 0,
             "vector_indexed": 0,
             "vector_failed": 0,
@@ -1248,10 +1723,14 @@ class GroupMemoryRepository:
                     counts["group_facts"] += 1
                 elif sk.startswith("JOKE#"):
                     counts["jokes"] += 1
-                elif sk.startswith("DAILY_SUMMARY#"):
+                elif sk.startswith(_DAILY_SUMMARY_PREFIX):
                     counts["daily_summaries"] += 1
-                elif sk.startswith("AGENT_REPLY#"):
+                elif sk.startswith(_AGENT_REPLY_PREFIX):
                     counts["agent_replies"] += 1
+                elif sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND["bot_commitment"]):
+                    counts["bot_commitments"] += 1
+                elif sk.startswith(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND["bot_correction"]):
+                    counts["bot_corrections"] += 1
                 elif sk == self._vector_backfill_sk():
                     counts["vector_backfill_status"] = str(item.get("vector_backfill_status") or "")
                     counts["vector_backfill_updated_at"] = item.get("vector_backfill_updated_at") or ""
@@ -1291,9 +1770,18 @@ class GroupMemoryRepository:
                     to_delete.append(item)
             if to_delete:
                 with self.table.batch_writer() as batch:
+                    deleted_keys: set[tuple[str, str]] = set()
                     for item in to_delete:
-                        batch.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
-                        deleted += 1
+                        pk = item.get("pk") or self._chat_pk(chat_id)
+                        item_sk = str(item.get("sk") or "")
+                        for sk in self._delete_sks_for_item(item):
+                            key = (str(pk), sk)
+                            if key in deleted_keys:
+                                continue
+                            deleted_keys.add(key)
+                            batch.delete_item(Key={"pk": pk, "sk": sk})
+                        if item_sk and not self._is_internal_index_sk(item_sk):
+                            deleted += 1
             start_key = resp.get("LastEvaluatedKey")
             if not start_key:
                 return deleted

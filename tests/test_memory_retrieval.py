@@ -7,6 +7,7 @@ from services.memory_retrieval import (
     build_agent_memory_context,
     dedupe_candidates,
     extract_lexical_terms,
+    memory_kinds_for_intent,
     pack_context,
     score_candidates,
 )
@@ -51,6 +52,7 @@ def test_build_agent_memory_context_scopes_self_reference_semantic_to_requester(
 
     semantic_retrieval.assert_called_once()
     assert semantic_retrieval.call_args.kwargs["user_id"] == 42
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("user_fact",)
     assert bundle.requester_profile_context == "Requester profile: username=@ada"
     assert bundle.retrieval_sources[0]["source"] == "requester_profile"
 
@@ -73,6 +75,7 @@ def test_build_agent_memory_context_does_not_scope_non_self_reference_semantic_q
     )
 
     assert semantic_retrieval.call_args.kwargs["user_id"] is None
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
 
 
 def test_build_agent_memory_context_injects_target_profile_context():
@@ -93,6 +96,59 @@ def test_build_agent_memory_context_injects_target_profile_context():
     assert bundle.intent.target_usernames == {"bayashat"}
     assert bundle.user_profile_context == "Trusted profile: username=@bayashat"
     assert any(source["source"] == "target_profile" for source in bundle.retrieval_sources)
+
+
+def test_memory_kind_filters_for_obvious_intents():
+    assert memory_kinds_for_intent(analyze_query_intent("what do you know about me", requester_user_id=42)) == (
+        "user_fact",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("@ada кім?", ignored_usernames={"zerde_kz_bot"})) == (
+        "user_fact",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what did we decide about S3 Vectors?")) == (
+        "group_fact",
+        "daily_summary",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what happened yesterday?")) == (
+        "event",
+        "daily_summary",
+    )
+    assert memory_kinds_for_intent(analyze_query_intent("what is the banana meme?")) == (
+        "joke",
+        "daily_summary",
+    )
+
+
+def test_build_agent_memory_context_uses_retrieval_query_for_semantic_and_intent():
+    repo = MagicMock()
+    semantic_retrieval = MagicMock(return_value=[])
+    long_term_context = MagicMock(return_value="")
+    retrieval_query = (
+        "Current follow-up: why?\n\n"
+        "Previous user request: what did we decide about S3 Vectors?\n\n"
+        "Original source message: [speaker user_id=7] S3 Vectors is cheaper for our memory index."
+    )
+
+    bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=-100123,
+        user_text=(
+            "The user is continuing a thread with this previous bot answer:\n"
+            "Previous bot answer:\nThis long answer should not be embedded for retrieval."
+        ),
+        retrieval_query=retrieval_query,
+        recent_context_fn=_empty_context,
+        long_term_context_fn=long_term_context,
+        semantic_retrieval_fn=semantic_retrieval,
+        semantic_context_fn=lambda rows: "",
+        user_profile_context_fn=_empty_context,
+        requester_profile_context_fn=_empty_context,
+    )
+
+    assert semantic_retrieval.call_args.args[1] == retrieval_query
+    assert semantic_retrieval.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
+    assert long_term_context.call_args.kwargs["query_text"] == retrieval_query
+    assert bundle.retrieval_query == retrieval_query
 
 
 def test_extract_lexical_terms_keeps_error_codes_and_short_mixed_terms():
@@ -272,6 +328,8 @@ def test_lexical_results_do_not_bypass_memory_safety_filter():
 
 def test_repository_lexical_search_uses_long_term_prefixes_and_filters_unsafe_rows():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    repo.table.query.return_value = {"Items": []}
     repo.get_recent_daily_summaries = MagicMock(
         return_value=[
             {
@@ -303,6 +361,51 @@ def test_repository_lexical_search_uses_long_term_prefixes_and_filters_unsafe_ro
 
     assert [item["sk"] for item in results] == ["EVENT#0000000000200#1", "DAILY_SUMMARY#2026-06-12"]
     assert results[0]["_lexical_terms"] == ["e1027", "opensearch"]
+
+
+def test_repository_lexical_index_finds_older_exact_term_memory():
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    source_sk = "GROUP_FACT#0001600000000000#77"
+    repo.table.query.return_value = {
+        "Items": [
+            {
+                "sk": f"TERM#e1027#1600000000000#{source_sk}",
+                "term": "e1027",
+                "source_sk": source_sk,
+                "source_kind": "group_fact",
+            }
+        ]
+    }
+    repo.table.get_item.return_value = {
+        "Item": {
+            "pk": "CHAT#-100123",
+            "sk": source_sk,
+            "kind": "group_fact",
+            "summary": "Imported history captured E1027 in the legacy payment worker.",
+            "created_at": 1_600_000_000,
+            "lexical_index_terms": ["e1027", "legacy", "payment"],
+        }
+    }
+    repo.get_recent_daily_summaries = MagicMock(return_value=[])
+    repo.get_recent_long_term_memories = MagicMock(
+        return_value=[
+            {
+                "sk": "EVENT#0001700000000000#1",
+                "kind": "event",
+                "summary": "Recent unrelated OpenSearch note.",
+                "created_at": 1_700_000_000,
+            }
+        ]
+    )
+
+    results = repo.search_long_term_memories_by_terms("-100123", {"E1027"}, limit=5)
+
+    assert [item["sk"] for item in results] == [source_sk]
+    assert results[0]["_lexical_terms"] == ["e1027"]
+    expression = repo.table.query.call_args.kwargs["KeyConditionExpression"]
+    begins_with = expression.get_expression()["values"][1].get_expression()
+    assert begins_with["values"][1] == "TERM#e1027#"
 
 
 def test_local_reranker_orders_profiles_user_facts_daily_summaries_and_jokes():
@@ -437,6 +540,84 @@ def test_joke_intent_preserves_joke_candidate_and_non_joke_query_penalizes_it():
     assert joke_score < event_score
 
 
+def test_wrong_feedback_penalizes_memory_candidate_score():
+    intent = analyze_query_intent("OpenSearch indexing")
+    flagged = MemoryCandidate(
+        source="semantic",
+        source_sk="USER_FACT#42#1#2",
+        memory_kind="user_fact",
+        text="Ada owns OpenSearch indexing.",
+        score=0.92,
+        trust_level=60,
+        created_at=None,
+        metadata={"confidence": 0.9, "wrong_feedback_count": 2, "feedback_status": "wrong"},
+    )
+    clean = MemoryCandidate(
+        source="semantic",
+        source_sk="GROUP_FACT#1#3",
+        memory_kind="group_fact",
+        text="The group chose OpenSearch indexing.",
+        score=0.72,
+        trust_level=54,
+        created_at=None,
+        metadata={"confidence": 0.72},
+    )
+
+    scored = score_candidates([flagged, clean], intent=intent, user_text="OpenSearch indexing")
+
+    assert scored[0].source_sk == "GROUP_FACT#1#3"
+    assert scored[1].source_sk == "USER_FACT#42#1#2"
+
+
+def test_semantic_candidate_hydrates_feedback_metadata_for_ranking():
+    repo = MagicMock()
+    repo.get_memory_item.side_effect = [
+        {
+            "sk": "USER_FACT#42#1#2",
+            "wrong_feedback_count": 2,
+            "negative_feedback_count": 2,
+            "feedback_status": "wrong",
+        },
+        {},
+    ]
+    semantic_rows = [
+        {
+            "distance": 0.02,
+            "metadata": {
+                "source_sk": "USER_FACT#42#1#2",
+                "memory_kind": "user_fact",
+                "text": "Ada owns OpenSearch indexing.",
+                "confidence": 0.95,
+            },
+        },
+        {
+            "distance": 0.18,
+            "metadata": {
+                "source_sk": "GROUP_FACT#1#3",
+                "memory_kind": "group_fact",
+                "text": "The group chose OpenSearch indexing.",
+                "confidence": 0.8,
+            },
+        },
+    ]
+
+    bundle = build_agent_memory_context(
+        repo=repo,
+        chat_id=-100123,
+        user_text="OpenSearch indexing",
+        recent_context_fn=_empty_context,
+        long_term_context_fn=_empty_context,
+        semantic_retrieval_fn=MagicMock(return_value=semantic_rows),
+        semantic_context_fn=lambda rows: "\n".join(row["metadata"]["text"] for row in rows),
+        lexical_search_fn=MagicMock(return_value=[]),
+        user_profile_context_fn=_empty_context,
+        requester_profile_context_fn=_empty_context,
+    )
+
+    assert bundle.retrieval_sources[0]["source_sk"] == "GROUP_FACT#1#3"
+    assert bundle.retrieval_sources[1]["source_sk"] == "USER_FACT#42#1#2"
+
+
 def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_injection():
     repo = MagicMock()
     semantic_rows = [
@@ -485,6 +666,8 @@ def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_in
             "memory_kind": "user_fact",
             "deletion_policy": "durable_memory",
             "deletable_source_sk": "USER_FACT#42#7",
+            "confidence": 0.95,
+            "distance": 0.18,
         }
     ]
 
