@@ -678,7 +678,14 @@ def get_vector_index_status(
         "total_count": int(overview.get("vector_total") or 0),
         "last_backfill_status": overview.get("vector_backfill_status") or "",
         "last_backfill_updated_at": overview.get("vector_backfill_updated_at") or "",
-        "last_backfill_failures": int(overview.get("vector_backfill_failures") or 0),
+        "last_backfill_started_at": overview.get("vector_backfill_started_at") or "",
+        "last_backfill_finished_at": overview.get("vector_backfill_finished_at") or "",
+        "last_backfill_processed_total": int(overview.get("vector_backfill_processed_total") or 0),
+        "last_backfill_enqueued_total": int(overview.get("vector_backfill_enqueued_total") or 0),
+        "last_backfill_failures_total": int(overview.get("vector_backfill_failures_total") or 0),
+        "last_backfill_failures": int(overview.get("vector_backfill_failures_total") or 0),
+        "last_backfill_next_token": overview.get("vector_backfill_next_token"),
+        "last_backfill_last_start_key": overview.get("vector_backfill_last_start_key"),
     }
 
 
@@ -710,7 +717,28 @@ def process_vector_memory_backfill_task(
     limit = int(body.get("limit") or VECTOR_MEMORY_BACKFILL_BATCH_SIZE)
     start_key = body.get("start_key")
     start_key = start_key if isinstance(start_key, dict) else None
+    logger.info(
+        "Vector memory backfill page started",
+        extra={
+            "chat_id": chat_id,
+            "limit": limit,
+            "has_start_key": bool(start_key),
+            "start_sk": str(start_key.get("sk") or "") if start_key else "",
+            "start_prefix": str(start_key.get("__vector_prefix") or "") if start_key else "",
+        },
+    )
     items, next_key = repo.list_vectorizable_memory_items(chat_id, limit=limit, start_key=start_key)
+    logger.info(
+        "Vector memory backfill page loaded",
+        extra={
+            "chat_id": chat_id,
+            "limit": limit,
+            "item_count": len(items),
+            "has_next": bool(next_key),
+            "next_sk": str(next_key.get("sk") or "") if next_key else "",
+            "next_prefix": str(next_key.get("__vector_prefix") or "") if next_key else "",
+        },
+    )
 
     if sqs_repo is None:
         from services.repositories.sqs import SQSClient
@@ -728,7 +756,10 @@ def process_vector_memory_backfill_task(
             enqueued += 1
         except Exception:
             failures += 1
-            logger.exception("Failed to enqueue vector memory backfill item", extra={"chat_id": chat_id})
+            logger.exception(
+                "Failed to enqueue vector memory backfill item",
+                extra={"chat_id": chat_id, "source_sk": source_sk},
+            )
 
     status = "queued_next_page" if next_key else "queued"
     if failures:
@@ -739,11 +770,21 @@ def process_vector_memory_backfill_task(
         processed=len(items),
         enqueued=enqueued,
         failures=failures,
+        start_key=start_key,
         next_token=next_key,
+        reset=start_key is None,
+        finished=next_key is None,
     )
     if next_key:
         sqs_repo.send_vector_memory_backfill_task(chat_id=chat_id, limit=limit, start_key=next_key)
     logger.info(
         "Vector memory backfill page queued",
-        extra={"chat_id": chat_id, "processed": len(items), "enqueued": enqueued, "has_next": bool(next_key)},
+        extra={
+            "chat_id": chat_id,
+            "processed": len(items),
+            "enqueued": enqueued,
+            "failures": failures,
+            "has_next": bool(next_key),
+            "finished": next_key is None,
+        },
     )

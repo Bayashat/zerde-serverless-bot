@@ -321,7 +321,16 @@ class SQSClient:
                 QueueUrl=getattr(self, "vector_queue_url", self.queue_url),
                 MessageBody=json.dumps(payload),
             )
-            logger.info("Queued vector memory backfill task", extra={"chat_id": chat_id, "limit": limit})
+            logger.info(
+                "Queued vector memory backfill task",
+                extra={
+                    "chat_id": chat_id,
+                    "limit": limit,
+                    "has_start_key": bool(start_key),
+                    "start_sk": str(start_key.get("sk") or "") if start_key else "",
+                    "start_prefix": str(start_key.get("__vector_prefix") or "") if start_key else "",
+                },
+            )
         except Exception as e:
             logger.exception(
                 "Failed to send vector memory backfill task to SQS", extra={"error": e, "chat_id": chat_id}
