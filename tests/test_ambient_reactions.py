@@ -7,7 +7,10 @@ from services.ai import gemini_client
 from services.ai.ambient_reaction_classifier import FallbackAmbientReactionClassifier
 from services.ai.gemini_client import GeminiClient
 from services.ambient_reactions import (
+    AmbientReactionContext,
+    build_ambient_reaction_task_payload,
     evaluate_ambient_reaction_rate_limit,
+    format_ambient_reaction_prompt_context,
     gather_ambient_reaction_context,
     is_ambient_reaction_eligible,
     process_ambient_reaction_task,
@@ -32,6 +35,19 @@ def _update(text: str = "This DynamoDB migration note is actually useful") -> di
     }
 
 
+def _linked_channel_update(text: str = "1958 жылы Texas Instruments-та монолитті идея пайда болды.") -> dict:
+    update = _update(text)
+    update["message"]["from"] = {"id": 777000, "is_bot": False, "first_name": "Telegram"}
+    update["message"]["sender_chat"] = {
+        "id": -1001037498558,
+        "title": "Тимурдан Инфо | it&tech",
+        "username": "timurdaninfo",
+        "type": "channel",
+    }
+    update["message"]["is_automatic_forward"] = True
+    return update
+
+
 def test_ambient_reaction_eligibility_filters_non_candidates() -> None:
     assert is_ambient_reaction_eligible(_update("This Terraform note is practical and useful")) is True
 
@@ -52,6 +68,50 @@ def test_ambient_reaction_eligibility_filters_non_candidates() -> None:
     media_update = _update("This Terraform note is practical and useful")
     media_update["message"]["photo"] = [{"file_id": "photo"}]
     assert is_ambient_reaction_eligible(media_update) is False
+
+
+def test_ambient_reaction_payload_uses_linked_channel_actor() -> None:
+    update = _linked_channel_update()
+
+    payload = build_ambient_reaction_task_payload(update)
+
+    assert payload is not None
+    assert payload["user_id"] == -1001037498558
+    assert payload["display_name"] == "Тимурдан Инфо | it&tech"
+    assert payload["username"] == "timurdaninfo"
+    assert payload["sender_type"] == "channel"
+    assert payload["force_reaction"] is True
+
+
+def test_ambient_reaction_payload_allows_linked_channel_media_without_caption() -> None:
+    update = _linked_channel_update("")
+    del update["message"]["text"]
+    update["message"]["photo"] = [{"file_id": "photo-id", "file_size": 100}]
+
+    payload = build_ambient_reaction_task_payload(update)
+
+    assert payload is not None
+    assert payload["force_reaction"] is True
+    assert payload["text"] == "Official linked-channel media post without text caption."
+
+
+def test_ambient_reaction_context_formats_linked_channel_sender_type() -> None:
+    _, _, current = format_ambient_reaction_prompt_context(
+        AmbientReactionContext(
+            previous_messages=(),
+            reply_chain=(),
+            current_message={
+                "message_id": 11,
+                "user_id": "-1001037498558",
+                "sender_type": "channel",
+                "username": "timurdaninfo",
+                "display_name": "Тимурдан Инфо | it&tech",
+                "text": "Monolithic idea post",
+            },
+        )
+    )
+
+    assert "[speaker sender_type=channel username=@timurdaninfo name=Тимурдан Инфо | it&tech" in current
 
 
 def test_validate_ambient_reaction_decision_accepts_only_allowed_contract() -> None:
@@ -237,6 +297,50 @@ def test_process_ambient_reaction_task_sets_reaction_and_records_event(monkeypat
     assert repo.record_ambient_reaction.call_args.kwargs["emoji"] == "👍"
 
 
+def test_process_forced_linked_channel_reaction_bypasses_rate_limit_and_classifier_skip(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.side_effect = AssertionError("forced reaction should not read rate-limit rows")
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": False,
+                "emoji": None,
+                "confidence": 0.2,
+                "category": "none",
+                "reason": "Would normally skip.",
+            }
+        ),
+        "gemini",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    monkeypatch.setattr(ambient_reactions.time, "time", lambda: 1_700_000_100)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": -1001037498558,
+            "display_name": "Тимурдан Инфо | it&tech",
+            "sender_type": "channel",
+            "text": "Official linked-channel media post without text caption.",
+            "lang": "kk",
+            "created_at": 1_700_000_000,
+            "force_reaction": True,
+        },
+    )
+
+    assert handled is True
+    bot.set_message_reaction.assert_called_once_with(-100123, 11, "👀")
+    repo.record_ambient_reaction.assert_called_once()
+    assert repo.record_ambient_reaction.call_args.kwargs["category"] == "interesting"
+
+
 def test_process_ambient_reaction_task_allows_command_and_sensitive_text(monkeypatch) -> None:
     monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
     repo = MagicMock()
@@ -295,6 +399,7 @@ def test_sqs_client_sends_ambient_reaction_task(monkeypatch) -> None:
         lang="en",
         created_at=1_700_000_000,
         reply_chain=[{"message_id": 10, "text": "previous"}],
+        force_reaction=True,
     )
 
     kwargs = fake_client.send_message.call_args.kwargs
@@ -305,6 +410,7 @@ def test_sqs_client_sends_ambient_reaction_task(monkeypatch) -> None:
     assert payload["message_id"] == 11
     assert payload["user_id"] == 42
     assert payload["reply_chain"][0]["message_id"] == 10
+    assert payload["force_reaction"] is True
 
 
 def test_gemini_ambient_reaction_prompt_returns_json_text(monkeypatch) -> None:

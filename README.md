@@ -28,13 +28,13 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **User profiles**: lightweight per-user context derived from each user's own messages.
 - **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
-- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, delayed conservative proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
-- **Ambient reactions**: optional emoji reactions to sampled high-signal group messages, classified through Gemini with DeepSeek/Groq fallback and processed asynchronously without writing long-term memory.
-- **Explicit media understanding**: `/ask` can be used as a reply to photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Zerde does not automatically analyze every group media message.
+- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, immediate linked-channel post comments, delayed conservative ordinary proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
+- **Ambient reactions**: optional emoji reactions to group messages, classified through Gemini with DeepSeek/Groq fallback and processed asynchronously without writing long-term memory. Linked-channel posts force a reaction attempt and fall back to 👀.
+- **Explicit media understanding**: `/ask` can be used as a reply to photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
 
-ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. The bot does not store raw bytes or downloaded files; only compact media metadata/summary may be stored in short-lived `AGENT_REPLY#...` rows for follow-up continuity.
+ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path, plus official linked-channel post comments. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. The bot does not store raw bytes or downloaded files; only compact media metadata/summary may be stored in short-lived `AGENT_REPLY#...` rows for follow-up continuity.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
@@ -48,8 +48,8 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Explicit multimodal `/ask` | Reply to photos/screenshots, voice/audio, PDFs, or supported text/code/log files with `/ask`; the async worker reads that media for the current answer only. |
 | RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
-| Social timing | Proactive replies are delayed briefly, then pass local heuristics, human-answer checks, recent bot activity penalties, Gemini judgment, and per-chat daily limits. |
-| Ambient reactions | Optional `setMessageReaction` presence feature for funny, useful, thoughtful, warm, or interesting text messages; enabled by default, sampled, and rate-limited. |
+| Social timing | Ordinary proactive replies are delayed briefly, then pass local heuristics, human-answer checks, recent bot activity penalties, Gemini judgment, and per-chat daily limits. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
+| Ambient reactions | Optional `setMessageReaction` presence feature for funny, useful, thoughtful, warm, or interesting messages; enabled by default. Ordinary messages are sampled/rate-limited, while linked-channel posts force a reaction attempt. |
 | Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |
 | Community voteban | Lets communities vote to ban or forgive by replying with `/voteban`. |
 | Daily AI news | EventBridge-triggered news Lambda summarizes tech news through Gemini/DeepSeek-compatible provider paths. |

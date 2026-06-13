@@ -60,6 +60,20 @@ def test_is_relevant_document_only():
     assert is_event_relevant_to_bot(body) is True
 
 
+def test_is_relevant_linked_channel_photo_post():
+    body = {
+        "message": {
+            "message_id": 11,
+            "photo": [{"file_id": "photo-id"}],
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 777000, "is_bot": False, "first_name": "Telegram"},
+            "sender_chat": {"id": -100456, "type": "channel", "title": "Official Channel"},
+            "is_automatic_forward": True,
+        }
+    }
+    assert is_event_relevant_to_bot(body) is True
+
+
 def test_create_response():
     resp = create_response(200, {"message": "ok"})
     assert resp["statusCode"] == 200

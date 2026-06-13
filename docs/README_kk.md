@@ -24,13 +24,13 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **User profiles**: әр адамның өз хабарламаларынан алынған жеңіл profile.
 - **Long-term memory**: candidate-gated және budgeted structured extraction арқылы алынатын `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, `DAILY_SUMMARY#...`, rule fallback бар.
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
-- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, delayed conservative proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
-- **Ambient reactions**: optional emoji reactions; sampled high-signal топ text хабарламаларына async `setMessageReaction` жасайды, long-term memory жазбайды.
-- **Explicit media understanding**: `/ask` фото/screenshot, voice/audio, PDF және supported text/code/log файлдарға reply ретінде жұмыс істейді. Zerde топтағы әр медианы автоматты талдамайды.
+- **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, immediate linked-channel post comments, delayed conservative ordinary proactive reply gating, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
+- **Ambient reactions**: optional emoji reactions; async `setMessageReaction` жасайды, long-term memory жазбайды. Ordinary messages sampled/rate-limited, ал linked-channel post міндетті reaction attempt жасайды және қажет болса 👀 fallback қолданады.
+- **Explicit media understanding**: `/ask` фото/screenshot, voice/audio, PDF және supported text/code/log файлдарға reply ретінде жұмыс істейді. Linked-channel post comment path attached media-ны ephemeral талдай алады. Zerde кәдімгі топ медиасының бәрін автоматты талдамайды.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, `/agent wrong` / `/memory wrong` feedback related vector cleanup-пен, owner-only group cleanup.
 - **Bot output boundary**: кәдімгі bot жауаптары тек short-term `AGENT_REPLY#...` thread metadata ретінде сақталады, semantic memory-ге embed жасалмайды. Durable bot-authored memory үшін future explicit `BOT_COMMITMENT#...` немесе `BOT_CORRECTION#...` flow қажет.
 
-Media analysis explicit және ephemeral: bot медианы тек user `/ask` немесе explicit mention/reply path арқылы сұрағанда жүктеп талдайды, raw bytes/downloaded file сақтамайды және media-derived фактілерді long-term memory немесе S3 Vectors-ке жазбайды. Follow-up continuity үшін short-lived `AGENT_REPLY#...` ішінде тек compact media metadata/summary сақталуы мүмкін.
+Media analysis explicit және ephemeral: bot медианы user `/ask` немесе explicit mention/reply path арқылы сұрағанда, сондай-ақ official linked-channel post comment path ішінде ғана жүктеп талдайды. Raw bytes/downloaded file сақталмайды және media-derived фактілер long-term memory немесе S3 Vectors-ке жазылмайды. Follow-up continuity үшін short-lived `AGENT_REPLY#...` ішінде тек compact media metadata/summary сақталуы мүмкін.
 
 RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен релевант memory/document іздеу, содан кейін LLM-ге сол контекстпен жауап бергізу. Zerde-де RAG — үлкенірек agentic bot архитектурасының бір қабаты.
 
@@ -48,8 +48,8 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Explicit multimodal `/ask` | Фото/screenshot, voice/audio, PDF немесе supported text/code/log файлға reply жасап `/ask` жіберуге болады; async worker медианы тек сол жауап үшін оқиды. |
 | RAG memory | Group memory DynamoDB-де сақталады, long-term memory structured Gemini schema + rule fallback арқылы алынады, high-information memory S3 Vectors semantic retrieval үшін индекстеледі және exact-term DynamoDB fallback + local reranking қолданылады. |
 | Reply thread continuity | Bot жауаптары short-term `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі; бұл semantic/vector memory емес. |
-| Social timing | Proactive жауаптар қысқа delay-ден кейін human-answer check, local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. |
-| Ambient reactions | Optional `setMessageReaction` presence feature; funny/useful/thoughtful/warm/interesting text messages үшін sampled және rate-limited emoji reaction, default on. |
+| Social timing | Ordinary proactive жауаптар қысқа delay-ден кейін human-answer check, local heuristics, recent bot penalty, Gemini decision және daily limit арқылы өтеді. Linked-channel post zero-delay comment path арқылы бөлек өңделеді және supported attached media-ны ephemeral талдай алады. |
+| Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages sampled және rate-limited, ал linked-channel post міндетті reaction attempt алады. |
 | Captcha және anti-spam | Жаңа мүшелерді тексеру, rule-based және Groq арқылы spam тексеру. |
 | Community voteban | `/voteban` арқылы қауымдастық дауысымен ban/forgive. |
 | Daily AI news | EventBridge арқылы іске қосылатын news Lambda Gemini/DeepSeek-compatible жолдармен IT news digest жасайды. |

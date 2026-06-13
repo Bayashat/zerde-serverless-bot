@@ -951,6 +951,7 @@ class GroupMemoryRepository:
         display_name: str,
         username: str | None,
         text: str,
+        sender_type: str | None = None,
         created_at: int | None = None,
         reply_metadata: dict[str, Any] | None = None,
         touch_profile: bool = True,
@@ -972,6 +973,8 @@ class GroupMemoryRepository:
             "created_at": created_at,
             "ttl": ttl,
         }
+        if sender_type:
+            item["sender_type"] = str(sender_type)[:80]
         if username:
             item["username"] = username
         if reply_metadata:

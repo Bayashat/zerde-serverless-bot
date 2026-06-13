@@ -24,10 +24,16 @@ from services.ai.ambient_reaction_classifier import (
     FallbackAmbientReactionClassifier,
     create_ambient_reaction_classifier,
 )
-from services.group_memory import display_name
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
+from services.telegram_actor import (
+    actor_display_name,
+    actor_sender_type,
+    actor_username,
+    is_linked_channel_discussion_post,
+    message_actor,
+)
 from zerde_common.ai_errors import ZerdeProviderError
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -93,6 +99,23 @@ def _compact_text(text: str, *, limit: int) -> str:
     return " ".join((text or "").split())[:limit]
 
 
+def _message_text(message: dict[str, Any]) -> str:
+    text = message.get("text")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    caption = message.get("caption")
+    if isinstance(caption, str) and caption.strip():
+        return caption.strip()
+    return ""
+
+
+def _linked_channel_reaction_text(message: dict[str, Any]) -> str:
+    text = _message_text(message)
+    if text:
+        return text
+    return "Official linked-channel media post without text caption."
+
+
 def _looks_like_pure_link(text: str) -> bool:
     stripped = text.strip()
     if not stripped:
@@ -124,10 +147,12 @@ def is_ambient_reaction_eligible(update: dict[str, Any]) -> bool:
     user = message.get("from") or {}
     if not isinstance(user, dict) or not user.get("id") or user.get("is_bot"):
         return False
+    if is_linked_channel_discussion_post(message):
+        return True
     if any(key in message for key in _MEDIA_KEYS):
         return False
-    text = message.get("text")
-    if not isinstance(text, str) or not text.strip():
+    text = _message_text(message)
+    if not text:
         return False
     stripped = text.strip()
     if _looks_like_too_short_or_emoji_only(stripped):
@@ -138,20 +163,25 @@ def is_ambient_reaction_eligible(update: dict[str, Any]) -> bool:
 
 
 def _message_context_from_telegram(message: dict[str, Any], *, max_text_chars: int = 700) -> dict[str, Any] | None:
+    if any(key in message for key in _MEDIA_KEYS) and not is_linked_channel_discussion_post(message):
+        return None
     text = message.get("text")
     if not isinstance(text, str) or not text.strip():
+        text = message.get("caption")
+    if not isinstance(text, str) or not text.strip():
         return None
-    sender = message.get("from") if isinstance(message.get("from"), dict) else {}
-    sender_chat = message.get("sender_chat") if isinstance(message.get("sender_chat"), dict) else {}
-    actor = sender or sender_chat
+    actor = message_actor(message)
+    sender_type = actor_sender_type(actor)
     item: dict[str, Any] = {
         "message_id": message.get("message_id"),
-        "user_id": actor.get("id") if isinstance(actor, dict) else None,
-        "display_name": display_name(actor) if isinstance(actor, dict) and actor else "",
+        "user_id": actor.get("id") if actor else None,
+        "display_name": actor_display_name(actor) if actor else "",
+        "sender_type": sender_type,
         "text": _compact_text(text, limit=max_text_chars),
     }
-    if isinstance(actor, dict) and actor.get("username"):
-        item["username"] = str(actor.get("username")).lstrip("@")
+    username = actor_username(actor)
+    if username:
+        item["username"] = username
     if message.get("date") is not None:
         item["created_at"] = message.get("date")
     return item
@@ -175,19 +205,25 @@ def build_ambient_reaction_task_payload(update: dict[str, Any]) -> dict[str, Any
     if not is_ambient_reaction_eligible(update):
         return None
     message = update["message"]
-    user = message["from"]
+    linked_channel_post = is_linked_channel_discussion_post(message)
+    actor = message_actor(message)
     chat_id = message["chat"]["id"]
+    username = actor_username(actor)
     payload: dict[str, Any] = {
         "update_id": update.get("update_id"),
         "chat_id": chat_id,
         "message_id": message["message_id"],
-        "user_id": user["id"],
-        "display_name": display_name(user),
-        "text": _compact_text(str(message.get("text") or ""), limit=1200),
+        "user_id": actor.get("id"),
+        "display_name": actor_display_name(actor),
+        "sender_type": actor_sender_type(actor),
+        "text": _compact_text(
+            _linked_channel_reaction_text(message) if linked_channel_post else _message_text(message), limit=1200
+        ),
         "lang": get_chat_lang(chat_id),
+        "force_reaction": linked_channel_post,
     }
-    if user.get("username"):
-        payload["username"] = str(user["username"]).lstrip("@")
+    if username:
+        payload["username"] = username
     if message.get("date"):
         payload["created_at"] = message.get("date")
     reply_chain = _reply_chain_payload(message)
@@ -209,7 +245,9 @@ def maybe_enqueue_ambient_reaction(
     payload = build_ambient_reaction_task_payload(update)
     if not payload:
         return False
-    if AMBIENT_REACTIONS_SAMPLE_RATE <= 0 or float(random_fn()) >= AMBIENT_REACTIONS_SAMPLE_RATE:
+    if not payload.get("force_reaction") and (
+        AMBIENT_REACTIONS_SAMPLE_RATE <= 0 or float(random_fn()) >= AMBIENT_REACTIONS_SAMPLE_RATE
+    ):
         return False
     try:
         sqs_repo.send_ambient_reaction_task(**payload)
@@ -234,6 +272,8 @@ def _message_context_from_repo_item(item: dict[str, Any]) -> dict[str, Any] | No
     }
     if item.get("username"):
         result["username"] = str(item["username"]).lstrip("@")
+    if item.get("sender_type"):
+        result["sender_type"] = str(item["sender_type"])[:80]
     if item.get("created_at") is not None:
         result["created_at"] = item.get("created_at")
     return result
@@ -269,6 +309,7 @@ def gather_ambient_reaction_context(
     current_text: str,
     current_created_at: int | None = None,
     current_username: str | None = None,
+    current_sender_type: str = "user",
     reply_chain: list[dict[str, Any]] | tuple[dict[str, Any], ...] | None = None,
 ) -> AmbientReactionContext:
     """Collect bounded recent and reply context for the classifier."""
@@ -300,6 +341,7 @@ def gather_ambient_reaction_context(
         "message_id": current_message_id,
         "user_id": str(current_user_id),
         "display_name": current_display_name,
+        "sender_type": current_sender_type,
         "text": _compact_text(current_text, limit=1200),
     }
     if current_username:
@@ -315,7 +357,10 @@ def gather_ambient_reaction_context(
 
 def _format_context_message(item: dict[str, Any]) -> str:
     bits: list[str] = []
-    if item.get("user_id") is not None:
+    sender_type = str(item.get("sender_type") or "").strip()
+    if sender_type and sender_type != "user":
+        bits.append(f"sender_type={sender_type[:80]}")
+    elif item.get("user_id") is not None:
         bits.append(f"user_id={item['user_id']}")
     if item.get("username"):
         bits.append(f"username=@{str(item['username']).lstrip('@')}")
@@ -434,9 +479,11 @@ def _parse_task_body(body: dict[str, Any]) -> dict[str, Any] | None:
             "text": str(body["text"]).strip(),
             "display_name": str(body.get("display_name") or body.get("username") or body["user_id"])[:80],
             "username": str(body.get("username") or "").lstrip("@") or None,
+            "sender_type": str(body.get("sender_type") or "user")[:80],
             "lang": str(body.get("lang") or get_chat_lang(body["chat_id"])),
             "created_at": int(body["created_at"]) if body.get("created_at") is not None else None,
             "reply_chain": body.get("reply_chain") if isinstance(body.get("reply_chain"), list) else [],
+            "force_reaction": bool(body.get("force_reaction")),
         }
     except (KeyError, TypeError, ValueError):
         return None
@@ -459,11 +506,12 @@ def process_ambient_reaction_task(
     message_id = parsed["message_id"]
     user_id = parsed["user_id"]
     text = parsed["text"]
-    if _looks_like_too_short_or_emoji_only(text) or _looks_like_pure_link(text):
+    force_reaction = bool(parsed["force_reaction"])
+    if not force_reaction and (_looks_like_too_short_or_emoji_only(text) or _looks_like_pure_link(text)):
         return False
 
     classifier = _get_classifier()
-    if classifier is None:
+    if classifier is None and not force_reaction:
         logger.info(
             "Ambient reaction skipped because no AI classifier provider is configured", extra={"chat_id": chat_id}
         )
@@ -471,18 +519,19 @@ def process_ambient_reaction_task(
 
     now = int(time.time())
     try:
-        events = repo.get_recent_ambient_reactions(
-            chat_id,
-            since_epoch=now - 24 * 60 * 60,
-            limit=max(AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY + 10, 50),
-        )
-        rate = evaluate_ambient_reaction_rate_limit(events, user_id=user_id, now=now)
-        if not rate.allowed:
-            logger.info(
-                "Ambient reaction skipped by rate limit",
-                extra={"chat_id": chat_id, "message_id": message_id, "reason": rate.reason},
+        if not force_reaction:
+            events = repo.get_recent_ambient_reactions(
+                chat_id,
+                since_epoch=now - 24 * 60 * 60,
+                limit=max(AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY + 10, 50),
             )
-            return False
+            rate = evaluate_ambient_reaction_rate_limit(events, user_id=user_id, now=now)
+            if not rate.allowed:
+                logger.info(
+                    "Ambient reaction skipped by rate limit",
+                    extra={"chat_id": chat_id, "message_id": message_id, "reason": rate.reason},
+                )
+                return False
         context = gather_ambient_reaction_context(
             repo=repo,
             chat_id=chat_id,
@@ -492,17 +541,40 @@ def process_ambient_reaction_task(
             current_text=text,
             current_created_at=parsed["created_at"],
             current_username=parsed["username"],
+            current_sender_type=parsed["sender_type"],
             reply_chain=parsed["reply_chain"],
         )
         previous_context, reply_context, current_context = format_ambient_reaction_prompt_context(context)
-        raw_decision, provider_name = classifier.ambient_reaction_decision(
-            current_message=current_context,
-            previous_context=previous_context,
-            reply_context=reply_context,
-            allowed_emojis=ALLOWED_AMBIENT_REACTION_EMOJIS,
-            lang=parsed["lang"],
-        )
-        decision = validate_ambient_reaction_decision(raw_decision)
+        provider_name = "forced_fallback"
+        decision: AmbientReactionDecision | None = None
+        if classifier is not None:
+            try:
+                raw_decision, provider_name = classifier.ambient_reaction_decision(
+                    current_message=current_context,
+                    previous_context=previous_context,
+                    reply_context=reply_context,
+                    allowed_emojis=ALLOWED_AMBIENT_REACTION_EMOJIS,
+                    lang=parsed["lang"],
+                )
+                decision = validate_ambient_reaction_decision(
+                    raw_decision,
+                    confidence_threshold=0.0 if force_reaction else AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD,
+                )
+            except ZerdeProviderError:
+                if not force_reaction:
+                    raise
+                logger.info(
+                    "Forced ambient reaction classifier unavailable; using fallback emoji",
+                    extra={"chat_id": chat_id, "message_id": message_id},
+                )
+        if force_reaction and (decision is None or not decision.should_react or not decision.emoji):
+            decision = AmbientReactionDecision(
+                True,
+                "👀",
+                1.0,
+                "interesting",
+                "Forced linked-channel post reaction fallback.",
+            )
         if decision is None or not decision.should_react or not decision.emoji:
             logger.info(
                 "Ambient reaction classifier skipped message",

@@ -23,13 +23,21 @@ from core.config import (
 )
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services.ai.channel_post_comment import (
+    FallbackChannelPostCommentProvider,
+    create_channel_post_comment_fallback_provider,
+)
 from services.ai.gemini_client import (
     GeminiClient,
     GeminiEmptyResponseError,
     GeminiRPDExhaustedError,
     GeminiUnavailableError,
+    GroupAgentDecision,
 )
-from services.ai.telegram_html import fit_llm_output, normalize_llm_output_for_telegram_html
+from services.ai.telegram_html import (
+    fit_llm_output,
+    normalize_llm_output_for_telegram_html,
+)
 from services.bot_identity import is_self_bot_user
 from services.group_memory import (
     display_name,
@@ -45,14 +53,42 @@ from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
 )
-from services.repositories.group_memory import GroupMemoryRepository, normalise_chat_style_profile
+from services.repositories.group_memory import (
+    GroupMemoryRepository,
+    normalise_chat_style_profile,
+)
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
-from services.vector_memory import format_semantic_memory_context, retrieve_relevant_memories
+from services.telegram_actor import (
+    actor_display_name,
+    actor_sender_type,
+    actor_username,
+    is_linked_channel_discussion_post,
+    message_actor,
+)
+from services.telegram_media import (
+    MediaDisabledError,
+    MediaError,
+    MediaTooLargeError,
+    MediaUnavailableError,
+    MediaUnsupportedError,
+    detect_media_reference,
+    media_reference_log_extra,
+    prepare_media_for_gemini,
+)
+from services.vector_memory import (
+    format_semantic_memory_context,
+    retrieve_relevant_memories,
+)
+from zerde_common.ai_errors import ProviderResponseError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
+_channel_post_comment_fallback: FallbackChannelPostCommentProvider | None = None
+
+CHANNEL_POST_GEMINI_MAX_ATTEMPTS = 3
+CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
 
 
 @dataclass(frozen=True)
@@ -86,6 +122,13 @@ def _get_gemini() -> GeminiClient | None:
     if get_gemini_api_key() and _agent_gemini is None:
         _agent_gemini = GeminiClient()
     return _agent_gemini
+
+
+def _get_channel_post_comment_fallback() -> FallbackChannelPostCommentProvider | None:
+    global _channel_post_comment_fallback
+    if _channel_post_comment_fallback is None:
+        _channel_post_comment_fallback = create_channel_post_comment_fallback_provider()
+    return _channel_post_comment_fallback
 
 
 def _is_plain_text_message(update: dict[str, Any]) -> bool:
@@ -177,7 +220,13 @@ def _agent_reply_media_context(item: dict[str, Any]) -> str:
     media_type = str(metadata.get("media_type") or "").strip()
     if media_type:
         lines.append(f"media_type={media_type}")
-    for key in ("mime_type", "file_name", "caption", "source_message_id", "source_display_name"):
+    for key in (
+        "mime_type",
+        "file_name",
+        "caption",
+        "source_message_id",
+        "source_display_name",
+    ):
         value = metadata.get(key)
         if value not in (None, ""):
             lines.append(f"{key}={str(value)[:500]}")
@@ -273,7 +322,7 @@ def build_explicit_question_context(
                 telegram_reply_text=replied_text,
             ),
             source_message_context=source_context,
-            parent_bot_message_id=int(parent_bot_message_id) if parent_bot_message_id is not None else None,
+            parent_bot_message_id=(int(parent_bot_message_id) if parent_bot_message_id is not None else None),
         )
 
     source_context = format_message_reference(reply)
@@ -355,7 +404,10 @@ def _load_chat_style_profile(repo: GroupMemoryRepository, chat_id: int | str) ->
     try:
         settings = repo.get_chat_settings(chat_id)
     except Exception:
-        logger.exception("Failed to load chat style profile; using defaults", extra={"chat_id": chat_id})
+        logger.exception(
+            "Failed to load chat style profile; using defaults",
+            extra={"chat_id": chat_id},
+        )
         return normalise_chat_style_profile(None)
     raw = settings.get("style_profile") if isinstance(settings, Mapping) else None
     return normalise_chat_style_profile(raw)
@@ -567,7 +619,9 @@ def _reply_policy(
     )
 
 
-def _proactive_reply_policy(style_profile: Mapping[str, Any] | None = None) -> ReplyPolicy:
+def _proactive_reply_policy(
+    style_profile: Mapping[str, Any] | None = None,
+) -> ReplyPolicy:
     style = normalise_chat_style_profile(style_profile)
     max_sentences = _sentence_count(style, "max_proactive_sentences")
     tokens, chars = _proactive_reply_budget(max_sentences)
@@ -863,6 +917,19 @@ def _looks_like_sufficient_human_answer(text: str, *, trigger_terms: set[str]) -
     return overlaps_trigger and len(text) >= 40 and not open_question
 
 
+def _looks_like_channel_post_discussion(text: str, *, trigger_terms: set[str]) -> bool:
+    lowered = " ".join((text or "").lower().split())
+    if not lowered or lowered.startswith("/"):
+        return False
+    response_terms = _proactive_terms(lowered)
+    overlaps_trigger = bool(trigger_terms & response_terms)
+    if overlaps_trigger and len(text) >= 24:
+        return True
+    if _looks_like_open_question(text) and len(text) >= 30:
+        return True
+    return len(text) >= 60
+
+
 def _human_answer_after_trigger(
     repo: GroupMemoryRepository,
     chat_id: int,
@@ -871,6 +938,7 @@ def _human_answer_after_trigger(
     trigger_user_id: int | str | None,
     trigger_created_at: int | None,
     user_text: str,
+    candidate_kind: str = "proactive",
 ) -> dict[str, Any] | None:
     start_epoch = int(trigger_created_at or 0)
     end_epoch = int(time.time()) + 1
@@ -892,7 +960,12 @@ def _human_answer_after_trigger(
         same_user = trigger_user and str(user_id) == trigger_user
         if same_user and not any(cue in text.lower() for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
             continue
-        if _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms):
+        discussed = (
+            _looks_like_channel_post_discussion(text, trigger_terms=trigger_terms)
+            if candidate_kind == "channel_post"
+            else _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms)
+        )
+        if discussed:
             return {
                 "message_id": message_id,
                 "user_id": user_id,
@@ -908,7 +981,11 @@ def _log_proactive_silent(
     message_id: int | str | None = None,
     **extra: Any,
 ) -> None:
-    payload = {"chat_id": chat_id, "message_id": message_id, "silent_reason": silent_reason}
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "silent_reason": silent_reason,
+    }
     payload.update(extra)
     logger.info("Group agent proactive candidate stayed silent", extra=payload)
 
@@ -924,6 +1001,11 @@ def _local_proactive_skip_reason(text: str) -> str | None:
         return "stop_or_awkward_cue"
     if _looks_like_bot_behavior_meta(text):
         return "bot_meta"
+    return None
+
+
+def _channel_post_proactive_skip_reason(text: str) -> str | None:
+    """Explain why a linked-channel post should not become a discussion-starter candidate."""
     return None
 
 
@@ -994,9 +1076,18 @@ def score_proactive_reply(
 
 
 def _trigger_kind(update: dict[str, Any]) -> str | None:
-    if not AGENT_ENABLED or not _is_plain_text_message(update):
+    if not AGENT_ENABLED:
         return None
-    message = update["message"]
+    message = update.get("message")
+    if not isinstance(message, dict):
+        return None
+    chat = message.get("chat") or {}
+    if chat.get("type") not in {"group", "supergroup"}:
+        return None
+    if is_linked_channel_discussion_post(message):
+        return "channel_post"
+    if not _is_plain_text_message(update):
+        return None
     text = extract_message_text(message)
     if _mentions_bot(text):
         return "explicit"
@@ -1036,7 +1127,10 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
     text = extract_message_text(message)
     if _mentions_bot(text) or _replies_to_any_bot(message):
         return
-    skip_reason = _local_proactive_skip_reason(text)
+    linked_channel_post = is_linked_channel_discussion_post(message)
+    skip_reason = (
+        _channel_post_proactive_skip_reason(text) if linked_channel_post else _local_proactive_skip_reason(text)
+    )
     if not skip_reason or skip_reason == "not_open_question":
         return
     logger.info(
@@ -1045,6 +1139,7 @@ def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
             "chat_id": (message.get("chat") or {}).get("id"),
             "message_id": message.get("message_id"),
             "skip_reason": skip_reason,
+            "candidate_kind": "channel_post" if linked_channel_post else "proactive",
             "text_chars": len(text),
         },
     )
@@ -1086,19 +1181,27 @@ def handle_update(
         return False
     message_id = message["message_id"]
     if trigger_kind == "proactive":
+        actor = message_actor(message)
         if sqs_repo is None:
             logger.warning(
                 "Group agent proactive candidate could not be queued",
-                extra={"chat_id": chat_id, "message_id": message_id, "reason": "missing_sqs_repo"},
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "reason": "missing_sqs_repo",
+                },
             )
             return False
         sqs_repo.send_proactive_candidate_task(
             update_id=update.get("update_id"),
             chat_id=chat_id,
             trigger_message_id=message_id,
-            trigger_user_id=(message.get("from") or {}).get("id"),
+            trigger_user_id=actor.get("id") if actor else None,
             user_text=extract_message_text(message),
             lang=get_chat_lang(chat_id),
+            trigger_username=actor_username(actor),
+            trigger_display_name=actor_display_name(actor) if actor else None,
+            trigger_sender_type=actor_sender_type(actor),
             created_at=message.get("date"),
             delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
         )
@@ -1108,6 +1211,46 @@ def handle_update(
                 "chat_id": chat_id,
                 "message_id": message_id,
                 "delay_seconds": AGENT_PROACTIVE_DELAY_SECONDS,
+            },
+        )
+        return True
+    if trigger_kind == "channel_post":
+        actor = message_actor(message)
+        media_ref = detect_media_reference(message, prefer_reply=False)
+        if sqs_repo is None:
+            logger.warning(
+                "Group agent proactive candidate could not be queued",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "reason": "missing_sqs_repo",
+                    "candidate_kind": "channel_post",
+                },
+            )
+            return False
+        sqs_repo.send_proactive_candidate_task(
+            update_id=update.get("update_id"),
+            chat_id=chat_id,
+            trigger_message_id=message_id,
+            trigger_user_id=actor.get("id") if actor else None,
+            user_text=extract_message_text(message),
+            lang=get_chat_lang(chat_id),
+            candidate_kind="channel_post",
+            trigger_username=actor_username(actor),
+            trigger_display_name=actor_display_name(actor) if actor else None,
+            trigger_sender_type=actor_sender_type(actor),
+            media_ref=media_ref.to_dict() if media_ref else None,
+            created_at=message.get("date"),
+            delay_seconds=0,
+        )
+        logger.info(
+            "Group agent linked channel post candidate queued",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "delay_seconds": 0,
+                "has_media": bool(media_ref),
+                **(media_reference_log_extra(media_ref) if media_ref else {}),
             },
         )
         return True
@@ -1131,7 +1274,11 @@ def handle_update(
     if handled:
         logger.info(
             "Group agent handled update",
-            extra={"chat_id": chat_id, "message_id": message_id, "trigger_kind": trigger_kind},
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "trigger_kind": trigger_kind,
+            },
         )
     return handled
 
@@ -1254,6 +1401,304 @@ def maybe_answer_proactively(
     return True
 
 
+def _format_channel_post_task_for_prompt(
+    *,
+    message_id: int,
+    user_text: str,
+    trigger_user_id: int | str | None,
+    trigger_username: str | None,
+    trigger_display_name: str | None,
+    trigger_sender_type: str | None,
+) -> str:
+    bits: list[str] = []
+    sender_type = str(trigger_sender_type or "channel").strip()
+    if sender_type and sender_type != "user":
+        bits.append(f"sender_type={sender_type[:80]}")
+    elif trigger_user_id is not None:
+        bits.append(f"user_id={trigger_user_id}")
+    if trigger_username:
+        bits.append(f"username=@{str(trigger_username).lstrip('@')[:80]}")
+    if trigger_display_name:
+        bits.append(f"name={str(trigger_display_name)[:80]}")
+    bits.append(f"message_id={message_id}")
+    speaker = f"[speaker {' '.join(bits)}]" if bits else "[speaker unknown]"
+    text = _compact_query_text(user_text, limit=5000) if user_text else "No text caption was included."
+    return f"{speaker} {text}"
+
+
+def _ensure_channel_post_comment_decision(
+    decision: GroupAgentDecision,
+    *,
+    provider_name: str,
+) -> GroupAgentDecision:
+    if not decision.should_reply or not decision.reply_text:
+        raise ProviderResponseError(f"{provider_name} returned no usable channel-post comment")
+    return decision
+
+
+def _channel_post_gemini_retry_delay(attempt: int) -> float:
+    index = attempt - 1
+    if 0 <= index < len(CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS):
+        return max(0.0, float(CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS[index]))
+    return 0.0
+
+
+def _try_gemini_channel_post_comment(
+    *,
+    channel_post: str,
+    recent_context: str,
+    lang: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    chat_id: int,
+    message_id: int,
+) -> tuple[GroupAgentDecision, str] | None:
+    gemini = _get_gemini()
+    if not gemini:
+        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=message_id)
+        return None
+
+    max_attempts = max(1, int(CHANNEL_POST_GEMINI_MAX_ATTEMPTS))
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            decision, _ = gemini.group_chat_channel_post_comment_decision(
+                channel_post=channel_post,
+                recent_context=recent_context,
+                lang=lang,
+                reply_instructions=reply_instructions,
+                max_output_tokens=max_output_tokens,
+                media_parts=media_parts,
+                media_context=media_context,
+            )
+            return (
+                _ensure_channel_post_comment_decision(decision, provider_name="gemini"),
+                "gemini",
+            )
+        except GeminiRPDExhaustedError as exc:
+            _log_proactive_silent(
+                "gemini_rpd_limit",
+                chat_id=chat_id,
+                message_id=message_id,
+                candidate_kind="channel_post",
+            )
+            logger.warning(
+                "Gemini channel post comment hit RPD limit; trying text-only fallback",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                },
+            )
+            last_error = exc
+            break
+        except (GeminiUnavailableError, ProviderResponseError) as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini channel post comment attempt failed",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+            )
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini channel post comment attempt failed unexpectedly",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+                exc_info=True,
+            )
+
+        if attempt < max_attempts:
+            delay = _channel_post_gemini_retry_delay(attempt)
+            if delay > 0:
+                time.sleep(delay)
+
+    logger.warning(
+        "Gemini channel post comment exhausted; trying text-only fallback",
+        extra={
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "attempts": max_attempts,
+            "error_type": last_error.__class__.__name__ if last_error else "",
+        },
+    )
+    return None
+
+
+def _fallback_channel_post_comment(
+    *,
+    channel_post: str,
+    recent_context: str,
+    lang: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+) -> tuple[GroupAgentDecision, str]:
+    fallback = _get_channel_post_comment_fallback()
+    if fallback is None:
+        raise ProviderResponseError("No channel-post comment providers configured")
+    decision, provider_name = fallback.comment_decision(
+        channel_post=channel_post,
+        recent_context=recent_context,
+        lang=lang,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+    )
+    return (
+        _ensure_channel_post_comment_decision(decision, provider_name=provider_name),
+        provider_name,
+    )
+
+
+def maybe_comment_on_channel_post(
+    *,
+    repo: GroupMemoryRepository,
+    bot: TelegramClient,
+    chat_id: int,
+    reply_to_message_id: int,
+    user_text: str,
+    lang: str,
+    trigger_user_id: int | str | None = None,
+    trigger_username: str | None = None,
+    trigger_display_name: str | None = None,
+    trigger_sender_type: str | None = None,
+    media_ref: Mapping[str, Any] | None = None,
+) -> bool:
+    """Generate a follow-up comment under a linked-channel post."""
+    recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
+    style = normalise_chat_style_profile(_load_chat_style_profile(repo, chat_id))
+    reply_instructions = _compose_reply_instructions(
+        (
+            "Write a natural comment under the official linked-channel post. "
+            "Use 1-4 concise sentences depending on the post. It can be a concrete observation, "
+            "a light opinion, or a natural question that helps discussion continue. "
+            "Do not recap the whole post and do not write a generic thank-you."
+        ),
+        style_profile=style,
+        low_confidence_retrieval=False,
+    )
+    media_parts: list[dict[str, Any]] | None = None
+    media_context = ""
+    media_metadata: dict[str, Any] | None = None
+    if isinstance(media_ref, Mapping):
+        try:
+            prepared_media = prepare_media_for_gemini(bot, media_ref)
+            media_parts = prepared_media.media_parts
+            media_context = prepared_media.media_context
+            media_metadata = prepared_media.agent_reply_metadata
+            logger.info(
+                "Linked channel post media prepared",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    **media_reference_log_extra(media_ref),
+                    "downloaded_bytes": prepared_media.downloaded_bytes,
+                    "content_mode": prepared_media.content_mode,
+                    "media_part_count": len(media_parts or []),
+                    "media_context_chars": len(media_context),
+                },
+            )
+        except (
+            MediaDisabledError,
+            MediaUnsupportedError,
+            MediaTooLargeError,
+            MediaUnavailableError,
+        ) as exc:
+            media_context = (
+                "Attached media metadata is available, but the media content could not be analyzed. "
+                "Do not claim visual/audio/file details that are not in the text."
+            )
+            logger.info(
+                "Linked channel post media unavailable; continuing text-only",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "error_type": exc.__class__.__name__,
+                    **media_reference_log_extra(media_ref),
+                },
+            )
+        except MediaError as exc:
+            logger.info(
+                "Linked channel post media failed safely; continuing text-only",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "error_type": exc.__class__.__name__,
+                    **media_reference_log_extra(media_ref),
+                },
+            )
+
+    channel_post = _format_channel_post_task_for_prompt(
+        message_id=reply_to_message_id,
+        user_text=user_text,
+        trigger_user_id=trigger_user_id,
+        trigger_username=trigger_username,
+        trigger_display_name=trigger_display_name,
+        trigger_sender_type=trigger_sender_type,
+    )
+    decision_provider = _try_gemini_channel_post_comment(
+        channel_post=channel_post,
+        recent_context=recent_context,
+        lang=lang,
+        reply_instructions=reply_instructions,
+        max_output_tokens=360,
+        media_parts=media_parts,
+        media_context=media_context,
+        chat_id=chat_id,
+        message_id=reply_to_message_id,
+    )
+    if decision_provider is None:
+        decision_provider = _fallback_channel_post_comment(
+            channel_post=channel_post,
+            recent_context=recent_context,
+            lang=lang,
+            reply_instructions=reply_instructions,
+            max_output_tokens=360,
+        )
+    decision, provider_name = decision_provider
+
+    answer_text = fit_llm_output(decision.reply_text, max_chars=900)
+    answer_html = normalize_llm_output_for_telegram_html(answer_text)
+    sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
+    bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
+    if bot_message_id:
+        repo.record_agent_reply(
+            chat_id=chat_id,
+            bot_message_id=bot_message_id,
+            trigger_message_id=reply_to_message_id,
+            trigger_kind="channel_post",
+            reason=f"{decision.reason or 'I judged this linked-channel post as worth a short discussion starter.'}",
+            answer_text=answer_text,
+            user_message=user_text,
+            current_user_message=user_text,
+            confidence=decision.confidence,
+            media_metadata=media_metadata,
+        )
+    logger.info(
+        "Group agent handled linked channel post",
+        extra={
+            "chat_id": chat_id,
+            "message_id": reply_to_message_id,
+            "trigger_kind": "channel_post",
+            "confidence": decision.confidence,
+            "provider": provider_name,
+            "reason": decision.reason,
+        },
+    )
+    return True
+
+
 def process_proactive_candidate_task(
     *,
     repo: GroupMemoryRepository,
@@ -1265,11 +1710,16 @@ def process_proactive_candidate_task(
         chat_id = int(body["chat_id"])
         trigger_message_id = int(body["trigger_message_id"])
     except (KeyError, TypeError, ValueError) as exc:
-        logger.warning("PROCESS_PROACTIVE_CANDIDATE missing required field", extra={"error": str(exc)})
+        logger.warning(
+            "PROCESS_PROACTIVE_CANDIDATE missing required field",
+            extra={"error": str(exc)},
+        )
         return False
 
     user_text = str(body.get("user_text") or "").strip()
-    if not user_text:
+    candidate_kind = str(body.get("candidate_kind") or "proactive")
+    media_ref = body.get("media_ref") if isinstance(body.get("media_ref"), dict) else None
+    if not user_text and not (candidate_kind == "channel_post" and media_ref):
         _log_proactive_silent("missing_user_text", chat_id=chat_id, message_id=trigger_message_id)
         return False
 
@@ -1277,39 +1727,69 @@ def process_proactive_candidate_task(
         _log_proactive_silent("agent_disabled", chat_id=chat_id, message_id=trigger_message_id)
         return False
 
-    skip_reason = _local_proactive_skip_reason(user_text)
+    skip_reason = (
+        _channel_post_proactive_skip_reason(user_text)
+        if candidate_kind == "channel_post"
+        else _local_proactive_skip_reason(user_text)
+    )
     if skip_reason is not None:
         _log_proactive_silent(
             "original_no_longer_useful",
             chat_id=chat_id,
             message_id=trigger_message_id,
             original_skip_reason=skip_reason,
+            candidate_kind=candidate_kind,
         )
         return False
 
-    try:
-        human_answer = _human_answer_after_trigger(
-            repo,
-            chat_id,
-            trigger_message_id=trigger_message_id,
-            trigger_user_id=body.get("trigger_user_id"),
-            trigger_created_at=_safe_int(body.get("created_at")),
-            user_text=user_text,
-        )
-    except Exception:
-        logger.exception("Failed to read post-trigger context for proactive candidate", extra={"chat_id": chat_id})
-        _log_proactive_silent("post_trigger_context_unavailable", chat_id=chat_id, message_id=trigger_message_id)
-        return False
-    if human_answer:
-        _log_proactive_silent(
-            "human_answered",
+    if candidate_kind != "channel_post":
+        try:
+            human_answer = _human_answer_after_trigger(
+                repo,
+                chat_id,
+                trigger_message_id=trigger_message_id,
+                trigger_user_id=body.get("trigger_user_id"),
+                trigger_created_at=_safe_int(body.get("created_at")),
+                user_text=user_text,
+                candidate_kind=candidate_kind,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to read post-trigger context for proactive candidate",
+                extra={"chat_id": chat_id},
+            )
+            _log_proactive_silent(
+                "post_trigger_context_unavailable",
+                chat_id=chat_id,
+                message_id=trigger_message_id,
+            )
+            return False
+        if human_answer:
+            _log_proactive_silent(
+                "human_answered",
+                chat_id=chat_id,
+                message_id=trigger_message_id,
+                answer_message_id=human_answer.get("message_id"),
+                answer_user_id=human_answer.get("user_id"),
+                answer_text_chars=human_answer.get("text_chars"),
+                candidate_kind=candidate_kind,
+            )
+            return False
+
+    if candidate_kind == "channel_post":
+        return maybe_comment_on_channel_post(
+            repo=repo,
+            bot=bot,
             chat_id=chat_id,
-            message_id=trigger_message_id,
-            answer_message_id=human_answer.get("message_id"),
-            answer_user_id=human_answer.get("user_id"),
-            answer_text_chars=human_answer.get("text_chars"),
+            reply_to_message_id=trigger_message_id,
+            user_text=user_text,
+            lang=str(body.get("lang") or get_chat_lang(chat_id)),
+            trigger_user_id=body.get("trigger_user_id"),
+            trigger_username=body.get("trigger_username"),
+            trigger_display_name=body.get("trigger_display_name"),
+            trigger_sender_type=body.get("trigger_sender_type"),
+            media_ref=media_ref,
         )
-        return False
 
     return maybe_answer_proactively(
         repo=repo,

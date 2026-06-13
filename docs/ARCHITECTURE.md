@@ -12,7 +12,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It stores normal bot answers only as short-term reply-thread metadata, not as long-term semantic memory.
-- It may proactively join a discussion, but only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits.
+- It may proactively join ordinary discussions only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits. Linked channel posts mirrored into discussion groups use a separate immediate comment path with ephemeral media analysis when supported media is attached.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
 
@@ -73,9 +73,9 @@ flowchart LR
 6. Irrelevant group chatter exits early.
 7. Relevant events route to the group agent or the command dispatcher.
 8. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
-9. `agent_enabled` gates non-command group agent participation: proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, while @mentions and reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+9. `agent_enabled` gates non-command group agent participation: ordinary proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, linked-channel post comments are queued as zero-delay `PROCESS_PROACTIVE_CANDIDATE` with Gemini retries plus DeepSeek/Groq text-only fallback, and @mentions/reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
 
-ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including proactive candidates, daily summaries, memory extraction, and vector indexing.
+ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path, plus official linked-channel post comments. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including ordinary proactive candidates, daily summaries, memory extraction, and vector indexing.
 
 ## SQS Tasks
 
@@ -86,8 +86,8 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata and optional metadata-only `media_ref`. Media bytes are downloaded only in this worker. |
-| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. |
-| `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for sampled normal group text messages; may call `setMessageReaction` and stores only short-lived `AMBIENT_REACTION#...` metadata. |
+| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed ordinary proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. Linked-channel post candidates use the same task with zero delay, bypass ordinary proactive gates, may download supported media ephemerally for Gemini, and generate a direct comment with a dedicated prompt. If Gemini fails after three attempts or is unavailable, DeepSeek then Groq are tried with text-only context; if every provider fails, the SQS task retries/DLQs. |
+| `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for ambient reactions; ordinary messages are sampled and rate-limited, while linked-channel posts force a reaction attempt and bypass sampling/cooldowns/rate caps. Stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
@@ -168,14 +168,15 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 Proactive replies are conservative:
 
 - The local prefilter only considers open questions or requests.
-- Candidates that pass the local prefilter are queued with `AGENT_PROACTIVE_DELAY_SECONDS` before final evaluation, so humans can answer first.
-- The delayed task re-reads messages after the trigger and stays silent when a later human reply looks sufficient.
+- Linked channel posts mirrored into discussion groups are detected from `is_automatic_forward` or the Telegram `777000` actor plus `sender_chat.type=channel`; these bypass the normal open-question/500-char/delay/human-answer/recent-bot/daily-limit gates and use a zero-delay dedicated comment prompt without weakening the ordinary proactive prefilter. Gemini is tried up to three times and may receive supported media; DeepSeek and Groq fallbacks receive text-only context.
+- Ordinary candidates that pass the local prefilter are queued with `AGENT_PROACTIVE_DELAY_SECONDS` before final evaluation, so humans can answer first.
+- The delayed ordinary task re-reads messages after the trigger and stays silent when a later human reply looks sufficient.
 - Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
 - The reply score recognizes multilingual technical, suggestion, and group-request cues in Kazakh, Russian, English, and Chinese.
 - Local prefilter skips for open-question candidates are logged with a structured skip reason before score/model gating.
 - Recent bot activity lowers the score.
 - Gemini must return a strong "should reply" decision.
-- `AGENT_DAILY_PROACTIVE_LIMIT` caps per-chat daily proactive responses.
+- `AGENT_DAILY_PROACTIVE_LIMIT` caps per-chat daily ordinary proactive responses; linked-channel post comments bypass this counter.
 
 Answer length is explicit:
 
@@ -205,6 +206,11 @@ short-lived `AMBIENT_REACTION#...` metadata for cooldowns and debugging.
 Command text and sensitive/hostile/serious text are not locally filtered before classification; the
 LLM prompt still requires a strong, context-safe reaction and forbids reactions that trivialize, mock,
 endorse, or escalate harm.
+Linked channel posts mirrored into discussion groups force a reaction attempt even when they are media
+posts, very short, pure links, or when recent reaction cooldowns/rate caps would block ordinary
+messages. Their actor is the source `sender_chat` channel rather than Telegram's synthetic `777000`
+user. The classifier is still used to pick a natural emoji when available; if provider output is
+unavailable or declines to react, the worker falls back to 👀.
 
 ## Vector Memory
 
