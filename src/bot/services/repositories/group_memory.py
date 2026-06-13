@@ -28,6 +28,7 @@ _LONG_TERM_MEMORY_PREFIXES = ("EVENT#", "USER_FACT#", "GROUP_FACT#", "JOKE#")
 _DAILY_SUMMARY_PREFIX = "DAILY_SUMMARY#"
 _VECTOR_MEMORY_PREFIXES = (*_LONG_TERM_MEMORY_PREFIXES, _DAILY_SUMMARY_PREFIX)
 _AGENT_REPLY_PREFIX = "AGENT_REPLY#"
+_AMBIENT_REACTION_PREFIX = "AMBIENT_REACTION#"
 _DURABLE_BOT_MEMORY_PREFIXES_BY_KIND = {
     "bot_commitment": "BOT_COMMITMENT#",
     "bot_correction": "BOT_CORRECTION#",
@@ -36,6 +37,7 @@ _DURABLE_BOT_MEMORY_PREFIXES = tuple(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.values
 _USERNAME_ALIAS_PREFIX = "USERNAME#"
 _LEXICAL_INDEX_PREFIX = "TERM#"
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
+_AMBIENT_REACTION_RETENTION_DAYS = 7
 CHAT_STYLE_TONES = {"concise", "professional", "friendly"}
 CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS = {"cautious", "avoid_weak_memory", "none"}
 DEFAULT_CHAT_STYLE_PROFILE: dict[str, Any] = {
@@ -189,6 +191,10 @@ class GroupMemoryRepository:
     @staticmethod
     def _agent_reply_sk(message_id: int | str) -> str:
         return f"{_AGENT_REPLY_PREFIX}{int(message_id):013d}"
+
+    @staticmethod
+    def _ambient_reaction_sk(created_at_ms: int, message_id: int | str) -> str:
+        return f"{_AMBIENT_REACTION_PREFIX}{created_at_ms:013d}#{message_id}"
 
     @staticmethod
     def _daily_summary_sk(summary_date: str) -> str:
@@ -1585,6 +1591,71 @@ class GroupMemoryRepository:
             if code == "ConditionalCheckFailedException":
                 return False
             raise
+
+    def get_recent_ambient_reactions(
+        self,
+        chat_id: int | str,
+        *,
+        since_epoch: int,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """Return recent ambient reaction event rows, newest first."""
+        items: list[dict[str, Any]] = []
+        limit = max(1, int(limit))
+        start_key: dict[str, Any] | None = None
+        while len(items) < limit:
+            kwargs: dict[str, Any] = {
+                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id))
+                & Key("sk").begins_with(_AMBIENT_REACTION_PREFIX),
+                "ScanIndexForward": False,
+                "Limit": min(100, limit - len(items)),
+            }
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self.table.query(**kwargs)
+            batch = resp.get("Items") or []
+            for item in batch:
+                try:
+                    created_at = int(item.get("created_at") or 0)
+                except (TypeError, ValueError):
+                    created_at = 0
+                if created_at >= since_epoch:
+                    items.append(item)
+                elif created_at > 0:
+                    return items
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                break
+        return items[:limit]
+
+    def record_ambient_reaction(
+        self,
+        *,
+        chat_id: int | str,
+        user_id: int | str,
+        message_id: int | str,
+        emoji: str,
+        category: str,
+        confidence: float,
+        created_at: int | None = None,
+    ) -> None:
+        """Store short-lived ambient reaction metadata for cooldowns and debugging."""
+        now = int(time.time())
+        created_at = created_at or now
+        item = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._ambient_reaction_sk(created_at * 1000, message_id),
+            "kind": "ambient_reaction",
+            "chat_id": str(chat_id),
+            "user_id": str(user_id),
+            "message_id": int(message_id),
+            "emoji": emoji,
+            "category": str(category or "")[:80],
+            "confidence": Decimal(str(max(0.0, min(1.0, confidence)))),
+            "created_at": created_at,
+            "ttl": self._ttl_from_days(now, _AMBIENT_REACTION_RETENTION_DAYS),
+        }
+        self.table.put_item(Item=item)
 
     @staticmethod
     def _normalise_retrieval_sources(sources: list[dict[str, Any]] | None) -> list[dict[str, Any]]:

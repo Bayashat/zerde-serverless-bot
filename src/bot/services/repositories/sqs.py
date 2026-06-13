@@ -180,6 +180,60 @@ class SQSClient:
             )
             raise
 
+    def send_ambient_reaction_task(
+        self,
+        *,
+        chat_id: int,
+        message_id: int,
+        user_id: int | str,
+        display_name: str,
+        text: str,
+        lang: str,
+        update_id: int | None = None,
+        username: str | None = None,
+        created_at: int | None = None,
+        reply_chain: list[dict[str, object]] | None = None,
+    ) -> None:
+        """Enqueue a sampled ambient reaction candidate for async classification."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_AMBIENT_REACTION",
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "user_id": user_id,
+            "display_name": display_name,
+            "text": text,
+            "lang": lang,
+        }
+        if update_id is not None:
+            payload["update_id"] = update_id
+        if username:
+            payload["username"] = username
+        if created_at:
+            payload["created_at"] = created_at
+        if reply_chain:
+            payload["reply_chain"] = reply_chain
+
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info(
+                "Queued ambient reaction task",
+                extra={
+                    "update_id": update_id,
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "has_reply_chain": bool(reply_chain),
+                },
+            )
+        except Exception as e:
+            logger.exception(
+                "Failed to send ambient reaction task to SQS",
+                extra={"error": e, "update_id": update_id, "chat_id": chat_id},
+            )
+            raise
+
     def send_spam_check_task(
         self,
         *,

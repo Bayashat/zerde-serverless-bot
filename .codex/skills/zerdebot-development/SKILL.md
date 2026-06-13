@@ -39,6 +39,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
+- `src/bot/services/ambient_reactions.py`: disabled-by-default ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, and `setMessageReaction` task processing.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
@@ -59,6 +60,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
 - Keep explicit multimodal `/ask` media ephemeral. Only explicit `/ask` or explicit mention/reply paths may analyze media; normal group media, proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. SQS carries metadata-only `media_ref`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
+- Keep ambient reactions ephemeral and low-noise: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
 - Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
@@ -90,6 +92,7 @@ SQS handler failures should re-raise when retry/DLQ semantics are intended. Curr
 - `SPAM_CHECK`
 - `PROCESS_GROUP_ASK`
 - `PROCESS_PROACTIVE_CANDIDATE`
+- `PROCESS_AMBIENT_REACTION`
 - `PROCESS_GROUP_MEMORY`
 - `PROCESS_DAILY_GROUP_SUMMARIES`
 
@@ -118,6 +121,8 @@ DynamoDB memory key families:
 - `TERM#...`
 - `AGENT_REPLY#...`
   - Optional compact media metadata/summary for explicit multimodal `/ask` continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
+- `AMBIENT_REACTION#...`
+  - Short-lived reaction metadata for cooldowns/debugging only. Do not write ambient reaction context to long-term memory or vectors.
 - `BOT_COMMITMENT#...`
 - `BOT_CORRECTION#...`
 - `VECTOR_BACKFILL` with cumulative `processed_total`, `enqueued_total`, `failures_total`,

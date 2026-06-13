@@ -72,6 +72,25 @@ def test_process_proactive_candidate_routes() -> None:
     mock_pc.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
 
 
+def test_process_ambient_reaction_routes() -> None:
+    body = {
+        "task_type": "PROCESS_AMBIENT_REACTION",
+        "chat_id": -1001,
+        "message_id": 3,
+        "user_id": 42,
+        "text": "This OpenSearch debugging note is useful",
+        "lang": "en",
+    }
+    memory_repo = MagicMock()
+    bot = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_ambient_reaction_task") as mock_ar,
+    ):
+        process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
+    mock_ar.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
+
+
 def test_spam_check_routes() -> None:
     body = {
         "task_type": "SPAM_CHECK",

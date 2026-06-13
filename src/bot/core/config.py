@@ -123,6 +123,16 @@ def _env_optional_int(name: str) -> int | None:
         return None
 
 
+def _env_float(name: str, default: float) -> float:
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def is_configured_group_chat(chat_id: int | str | None) -> bool:
     """True when ``chat_id`` is allowed (present in the configured group → language map)."""
     if chat_id is None:
@@ -186,6 +196,20 @@ AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIM
 AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45"))
 AGENT_PROACTIVE_SCORE_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62"))
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
+AMBIENT_REACTIONS_ENABLED: bool = _env_bool("AMBIENT_REACTIONS_ENABLED", False)
+AMBIENT_REACTIONS_SAMPLE_RATE: float = max(0.0, min(1.0, _env_float("AMBIENT_REACTIONS_SAMPLE_RATE", 0.10)))
+AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD: float = max(
+    0.0,
+    min(1.0, _env_float("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", 0.80)),
+)
+AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS: int = int(
+    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "300")
+)
+AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS: int = int(
+    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "1200")
+)
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "3"))
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "25"))
 GROUP_MEMORY_DAILY_SUMMARY_DAYS: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7"))
 GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500"))
 MULTIMODAL_ENABLED: bool = _env_bool("MULTIMODAL_ENABLED", True)
