@@ -18,15 +18,17 @@ from core.config import (
     AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS,
     AMBIENT_REACTIONS_SAMPLE_RATE,
     get_chat_lang,
-    get_gemini_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
-from services.ai.gemini_client import GeminiClient, GeminiRPDExhaustedError, GeminiUnavailableError
+from services.ai.ambient_reaction_classifier import (
+    FallbackAmbientReactionClassifier,
+    create_ambient_reaction_classifier,
+)
 from services.group_memory import display_name
-from services.memory_safety import is_memory_learning_safe
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
+from zerde_common.ai_errors import ZerdeProviderError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -55,31 +57,7 @@ _MEDIA_KEYS = {
     "video_note",
     "voice",
 }
-_SENSITIVE_OR_SERIOUS_RE = re.compile(
-    "|".join(
-        (
-            r"\b(?:suicide|kill myself|self[- ]?harm|overdose|died|death|funeral|cancer|hospital|emergency)\b",
-            r"\b(?:lawsuit|lawyer|court|arrested|police report|bankrupt|bankruptcy|debt crisis)\b",
-            r"\b(?:war|genocide|terrorism|election|politics|religion|ethnic|racist|racism)\b",
-            r"\b(?:депрессия|суицид|умер|смерть|похорон|рак|больниц|суд|адвокат|банкрот|война|"
-            r"геноцид|террор|выбор|политик|религи|расизм)\b",
-            r"\b(?:суицид|өлді|өлім|аурухана|сот|банкрот|соғыс|саясат|дін|нәсіл)\b",
-        )
-    ),
-    flags=re.IGNORECASE,
-)
-_HOSTILE_RE = re.compile(
-    "|".join(
-        (
-            r"\b(?:idiot|moron|stupid|dumbass|fuck you|shut up|hate you)\b",
-            r"\b(?:идиот|дебил|дурак|тупой|заткнись|ненавижу)\b",
-            r"\b(?:ақымақ|акымак|жынды|өшір|жек көрем)\b",
-        )
-    ),
-    flags=re.IGNORECASE,
-)
-
-_ambient_gemini: GeminiClient | None = None
+_ambient_classifier: FallbackAmbientReactionClassifier | None = None
 
 
 @dataclass(frozen=True)
@@ -104,24 +82,15 @@ class AmbientReactionContext:
     current_message: dict[str, Any]
 
 
-def _get_gemini() -> GeminiClient | None:
-    global _ambient_gemini
-    if get_gemini_api_key() and _ambient_gemini is None:
-        _ambient_gemini = GeminiClient()
-    return _ambient_gemini
+def _get_classifier() -> FallbackAmbientReactionClassifier | None:
+    global _ambient_classifier
+    if _ambient_classifier is None:
+        _ambient_classifier = create_ambient_reaction_classifier()
+    return _ambient_classifier
 
 
 def _compact_text(text: str, *, limit: int) -> str:
     return " ".join((text or "").split())[:limit]
-
-
-def _has_bot_command_at_start(message: dict[str, Any]) -> bool:
-    for entity in message.get("entities") or []:
-        if not isinstance(entity, dict):
-            continue
-        if entity.get("type") == "bot_command" and int(entity.get("offset") or 0) == 0:
-            return True
-    return False
 
 
 def _looks_like_pure_link(text: str) -> bool:
@@ -144,15 +113,6 @@ def _looks_like_too_short_or_emoji_only(text: str) -> bool:
     return len(words) < 2 and len(compact) < 24
 
 
-def _looks_sensitive_or_hostile(text: str) -> bool:
-    compact = _compact_text(text, limit=1200)
-    return (
-        not is_memory_learning_safe(compact)
-        or bool(_SENSITIVE_OR_SERIOUS_RE.search(compact))
-        or bool(_HOSTILE_RE.search(compact))
-    )
-
-
 def is_ambient_reaction_eligible(update: dict[str, Any]) -> bool:
     """Return whether a Telegram update may be considered for ambient reaction sampling."""
     message = update.get("message")
@@ -170,13 +130,11 @@ def is_ambient_reaction_eligible(update: dict[str, Any]) -> bool:
     if not isinstance(text, str) or not text.strip():
         return False
     stripped = text.strip()
-    if stripped.startswith("/") or _has_bot_command_at_start(message):
-        return False
     if _looks_like_too_short_or_emoji_only(stripped):
         return False
     if _looks_like_pure_link(stripped):
         return False
-    return not _looks_sensitive_or_hostile(stripped)
+    return True
 
 
 def _message_context_from_telegram(message: dict[str, Any], *, max_text_chars: int = 700) -> dict[str, Any] | None:
@@ -501,12 +459,14 @@ def process_ambient_reaction_task(
     message_id = parsed["message_id"]
     user_id = parsed["user_id"]
     text = parsed["text"]
-    if _looks_like_too_short_or_emoji_only(text) or _looks_like_pure_link(text) or _looks_sensitive_or_hostile(text):
+    if _looks_like_too_short_or_emoji_only(text) or _looks_like_pure_link(text):
         return False
 
-    gemini = _get_gemini()
-    if gemini is None:
-        logger.info("Ambient reaction skipped because Gemini is not configured", extra={"chat_id": chat_id})
+    classifier = _get_classifier()
+    if classifier is None:
+        logger.info(
+            "Ambient reaction skipped because no AI classifier provider is configured", extra={"chat_id": chat_id}
+        )
         return False
 
     now = int(time.time())
@@ -535,7 +495,7 @@ def process_ambient_reaction_task(
             reply_chain=parsed["reply_chain"],
         )
         previous_context, reply_context, current_context = format_ambient_reaction_prompt_context(context)
-        raw_decision, _ = gemini.ambient_reaction_decision(
+        raw_decision, provider_name = classifier.ambient_reaction_decision(
             current_message=current_context,
             previous_context=previous_context,
             reply_context=reply_context,
@@ -546,7 +506,7 @@ def process_ambient_reaction_task(
         if decision is None or not decision.should_react or not decision.emoji:
             logger.info(
                 "Ambient reaction classifier skipped message",
-                extra={"chat_id": chat_id, "message_id": message_id},
+                extra={"chat_id": chat_id, "message_id": message_id, "provider": provider_name},
             )
             return False
         bot.set_message_reaction(chat_id, message_id, decision.emoji)
@@ -567,10 +527,11 @@ def process_ambient_reaction_task(
                 "emoji": decision.emoji,
                 "category": decision.category,
                 "confidence": decision.confidence,
+                "provider": provider_name,
             },
         )
         return True
-    except (GeminiRPDExhaustedError, GeminiUnavailableError) as exc:
+    except ZerdeProviderError as exc:
         logger.info(
             "Ambient reaction classifier unavailable",
             extra={"chat_id": chat_id, "message_id": message_id, "error_type": exc.__class__.__name__},

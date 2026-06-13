@@ -16,7 +16,9 @@ _SSM_KEY_MAP: dict[str, str] = {
 }
 if _SSM_SECRET_PREFIX:
     load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, _SSM_KEY_MAP)
-_LAZY_SECRET_ATTRS: frozenset[str] = frozenset({"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY"})
+_LAZY_SECRET_ATTRS: frozenset[str] = frozenset(
+    {"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"}
+)
 
 
 def _load_secret(ssm_name: str, env_key: str) -> None:
@@ -39,6 +41,12 @@ def get_groq_api_key() -> str | None:
     """Return optional Groq API key, loading SSM secrets on first use."""
     _load_secret("groq-api-key", "GROQ_API_KEY")
     return os.environ.get("GROQ_API_KEY")
+
+
+def get_deepseek_api_key() -> str | None:
+    """Return optional DeepSeek API key, loading SSM secrets on first use."""
+    _load_secret("deepseek-api-key", "DEEPSEEK_API_KEY")
+    return os.environ.get("DEEPSEEK_API_KEY")
 
 
 def get_gemini_api_key() -> str | None:
@@ -80,6 +88,10 @@ ADMIN_USER_ID: int = require_int("ADMIN_USER_ID")
 # ── Groq parameters ──────────────────────────────────────────────────────────
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 GROQ_MODEL: str | None = os.environ.get("GROQ_MODEL")
+
+# ── DeepSeek fallback parameters ───────────────────────────────────────────
+DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
+DEEPSEEK_MODEL: str = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
 # ── Spam moderation thresholds ──────────────────────────────────────────────
 SPAM_RULE_ENFORCE_THRESHOLD: float = float(os.environ.get("SPAM_RULE_ENFORCE_THRESHOLD", "0.8"))
@@ -197,19 +209,19 @@ AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_S
 AGENT_PROACTIVE_SCORE_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62"))
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
 AMBIENT_REACTIONS_ENABLED: bool = _env_bool("AMBIENT_REACTIONS_ENABLED", True)
-AMBIENT_REACTIONS_SAMPLE_RATE: float = max(0.0, min(1.0, _env_float("AMBIENT_REACTIONS_SAMPLE_RATE", 0.10)))
+AMBIENT_REACTIONS_SAMPLE_RATE: float = max(0.0, min(1.0, _env_float("AMBIENT_REACTIONS_SAMPLE_RATE", 0.80)))
 AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD: float = max(
     0.0,
     min(1.0, _env_float("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", 0.80)),
 )
 AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS: int = int(
-    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "300")
+    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
 )
 AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS: int = int(
-    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "1200")
+    os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "300")
 )
-AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "3"))
-AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "25"))
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "12"))
+AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY: int = int(os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "100"))
 GROUP_MEMORY_DAILY_SUMMARY_DAYS: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7"))
 GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT: int = int(os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500"))
 MULTIMODAL_ENABLED: bool = _env_bool("MULTIMODAL_ENABLED", True)
@@ -256,6 +268,8 @@ def __getattr__(name: str) -> str | None:
             return get_groq_api_key()
         if name == "GEMINI_API_KEY":
             return get_gemini_api_key()
+        if name == "DEEPSEEK_API_KEY":
+            return get_deepseek_api_key()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

@@ -151,14 +151,12 @@ class ZerdeTelegramBotStack(Stack):
         agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
         ambient_reactions_enabled = os.environ.get("AMBIENT_REACTIONS_ENABLED", "true")
-        ambient_reactions_sample_rate = os.environ.get("AMBIENT_REACTIONS_SAMPLE_RATE", "0.10")
+        ambient_reactions_sample_rate = os.environ.get("AMBIENT_REACTIONS_SAMPLE_RATE", "0.80")
         ambient_reactions_confidence_threshold = os.environ.get("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", "0.80")
-        ambient_reactions_min_gap_per_chat_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "300")
-        ambient_reactions_min_gap_per_user_seconds = os.environ.get(
-            "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "1200"
-        )
-        ambient_reactions_max_per_chat_per_hour = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "3")
-        ambient_reactions_max_per_chat_per_day = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "25")
+        ambient_reactions_min_gap_per_chat_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
+        ambient_reactions_min_gap_per_user_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "300")
+        ambient_reactions_max_per_chat_per_hour = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "12")
+        ambient_reactions_max_per_chat_per_day = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "100")
         multimodal_enabled = os.environ.get("MULTIMODAL_ENABLED", "true")
         multimodal_max_download_bytes = os.environ.get("MULTIMODAL_MAX_DOWNLOAD_BYTES", "12000000")
         multimodal_inline_max_bytes = os.environ.get("MULTIMODAL_INLINE_MAX_BYTES", "8000000")
@@ -236,6 +234,8 @@ class ZerdeTelegramBotStack(Stack):
             gemini_embedding_rpd_limit=gemini_embedding_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
+            deepseek_api_base=deepseek_api_base,
+            deepseek_model=deepseek_model,
             spam_rule_enforce_threshold=spam_rule_enforce_threshold,
             spam_rule_ai_threshold=spam_rule_ai_threshold,
             spam_ai_confidence_threshold=spam_ai_confidence_threshold,
