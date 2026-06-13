@@ -250,6 +250,16 @@ def test_vector_indexer_consumes_vector_queue(monkeypatch: Any) -> None:
 
 
 def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
+    for key in (
+        "GROUP_MEMORY_RETENTION_DAYS",
+        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
+        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
+        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
+        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
+        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
     template = _dev_template(monkeypatch)
     _, bot_lambda = _find_resource_by_property(
         template,
@@ -259,11 +269,45 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     )
 
     env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
+    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
+    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
+    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "3650"
+    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PROVIDER"] == "gemini"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_MODE"] == "gemini_candidate_only"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE"] == "0.65"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT"] == "50"
     assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
+
+
+def test_broad_memory_type_retention_envs_fallback_to_legacy_retention(monkeypatch: Any) -> None:
+    monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "42")
+    for key in (
+        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
+        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
+        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
+        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
+        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    template = _dev_template(monkeypatch)
+    _, bot_lambda = _find_resource_by_property(
+        template,
+        "AWS::Lambda::Function",
+        "FunctionName",
+        "zerde-serverless-bot-dev",
+    )
+
+    env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
+    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
+    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
 
 
 def test_vector_indexer_ssm_access_is_limited_to_gemini(monkeypatch: Any) -> None:

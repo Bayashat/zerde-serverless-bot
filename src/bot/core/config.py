@@ -131,11 +131,34 @@ VOTEBAN_FORGIVE_THRESHOLD: int = require_int("VOTEBAN_FORGIVE_THRESHOLD")
 # ── Captcha settings ────────────────────────────────────────────────────────
 CAPTCHA_MAX_ATTEMPTS: int = require_int("CAPTCHA_MAX_ATTEMPTS")
 
+
 # ── Group memory / agent MVP ────────────────────────────────────────────────
+def _memory_retention_days(name: str, default_days: int, *, legacy_fallback: bool = True) -> int:
+    value = os.environ.get(name)
+    if value is None and legacy_fallback:
+        value = os.environ.get("GROUP_MEMORY_RETENTION_DAYS")
+    if value is None:
+        return default_days
+    return int(value)
+
+
 MEMORY_TABLE_NAME: str | None = os.environ.get("MEMORY_TABLE_NAME")
 GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", True)
 GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "80"))
 GROUP_MEMORY_RETENTION_DAYS: int = int(os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650"))
+GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS: int = _memory_retention_days("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", 30)
+GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", 7, legacy_fallback=False
+)
+GROUP_MEMORY_LONG_TERM_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", GROUP_MEMORY_RETENTION_DAYS
+)
+GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS", GROUP_MEMORY_RETENTION_DAYS
+)
+GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS", 3, legacy_fallback=False
+)
 GROUP_MEMORY_EXTRACTOR_PROVIDER: str = os.environ.get("GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini").strip().lower()
 GROUP_MEMORY_EXTRACTOR_MODE: str = (
     os.environ.get("GROUP_MEMORY_EXTRACTOR_MODE", "gemini_candidate_only").strip().lower()
