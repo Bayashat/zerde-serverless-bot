@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from botocore.exceptions import ClientError
 from services import group_agent, group_memory, group_memory_processor
-from services.ai import channel_post_comment, gemini_client
+from services.ai import channel_post_comment, gemini_client, group_chat_reply_fallback
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
 from services.group_memory_processor import (
     build_daily_messages_context,
@@ -23,7 +23,7 @@ from services.repositories.group_memory import (
 )
 from services.repositories.sqs import SQSClient
 from services.telegram_media import PreparedMedia
-from zerde_common.ai_errors import ProviderTransportError
+from zerde_common.ai_errors import ProviderResponseError, ProviderTransportError
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -3083,6 +3083,62 @@ def test_openai_channel_post_comment_provider_uses_text_only_json_prompt(monkeyp
     assert "inline_data" not in fake_http.body
 
 
+def test_openai_group_chat_reply_fallback_provider_uses_text_only_prompt(monkeypatch):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps(
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": "Можно проверить биллинг-адрес и попробовать другой способ оплаты."
+                                }
+                            }
+                        ]
+                    }
+                ).encode("utf-8"),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(
+        group_chat_reply_fallback.OpenAICompatibleGroupChatReplyProvider,
+        "_http",
+        fake_http,
+    )
+    provider = group_chat_reply_fallback.OpenAICompatibleGroupChatReplyProvider(
+        "deepseek",
+        "test-key",
+        "https://api.deepseek.example",
+        "deepseek-test-model",
+    )
+
+    answer = provider.generate_reply(
+        user_message="@zerde_kz_bot что делать с Oracle картой?",
+        recent_context="Ada: previous message",
+        requester_profile_context="Requester profile: username=@ada",
+        reply_instructions="Answer in 1-3 short sentences.",
+        lang="ru",
+        max_output_tokens=180,
+        text_only_media_context="Explicit media context:\n- media_type: photo\nBinary media bytes were not sent.",
+    )
+
+    payload = json.loads(fake_http.body)
+    system_prompt = payload["messages"][0]["content"]
+    user_prompt = payload["messages"][1]["content"]
+
+    assert answer == "Можно проверить биллинг-адрес и попробовать другой способ оплаты."
+    assert payload["model"] == "deepseek-test-model"
+    assert "fallback provider receives text only" in system_prompt
+    assert "Text-only attached media context" in user_prompt
+    assert "inline_data" not in fake_http.body
+
+
 def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
     class FakeHttp:
         def request(self, method, url, body, headers, retries):
@@ -3464,19 +3520,29 @@ def test_answer_group_question_retrieves_with_compact_query_but_generates_from_f
     assert "Previous bot answer" in gemini.group_chat_reply.call_args.kwargs["user_message"]
 
 
-def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
+def test_answer_group_question_retries_gemini_then_uses_deepseek_text_fallback(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
-    gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
-        "Gemini transport ReadTimeoutError: read timed out"
+    gemini.group_chat_reply.side_effect = [
+        gemini_client.GeminiUnavailableError("transient 1"),
+        gemini_client.GeminiUnavailableError("transient 2"),
+        gemini_client.GeminiUnavailableError("transient 3"),
+    ]
+    fallback = MagicMock()
+    fallback.generate_reply.return_value = (
+        "DeepSeek fallback answer.",
+        "deepseek",
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
     monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS", (0, 0))
 
     handled = group_agent.answer_group_question(
         repo=repo,
@@ -3488,24 +3554,27 @@ def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     )
 
     assert handled is True
+    assert gemini.group_chat_reply.call_count == 3
+    fallback.generate_reply.assert_called_once()
+    fallback_kwargs = fallback.generate_reply.call_args.kwargs
+    assert fallback_kwargs["user_message"] == "@zerde_kz_bot не білесің?"
+    assert fallback_kwargs["text_only_media_context"] == ""
     bot.send_message.assert_called_once_with(
         -100123,
-        "😵 AI agent қазір қолжетімсіз.",
+        "DeepSeek fallback answer.",
         reply_to_message_id=99,
     )
-    repo.record_agent_reply.assert_not_called()
+    repo.record_agent_reply.assert_called_once()
 
 
-def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_retry(
-    monkeypatch,
-):
+def test_answer_group_question_fallback_gets_text_only_media_context(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.group_chat_reply.side_effect = gemini_client.GeminiEmptyResponseError(
-        "Gemini response had no candidate text: missing_candidates; prompt_block_reason=SAFETY"
-    )
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    bot.send_message.return_value = {"message_id": 1000}
+    fallback = MagicMock()
+    fallback.generate_reply.return_value = ("Text-only media fallback answer.", "deepseek")
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: None)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
@@ -3517,12 +3586,49 @@ def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_re
         bot=bot,
         chat_id=-100123,
         reply_to_message_id=99,
-        user_text="/ask Бауырым, плов қалай жасайд?",
-        lang="kk",
-        raise_on_unavailable=True,
+        user_text="/ask summarize this file",
+        lang="en",
+        media_parts=[
+            {"text": "Attached text file content:\nline 1\nline 2"},
+            {"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}},
+        ],
+        media_context="Explicit media context:\n- media_type: text_file",
     )
 
     assert handled is True
+    text_only_context = fallback.generate_reply.call_args.kwargs["text_only_media_context"]
+    assert "media_type: text_file" in text_only_context
+    assert "line 1" in text_only_context
+    assert "inline_data" not in text_only_context
+
+
+def test_answer_group_question_notifies_when_all_reply_providers_unavailable(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
+        "Gemini transport ReadTimeoutError: read timed out"
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: None)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS", (0, 0))
+
+    handled = group_agent.answer_group_question(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="@zerde_kz_bot не білесің?",
+        lang="kk",
+    )
+
+    assert handled is True
+    assert gemini.group_chat_reply.call_count == 3
     bot.send_message.assert_called_once_with(
         -100123,
         "😵 AI agent қазір қолжетімсіз.",
@@ -3531,7 +3637,41 @@ def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_re
     repo.record_agent_reply.assert_not_called()
 
 
-def test_answer_group_question_reraises_retryable_unavailable_for_sqs(monkeypatch):
+def test_answer_group_question_retries_empty_gemini_then_raises_when_no_fallback(
+    monkeypatch,
+):
+    repo = MagicMock()
+    bot = MagicMock()
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiEmptyResponseError(
+        "Gemini response had no candidate text: missing_candidates; prompt_block_reason=SAFETY"
+    )
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: None)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
+    monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS", (0, 0))
+
+    with pytest.raises(ProviderResponseError):
+        group_agent.answer_group_question(
+            repo=repo,
+            bot=bot,
+            chat_id=-100123,
+            reply_to_message_id=99,
+            user_text="/ask Бауырым, плов қалай жасайд?",
+            lang="kk",
+            raise_on_unavailable=True,
+        )
+
+    assert gemini.group_chat_reply.call_count == 3
+    bot.send_message.assert_not_called()
+    repo.record_agent_reply.assert_not_called()
+
+
+def test_answer_group_question_reraises_provider_failure_for_sqs(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
     gemini = MagicMock()
@@ -3539,13 +3679,15 @@ def test_answer_group_question_reraises_retryable_unavailable_for_sqs(monkeypatc
         "Gemini transport ReadTimeoutError: read timed out"
     )
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: None)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
     monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS", (0, 0))
 
-    with pytest.raises(gemini_client.GeminiUnavailableError):
+    with pytest.raises(ProviderResponseError):
         group_agent.answer_group_question(
             repo=repo,
             bot=bot,

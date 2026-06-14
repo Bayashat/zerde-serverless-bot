@@ -29,10 +29,13 @@ from services.ai.channel_post_comment import (
 )
 from services.ai.gemini_client import (
     GeminiClient,
-    GeminiEmptyResponseError,
     GeminiRPDExhaustedError,
     GeminiUnavailableError,
     GroupAgentDecision,
+)
+from services.ai.group_chat_reply_fallback import (
+    FallbackGroupChatReplyProvider,
+    create_group_chat_reply_fallback_provider,
 )
 from services.ai.telegram_html import (
     fit_llm_output,
@@ -80,15 +83,18 @@ from services.vector_memory import (
     format_semantic_memory_context,
     retrieve_relevant_memories,
 )
-from zerde_common.ai_errors import ProviderResponseError
+from zerde_common.ai_errors import ProviderResponseError, ZerdeProviderError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
 _channel_post_comment_fallback: FallbackChannelPostCommentProvider | None = None
+_group_chat_reply_fallback: FallbackGroupChatReplyProvider | None = None
 
 CHANNEL_POST_GEMINI_MAX_ATTEMPTS = 3
 CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
+GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS = 3
+GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
 
 
 @dataclass(frozen=True)
@@ -129,6 +135,13 @@ def _get_channel_post_comment_fallback() -> FallbackChannelPostCommentProvider |
     if _channel_post_comment_fallback is None:
         _channel_post_comment_fallback = create_channel_post_comment_fallback_provider()
     return _channel_post_comment_fallback
+
+
+def _get_group_chat_reply_fallback() -> FallbackGroupChatReplyProvider | None:
+    global _group_chat_reply_fallback
+    if _group_chat_reply_fallback is None:
+        _group_chat_reply_fallback = create_group_chat_reply_fallback_provider()
+    return _group_chat_reply_fallback
 
 
 def _is_plain_text_message(update: dict[str, Any]) -> bool:
@@ -1426,6 +1439,170 @@ def _format_channel_post_task_for_prompt(
     return f"{speaker} {text}"
 
 
+def _group_chat_reply_gemini_retry_delay(attempt: int) -> float:
+    index = attempt - 1
+    if 0 <= index < len(GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS):
+        return max(0.0, float(GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS[index]))
+    return 0.0
+
+
+def _text_only_media_context_for_fallback(
+    *,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+) -> str:
+    if not media_parts and not media_context:
+        return ""
+    lines: list[str] = []
+    if media_context:
+        lines.append(media_context)
+    text_parts = [
+        str(part.get("text") or "").strip()
+        for part in media_parts or []
+        if isinstance(part, Mapping) and isinstance(part.get("text"), str) and str(part.get("text") or "").strip()
+    ]
+    if text_parts:
+        lines.append("Attached text content available to the fallback provider:")
+        lines.extend(_compact_query_text(text, limit=4000) for text in text_parts)
+    else:
+        lines.append(
+            "Binary media bytes were not sent to the fallback provider. Use only this metadata/caption context."
+        )
+    return _compact_query_text("\n".join(lines), limit=6000)
+
+
+def _try_gemini_group_chat_reply(
+    *,
+    user_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    semantic_memory_context: str,
+    user_profile_context: str,
+    requester_profile_context: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    lang: str,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    chat_id: int,
+    reply_to_message_id: int,
+) -> tuple[str, str] | None:
+    gemini = _get_gemini()
+    if not gemini:
+        logger.info(
+            "Group agent Gemini reply skipped because Gemini is not configured",
+            extra={"chat_id": chat_id, "reply_to_message_id": reply_to_message_id},
+        )
+        return None
+
+    max_attempts = max(1, int(GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS))
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            answer, _ = gemini.group_chat_reply(
+                user_message=user_message,
+                recent_context=recent_context,
+                long_term_memory_context=long_term_memory_context,
+                semantic_memory_context=semantic_memory_context,
+                user_profile_context=user_profile_context,
+                requester_profile_context=requester_profile_context,
+                reply_instructions=reply_instructions,
+                max_output_tokens=max_output_tokens,
+                lang=lang,
+                media_parts=media_parts,
+                media_context=media_context,
+            )
+            if not answer.strip():
+                raise ProviderResponseError("gemini returned empty group chat reply")
+            return answer, "gemini"
+        except GeminiRPDExhaustedError as exc:
+            logger.warning(
+                "Gemini group chat reply hit RPD limit; trying text-only fallback",
+                extra={"chat_id": chat_id, "reply_to_message_id": reply_to_message_id, "attempt": attempt},
+            )
+            last_error = exc
+            break
+        except GeminiUnavailableError as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini group chat reply attempt failed",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                    "retryable": getattr(exc, "retryable", True),
+                },
+            )
+        except ProviderResponseError as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini group chat reply returned unusable content",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+            )
+
+        if attempt < max_attempts:
+            delay = _group_chat_reply_gemini_retry_delay(attempt)
+            if delay > 0:
+                time.sleep(delay)
+
+    logger.warning(
+        "Gemini group chat reply exhausted; trying text-only fallback",
+        extra={
+            "chat_id": chat_id,
+            "reply_to_message_id": reply_to_message_id,
+            "attempts": max_attempts,
+            "error_type": last_error.__class__.__name__ if last_error else "",
+        },
+    )
+    return None
+
+
+def _fallback_group_chat_reply(
+    *,
+    user_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    semantic_memory_context: str,
+    user_profile_context: str,
+    requester_profile_context: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    lang: str,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+) -> tuple[str, str]:
+    fallback = _get_group_chat_reply_fallback()
+    if fallback is None:
+        raise ProviderResponseError("No group chat reply fallback providers configured")
+    text_only_media_context = _text_only_media_context_for_fallback(
+        media_parts=media_parts,
+        media_context=media_context,
+    )
+    answer, provider_name = fallback.generate_reply(
+        user_message=user_message,
+        recent_context=recent_context,
+        long_term_memory_context=long_term_memory_context,
+        semantic_memory_context=semantic_memory_context,
+        user_profile_context=user_profile_context,
+        requester_profile_context=requester_profile_context,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+        lang=lang,
+        text_only_media_context=text_only_media_context,
+    )
+    if not answer.strip():
+        raise ProviderResponseError(f"{provider_name} returned empty group chat reply")
+    return answer, provider_name
+
+
 def _ensure_channel_post_comment_decision(
     decision: GroupAgentDecision,
     *,
@@ -1844,10 +2021,6 @@ def answer_group_question(
             )
         return True
 
-    gemini = _get_gemini()
-    if not gemini:
-        return False
-
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     memory_bundle = build_agent_memory_context(
         repo=repo,
@@ -1891,7 +2064,7 @@ def answer_group_question(
     )
 
     try:
-        answer, _ = gemini.group_chat_reply(
+        answer_provider = _try_gemini_group_chat_reply(
             user_message=user_text,
             recent_context=memory_bundle.recent_context,
             long_term_memory_context=memory_bundle.long_term_memory_context,
@@ -1903,27 +2076,34 @@ def answer_group_question(
             lang=lang,
             media_parts=media_parts,
             media_context=media_context,
-        )
-    except GeminiRPDExhaustedError:
-        bot.send_message(
-            chat_id,
-            get_translated_text("ask_daily_quota_exhausted", lang),
+            chat_id=chat_id,
             reply_to_message_id=reply_to_message_id,
         )
-        return True
-    except GeminiUnavailableError as exc:
-        retryable = getattr(exc, "retryable", True)
+        if answer_provider is None:
+            answer_provider = _fallback_group_chat_reply(
+                user_message=user_text,
+                recent_context=memory_bundle.recent_context,
+                long_term_memory_context=memory_bundle.long_term_memory_context,
+                semantic_memory_context=memory_bundle.semantic_memory_context,
+                user_profile_context=memory_bundle.user_profile_context,
+                requester_profile_context=memory_bundle.requester_profile_context,
+                reply_instructions=reply_policy.instructions,
+                max_output_tokens=reply_policy.max_output_tokens,
+                lang=lang,
+                media_parts=media_parts,
+                media_context=media_context,
+            )
+    except (GeminiUnavailableError, ZerdeProviderError) as exc:
         logger.warning(
-            "Group agent Gemini call unavailable",
+            "Group agent reply provider chain unavailable",
             extra={
                 "chat_id": chat_id,
                 "reply_to_message_id": reply_to_message_id,
                 "error_type": exc.__class__.__name__,
                 "error_message": str(exc)[:500],
-                "retryable": retryable,
             },
         )
-        if raise_on_unavailable and retryable and not isinstance(exc, GeminiEmptyResponseError):
+        if raise_on_unavailable:
             raise
         bot.send_message(
             chat_id,
@@ -1936,6 +2116,7 @@ def answer_group_question(
         if raise_on_unavailable:
             raise
         return False
+    answer, provider_name = answer_provider
 
     answer_text = fit_llm_output(answer, max_chars=reply_policy.max_chars)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
@@ -1965,4 +2146,12 @@ def answer_group_question(
             retrieval_sources=memory_bundle.retrieval_sources,
             media_metadata=media_reply_metadata or None,
         )
+    logger.info(
+        "Group agent explicit reply generated",
+        extra={
+            "chat_id": chat_id,
+            "reply_to_message_id": reply_to_message_id,
+            "provider": provider_name,
+        },
+    )
     return True

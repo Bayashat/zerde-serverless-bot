@@ -12,8 +12,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Recent group context, requester identity, and user profiles live in DynamoDB.
 - Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
 - Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
-- Gemini handles agent answers, proactive timing decisions, multimodal linked-channel post comments, summaries, embeddings, and is the primary ambient reaction classifier. Linked-channel comments fall back to DeepSeek and then Groq with text-only context when Gemini is unavailable after retries.
-- DeepSeek and Groq can serve as ambient reaction fallback classifiers; Groq also handles async spam checks.
+- Gemini handles agent answers, proactive timing decisions, multimodal linked-channel post comments, summaries, embeddings, and is the primary ambient reaction classifier. Explicit answers and linked-channel comments fall back to DeepSeek and then Groq with text-only context when Gemini is unavailable after retries.
+- DeepSeek and Groq can serve as explicit-answer, linked-channel comment, and ambient reaction fallback providers; Groq also handles async spam checks.
 - The bot should answer only when useful, keep reply length appropriate, and avoid prompt pollution from irrelevant memories.
 
 ## First Steps
@@ -34,12 +34,13 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 ## Repository Map
 
 - `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
-- `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, linked-channel post immediate comments, provider fallback orchestration, reply-thread continuity, response length/style policy.
+- `src/bot/services/group_agent.py`: agent trigger policy, explicit reply fallback orchestration, proactive gating, linked-channel post comments, reply-thread continuity, response length/style policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
+- `src/bot/services/ai/group_chat_reply_fallback.py`: DeepSeek then Groq text-only fallback chain for explicit `/ask`, @mention, and reply-to-Zerde answers after Gemini retry exhaustion.
 - `src/bot/services/ai/ambient_reaction_classifier.py`: Gemini primary plus DeepSeek/Groq OpenAI-compatible fallback chain for ambient reaction strict-JSON classification.
 - `src/bot/services/ai/channel_post_comment.py`: DeepSeek then Groq text-only fallback chain for linked-channel post comments after Gemini retry exhaustion.
 - `src/bot/services/telegram_actor.py`: shared Telegram actor attribution, including linked-channel discussion mirror detection and `sender_chat` actor selection.
@@ -63,6 +64,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
 - Keep explicit multimodal `/ask` media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. SQS carries metadata-only `media_ref`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
+- Keep explicit answer provider fallback on the common `answer_group_question()` path so `/ask`, ordinary @bot mentions, and reply-to-Zerde follow-ups share the same behavior. Try Gemini first, up to three attempts for transport/quota/unusable/empty response failures, then DeepSeek and Groq with text-only context. The text-only fallback may receive current/recent/memory/profile/reply-thread text, media captions/metadata, and decoded text-file content, but never raw media bytes or Gemini inline data. If all providers fail in `PROCESS_GROUP_ASK`, let SQS retry/DLQ; immediate @mention/reply-to-bot paths should log and send the normal unavailable notice.
 - Keep ambient reactions ephemeral: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed. Command text and sensitive/hostile/serious text may reach the classifier, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm. Official linked-channel posts are the exception to conservative ambient gating: they bypass sample rate, cooldowns, and rate caps, and fall back to 👀 if the provider cannot choose an emoji.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
@@ -158,10 +160,10 @@ Treat AI behavior as user-facing reliability work:
 
 - Verify current model names against official provider docs when model availability, preview/stable status, or rate limits matter.
 - Avoid preview/shutdown model IDs for production defaults.
-- Prefer fast fallback for interactive commands and `/ask` paths over long primary-provider retries.
+- Prefer fast fallback for interactive commands and `/ask` paths over long primary-provider retries; the explicit answer path uses a short three-attempt Gemini cycle before DeepSeek/Groq.
 - Keep scheduled/batch paths allowed to retry longer than interactive user commands.
 - Map provider transport, 429, 5xx, and parse failures into consistent error types where the codebase already has that pattern.
-- Treat Gemini HTTP 200 responses with no candidate text as non-retryable for interactive `/ask`; log safe response-shape metadata such as block reason, finish reason, and candidate counts without logging full model responses.
+- Treat Gemini HTTP 200 responses with no candidate text as primary-provider failures on explicit answer paths: log safe response-shape metadata such as block reason, finish reason, and candidate counts without logging full model responses, then let the three-attempt Gemini cycle and text-only fallback chain handle the user-facing response.
 - Do not log full prompts, model responses, API keys, Telegram file contents, or user secrets.
 
 ## Implementation Guidance
