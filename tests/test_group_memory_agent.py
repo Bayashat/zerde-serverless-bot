@@ -2516,6 +2516,27 @@ def test_proactive_decision_chain_raises_when_all_providers_fail():
         chain.decide(current_message="Что выбрать для диплома?", lang="ru")
 
 
+def test_proactive_decision_prompt_requires_social_permission():
+    system_prompt, user_prompt = proactive_decision._build_prompts(
+        current_message="@qusjk 支持中文了",
+        recent_context="Ada: prior context",
+        long_term_memory_context="",
+        reply_instructions="short",
+        lang="zh",
+    )
+
+    assert "default decision is should_reply=false" in system_prompt
+    assert "social permission" in system_prompt
+    assert "who the current message is for" in system_prompt
+    assert "merely mentions AI, bots, Codex, language support" in system_prompt
+    assert "not enough" in system_prompt
+    assert "If you are unsure about audience, intent, or incremental value" in system_prompt
+    assert "Decision checklist" in user_prompt
+    assert "Intended audience" in user_prompt
+    assert "Conversation act" in user_prompt
+    assert "Incremental value" in user_prompt
+
+
 def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
