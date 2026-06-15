@@ -148,7 +148,6 @@ class ZerdeTelegramBotStack(Stack):
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
         agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
-        agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
         ambient_reactions_enabled = os.environ.get("AMBIENT_REACTIONS_ENABLED", "true")
         ambient_reactions_sample_rate = os.environ.get("AMBIENT_REACTIONS_SAMPLE_RATE", "0.80")
@@ -266,7 +265,6 @@ class ZerdeTelegramBotStack(Stack):
             agent_recent_context_limit=agent_recent_context_limit,
             agent_daily_proactive_limit=agent_daily_proactive_limit,
             agent_proactive_delay_seconds=agent_proactive_delay_seconds,
-            agent_proactive_score_threshold=agent_proactive_score_threshold,
             agent_proactive_final_threshold=agent_proactive_final_threshold,
             ambient_reactions_enabled=ambient_reactions_enabled,
             ambient_reactions_sample_rate=ambient_reactions_sample_rate,

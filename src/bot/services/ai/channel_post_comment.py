@@ -49,9 +49,15 @@ def _build_channel_post_comment_prompts(
     lang: str,
     reply_instructions: str,
 ) -> tuple[str, str]:
+    language_instruction = (
+        f"Mandatory response language code: {lang}. Write reply_text in that configured chat language even if "
+        "the post or recent users mix languages. Switch language only when the post explicitly asks for "
+        "translation or another language."
+    )
     system_prompt = (
         "You are the social timing layer for ZerdeBot, a Telegram group chat member in an IT community. "
         "This is an official linked-channel post mirrored into the group discussion. "
+        f"{language_instruction} "
         "Write one natural follow-up comment from ZerdeBot under the post. Do not decide to stay silent. "
         "The goal is to continue the conversation under the post, not to answer a direct question and not "
         "to summarize the whole post. Pick one specific angle from the text: technical, historical, "
@@ -60,12 +66,12 @@ def _build_channel_post_comment_prompts(
         "text, caption, sender metadata, and recent text context. Do not claim visual/audio/file details. "
         "Do not praise the channel owner, do not say generic thanks, and do not sound promotional. "
         "The comment may be short or a few concise sentences depending on the post, but it must feel like a "
-        "real group participant replying under the post. Prefer the group's language. "
+        "real group participant replying under the post. "
         "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
         "reply_text (string). Set should_reply=true."
     )
     user_prompt = (
-        f"Preferred language code: {lang}\n\n"
+        f"{language_instruction}\n\n"
         "Recent group context, oldest to newest:\n"
         f"{recent_context or '(no recent context available)'}\n\n"
         "Current official linked-channel post:\n"

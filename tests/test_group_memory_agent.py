@@ -5,8 +5,9 @@ from unittest.mock import MagicMock
 import pytest
 from botocore.exceptions import ClientError
 from services import group_agent, group_memory, group_memory_processor
-from services.ai import channel_post_comment, gemini_client
+from services.ai import channel_post_comment, gemini_client, proactive_decision
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
+from services.ai.proactive_decision import ProactiveDecision
 from services.group_memory_processor import (
     build_daily_messages_context,
     process_daily_group_summaries_task,
@@ -23,7 +24,7 @@ from services.repositories.group_memory import (
 )
 from services.repositories.sqs import SQSClient
 from services.telegram_media import PreparedMedia
-from zerde_common.ai_errors import ProviderTransportError
+from zerde_common.ai_errors import ProviderResponseError, ProviderTransportError
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -1831,11 +1832,11 @@ def test_agent_reply_to_bot_with_explicit_mention_overrides_gate(monkeypatch):
     assert "@ZerdeBot haha" in answer.call_args.kwargs["user_text"]
 
 
-def test_agent_should_not_answer_plain_chatter(monkeypatch):
+def test_agent_considers_plain_chatter_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("just talking to the group")) is False
+    assert group_agent.should_answer(_group_update("just talking to the group")) is True
 
 
 def test_agent_can_consider_open_question_when_enabled(monkeypatch):
@@ -1854,15 +1855,12 @@ def test_agent_can_consider_telegram_bot_stack_question_when_enabled(monkeypatch
         "соған нақты техникалық стэк керек болып тұр, қандай ұсына аласыздар???"
     )
 
-    assert group_agent._local_proactive_skip_reason(text) is None
     assert group_agent.should_answer(_group_update(text)) is True
-    score = group_agent.score_proactive_reply(
-        user_text=text, recent_context="Ada: context", long_term_memory_context=""
-    )
-    assert "technical_relevance" in score.reasons
 
 
-def test_proactive_score_recognizes_multilingual_suggestion_requests():
+def test_agent_considers_multilingual_suggestion_requests_for_ai_decision(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
     cases = (
         (
             "Дипломдық проектіме идея іздеп жүрмін, тақырып ядролық физикаға жақын болу керек. "
@@ -1874,25 +1872,18 @@ def test_proactive_score_recognizes_multilingual_suggestion_requests():
     )
 
     for text in cases:
-        score = group_agent.score_proactive_reply(
-            user_text=text,
-            recent_context="Ada: previous context",
-            long_term_memory_context="",
-        )
-
-        assert score.score >= group_agent.AGENT_PROACTIVE_SCORE_THRESHOLD
-        assert "asks_for_suggestions" in score.reasons
+        assert group_agent.should_answer(_group_update(text)) is True
 
 
 def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.group_chat_proactive_decision.return_value = (
-        GroupAgentDecision(False, 0.8, "useful ideation request, but humans may answer first", ""),
-        1,
+    provider = MagicMock()
+    provider.decide.return_value = (
+        ProactiveDecision(False, 0.8, "useful ideation request, but humans may answer first", ""),
+        "groq",
     )
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
     monkeypatch.setattr(
         group_agent,
         "format_recent_context",
@@ -1913,44 +1904,40 @@ def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
     )
 
     assert handled is False
-    gemini.group_chat_proactive_decision.assert_called_once()
+    provider.decide.assert_called_once()
     repo.try_reserve_proactive_reply.assert_not_called()
 
 
-def test_agent_does_not_consider_bot_meta_question_for_proactive_reply(monkeypatch):
+def test_agent_considers_bot_meta_question_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent._local_proactive_skip_reason("қазір кез келген хатты оқитын болған ба?") == "bot_meta"
-    assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is False
+    assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is True
 
 
-def test_agent_logs_local_proactive_prefilter_skip(monkeypatch):
+def test_agent_queues_bot_meta_question_for_ai_decision(monkeypatch):
     repo = MagicMock()
-    info = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    sqs = MagicMock()
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
-    monkeypatch.setattr(group_agent.logger, "info", info)
 
     handled = group_agent.handle_update(
         repo=repo,
         bot=MagicMock(),
         update=_group_update("қазір кез келген хатты оқитын болған ба?"),
+        sqs_repo=sqs,
     )
 
-    assert handled is False
-    assert any(
-        call.args[0] == "Group agent proactive candidate skipped by local prefilter"
-        and call.kwargs["extra"]["skip_reason"] == "bot_meta"
-        for call in info.call_args_list
-    )
+    assert handled is True
+    sqs.send_proactive_candidate_task.assert_called_once()
 
 
-def test_agent_does_not_consider_stop_cue_for_proactive_reply(monkeypatch):
+def test_agent_considers_stop_cue_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("болды жазба енді?")) is False
+    assert group_agent.should_answer(_group_update("болды жазба енді?")) is True
 
 
 def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch):
@@ -2063,32 +2050,26 @@ def test_linked_channel_photo_post_queues_immediate_media_comment(monkeypatch):
     bot.send_message.assert_not_called()
 
 
-def test_normal_long_message_still_skips_proactive_prefilter(monkeypatch):
+def test_normal_long_message_is_queued_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     long_question = "does anyone know " + ("how OpenSearch pricing works " * 40)
 
-    assert group_agent._local_proactive_skip_reason(long_question) == "too_long"
-    assert group_agent.should_answer(_group_update(long_question)) is False
+    assert group_agent.should_answer(_group_update(long_question)) is True
 
 
-def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypatch):
+def test_delayed_proactive_candidate_stays_silent_when_ai_says_humans_answered(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
-    repo.get_messages_for_day.return_value = [
-        {
-            "message_id": 11,
-            "user_id": 42,
-            "text": "does anyone know how OpenSearch pricing works?",
-        },
-        {
-            "message_id": 12,
-            "user_id": 7,
-            "text": "You can use OpenSearch Serverless; pricing depends on capacity units.",
-        },
-    ]
     bot = MagicMock()
-    gemini = MagicMock()
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    provider = MagicMock()
+    provider.decide.return_value = (ProactiveDecision(False, 0.91, "humans already answered", ""), "groq")
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
+    monkeypatch.setattr(
+        group_agent,
+        "format_recent_context",
+        lambda *args, **kwargs: "Ada: You can use OpenSearch Serverless.",
+    )
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
 
     handled = group_agent.process_proactive_candidate_task(
         repo=repo,
@@ -2105,7 +2086,7 @@ def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypat
     )
 
     assert handled is False
-    gemini.group_chat_proactive_decision.assert_not_called()
+    provider.decide.assert_called_once()
     repo.try_reserve_proactive_reply.assert_not_called()
     bot.send_message.assert_not_called()
 
@@ -2113,21 +2094,17 @@ def test_delayed_proactive_candidate_stays_silent_when_humans_answered(monkeypat
 def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
-    repo.get_messages_for_day.return_value = []
     repo.try_reserve_proactive_reply.return_value = True
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1000}
-    gemini = MagicMock()
-    gemini.group_chat_proactive_decision.return_value = (
-        GroupAgentDecision(
-            True,
-            0.86,
-            "open technical question with no answer yet",
-            "OpenSearch pricing depends on shards.",
-        ),
-        1,
+    provider = MagicMock()
+    provider.decide.return_value = (
+        ProactiveDecision(True, 0.86, "open technical question with no answer yet", "mention capacity units"),
+        "groq",
     )
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
+    generate = MagicMock(return_value=("OpenSearch pricing depends on shards.", "gemini"))
+    monkeypatch.setattr(group_agent, "_generate_group_chat_reply", generate)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
@@ -2150,8 +2127,9 @@ def test_delayed_proactive_candidate_replies_when_still_useful(monkeypatch):
     )
 
     assert handled is True
-    gemini.group_chat_proactive_decision.assert_called_once()
+    provider.decide.assert_called_once()
     repo.try_reserve_proactive_reply.assert_called_once()
+    assert generate.call_args.kwargs["proactive"] is True
     bot.send_message.assert_called_once_with(
         -100123,
         "OpenSearch pricing depends on shards.",
@@ -2444,26 +2422,14 @@ def test_channel_post_candidate_comments_even_when_humans_discuss(monkeypatch):
     )
 
 
-def test_reply_score_penalizes_recent_bot_activity():
-    score = group_agent.score_proactive_reply(
-        user_text="does anyone know how OpenSearch pricing works?",
-        recent_context="Ada: earlier context",
-        long_term_memory_context="[event speaker=Ada] OpenSearch pricing discussion",
-        recent_bot_replies=3,
-    )
-
-    assert score.score < 0.62
-    assert any(reason.startswith("recent_bot_activity_penalty") for reason in score.reasons)
-
-
-def test_proactive_agent_skips_llm_when_reply_score_is_low(monkeypatch):
+def test_proactive_agent_stays_silent_when_decision_provider_unavailable(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
-    gemini = MagicMock()
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    provider = MagicMock()
+    provider.decide.side_effect = ProviderTransportError("groq unavailable")
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
-    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_SCORE_THRESHOLD", 0.62)
 
     handled = group_agent.maybe_answer_proactively(
         repo=repo,
@@ -2475,19 +2441,58 @@ def test_proactive_agent_skips_llm_when_reply_score_is_low(monkeypatch):
     )
 
     assert handled is False
-    gemini.group_chat_proactive_decision.assert_not_called()
+    provider.decide.assert_called_once()
     bot.send_message.assert_not_called()
+
+
+def test_proactive_decision_chain_falls_back_from_groq_to_deepseek():
+    class BadProvider:
+        provider_name = "groq"
+
+        def decide(self, **kwargs):
+            raise ProviderResponseError("bad json")
+
+    class GoodProvider:
+        provider_name = "deepseek"
+
+        def __init__(self):
+            self.calls = 0
+
+        def decide(self, **kwargs):
+            self.calls += 1
+            return ProactiveDecision(True, 0.88, "useful technical question", "answer briefly")
+
+    deepseek = GoodProvider()
+    chain = proactive_decision.FallbackProactiveDecisionProvider([BadProvider(), deepseek])
+
+    decision, provider = chain.decide(current_message="Что выбрать для диплома?", lang="ru")
+
+    assert provider == "deepseek"
+    assert decision.should_reply is True
+    assert decision.confidence == 0.88
+    assert deepseek.calls == 1
+
+
+def test_proactive_decision_chain_raises_when_all_providers_fail():
+    class BadProvider:
+        def __init__(self, provider_name):
+            self.provider_name = provider_name
+
+        def decide(self, **kwargs):
+            raise ProviderTransportError(f"{self.provider_name} unavailable")
+
+    chain = proactive_decision.FallbackProactiveDecisionProvider([BadProvider("groq"), BadProvider("deepseek")])
+
+    with pytest.raises(ProviderTransportError):
+        chain.decide(current_message="Что выбрать для диплома?", lang="ru")
 
 
 def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.group_chat_proactive_decision.return_value = (
-        GroupAgentDecision(False, 0.91, "humans are already handling it", ""),
-        1,
-    )
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    provider = MagicMock()
+    provider.decide.return_value = (ProactiveDecision(False, 0.91, "humans are already handling it", ""), "groq")
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
     monkeypatch.setattr(
         group_agent,
         "format_recent_context",
@@ -2509,21 +2514,53 @@ def test_proactive_agent_stays_silent_when_decision_says_no(monkeypatch):
     bot.send_message.assert_not_called()
 
 
+def test_proactive_agent_stays_silent_when_decision_confidence_is_low(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    provider = MagicMock()
+    provider.decide.return_value = (ProactiveDecision(True, 0.42, "weak signal", "maybe answer"), "groq")
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text="does anyone know?",
+        lang="en",
+    )
+
+    assert handled is False
+    repo.try_reserve_proactive_reply.assert_not_called()
+    bot.send_message.assert_not_called()
+
+
 def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
     repo = MagicMock()
-    repo.try_reserve_proactive_reply.return_value = True
+    events = []
+
+    def reserve(*args, **kwargs):
+        events.append("reserve")
+        return True
+
+    repo.try_reserve_proactive_reply.side_effect = reserve
     bot = MagicMock()
-    gemini = MagicMock()
-    gemini.group_chat_proactive_decision.return_value = (
-        GroupAgentDecision(
-            True,
-            0.86,
-            "open technical question with no answer yet",
-            "OpenSearch pricing depends on shards.",
-        ),
-        1,
+    bot.send_message.return_value = {"message_id": 1000}
+    provider = MagicMock()
+    provider.decide.return_value = (
+        ProactiveDecision(True, 0.86, "open technical question with no answer yet", "mention capacity"),
+        "groq",
     )
-    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
+
+    def generate_answer(**kwargs):
+        events.append("generate")
+        return "OpenSearch pricing depends on shards.", "gemini"
+
+    generate = MagicMock(side_effect=generate_answer)
+    monkeypatch.setattr(group_agent, "_generate_group_chat_reply", generate)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         group_agent,
@@ -2542,14 +2579,51 @@ def test_proactive_agent_speaks_when_decision_is_confident(monkeypatch):
 
     assert handled is True
     repo.try_reserve_proactive_reply.assert_called_once()
-    assert gemini.group_chat_proactive_decision.call_args.kwargs["long_term_memory_context"]
-    assert "up to 2 short sentences" in gemini.group_chat_proactive_decision.call_args.kwargs["reply_instructions"]
-    assert gemini.group_chat_proactive_decision.call_args.kwargs["max_output_tokens"] == 300
+    assert provider.decide.call_args.kwargs["long_term_memory_context"]
+    assert "up to 2 short sentences" in provider.decide.call_args.kwargs["reply_instructions"]
+    assert events == ["reserve", "generate"]
+    assert generate.call_args.kwargs["proactive"] is True
     bot.send_message.assert_called_once_with(
         -100123,
         "OpenSearch pricing depends on shards.",
         reply_to_message_id=11,
     )
+    repo.record_agent_reply.assert_called_once()
+    assert repo.record_agent_reply.call_args.kwargs["trigger_kind"] == "proactive"
+    assert repo.record_agent_reply.call_args.kwargs["confidence"] == 0.86
+
+
+def test_proactive_answer_generation_falls_back_after_gemini_failure(monkeypatch):
+    gemini = MagicMock()
+    gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError("transport down")
+    fallback = MagicMock()
+    fallback.generate_reply.return_value = ("Fallback answer", "deepseek")
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
+    monkeypatch.setattr(group_agent.time, "sleep", lambda _: None)
+
+    answer, provider = group_agent._generate_group_chat_reply(
+        user_message="ordinary message",
+        recent_context="recent",
+        long_term_memory_context="long-term",
+        semantic_memory_context="semantic",
+        user_profile_context="profile",
+        requester_profile_context="requester",
+        reply_instructions="short",
+        max_output_tokens=120,
+        lang="ru",
+        media_parts=None,
+        media_context="",
+        chat_id=-100123,
+        reply_to_message_id=11,
+        proactive=True,
+    )
+
+    assert answer == "Fallback answer"
+    assert provider == "deepseek"
+    assert gemini.group_chat_reply.call_count == group_agent.GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS
+    assert fallback.generate_reply.call_args.kwargs["proactive"] is True
+    assert fallback.generate_reply.call_args.kwargs["lang"] == "ru"
 
 
 def test_proactive_reservation_escapes_ttl_attribute():
@@ -2842,6 +2916,46 @@ def test_group_chat_reply_text_only_keeps_single_text_part(monkeypatch):
     assert len(parts) == 1
     assert "Explicitly attached media metadata" not in parts[0]["text"]
     assert "attached media is provided" not in payload["systemInstruction"]["parts"][0]["text"]
+
+
+def test_group_chat_reply_prompt_enforces_configured_language_over_user_message(monkeypatch):
+    class FakeHttp:
+        def __init__(self):
+            self.body = ""
+
+        def request(self, method, url, body, headers, retries):
+            self.body = body
+            return MagicMock(
+                status=200,
+                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "Ответ на русском"}]}}]}).encode(
+                    "utf-8"
+                ),
+            )
+
+    fake_http = FakeHttp()
+    monkeypatch.setattr(gemini_client, "_http", fake_http)
+    monkeypatch.setattr(gemini_client, "_circuit_open_until", 0.0)
+
+    client = GeminiClient.__new__(GeminiClient)
+    client._api_key = "test-key"
+    client._model = "test-gemini-model"
+    client._rate_repo = MagicMock(rpd_limit=1000)
+    client._rate_repo.increment_and_check.return_value = (1, True)
+
+    client.group_chat_reply(
+        user_message="@zerde_kz_bot саған айтып тұр, не дейсің?",
+        recent_context="[speaker user_id=7 name=zxcvbnm] Пошел нахуй зерде",
+        lang="ru",
+    )
+
+    payload = json.loads(fake_http.body)
+    system_prompt = payload["systemInstruction"]["parts"][0]["text"]
+    user_prompt = payload["contents"][0]["parts"][0]["text"]
+
+    assert "Mandatory response language code: ru" in system_prompt
+    assert "Mandatory response language code: ru" in user_prompt
+    assert "even if the current user message uses another language" in system_prompt
+    assert "Preferred language" not in user_prompt
 
 
 def test_group_chat_reply_multimodal_includes_inline_data_part(monkeypatch, caplog):
@@ -3471,6 +3585,8 @@ def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
         "Gemini transport ReadTimeoutError: read timed out"
     )
+    monkeypatch.setattr(group_agent.time, "sleep", lambda _: None)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: None)
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
@@ -3496,16 +3612,19 @@ def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
     repo.record_agent_reply.assert_not_called()
 
 
-def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_retry(
-    monkeypatch,
-):
+def test_answer_group_question_falls_back_for_empty_gemini_response(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
+    bot.send_message.return_value = {"message_id": 1000}
     gemini = MagicMock()
     gemini.group_chat_reply.side_effect = gemini_client.GeminiEmptyResponseError(
         "Gemini response had no candidate text: missing_candidates; prompt_block_reason=SAFETY"
     )
+    monkeypatch.setattr(group_agent.time, "sleep", lambda _: None)
+    fallback = MagicMock()
+    fallback.generate_reply.return_value = ("Fallback answer", "deepseek")
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
@@ -3525,27 +3644,32 @@ def test_answer_group_question_notifies_for_empty_gemini_response_without_sqs_re
     assert handled is True
     bot.send_message.assert_called_once_with(
         -100123,
-        "😵 AI agent қазір қолжетімсіз.",
+        "Fallback answer",
         reply_to_message_id=99,
     )
-    repo.record_agent_reply.assert_not_called()
+    repo.record_agent_reply.assert_called_once()
+    assert fallback.generate_reply.call_args.kwargs["lang"] == "kk"
 
 
-def test_answer_group_question_reraises_retryable_unavailable_for_sqs(monkeypatch):
+def test_answer_group_question_reraises_when_all_providers_fail_for_sqs(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
     gemini = MagicMock()
     gemini.group_chat_reply.side_effect = gemini_client.GeminiUnavailableError(
         "Gemini transport ReadTimeoutError: read timed out"
     )
+    monkeypatch.setattr(group_agent.time, "sleep", lambda _: None)
+    fallback = MagicMock()
+    fallback.generate_reply.side_effect = ProviderTransportError("deepseek transport down")
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
     monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "retrieve_relevant_memories", lambda *args, **kwargs: [])
     monkeypatch.setattr(group_agent, "format_user_profile_context", lambda *args, **kwargs: "")
     monkeypatch.setattr(group_agent, "format_requester_profile_context", lambda *args, **kwargs: "")
 
-    with pytest.raises(gemini_client.GeminiUnavailableError):
+    with pytest.raises(ProviderTransportError):
         group_agent.answer_group_question(
             repo=repo,
             bot=bot,

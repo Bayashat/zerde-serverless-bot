@@ -12,8 +12,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Recent group context, requester identity, and user profiles live in DynamoDB.
 - Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
 - Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
-- Gemini handles agent answers, proactive timing decisions, multimodal linked-channel post comments, summaries, embeddings, and is the primary ambient reaction classifier. Linked-channel comments fall back to DeepSeek and then Groq with text-only context when Gemini is unavailable after retries.
-- DeepSeek and Groq can serve as ambient reaction fallback classifiers; Groq also handles async spam checks.
+- Gemini handles agent answers, multimodal linked-channel post comments, summaries, embeddings, and is the primary ambient reaction classifier. Linked-channel comments fall back to DeepSeek and then Groq with text-only context when Gemini is unavailable after retries.
+- Groq then DeepSeek handle ordinary proactive answer decisions with strict JSON; DeepSeek then Groq provide text-only answer-generation fallback when Gemini fails. DeepSeek and Groq can also serve as ambient reaction fallback classifiers; Groq handles async spam checks.
 - The bot should answer only when useful, keep reply length appropriate, and avoid prompt pollution from irrelevant memories.
 
 ## First Steps
@@ -30,16 +30,19 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Do not create `codex/` branches for this repository.
 - Use conventional commit-style titles for commits and PRs, for example `feat: improve RAG memory grounding` or `fix: scope self-reference retrieval`.
 - Do not add `codex` or `[codex]` to commit messages or PR titles.
+- For development requests that change code, tests, docs, or infra, finish by staging the intended changes, committing them, pushing the branch, and opening a GitHub PR against `main` unless the user explicitly asks not to. Do not leave completed implementation work only as local uncommitted changes.
 
 ## Repository Map
 
 - `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
-- `src/bot/services/group_agent.py`: agent trigger policy, proactive gating, linked-channel post immediate comments, provider fallback orchestration, reply-thread continuity, response length/style policy.
+- `src/bot/services/group_agent.py`: agent trigger policy, ordinary proactive AI decision orchestration, linked-channel post immediate comments, provider fallback orchestration, reply-thread continuity, response length/style policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
 - `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
 - `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
+- `src/bot/services/ai/proactive_decision.py`: Groq then DeepSeek strict-JSON decision chain for ordinary proactive group answers.
+- `src/bot/services/ai/group_chat_reply_fallback.py`: DeepSeek then Groq text-only fallback chain for group answer generation when Gemini fails.
 - `src/bot/services/ai/ambient_reaction_classifier.py`: Gemini primary plus DeepSeek/Groq OpenAI-compatible fallback chain for ambient reaction strict-JSON classification.
 - `src/bot/services/ai/channel_post_comment.py`: DeepSeek then Groq text-only fallback chain for linked-channel post comments after Gemini retry exhaustion.
 - `src/bot/services/telegram_actor.py`: shared Telegram actor attribution, including linked-channel discussion mirror detection and `sender_chat` actor selection.
@@ -81,9 +84,9 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
 - Keep `/agent wrong` and `/memory wrong` non-destructive: mark a replied bot answer's recorded memory sources with negative feedback metadata and lower future retrieval priority.
 - Keep `/memory about me` scoped to the requester profile derived from their own messages. Keep `/memory forget this` permission-scoped to own durable memory unless the caller is the group owner or bot owner, and never delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources.
-- Keep proactive participation conservative: local open-question prefilter, delayed candidate queue, post-trigger human-answer check, bot-behavior-meta/stop-cue exclusions, recent bot activity penalty, Gemini decision, and daily limit.
-- Keep linked-channel post participation separate from ordinary proactive replies: detect official linked channel discussion mirrors via `is_automatic_forward` or Telegram `777000` plus `sender_chat.type=channel`, use `sender_chat` as the actor, queue a zero-delay `channel_post` worker task, do not apply the ordinary open-question/500-char/delay/human-answer/recent-bot/daily-limit gates, and use the dedicated channel-post comment prompt. Supported attached media may be analyzed ephemerally by Gemini in that worker. If Gemini fails after three attempts or cannot be used, fall back to DeepSeek and then Groq with text-only context; if every provider fails, let SQS retry/DLQ instead of returning `False`. Do not relax the normal long-message proactive prefilter.
-- Do not suppress proactive technical/product questions merely because they mention "bot"/"бот"; score multilingual technical, suggestion, and group-request cues across Kazakh, Russian, English, and Chinese; local prefilter skips for open-question candidates should log structured reasons.
+- Keep ordinary proactive participation conservative through the AI decision prompt, not local heuristics: queue eligible ordinary group text with `AGENT_PROACTIVE_DELAY_SECONDS`; the worker gathers recent context and query-filtered long-term context, asks Groq then DeepSeek for strict JSON, requires `AGENT_PROACTIVE_FINAL_THRESHOLD`, reserves `AGENT_DAILY_PROACTIVE_LIMIT` only after a yes decision, then generates with Gemini retry plus DeepSeek/Groq fallback.
+- Do not reintroduce local open-question, length, bot-meta, stop-cue, score, recent-bot, or human-answer gates for ordinary proactive answering. Put multilingual, messy-question, human-already-answered, bot-meta, stop-cue, and sensitive/hostile/serious-content rules into the proactive decision prompt.
+- Keep linked-channel post participation separate from ordinary proactive replies: detect official linked channel discussion mirrors via `is_automatic_forward` or Telegram `777000` plus `sender_chat.type=channel`, use `sender_chat` as the actor, queue a zero-delay `channel_post` worker task, bypass ordinary proactive delay/confidence/daily-limit/text-only rules, and use the dedicated channel-post comment prompt. Supported attached media may be analyzed ephemerally by Gemini in that worker. If Gemini fails after three attempts or cannot be used, fall back to DeepSeek and then Groq with text-only context; if every provider fails, let SQS retry/DLQ instead of returning `False`.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - Keep chat-level `style_profile` defaults concise and socially safe. Weak selected memory should add uncertainty instructions instead of letting the model sound certain.
 - If cleaning production memory, first back up exact DynamoDB items and vector keys locally, then delete narrowly.

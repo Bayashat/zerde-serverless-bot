@@ -1,0 +1,287 @@
+"""Provider chain for ordinary proactive answer decisions."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from typing import Any, Protocol
+
+import urllib3
+from core.config import (
+    DEEPSEEK_API_BASE,
+    DEEPSEEK_MODEL,
+    GROQ_API_BASE,
+    GROQ_MODEL,
+    get_deepseek_api_key,
+    get_groq_api_key,
+)
+from core.logger import LoggerAdapter, get_logger
+from urllib3.exceptions import HTTPError
+from zerde_common.ai_errors import (
+    ProviderResponseError,
+    ProviderTransportError,
+    ZerdeProviderError,
+    map_http_status_to_provider_error,
+)
+
+logger = LoggerAdapter(get_logger(__name__), {})
+
+
+@dataclass(frozen=True)
+class ProactiveDecision:
+    should_reply: bool
+    confidence: float
+    reason: str
+    answer_guidance: str = ""
+
+
+class ProactiveDecisionProvider(Protocol):
+    provider_name: str
+
+    def decide(
+        self,
+        *,
+        current_message: str,
+        recent_context: str = "",
+        long_term_memory_context: str = "",
+        reply_instructions: str = "",
+        lang: str = "kk",
+    ) -> ProactiveDecision:
+        """Return a strict proactive decision or raise a provider error."""
+
+
+def _language_instruction(lang: str) -> str:
+    return (
+        f"If a later answer is generated, it must use configured chat language code {lang}, even when the "
+        "current user's message uses another language. The only exception is an explicit request to translate "
+        "or answer in a different language."
+    )
+
+
+def _build_prompts(
+    *,
+    current_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    reply_instructions: str,
+    lang: str,
+) -> tuple[str, str]:
+    system_prompt = (
+        "You are ZerdeBot's proactive participation decision layer for a Telegram IT community. "
+        "You only decide whether ZerdeBot should answer an ordinary group message that was not necessarily "
+        "addressed to the bot. Be conservative, but do not require fixed local patterns like question marks: "
+        "users may write messy, multilingual, informal, implicit requests. "
+        "Say should_reply=true only when a brief bot answer would clearly add value: technical or practical "
+        "help, explanation, debugging, useful advice, study/career/product reasoning, or helpful context. "
+        "Stay silent for ordinary chatter, pure jokes/laughter, rhetorical remarks, ambiguous messages, "
+        "private interpersonal moments, bot-meta complaints, stop cues, or threads where humans already "
+        "answered sufficiently in the recent context. Sensitive, hostile, sad, medical, legal, financial, "
+        "political, religious, or conflict-heavy messages are allowed as input, but choose silence unless a "
+        "short, safe, non-escalating answer would genuinely help. Never encourage harm, mock people, or "
+        "intensify conflict. "
+        f"{_language_instruction(lang)} "
+        "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
+        "answer_guidance (short string; empty when silent). Do not include the final answer text."
+    )
+    user_prompt = (
+        f"{_language_instruction(lang)}\n\n"
+        "Trusted long-term group memory, query-filtered for this message:\n"
+        f"{long_term_memory_context or '(no long-term memory available)'}\n\n"
+        "Recent group context, oldest to newest:\n"
+        f"{recent_context or '(no recent context available)'}\n\n"
+        "Proactive reply style constraints if you choose should_reply=true:\n"
+        f"{reply_instructions or 'The eventual reply should be concise, natural, and useful.'}\n\n"
+        "Current ordinary group message:\n"
+        f"{current_message}\n\n"
+        "Should ZerdeBot proactively answer this message?"
+    )
+    return system_prompt, user_prompt
+
+
+def _parse_decision(raw_content: str, *, provider_name: str) -> ProactiveDecision:
+    try:
+        raw = json.loads(raw_content)
+        if not isinstance(raw, dict):
+            raise TypeError("decision JSON was not an object")
+        if "should_reply" not in raw or "confidence" not in raw or "reason" not in raw:
+            raise KeyError("missing required decision field")
+        should_reply = raw["should_reply"]
+        if not isinstance(should_reply, bool):
+            raise TypeError("should_reply must be boolean")
+        confidence = max(0.0, min(1.0, float(raw["confidence"])))
+        reason = str(raw["reason"] or "")[:300]
+        answer_guidance = str(raw.get("answer_guidance") or "").strip()[:600]
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise ProviderResponseError(f"{provider_name} returned invalid proactive decision JSON: {exc}") from exc
+    return ProactiveDecision(
+        should_reply=should_reply,
+        confidence=confidence,
+        reason=reason,
+        answer_guidance=answer_guidance if should_reply else "",
+    )
+
+
+class OpenAICompatibleProactiveDecisionProvider:
+    """OpenAI-compatible chat/completions provider for proactive decisions."""
+
+    _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(connect=3, read=10))
+
+    def __init__(self, provider_name: str, api_key: str, api_base: str, model: str) -> None:
+        self.provider_name = provider_name
+        self._api_key = api_key
+        self._api_base = api_base.rstrip("/")
+        self._model = model
+        logger.info(
+            "Proactive decision provider initialized",
+            extra={"provider": provider_name, "model": model},
+        )
+
+    def decide(
+        self,
+        *,
+        current_message: str,
+        recent_context: str = "",
+        long_term_memory_context: str = "",
+        reply_instructions: str = "",
+        lang: str = "kk",
+    ) -> ProactiveDecision:
+        system_prompt, user_prompt = _build_prompts(
+            current_message=current_message,
+            recent_context=recent_context,
+            long_term_memory_context=long_term_memory_context,
+            reply_instructions=reply_instructions,
+            lang=lang,
+        )
+        payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.1,
+            "max_tokens": 260,
+            "response_format": {"type": "json_object"},
+        }
+
+        logger.info(
+            "Proactive decision provider request started",
+            extra={
+                "provider": self.provider_name,
+                "model": self._model,
+                "context_chars": len(recent_context),
+                "long_term_memory_chars": len(long_term_memory_context),
+                "message_chars": len(current_message),
+                "lang": lang,
+            },
+        )
+        try:
+            resp = self._http.request(
+                "POST",
+                f"{self._api_base}/chat/completions",
+                body=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self._api_key}",
+                },
+                retries=False,
+            )
+        except (HTTPError, OSError) as exc:
+            raise ProviderTransportError(f"{self.provider_name} transport error: {exc}") from exc
+
+        if resp.status >= 400:
+            body = resp.data.decode("utf-8", errors="replace")
+            logger.warning(
+                "Proactive decision provider API error",
+                extra={"provider": self.provider_name, "status": resp.status, "body": body[:500]},
+            )
+            raise map_http_status_to_provider_error(
+                resp.status,
+                f"{self.provider_name} API {resp.status}: {body[:200]}",
+            )
+
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            content = data["choices"][0]["message"]["content"]
+        except json.JSONDecodeError as exc:
+            raise ProviderResponseError(f"{self.provider_name} response was not valid JSON: {exc}") from exc
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ProviderResponseError(f"{self.provider_name} response schema invalid: {exc}") from exc
+        if not isinstance(content, str) or not content.strip():
+            raise ProviderResponseError(f"{self.provider_name} returned empty proactive decision content")
+        decision = _parse_decision(content.strip(), provider_name=self.provider_name)
+        logger.info(
+            "Proactive decision provider response parsed",
+            extra={
+                "provider": self.provider_name,
+                "model": self._model,
+                "should_reply": decision.should_reply,
+                "confidence": decision.confidence,
+            },
+        )
+        return decision
+
+
+class FallbackProactiveDecisionProvider:
+    """Try proactive decision providers in order until one returns valid JSON."""
+
+    def __init__(self, providers: list[ProactiveDecisionProvider]) -> None:
+        self._providers = providers
+
+    def decide(
+        self,
+        *,
+        current_message: str,
+        recent_context: str = "",
+        long_term_memory_context: str = "",
+        reply_instructions: str = "",
+        lang: str = "kk",
+    ) -> tuple[ProactiveDecision, str]:
+        last_error: ZerdeProviderError | None = None
+        for provider in self._providers:
+            try:
+                decision = provider.decide(
+                    current_message=current_message,
+                    recent_context=recent_context,
+                    long_term_memory_context=long_term_memory_context,
+                    reply_instructions=reply_instructions,
+                    lang=lang,
+                )
+                logger.info("Proactive decision made by provider", extra={"provider": provider.provider_name})
+                return decision, provider.provider_name
+            except ZerdeProviderError as exc:
+                last_error = exc
+                logger.warning(
+                    "Proactive decision provider failed, trying next provider",
+                    extra={"provider": provider.provider_name, "error_type": exc.__class__.__name__},
+                )
+        if last_error:
+            raise last_error
+        raise ProviderResponseError("No proactive decision providers configured")
+
+
+def create_proactive_decision_provider() -> FallbackProactiveDecisionProvider | None:
+    """Build Groq -> DeepSeek proactive decision chain from configured keys."""
+    providers: list[ProactiveDecisionProvider] = []
+
+    groq_api_key = get_groq_api_key()
+    if groq_api_key and GROQ_MODEL:
+        providers.append(OpenAICompatibleProactiveDecisionProvider("groq", groq_api_key, GROQ_API_BASE, GROQ_MODEL))
+
+    deepseek_api_key = get_deepseek_api_key()
+    if deepseek_api_key and DEEPSEEK_MODEL:
+        providers.append(
+            OpenAICompatibleProactiveDecisionProvider(
+                "deepseek",
+                deepseek_api_key,
+                DEEPSEEK_API_BASE,
+                DEEPSEEK_MODEL,
+            )
+        )
+
+    if not providers:
+        return None
+    logger.info(
+        "Proactive decision provider chain configured",
+        extra={"providers": ",".join(provider.provider_name for provider in providers)},
+    )
+    return FallbackProactiveDecisionProvider(providers)

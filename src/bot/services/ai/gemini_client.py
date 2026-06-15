@@ -287,6 +287,7 @@ class GeminiClient:
         lang: str = "kk",
         media_parts: list[dict[str, Any]] | None = None,
         media_context: str = "",
+        proactive: bool = False,
     ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
         if _circuit_is_open():
@@ -310,9 +311,22 @@ class GeminiClient:
             if media_parts or media_context
             else ""
         )
+        language_instructions = (
+            f"Mandatory response language code: {lang}. Write the final Telegram reply in that configured "
+            "chat language even if the current user message uses another language. Switch language only when "
+            "the user explicitly asks for translation or asks you to answer in a different language. "
+        )
+        proactive_instructions = (
+            "This is a proactive answer to an ordinary group message. The message was not necessarily directed "
+            "at ZerdeBot, so do not phrase the reply as if the user asked you personally. Add value briefly and "
+            "avoid forcing a conversation. "
+            if proactive
+            else ""
+        )
         system_prompt = (
             "You are ZerdeBot, a Telegram group chat member for an IT community. "
             "Answer like a helpful, socially aware participant, not a corporate assistant. "
+            f"{language_instructions}"
             "Use the recent chat context only when it is relevant. Do not invent private facts. "
             "Use long-term memory only when it directly helps answer the current message. "
             "When answering about a specific person, rely mainly on that person's own messages, "
@@ -345,7 +359,8 @@ class GeminiClient:
             "Answer naturally and directly; do not add disclaimers about not being able to characterize people. "
             "If the context is insufficient, say so briefly. "
             "Respect the response length instructions exactly; short follow-ups should stay short. "
-            "Keep replies concise, natural, and in the group's language. "
+            f"{proactive_instructions}"
+            "Keep replies concise, natural, and in the configured chat language. "
             "Avoid mentioning that you are using stored memory unless asked."
         )
         generation_config: dict[str, Any] = {
@@ -362,8 +377,13 @@ class GeminiClient:
             if media_parts or media_context
             else ""
         )
+        current_label = (
+            "Current ordinary group message selected for a proactive answer:"
+            if proactive
+            else "Current message directed at you:"
+        )
         prompt = (
-            f"Preferred language code: {lang}\n\n"
+            f"{language_instructions}\n\n"
             "Trusted current requester profile context:\n"
             f"{requester_profile_context or '(no requester profile context available)'}\n\n"
             "Trusted target-user profile context:\n"
@@ -379,7 +399,7 @@ class GeminiClient:
             f"{media_prompt_section}"
             "Response length and style instructions:\n"
             f"{reply_instructions or 'Answer in 2-5 concise sentences unless the user asks for more detail.'}\n\n"
-            "Current message directed at you:\n"
+            f"{current_label}\n"
             f"{user_message}\n\n"
             "Reply to the current message."
         )
@@ -586,6 +606,9 @@ class GeminiClient:
         system_prompt = (
             "You are the social timing layer for ZerdeBot, a Telegram group chat member in an IT community. "
             "This is an official linked-channel post mirrored into the group discussion. "
+            f"Mandatory response language code: {lang}. Write the comment in that configured chat language "
+            "even if the post or recent users mix languages. Switch language only when the post explicitly "
+            "asks for translation or another language. "
             "Write one natural follow-up comment from ZerdeBot under the post. Do not decide to stay silent. "
             "The goal is to continue the conversation under the post, not to answer a direct question and not "
             "to summarize the whole post. Pick one specific angle from the text or attached media: technical, "
@@ -593,7 +616,7 @@ class GeminiClient:
             "If attached media is provided, analyze it only for this comment and do not claim that it was stored. "
             "Do not praise the channel owner, do not say generic thanks, and do not sound promotional. "
             "The comment may be short or a few concise sentences depending on the post, but it must feel like a "
-            "real group participant replying under the post. Prefer the group's language. "
+            "real group participant replying under the post. "
             "Return only compact JSON with keys: should_reply (boolean), confidence (0..1), reason (short string), "
             "reply_text (string). Set should_reply=true."
         )
@@ -613,7 +636,8 @@ class GeminiClient:
             else ""
         )
         prompt = (
-            f"Preferred language code: {lang}\n\n"
+            f"Mandatory response language code: {lang}. Use this configured chat language for reply_text unless "
+            "the post explicitly asks for translation or another language.\n\n"
             "Recent group context, oldest to newest:\n"
             f"{recent_context or '(no recent context available)'}\n\n"
             f"{media_prompt_section}"

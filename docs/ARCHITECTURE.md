@@ -12,7 +12,7 @@ ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram
 - It answers explicit questions through a retrieval pipeline that combines requester identity, recent context, user profiles, long-term memory, and query-matched vector memory.
 - It can continue reply threads with its own previous answers and the original quoted source message when that context was captured.
 - It stores normal bot answers only as short-term reply-thread metadata, not as long-term semantic memory.
-- It may proactively join ordinary discussions only after a short delayed candidate window, local gating, human-answer checks, model timing judgment, recent-bot-activity penalty, and daily limits. Linked channel posts mirrored into discussion groups use a separate immediate comment path with ephemeral media analysis when supported media is attached.
+- It may proactively join ordinary discussions only after a short delayed candidate window, a Groq/DeepSeek AI decision with recent and query-filtered long-term context, answer-generation fallback, and daily limits. Linked channel posts mirrored into discussion groups use a separate immediate comment path with ephemeral media analysis when supported media is attached.
 
 RAG is one part of the system. The larger system is an agentic bot: it decides whether to answer, what context to use, how long the answer should be, and what to remember afterward.
 
@@ -86,7 +86,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `CHECK_TIMEOUT` | timeout/tasks queue | Bot Lambda captcha timeout enforcement. |
 | `SPAM_CHECK` | timeout/tasks queue | Bot Lambda Groq-based async spam classification. |
 | `PROCESS_GROUP_ASK` | timeout/tasks queue | Bot Lambda async explicit agent answer with optional requester metadata and optional metadata-only `media_ref`. Media bytes are downloaded only in this worker. |
-| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed ordinary proactive final check that re-reads recent context, stays silent if humans answered, then uses existing score/model/daily-limit gating. Linked-channel post candidates use the same task with zero delay, bypass ordinary proactive gates, may download supported media ephemerally for Gemini, and generate a direct comment with a dedicated prompt. If Gemini fails after three attempts or is unavailable, DeepSeek then Groq are tried with text-only context; if every provider fails, the SQS task retries/DLQs. |
+| `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed ordinary proactive AI decision. The webhook queues eligible ordinary group text without local open-question/score gating; the worker re-reads recent context, adds query-filtered long-term context, asks Groq then DeepSeek for strict JSON, and stays silent on invalid/low-confidence/no decisions. If the decision is yes, it reserves the daily proactive counter, generates the answer with Gemini retries plus DeepSeek/Groq text-only fallback, and records the reply as `trigger_kind=proactive`. Linked-channel post candidates use the same task with zero delay, bypass ordinary proactive gates, may download supported media ephemerally for Gemini, and generate a direct comment with a dedicated prompt. If every provider fails for linked-channel comments, the SQS task retries/DLQs. |
 | `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for ambient reactions; ordinary messages are sampled and rate-limited, while linked-channel posts force a reaction attempt and bypass sampling/cooldowns/rate caps. Stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
@@ -132,7 +132,7 @@ Memory retention is type-specific. `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` con
 
 `services.group_memory_processor.process_group_memory_task` uses `services.memory_extractor` for one-message extraction. The default backend is `GROUP_MEMORY_EXTRACTOR_PROVIDER=gemini`, but production should keep `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only`. In candidate-only mode, the worker first applies cheap local gates: rule-based memory cues, durable decision/preference/incident/joke/technical terms, reply or mention hints, and a deterministic small sample of long-form technical messages. Only candidate messages call Gemini for compact JSON matching the `ExtractedMemory` schema: `should_store`, `kind`, `summary`, `reason`, `confidence`, `subject_user_id`, `sensitivity`, `expires_in_days`, and `evidence_message_ids`.
 
-Extractor modes are `rules`, `gemini_candidate_only`, and `gemini_all`. `gemini_all` preserves the original "try Gemini for every safe message" behavior, but it is still bounded by the extractor LLM budgets. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` (default `50`) and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` (default `20`) use independent DynamoDB rate-limit scopes before Gemini is called, so background memory extraction cannot consume the full shared Gemini generate RPD used by `/ask`, proactive decisions, and summaries.
+Extractor modes are `rules`, `gemini_candidate_only`, and `gemini_all`. `gemini_all` preserves the original "try Gemini for every safe message" behavior, but it is still bounded by the extractor LLM budgets. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` (default `50`) and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` (default `20`) use independent DynamoDB rate-limit scopes before Gemini is called, so background memory extraction cannot consume the full shared Gemini generate RPD used by `/ask`, answer generation, linked-channel comments, and summaries.
 
 The extractor stores only memories above `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE` (default `0.65`) and rejects `sensitive` or `secret` outputs. It also rejects third-party `user_fact` claims by requiring the extracted `subject_user_id` to match the speaker for personal memories. `JOKE#` storage is stricter than ordinary memory: a one-message rule fallback joke is not durable, while high-confidence Gemini joke extraction or repeated evidence can be stored. If Gemini is unavailable, quota-exhausted, unconfigured, not selected by candidate-only mode, or over the extractor budget, the existing cue-based classifier runs as the fallback. The same safety filters still block secrets, contact details, medical/financial/identity data, future-answer directives, subjective people rankings, and jokes-as-facts.
 
@@ -167,16 +167,13 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 
 Proactive replies are conservative:
 
-- The local prefilter only considers open questions or requests.
-- Linked channel posts mirrored into discussion groups are detected from `is_automatic_forward` or the Telegram `777000` actor plus `sender_chat.type=channel`; these bypass the normal open-question/500-char/delay/human-answer/recent-bot/daily-limit gates and use a zero-delay dedicated comment prompt without weakening the ordinary proactive prefilter. Gemini is tried up to three times and may receive supported media; DeepSeek and Groq fallbacks receive text-only context.
-- Ordinary candidates that pass the local prefilter are queued with `AGENT_PROACTIVE_DELAY_SECONDS` before final evaluation, so humans can answer first.
-- The delayed ordinary task re-reads messages after the trigger and stays silent when a later human reply looks sufficient.
-- Bot-behavior meta complaints and stop cues are ignored, but generic technical/product mentions of "bot"/"бот" are still allowed through scoring.
-- The reply score recognizes multilingual technical, suggestion, and group-request cues in Kazakh, Russian, English, and Chinese.
-- Local prefilter skips for open-question candidates are logged with a structured skip reason before score/model gating.
-- Recent bot activity lowers the score.
-- Gemini must return a strong "should reply" decision.
-- `AGENT_DAILY_PROACTIVE_LIMIT` caps per-chat daily ordinary proactive responses; linked-channel post comments bypass this counter.
+- The webhook queues eligible ordinary group text messages with `AGENT_PROACTIVE_DELAY_SECONDS`; it does not run local open-question, message-length, bot-meta, stop-cue, score, or human-answer heuristics.
+- Linked channel posts mirrored into discussion groups are detected from `is_automatic_forward` or the Telegram `777000` actor plus `sender_chat.type=channel`; these bypass ordinary proactive delay, confidence, daily-limit, and text-only rules, and use a zero-delay dedicated comment prompt. Gemini is tried up to three times and may receive supported media; DeepSeek and Groq fallbacks receive text-only context.
+- The delayed ordinary task gathers recent context and query-filtered long-term context, then asks Groq and then DeepSeek for a strict JSON decision. Gemini is not used for ordinary proactive decisions.
+- The proactive decision prompt carries the former behavior rules: stay silent for ordinary chatter, jokes, bot-meta complaints, stop cues, ambiguous private moments, already-answered threads, or cases where a bot reply would worsen a sensitive/hostile/serious exchange.
+- A yes decision must meet `AGENT_PROACTIVE_FINAL_THRESHOLD`; invalid JSON, provider failure, missing fields, or low confidence stays silent.
+- After a yes decision, the worker reserves `AGENT_DAILY_PROACTIVE_LIMIT` for the chat before generation. Linked-channel post comments bypass this counter.
+- Ordinary proactive answers are generated with Gemini retry plus DeepSeek/Groq text-only fallback and recorded as `trigger_kind=proactive`.
 
 Answer length is explicit:
 
