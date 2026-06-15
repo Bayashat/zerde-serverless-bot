@@ -77,6 +77,17 @@ class AmbientReactionDecision:
 
 
 @dataclass(frozen=True)
+class AmbientReactionValidationResult:
+    decision: AmbientReactionDecision | None
+    skip_reason: str
+    should_react: bool | None = None
+    classifier_emoji: str | None = None
+    confidence: float | None = None
+    category: str | None = None
+    reason: str = ""
+
+
+@dataclass(frozen=True)
 class AmbientReactionRateLimit:
     allowed: bool
     reason: str = ""
@@ -406,6 +417,109 @@ def format_ambient_reaction_prompt_context(context: AmbientReactionContext) -> t
     return previous, replies, current
 
 
+def validate_ambient_reaction_decision_with_reason(
+    raw_output: str | dict[str, Any],
+    *,
+    confidence_threshold: float = AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD,
+    allowed_emojis: tuple[str, ...] = ALLOWED_AMBIENT_REACTION_EMOJIS,
+) -> AmbientReactionValidationResult:
+    """Parse and strictly validate the classifier contract with log-safe status."""
+    try:
+        raw = json.loads(raw_output) if isinstance(raw_output, str) else raw_output
+    except json.JSONDecodeError:
+        return AmbientReactionValidationResult(None, "invalid_json")
+    if not isinstance(raw, dict):
+        return AmbientReactionValidationResult(None, "invalid_schema")
+
+    should_react = raw.get("should_react")
+    if not isinstance(should_react, bool):
+        return AmbientReactionValidationResult(None, "invalid_should_react")
+    confidence_raw = raw.get("confidence")
+    if isinstance(confidence_raw, bool):
+        return AmbientReactionValidationResult(None, "invalid_confidence", should_react=should_react)
+    try:
+        confidence = float(confidence_raw)
+    except (TypeError, ValueError):
+        return AmbientReactionValidationResult(None, "invalid_confidence", should_react=should_react)
+    if confidence < 0 or confidence > 1:
+        return AmbientReactionValidationResult(None, "invalid_confidence", should_react=should_react)
+    category = str(raw.get("category") or "none").strip().lower()[:80]
+    if not category:
+        return AmbientReactionValidationResult(
+            None,
+            "invalid_category",
+            should_react=should_react,
+            confidence=confidence,
+        )
+    reason = str(raw.get("reason") or "").strip()[:300]
+
+    emoji = raw.get("emoji")
+    classifier_emoji = emoji if isinstance(emoji, str) else None
+    if not should_react:
+        if emoji is not None:
+            return AmbientReactionValidationResult(
+                None,
+                "invalid_no_reaction_emoji",
+                should_react=False,
+                classifier_emoji=classifier_emoji,
+                confidence=confidence,
+                category=category,
+                reason=reason,
+            )
+        decision = AmbientReactionDecision(False, None, confidence, "none", reason)
+        return AmbientReactionValidationResult(
+            decision,
+            "classifier_declined",
+            should_react=False,
+            confidence=confidence,
+            category="none",
+            reason=reason,
+        )
+
+    if not isinstance(emoji, str):
+        return AmbientReactionValidationResult(
+            None,
+            "invalid_emoji",
+            should_react=True,
+            confidence=confidence,
+            category=category,
+            reason=reason,
+        )
+    if emoji not in allowed_emojis:
+        return AmbientReactionValidationResult(
+            None,
+            "unknown_emoji",
+            should_react=True,
+            classifier_emoji=emoji,
+            confidence=confidence,
+            category=category,
+            reason=reason,
+        )
+    if confidence < confidence_threshold:
+        decision = AmbientReactionDecision(
+            False, None, confidence, category, reason or "Low confidence reaction signal."
+        )
+        return AmbientReactionValidationResult(
+            decision,
+            "low_confidence",
+            should_react=True,
+            classifier_emoji=emoji,
+            confidence=confidence,
+            category=category,
+            reason=decision.reason,
+        )
+    decision = AmbientReactionDecision(True, emoji, confidence, category, reason)
+    return AmbientReactionValidationResult(
+        decision,
+        "ok",
+        should_react=True,
+        classifier_emoji=emoji,
+        confidence=confidence,
+        category=category,
+        reason=reason,
+    )
+
+
 def validate_ambient_reaction_decision(
     raw_output: str | dict[str, Any],
     *,
@@ -413,41 +527,41 @@ def validate_ambient_reaction_decision(
     allowed_emojis: tuple[str, ...] = ALLOWED_AMBIENT_REACTION_EMOJIS,
 ) -> AmbientReactionDecision | None:
     """Parse and strictly validate the classifier contract."""
-    try:
-        raw = json.loads(raw_output) if isinstance(raw_output, str) else raw_output
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(raw, dict):
-        return None
+    return validate_ambient_reaction_decision_with_reason(
+        raw_output,
+        confidence_threshold=confidence_threshold,
+        allowed_emojis=allowed_emojis,
+    ).decision
 
-    should_react = raw.get("should_react")
-    if not isinstance(should_react, bool):
-        return None
-    confidence_raw = raw.get("confidence")
-    if isinstance(confidence_raw, bool):
-        return None
-    try:
-        confidence = float(confidence_raw)
-    except (TypeError, ValueError):
-        return None
-    if confidence < 0 or confidence > 1:
-        return None
-    category = str(raw.get("category") or "none").strip().lower()[:80]
-    if not category:
-        return None
-    reason = str(raw.get("reason") or "").strip()[:300]
 
-    emoji = raw.get("emoji")
-    if not should_react:
-        if emoji is not None:
-            return None
-        return AmbientReactionDecision(False, None, confidence, "none", reason)
-
-    if not isinstance(emoji, str) or emoji not in allowed_emojis:
-        return None
-    if confidence < confidence_threshold:
-        return AmbientReactionDecision(False, None, confidence, category, reason or "Low confidence reaction signal.")
-    return AmbientReactionDecision(True, emoji, confidence, category, reason)
+def _ambient_reaction_skip_log_extra(
+    *,
+    chat_id: int,
+    message_id: int,
+    provider: str,
+    validation: AmbientReactionValidationResult | None,
+    confidence_threshold: float,
+) -> dict[str, Any]:
+    if validation is None:
+        return {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "provider": provider,
+            "skip_reason": "classifier_unavailable",
+            "confidence_threshold": confidence_threshold,
+        }
+    return {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "provider": provider,
+        "skip_reason": validation.skip_reason,
+        "should_react": validation.should_react,
+        "classifier_emoji": validation.classifier_emoji,
+        "confidence": validation.confidence,
+        "confidence_threshold": confidence_threshold,
+        "category": validation.category,
+        "reason": validation.reason,
+    }
 
 
 def evaluate_ambient_reaction_rate_limit(
@@ -571,6 +685,7 @@ def process_ambient_reaction_task(
         previous_context, reply_context = _cap_ambient_decision_context(previous_context, reply_context)
         provider_name = "forced_fallback"
         decision: AmbientReactionDecision | None = None
+        validation: AmbientReactionValidationResult | None = None
         if classifier is not None:
             try:
                 raw_decision, provider_name = classifier.ambient_reaction_decision(
@@ -580,10 +695,11 @@ def process_ambient_reaction_task(
                     allowed_emojis=ALLOWED_AMBIENT_REACTION_EMOJIS,
                     lang=parsed["lang"],
                 )
-                decision = validate_ambient_reaction_decision(
+                validation = validate_ambient_reaction_decision_with_reason(
                     raw_decision,
                     confidence_threshold=0.0 if force_reaction else AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD,
                 )
+                decision = validation.decision
             except ZerdeProviderError:
                 if not force_reaction:
                     raise
@@ -602,7 +718,13 @@ def process_ambient_reaction_task(
         if decision is None or not decision.should_react or not decision.emoji:
             logger.info(
                 "Ambient reaction classifier skipped message",
-                extra={"chat_id": chat_id, "message_id": message_id, "provider": provider_name},
+                extra=_ambient_reaction_skip_log_extra(
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    provider=provider_name,
+                    validation=validation,
+                    confidence_threshold=AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD,
+                ),
             )
             return False
         bot.set_message_reaction(chat_id, message_id, decision.emoji)

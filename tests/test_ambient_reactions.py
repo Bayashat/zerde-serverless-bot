@@ -487,6 +487,8 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     classifier = MagicMock()
     classifier.ambient_reaction_decision.return_value = ("not json", "gemini")
     monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
 
     handled = process_ambient_reaction_task(
         repo=repo,
@@ -504,6 +506,112 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     assert handled is False
     bot.set_message_reaction.assert_not_called()
     repo.record_ambient_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    assert skip_log.kwargs["extra"]["skip_reason"] == "invalid_json"
+    assert skip_log.kwargs["extra"]["confidence"] is None
+    assert skip_log.kwargs["extra"]["provider"] == "gemini"
+
+
+def test_process_ambient_reaction_task_logs_classifier_decline_details(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": False,
+                "emoji": None,
+                "confidence": 0.42,
+                "category": "none",
+                "reason": "Ordinary message without strong reaction signal.",
+            }
+        ),
+        "groq:fast",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+        },
+    )
+
+    assert handled is False
+    bot.set_message_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    extra = skip_log.kwargs["extra"]
+    assert extra["skip_reason"] == "classifier_declined"
+    assert extra["should_react"] is False
+    assert extra["confidence"] == 0.42
+    assert extra["category"] == "none"
+    assert extra["reason"] == "Ordinary message without strong reaction signal."
+
+
+def test_process_ambient_reaction_task_logs_low_confidence_details(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": True,
+                "emoji": "👀",
+                "confidence": 0.79,
+                "category": "interesting",
+                "reason": "Some signal but not strong enough.",
+            }
+        ),
+        "groq:fast",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+        },
+    )
+
+    assert handled is False
+    bot.set_message_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    extra = skip_log.kwargs["extra"]
+    assert extra["skip_reason"] == "low_confidence"
+    assert extra["should_react"] is True
+    assert extra["classifier_emoji"] == "👀"
+    assert extra["confidence"] == 0.79
+    assert extra["confidence_threshold"] == ambient_reactions.AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD
+    assert extra["category"] == "interesting"
+    assert extra["reason"] == "Some signal but not strong enough."
 
 
 def test_process_ambient_reaction_task_skips_when_groq_classifiers_fail(monkeypatch) -> None:
