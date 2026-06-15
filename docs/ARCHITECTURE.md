@@ -167,7 +167,7 @@ Memory safety filters apply before context reaches the model. Raw `MSG#...` item
 
 Proactive replies are conservative:
 
-- The webhook queues eligible ordinary group text messages with `AGENT_PROACTIVE_DELAY_SECONDS`; it does not run local open-question, message-length, bot-meta, stop-cue, score, or human-answer heuristics.
+- The webhook queues eligible ordinary group text messages with `AGENT_PROACTIVE_DELAY_SECONDS`; it does not run local open-question, message-length, bot-meta, stop-cue, score, or human-answer heuristics. Messages that start with a non-bot `@username` are treated as directed to that human and are not ordinary proactive candidates.
 - Linked channel posts mirrored into discussion groups are detected from `is_automatic_forward` or the Telegram `777000` actor plus `sender_chat.type=channel`; these bypass ordinary proactive delay, confidence, daily-limit, and text-only rules, and use a zero-delay dedicated comment prompt. Gemini is tried up to three times and may receive supported media; DeepSeek and Groq fallbacks receive text-only context.
 - The delayed ordinary task gathers recent context and query-filtered long-term context, then asks Groq and then DeepSeek for a strict JSON decision. Gemini is not used for ordinary proactive decisions.
 - The proactive decision prompt carries the former behavior rules: stay silent for ordinary chatter, jokes, bot-meta complaints, stop cues, ambiguous private moments, already-answered threads, or cases where a bot reply would worsen a sensitive/hostile/serious exchange.

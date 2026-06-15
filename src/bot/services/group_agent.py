@@ -165,6 +165,19 @@ def _mentions_bot(text: str) -> bool:
     return re.search(rf"@{re.escape(AGENT_BOT_USERNAME)}\b", text, flags=re.IGNORECASE) is not None
 
 
+def _leading_mention_username(text: str) -> str:
+    match = re.match(r"\s*@([A-Za-z0-9_]{5,32})(?=$|[^A-Za-z0-9_])", text or "")
+    return match.group(1).lower() if match else ""
+
+
+def _starts_with_other_user_mention(message: dict[str, Any]) -> bool:
+    """Treat leading non-bot @mentions as human-directed, not proactive candidates."""
+    username = _leading_mention_username(extract_message_text(message))
+    if not username:
+        return False
+    return username != (AGENT_BOT_USERNAME or "").lstrip("@").lower()
+
+
 def _replies_to_bot(message: dict[str, Any]) -> bool:
     reply = message.get("reply_to_message")
     if not isinstance(reply, dict):
@@ -931,6 +944,8 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
     if _replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None:
         return "explicit"
     if _replies_to_any_bot(message):
+        return None
+    if _starts_with_other_user_mention(message):
         return None
     return "proactive"
 

@@ -1933,6 +1933,35 @@ def test_agent_queues_bot_meta_question_for_ai_decision(monkeypatch):
     sqs.send_proactive_candidate_task.assert_called_once()
 
 
+def test_agent_skips_human_directed_leading_mention_for_proactive_decision(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    sqs = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
+
+    update = _group_update("@qusjk 支持中文了")
+    update["message"]["entities"] = [{"offset": 0, "length": 6, "type": "mention"}]
+
+    assert group_agent.should_answer(update) is False
+    handled = group_agent.handle_update(
+        repo=repo,
+        bot=MagicMock(),
+        update=update,
+        sqs_repo=sqs,
+    )
+
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
+
+
+def test_agent_keeps_leading_bot_mention_as_explicit(monkeypatch):
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerde_kz_bot")
+
+    assert group_agent.should_answer(_group_update("@zerde_kz_bot 支持中文了吗？")) is True
+
+
 def test_agent_considers_stop_cue_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
