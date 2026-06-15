@@ -3,21 +3,24 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 
 import urllib3
 from core.config import (
+    AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK,
+    AGENT_PROACTIVE_DECISION_GROQ_MODELS,
     DEEPSEEK_API_BASE,
     DEEPSEEK_MODEL,
     GROQ_API_BASE,
-    GROQ_MODEL,
     get_deepseek_api_key,
     get_groq_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
 from urllib3.exceptions import HTTPError
 from zerde_common.ai_errors import (
+    ProviderRateLimitError,
     ProviderResponseError,
     ProviderTransportError,
     ZerdeProviderError,
@@ -25,6 +28,8 @@ from zerde_common.ai_errors import (
 )
 
 logger = LoggerAdapter(get_logger(__name__), {})
+_RATE_LIMIT_COOLDOWN_SECONDS = 60 * 60
+_rate_limited_until_by_model: dict[str, float] = {}
 
 
 @dataclass(frozen=True)
@@ -150,6 +155,7 @@ class OpenAICompatibleProactiveDecisionProvider:
         self._api_key = api_key
         self._api_base = api_base.rstrip("/")
         self._model = model
+        self._cooldown_key = f"{provider_name}:{model}"
         logger.info(
             "Proactive decision provider initialized",
             extra={"provider": provider_name, "model": model},
@@ -164,6 +170,11 @@ class OpenAICompatibleProactiveDecisionProvider:
         reply_instructions: str = "",
         lang: str = "kk",
     ) -> ProactiveDecision:
+        cooldown_until = _rate_limited_until_by_model.get(self._cooldown_key, 0)
+        now = time.time()
+        if cooldown_until > now:
+            raise ProviderRateLimitError(f"{self.provider_name} model {self._model} is cooling down after rate limit")
+
         system_prompt, user_prompt = _build_prompts(
             current_message=current_message,
             recent_context=recent_context,
@@ -211,12 +222,28 @@ class OpenAICompatibleProactiveDecisionProvider:
             body = resp.data.decode("utf-8", errors="replace")
             logger.warning(
                 "Proactive decision provider API error",
-                extra={"provider": self.provider_name, "status": resp.status, "body": body[:500]},
+                extra={
+                    "provider": self.provider_name,
+                    "model": self._model,
+                    "status": resp.status,
+                    "body": body[:500],
+                },
             )
-            raise map_http_status_to_provider_error(
+            error = map_http_status_to_provider_error(
                 resp.status,
                 f"{self.provider_name} API {resp.status}: {body[:200]}",
             )
+            if isinstance(error, ProviderRateLimitError):
+                _rate_limited_until_by_model[self._cooldown_key] = time.time() + _RATE_LIMIT_COOLDOWN_SECONDS
+                logger.warning(
+                    "Proactive decision provider model entered cooldown",
+                    extra={
+                        "provider": self.provider_name,
+                        "model": self._model,
+                        "cooldown_seconds": _RATE_LIMIT_COOLDOWN_SECONDS,
+                    },
+                )
+            raise error
 
         try:
             data = json.loads(resp.data.decode("utf-8"))
@@ -279,23 +306,32 @@ class FallbackProactiveDecisionProvider:
 
 
 def create_proactive_decision_provider() -> FallbackProactiveDecisionProvider | None:
-    """Build Groq -> DeepSeek proactive decision chain from configured keys."""
+    """Build the Groq-only proactive decision pool, with optional DeepSeek fallback."""
     providers: list[ProactiveDecisionProvider] = []
 
     groq_api_key = get_groq_api_key()
-    if groq_api_key and GROQ_MODEL:
-        providers.append(OpenAICompatibleProactiveDecisionProvider("groq", groq_api_key, GROQ_API_BASE, GROQ_MODEL))
-
-    deepseek_api_key = get_deepseek_api_key()
-    if deepseek_api_key and DEEPSEEK_MODEL:
-        providers.append(
-            OpenAICompatibleProactiveDecisionProvider(
-                "deepseek",
-                deepseek_api_key,
-                DEEPSEEK_API_BASE,
-                DEEPSEEK_MODEL,
+    if groq_api_key:
+        for model in AGENT_PROACTIVE_DECISION_GROQ_MODELS:
+            providers.append(
+                OpenAICompatibleProactiveDecisionProvider(
+                    f"groq:{model}",
+                    groq_api_key,
+                    GROQ_API_BASE,
+                    model,
+                )
             )
-        )
+
+    if AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK:
+        deepseek_api_key = get_deepseek_api_key()
+        if deepseek_api_key and DEEPSEEK_MODEL:
+            providers.append(
+                OpenAICompatibleProactiveDecisionProvider(
+                    "deepseek",
+                    deepseek_api_key,
+                    DEEPSEEK_API_BASE,
+                    DEEPSEEK_MODEL,
+                )
+            )
 
     if not providers:
         return None

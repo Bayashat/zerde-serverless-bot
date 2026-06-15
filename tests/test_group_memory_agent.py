@@ -24,7 +24,7 @@ from services.repositories.group_memory import (
 )
 from services.repositories.sqs import SQSClient
 from services.telegram_media import PreparedMedia
-from zerde_common.ai_errors import ProviderResponseError, ProviderTransportError
+from zerde_common.ai_errors import ProviderRateLimitError, ProviderResponseError, ProviderTransportError
 
 
 def _group_update(text: str = "hello @ZerdeBot") -> dict:
@@ -2474,15 +2474,68 @@ def test_proactive_agent_stays_silent_when_decision_provider_unavailable(monkeyp
     bot.send_message.assert_not_called()
 
 
-def test_proactive_decision_chain_falls_back_from_groq_to_deepseek():
+def test_proactive_agent_caps_decision_context(monkeypatch):
+    repo = MagicMock()
+    bot = MagicMock()
+    provider = MagicMock()
+    provider.decide.return_value = (ProactiveDecision(False, 0.91, "no clear social permission", ""), "groq:fast")
+    recent_context = "\n".join(f"Ada: old context line {idx}" for idx in range(20))
+    long_term_context = "LONG_TERM_" + ("x" * 200)
+    monkeypatch.setattr(group_agent, "_get_proactive_decision_provider", lambda: provider)
+    monkeypatch.setattr(group_agent, "format_recent_context", lambda *args, **kwargs: recent_context)
+    monkeypatch.setattr(group_agent, "format_long_term_memory_context", lambda *args, **kwargs: long_term_context)
+    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", 120)
+
+    handled = group_agent.maybe_answer_proactively(
+        repo=repo,
+        bot=bot,
+        chat_id=-100123,
+        reply_to_message_id=11,
+        user_text="does anyone know?",
+        lang="en",
+    )
+
+    assert handled is False
+    kwargs = provider.decide.call_args.kwargs
+    assert len(kwargs["recent_context"]) + len(kwargs["long_term_memory_context"]) <= 120
+    assert "old context line 19" in kwargs["recent_context"]
+    bot.send_message.assert_not_called()
+
+
+def test_proactive_decision_factory_builds_groq_model_pool_without_deepseek_by_default(monkeypatch):
+    monkeypatch.setattr(proactive_decision, "get_groq_api_key", lambda: "groq-key")
+    monkeypatch.setattr(proactive_decision, "get_deepseek_api_key", lambda: "deepseek-key")
+    monkeypatch.setattr(proactive_decision, "AGENT_PROACTIVE_DECISION_GROQ_MODELS", ("model-a", "model-b"))
+    monkeypatch.setattr(proactive_decision, "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK", False)
+
+    provider = proactive_decision.create_proactive_decision_provider()
+
+    assert provider is not None
+    assert [item.provider_name for item in provider._providers] == ["groq:model-a", "groq:model-b"]
+
+
+def test_proactive_decision_factory_can_opt_in_to_deepseek(monkeypatch):
+    monkeypatch.setattr(proactive_decision, "get_groq_api_key", lambda: "groq-key")
+    monkeypatch.setattr(proactive_decision, "get_deepseek_api_key", lambda: "deepseek-key")
+    monkeypatch.setattr(proactive_decision, "AGENT_PROACTIVE_DECISION_GROQ_MODELS", ("model-a",))
+    monkeypatch.setattr(proactive_decision, "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK", True)
+    monkeypatch.setattr(proactive_decision, "DEEPSEEK_MODEL", "deepseek-chat")
+
+    provider = proactive_decision.create_proactive_decision_provider()
+
+    assert provider is not None
+    assert [item.provider_name for item in provider._providers] == ["groq:model-a", "deepseek"]
+
+
+def test_proactive_decision_chain_falls_back_between_groq_models():
     class BadProvider:
-        provider_name = "groq"
+        provider_name = "groq:model-a"
 
         def decide(self, **kwargs):
-            raise ProviderResponseError("bad json")
+            raise ProviderRateLimitError("rate limited")
 
     class GoodProvider:
-        provider_name = "deepseek"
+        provider_name = "groq:model-b"
 
         def __init__(self):
             self.calls = 0
@@ -2491,15 +2544,36 @@ def test_proactive_decision_chain_falls_back_from_groq_to_deepseek():
             self.calls += 1
             return ProactiveDecision(True, 0.88, "useful technical question", "answer briefly")
 
-    deepseek = GoodProvider()
-    chain = proactive_decision.FallbackProactiveDecisionProvider([BadProvider(), deepseek])
+    secondary = GoodProvider()
+    chain = proactive_decision.FallbackProactiveDecisionProvider([BadProvider(), secondary])
 
     decision, provider = chain.decide(current_message="Что выбрать для диплома?", lang="ru")
 
-    assert provider == "deepseek"
+    assert provider == "groq:model-b"
     assert decision.should_reply is True
     assert decision.confidence == 0.88
-    assert deepseek.calls == 1
+    assert secondary.calls == 1
+
+
+def test_proactive_decision_chain_falls_back_on_bad_json():
+    class BadProvider:
+        provider_name = "groq:model-a"
+
+        def decide(self, **kwargs):
+            raise ProviderResponseError("bad json")
+
+    class GoodProvider:
+        provider_name = "groq:model-b"
+
+        def decide(self, **kwargs):
+            return ProactiveDecision(True, 0.82, "useful request", "answer briefly")
+
+    chain = proactive_decision.FallbackProactiveDecisionProvider([BadProvider(), GoodProvider()])
+
+    decision, provider = chain.decide(current_message="Что выбрать для диплома?", lang="ru")
+
+    assert provider == "groq:model-b"
+    assert decision.should_reply is True
 
 
 def test_proactive_decision_chain_raises_when_all_providers_fail():

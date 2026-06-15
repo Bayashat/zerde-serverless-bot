@@ -11,6 +11,7 @@ from typing import Any
 
 from core.config import (
     AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD,
+    AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS,
     AMBIENT_REACTIONS_ENABLED,
     AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY,
     AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR,
@@ -97,6 +98,28 @@ def _get_classifier() -> FallbackAmbientReactionClassifier | None:
 
 def _compact_text(text: str, *, limit: int) -> str:
     return " ".join((text or "").split())[:limit]
+
+
+def _tail_text_for_decision(text: str, *, limit: int) -> str:
+    if limit <= 0 or not text:
+        return ""
+    if len(text) <= limit:
+        return text
+    marker = "[older reaction context truncated]\n"
+    if limit <= len(marker):
+        return text[-limit:]
+    return marker + text[-(limit - len(marker)) :]
+
+
+def _cap_ambient_decision_context(previous_context: str, reply_context: str) -> tuple[str, str]:
+    max_chars = AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS
+    if max_chars <= 0:
+        return "", ""
+    if len(previous_context) + len(reply_context) <= max_chars:
+        return previous_context, reply_context
+    capped_reply = _tail_text_for_decision(reply_context, limit=max_chars)
+    remaining = max(0, max_chars - len(capped_reply))
+    return _tail_text_for_decision(previous_context, limit=remaining), capped_reply
 
 
 def _message_text(message: dict[str, Any]) -> str:
@@ -545,6 +568,7 @@ def process_ambient_reaction_task(
             reply_chain=parsed["reply_chain"],
         )
         previous_context, reply_context, current_context = format_ambient_reaction_prompt_context(context)
+        previous_context, reply_context = _cap_ambient_decision_context(previous_context, reply_context)
         provider_name = "forced_fallback"
         decision: AmbientReactionDecision | None = None
         if classifier is not None:

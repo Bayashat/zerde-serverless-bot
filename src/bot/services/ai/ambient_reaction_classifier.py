@@ -3,26 +3,17 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Protocol
 
 import urllib3
 from core.config import (
-    DEEPSEEK_API_BASE,
-    DEEPSEEK_MODEL,
+    AMBIENT_REACTIONS_DECISION_GROQ_MODELS,
     GROQ_API_BASE,
-    GROQ_MODEL,
-    get_deepseek_api_key,
-    get_gemini_api_key,
     get_groq_api_key,
 )
 from core.logger import LoggerAdapter, get_logger
 from services.ai.ambient_reaction_prompt import build_ambient_reaction_prompts
-from services.ai.gemini_client import (
-    GeminiClient,
-    GeminiEmptyResponseError,
-    GeminiRPDExhaustedError,
-    GeminiUnavailableError,
-)
 from urllib3.exceptions import HTTPError
 from zerde_common.ai_errors import (
     ProviderRateLimitError,
@@ -33,6 +24,8 @@ from zerde_common.ai_errors import (
 )
 
 logger = LoggerAdapter(get_logger(__name__), {})
+_RATE_LIMIT_COOLDOWN_SECONDS = 60 * 60
+_rate_limited_until_by_model: dict[str, float] = {}
 
 
 class AmbientReactionProvider(Protocol):
@@ -50,40 +43,6 @@ class AmbientReactionProvider(Protocol):
         """Return raw strict-JSON classifier text or raise a provider error."""
 
 
-class GeminiAmbientReactionProvider:
-    """Gemini ambient reaction provider adapter."""
-
-    provider_name = "gemini"
-
-    def __init__(self) -> None:
-        self._client = GeminiClient()
-
-    def ambient_reaction_decision(
-        self,
-        *,
-        current_message: str,
-        previous_context: str = "",
-        reply_context: str = "",
-        allowed_emojis: tuple[str, ...] = ("🤣", "👍", "🤔", "❤️", "👀"),
-        lang: str = "kk",
-    ) -> str:
-        try:
-            raw, _ = self._client.ambient_reaction_decision(
-                current_message=current_message,
-                previous_context=previous_context,
-                reply_context=reply_context,
-                allowed_emojis=allowed_emojis,
-                lang=lang,
-            )
-            return raw
-        except GeminiRPDExhaustedError as exc:
-            raise ProviderRateLimitError(str(exc)) from exc
-        except GeminiEmptyResponseError as exc:
-            raise ProviderResponseError(str(exc)) from exc
-        except GeminiUnavailableError as exc:
-            raise ProviderTransportError(str(exc)) from exc
-
-
 class OpenAICompatibleAmbientReactionProvider:
     """OpenAI-compatible chat/completions provider for ambient reactions."""
 
@@ -94,8 +53,9 @@ class OpenAICompatibleAmbientReactionProvider:
         self._api_key = api_key
         self._api_base = api_base.rstrip("/")
         self._model = model
+        self._cooldown_key = f"{provider_name}:{model}"
         logger.info(
-            "Ambient reaction fallback provider initialized",
+            "Ambient reaction provider initialized",
             extra={"provider": provider_name, "model": model},
         )
 
@@ -108,6 +68,11 @@ class OpenAICompatibleAmbientReactionProvider:
         allowed_emojis: tuple[str, ...] = ("🤣", "👍", "🤔", "❤️", "👀"),
         lang: str = "kk",
     ) -> str:
+        cooldown_until = _rate_limited_until_by_model.get(self._cooldown_key, 0)
+        now = time.time()
+        if cooldown_until > now:
+            raise ProviderRateLimitError(f"{self.provider_name} model {self._model} is cooling down after rate limit")
+
         system_prompt, user_prompt = build_ambient_reaction_prompts(
             current_message=current_message,
             previous_context=previous_context,
@@ -127,7 +92,7 @@ class OpenAICompatibleAmbientReactionProvider:
         }
 
         logger.info(
-            "Ambient reaction fallback provider request started",
+            "Ambient reaction provider request started",
             extra={
                 "provider": self.provider_name,
                 "model": self._model,
@@ -153,13 +118,29 @@ class OpenAICompatibleAmbientReactionProvider:
         if resp.status >= 400:
             body = resp.data.decode("utf-8", errors="replace")
             logger.warning(
-                "Ambient reaction fallback provider API error",
-                extra={"provider": self.provider_name, "status": resp.status, "body": body[:500]},
+                "Ambient reaction provider API error",
+                extra={
+                    "provider": self.provider_name,
+                    "model": self._model,
+                    "status": resp.status,
+                    "body": body[:500],
+                },
             )
-            raise map_http_status_to_provider_error(
+            error = map_http_status_to_provider_error(
                 resp.status,
                 f"{self.provider_name} API {resp.status}: {body[:200]}",
             )
+            if isinstance(error, ProviderRateLimitError):
+                _rate_limited_until_by_model[self._cooldown_key] = time.time() + _RATE_LIMIT_COOLDOWN_SECONDS
+                logger.warning(
+                    "Ambient reaction provider model entered cooldown",
+                    extra={
+                        "provider": self.provider_name,
+                        "model": self._model,
+                        "cooldown_seconds": _RATE_LIMIT_COOLDOWN_SECONDS,
+                    },
+                )
+            raise error
 
         try:
             data = json.loads(resp.data.decode("utf-8"))
@@ -171,7 +152,7 @@ class OpenAICompatibleAmbientReactionProvider:
         if not isinstance(content, str) or not content.strip():
             raise ProviderResponseError(f"{self.provider_name} returned empty ambient reaction content")
         logger.info(
-            "Ambient reaction fallback provider response parsed",
+            "Ambient reaction provider response parsed",
             extra={"provider": self.provider_name, "model": self._model, "response_chars": len(content)},
         )
         return content.strip()
@@ -202,6 +183,7 @@ class FallbackAmbientReactionClassifier:
                     allowed_emojis=allowed_emojis,
                     lang=lang,
                 )
+                _ensure_json_object(raw, provider_name=provider.provider_name)
                 logger.info("Ambient reaction classified by provider", extra={"provider": provider.provider_name})
                 return raw, provider.provider_name
             except ZerdeProviderError as exc:
@@ -215,33 +197,30 @@ class FallbackAmbientReactionClassifier:
         raise ProviderResponseError("No ambient reaction providers configured")
 
 
-def create_ambient_reaction_classifier() -> FallbackAmbientReactionClassifier | None:
-    """Build Gemini -> DeepSeek -> Groq provider chain from configured keys."""
-    providers: list[AmbientReactionProvider] = []
-    if get_gemini_api_key():
-        providers.append(GeminiAmbientReactionProvider())
+def _ensure_json_object(raw: str, *, provider_name: str) -> None:
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ProviderResponseError(f"{provider_name} returned invalid ambient reaction JSON: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ProviderResponseError(f"{provider_name} returned non-object ambient reaction JSON")
 
-    deepseek_api_key = get_deepseek_api_key()
-    if deepseek_api_key and DEEPSEEK_MODEL:
-        providers.append(
-            OpenAICompatibleAmbientReactionProvider(
-                "deepseek",
-                deepseek_api_key,
-                DEEPSEEK_API_BASE,
-                DEEPSEEK_MODEL,
-            )
-        )
+
+def create_ambient_reaction_classifier() -> FallbackAmbientReactionClassifier | None:
+    """Build the Groq-only ambient reaction decision pool."""
+    providers: list[AmbientReactionProvider] = []
 
     groq_api_key = get_groq_api_key()
-    if groq_api_key and GROQ_MODEL:
-        providers.append(
-            OpenAICompatibleAmbientReactionProvider(
-                "groq",
-                groq_api_key,
-                GROQ_API_BASE,
-                GROQ_MODEL,
+    if groq_api_key:
+        for model in AMBIENT_REACTIONS_DECISION_GROQ_MODELS:
+            providers.append(
+                OpenAICompatibleAmbientReactionProvider(
+                    f"groq:{model}",
+                    groq_api_key,
+                    GROQ_API_BASE,
+                    model,
+                )
             )
-        )
 
     if not providers:
         return None

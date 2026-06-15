@@ -13,6 +13,7 @@ from core.config import (
     AGENT_BOT_USERNAME,
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
+    AGENT_PROACTIVE_DECISION_CONTEXT_CHARS,
     AGENT_PROACTIVE_DELAY_SECONDS,
     AGENT_PROACTIVE_FINAL_THRESHOLD,
     AGENT_RECENT_CONTEXT_LIMIT,
@@ -920,6 +921,30 @@ def _log_proactive_silent(
     logger.info("Group agent proactive candidate stayed silent", extra=payload)
 
 
+def _tail_text_for_decision(text: str, *, limit: int) -> str:
+    if limit <= 0 or not text:
+        return ""
+    if len(text) <= limit:
+        return text
+    marker = "[older decision context truncated]\n"
+    if limit <= len(marker):
+        return text[-limit:]
+    return marker + text[-(limit - len(marker)) :]
+
+
+def _cap_proactive_decision_context(recent_context: str, long_term_memory_context: str) -> tuple[str, str]:
+    """Cap decision-only context while preserving newest recent lines."""
+    max_chars = AGENT_PROACTIVE_DECISION_CONTEXT_CHARS
+    if max_chars <= 0:
+        return "", ""
+    if len(recent_context) + len(long_term_memory_context) <= max_chars:
+        return recent_context, long_term_memory_context
+    long_term_budget = min(len(long_term_memory_context), max_chars // 2)
+    capped_long_term = long_term_memory_context[:long_term_budget]
+    recent_budget = max(0, max_chars - len(capped_long_term))
+    return _tail_text_for_decision(recent_context, limit=recent_budget), capped_long_term
+
+
 def _channel_post_proactive_skip_reason(text: str) -> str | None:
     """Explain why a linked-channel post should not become a discussion-starter candidate."""
     return None
@@ -1127,13 +1152,17 @@ def maybe_answer_proactively(
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
+    decision_recent_context, decision_long_term_memory_context = _cap_proactive_decision_context(
+        recent_context,
+        long_term_memory_context,
+    )
     style_profile = _load_chat_style_profile(repo, chat_id)
     reply_policy = _proactive_reply_policy(style_profile)
     try:
         decision, decision_provider_name = decision_provider.decide(
             current_message=user_text,
-            recent_context=recent_context,
-            long_term_memory_context=long_term_memory_context,
+            recent_context=decision_recent_context,
+            long_term_memory_context=decision_long_term_memory_context,
             lang=lang,
             reply_instructions=reply_policy.instructions,
         )
