@@ -25,6 +25,11 @@ _RE_URL = re.compile(r"t\.me/|telegram\.me/|https?://", re.IGNORECASE)
 _RE_PROMO = re.compile(r"аренда|продаж|скидк|подписк|аккаунт|гаранти|отзыв|подключени", re.IGNORECASE)
 
 _RE_SCAM_HOOK = re.compile(r"срочно|за пару (движений|минут)|быстрые деньги|легкие деньги", re.IGNORECASE)
+_RE_FINANCE_TOPIC = re.compile(r"деньг|инвестиц|капитал|доход|финанс|заработ", re.IGNORECASE)
+_RE_SOFT_LEAD_BAIT = re.compile(
+    r"кому\s+интересно.{0,40}(?:скину|пишите|напишу|расскажу)|(?:скину|пишите).{0,40}кому\s+интересно",
+    re.IGNORECASE,
+)
 
 
 class RuleBasedSpamFilter:
@@ -47,6 +52,8 @@ class RuleBasedSpamFilter:
         has_url = bool(_RE_URL.search(text))
         has_promo = bool(_RE_PROMO.search(text))
         has_scam_hook = bool(_RE_SCAM_HOOK.search(text))
+        has_finance_topic = bool(_RE_FINANCE_TOPIC.search(text))
+        has_soft_lead_bait = bool(_RE_SOFT_LEAD_BAIT.search(text))
 
         # @username alone is normal group chat; only score as "external" with other risk signals
         risky_mention = has_mention and (has_money or has_vpn or has_job or is_mixed_script or has_url or has_promo)
@@ -81,6 +88,10 @@ class RuleBasedSpamFilter:
         if has_scam_hook:
             score += 0.25
             triggered.append("scam_hook")
+
+        if has_finance_topic and has_soft_lead_bait:
+            score += 0.35
+            triggered.append("finance_soft_lead_bait")
 
         if has_money and has_scam_hook:
             score += 0.20

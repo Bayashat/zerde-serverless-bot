@@ -91,6 +91,27 @@ def test_cyrillic_ruble_suffix_without_space_triggers_money(f):
     assert score > 0.3
 
 
+def test_finance_soft_lead_bait_queues_for_ai_check(f):
+    text = (
+        "Читаю книгу «Психология денег». Книга не про умные схемы инвестиций, "
+        "а про решения и привычки, которые постепенно влияют на капитал. Кому интересно, скину."
+    )
+    score, rules = f.check(text, _USER_ID, _CHAT_ID)
+    assert "finance_soft_lead_bait" in rules
+    assert score >= 0.15
+    assert score < 0.8
+
+
+def test_plain_finance_book_discussion_stays_low(f):
+    score, rules = f.check(
+        "Кто читал «Психология денег»? Нормальная книга про привычки и капитал.",
+        _USER_ID,
+        _CHAT_ID,
+    )
+    assert "finance_soft_lead_bait" not in rules
+    assert score < 0.15
+
+
 def test_mention_only_does_not_trigger_external_even_if_short(f):
     score, rules = f.check("@user", _USER_ID, _CHAT_ID)
     assert "external_mention" not in rules

@@ -46,14 +46,13 @@ _CAPTCHA_BLOCKED_PERMISSIONS = tuple(key for key, value in _TEXT_ONLY_PERMISSION
 def _delete_timeout_messages(
     bot: TelegramClient,
     chat_id: int | str,
-    join_message_id: int,
-    verification_message_id: int,
+    message_ids: list[int],
 ) -> None:
-    try:
-        bot.delete_message(chat_id, join_message_id)
-        bot.delete_message(chat_id, verification_message_id)
-    except Exception as e:
-        logger.warning("Failed to delete join/verification messages: %s", e)
+    for message_id in message_ids:
+        try:
+            bot.delete_message(chat_id, message_id)
+        except Exception as e:
+            logger.warning("Failed to delete captcha timeout message %s: %s", message_id, e)
 
 
 def _challenge_matches_timeout_task(
@@ -113,9 +112,10 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
                     },
                 )
                 return
-            should_cleanup_state = True
             if challenge.get("status") == "verified":
-                _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
+                should_cleanup_state = True
+                wrong_message_ids = list(challenge.get("wrong_msg_ids", []))
+                _delete_timeout_messages(bot, chat_id, [verification_message_id, *wrong_message_ids])
                 logger.info("User %s already verified. Ignoring timeout.", user_id)
                 return
             if challenge.get("status") != "pending":
@@ -131,9 +131,12 @@ def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None
 
         logger.info("User %s timed out. Kicking.", user_id)
         bot.kick_chat_member(chat_id, user_id)
-        _delete_timeout_messages(bot, chat_id, join_message_id, verification_message_id)
+        should_cleanup_state = True
+        wrong_message_ids = list(challenge.get("wrong_msg_ids", [])) if challenge else []
+        _delete_timeout_messages(bot, chat_id, [join_message_id, verification_message_id, *wrong_message_ids])
     except Exception as e:
         logger.exception("Timeout task error (user may have left or message deleted): %s", e)
+        raise
     finally:
         if should_cleanup_state:
             _delete_pending_state(captcha_repo, chat_id, user_id)

@@ -1,6 +1,8 @@
 """Tests for the grid image captcha: answer checking, state transitions."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
+
+import pytest
 
 
 def _make_ctx(text, user_id, chat_id, captcha_repo):
@@ -38,6 +40,7 @@ def test_correct_answer_unrestricts_user():
     ctx.bot.restrict_chat_member.assert_called_once()
     captcha_repo.mark_verified.assert_called_once_with(-100123, 42)
     captcha_repo.delete_pending.assert_not_called()
+    assert call(-100123, 5) not in ctx.bot.delete_message.call_args_list
 
 
 def test_wrong_answer_increments_attempts():
@@ -128,6 +131,7 @@ def test_timeout_with_matching_pending_challenge_kicks_user():
         "status": "pending",
         "join_msg_id": 5,
         "verify_msg_id": 6,
+        "wrong_msg_ids": [7, 8],
     }
 
     process_timeout_task(
@@ -145,7 +149,38 @@ def test_timeout_with_matching_pending_challenge_kicks_user():
     bot.get_chat_member.assert_not_called()
     bot.delete_message.assert_any_call(-100123, 5)
     bot.delete_message.assert_any_call(-100123, 6)
+    bot.delete_message.assert_any_call(-100123, 7)
+    bot.delete_message.assert_any_call(-100123, 8)
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
+
+
+def test_timeout_kick_failure_retries_without_clearing_pending_state():
+    from services.handlers.captcha import process_timeout_task
+
+    bot = MagicMock()
+    bot.kick_chat_member.side_effect = ConnectionResetError("connection reset")
+    captcha_repo = MagicMock()
+    captcha_repo.get_challenge.return_value = {
+        "status": "pending",
+        "join_msg_id": 5,
+        "verify_msg_id": 6,
+    }
+
+    with pytest.raises(ConnectionResetError):
+        process_timeout_task(
+            bot,
+            {
+                "chat_id": -100123,
+                "user_id": 42,
+                "join_message_id": 5,
+                "verification_message_id": 6,
+                "_captcha_repo": captcha_repo,
+            },
+        )
+
+    bot.kick_chat_member.assert_called_once_with(-100123, 42)
+    bot.delete_message.assert_not_called()
+    captcha_repo.delete_pending.assert_not_called()
 
 
 def test_timeout_with_verified_challenge_does_not_kick_user():
@@ -157,6 +192,7 @@ def test_timeout_with_verified_challenge_does_not_kick_user():
         "status": "verified",
         "join_msg_id": 5,
         "verify_msg_id": 6,
+        "wrong_msg_ids": [7],
     }
 
     process_timeout_task(
@@ -172,8 +208,9 @@ def test_timeout_with_verified_challenge_does_not_kick_user():
 
     bot.kick_chat_member.assert_not_called()
     bot.get_chat_member.assert_not_called()
-    bot.delete_message.assert_any_call(-100123, 5)
     bot.delete_message.assert_any_call(-100123, 6)
+    bot.delete_message.assert_any_call(-100123, 7)
+    assert call(-100123, 5) not in bot.delete_message.call_args_list
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
 
 
