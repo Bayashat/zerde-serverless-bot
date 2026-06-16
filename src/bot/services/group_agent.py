@@ -6,7 +6,6 @@ import re
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from numbers import Number
 from typing import Any
 
 from core.config import (
@@ -14,9 +13,9 @@ from core.config import (
     AGENT_BOT_USERNAME,
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
+    AGENT_PROACTIVE_DECISION_CONTEXT_CHARS,
     AGENT_PROACTIVE_DELAY_SECONDS,
     AGENT_PROACTIVE_FINAL_THRESHOLD,
-    AGENT_PROACTIVE_SCORE_THRESHOLD,
     AGENT_RECENT_CONTEXT_LIMIT,
     get_chat_lang,
     get_gemini_api_key,
@@ -29,10 +28,17 @@ from services.ai.channel_post_comment import (
 )
 from services.ai.gemini_client import (
     GeminiClient,
-    GeminiEmptyResponseError,
     GeminiRPDExhaustedError,
     GeminiUnavailableError,
     GroupAgentDecision,
+)
+from services.ai.group_chat_reply_fallback import (
+    FallbackGroupChatReplyProvider,
+    create_group_chat_reply_fallback_provider,
+)
+from services.ai.proactive_decision import (
+    FallbackProactiveDecisionProvider,
+    create_proactive_decision_provider,
 )
 from services.ai.telegram_html import (
     fit_llm_output,
@@ -80,21 +86,19 @@ from services.vector_memory import (
     format_semantic_memory_context,
     retrieve_relevant_memories,
 )
-from zerde_common.ai_errors import ProviderResponseError
+from zerde_common.ai_errors import ProviderResponseError, ZerdeProviderError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _agent_gemini: GeminiClient | None = None
 _channel_post_comment_fallback: FallbackChannelPostCommentProvider | None = None
+_group_chat_reply_fallback: FallbackGroupChatReplyProvider | None = None
+_proactive_decision_provider: FallbackProactiveDecisionProvider | None = None
 
 CHANNEL_POST_GEMINI_MAX_ATTEMPTS = 3
 CHANNEL_POST_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
-
-
-@dataclass(frozen=True)
-class ProactiveReplyScore:
-    score: float
-    reasons: tuple[str, ...]
+GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS = 3
+GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS: tuple[float, ...] = (1.0, 2.0)
 
 
 @dataclass(frozen=True)
@@ -131,6 +135,20 @@ def _get_channel_post_comment_fallback() -> FallbackChannelPostCommentProvider |
     return _channel_post_comment_fallback
 
 
+def _get_group_chat_reply_fallback() -> FallbackGroupChatReplyProvider | None:
+    global _group_chat_reply_fallback
+    if _group_chat_reply_fallback is None:
+        _group_chat_reply_fallback = create_group_chat_reply_fallback_provider()
+    return _group_chat_reply_fallback
+
+
+def _get_proactive_decision_provider() -> FallbackProactiveDecisionProvider | None:
+    global _proactive_decision_provider
+    if _proactive_decision_provider is None:
+        _proactive_decision_provider = create_proactive_decision_provider()
+    return _proactive_decision_provider
+
+
 def _is_plain_text_message(update: dict[str, Any]) -> bool:
     message = update.get("message")
     if not isinstance(message, dict):
@@ -146,6 +164,19 @@ def _mentions_bot(text: str) -> bool:
     if not AGENT_BOT_USERNAME:
         return False
     return re.search(rf"@{re.escape(AGENT_BOT_USERNAME)}\b", text, flags=re.IGNORECASE) is not None
+
+
+def _leading_mention_username(text: str) -> str:
+    match = re.match(r"\s*@([A-Za-z0-9_]{5,32})(?=$|[^A-Za-z0-9_])", text or "")
+    return match.group(1).lower() if match else ""
+
+
+def _starts_with_other_user_mention(message: dict[str, Any]) -> bool:
+    """Treat leading non-bot @mentions as human-directed, not proactive candidates."""
+    username = _leading_mention_username(extract_message_text(message))
+    if not username:
+        return False
+    return username != (AGENT_BOT_USERNAME or "").lstrip("@").lower()
 
 
 def _replies_to_bot(message: dict[str, Any]) -> bool:
@@ -244,6 +275,215 @@ def _media_summary_from_metadata(answer_text: str, metadata: Mapping[str, Any]) 
     if not answer:
         return prefix[:180]
     return f"{prefix}: {answer[:760]}"
+
+
+def _text_only_media_context_for_fallback(
+    *,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+) -> str:
+    lines: list[str] = []
+    if media_context:
+        lines.append(media_context)
+    if media_parts:
+        lines.append(
+            "Binary media bytes were not sent to the fallback provider. Use only this metadata/caption context."
+        )
+    return _compact_query_text("\n".join(lines), limit=6000)
+
+
+def _group_chat_reply_gemini_retry_delay(attempt: int) -> float:
+    index = attempt - 1
+    if 0 <= index < len(GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS):
+        return max(0.0, float(GROUP_CHAT_REPLY_GEMINI_RETRY_DELAYS_SECONDS[index]))
+    return 0.0
+
+
+def _try_gemini_group_chat_reply(
+    *,
+    user_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    semantic_memory_context: str,
+    user_profile_context: str,
+    requester_profile_context: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    lang: str,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    chat_id: int,
+    reply_to_message_id: int,
+    proactive: bool,
+) -> tuple[str, str] | None:
+    gemini = _get_gemini()
+    if not gemini:
+        logger.info(
+            "Group agent Gemini reply skipped because Gemini is not configured",
+            extra={"chat_id": chat_id, "reply_to_message_id": reply_to_message_id, "proactive": proactive},
+        )
+        return None
+
+    max_attempts = max(1, int(GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS))
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            answer, _ = gemini.group_chat_reply(
+                user_message=user_message,
+                recent_context=recent_context,
+                long_term_memory_context=long_term_memory_context,
+                semantic_memory_context=semantic_memory_context,
+                user_profile_context=user_profile_context,
+                requester_profile_context=requester_profile_context,
+                reply_instructions=reply_instructions,
+                max_output_tokens=max_output_tokens,
+                lang=lang,
+                media_parts=media_parts,
+                media_context=media_context,
+                proactive=proactive,
+            )
+            if not answer.strip():
+                raise ProviderResponseError("gemini returned empty group chat reply")
+            return answer, "gemini"
+        except GeminiRPDExhaustedError as exc:
+            logger.warning(
+                "Gemini group chat reply hit RPD limit; trying text-only fallback",
+                extra={"chat_id": chat_id, "reply_to_message_id": reply_to_message_id, "attempt": attempt},
+            )
+            last_error = exc
+            break
+        except GeminiUnavailableError as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini group chat reply attempt failed",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                    "retryable": getattr(exc, "retryable", True),
+                },
+            )
+        except ProviderResponseError as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini group chat reply returned unusable content",
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "attempt": attempt,
+                    "max_attempts": max_attempts,
+                    "error_type": exc.__class__.__name__,
+                },
+            )
+
+        if attempt < max_attempts:
+            delay = _group_chat_reply_gemini_retry_delay(attempt)
+            if delay > 0:
+                time.sleep(delay)
+
+    logger.warning(
+        "Gemini group chat reply exhausted; trying text-only fallback",
+        extra={
+            "chat_id": chat_id,
+            "reply_to_message_id": reply_to_message_id,
+            "attempts": max_attempts,
+            "error_type": last_error.__class__.__name__ if last_error else "",
+        },
+    )
+    return None
+
+
+def _fallback_group_chat_reply(
+    *,
+    user_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    semantic_memory_context: str,
+    user_profile_context: str,
+    requester_profile_context: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    lang: str,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    proactive: bool,
+) -> tuple[str, str]:
+    fallback = _get_group_chat_reply_fallback()
+    if fallback is None:
+        raise ProviderResponseError("No group chat reply fallback providers configured")
+    text_only_media_context = _text_only_media_context_for_fallback(
+        media_parts=media_parts,
+        media_context=media_context,
+    )
+    answer, provider_name = fallback.generate_reply(
+        user_message=user_message,
+        recent_context=recent_context,
+        long_term_memory_context=long_term_memory_context,
+        semantic_memory_context=semantic_memory_context,
+        user_profile_context=user_profile_context,
+        requester_profile_context=requester_profile_context,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+        lang=lang,
+        text_only_media_context=text_only_media_context,
+        proactive=proactive,
+    )
+    if not answer.strip():
+        raise ProviderResponseError(f"{provider_name} returned empty group chat reply")
+    return answer, provider_name
+
+
+def _generate_group_chat_reply(
+    *,
+    user_message: str,
+    recent_context: str,
+    long_term_memory_context: str,
+    semantic_memory_context: str,
+    user_profile_context: str,
+    requester_profile_context: str,
+    reply_instructions: str,
+    max_output_tokens: int,
+    lang: str,
+    media_parts: list[dict[str, Any]] | None,
+    media_context: str,
+    chat_id: int,
+    reply_to_message_id: int,
+    proactive: bool = False,
+) -> tuple[str, str]:
+    answer_provider = _try_gemini_group_chat_reply(
+        user_message=user_message,
+        recent_context=recent_context,
+        long_term_memory_context=long_term_memory_context,
+        semantic_memory_context=semantic_memory_context,
+        user_profile_context=user_profile_context,
+        requester_profile_context=requester_profile_context,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+        lang=lang,
+        media_parts=media_parts,
+        media_context=media_context,
+        chat_id=chat_id,
+        reply_to_message_id=reply_to_message_id,
+        proactive=proactive,
+    )
+    if answer_provider is not None:
+        return answer_provider
+    return _fallback_group_chat_reply(
+        user_message=user_message,
+        recent_context=recent_context,
+        long_term_memory_context=long_term_memory_context,
+        semantic_memory_context=semantic_memory_context,
+        user_profile_context=user_profile_context,
+        requester_profile_context=requester_profile_context,
+        reply_instructions=reply_instructions,
+        max_output_tokens=max_output_tokens,
+        lang=lang,
+        media_parts=media_parts,
+        media_context=media_context,
+        proactive=proactive,
+    )
 
 
 def _reply_source_retrieval_query(*, current_question: str, source_context: str) -> str:
@@ -665,315 +905,6 @@ def _guardrail_reply(user_text: str, lang: str) -> str:
     return ""
 
 
-def _looks_like_open_question(text: str) -> bool:
-    lowered = text.lower()
-    question_mark = "?" in text or "？" in text
-    cue_words = (
-        "how ",
-        "why ",
-        "what ",
-        "which ",
-        "кто",
-        "как",
-        "что",
-        "какой",
-        "какая",
-        "какие",
-        "где",
-        "когда",
-        "зачем",
-        "почему",
-        "怎么",
-        "为什么",
-        "什么",
-        "哪",
-        "қалай",
-        "қандай",
-        "қайсы",
-        "қайда",
-        "қашан",
-        "кім",
-        "неге",
-    )
-    return len(text) >= 12 and (question_mark or any(word in lowered for word in cue_words))
-
-
-_PROACTIVE_STOP_CUES = (
-    "болды",
-    "жазба",
-    "жетеді",
-    "stop",
-    "don't reply",
-    "не отвечай",
-    "хватит",
-    "не пиши",
-    "别说",
-    "不要说",
-    "尴尬",
-)
-
-_PROACTIVE_BOT_META_CUES = (
-    "zerde",
-    "зерде",
-    "оқитын болған",
-    "оқып отыр",
-    "тыңдап отыр",
-    "читает чат",
-    "читает все",
-    "читает любые",
-    "слушает чат",
-    "reading every",
-    "reads every",
-    "listening to everything",
-    "why is the bot replying",
-    "bot keeps replying",
-    "бот жауап беріп жатыр",
-    "бот отвечает",
-)
-
-_PROACTIVE_TECHNICAL_CUES = (
-    "aws",
-    "opensearch",
-    "dynamodb",
-    "lambda",
-    "python",
-    "telegram",
-    "телеграм",
-    "bot",
-    "бот",
-    "техникалық",
-    "стэк",
-    "стек",
-    "infra",
-    "deploy",
-    "api",
-    "database",
-    "serverless",
-    "llm",
-    "gemini",
-    "deepseek",
-    "groq",
-)
-
-_PROACTIVE_SUGGESTION_CUES = (
-    "idea",
-    "ideas",
-    "suggest",
-    "recommend",
-    "advice",
-    "topic",
-    "project idea",
-    "идея",
-    "идеи",
-    "идею",
-    "посовет",
-    "предлож",
-    "совет",
-    "тема",
-    "диплом",
-    "ұсын",
-    "кеңес",
-    "тақырып",
-    "жоба",
-    "проект",
-    "қоса аласың",
-    "毕业",
-    "论文",
-    "课题",
-    "建议",
-    "推荐",
-    "想法",
-)
-
-_PROACTIVE_GROUP_REQUEST_CUES = (
-    "anyone",
-    "any ideas",
-    "does anyone",
-    "what do you all",
-    "what would you",
-    "кто-нибудь",
-    "что посоветуете",
-    "какие идеи",
-    "біреу",
-    "ұсына аласыңдар",
-    "қоса аласыңдар",
-    "не дейсіңдер",
-    "有什么建议",
-    "有推荐",
-    "大家",
-    "有人",
-)
-
-_PROACTIVE_HUMAN_ANSWER_CUES = (
-    "you can",
-    "you should",
-    "use ",
-    "try ",
-    "depends",
-    "because",
-    "i think",
-    "i'd ",
-    "i would",
-    "better to",
-    "лучше",
-    "можно",
-    "нужно",
-    "надо",
-    "попроб",
-    "потому",
-    "думаю",
-    "болады",
-    "керек",
-    "қолдан",
-    "себебі",
-    "меніңше",
-    "可以",
-    "建议",
-    "因为",
-    "用",
-)
-_PROACTIVE_HUMAN_SOLVED_CUES = (
-    "solved",
-    "figured it out",
-    "got it",
-    "нашел",
-    "нашла",
-    "решил",
-    "решили",
-    "понял",
-    "таптым",
-    "шешілді",
-    "түсіндім",
-    "解决了",
-    "懂了",
-)
-_PROACTIVE_TERM_RE = re.compile(r"[0-9a-zа-яәғқңөұүһіё][0-9a-zа-яәғқңөұүһіё+#._-]{2,}", re.IGNORECASE)
-_PROACTIVE_TERM_STOPWORDS = {
-    "any",
-    "are",
-    "can",
-    "does",
-    "for",
-    "how",
-    "know",
-    "the",
-    "what",
-    "when",
-    "where",
-    "which",
-    "who",
-    "why",
-    "есть",
-    "как",
-    "кто",
-    "что",
-    "это",
-    "бар",
-    "бір",
-    "деп",
-    "кім",
-    "не",
-    "осы",
-}
-
-
-def _looks_like_bot_behavior_meta(text: str) -> bool:
-    """Return True for bot-behavior meta chatter, not generic bot-building questions."""
-    lowered = " ".join((text or "").lower().split())
-    return any(cue in lowered for cue in _PROACTIVE_BOT_META_CUES)
-
-
-def _proactive_terms(text: str) -> set[str]:
-    return {
-        term.lstrip("@").lower()
-        for term in _PROACTIVE_TERM_RE.findall(text or "")
-        if term and term.lower() not in _PROACTIVE_TERM_STOPWORDS and not term.isdigit()
-    }
-
-
-def _safe_int(value: Any) -> int | None:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _looks_like_sufficient_human_answer(text: str, *, trigger_terms: set[str]) -> bool:
-    lowered = " ".join((text or "").lower().split())
-    if not lowered or lowered.startswith("/"):
-        return False
-    if any(cue in lowered for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
-        return True
-
-    answer_cue = any(cue in lowered for cue in _PROACTIVE_HUMAN_ANSWER_CUES)
-    response_terms = _proactive_terms(lowered)
-    overlaps_trigger = bool(trigger_terms & response_terms)
-    open_question = _looks_like_open_question(text)
-
-    if open_question and not answer_cue:
-        return False
-    if answer_cue and (overlaps_trigger or len(text) >= 24):
-        return True
-    return overlaps_trigger and len(text) >= 40 and not open_question
-
-
-def _looks_like_channel_post_discussion(text: str, *, trigger_terms: set[str]) -> bool:
-    lowered = " ".join((text or "").lower().split())
-    if not lowered or lowered.startswith("/"):
-        return False
-    response_terms = _proactive_terms(lowered)
-    overlaps_trigger = bool(trigger_terms & response_terms)
-    if overlaps_trigger and len(text) >= 24:
-        return True
-    if _looks_like_open_question(text) and len(text) >= 30:
-        return True
-    return len(text) >= 60
-
-
-def _human_answer_after_trigger(
-    repo: GroupMemoryRepository,
-    chat_id: int,
-    *,
-    trigger_message_id: int,
-    trigger_user_id: int | str | None,
-    trigger_created_at: int | None,
-    user_text: str,
-    candidate_kind: str = "proactive",
-) -> dict[str, Any] | None:
-    start_epoch = int(trigger_created_at or 0)
-    end_epoch = int(time.time()) + 1
-    if start_epoch > 0:
-        messages = repo.get_messages_for_day(chat_id, start_epoch=start_epoch, end_epoch=end_epoch, limit=25)
-    else:
-        messages = repo.get_recent_messages(chat_id, limit=25)
-
-    trigger_terms = _proactive_terms(user_text)
-    trigger_user = str(trigger_user_id) if trigger_user_id is not None else ""
-    for item in messages:
-        message_id = _safe_int(item.get("message_id"))
-        if message_id is not None and message_id <= trigger_message_id:
-            continue
-        text = str(item.get("text") or "").strip()
-        if not text or text == user_text:
-            continue
-        user_id = item.get("user_id")
-        same_user = trigger_user and str(user_id) == trigger_user
-        if same_user and not any(cue in text.lower() for cue in _PROACTIVE_HUMAN_SOLVED_CUES):
-            continue
-        discussed = (
-            _looks_like_channel_post_discussion(text, trigger_terms=trigger_terms)
-            if candidate_kind == "channel_post"
-            else _looks_like_sufficient_human_answer(text, trigger_terms=trigger_terms)
-        )
-        if discussed:
-            return {
-                "message_id": message_id,
-                "user_id": user_id,
-                "text_chars": len(text),
-            }
-    return None
-
-
 def _log_proactive_silent(
     silent_reason: str,
     *,
@@ -990,89 +921,33 @@ def _log_proactive_silent(
     logger.info("Group agent proactive candidate stayed silent", extra=payload)
 
 
-def _local_proactive_skip_reason(text: str) -> str | None:
-    """Explain why a message is rejected before proactive score/model gating."""
-    lowered = text.lower().strip()
-    if not _looks_like_open_question(text):
-        return "not_open_question"
-    if len(text) > 500:
-        return "too_long"
-    if any(cue in lowered for cue in _PROACTIVE_STOP_CUES):
-        return "stop_or_awkward_cue"
-    if _looks_like_bot_behavior_meta(text):
-        return "bot_meta"
-    return None
+def _tail_text_for_decision(text: str, *, limit: int) -> str:
+    if limit <= 0 or not text:
+        return ""
+    if len(text) <= limit:
+        return text
+    marker = "[older decision context truncated]\n"
+    if limit <= len(marker):
+        return text[-limit:]
+    return marker + text[-(limit - len(marker)) :]
+
+
+def _cap_proactive_decision_context(recent_context: str, long_term_memory_context: str) -> tuple[str, str]:
+    """Cap decision-only context while preserving newest recent lines."""
+    max_chars = AGENT_PROACTIVE_DECISION_CONTEXT_CHARS
+    if max_chars <= 0:
+        return "", ""
+    if len(recent_context) + len(long_term_memory_context) <= max_chars:
+        return recent_context, long_term_memory_context
+    long_term_budget = min(len(long_term_memory_context), max_chars // 2)
+    capped_long_term = long_term_memory_context[:long_term_budget]
+    recent_budget = max(0, max_chars - len(capped_long_term))
+    return _tail_text_for_decision(recent_context, limit=recent_budget), capped_long_term
 
 
 def _channel_post_proactive_skip_reason(text: str) -> str | None:
     """Explain why a linked-channel post should not become a discussion-starter candidate."""
     return None
-
-
-def _local_proactive_candidate(text: str) -> bool:
-    """Cheap social prefilter before spending an LLM call on timing judgment."""
-    return _local_proactive_skip_reason(text) is None
-
-
-def score_proactive_reply(
-    *,
-    user_text: str,
-    recent_context: str,
-    long_term_memory_context: str,
-    recent_bot_replies: int = 0,
-) -> ProactiveReplyScore:
-    """Cheap, explainable gate before asking the LLM for social timing."""
-    lowered = user_text.lower().strip()
-    score = 0.0
-    reasons: list[str] = []
-
-    if _looks_like_open_question(user_text):
-        score += 0.34
-        reasons.append("open_question")
-
-    if any(cue in lowered for cue in _PROACTIVE_TECHNICAL_CUES):
-        score += 0.22
-        reasons.append("technical_relevance")
-
-    if any(cue in lowered for cue in _PROACTIVE_SUGGESTION_CUES):
-        score += 0.22
-        reasons.append("asks_for_suggestions")
-
-    if long_term_memory_context:
-        memory_terms = {
-            term
-            for term in re.findall(r"[a-zа-яәғқңөұүһіё0-9+#._-]{4,}", long_term_memory_context.lower())
-            if term not in {"summary", "speaker", "reason", "daily"}
-        }
-        if any(term in lowered for term in list(memory_terms)[:80]):
-            score += 0.16
-            reasons.append("matches_group_memory")
-
-    if recent_context:
-        score += 0.08
-        reasons.append("has_recent_context")
-    else:
-        score -= 0.08
-        reasons.append("no_recent_context")
-
-    if len(user_text) > 220:
-        score += 0.05
-        reasons.append("substantial_question")
-
-    if any(cue in lowered for cue in _PROACTIVE_GROUP_REQUEST_CUES):
-        score += 0.08
-        reasons.append("asks_group")
-
-    if recent_bot_replies:
-        penalty = min(0.32, recent_bot_replies * 0.16)
-        score -= penalty
-        reasons.append(f"recent_bot_activity_penalty:{recent_bot_replies}")
-
-    if any(cue in lowered for cue in ("haha", "lol", "ахах", "хаха", "哈哈")):
-        score -= 0.18
-        reasons.append("joke_penalty")
-
-    return ProactiveReplyScore(score=max(0.0, min(1.0, score)), reasons=tuple(reasons))
 
 
 def _trigger_kind(update: dict[str, Any]) -> str | None:
@@ -1095,9 +970,9 @@ def _trigger_kind(update: dict[str, Any]) -> str | None:
         return "explicit"
     if _replies_to_any_bot(message):
         return None
-    if _local_proactive_candidate(text):
-        return "proactive"
-    return None
+    if _starts_with_other_user_mention(message):
+        return None
+    return "proactive"
 
 
 def _log_skipped_reply_to_bot_followup(update: dict[str, Any]) -> None:
@@ -1116,31 +991,6 @@ def _log_skipped_reply_to_bot_followup(update: dict[str, Any]) -> None:
             "chat_id": (message.get("chat") or {}).get("id"),
             "message_id": message.get("message_id"),
             "skip_reason": skip_reason,
-        },
-    )
-
-
-def _log_skipped_proactive_prefilter(update: dict[str, Any]) -> None:
-    if not AGENT_ENABLED or not _is_plain_text_message(update):
-        return
-    message = update["message"]
-    text = extract_message_text(message)
-    if _mentions_bot(text) or _replies_to_any_bot(message):
-        return
-    linked_channel_post = is_linked_channel_discussion_post(message)
-    skip_reason = (
-        _channel_post_proactive_skip_reason(text) if linked_channel_post else _local_proactive_skip_reason(text)
-    )
-    if not skip_reason or skip_reason == "not_open_question":
-        return
-    logger.info(
-        "Group agent proactive candidate skipped by local prefilter",
-        extra={
-            "chat_id": (message.get("chat") or {}).get("id"),
-            "message_id": message.get("message_id"),
-            "skip_reason": skip_reason,
-            "candidate_kind": "channel_post" if linked_channel_post else "proactive",
-            "text_chars": len(text),
         },
     )
 
@@ -1170,7 +1020,6 @@ def handle_update(
     trigger_kind = _trigger_kind(update)
     if trigger_kind is None:
         _log_skipped_reply_to_bot_followup(update)
-        _log_skipped_proactive_prefilter(update)
         return False
     if repo is None:
         return False
@@ -1291,50 +1140,35 @@ def maybe_answer_proactively(
     reply_to_message_id: int,
     user_text: str,
     lang: str,
+    trigger_user_id: int | str | None = None,
+    trigger_username: str | None = None,
+    trigger_display_name: str | None = None,
 ) -> bool:
-    """Ask the model whether speaking is socially useful; speak only on a strong yes."""
-    gemini = _get_gemini()
-    if not gemini:
-        _log_proactive_silent("gemini_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
+    """Ask Groq/DeepSeek whether speaking is useful; generate only on a strong yes."""
+    decision_provider = _get_proactive_decision_provider()
+    if decision_provider is None:
+        _log_proactive_silent("proactive_decision_not_configured", chat_id=chat_id, message_id=reply_to_message_id)
         return False
 
     recent_context = format_recent_context(repo, chat_id, limit=AGENT_RECENT_CONTEXT_LIMIT)
     long_term_memory_context = format_long_term_memory_context(repo, chat_id, query_text=user_text)
+    decision_recent_context, decision_long_term_memory_context = _cap_proactive_decision_context(
+        recent_context,
+        long_term_memory_context,
+    )
     style_profile = _load_chat_style_profile(repo, chat_id)
     reply_policy = _proactive_reply_policy(style_profile)
-    raw_recent_bot_replies = repo.count_recent_agent_replies(chat_id, since_epoch=int(time.time()) - 60 * 60)
-    recent_bot_replies = int(raw_recent_bot_replies) if isinstance(raw_recent_bot_replies, Number) else 0
-    reply_score = score_proactive_reply(
-        user_text=user_text,
-        recent_context=recent_context,
-        long_term_memory_context=long_term_memory_context,
-        recent_bot_replies=recent_bot_replies,
-    )
-    if reply_score.score < AGENT_PROACTIVE_SCORE_THRESHOLD:
-        _log_proactive_silent(
-            "low_reply_score",
-            chat_id=chat_id,
-            message_id=reply_to_message_id,
-            reply_score=reply_score.score,
-            reasons=",".join(reply_score.reasons),
-        )
-        return False
-
     try:
-        decision, _ = gemini.group_chat_proactive_decision(
-            user_message=user_text,
-            recent_context=recent_context,
-            long_term_memory_context=long_term_memory_context,
+        decision, decision_provider_name = decision_provider.decide(
+            current_message=user_text,
+            recent_context=decision_recent_context,
+            long_term_memory_context=decision_long_term_memory_context,
             lang=lang,
             reply_instructions=reply_policy.instructions,
-            max_output_tokens=reply_policy.max_output_tokens,
         )
-    except GeminiRPDExhaustedError:
-        _log_proactive_silent("gemini_rpd_limit", chat_id=chat_id, message_id=reply_to_message_id)
-        return False
-    except GeminiUnavailableError as exc:
+    except ZerdeProviderError as exc:
         _log_proactive_silent(
-            "gemini_unavailable",
+            "proactive_decision_failed",
             chat_id=chat_id,
             message_id=reply_to_message_id,
             error_type=exc.__class__.__name__,
@@ -1345,16 +1179,15 @@ def maybe_answer_proactively(
         logger.exception("Group agent proactive decision failed", extra={"chat_id": chat_id})
         return False
 
-    final_score = reply_score.score * 0.45 + decision.confidence * 0.55
-    if not decision.should_reply or final_score < AGENT_PROACTIVE_FINAL_THRESHOLD or not decision.reply_text:
+    if not decision.should_reply or decision.confidence < AGENT_PROACTIVE_FINAL_THRESHOLD:
         _log_proactive_silent(
             "model_said_no",
             chat_id=chat_id,
             message_id=reply_to_message_id,
             confidence=decision.confidence,
-            reply_score=reply_score.score,
-            final_score=final_score,
+            confidence_threshold=AGENT_PROACTIVE_FINAL_THRESHOLD,
             reason=decision.reason,
+            provider=decision_provider_name,
         )
         return False
 
@@ -1364,10 +1197,69 @@ def maybe_answer_proactively(
             chat_id=chat_id,
             message_id=reply_to_message_id,
             reason=decision.reason,
+            provider=decision_provider_name,
         )
         return False
 
-    answer_text = fit_llm_output(decision.reply_text, max_chars=reply_policy.max_chars)
+    ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
+    proactive_user_message = (
+        "ZerdeBot may proactively answer this ordinary group message. "
+        "The message was not necessarily directed at the bot.\n\n"
+        f"AI decision reason: {decision.reason or '(no reason provided)'}\n"
+        f"Answer guidance: {decision.answer_guidance or '(no extra guidance)'}\n\n"
+        "Ordinary group message:\n"
+        f"{user_text}"
+    )
+    try:
+        memory_bundle = build_agent_memory_context(
+            repo=repo,
+            chat_id=chat_id,
+            user_text=user_text,
+            retrieval_query=user_text,
+            requester_user_id=trigger_user_id,
+            requester_username=trigger_username,
+            requester_display_name=trigger_display_name,
+            ignored_usernames=ignored_usernames,
+            recent_limit=AGENT_RECENT_CONTEXT_LIMIT,
+            semantic_limit=8,
+            recent_context_fn=format_recent_context,
+            long_term_context_fn=format_long_term_memory_context,
+            semantic_retrieval_fn=retrieve_relevant_memories,
+            semantic_context_fn=format_semantic_memory_context,
+            user_profile_context_fn=format_user_profile_context,
+            requester_profile_context_fn=format_requester_profile_context,
+        )
+        answer, answer_provider = _generate_group_chat_reply(
+            user_message=proactive_user_message,
+            recent_context=memory_bundle.recent_context,
+            long_term_memory_context=memory_bundle.long_term_memory_context,
+            semantic_memory_context=memory_bundle.semantic_memory_context,
+            user_profile_context=memory_bundle.user_profile_context,
+            requester_profile_context=memory_bundle.requester_profile_context,
+            reply_instructions=reply_policy.instructions,
+            max_output_tokens=reply_policy.max_output_tokens,
+            lang=lang,
+            media_parts=None,
+            media_context="",
+            chat_id=chat_id,
+            reply_to_message_id=reply_to_message_id,
+            proactive=True,
+        )
+    except (GeminiUnavailableError, ZerdeProviderError) as exc:
+        _log_proactive_silent(
+            "answer_provider_failed",
+            chat_id=chat_id,
+            message_id=reply_to_message_id,
+            decision_provider=decision_provider_name,
+            error_type=exc.__class__.__name__,
+            error_message=str(exc)[:500],
+        )
+        return False
+    except Exception:
+        logger.exception("Group agent proactive answer generation failed", extra={"chat_id": chat_id})
+        return False
+
+    answer_text = fit_llm_output(answer, max_chars=reply_policy.max_chars)
     answer_html = normalize_llm_output_for_telegram_html(answer_text)
     sent = bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     bot_message_id = sent.get("message_id") if isinstance(sent, dict) else None
@@ -1378,13 +1270,17 @@ def maybe_answer_proactively(
             trigger_message_id=reply_to_message_id,
             trigger_kind="proactive",
             reason=(
-                f"{decision.reason or 'I judged this as a useful moment to answer.'} "
-                f"reply_score={reply_score.score:.2f}; signals={', '.join(reply_score.reasons)}"
+                f"{decision.reason or 'AI decision judged this as a useful moment to answer.'} "
+                f"decision_provider={decision_provider_name}; answer_provider={answer_provider}"
             ),
             answer_text=answer_text,
             user_message=user_text,
             current_user_message=user_text,
-            confidence=final_score,
+            requester_user_id=trigger_user_id,
+            requester_username=trigger_username,
+            requester_display_name=trigger_display_name,
+            retrieval_sources=memory_bundle.retrieval_sources,
+            confidence=decision.confidence,
         )
     logger.info(
         "Group agent handled update",
@@ -1393,9 +1289,9 @@ def maybe_answer_proactively(
             "message_id": reply_to_message_id,
             "trigger_kind": "proactive",
             "confidence": decision.confidence,
-            "reply_score": reply_score.score,
-            "final_score": final_score,
             "reason": decision.reason,
+            "decision_provider": decision_provider_name,
+            "answer_provider": answer_provider,
         },
     )
     return True
@@ -1727,11 +1623,7 @@ def process_proactive_candidate_task(
         _log_proactive_silent("agent_disabled", chat_id=chat_id, message_id=trigger_message_id)
         return False
 
-    skip_reason = (
-        _channel_post_proactive_skip_reason(user_text)
-        if candidate_kind == "channel_post"
-        else _local_proactive_skip_reason(user_text)
-    )
+    skip_reason = _channel_post_proactive_skip_reason(user_text) if candidate_kind == "channel_post" else None
     if skip_reason is not None:
         _log_proactive_silent(
             "original_no_longer_useful",
@@ -1741,40 +1633,6 @@ def process_proactive_candidate_task(
             candidate_kind=candidate_kind,
         )
         return False
-
-    if candidate_kind != "channel_post":
-        try:
-            human_answer = _human_answer_after_trigger(
-                repo,
-                chat_id,
-                trigger_message_id=trigger_message_id,
-                trigger_user_id=body.get("trigger_user_id"),
-                trigger_created_at=_safe_int(body.get("created_at")),
-                user_text=user_text,
-                candidate_kind=candidate_kind,
-            )
-        except Exception:
-            logger.exception(
-                "Failed to read post-trigger context for proactive candidate",
-                extra={"chat_id": chat_id},
-            )
-            _log_proactive_silent(
-                "post_trigger_context_unavailable",
-                chat_id=chat_id,
-                message_id=trigger_message_id,
-            )
-            return False
-        if human_answer:
-            _log_proactive_silent(
-                "human_answered",
-                chat_id=chat_id,
-                message_id=trigger_message_id,
-                answer_message_id=human_answer.get("message_id"),
-                answer_user_id=human_answer.get("user_id"),
-                answer_text_chars=human_answer.get("text_chars"),
-                candidate_kind=candidate_kind,
-            )
-            return False
 
     if candidate_kind == "channel_post":
         return maybe_comment_on_channel_post(
@@ -1798,6 +1656,9 @@ def process_proactive_candidate_task(
         reply_to_message_id=trigger_message_id,
         user_text=user_text,
         lang=str(body.get("lang") or get_chat_lang(chat_id)),
+        trigger_user_id=body.get("trigger_user_id"),
+        trigger_username=str(body.get("trigger_username") or "") or None,
+        trigger_display_name=str(body.get("trigger_display_name") or "") or None,
     )
 
 
@@ -1844,10 +1705,6 @@ def answer_group_question(
             )
         return True
 
-    gemini = _get_gemini()
-    if not gemini:
-        return False
-
     ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
     memory_bundle = build_agent_memory_context(
         repo=repo,
@@ -1891,7 +1748,7 @@ def answer_group_question(
     )
 
     try:
-        answer, _ = gemini.group_chat_reply(
+        answer, provider_name = _generate_group_chat_reply(
             user_message=user_text,
             recent_context=memory_bundle.recent_context,
             long_term_memory_context=memory_bundle.long_term_memory_context,
@@ -1903,27 +1760,21 @@ def answer_group_question(
             lang=lang,
             media_parts=media_parts,
             media_context=media_context,
-        )
-    except GeminiRPDExhaustedError:
-        bot.send_message(
-            chat_id,
-            get_translated_text("ask_daily_quota_exhausted", lang),
+            chat_id=chat_id,
             reply_to_message_id=reply_to_message_id,
+            proactive=False,
         )
-        return True
-    except GeminiUnavailableError as exc:
-        retryable = getattr(exc, "retryable", True)
+    except (GeminiUnavailableError, ZerdeProviderError) as exc:
         logger.warning(
-            "Group agent Gemini call unavailable",
+            "Group agent reply provider chain unavailable",
             extra={
                 "chat_id": chat_id,
                 "reply_to_message_id": reply_to_message_id,
                 "error_type": exc.__class__.__name__,
                 "error_message": str(exc)[:500],
-                "retryable": retryable,
             },
         )
-        if raise_on_unavailable and retryable and not isinstance(exc, GeminiEmptyResponseError):
+        if raise_on_unavailable:
             raise
         bot.send_message(
             chat_id,
@@ -1965,4 +1816,13 @@ def answer_group_question(
             retrieval_sources=memory_bundle.retrieval_sources,
             media_metadata=media_reply_metadata or None,
         )
+    logger.info(
+        "Group agent explicit reply generated",
+        extra={
+            "chat_id": chat_id,
+            "reply_to_message_id": reply_to_message_id,
+            "provider": provider_name,
+            "lang": lang,
+        },
+    )
     return True

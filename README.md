@@ -28,8 +28,8 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **User profiles**: lightweight per-user context derived from each user's own messages.
 - **Long-term memory**: candidate-gated, budgeted schema extraction for `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, conservative `JOKE#...`, and `DAILY_SUMMARY#...` items, with rule fallback.
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
-- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, immediate linked-channel post comments, delayed conservative ordinary proactive reply gating, reply-length/style budgeting, and `/agent why` source summaries.
-- **Ambient reactions**: optional emoji reactions to group messages, classified through Gemini with DeepSeek/Groq fallback and processed asynchronously without writing long-term memory. Linked-channel posts force a reaction attempt and fall back to 👀.
+- **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, immediate linked-channel post comments, delayed AI-decided ordinary proactive replies, reply-length/style budgeting, and `/agent why` source summaries.
+- **Ambient reactions**: optional emoji reactions to group messages, classified through a Groq model pool and processed asynchronously without writing long-term memory. Linked-channel posts force a reaction attempt and fall back to 👀.
 - **Explicit media understanding**: `/ask` can be used as a reply to photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
@@ -48,7 +48,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Explicit multimodal `/ask` | Reply to photos/screenshots, voice/audio, PDFs, or supported text/code/log files with `/ask`; the async worker reads that media for the current answer only. |
 | RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
-| Social timing | Ordinary proactive replies are delayed briefly, then pass local heuristics, human-answer checks, recent bot activity penalties, Gemini judgment, and per-chat daily limits. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
+| Social timing | Ordinary proactive replies are delayed briefly, then a Groq model pool decides from capped recent and query-filtered long-term context whether the bot can add value. If yes, the chat daily limit is reserved and Gemini generates with DeepSeek/Groq fallback. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
 | Ambient reactions | Optional `setMessageReaction` presence feature for funny, useful, thoughtful, warm, or interesting messages; enabled by default. Ordinary messages are sampled/rate-limited, while linked-channel posts force a reaction attempt. |
 | Smart captcha and anti-spam | Mutes new members until verification and routes suspicious messages through rule-based and Groq checks. |
 | Community voteban | Lets communities vote to ban or forgive by replying with `/voteban`. |
@@ -168,6 +168,14 @@ Common group-memory retention settings:
 
 `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted. `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term memory still stores explicit `expires_at` metadata from `expires_in_days`; DynamoDB TTL uses the shorter of that explicit expiry and the configured long-term retention.
 
+Proactive decision settings:
+
+| Env var | Applies to | Default |
+|---------|------------|---------|
+| `AGENT_PROACTIVE_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for ordinary proactive decisions | `llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b` |
+| `AGENT_PROACTIVE_DECISION_CONTEXT_CHARS` | Max recent/query-filtered context characters sent to decision models | `4000` |
+| `AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK` | Opt-in DeepSeek fallback for proactive decisions when every Groq model fails | `false` |
+
 Ambient reaction settings:
 
 | Env var | Applies to | Default |
@@ -175,6 +183,8 @@ Ambient reaction settings:
 | `AMBIENT_REACTIONS_ENABLED` | Enables async ambient emoji reactions | `true` |
 | `AMBIENT_REACTIONS_SAMPLE_RATE` | Fraction of eligible messages sampled before SQS enqueue | `0.80` |
 | `AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD` | Minimum classifier confidence before reacting | `0.80` |
+| `AMBIENT_REACTIONS_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for reaction decisions | `llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct` |
+| `AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS` | Max previous/reply context characters sent to reaction decision models | `3000` |
 | `AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS` | Minimum seconds between reactions in one chat | `60` |
 | `AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS` | Minimum seconds between reactions to one user's messages in a chat | `300` |
 | `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR` | Per-chat hourly reaction cap | `12` |

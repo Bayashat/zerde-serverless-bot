@@ -148,11 +148,23 @@ class ZerdeTelegramBotStack(Stack):
         agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
         agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
         agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
-        agent_proactive_score_threshold = os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62")
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
+        agent_proactive_decision_groq_models = os.environ.get(
+            "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
+            "llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b",
+        )
+        agent_proactive_decision_context_chars = os.environ.get("AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", "4000")
+        agent_proactive_decision_allow_deepseek_fallback = os.environ.get(
+            "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK", "false"
+        )
         ambient_reactions_enabled = os.environ.get("AMBIENT_REACTIONS_ENABLED", "true")
         ambient_reactions_sample_rate = os.environ.get("AMBIENT_REACTIONS_SAMPLE_RATE", "0.80")
         ambient_reactions_confidence_threshold = os.environ.get("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", "0.80")
+        ambient_reactions_decision_groq_models = os.environ.get(
+            "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
+            "llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct",
+        )
+        ambient_reactions_decision_context_chars = os.environ.get("AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", "3000")
         ambient_reactions_min_gap_per_chat_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
         ambient_reactions_min_gap_per_user_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "300")
         ambient_reactions_max_per_chat_per_hour = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "12")
@@ -266,11 +278,15 @@ class ZerdeTelegramBotStack(Stack):
             agent_recent_context_limit=agent_recent_context_limit,
             agent_daily_proactive_limit=agent_daily_proactive_limit,
             agent_proactive_delay_seconds=agent_proactive_delay_seconds,
-            agent_proactive_score_threshold=agent_proactive_score_threshold,
             agent_proactive_final_threshold=agent_proactive_final_threshold,
+            agent_proactive_decision_groq_models=agent_proactive_decision_groq_models,
+            agent_proactive_decision_context_chars=agent_proactive_decision_context_chars,
+            agent_proactive_decision_allow_deepseek_fallback=agent_proactive_decision_allow_deepseek_fallback,
             ambient_reactions_enabled=ambient_reactions_enabled,
             ambient_reactions_sample_rate=ambient_reactions_sample_rate,
             ambient_reactions_confidence_threshold=ambient_reactions_confidence_threshold,
+            ambient_reactions_decision_groq_models=ambient_reactions_decision_groq_models,
+            ambient_reactions_decision_context_chars=ambient_reactions_decision_context_chars,
             ambient_reactions_min_gap_per_chat_seconds=ambient_reactions_min_gap_per_chat_seconds,
             ambient_reactions_min_gap_per_user_seconds=ambient_reactions_min_gap_per_user_seconds,
             ambient_reactions_max_per_chat_per_hour=ambient_reactions_max_per_chat_per_hour,

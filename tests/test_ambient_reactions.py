@@ -3,7 +3,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 from services import ambient_reactions
-from services.ai import gemini_client
+from services.ai import ambient_reaction_classifier, gemini_client
 from services.ai.ambient_reaction_classifier import FallbackAmbientReactionClassifier
 from services.ai.gemini_client import GeminiClient
 from services.ambient_reactions import (
@@ -19,7 +19,7 @@ from services.ambient_reactions import (
 from services.repositories import sqs as sqs_module
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
-from zerde_common.ai_errors import ProviderTransportError
+from zerde_common.ai_errors import ProviderRateLimitError
 
 
 def _update(text: str = "This DynamoDB migration note is actually useful") -> dict:
@@ -487,6 +487,142 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     classifier = MagicMock()
     classifier.ambient_reaction_decision.return_value = ("not json", "gemini")
     monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+        },
+    )
+
+    assert handled is False
+    bot.set_message_reaction.assert_not_called()
+    repo.record_ambient_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    assert skip_log.kwargs["extra"]["skip_reason"] == "invalid_json"
+    assert skip_log.kwargs["extra"]["confidence"] is None
+    assert skip_log.kwargs["extra"]["provider"] == "gemini"
+
+
+def test_process_ambient_reaction_task_logs_classifier_decline_details(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": False,
+                "emoji": None,
+                "confidence": 0.42,
+                "category": "none",
+                "reason": "Ordinary message without strong reaction signal.",
+            }
+        ),
+        "groq:fast",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+        },
+    )
+
+    assert handled is False
+    bot.set_message_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    extra = skip_log.kwargs["extra"]
+    assert extra["skip_reason"] == "classifier_declined"
+    assert extra["should_react"] is False
+    assert extra["confidence"] == 0.42
+    assert extra["category"] == "none"
+    assert extra["reason"] == "Ordinary message without strong reaction signal."
+
+
+def test_process_ambient_reaction_task_logs_low_confidence_details(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": True,
+                "emoji": "👀",
+                "confidence": 0.79,
+                "category": "interesting",
+                "reason": "Some signal but not strong enough.",
+            }
+        ),
+        "groq:fast",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+    log_info = MagicMock()
+    monkeypatch.setattr(ambient_reactions.logger, "info", log_info)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 11,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+        },
+    )
+
+    assert handled is False
+    bot.set_message_reaction.assert_not_called()
+    skip_log = next(
+        call for call in log_info.call_args_list if call.args[0] == "Ambient reaction classifier skipped message"
+    )
+    extra = skip_log.kwargs["extra"]
+    assert extra["skip_reason"] == "low_confidence"
+    assert extra["should_react"] is True
+    assert extra["classifier_emoji"] == "👀"
+    assert extra["confidence"] == 0.79
+    assert extra["confidence_threshold"] == ambient_reactions.AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD
+    assert extra["category"] == "interesting"
+    assert extra["reason"] == "Some signal but not strong enough."
+
+
+def test_process_ambient_reaction_task_skips_when_groq_classifiers_fail(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = []
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.side_effect = ProviderRateLimitError("all groq models rate limited")
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
 
     handled = process_ambient_reaction_task(
         repo=repo,
@@ -506,12 +642,78 @@ def test_process_ambient_reaction_task_skips_invalid_classifier_output(monkeypat
     repo.record_ambient_reaction.assert_not_called()
 
 
-def test_ambient_reaction_classifier_falls_back_to_secondary_provider() -> None:
+def test_process_ambient_reaction_task_caps_decision_context(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_ENABLED", True)
+    monkeypatch.setattr(ambient_reactions, "AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", 180)
+    repo = MagicMock()
+    repo.get_recent_ambient_reactions.return_value = []
+    repo.get_recent_messages.return_value = [
+        {
+            "message_id": idx,
+            "user_id": idx,
+            "display_name": f"User {idx}",
+            "text": f"very long previous technical context line {idx} " + ("x" * 80),
+            "created_at": 1_700_000_000 + idx,
+        }
+        for idx in range(1, 15)
+    ]
+    bot = MagicMock()
+    classifier = MagicMock()
+    classifier.ambient_reaction_decision.return_value = (
+        json.dumps(
+            {
+                "should_react": False,
+                "emoji": None,
+                "confidence": 0.25,
+                "category": "none",
+                "reason": "No strong signal.",
+            }
+        ),
+        "groq:fast",
+    )
+    monkeypatch.setattr(ambient_reactions, "_get_classifier", lambda: classifier)
+
+    handled = process_ambient_reaction_task(
+        repo=repo,
+        bot=bot,
+        body={
+            "chat_id": -100123,
+            "message_id": 99,
+            "user_id": 42,
+            "display_name": "Ada",
+            "text": "This DynamoDB migration note is practical and useful",
+            "lang": "en",
+            "created_at": 1_700_000_100,
+        },
+    )
+
+    assert handled is False
+    kwargs = classifier.ambient_reaction_decision.call_args.kwargs
+    assert len(kwargs["previous_context"]) + len(kwargs["reply_context"]) <= 180
+    assert "line 14" in kwargs["previous_context"]
+    bot.set_message_reaction.assert_not_called()
+
+
+def test_ambient_reaction_classifier_factory_builds_groq_model_pool(monkeypatch) -> None:
+    monkeypatch.setattr(ambient_reaction_classifier, "get_groq_api_key", lambda: "groq-key")
+    monkeypatch.setattr(
+        ambient_reaction_classifier,
+        "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
+        ("model-a", "model-b"),
+    )
+
+    classifier = ambient_reaction_classifier.create_ambient_reaction_classifier()
+
+    assert classifier is not None
+    assert [provider.provider_name for provider in classifier._providers] == ["groq:model-a", "groq:model-b"]
+
+
+def test_ambient_reaction_classifier_falls_back_to_secondary_groq_model_on_rate_limit() -> None:
     primary = MagicMock()
-    primary.provider_name = "gemini"
-    primary.ambient_reaction_decision.side_effect = ProviderTransportError("gemini unavailable")
+    primary.provider_name = "groq:model-a"
+    primary.ambient_reaction_decision.side_effect = ProviderRateLimitError("rate limited")
     secondary = MagicMock()
-    secondary.provider_name = "deepseek"
+    secondary.provider_name = "groq:model-b"
     secondary.ambient_reaction_decision.return_value = json.dumps(
         {
             "should_react": False,
@@ -531,7 +733,37 @@ def test_ambient_reaction_classifier_falls_back_to_secondary_provider() -> None:
     )
 
     assert json.loads(raw)["should_react"] is False
-    assert provider == "deepseek"
+    assert provider == "groq:model-b"
+    primary.ambient_reaction_decision.assert_called_once()
+    secondary.ambient_reaction_decision.assert_called_once()
+
+
+def test_ambient_reaction_classifier_falls_back_to_secondary_groq_model_on_bad_json() -> None:
+    primary = MagicMock()
+    primary.provider_name = "groq:model-a"
+    primary.ambient_reaction_decision.return_value = "not json"
+    secondary = MagicMock()
+    secondary.provider_name = "groq:model-b"
+    secondary.ambient_reaction_decision.return_value = json.dumps(
+        {
+            "should_react": False,
+            "emoji": None,
+            "confidence": 0.2,
+            "category": "none",
+            "reason": "No strong signal.",
+        }
+    )
+    classifier = FallbackAmbientReactionClassifier([primary, secondary])
+
+    raw, provider = classifier.ambient_reaction_decision(
+        current_message="[speaker user_id=42] ordinary update",
+        previous_context="",
+        reply_context="",
+        lang="kk",
+    )
+
+    assert json.loads(raw)["should_react"] is False
+    assert provider == "groq:model-b"
     primary.ambient_reaction_decision.assert_called_once()
     secondary.ambient_reaction_decision.assert_called_once()
 

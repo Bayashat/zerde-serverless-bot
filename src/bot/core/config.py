@@ -145,6 +145,13 @@ def _env_float(name: str, default: float) -> float:
         return default
 
 
+def _env_csv(name: str, default: str = "") -> tuple[str, ...]:
+    value = os.environ.get(name)
+    if value is None:
+        value = default
+    return tuple(part.strip() for part in value.split(",") if part.strip())
+
+
 def is_configured_group_chat(chat_id: int | str | None) -> bool:
     """True when ``chat_id`` is allowed (present in the configured group → language map)."""
     if chat_id is None:
@@ -206,13 +213,29 @@ AGENT_BOT_ID: int | None = _env_optional_int("AGENT_BOT_ID")
 AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
 AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
 AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45"))
-AGENT_PROACTIVE_SCORE_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_SCORE_THRESHOLD", "0.62"))
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
+AGENT_PROACTIVE_DECISION_GROQ_MODELS: tuple[str, ...] = _env_csv(
+    "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
+    "llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b",
+)
+AGENT_PROACTIVE_DECISION_CONTEXT_CHARS: int = max(
+    0, int(os.environ.get("AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", "4000"))
+)
+AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK: bool = _env_bool(
+    "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK", False
+)
 AMBIENT_REACTIONS_ENABLED: bool = _env_bool("AMBIENT_REACTIONS_ENABLED", True)
 AMBIENT_REACTIONS_SAMPLE_RATE: float = max(0.0, min(1.0, _env_float("AMBIENT_REACTIONS_SAMPLE_RATE", 0.80)))
 AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD: float = max(
     0.0,
     min(1.0, _env_float("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", 0.80)),
+)
+AMBIENT_REACTIONS_DECISION_GROQ_MODELS: tuple[str, ...] = _env_csv(
+    "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
+    "llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct",
+)
+AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS: int = max(
+    0, int(os.environ.get("AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", "3000"))
 )
 AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS: int = int(
     os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
