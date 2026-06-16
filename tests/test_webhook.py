@@ -113,8 +113,14 @@ def test_pending_captcha_message_skips_spam_screening():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
+        patch("webhook.observe_group_memory_update") as observe_memory,
+        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("webhook.handle_group_agent_update") as group_agent,
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
 
     screener.run.assert_not_called()
+    observe_memory.assert_not_called()
+    ambient_reaction.assert_not_called()
+    group_agent.assert_not_called()
     dispatcher.process_update.assert_called_once_with(body)

@@ -67,13 +67,15 @@ flowchart LR
 
 1. `webhook.handle_event` verifies the Telegram webhook secret.
 2. Private chats get a fixed response; non-whitelisted groups are ignored.
-3. Spam screening runs before normal handling unless a captcha is pending.
+3. Spam screening runs before normal handling unless a captcha is pending. Pending captcha messages stay in the captcha path only: spam-like text is deleted as a wrong captcha attempt, not announced as spam or routed into memory/agent flows.
 4. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
 5. If ambient reactions are enabled, eligible group text messages, including command text, are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
 6. Irrelevant group chatter exits early.
 7. Relevant events route to the group agent or the command dispatcher.
 8. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
 9. `agent_enabled` gates non-command group agent participation: ordinary proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, linked-channel post comments are queued as zero-delay `PROCESS_PROACTIVE_CANDIDATE` with Gemini retries plus DeepSeek/Groq text-only fallback, and @mentions/reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+
+Captcha timeout cleanup removes failed join artifacts only after a successful kick. If the user verifies successfully, the delayed timeout cleans only captcha prompts and preserves Telegram's original join system message.
 
 ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path, plus official linked-channel post comments. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. Normal photos, voice messages, and documents are ignored for multimodal analysis, including ordinary proactive candidates, daily summaries, memory extraction, and vector indexing.
 
