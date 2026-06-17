@@ -50,7 +50,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Reply thread continuity | Ответы бота сохраняются как short-term `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ; эти записи не являются semantic/vector memory. |
 | Social timing | Ordinary proactive replies ждут короткий delay, затем Groq/DeepSeek решает по recent context и query-filtered long-term context, может ли бот добавить пользу. Если да, резервируется chat daily limit, а ответ генерирует Gemini с DeepSeek/Groq fallback. Linked-channel post обрабатывается отдельным zero-delay comment path и может ephemeral анализировать supported attached media. |
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages получают sampled/rate-limited emoji reaction, а linked-channel post всегда получает reaction attempt. |
-| Captcha и anti-spam | Проверка новых участников; сообщения pending captcha идут только в captcha flow, а подозрительные сообщения verified users проходят rule-based spam screening и Groq checks. |
+| Captcha и anti-spam | Проверка новых участников; сообщения pending captcha идут только в captcha flow, high-confidence spam удаляется тихо, а low-confidence случаи уходят на admin review. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
 | Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |
 | IT quizzes | Scheduled и on-demand quiz Lambda отправляет multilingual developer quizzes. |

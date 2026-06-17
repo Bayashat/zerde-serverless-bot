@@ -1,12 +1,12 @@
-"""Tests for SpamEnforcer notification target rendering."""
+"""Tests for SpamEnforcer moderation behavior and mention rendering."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID
-from services.spam.enforcer import SpamEnforcer
+from services.spam.enforcer import SpamEnforcer, resolve_spam_target_mention, translate_spam_reason
 
 
-def test_enforce_notice_uses_username_when_available() -> None:
+def test_high_confidence_enforcement_is_silent() -> None:
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spam_user"}}
     stats_repo = MagicMock()
@@ -18,24 +18,30 @@ def test_enforce_notice_uses_username_when_available() -> None:
         reason="rules:external_mention",
     )
 
-    sent_text = bot.send_message.call_args[0][1]
-    assert "@spam_user" in sent_text
+    bot.delete_message.assert_called_once_with(-1001234567890, 42)
+    bot.kick_chat_member.assert_called_once_with(-1001234567890, 12345)
+    stats_repo.increment_spam_bans.assert_called_once_with(-1001234567890)
+    bot.send_message.assert_not_called()
 
 
-def test_enforce_notice_falls_back_to_user_id_when_username_missing() -> None:
+def test_target_mention_uses_username_when_available() -> None:
     bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {}}
-    stats_repo = MagicMock()
+    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spam_user"}}
 
-    SpamEnforcer(bot, stats_repo).enforce(
-        chat_id=-1001234567890,
-        user_id=12345,
-        message_id=42,
-        reason="rules:external_mention",
-    )
+    assert resolve_spam_target_mention(bot, -1001234567890, 12345) == "@spam_user"
 
-    sent_text = bot.send_message.call_args[0][1]
-    assert "ID:12345" in sent_text
+
+def test_target_mention_falls_back_to_clickable_user_link() -> None:
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {
+        "status": "member",
+        "user": {"first_name": "Алена <bad>", "last_name": "Coney"},
+    }
+
+    mention = resolve_spam_target_mention(bot, -1001234567890, 12345)
+
+    assert mention == '<a href="tg://user?id=12345">Алена &lt;bad&gt; Coney</a>'
+    assert "ID:12345" not in mention
 
 
 def test_enforce_skips_channel_discussion_actor() -> None:
@@ -51,7 +57,7 @@ def test_enforce_skips_channel_discussion_actor() -> None:
 
     bot.delete_message.assert_not_called()
     bot.kick_chat_member.assert_not_called()
-    stats_repo.increment_total_bans.assert_not_called()
+    stats_repo.increment_spam_bans.assert_not_called()
     bot.send_message.assert_not_called()
 
 
@@ -69,89 +75,27 @@ def test_enforce_skips_administrator() -> None:
 
     bot.delete_message.assert_not_called()
     bot.kick_chat_member.assert_not_called()
-    stats_repo.increment_total_bans.assert_not_called()
+    stats_repo.increment_spam_bans.assert_not_called()
     bot.send_message.assert_not_called()
 
 
-@patch("services.spam.enforcer.get_chat_lang", return_value="en")
-def test_translate_reason_rules_prefix_uses_rules_translation(_mock_lang: object) -> None:
-    bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-    stats_repo = MagicMock()
-
-    enforcer = SpamEnforcer(bot, stats_repo)
-    enforcer.enforce(
-        chat_id=-1001234567890,
-        user_id=12345,
-        message_id=42,
-        reason="rules:external_mention",
-    )
-
-    sent_text = bot.send_message.call_args[0][1]
-    assert "referral/promotional link" in sent_text
+def test_translate_reason_rules_prefix_uses_rules_translation() -> None:
+    assert translate_spam_reason("rules:external_mention", "en") == "referral/promotional link"
 
 
-@patch("services.spam.enforcer.get_chat_lang", return_value="en")
-def test_translate_reason_rules_prefix_uses_specific_highest_priority_reason(_mock_lang: object) -> None:
-    bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-    stats_repo = MagicMock()
-
-    SpamEnforcer(bot, stats_repo).enforce(
-        chat_id=-1001234567890,
-        user_id=12345,
-        message_id=42,
-        reason="rules:external_mention,vpn_pattern,job_offer",
-    )
-
-    sent_text = bot.send_message.call_args[0][1]
-    assert "VPN advertisement" in sent_text
+def test_translate_reason_rules_prefix_uses_specific_highest_priority_reason() -> None:
+    assert translate_spam_reason("rules:external_mention,vpn_pattern,job_offer", "en") == "VPN advertisement"
 
 
-@patch("services.spam.enforcer.get_chat_lang", return_value="en")
-def test_translate_reason_known_code_uses_specific_translation(_mock_lang: object) -> None:
-    bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-    stats_repo = MagicMock()
-
-    enforcer = SpamEnforcer(bot, stats_repo)
-    enforcer.enforce(
-        chat_id=-1001234567890,
-        user_id=12345,
-        message_id=42,
-        reason="job_offer",
-    )
-
-    sent_text = bot.send_message.call_args[0][1]
-    # English: "job/income offer"
-    assert "job/income offer" in sent_text
+def test_translate_reason_known_code_uses_specific_translation() -> None:
+    assert translate_spam_reason("job_offer", "en") == "job/income offer"
 
 
-@patch("services.spam.enforcer.get_chat_lang", return_value="en")
-def test_translate_reason_unknown_code_uses_fallback(_mock_lang: object) -> None:
-    bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-    stats_repo = MagicMock()
-
-    enforcer = SpamEnforcer(bot, stats_repo)
-    enforcer.enforce(
-        chat_id=-1001234567890,
-        user_id=12345,
-        message_id=42,
-        reason="nonexistent_reason_code",
-    )
-
-    sent_text = bot.send_message.call_args[0][1]
-    # English: "unknown reason"
-    assert "unknown reason" in sent_text
+def test_translate_reason_unknown_code_uses_fallback() -> None:
+    assert translate_spam_reason("nonexistent_reason_code", "en") == "unknown reason"
 
 
-@patch("services.spam.enforcer.get_chat_lang", return_value="en")
-def test_translate_reason_all_known_codes(_mock_lang: object) -> None:
-    bot = MagicMock()
-    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-    stats_repo = MagicMock()
-
+def test_translate_reason_all_known_codes() -> None:
     known_reasons = [
         ("job_offer", "job/income offer"),
         ("dm_redirect_scam", "DM redirect scam"),
@@ -167,18 +111,5 @@ def test_translate_reason_all_known_codes(_mock_lang: object) -> None:
         ("admin_review", "admin-reviewed spam"),
     ]
 
-    enforcer = SpamEnforcer(bot, stats_repo)
-
     for reason_code, expected_text in known_reasons:
-        bot.reset_mock()
-        bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spammer"}}
-
-        enforcer.enforce(
-            chat_id=-1001234567890,
-            user_id=12345,
-            message_id=42,
-            reason=reason_code,
-        )
-
-        sent_text = bot.send_message.call_args[0][1]
-        assert expected_text in sent_text, f"Expected '{expected_text}' for reason '{reason_code}'"
+        assert translate_spam_reason(reason_code, "en") == expected_text

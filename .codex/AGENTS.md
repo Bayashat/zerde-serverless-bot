@@ -107,7 +107,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/ai/group_chat_reply_fallback.py` — DeepSeek then Groq text-only fallback chain for group answer generation when Gemini fails.
 - `services/ai/channel_post_comment.py` — DeepSeek then Groq text-only fallback chain for linked-channel post comments when Gemini is unavailable after retries.
 - `services/ai/ambient_reaction_classifier.py` — Groq-only model-pool strict-JSON classifier chain for ambient emoji reactions.
-- `services/spam/` — rule-based spam screening plus Groq async checks.
+- `services/spam/` — rule-based spam screening plus Groq async checks, with explicit handled outcomes so spam does not continue into memory or agent flows.
 
 ## Memory Table
 
@@ -167,6 +167,7 @@ both DLQs default to 14 days for incident inspection and redrive. Tune these at 
 
 - **No SnapStart**: low-frequency workloads and Python package trade-offs make SnapStart unnecessary here.
 - **Bot Lambda for webhook and main SQS only**: `/ask`, spam, captcha, and memory extraction share the bot warm path.
+- **Captcha and spam routing priority**: pending-captcha messages stay only in captcha handling, where non-answer text counts as a wrong attempt. Rule-enforced spam and queued AI spam review short-circuit the webhook before memory observation, ambient reactions, proactive candidates, or dispatcher handling. High-confidence spam enforcement is silent in chat; low-confidence spam uses admin review prompts.
 - **Separate vector indexer Lambda and vector queue**: slower embedding/backfill/S3 Vectors work has independent concurrency, logs, alarms, and DLQ visibility so it does not block webhook or interactive `/ask` work.
 - **Vector backfill observability**: `VECTOR_BACKFILL` keeps cumulative `processed_total`,
   `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and

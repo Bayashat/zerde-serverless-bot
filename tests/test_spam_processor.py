@@ -166,3 +166,30 @@ def test_spam_low_confidence_sends_alert(
     assert "70%" in args[1]
     assert kwargs["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == "spam_ban:111222333:42"
     assert kwargs["reply_markup"]["inline_keyboard"][0][1]["callback_data"] == "spam_ignore:111222333:42"
+
+
+@patch("services.spam.processor.StatsRepository")
+@patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor.get_chat_lang", return_value="en")
+@patch("services.spam.processor._get_detector")
+def test_spam_low_confidence_alert_uses_clickable_mention_without_username(
+    mock_get_detector,
+    _mock_lang,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+):
+    mock_detector = MagicMock()
+    mock_get_detector.return_value = mock_detector
+    mock_detector.classify.return_value = _make_result("SPAM", 0.70, reason="dm_redirect_scam")
+    mock_bot.get_chat_member.return_value = {
+        "status": "member",
+        "user": {"first_name": "Алена <bad>", "last_name": "Coney"},
+    }
+
+    process_spam_check_task(mock_bot, _BODY)
+
+    text = mock_bot.send_message.call_args[0][1]
+    assert '<a href="tg://user?id=111222333">Алена &lt;bad&gt; Coney</a>' in text
+    assert "ID:111222333" not in text
+    mock_enforcer_cls.return_value.enforce.assert_not_called()
