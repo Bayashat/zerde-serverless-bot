@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from core.config import SPAM_RULE_AI_THRESHOLD, SPAM_RULE_ENFORCE_THRESHOLD
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.sqs import SQSClient
@@ -14,6 +16,8 @@ from services.spam.rule_filter import RuleBasedSpamFilter
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
+
+SpamScreeningOutcome = Literal["none", "queued", "enforced", "error"]
 
 
 class SpamScreeningService:
@@ -43,13 +47,13 @@ class SpamScreeningService:
             return False
         return True
 
-    def run(self, body: dict) -> None:
+    def run(self, body: dict) -> SpamScreeningOutcome:
         """Score message, enforce or queue Groq. Never raises."""
         try:
             msg = body["message"]
             combined = collect_spam_screen_text(msg)
             if not combined.strip():
-                return
+                return "none"
             user_id: int = msg["from"]["id"]
             message_id: int = msg["message_id"]
             chat_id: int = msg["chat"]["id"]
@@ -59,7 +63,7 @@ class SpamScreeningService:
                     "Spam screening skipped (sender is administrator or creator)",
                     extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id},
                 )
-                return
+                return "none"
 
             score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
             if score >= SPAM_RULE_ENFORCE_THRESHOLD:
@@ -73,7 +77,7 @@ class SpamScreeningService:
                     message_id=message_id,
                     reason=f"rules:{','.join(triggered_rules)}",
                 )
-                return
+                return "enforced"
             if score >= SPAM_RULE_AI_THRESHOLD:
                 logger.info(
                     "Ambiguous spam score, queuing for AI check",
@@ -86,11 +90,13 @@ class SpamScreeningService:
                     text=combined,
                     triggered_rules=triggered_rules,
                 )
-                return
+                return "queued"
             if triggered_rules:
                 logger.info(
                     "Spam screening below AI threshold (no automatic action)",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
                 )
+            return "none"
         except Exception as e:
             logger.error("Spam screening error, continuing normal flow", extra={"error": e})
+            return "error"

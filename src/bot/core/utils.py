@@ -1,14 +1,22 @@
 """Shared utility helpers."""
 
+from html import escape
+
 from core.config import get_chat_lang
 from core.translations import get_translated_text
 
 
-def format_mention(user_id: int, username: str | None, first_name: str = "User") -> str:
+def format_mention(
+    user_id: int,
+    username: str | None,
+    first_name: str = "User",
+    last_name: str | None = None,
+) -> str:
     """Build a Telegram user mention (prefers @username when available)."""
     if username:
-        return f"@{username}"
-    return f'<a href="tg://user?id={user_id}">{first_name}</a>'
+        return f"@{escape(username)}"
+    display_name = " ".join(part for part in [first_name, last_name] if part).strip() or "User"
+    return f'<a href="tg://user?id={user_id}">{escape(display_name)}</a>'
 
 
 def check_membership(ctx) -> bool:

@@ -32,6 +32,7 @@ def test_correct_answer_unrestricts_user():
         "join_msg_id": 5,
         "verify_msg_id": 6,
         "attempts": 0,
+        "wrong_msg_ids": [7, 8],
     }
 
     ctx = _make_ctx("3719", user_id=42, chat_id=-100123, captcha_repo=captcha_repo)
@@ -40,6 +41,10 @@ def test_correct_answer_unrestricts_user():
     ctx.bot.restrict_chat_member.assert_called_once()
     captcha_repo.mark_verified.assert_called_once_with(-100123, 42)
     captcha_repo.delete_pending.assert_not_called()
+    ctx.bot.delete_message.assert_any_call(-100123, 6)
+    ctx.bot.delete_message.assert_any_call(-100123, 7)
+    ctx.bot.delete_message.assert_any_call(-100123, 8)
+    ctx.bot.delete_message.assert_any_call(-100123, 10)
     assert call(-100123, 5) not in ctx.bot.delete_message.call_args_list
 
 
@@ -98,6 +103,7 @@ def test_third_wrong_answer_kicks_user():
         "join_msg_id": 5,
         "verify_msg_id": 6,
         "attempts": CAPTCHA_MAX_ATTEMPTS - 1,
+        "wrong_msg_ids": [7, 8],
     }
     captcha_repo.increment_attempts.return_value = CAPTCHA_MAX_ATTEMPTS  # hits limit
 
@@ -106,6 +112,11 @@ def test_third_wrong_answer_kicks_user():
 
     ctx.bot.kick_chat_member.assert_called_once_with(-100123, 42)
     captcha_repo.delete_pending.assert_called_once()
+    ctx.bot.delete_message.assert_any_call(-100123, 5)
+    ctx.bot.delete_message.assert_any_call(-100123, 6)
+    ctx.bot.delete_message.assert_any_call(-100123, 7)
+    ctx.bot.delete_message.assert_any_call(-100123, 8)
+    ctx.bot.delete_message.assert_any_call(-100123, 10)
 
 
 def test_no_pending_captcha_ignored():

@@ -12,7 +12,7 @@ from core.translations import get_translated_text
 from services.repositories.captcha import CaptchaRepository
 from services.repositories.stats import StatsRepository
 from services.spam.chat_member import is_chat_admin_or_creator
-from services.spam.enforcer import SpamEnforcer, translate_spam_reason
+from services.spam.enforcer import SpamEnforcer, resolve_spam_target_mention, translate_spam_reason
 from services.spam.groq_detector import GroqSpamDetector
 from services.telegram import TelegramClient
 
@@ -92,7 +92,7 @@ def process_spam_check_task(
         elif result.label == "SPAM":
             # Low-confidence SPAM: alert admins without taking automated action
             try:
-                target = _resolve_target(bot, chat_id, user_id)
+                target = resolve_spam_target_mention(bot, chat_id, user_id)
                 lang = get_chat_lang(chat_id)
                 reason = translate_spam_reason(result.reason, lang)
                 confidence = int(result.confidence * 100)
@@ -147,19 +147,3 @@ def _spam_review_keyboard(user_id: int, message_id: int, lang: str) -> dict:
             ]
         ]
     }
-
-
-def _resolve_target(bot: TelegramClient, chat_id: int, user_id: int) -> str:
-    """Resolve a human-readable target mention for uncertain spam alerts."""
-    try:
-        member = bot.get_chat_member(chat_id, user_id)
-        user = member.get("user", {}) if isinstance(member, dict) else {}
-        username = user.get("username")
-        if username:
-            return f"@{username}"
-    except Exception as e:
-        logger.debug(
-            "Failed to resolve uncertain spam target username",
-            extra={"chat_id": chat_id, "user_id": user_id, "error": e},
-        )
-    return f"ID:{user_id}"

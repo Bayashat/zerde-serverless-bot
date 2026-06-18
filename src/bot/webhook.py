@@ -100,7 +100,12 @@ def _handle_api_gateway(
         has_pending_captcha = _has_pending_captcha(dispatcher, body)
 
         if screener.should_screen(body) and not has_pending_captcha:
-            screener.run(body)
+            spam_outcome = screener.run(body)
+            if spam_outcome in {"enforced", "queued"}:
+                logger.info(
+                    "Spam screening handled update; skipping normal group flows", extra={"outcome": spam_outcome}
+                )
+                return create_response(200, {"message": "ok"})
 
         if not has_pending_captcha:
             observe_group_memory_update(dispatcher.memory_repo, body, sqs_repo=_sqs_client)

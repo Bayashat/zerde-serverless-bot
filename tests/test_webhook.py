@@ -96,7 +96,15 @@ def test_pending_captcha_message_skips_spam_screening():
     body = {
         "message": {
             "message_id": 10,
-            "text": "ОНЛАЙН РАБОТА C ДОХОДОМ @spam_bot",
+            "text": "Работаееет",
+            "external_reply": {
+                "origin": {
+                    "type": "channel",
+                    "chat": {"id": -1004414999335, "title": "NordVPN - Бесплатный ВПН", "type": "channel"},
+                },
+                "chat": {"id": -1004414999335, "title": "NordVPN - Бесплатный ВПН", "type": "channel"},
+            },
+            "quote": {"text": "NordVPN — бесплатный ВПН, YouTube и Telegram летают"},
             "chat": {"id": -100123, "type": "supergroup"},
             "from": {"id": 42, "is_bot": False},
         }
@@ -124,3 +132,75 @@ def test_pending_captcha_message_skips_spam_screening():
     ambient_reaction.assert_not_called()
     group_agent.assert_not_called()
     dispatcher.process_update.assert_called_once_with(body)
+
+
+def test_enforced_spam_short_circuits_normal_group_flows():
+    body = {
+        "message": {
+            "message_id": 10,
+            "text": "vpn реклама @spam_bot",
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 42, "is_bot": False},
+        }
+    }
+    event = {
+        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret"},
+        "body": json.dumps(body),
+    }
+    dispatcher = MagicMock()
+    dispatcher.captcha_repo.get_pending.return_value = None
+    screener = MagicMock()
+    screener.should_screen.return_value = True
+    screener.run.return_value = "enforced"
+
+    with (
+        patch("webhook._spam_screening", return_value=screener),
+        patch("webhook.is_configured_group_chat", return_value=True),
+        patch("webhook.observe_group_memory_update") as observe_memory,
+        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("webhook.handle_group_agent_update") as group_agent,
+    ):
+        resp = _handle_api_gateway(event, dispatcher, MagicMock())
+
+    assert json.loads(resp["body"])["message"] == "ok"
+    screener.run.assert_called_once_with(body)
+    observe_memory.assert_not_called()
+    ambient_reaction.assert_not_called()
+    group_agent.assert_not_called()
+    dispatcher.process_update.assert_not_called()
+
+
+def test_queued_spam_short_circuits_normal_group_flows():
+    body = {
+        "message": {
+            "message_id": 10,
+            "text": "Кому интересно, скину про инвестиции",
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 42, "is_bot": False},
+        }
+    }
+    event = {
+        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret"},
+        "body": json.dumps(body),
+    }
+    dispatcher = MagicMock()
+    dispatcher.captcha_repo.get_pending.return_value = None
+    screener = MagicMock()
+    screener.should_screen.return_value = True
+    screener.run.return_value = "queued"
+
+    with (
+        patch("webhook._spam_screening", return_value=screener),
+        patch("webhook.is_configured_group_chat", return_value=True),
+        patch("webhook.observe_group_memory_update") as observe_memory,
+        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("webhook.handle_group_agent_update") as group_agent,
+    ):
+        resp = _handle_api_gateway(event, dispatcher, MagicMock())
+
+    assert json.loads(resp["body"])["message"] == "ok"
+    screener.run.assert_called_once_with(body)
+    observe_memory.assert_not_called()
+    ambient_reaction.assert_not_called()
+    group_agent.assert_not_called()
+    dispatcher.process_update.assert_not_called()
