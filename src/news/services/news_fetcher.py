@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
-from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
 import feedparser
 import urllib3
@@ -15,6 +15,9 @@ from core.logger import LoggerAdapter, get_logger
 logger = LoggerAdapter(get_logger(__name__), {})
 
 http = urllib3.PoolManager(timeout=urllib3.Timeout(total=10))
+
+_KZ_DOMAINS = ("digitalbusiness.kz", "profit.kz")
+_REGIONAL_DOMAINS = ("tproger.ru",)
 
 
 def normalize_url(url: str) -> str:
@@ -28,6 +31,33 @@ def normalize_url(url: str) -> str:
     query = quote(parts.query, safe="=&?/:,+%")
     fragment = quote(parts.fragment, safe="=&?/:,+%")
     return urlunsplit((parts.scheme, parts.netloc, path, query, fragment))
+
+
+def extract_domain(url: str) -> str:
+    """Return a normalized hostname without a leading www."""
+    netloc = urlsplit(normalize_url(url)).netloc.lower()
+    return netloc[4:] if netloc.startswith("www.") else netloc
+
+
+def classify_source_region(url: str) -> str:
+    """Classify source geography for digest ranking."""
+    domain = extract_domain(url)
+    if domain.endswith(_KZ_DOMAINS):
+        return "kz"
+    if domain.endswith(_REGIONAL_DOMAINS):
+        return "regional"
+    return "global"
+
+
+def clean_html_text(value: str) -> str:
+    """Strip simple RSS/HTML markup into compact text."""
+    if not value:
+        return ""
+    text = re.sub(r"<script[^>]*>.*?</script>", " ", value, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = html.unescape(text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 class NewsFetcher:
@@ -83,11 +113,15 @@ class NewsFetcher:
                     pub_date = self._parse_date(pub_date_str)
                     if pub_date is None or pub_date < cutoff_time:
                         continue
+                    link = normalize_url(entry.get("link", ""))
                     local_news.append(
                         {
                             "title": entry.get("title", "No title"),
-                            "link": normalize_url(entry.get("link", "")),
-                            "summary": entry.get("summary", "")[:250],
+                            "link": link,
+                            "summary": clean_html_text(entry.get("summary", ""))[:350],
+                            "domain": extract_domain(link),
+                            "source_region": classify_source_region(link),
+                            "feed_url": feed_url,
                         }
                     )
                     # logger.debug(
@@ -122,8 +156,8 @@ class NewsFetcher:
             resp = http.request("GET", url, headers=headers, timeout=8)
             if resp.status >= 400:
                 logger.warning("Deep scrape HTTP error", extra={"url": url, "status": resp.status})
-                return {"image_url": "", "full_text": ""}
-            html_content = resp.data.decode("utf-8")
+                return {"image_url": "", "full_text": "", "full_text_chars": 0}
+            html_content = resp.data.decode("utf-8", errors="replace")
             image_url = ""
 
             # Prefer og:image / twitter:image, then first content img
@@ -131,26 +165,27 @@ class NewsFetcher:
                 r'<meta\s+property=["\']og:image["\']\s+content=["\']([^"\']+)["\']',
                 r'<meta\s+content=["\']([^"\']+)["\']\s+property=["\']og:image["\']',
                 r'<meta\s+name=["\']twitter:image["\']\s+content=["\']([^"\']+)["\']',
-                r'<img[^>]+src=["\'](https?://[^"\']+(?:jpg|jpeg|png|webp))["\']',
+                r'<meta\s+property=["\']twitter:image["\']\s+content=["\']([^"\']+)["\']',
+                r'<img[^>]+src=["\']([^"\']+(?:jpg|jpeg|png|webp)(?:\?[^"\']*)?)["\']',
             ]
             for pattern in patterns:
                 match = re.search(pattern, html_content, re.IGNORECASE)
                 if match:
                     extracted_url = match.group(1).strip()
                     extracted_url = html.unescape(extracted_url)
-
-                    if extracted_url.startswith("http"):
-                        image_url = extracted_url
+                    image_url = urljoin(url, extracted_url)
+                    if image_url.startswith("http"):
                         break
 
             p_tags = re.findall(r"<p[^>]*>(.*?)</p>", html_content, re.IGNORECASE | re.DOTALL)
-            clean_text = " ".join([re.sub(r"<[^>]+>", "", p).strip() for p in p_tags if len(p) > 50])
+            paragraphs = [clean_html_text(p) for p in p_tags]
+            clean_text = " ".join([p for p in paragraphs if len(p) > 50])
             full_text = clean_text[:3000]
             logger.debug("Deep scrape success", extra={"url": url, "image_found": image_url})
-            return {"image_url": image_url, "full_text": full_text}
+            return {"image_url": image_url, "full_text": full_text, "full_text_chars": len(full_text)}
         except Exception as e:
             logger.warning("Deep scrape failed", extra={"url": url, "error": str(e)})
-            return {"image_url": "", "full_text": ""}
+            return {"image_url": "", "full_text": "", "full_text_chars": 0}
 
     def _parse_date(self, date_string: Optional[str]) -> Optional[datetime]:
         """Parse RSS date string to timezone-aware UTC datetime."""

@@ -52,7 +52,7 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages получают sampled/rate-limited emoji reaction, а linked-channel post всегда получает reaction attempt. |
 | Captcha и anti-spam | Проверка новых участников; сообщения pending captcha идут только в captcha flow, strong high-confidence spam удаляется тихо, а weak/ambiguous случаи уходят на admin review с optional admin @mentions. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
-| Daily AI news | News Lambda по EventBridge делает IT news digest через Gemini/DeepSeek-compatible paths. |
+| Daily AI news | News Lambda по EventBridge обогащает RSS-кандидаты текстом/картинками статей, выбирает high-signal новости для разработчиков и отправляет fact-first multilingual digest через Gemini/DeepSeek-compatible paths. |
 | IT quizzes | Scheduled и on-demand quiz Lambda отправляет multilingual developer quizzes. |
 | Serverless ops | AWS CDK управляет Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM и alarms. |
 

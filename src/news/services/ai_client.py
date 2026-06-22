@@ -38,14 +38,26 @@ def _map_gemini_api_error(exc: genai_errors.APIError) -> ZerdeProviderError:
 _TOP_NEWS_RESPONSE_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "top_indices": {
+        "top_news": {
             "type": "array",
             "minItems": 3,
             "maxItems": 3,
-            "items": {"type": "integer"},
+            "items": {
+                "type": "object",
+                "properties": {
+                    "index": {"type": "integer"},
+                    "category": {
+                        "type": "string",
+                        "enum": ["global_tech_ai", "hardcore_engineering", "kz_or_regional", "other_high_signal"],
+                    },
+                    "score_reason": {"type": "string"},
+                },
+                "required": ["index", "category", "score_reason"],
+                "additionalProperties": False,
+            },
         },
     },
-    "required": ["top_indices"],
+    "required": ["top_news"],
     "additionalProperties": False,
 }
 
@@ -57,6 +69,9 @@ _ARTICLE_DIGEST_RESPONSE_SCHEMA: dict[str, Any] = {
     "required": ["digest"],
     "additionalProperties": False,
 }
+
+_MIN_SELECTION_QUALITY_SCORE = 1.0
+_MIN_GENERATIVE_TEXT_CHARS = 420
 
 
 class NewsAIClientBase(ABC):
@@ -72,31 +87,161 @@ class NewsAIClientBase(ABC):
     ) -> dict:
         """Call the LLM and return the parsed JSON dict. Raises on failure."""
 
-    def select_top_news(self, news_items: list[dict]) -> list[int]:
-        """Ask the model to pick the top 3 unique news indices."""
+    def _fallback_top_news(
+        self,
+        news_items: list[dict],
+        used_indices: set[int] | None = None,
+        used_domains: set[str] | None = None,
+    ) -> list[dict]:
+        """Deterministically pick high-quality, domain-unique fallback selections."""
+        used_indices = used_indices or set()
+        used_domains = used_domains or set()
+        selections: list[dict] = []
+        sorted_items = sorted(
+            news_items,
+            key=lambda item: (
+                float(item.get("quality_score", 0)),
+                bool(item.get("image_url")),
+                int(item.get("full_text_chars") or 0),
+            ),
+            reverse=True,
+        )
+        for article in sorted_items:
+            index = int(article.get("index", -1))
+            domain = str(article.get("domain") or "")
+            if index in used_indices or (domain and domain in used_domains):
+                continue
+            if len(selections) < 3 and float(article.get("quality_score", 0)) < _MIN_SELECTION_QUALITY_SCORE:
+                continue
+            selections.append(
+                {
+                    "index": index,
+                    "category": (
+                        "kz_or_regional" if article.get("source_region") in {"kz", "regional"} else "other_high_signal"
+                    ),
+                    "score_reason": "local quality-score fallback",
+                }
+            )
+            used_indices.add(index)
+            if domain:
+                used_domains.add(domain)
+            if len(selections) == 3:
+                break
+
+        if len(selections) < min(3, len(news_items)):
+            for article in sorted_items:
+                index = int(article.get("index", -1))
+                domain = str(article.get("domain") or "")
+                if index in used_indices or (domain and domain in used_domains):
+                    continue
+                selections.append(
+                    {
+                        "index": index,
+                        "category": "other_high_signal",
+                        "score_reason": "low-supply local fallback",
+                    }
+                )
+                used_indices.add(index)
+                if domain:
+                    used_domains.add(domain)
+                if len(selections) == min(3, len(news_items)):
+                    break
+        return selections
+
+    def _validate_top_news_response(self, data: dict, news_items: list[dict]) -> list[dict]:
+        """Normalize LLM choices and enforce local uniqueness/quality constraints."""
+        raw_items = data.get("top_news")
+        if raw_items is None:
+            raw_items = [
+                {"index": index, "category": "other_high_signal", "score_reason": "legacy response"}
+                for index in data.get("top_indices", [])
+            ]
+
+        by_index = {int(item["index"]): item for item in news_items if "index" in item}
+        selections: list[dict] = []
+        used_indices: set[int] = set()
+        used_domains: set[str] = set()
+
+        for raw in raw_items or []:
+            try:
+                index = int(raw.get("index"))
+            except (AttributeError, TypeError, ValueError):
+                continue
+            article = by_index.get(index)
+            if not article or index in used_indices:
+                continue
+            domain = str(article.get("domain") or "")
+            if domain and domain in used_domains:
+                continue
+            if float(article.get("quality_score", 0)) < _MIN_SELECTION_QUALITY_SCORE:
+                continue
+            selections.append(
+                {
+                    "index": index,
+                    "category": str(raw.get("category") or "other_high_signal"),
+                    "score_reason": str(raw.get("score_reason") or "selected by AI"),
+                }
+            )
+            used_indices.add(index)
+            if domain:
+                used_domains.add(domain)
+            if len(selections) == min(3, len(news_items)):
+                break
+
+        if len(selections) < min(3, len(news_items)):
+            filler = self._fallback_top_news(
+                news_items,
+                used_indices=set(used_indices),
+                used_domains=set(used_domains),
+            )
+            for item in filler:
+                if item["index"] not in used_indices:
+                    selections.append(item)
+                    used_indices.add(item["index"])
+                if len(selections) == min(3, len(news_items)):
+                    break
+
+        return selections
+
+    def select_top_news(self, news_items: list[dict]) -> list[dict]:
+        """Ask the model to pick the top 3 unique enriched news candidates."""
         if not news_items:
             return []
 
-        payload = [{"index": n["index"], "title": n["title"], "summary": n["summary"]} for n in news_items]
+        payload = [
+            {
+                "index": n["index"],
+                "title": n["title"],
+                "summary": n.get("summary", ""),
+                "domain": n.get("domain", ""),
+                "source_region": n.get("source_region", "global"),
+                "has_image": bool(n.get("image_url")),
+                "full_text_chars": int(n.get("full_text_chars") or 0),
+                "quality_score": float(n.get("quality_score", 0)),
+                "quality_reasons": n.get("quality_reasons", []),
+                "text_preview": (n.get("full_text") or n.get("summary") or "")[:700],
+            }
+            for n in news_items
+        ]
         prompt = (
             "You are an expert IT Editor curating a daily news digest for a hardcore community of Software Engineers (primarily backend, cloud, and AI developers).\n"  # noqa: E501
-            "Analyze the provided JSON list of news items and cluster duplicate or similar stories.\n"
-            "Your task is to select EXACTLY 3 of the most IMPACTFUL, HIGH-SIGNAL, and UNIQUE news items.\n\n"
+            "Analyze the provided enriched JSON list of news items and cluster duplicate or similar stories.\n"
+            "Your task is to select EXACTLY 3 of the most IMPACTFUL, HIGH-SIGNAL, and UNIQUE news items.\n"
+            "Prefer candidates with strong quality_score, concrete article text, "
+            "clear developer relevance, and images.\n\n"
             "**DEFINITION OF 'IMPACTFUL' FOR THIS AUDIENCE:**\n"
             "✅ YES (High Priority): Major framework/tool updates (e.g., AWS, Python, AI models), deep architectural insights, high-profile open-source releases, tech startup funding, or paradigm shifts in software engineering.\n"  # noqa: E501
-            "❌ NO (DO NOT SELECT): Boring technical standards (like raw RFC protocol texts), generic e-government/municipal updates (e.g., citizen portals, public services), pure consumer gadget reviews, or corporate PR fluff.\n\n"  # noqa: E501
-            "To ensure content diversity, select one article from each of the following 3 categories:\n"
+            "❌ NO (DO NOT SELECT): Empty/thin article pages, generic e-government/municipal updates, pure consumer gadget reviews, homepage/project pages with no news angle, or corporate PR fluff.\n\n"  # noqa: E501
+            "Aim for content diversity across these categories when quality supports it:\n"
             "1. Global Tech & AI: Game-changing tech news, major AI model releases, or massive industry shifts that affect how developers build software.\n"  # noqa: E501
             "2. Hardcore Engineering: Practical cloud infrastructure (Serverless, AWS), backend architecture, or DevOps tools.\n"  # noqa: E501
             "3. Kazakhstan IT & Community: Local tech startups, IT business in KZ, Almaty/Astana developer community events, or Kazakhstani tech industry news.\n\n"  # noqa: E501
-            "🛡️ STRICT DIVERSITY & GEOGRAPHY QUOTAS (CRITICAL):\n"
-            "- EXACTLY ONE KAZAKHSTAN ARTICLE: You MUST select exactly 1 article from Kazakhstani sources (often in Russian or Kazakh). This belongs strictly to Category 3.\n"  # noqa: E501
-            "- GLOBAL DOMINANCE: Categories 1 and 2 MUST be fulfilled by international, English-language tech media.\n"
+            "🛡️ LOCAL CONSTRAINTS:\n"
+            "- Kazakhstan/regional content is a SOFT BONUS, not a quota. Include one only when it is genuinely strong for software/AI/cloud/startup developers.\n"  # noqa: E501
+            "- If KZ/local candidates are weak, choose three stronger global engineering/AI stories instead.\n"
             "- DOMAIN UNIQUENESS: Do not select multiple articles from the same website domain.\n\n"
-            "⚠️ FALLBACK RULE: If the news pool lacks quality articles in one of these categories, "
-            "substitute it with another highly engaging article, but NEVER violate the 'EXACTLY ONE KAZAKHSTAN ARTICLE' quota unless the pool has absolutely zero KZ news.\n\n"  # noqa: E501
             "Respond ONLY with a JSON object in this exact format:\n"
-            '{"top_indices": [idx1, idx2, idx3]}\n\n'
+            '{"top_news": [{"index": 0, "category": "global_tech_ai", "score_reason": "concrete reason"}]}\n\n'
             f"DATA:\n{json.dumps(payload, ensure_ascii=False)}"
         )
 
@@ -108,13 +253,15 @@ class NewsAIClientBase(ABC):
                 max_output_tokens=1024,
                 response_json_schema=_TOP_NEWS_RESPONSE_SCHEMA,
             )
-            indices = data.get("top_indices", [0, 1, 2])
-            result = [int(i) for i in indices if 0 <= int(i) < len(news_items)][:3]
-            logger.info("Top news selected", extra={"indices": result, "pool_size": len(news_items)})
+            result = self._validate_top_news_response(data, news_items)
+            logger.info(
+                "Top news selected",
+                extra={"indices": [item["index"] for item in result], "pool_size": len(news_items)},
+            )
             return result
         except ZerdeProviderError:
-            logger.exception("AI failed to select top news; falling back to first items")
-            return list(range(min(3, len(news_items))))
+            logger.exception("AI failed to select top news; falling back to local quality score")
+            return self._fallback_top_news(news_items)
 
     def generate_digests_per_article(self, deep_news_items: list[dict], chat_lang: str) -> list[str]:
         """Generate one HTML digest block per article for pairing with images."""
@@ -142,31 +289,46 @@ class NewsAIClientBase(ABC):
         )
 
         def fallback(article: dict) -> str:
-            return f"<b>{article['title']}</b>\n{article['link']}"
+            summary = (article.get("summary") or article.get("full_text") or "").strip()
+            summary_line = f"\n\n{summary[:420]}" if summary else ""
+            return f'<b>{article["title"]}</b>{summary_line}\n\n<a href="{article["link"]}">{read_full_text}</a>'
 
         def build_prompt(article: dict) -> str:
             payload = {
                 "title": article["title"],
                 "link": article["link"],
+                "source_summary": article.get("summary", ""),
                 "full_text": article.get("full_text", article["summary"]),
+                "full_text_chars": int(article.get("full_text_chars") or 0),
             }
             return (
                 f"You are an expert IT journalist for a {community_name}.\n"
-                "I will give you the FULL text of one IT news article.\n"
-                f"Write ONE digest block in modern {language}. "
+                "I will give you the title, source summary, and extracted article text for one IT news article.\n"
+                f"Write ONE fact-first digest block in modern {language}. "
                 f"CRITICAL: The ENTIRE block, INCLUDING the TITLE, MUST be completely translated and written in {language}.\n\n"  # noqa: E501
                 "FORMAT RULES:\n"
-                f"1. One relevant Emoji, then a <b>Catchy Title TRANSLATED INTO {language}</b>.\n"
-                "2. Add two new lines (\\n\\n) after the title, then write 3-4 sentences of deep analysis based on the full text.\n"  # noqa: E501
+                f"1. One relevant Emoji, then a <b>specific factual title TRANSLATED INTO {language}</b>.\n"
+                "2. Add two new lines (\\n\\n) after the title, then write 3-4 concise sentences based ONLY on the provided title, source summary, and full_text.\n"  # noqa: E501
                 f'3. End with the HTML link: <a href="URL">{read_full_text}</a>.\n'
                 "4. NO raw URLs except inside the href attribute.\n"
                 "5. Keep the block under ~800 characters.\n\n"
+                "CONTENT RULES:\n"
+                "- Say what concretely happened: who did what, which product/model/tool/company is involved, and what changes for developers.\n"  # noqa: E501
+                "- Include at least one concrete detail from the article: a version, number, named feature, affected tool, company, model, API, vulnerability, funding amount, or deployment impact.\n"  # noqa: E501
+                "- Do NOT invent details or write generic hype. Avoid phrases like 'industry benchmark', 'new cornerstone', 'new chapter', 'core driver', or 'urgent challenge' unless the text explicitly supports them.\n"  # noqa: E501
+                "- If evidence is limited, be modest and specific instead of analytical.\n\n"
                 "Respond ONLY with a JSON object:\n"
                 '{"digest": "single html digest block"}\n\n'
                 f"DATA:\n{json.dumps(payload, ensure_ascii=False)}"
             )
 
         def generate_one(index: int, article: dict) -> str:
+            if int(article.get("full_text_chars") or 0) < _MIN_GENERATIVE_TEXT_CHARS:
+                logger.info(
+                    "Skipping AI digest generation for thin article text",
+                    extra={"index": index, "full_text_chars": int(article.get("full_text_chars") or 0)},
+                )
+                return fallback(article)
             logger.info("Generating single article digest", extra={"index": index})
             data = self._generate(
                 build_prompt(article),
