@@ -52,7 +52,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages sampled және rate-limited, ал linked-channel post міндетті reaction attempt алады. |
 | Captcha және anti-spam | Жаңа мүшелерді тексеру; pending captcha хабарлары тек captcha flow ішінде қалады, strong high-confidence spam үнсіз өшіріледі, ал weak/ambiguous жағдайлар optional admin @mentions бар admin review-ға жіберіледі. |
 | Community voteban | `/voteban` арқылы қауымдастық дауысымен ban/forgive. |
-| Daily AI news | EventBridge арқылы іске қосылатын news Lambda Gemini/DeepSeek-compatible жолдармен IT news digest жасайды. |
+| Daily AI news | EventBridge арқылы іске қосылатын news Lambda RSS кандидаттарын мақала мәтіні/суретімен толықтырады, developer-ге пайдалы high-signal жаңалықтарды таңдайды және Gemini/DeepSeek-compatible жолдармен fact-first көптілді digest жібереді. |
 | IT quizzes | Scheduled және on-demand quiz Lambda көптілді developer quiz жібереді. |
 | Serverless ops | AWS CDK Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM және alarms ресурстарын басқарады. |
 
