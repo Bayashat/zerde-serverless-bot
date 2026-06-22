@@ -77,10 +77,28 @@ def handle_poll_answer(ctx: Context) -> None:
     selected_option = option_ids[0]
 
     points = int(quiz_record.get("points", 1))
+    record_key = str(quiz_record.get("SK", ""))
+    weekly_points = points if record_key.startswith("DATE#") else 0
 
     if selected_option == correct_option_id:
-        ctx.quiz_repo.update_score_correct(chat_id, user_id, first_name, poll_id=poll_id, points=points)
-        logger.info("Correct answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "points": points})
+        ctx.quiz_repo.update_score_correct(
+            chat_id,
+            user_id,
+            first_name,
+            poll_id=poll_id,
+            points=points,
+            weekly_points=weekly_points,
+        )
+        logger.info(
+            "Correct answer recorded",
+            extra={
+                "user_id": user_id,
+                "chat_id": chat_id,
+                "points": points,
+                "weekly_points": weekly_points,
+                "quiz_record_key": record_key,
+            },
+        )
     else:
         ctx.quiz_repo.update_score_wrong(chat_id, user_id, first_name, poll_id=poll_id)
         logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id})

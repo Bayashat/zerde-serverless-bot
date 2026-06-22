@@ -66,6 +66,7 @@ class QuizRepository:
         *,
         poll_id: str,
         points: int = 1,
+        weekly_points: int | None = None,
     ) -> None:
         """Update user score for a correct answer with streak logic.
 
@@ -84,12 +85,14 @@ class QuizRepository:
             new_streak = 1
         best_streak = max(new_streak, int((current or {}).get("best_streak", 0)))
 
+        week_points = points if weekly_points is None else weekly_points
+
         try:
             self._table.update_item(
                 Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
                 UpdateExpression=(
                     "SET total_score = if_not_exists(total_score, :zero) + :pts,"
-                    "    week_score = if_not_exists(week_score, :zero) + :pts,"
+                    "    week_score = if_not_exists(week_score, :zero) + :week_pts,"
                     "    current_streak = :streak,"
                     "    best_streak = :best,"
                     "    last_correct_date = :today,"
@@ -103,6 +106,7 @@ class QuizRepository:
                 ExpressionAttributeValues={
                     ":zero": 0,
                     ":pts": points,
+                    ":week_pts": week_points,
                     ":streak": new_streak,
                     ":best": best_streak,
                     ":today": today,
@@ -114,7 +118,13 @@ class QuizRepository:
             )
             logger.info(
                 "Correct answer recorded",
-                extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id, "points": points},
+                extra={
+                    "user_id": user_id,
+                    "chat_id": chat_id,
+                    "poll_id": poll_id,
+                    "points": points,
+                    "weekly_points": week_points,
+                },
             )
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
