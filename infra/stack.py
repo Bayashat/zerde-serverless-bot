@@ -103,6 +103,7 @@ class ZerdeTelegramBotStack(Stack):
         spam_rule_enforce_threshold = os.environ.get("SPAM_RULE_ENFORCE_THRESHOLD", "0.8")
         spam_rule_ai_threshold = os.environ.get("SPAM_RULE_AI_THRESHOLD", "0.15")
         spam_ai_confidence_threshold = os.environ.get("SPAM_AI_CONFIDENCE_THRESHOLD", "0.85")
+        spam_review_admin_mentions = os.environ.get("SPAM_REVIEW_ADMIN_MENTIONS", "{}")
 
         # ── DeepSeek parameters ────────────────────────────────────────────────
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
@@ -251,6 +252,7 @@ class ZerdeTelegramBotStack(Stack):
             spam_rule_enforce_threshold=spam_rule_enforce_threshold,
             spam_rule_ai_threshold=spam_rule_ai_threshold,
             spam_ai_confidence_threshold=spam_ai_confidence_threshold,
+            spam_review_admin_mentions=spam_review_admin_mentions,
             chat_lang_map=chat_lang_map,
             captcha_timeout_seconds=captcha_timeout_seconds,
             captcha_max_attempts=captcha_max_attempts,

@@ -83,7 +83,7 @@ def process_sqs_event(
                 body["_captcha_repo"] = captcha_repo
                 process_timeout_task(bot, body)
             elif task_type == "SPAM_CHECK":
-                process_spam_check_task(bot, body, captcha_repo=captcha_repo)
+                process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=memory_repo)
             elif task_type == "PROCESS_GROUP_ASK":
                 if memory_repo is None:
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")

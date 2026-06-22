@@ -33,6 +33,7 @@ def handle_spam_review_callback(ctx: Context) -> None:
             user_id=target_user_id,
             message_id=target_message_id,
             reason="admin_review",
+            permanent=True,
         )
         ctx.bot.answer_callback_query(
             ctx.callback_query_id,
@@ -49,7 +50,7 @@ def handle_spam_review_callback(ctx: Context) -> None:
         ctx.callback_query_id,
         text=get_translated_text("spam_review_ignored_toast", ctx.lang_code),
     )
-    _replace_review_alert(ctx, get_translated_text("spam_review_ignored_notice", ctx.lang_code))
+    _delete_review_alert(ctx)
     logger.info(
         "Admin ignored spam review alert",
         extra={"chat_id": ctx.chat_id, "admin_user_id": ctx.user_id, "target_user_id": target_user_id},
@@ -89,5 +90,15 @@ def _replace_review_alert(ctx: Context, text: str) -> None:
     except Exception as e:
         logger.warning(
             "Failed to replace spam review alert",
+            extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id, "error": e},
+        )
+
+
+def _delete_review_alert(ctx: Context) -> None:
+    try:
+        ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
+    except Exception as e:
+        logger.warning(
+            "Failed to delete spam review alert",
             extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id, "error": e},
         )

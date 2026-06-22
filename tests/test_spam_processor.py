@@ -172,6 +172,127 @@ def test_spam_low_confidence_sends_alert(
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
+def test_money_only_high_confidence_spam_sends_review_not_auto_ban(
+    mock_get_detector,
+    _mock_lang,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+) -> None:
+    mock_detector = MagicMock()
+    mock_get_detector.return_value = mock_detector
+    mock_detector.classify.return_value = _make_result("SPAM", 0.95, reason="selling_services")
+    mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "fafnirdragon"}}
+    body = {
+        **_BODY,
+        "text": "Смекта 2000тг деп куткарам.",
+        "triggered_rules": ["money_pattern"],
+        "rule_score": 0.3,
+        "message_context": {
+            "current_message": "Смекта 2000тг деп куткарам.",
+            "triggered_rules": ["money_pattern"],
+            "rule_score": 0.3,
+        },
+    }
+
+    process_spam_check_task(mock_bot, body)
+
+    mock_enforcer_cls.return_value.enforce.assert_not_called()
+    mock_bot.send_message.assert_called_once()
+    assert "@fafnirdragon" in mock_bot.send_message.call_args[0][1]
+    assert "selling digital services" in mock_bot.send_message.call_args[0][1]
+
+
+@patch("services.spam.processor.StatsRepository")
+@patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor.get_chat_lang", return_value="en")
+@patch("services.spam.processor._get_detector")
+def test_job_rule_alone_high_confidence_spam_sends_review_not_auto_ban(
+    mock_get_detector,
+    _mock_lang,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+) -> None:
+    mock_detector = MagicMock()
+    mock_get_detector.return_value = mock_detector
+    mock_detector.classify.return_value = _make_result("SPAM", 0.95, reason="job_offer")
+    mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "maybe_recruiter"}}
+    body = {
+        **_BODY,
+        "text": "работа удаленно",
+        "triggered_rules": ["job_offer"],
+        "rule_score": 0.25,
+        "message_context": {
+            "current_message": "работа удаленно",
+            "triggered_rules": ["job_offer"],
+            "rule_score": 0.25,
+        },
+    }
+
+    process_spam_check_task(mock_bot, body)
+
+    mock_enforcer_cls.return_value.enforce.assert_not_called()
+    mock_bot.send_message.assert_called_once()
+
+
+@patch("services.spam.processor.StatsRepository")
+@patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor.get_chat_lang", return_value="en")
+@patch("services.spam.processor.get_spam_review_admin_mentions", return_value=("bayashat", "yeskabyl"))
+@patch("services.spam.processor._get_detector")
+def test_spam_review_alert_mentions_configured_admins(
+    mock_get_detector,
+    _mock_mentions,
+    _mock_lang,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+) -> None:
+    mock_detector = MagicMock()
+    mock_get_detector.return_value = mock_detector
+    mock_detector.classify.return_value = _make_result("SPAM", 0.70, reason="dm_redirect_scam")
+    mock_bot.get_chat_member.return_value = {"status": "member", "user": {"username": "suspicious_user"}}
+
+    process_spam_check_task(mock_bot, _BODY)
+
+    text = mock_bot.send_message.call_args[0][1]
+    assert text.startswith("@bayashat @yeskabyl\n")
+    mock_enforcer_cls.return_value.enforce.assert_not_called()
+
+
+@patch("services.spam.processor.StatsRepository")
+@patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor._get_detector")
+def test_spam_processor_adds_bounded_recent_context(
+    mock_get_detector,
+    mock_enforcer_cls,
+    mock_stats_cls,
+    mock_bot,
+) -> None:
+    mock_detector = MagicMock()
+    mock_get_detector.return_value = mock_detector
+    mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.98)
+    memory_repo = MagicMock()
+    memory_repo.get_recent_messages.return_value = [
+        {"message_id": 1, "display_name": "Aman", "text": "ФГДС жасап кету керек."},
+        {"message_id": 2, "display_name": "Lio", "text": "За что."},
+    ]
+
+    process_spam_check_task(mock_bot, _BODY, memory_repo=memory_repo)
+
+    memory_repo.get_recent_messages.assert_called_once_with(_BODY["chat_id"], limit=12)
+    classifier_input = mock_detector.classify.call_args[0][0]
+    assert "CURRENT_MESSAGE:" in classifier_input
+    assert "RECENT_GROUP_MESSAGES" in classifier_input
+    assert "Aman: ФГДС жасап кету керек." in classifier_input
+    mock_enforcer_cls.return_value.enforce.assert_not_called()
+
+
+@patch("services.spam.processor.StatsRepository")
+@patch("services.spam.processor.SpamEnforcer")
+@patch("services.spam.processor.get_chat_lang", return_value="en")
+@patch("services.spam.processor._get_detector")
 def test_spam_low_confidence_alert_uses_clickable_mention_without_username(
     mock_get_detector,
     _mock_lang,

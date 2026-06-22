@@ -266,6 +266,8 @@ class SQSClient:
         message_id: int,
         text: str,
         triggered_rules: list[str],
+        rule_score: float | None = None,
+        message_context: dict[str, object] | None = None,
     ) -> None:
         """Enqueue a SPAM_CHECK task for async Layer-2 Groq classification."""
         payload = {
@@ -276,6 +278,10 @@ class SQSClient:
             "text": text,
             "triggered_rules": triggered_rules,
         }
+        if rule_score is not None:
+            payload["rule_score"] = float(rule_score)
+        if message_context:
+            payload["message_context"] = message_context
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
@@ -283,7 +289,14 @@ class SQSClient:
             )
             logger.info(
                 "Queued spam check task",
-                extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id},
+                extra={
+                    "chat_id": chat_id,
+                    "user_id": user_id,
+                    "message_id": message_id,
+                    "rules": triggered_rules,
+                    "score": rule_score,
+                    "has_message_context": bool(message_context),
+                },
             )
         except Exception as e:
             logger.exception("Failed to send spam check task to SQS", extra={"error": e})

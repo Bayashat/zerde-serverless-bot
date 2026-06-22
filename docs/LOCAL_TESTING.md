@@ -117,6 +117,10 @@ MAIN_TASK_QUEUE_RETENTION_DAYS=1
 MAIN_TASK_DLQ_RETENTION_DAYS=14
 VECTOR_MEMORY_QUEUE_RETENTION_DAYS=4
 VECTOR_MEMORY_DLQ_RETENTION_DAYS=14
+SPAM_RULE_ENFORCE_THRESHOLD=0.8
+SPAM_RULE_AI_THRESHOLD=0.15
+SPAM_AI_CONFIDENCE_THRESHOLD=0.85
+SPAM_REVIEW_ADMIN_MENTIONS={"-1001234567890":["admin_username"]}
 
 # Optional — group memory / agent
 GROUP_MEMORY_ENABLED=true
@@ -163,6 +167,10 @@ MULTIMODAL_TEXT_FILE_MAX_CHARS=20000
 **To find a group's chat ID:** Add [@userinfobot](https://t.me/userinfobot) to the group; it will print the chat ID on join.
 
 Never commit `.env` — it is in `.gitignore`.
+
+For GitHub deploys, set `SPAM_REVIEW_ADMIN_MENTIONS` as a repository variable in the same JSON format,
+for example `{"-1001244628965":["bayashat","yeskabyl"]}`. Usernames are used only for alert mentions;
+button permissions still come from Telegram admin/creator status.
 
 ---
 

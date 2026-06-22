@@ -20,8 +20,28 @@ def test_high_confidence_enforcement_is_silent() -> None:
 
     bot.delete_message.assert_called_once_with(-1001234567890, 42)
     bot.kick_chat_member.assert_called_once_with(-1001234567890, 12345)
+    bot.ban_chat_member.assert_not_called()
     stats_repo.increment_spam_bans.assert_called_once_with(-1001234567890)
     bot.send_message.assert_not_called()
+
+
+def test_permanent_enforcement_uses_permanent_ban() -> None:
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {"status": "member", "user": {"username": "spam_user"}}
+    stats_repo = MagicMock()
+
+    SpamEnforcer(bot, stats_repo).enforce(
+        chat_id=-1001234567890,
+        user_id=12345,
+        message_id=42,
+        reason="admin_review",
+        permanent=True,
+    )
+
+    bot.delete_message.assert_called_once_with(-1001234567890, 42)
+    bot.kick_chat_member.assert_not_called()
+    bot.ban_chat_member.assert_called_once_with(-1001234567890, 12345)
+    stats_repo.increment_spam_bans.assert_called_once_with(-1001234567890)
 
 
 def test_target_mention_uses_username_when_available() -> None:

@@ -18,7 +18,7 @@ class SpamEnforcer:
         self.bot = bot
         self.stats_repo = stats_repo
 
-    def enforce(self, chat_id: int, user_id: int, message_id: int, reason: str) -> None:
+    def enforce(self, chat_id: int, user_id: int, message_id: int, reason: str, *, permanent: bool = False) -> None:
         """Delete message + ban user + update stats. Logs each action; never raises."""
         if user_id == TELEGRAM_CHANNEL_POST_ACTOR_USER_ID:
             logger.info(
@@ -36,7 +36,13 @@ class SpamEnforcer:
 
         logger.info(
             "Enforcing spam action",
-            extra={"chat_id": chat_id, "user_id": user_id, "message_id": message_id, "reason": reason},
+            extra={
+                "chat_id": chat_id,
+                "user_id": user_id,
+                "message_id": message_id,
+                "reason": reason,
+                "permanent": permanent,
+            },
         )
 
         try:
@@ -48,7 +54,10 @@ class SpamEnforcer:
             )
 
         try:
-            self.bot.kick_chat_member(chat_id, user_id)
+            if permanent:
+                self.bot.ban_chat_member(chat_id, user_id)
+            else:
+                self.bot.kick_chat_member(chat_id, user_id)
         except Exception as e:
             logger.warning(
                 "Failed to ban spam user",

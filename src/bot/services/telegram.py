@@ -234,6 +234,21 @@ class TelegramClient:
             )
             raise
 
+    def ban_chat_member(self, chat_id: int | str, user_id: int) -> None:
+        """Permanently ban a chat member."""
+        payload = {
+            "chat_id": chat_id,
+            "user_id": user_id,
+        }
+        try:
+            self._post("banChatMember", payload)
+        except Exception as e:
+            logger.error(
+                "Failed to ban chat member",
+                extra={"user_id": user_id, "error": str(e)},
+            )
+            raise
+
     def get_chat(self, chat_id: int | str) -> dict[str, Any]:
         """Return chat metadata (``title``, ``type``, ``username``, …) from ``getChat``."""
         payload: dict[str, Any] = {"chat_id": chat_id}
