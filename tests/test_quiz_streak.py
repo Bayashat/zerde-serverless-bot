@@ -41,12 +41,30 @@ class TestStreakCorrectAnswer:
         call_kwargs = mock_table.update_item.call_args[1]
         vals = call_kwargs["ExpressionAttributeValues"]
         assert vals[":pts"] == 1
+        assert vals[":week_pts"] == 1
         assert vals[":streak"] == 1
         assert vals[":best"] == 1
         assert vals[":poll_id"] == "poll-1"
         assert vals[":poll_list"] == ["poll-1"]
         assert "answered_poll_ids" in call_kwargs["ConditionExpression"]
         assert "last_answered_date <> :today" not in call_kwargs["ConditionExpression"]
+
+    @_PATCH_YESTERDAY
+    @_PATCH_TODAY
+    @patch("services.repositories.quiz.get_dynamodb")
+    def test_on_demand_correct_answer_can_skip_weekly_points(self, mock_dynamo, _m_today, _m_yday):
+        mock_table = MagicMock()
+        mock_dynamo.return_value.Table.return_value = mock_table
+
+        from services.repositories.quiz import QuizRepository
+
+        repo = QuizRepository()
+        repo.get_user_score = MagicMock(return_value=None)
+        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1", points=3, weekly_points=0)
+
+        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
+        assert vals[":pts"] == 3
+        assert vals[":week_pts"] == 0
 
     @_PATCH_YESTERDAY
     @_PATCH_TODAY

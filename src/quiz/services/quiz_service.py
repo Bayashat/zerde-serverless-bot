@@ -1,5 +1,6 @@
 """Quiz domain services for managing generation, sending and leaderboards."""
 
+import html
 import random
 import re
 import uuid
@@ -115,26 +116,35 @@ class QuizService:
         return text
 
     def build_leaderboard_text(self, lang: str, entries: list[dict]) -> str:
-        """Build the formatted leaderboard text with competition-style tie handling.
-
-        Users with equal scores share the same rank and medal.
-        Example: two users at 7 pts both get 🥈; the next unique score is rank 4.
-        """
+        """Build the formatted leaderboard text, grouping users with equal scores."""
         header = get_translated_text("leaderboard_header", lang)
         if not entries:
             return header + get_translated_text("leaderboard_empty", lang)
 
         lines = []
-        rank = 1
-        for i, entry in enumerate(entries):
-            if i > 0 and int(entry.get("week_score", 0)) < int(entries[i - 1].get("week_score", 0)):
-                rank = i + 1  # standard competition ranking: rank jumps to actual position
+        rank = 0
+        current_score: int | None = None
+        mentions: list[str] = []
+
+        def flush_group() -> None:
+            if current_score is None or not mentions:
+                return
             medal = _MEDALS[rank - 1] if rank - 1 < len(_MEDALS) else f"{rank}."
-            user_id = entry.get("SK", "").replace("USER#", "")
-            first_name = entry.get("first_name", "User")
+            lines.append(f"{medal} {', '.join(mentions)} — <b>{current_score}</b>")
+
+        for entry in entries:
             score = int(entry.get("week_score", 0))
+            if current_score is None or score != current_score:
+                flush_group()
+                rank += 1
+                current_score = score
+                mentions = []
+            user_id = entry.get("SK", "").replace("USER#", "")
+            first_name = html.escape(str(entry.get("first_name", "User")))
             mention = f'<a href="tg://user?id={user_id}">{first_name}</a>'
-            lines.append(f"{medal} {mention} — <b>{score}</b>")
+            mentions.append(mention)
+
+        flush_group()
 
         return header + "\n".join(lines)
 
