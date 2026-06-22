@@ -52,6 +52,7 @@ class BotConstruct(Construct):
         spam_rule_enforce_threshold: str,
         spam_rule_ai_threshold: str,
         spam_ai_confidence_threshold: str,
+        spam_review_admin_mentions: str,
         chat_lang_map: dict[str, str],
         captcha_timeout_seconds: int,
         captcha_max_attempts: int,
@@ -249,6 +250,7 @@ class BotConstruct(Construct):
             "SPAM_RULE_ENFORCE_THRESHOLD": spam_rule_enforce_threshold,
             "SPAM_RULE_AI_THRESHOLD": spam_rule_ai_threshold,
             "SPAM_AI_CONFIDENCE_THRESHOLD": spam_ai_confidence_threshold,
+            "SPAM_REVIEW_ADMIN_MENTIONS": spam_review_admin_mentions,
             # -- Gemini parameters (non-secret) ────────────────────────────────
             "GEMINI_API_BASE": gemini_api_base,
             "GEMINI_MODEL": gemini_model,

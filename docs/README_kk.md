@@ -50,7 +50,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Reply thread continuity | Bot жауаптары short-term `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі; бұл semantic/vector memory емес. |
 | Social timing | Ordinary proactive жауаптар қысқа delay-ден кейін recent context және query-filtered long-term context негізінде Groq/DeepSeek decision арқылы өтеді. Yes болса, chat daily limit reserve жасалып, жауап Gemini арқылы generate болады, DeepSeek/Groq fallback бар. Linked-channel post zero-delay comment path арқылы бөлек өңделеді және supported attached media-ны ephemeral талдай алады. |
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages sampled және rate-limited, ал linked-channel post міндетті reaction attempt алады. |
-| Captcha және anti-spam | Жаңа мүшелерді тексеру; pending captcha хабарлары тек captcha flow ішінде қалады, high-confidence spam үнсіз өшіріледі, ал low-confidence жағдайлар admin review-ға жіберіледі. |
+| Captcha және anti-spam | Жаңа мүшелерді тексеру; pending captcha хабарлары тек captcha flow ішінде қалады, strong high-confidence spam үнсіз өшіріледі, ал weak/ambiguous жағдайлар optional admin @mentions бар admin review-ға жіберіледі. |
 | Community voteban | `/voteban` арқылы қауымдастық дауысымен ban/forgive. |
 | Daily AI news | EventBridge арқылы іске қосылатын news Lambda Gemini/DeepSeek-compatible жолдармен IT news digest жасайды. |
 | IT quizzes | Scheduled және on-demand quiz Lambda көптілді developer quiz жібереді. |

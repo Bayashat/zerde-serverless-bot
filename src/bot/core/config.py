@@ -1,5 +1,6 @@
 """Centralised configuration: environment variables and constants."""
 
+import json
 import os
 from typing import Any
 
@@ -150,6 +151,36 @@ def _env_csv(name: str, default: str = "") -> tuple[str, ...]:
     if value is None:
         value = default
     return tuple(part.strip() for part in value.split(",") if part.strip())
+
+
+def _env_json_object(name: str, default: str = "{}") -> dict[str, Any]:
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        raw = default
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{name} is not valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ValueError(f"{name} must be a JSON object")
+    return value
+
+
+_SPAM_REVIEW_ADMIN_MENTIONS_RAW: dict[str, Any] = _env_json_object("SPAM_REVIEW_ADMIN_MENTIONS", "{}")
+SPAM_REVIEW_ADMIN_MENTIONS: dict[str, tuple[str, ...]] = {
+    str(chat_id): tuple(
+        username.strip().lstrip("@") for username in usernames if isinstance(username, str) and username.strip()
+    )
+    for chat_id, usernames in _SPAM_REVIEW_ADMIN_MENTIONS_RAW.items()
+    if isinstance(usernames, list)
+}
+
+
+def get_spam_review_admin_mentions(chat_id: int | str | None) -> tuple[str, ...]:
+    """Return configured usernames to notify for a chat's uncertain spam review alerts."""
+    if chat_id is None:
+        return ()
+    return SPAM_REVIEW_ADMIN_MENTIONS.get(str(chat_id), ())
 
 
 def is_configured_group_chat(chat_id: int | str | None) -> bool:

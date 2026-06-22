@@ -11,7 +11,7 @@ from services.repositories.stats import StatsRepository
 from services.spam.channel_post import should_skip_spam_for_channel_discussion_mirror
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import SpamEnforcer
-from services.spam.message_text import collect_spam_screen_text
+from services.spam.message_text import build_spam_context_payload, collect_spam_screen_text
 from services.spam.rule_filter import RuleBasedSpamFilter
 from services.telegram import TelegramClient
 
@@ -89,6 +89,12 @@ class SpamScreeningService:
                     message_id=message_id,
                     text=combined,
                     triggered_rules=triggered_rules,
+                    rule_score=score,
+                    message_context=build_spam_context_payload(
+                        msg,
+                        rule_score=score,
+                        triggered_rules=triggered_rules,
+                    ),
                 )
                 return "queued"
             if triggered_rules:

@@ -57,6 +57,7 @@ def mock_bot():
     bot.answer_callback_query.return_value = None
     bot.restrict_chat_member.return_value = None
     bot.kick_chat_member.return_value = None
+    bot.ban_chat_member.return_value = None
     bot.delete_message.return_value = None
     bot.edit_message_text.return_value = {}
     return bot

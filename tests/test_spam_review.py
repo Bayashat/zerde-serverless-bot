@@ -30,6 +30,7 @@ def test_spam_review_rejects_non_admin(_mock_is_admin: MagicMock) -> None:
     ctx.bot.answer_callback_query.assert_called_once()
     assert ctx.bot.answer_callback_query.call_args.kwargs["show_alert"] is True
     ctx.bot.kick_chat_member.assert_not_called()
+    ctx.bot.ban_chat_member.assert_not_called()
 
 
 @patch("services.handlers.spam_review.is_chat_admin_or_creator", return_value=True)
@@ -40,17 +41,19 @@ def test_spam_review_ban_enforces_and_replaces_alert(_mock_is_admin: MagicMock) 
     handle_spam_review_callback(ctx)
 
     ctx.bot.delete_message.assert_called_once_with(-100123, 10)
-    ctx.bot.kick_chat_member.assert_called_once_with(-100123, 42)
+    ctx.bot.kick_chat_member.assert_not_called()
+    ctx.bot.ban_chat_member.assert_called_once_with(-100123, 42)
     ctx.stats_repo.increment_spam_bans.assert_called_once_with(-100123)
     ctx.bot.edit_message_text.assert_called_once()
 
 
 @patch("services.handlers.spam_review.is_chat_admin_or_creator", return_value=True)
-def test_spam_review_ignore_replaces_alert_without_ban(_mock_is_admin: MagicMock) -> None:
+def test_spam_review_ignore_deletes_alert_without_ban(_mock_is_admin: MagicMock) -> None:
     ctx = _make_ctx("spam_ignore:42:10")
 
     handle_spam_review_callback(ctx)
 
     ctx.bot.kick_chat_member.assert_not_called()
-    ctx.bot.delete_message.assert_not_called()
-    ctx.bot.edit_message_text.assert_called_once()
+    ctx.bot.ban_chat_member.assert_not_called()
+    ctx.bot.delete_message.assert_called_once_with(-100123, 99)
+    ctx.bot.edit_message_text.assert_not_called()

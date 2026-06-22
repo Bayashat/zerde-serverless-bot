@@ -1,6 +1,6 @@
-"""Tests for collect_spam_screen_text (quote + external_reply aggregation)."""
+"""Tests for spam screening text and AI context rendering."""
 
-from services.spam.message_text import collect_spam_screen_text
+from services.spam.message_text import build_spam_context_payload, collect_spam_screen_text, format_spam_ai_context
 from services.spam.rule_filter import RuleBasedSpamFilter
 
 _USER_ID = 123456
@@ -74,3 +74,48 @@ def test_combined_text_triggers_vpn_rule_on_harmless_surface_text() -> None:
 
 def test_empty_message_returns_empty_string() -> None:
     assert collect_spam_screen_text({}) == ""
+
+
+def test_build_context_payload_includes_reply_quote_and_rules() -> None:
+    msg = {
+        "message_id": 184178,
+        "text": "Смекта 2000тг деп куткарам.",
+        "reply_to_message": {
+            "message_id": 184163,
+            "from": {"id": 845486913, "username": "yeskabyl", "first_name": "Ruslanuly"},
+            "text": "заблокировал(а) Grand Theft Auto VI [IHN] (@fafnirdragon)",
+        },
+        "quote": {"text": "Смекта 2000 3000тг ушын ба?"},
+    }
+
+    payload = build_spam_context_payload(msg, rule_score=0.3, triggered_rules=["money_pattern"])
+
+    assert payload["current_message"] == "Смекта 2000тг деп куткарам."
+    assert payload["reply_to_message"]["from"] == "@yeskabyl"
+    assert "заблокировал" in payload["reply_to_message"]["text"]
+    assert payload["quote"] == "Смекта 2000 3000тг ушын ба?"
+    assert payload["rule_score"] == 0.3
+    assert payload["triggered_rules"] == ["money_pattern"]
+
+
+def test_format_spam_ai_context_renders_current_and_recent_context() -> None:
+    rendered = format_spam_ai_context(
+        text="combined fallback",
+        message_context={
+            "current_message": "Смекта 2000тг деп куткарам.",
+            "reply_to_message": {"from": "@yeskabyl", "text": "заблокировал(а) Grand Theft Auto VI"},
+            "rule_score": 0.3,
+            "triggered_rules": ["money_pattern"],
+        },
+        recent_context=[
+            {"display_name": "Aman", "text": "ФГДС и колоноскапия жасап кету керек."},
+            {"display_name": "Lio", "text": "За что."},
+        ],
+    )
+
+    assert "CURRENT_MESSAGE:" in rendered
+    assert "Смекта 2000тг деп куткарам." in rendered
+    assert "REPLY_TO_MESSAGE:" in rendered
+    assert "triggered_rules=['money_pattern']" in rendered
+    assert "RECENT_GROUP_MESSAGES" in rendered
+    assert "Aman: ФГДС и колоноскапия жасап кету керек." in rendered

@@ -14,6 +14,10 @@ _http = urllib3.PoolManager(maxsize=2, timeout=urllib3.Timeout(total=8))
 _SYSTEM_PROMPT = """\
 You are a spam classifier for a Telegram group of IT professionals in Kazakhstan.
 Your ONLY task: determine if a message is spam.
+You may receive a structured context block with CURRENT_MESSAGE, REPLY_TO_MESSAGE,
+QUOTE_CONTEXT, EXTERNAL_REPLY_CONTEXT, RECENT_GROUP_MESSAGES, and RULE_SIGNAL.
+Classify ONLY the CURRENT_MESSAGE. Use context only to disambiguate what the current
+sender meant. Do not classify previous/replied/quoted messages by themselves.
 
 SPAM includes:
 - Job/gig/income offers with specific payment amounts ($, USD, tenge, ruble),
@@ -32,7 +36,9 @@ NOT_SPAM includes:
 - Technical questions, code sharing, IT discussions, IT news or opinions
 - Someone asking if anyone knows of job openings (seeking work, not recruiting)
 - Mentioning money in context of discussing salaries, product prices, or hypothetical amounts in a technical discussion
+- Group chat price discussions, jokes, ordinary consumer prices, medical/pharmacy prices, or splitting bills
 - Mentioning "работа/жұмыс" in context of talking about one's own job or company, not recruiting others
+- Tagging, blocking, banning, or moderation jokes/discussions without an external promotion
 - Normal conversation, greetings, jokes, memes
 - @username tags that are clearly addressing someone already in the conversation
 - Bot commands or feature requests
@@ -119,6 +125,9 @@ Message: "https://github.com/tiangolo/fastapi"
 
 Message: "@bayashat genquiz деп тағы куиз жасаңызшы."
 {"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
+
+Message: "Смекта 2000тг деп куткарам."
+{"label": "NOT_SPAM", "confidence": 0.99, "reason": "not_spam"}
 """
 
 
@@ -155,7 +164,7 @@ class GroqSpamDetector:
             "model": self.model,
             "messages": [
                 {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": f"Classify: {text}"},
+                {"role": "user", "content": f"Classify this structured spam review context:\n{text}"},
             ],
             "temperature": 0.0,
             "max_tokens": 64,

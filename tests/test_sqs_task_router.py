@@ -106,8 +106,9 @@ def test_spam_check_routes() -> None:
     ):
         captcha = MagicMock()
         bot = MagicMock()
-        process_sqs_event({"Records": [_record(body)]}, bot, captcha)
-    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha)
+        memory_repo = MagicMock()
+        process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory_repo)
+    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha, memory_repo=memory_repo)
 
 
 def test_process_group_memory_routes() -> None:

@@ -71,6 +71,20 @@ def test_set_message_reaction_posts_single_emoji(monkeypatch):
     }
 
 
+def test_ban_chat_member_posts_permanent_ban_without_until_date(monkeypatch):
+    fake_http = _FakeHttp([_Response(status=200, data=b'{"ok":true,"result":true}')])
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+
+    client.ban_chat_member(-100123, 42)
+
+    request = fake_http.requests[0]
+    payload = json.loads(request["body"])
+    assert request["method"] == "POST"
+    assert request["url"].endswith("/banChatMember")
+    assert payload == {"chat_id": -100123, "user_id": 42}
+
+
 class _Response:
     def __init__(self, *, status, data=b"", headers=None, chunks=None):
         self.status = status
