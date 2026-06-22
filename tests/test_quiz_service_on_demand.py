@@ -42,6 +42,33 @@ def _make_service() -> QuizService:
     return svc
 
 
+def test_leaderboard_groups_tied_scores_on_one_line() -> None:
+    svc = _make_service()
+
+    text = svc.build_leaderboard_text(
+        "en",
+        [
+            {"SK": "USER#1", "first_name": "Bayashat", "week_score": 15},
+            {"SK": "USER#2", "first_name": "Lio", "week_score": 15},
+            {"SK": "USER#3", "first_name": "Adilet", "week_score": 13},
+            {"SK": "USER#4", "first_name": "Yesbol", "week_score": 12},
+            {"SK": "USER#5", "first_name": "Alikhan", "week_score": 12},
+        ],
+    )
+
+    assert '<a href="tg://user?id=1">Bayashat</a>, <a href="tg://user?id=2">Lio</a> — <b>15</b>' in text
+    assert '🥈 <a href="tg://user?id=3">Adilet</a> — <b>13</b>' in text
+    assert '<a href="tg://user?id=4">Yesbol</a>, <a href="tg://user?id=5">Alikhan</a> — <b>12</b>' in text
+
+
+def test_leaderboard_escapes_user_names() -> None:
+    svc = _make_service()
+
+    text = svc.build_leaderboard_text("en", [{"SK": "USER#1", "first_name": "A&B", "week_score": 1}])
+
+    assert '<a href="tg://user?id=1">A&amp;B</a> — <b>1</b>' in text
+
+
 def _question(points: int = 3) -> dict:
     return {
         "question": "What is Python?",

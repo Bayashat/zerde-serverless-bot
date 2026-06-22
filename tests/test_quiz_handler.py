@@ -53,6 +53,28 @@ class TestHandlePollAnswer:
             "Test",
             poll_id="poll123",
             points=3,
+            weekly_points=3,
+        )
+
+    def test_on_demand_correct_answer_does_not_add_weekly_points(self):
+        quiz_repo = MagicMock()
+        quiz_repo.lookup_poll.return_value = {
+            "PK": "QUIZ#-100123",
+            "SK": "ONDEMAND#poll123",
+            "correct_option_id": 2,
+            "points": 3,
+        }
+        ctx = self._make_ctx("poll123", 456, 2, quiz_repo)
+
+        handle_poll_answer(ctx)
+
+        quiz_repo.update_score_correct.assert_called_once_with(
+            "-100123",
+            "456",
+            "Test",
+            poll_id="poll123",
+            points=3,
+            weekly_points=0,
         )
 
     def test_wrong_answer_updates_score(self):
