@@ -50,6 +50,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
 | Social timing | Ordinary proactive replies are delayed briefly, then a Groq model pool decides from capped recent and query-filtered long-term context whether the bot can add value. If yes, the chat daily limit is reserved and Gemini generates with DeepSeek/Groq fallback. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
 | Ambient reactions | Optional `setMessageReaction` presence feature for funny, useful, thoughtful, warm, or interesting messages; enabled by default. Ordinary messages are sampled/rate-limited, while linked-channel posts force a reaction attempt. |
+| Fair linked-channel contests | An official linked-channel post containing `#конкурс` opens a Kazakh-language contest in its discussion supergroup. Direct personal-account replies containing `қатысамын` are deduplicated by Telegram user id; only the group creator can draw or redraw. |
 | Smart captcha and anti-spam | Mutes new members until verification; pending captcha messages stay in captcha handling, strong high-confidence spam is removed silently, and weak or ambiguous cases go to admin review with optional admin @mentions. |
 | Community voteban | Lets communities vote to ban or forgive by replying with `/voteban`. |
 | Daily AI news | EventBridge-triggered news Lambda enriches RSS candidates with article text/images, ranks high-signal developer stories, and sends fact-first multilingual digests through Gemini/DeepSeek-compatible provider paths. |
@@ -124,6 +125,18 @@ For the deeper developer map, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `/memory about me` | Everyone | Show the current user's own stored profile fields without showing other users' claims. |
 | `/memory on/off/status/forget .../wrong` | Group owner or bot owner for settings; users can delete their own memory or mark answer sources wrong | Manage group memory and cleanup. `forget this` deletes durable long-term memory from a replied bot answer, or raw/derived memory when replying directly to a source message; it does not delete `USER#` profiles. `wrong` marks a replied bot answer's memory sources as wrong without deleting them. |
 | `/agent on/off/status/why/wrong` | Group owner or bot owner for settings; everyone can inspect or mark replied answer sources | Manage agent participation and inspect why the bot replied, including memory source types and counts without full memory text. `/agent wrong` marks a replied bot answer's memory sources as wrong. `/agent off` disables proactive, mention, and reply-thread participation; `/ask` remains available if memory is on. |
+| `/contest draw/redraw/cancel` | Current Telegram group creator only | Reply to the contest root or Zerde's rules message. `draw` freezes unique entries and chooses securely; at most two `redraw` commands choose new, previously unselected winners. |
+| `/contest status` | Current Telegram group creator or administrators | Reply to the contest root or rules message to inspect lifecycle, unique participant count, and draw count. |
+
+### Linked-Channel Contests
+
+- The initial official channel post must contain standalone `#конкурс` in its text or media caption. Adding it later by edit does not activate a contest.
+- Participation is fixed Kazakh V1: a personal account must reply directly to the original root post with text containing `қатысамын`, case-insensitively. Replies to other comments, captions, bots, channels, and anonymous administrators do not count.
+- The first accepted entry per Telegram user id is retained and receives the Bot API-supported `🎉` reaction; later entries do not add another chance.
+- The current Telegram group creator manually runs the draw. The result replies to the winner's first accepted comment and publishes the unique participant count and draw ordinal. If that comment was deleted, Zerde falls back to the root with the saved entry snapshot; it never sends an unanchored result into the main chat.
+- The first successful draw or cancellation fixes a 30-day retention window. Drawn contests are closed to new entries, permit at most two distinct redraws, and do not extend that window.
+- Zerde must be an administrator in the discussion supergroup. A known webhook outage longer than Telegram's update-retention window invalidates fairness; cancel the affected open contest instead of drawing it.
+- Incident inspection, DLQ recovery, and exact-row cleanup are documented in [docs/CONTEST_OPERATIONS.md](docs/CONTEST_OPERATIONS.md).
 
 ### Chat Style Settings
 

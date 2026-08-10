@@ -34,7 +34,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 
 ## Repository Map
 
-- `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
+- `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, fair linked-channel contests, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
 - `src/bot/services/group_agent.py`: agent trigger policy, ordinary proactive AI decision orchestration, linked-channel post immediate comments, provider fallback orchestration, reply-thread continuity, response length/style policy.
 - `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
 - `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
@@ -49,6 +49,9 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
 - `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
+- `src/bot/services/contest.py`: official contest-root/entry recognition, secure draw/redraw orchestration, fixed Kazakh output, anchored winner evidence, and TTL sweep processing.
+- `src/bot/services/handlers/contest.py`: `/contest` anchor parsing and exact live Telegram creator/administrator authorization.
+- `src/bot/services/repositories/contest.py`: sole contest lifecycle, participant uniqueness, winner history, rules alias, and retention truth owner.
 - `src/news/`: scheduled news digest Lambda.
 - `src/quiz/`: scheduled and on-demand quiz Lambda.
 - `src/shared/python/zerde_common/`: shared Lambda layer utilities.
@@ -88,6 +91,9 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Keep ordinary proactive participation conservative through the AI decision prompt, not local heuristics: queue eligible ordinary group text with `AGENT_PROACTIVE_DELAY_SECONDS`; the worker gathers recent context and query-filtered long-term context, asks the `AGENT_PROACTIVE_DECISION_GROQ_MODELS` pool for strict JSON using capped decision-only context, requires `AGENT_PROACTIVE_FINAL_THRESHOLD`, reserves `AGENT_DAILY_PROACTIVE_LIMIT` only after a yes decision, then generates with Gemini retry plus DeepSeek/Groq fallback. DeepSeek proactive decision fallback is opt-in only through `AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK`.
 - Do not reintroduce local open-question, length, bot-meta, stop-cue, score, recent-bot, or human-answer gates for ordinary proactive answering. Keep only narrow routing guards such as skipping messages that start with a non-bot `@username`, because those are directed at a human rather than the bot or the group. Put a general social-permission rubric into the proactive decision prompt: intended audience, conversation act, concrete bot incremental value, and timing. The prompt should handle multilingual messy questions while staying silent for human-directed side conversations, FYI/status updates, reactions, human-already-answered threads, bot-meta, stop-cue, and sensitive/hostile/serious-content cases where a bot reply would add noise or harm.
 - Keep linked-channel post participation separate from ordinary proactive replies: detect official linked channel discussion mirrors via `is_automatic_forward` or Telegram `777000` plus `sender_chat.type=channel`, use `sender_chat` as the actor, queue a zero-delay `channel_post` worker task, bypass ordinary proactive delay/confidence/daily-limit/text-only rules, and use the dedicated channel-post comment prompt. Supported attached media may be analyzed ephemerally by Gemini in that worker. If Gemini fails after three attempts or cannot be used, fall back to DeepSeek and then Groq with text-only context; if every provider fails, let SQS retry/DLQ instead of returning `False`.
+- Keep contests outside AI and memory inference. Activate only an initial official mirror whose text/media caption has standalone `#конкурс` and whose current linked channel matches `getChat.linked_chat_id`; require Zerde to be an administrator. Accept only direct first-level personal-account text replies containing `қатысамын`, transactionally once per Telegram user id. Only live `creator` may draw/redraw/cancel; live creator/admin may inspect status; `ADMIN_USER_ID` is not an exception.
+- Preserve contest recovery/fairness invariants: `CREATING` and `DRAWING` are fail-closed, the first draw strongly reads every participant page through a uniform `secrets.randbelow` reservoir sample, winners persist before Telegram delivery, pending delivery replays the same winner, redraw excludes prior winners and never extends the 30-day expiry, and missing entry/root anchors must become `ORPHANED` rather than spill a result into the main chat.
+- Treat contest retention as a durable outbox protocol. First draw/cancel atomically creates `pk=CONTEST_TTL_OUTBOX`; sweep SQS payloads carry only contest identity while META cursor/version owns sweep progress; sweep completion atomically sets META TTL and deletes the marker. Initial sweep enqueue is best-effort and must not block winner/status delivery. The production EventBridge recovery rule stays present without configured chats and seeds bounded `PROCESS_CONTEST_TTL_RECOVERY` pages; recovery and sweep failures use normal SQS retry/DLQ semantics.
 - Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
 - Keep chat-level `style_profile` defaults concise and socially safe. Weak selected memory should add uncertainty instructions instead of letting the model sound certain.
 - If cleaning production memory, first back up exact DynamoDB items and vector keys locally, then delete narrowly.
@@ -103,6 +109,8 @@ SQS handler failures should re-raise when retry/DLQ semantics are intended. Curr
 - `PROCESS_AMBIENT_REACTION`
 - `PROCESS_GROUP_MEMORY`
 - `PROCESS_DAILY_GROUP_SUMMARIES`
+- `PROCESS_CONTEST_TTL_SWEEP`
+- `PROCESS_CONTEST_TTL_RECOVERY`
 
 Current vector-indexer SQS task types:
 
@@ -131,6 +139,14 @@ DynamoDB memory key families:
   - Optional compact media metadata/summary for explicit multimodal `/ask` continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
 - `AMBIENT_REACTION#...`
   - Short-lived reaction metadata for cooldowns/debugging only. Do not write ambient reaction context to long-term memory or vectors.
+- `CONTEST#<root_message_id>#META`
+  - Lifecycle, rules id, frozen count, winner history, announcement state, logical expiry, and resumable TTL cursor.
+- `CONTEST#<root_message_id>#PARTICIPANT#<user_id>`
+  - Immutable first accepted direct-comment snapshot; exactly one row per Telegram user id.
+- `CONTEST_RULE#<rules_message_id>`
+  - Alias allowing commands to reply to the Bot's rules message or the root.
+- `pk=CONTEST_TTL_OUTBOX`, `sk=CHAT#<chat_id>#ROOT#<root_message_id>`
+  - Global durable cleanup marker; never give it a physical TTL or delete it before the corresponding sweep atomically reaches `COMPLETE`.
 - `BOT_COMMITMENT#...`
 - `BOT_CORRECTION#...`
 - `VECTOR_BACKFILL` with cumulative `processed_total`, `enqueued_total`, `failures_total`,

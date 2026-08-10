@@ -71,6 +71,19 @@ def test_set_message_reaction_posts_single_emoji(monkeypatch):
     }
 
 
+def test_get_me_caches_bot_identity(monkeypatch):
+    fake_http = _FakeHttp(
+        [_Response(status=200, data=b'{"ok":true,"result":{"id":123,"is_bot":true,"username":"zerde"}}')]
+    )
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+
+    assert client.get_me()["id"] == 123
+    assert client.get_me()["username"] == "zerde"
+    assert len(fake_http.requests) == 1
+    assert fake_http.requests[0]["url"].endswith("/getMe")
+
+
 def test_ban_chat_member_posts_permanent_ban_without_until_date(monkeypatch):
     fake_http = _FakeHttp([_Response(status=200, data=b'{"ok":true,"result":true}')])
     monkeypatch.setattr(telegram, "http", fake_http)

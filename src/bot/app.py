@@ -8,6 +8,7 @@ from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
 from services.repositories import (
     CaptchaRepository,
+    ContestRepository,
     GroupMemoryRepository,
     LambdaInvoker,
     QuizRepository,
@@ -22,6 +23,8 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
 _memory_repo: GroupMemoryRepository | None = None
+_contest_repo: ContestRepository | None = None
+_sqs_repo: SQSClient | None = None
 _dispatcher: Dispatcher | None = None
 
 
@@ -51,6 +54,24 @@ def get_memory_repo() -> GroupMemoryRepository | None:
     return _memory_repo
 
 
+def get_contest_repo() -> ContestRepository | None:
+    """Return the contest truth owner when the shared memory table is configured."""
+    global _contest_repo
+    if not MEMORY_TABLE_NAME:
+        return None
+    if _contest_repo is None:
+        _contest_repo = ContestRepository()
+    return _contest_repo
+
+
+def get_sqs_repo() -> SQSClient:
+    """Return the shared main-queue client used by webhook and SQS continuations."""
+    global _sqs_repo
+    if _sqs_repo is None:
+        _sqs_repo = SQSClient()
+    return _sqs_repo
+
+
 def get_dispatcher() -> Dispatcher:
     """Wire the webhook dispatcher lazily and reuse it across warm invocations."""
     global _dispatcher
@@ -58,12 +79,13 @@ def get_dispatcher() -> Dispatcher:
         dispatcher = Dispatcher(
             get_bot(),
             StatsRepository(),
-            SQSClient(),
+            get_sqs_repo(),
             VoteRepository(),
             QuizRepository() if QUIZ_TABLE_NAME else None,
             LambdaInvoker() if QUIZ_LAMBDA_NAME else None,
             captcha_repo=get_captcha_repo(),
             memory_repo=get_memory_repo(),
+            contest_repo=get_contest_repo(),
         )
         register_handlers(dispatcher)
         _dispatcher = dispatcher

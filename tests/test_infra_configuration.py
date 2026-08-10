@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -36,15 +37,19 @@ def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambd
     )
 
 
-def _dev_template(monkeypatch: Any) -> Template:
+def _template(monkeypatch: Any, *, env_name: str) -> Template:
     monkeypatch.setattr(bot_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(news_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(quiz_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(vector_indexer_component, "PythonFunction", _stub_python_function)
 
     app = App()
-    stack = ZerdeTelegramBotStack(app, "TestStack", env_name="dev")
+    stack = ZerdeTelegramBotStack(app, "TestStack", env_name=env_name)
     return Template.from_stack(stack)
+
+
+def _dev_template(monkeypatch: Any) -> Template:
+    return _template(monkeypatch, env_name="dev")
 
 
 def _resources(template: Template) -> dict[str, Any]:
@@ -197,6 +202,74 @@ def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any)
 
     assert _event_source_targets(template, main_queue_id) == [{"Ref": bot_lambda_id}]
     assert _event_source_targets(template, vector_queue_id) == [{"Ref": vector_indexer_lambda_id}]
+
+
+def test_prod_contest_recovery_schedule_exists_without_configured_chats(
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
+    for key in (
+        "CHATS_KK",
+        "CHATS_ZH",
+        "CHATS_RU",
+        "NEWS_CHATS_KK",
+        "NEWS_CHATS_ZH",
+        "NEWS_CHATS_RU",
+        "QUIZ_CHATS_KK",
+        "QUIZ_CHATS_ZH",
+        "QUIZ_CHATS_RU",
+    ):
+        monkeypatch.setenv(key, "")
+
+    template = _template(monkeypatch, env_name="prod")
+    rule_id, rule = _find_resource_by_property(
+        template,
+        "AWS::Events::Rule",
+        "Name",
+        "zerde-serverless-contest-ttl-recovery-prod",
+    )
+    queue_id, _ = _find_resource_by_property(
+        template,
+        "AWS::SQS::Queue",
+        "QueueName",
+        "zerde-serverless-timeout-tasks-queue-prod",
+    )
+
+    properties = rule["Properties"]
+    assert properties["ScheduleExpression"] == "cron(50 20 * * ? *)"
+    assert json.loads(properties["Targets"][0]["Input"]) == {"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}
+    assert properties["Targets"][0]["Arn"] == {"Fn::GetAtt": [queue_id, "Arn"]}
+    assert not any(
+        resource.get("Type") == "AWS::Events::Rule"
+        and resource.get("Properties", {}).get("Name") == "zerde-serverless-group-memory-daily-summary-prod"
+        for resource in _resources(template).values()
+    )
+
+    expected_queue_arn = {"Fn::GetAtt": [queue_id, "Arn"]}
+    expected_rule_arn = {"Fn::GetAtt": [rule_id, "Arn"]}
+    statements = [
+        statement
+        for resource in _resources(template).values()
+        if resource.get("Type") == "AWS::SQS::QueuePolicy"
+        for statement in _as_list(resource["Properties"]["PolicyDocument"]["Statement"])
+    ]
+    assert any(
+        statement.get("Principal") == {"Service": "events.amazonaws.com"}
+        and "sqs:SendMessage" in _as_list(statement.get("Action", []))
+        and statement.get("Resource") == expected_queue_arn
+        and statement.get("Condition", {}).get("ArnEquals", {}).get("aws:SourceArn") == expected_rule_arn
+        for statement in statements
+    )
+
+
+def test_dev_has_no_scheduled_contest_recovery(monkeypatch: Any) -> None:
+    template = _dev_template(monkeypatch)
+
+    assert not any(
+        resource.get("Type") == "AWS::Events::Rule"
+        and resource.get("Properties", {}).get("Name") == "zerde-serverless-contest-ttl-recovery-dev"
+        for resource in _resources(template).values()
+    )
 
 
 def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -> None:
