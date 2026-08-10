@@ -41,6 +41,7 @@ flowchart LR
 
   EB["EventBridge"] --> NEWS["News Lambda"]
   EB --> QUIZ["Quiz Lambda"]
+  EB -- "contest recovery seed" --> MAINQ
   NEWS --> GEMINI
   QUIZ --> GEMINI
   NEWS --> TG
@@ -56,7 +57,9 @@ flowchart LR
 
 | Package | Entry | Main responsibilities |
 |---------|-------|-----------------------|
-| `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and main SQS worker. Handles Telegram updates, captcha, voteban, spam checks, group memory, `/ask`, agent replies, semantic retrieval, and cleanup commands. |
+| `src/bot/` | `main.py:lambda_handler` | API Gateway webhook and main SQS worker. Handles Telegram updates, captcha, voteban, spam checks, fair linked-channel contests, group memory, `/ask`, agent replies, semantic retrieval, and cleanup commands. |
+| `src/bot/services/contest.py` | `ContestService` | Validates official contest roots and direct entries, coordinates secure draws/redraws, and publishes anchored winner evidence. |
+| `src/bot/services/repositories/contest.py` | `ContestRepository` | Sole contest lifecycle, participant uniqueness, winner history, rule-anchor, and retention truth owner in the memory table. |
 | `src/bot/services/memory_retrieval.py` | `build_agent_memory_context` | Memory Retrieval Pipeline V1: query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking. |
 | `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory SQS worker for embedding/indexing and vector backfill paging. |
 | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest and Telegram delivery. |
@@ -69,12 +72,13 @@ flowchart LR
 2. Private chats get a fixed response; non-whitelisted groups are ignored.
 3. Spam screening runs before normal handling unless a captcha is pending. Pending captcha messages stay in the captcha path only: spam-like text is deleted as a wrong captcha attempt, not announced as spam or routed into memory/agent flows.
 4. Spam handled by rule enforcement or queued AI review exits the webhook early, so spam text is not observed as group memory, sampled for reactions, or queued as a proactive candidate. AI spam checks receive structured context for the current message, reply/quote/external reply, bounded recent group messages, and rule signals, but they still classify only the current sender's message. Automatic AI enforcement requires `SPAM`, confidence above `SPAM_AI_CONFIDENCE_THRESHOLD`, and a strong structural signal such as a link, external contact, VPN, DM redirect, job/income hook, finance lead bait, or short text with contact. Weak signals such as `money_pattern` alone go to admin review, and review prompts can optionally @ configured chat admins. Automatic spam enforcement keeps the existing temporary ban path; admin-confirmed review bans are permanent.
-5. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
-6. If ambient reactions are enabled, eligible group text messages, including command text, are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
-7. Irrelevant group chatter exits early.
-8. Relevant events route to the group agent or the command dispatcher.
-9. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
-10. `agent_enabled` gates non-command group agent participation: ordinary proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, linked-channel post comments are queued as zero-delay `PROCESS_PROACTIVE_CANDIDATE` with Gemini retries plus DeepSeek/Groq text-only fallback, and @mentions/reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
+5. `contest.observe_contest_update` recognizes only initial official linked-channel mirrors containing standalone `#конкурс`, and records only direct personal-account text replies containing `қатысамын`. It is non-consuming: accepted contest updates continue through the existing memory, ambient, agent, and dispatcher paths.
+6. `group_memory.observe_update` stores non-command group messages and queues long-term memory extraction.
+7. If ambient reactions are enabled, eligible group text messages, including command text, are sampled and queued as `PROCESS_AMBIENT_REACTION`; classification runs asynchronously and does not use long-term memory or vector search.
+8. Irrelevant group chatter exits early.
+9. Relevant events route to the group agent or the command dispatcher. `/contest` is a normal dispatcher command and does not replace the single captcha plain-message handler.
+10. `/ask` is queued as `PROCESS_GROUP_ASK` with requester metadata so Telegram webhook latency stays low and self-reference questions are grounded. When `/ask` explicitly replies to supported media, the webhook adds only a serializable `media_ref`; it does not download bytes.
+11. `agent_enabled` gates non-command group agent participation: ordinary proactive candidates are delayed as `PROCESS_PROACTIVE_CANDIDATE`, linked-channel post comments are queued as zero-delay `PROCESS_PROACTIVE_CANDIDATE` with Gemini retries plus DeepSeek/Groq text-only fallback, and @mentions/reply-to-bot follow-ups stay immediate. Explicit `/ask` remains available while `memory_enabled` is true.
 
 Captcha timeout cleanup removes failed join artifacts only after a successful kick. If the user verifies successfully, the delayed timeout cleans only captcha prompts and preserves Telegram's original join system message.
 
@@ -93,6 +97,8 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for ambient reactions; ordinary messages are sampled and rate-limited, while linked-channel posts force a reaction attempt and bypass sampling/cooldowns/rate caps. Stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
 | `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
+| `PROCESS_CONTEST_TTL_SWEEP` | timeout/tasks queue | Bot Lambda stamps the immutable contest expiry on bounded participant pages, persists a DynamoDB continuation cursor before identity-only re-enqueue, then expires the rules alias and META row. Duplicate delivery is idempotent. |
+| `PROCESS_CONTEST_TTL_RECOVERY` | timeout/tasks queue | An always-on production EventBridge rule seeds a bounded page over the global durable outbox. Each marker queues an identity-only sweep; a DynamoDB page cursor is carried only to the next recovery task, keeping recovery independently retryable even after all chats are removed from configuration. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
@@ -122,6 +128,10 @@ The table is single-table by chat partition:
 | `sk=TERM#<term>#<created_at_ms>#<source_sk>` | Lightweight exact-term lexical index row pointing back to a long-term memory or daily summary source item. |
 | `sk=AGENT_REPLY#<bot_message_id>` | Short-term bot answer metadata, answer text, triggering/current user message, optional quoted source-message context, optional compact media metadata/summary, parent bot message id, requester metadata, and compact retrieval source metadata, including deletion policy, for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`. These rows are not long-term semantic memory. |
 | `sk=AMBIENT_REACTION#<created_at_ms>#<message_id>` | Seven-day reaction metadata for cooldowns/debugging: chat id, user id, message id, emoji, category, confidence, and TTL. These rows are not semantic/vector memory. |
+| `sk=CONTEST#<root_message_id>#META` | Contest lifecycle (`CREATING`, `OPEN`, internal `DRAWING`, `DRAWN`, `CANCELLED`, terminal `ORPHANED`), exact participant/frozen counts, winner history, rules id, logical expiry, and TTL-sweep cursor. |
+| `sk=CONTEST#<root_message_id>#PARTICIPANT#<user_id>` | One immutable first accepted direct-comment snapshot per Telegram user id. Participant rows are queried strongly and fully before secure selection. |
+| `sk=CONTEST_RULE#<rules_message_id>` | Alias from the Bot's rules reply to the contest root, allowing commands to anchor to either message. |
+| `pk=CONTEST_TTL_OUTBOX`, `sk=CHAT#<chat_id>#ROOT#<root_message_id>` | Durable global cleanup marker created atomically with first draw/cancel and deleted atomically only when the TTL sweep completes. The independent production recovery schedule can discover missed work without scanning participant rows. |
 | `sk=BOT_COMMITMENT#...` | Reserved durable bot-authored commitment key family for a future explicit command/admin flow. Normal answer generation must not write this. |
 | `sk=BOT_CORRECTION#...` | Reserved durable bot-authored correction key family for a future explicit user/admin correction flow. Normal answer generation must not write this. |
 | `sk=VECTOR_BACKFILL` | Cumulative vector backfill status for a chat. Tracks `processed_total`, `enqueued_total`, `failures_total`, `started_at`, `last_updated_at`, optional `finished_at`, and continuation tokens. Legacy `vector_backfill_*` attributes are still written for compatibility. |
@@ -130,6 +140,17 @@ The table is single-table by chat partition:
 Long-term memory items include `extractor_source`, `sensitivity`, `evidence_message_ids`, feedback metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, a `superseded_by` placeholder for future consolidation, and optional `expires_at` metadata. Long-term memory prefixes are vectorizable, and daily summaries are vectorized only when they are high-information. Raw `MSG#...` items, normal bot answer `AGENT_REPLY#...` items, and `AMBIENT_REACTION#...` rows are not vector memory. The reserved `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` families are placeholders for explicit future durable bot memory flows and are not vectorizable until such flows add review/permission checks and tests.
 
 Memory retention is type-specific. `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` controls raw `MSG#...` records, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` controls `AGENT_REPLY#...` thread metadata, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` controls `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` controls `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` controls `PROACTIVE#...` counters. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still stores `expires_at`; the DynamoDB `ttl` is the shorter of explicit expiry and configured long-term retention.
+
+## Contest Fairness Boundary
+
+- Activation is fail-closed: validate the current linked channel and Bot administrator status, write `CREATING`, publish fixed Kazakh rules under the root, then atomically attach the rules alias and transition to `OPEN`. `CREATING` never accepts entries.
+- Eligibility is raw-update deterministic and does not call an LLM: initial text/media caption marker only; entry text only; direct first-level root reply only; personal non-Bot `from.id` only. Registration transaction-checks `OPEN` and conditionally writes one participant row per user id.
+- First draw conditionally transitions `OPEN -> DRAWING` before a strongly consistent, fully paginated participant read. A `secrets.randbelow` reservoir sample gives every eligible row equal probability without materializing an unbounded list; zero entrants restore `OPEN`, and persisted winners precede Telegram delivery.
+- `announcement_state=PENDING` replays the same stored winner after delivery ambiguity. A winner announcement replies to the saved entry; an explicit missing-entry error falls back to the root with an escaped bounded snapshot. If both anchors are missing, the contest becomes terminal `ORPHANED`; no unanchored result is allowed.
+- Only live Telegram `creator` status may draw, redraw, or cancel. Live `creator` or `administrator` may inspect status. Anonymous identities and the configured Bot owner have no exception.
+- First successful draw or cancellation fixes `expires_at` at 30 days and atomically writes a durable cleanup outbox marker. At most two redraws append distinct winners and never extend expiry. `PROCESS_CONTEST_TTL_SWEEP` applies the same physical TTL to participant/alias/META rows; META cursor/version is the only sweep-continuation truth. Sweep completion atomically sets META TTL and consumes the marker. Initial enqueue is best-effort so cleanup outages do not block a winner/status response. An independent always-on production EventBridge rule seeds bounded `PROCESS_CONTEST_TTL_RECOVERY` pages, including when no chat remains configured. Logical expiry wins while DynamoDB deletion lags.
+- Operational inspection, DLQ redrive, and exact-row cleanup are defined in [CONTEST_OPERATIONS.md](CONTEST_OPERATIONS.md).
+- Open contests do not auto-expire. If a known webhook outage exceeds Telegram's update-retention window, cancel the affected contest because the participant set can no longer be proven complete.
 
 ## Long-Term Memory Extraction
 

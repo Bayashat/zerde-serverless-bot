@@ -433,3 +433,59 @@ class SQSClient:
                 "Failed to send vector memory backfill task to SQS", extra={"error": e, "chat_id": chat_id}
             )
             raise
+
+    def send_contest_ttl_sweep_task(
+        self,
+        *,
+        chat_id: int,
+        root_message_id: int,
+    ) -> None:
+        """Enqueue one retention page; DynamoDB owns the durable cursor."""
+        payload: dict[str, object] = {
+            "task_type": "PROCESS_CONTEST_TTL_SWEEP",
+            "chat_id": chat_id,
+            "root_message_id": root_message_id,
+        }
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info(
+                "Queued contest TTL sweep page",
+                extra={
+                    "chat_id": chat_id,
+                    "root_message_id": root_message_id,
+                },
+            )
+        except Exception as e:
+            logger.exception(
+                "Failed to enqueue contest TTL sweep",
+                extra={"error": e, "chat_id": chat_id, "root_message_id": root_message_id},
+            )
+            raise
+
+    def send_contest_ttl_recovery_task(
+        self,
+        *,
+        start_key: dict[str, object] | None = None,
+    ) -> None:
+        """Enqueue one bounded page of durable contest cleanup discovery."""
+        payload: dict[str, object] = {"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}
+        if start_key:
+            payload["start_key"] = start_key
+        try:
+            self.sqs_client.send_message(
+                QueueUrl=self.queue_url,
+                MessageBody=json.dumps(payload),
+            )
+            logger.info(
+                "Queued contest TTL outbox recovery page",
+                extra={"has_start_key": bool(start_key)},
+            )
+        except Exception as e:
+            logger.exception(
+                "Failed to enqueue contest TTL outbox recovery",
+                extra={"error": e},
+            )
+            raise

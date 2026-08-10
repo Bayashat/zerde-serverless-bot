@@ -50,6 +50,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Reply thread continuity | Bot жауаптары short-term `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі; бұл semantic/vector memory емес. |
 | Social timing | Ordinary proactive жауаптар қысқа delay-ден кейін recent context және query-filtered long-term context негізінде Groq/DeepSeek decision арқылы өтеді. Yes болса, chat daily limit reserve жасалып, жауап Gemini арқылы generate болады, DeepSeek/Groq fallback бар. Linked-channel post zero-delay comment path арқылы бөлек өңделеді және supported attached media-ны ephemeral талдай алады. |
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages sampled және rate-limited, ал linked-channel post міндетті reaction attempt алады. |
+| Әділ linked-channel конкурс | Official linked-channel post ішінде `#конкурс` болса, discussion supergroup-та қазақша конкурс ашылады. `қатысамын` сөзі бар тікелей personal-account replies Telegram user id бойынша бір рет қана саналады; ұтысты тек топ иесі өткізеді. |
 | Captcha және anti-spam | Жаңа мүшелерді тексеру; pending captcha хабарлары тек captcha flow ішінде қалады, strong high-confidence spam үнсіз өшіріледі, ал weak/ambiguous жағдайлар optional admin @mentions бар admin review-ға жіберіледі. |
 | Community voteban | `/voteban` арқылы қауымдастық дауысымен ban/forgive. |
 | Daily AI news | EventBridge арқылы іске қосылатын news Lambda RSS кандидаттарын мақала мәтіні/суретімен толықтырады, developer-ге пайдалы high-signal жаңалықтарды таңдайды және Gemini/DeepSeek-compatible жолдармен fact-first көптілді digest жібереді. |
@@ -124,6 +125,17 @@ Bot Lambda retrieval және memory cleanup үшін S3 Vectors query/delete ж
 | `/memory about me` | Барлығына | Current user-дің өз хабарламаларынан сақталған profile fields көрсету; басқа адамдардың бағасын көрсетпейді. |
 | `/memory on/off/status/forget .../wrong` | Settings үшін group owner немесе bot owner; users өз memory өшіре алады немесе answer source-тарын wrong деп белгілей алады | Group memory басқару және cleanup. `forget this` bot answer-ден durable long-term memory ғана өшіреді немесе source message-ке тікелей reply болса raw/derived memory өшіреді; `USER#` profile өшірмейді. `wrong` reply жасалған bot answer memory source-тарын өшірмей қате деп белгілейді. |
 | `/agent on/off/status/why/wrong` | Settings үшін group owner немесе bot owner; users replied answer source-тарын тексере/белгілей алады | Agent participation басқару және bot неге жауап бергенін көру; memory source түрлері/count көрсетіледі, толық memory text көрсетілмейді. `/agent wrong` reply жасалған bot answer memory source-тарын қате деп белгілейді. `/agent off` proactive, mention және reply-thread қатысуын өшіреді; жад қосулы болса, `/ask` қолжетімді. |
+| `/contest draw/redraw/cancel` | Telegram-дағы қазіргі топ иесіне ғана | Конкурс root жазбасына немесе Zerde ережесіне reply арқылы жіберіледі. `draw` бірегей тізімді бекітіп, қауіпсіз кездейсоқ жеңімпаз таңдайды; ең көбі екі `redraw` бұрын жеңбеген адамды таңдайды. |
+| `/contest status` | Топ иесі немесе administrators | Конкурс root жазбасына не ережеге reply жасап, күйін, бірегей қатысушылар және ұтыс санын көру. |
+
+### Linked-channel конкурс ережесі
+
+- Official channel-дың бастапқы text немесе media caption ішінде standalone `#конкурс` болуы керек. Кейін edit арқылы қосылған hashtag конкурс ашпайды.
+- Қатысу үшін personal account бастапқы root жазбаға тікелей reply жасап, text ішінде `қатысамын` сөзін жазуы керек; регистр маңызды емес. Басқа comment-ке reply, caption, bot, channel және anonymous administrator есептелмейді.
+- Әр Telegram user id үшін алғашқы жарамды comment қана сақталып, оған Bot API қолдайтын `🎉` reaction қойылады. Қайта жазу қосымша мүмкіндік бермейді.
+- Ұтысты Telegram-дағы қазіргі топ иесі қолмен бастайды. Нәтиже жеңімпаздың алғашқы жарамды comment-іне reply болады және қатысушылар саны мен ұтыс ретін көрсетеді. Comment жойылса, Zerde сақталған snapshot-пен root-қа reply жасайды; main chat-қа anchor-сыз нәтиже жібермейді.
+- Алғашқы сәтті draw немесе cancel 30 күндік сақтау мерзімін бекітеді. Конкурс жаңа қатысушылар үшін жабылады, екі ретке дейін distinct redraw рұқсат етіледі және мерзім ұзартылмайды.
+- Zerde discussion supergroup ішінде administrator болуы керек. Белгілі webhook outage Telegram update сақтау терезесінен ұзақ болса, fairness бұзылады: ондай ашық конкурсты draw жасамай тоқтату керек.
 
 ---
 

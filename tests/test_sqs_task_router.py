@@ -139,6 +139,135 @@ def test_process_daily_group_summaries_routes() -> None:
     mock_pd.assert_called_once_with(body, repo=None)
 
 
+def test_daily_summary_task_does_not_share_contest_recovery_failure_domain() -> None:
+    body = {
+        "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
+        "chat_ids": [-1001],
+    }
+    contest_repo = MagicMock()
+    sqs_repo = MagicMock()
+    memory_repo = MagicMock()
+    with patch("services.sqs_task_router.process_daily_group_summaries_task") as summary:
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            memory_repo,
+            contest_repo=contest_repo,
+            sqs_repo=sqs_repo,
+        )
+
+    sqs_repo.send_contest_ttl_recovery_task.assert_not_called()
+    summary.assert_called_once_with(body, repo=memory_repo)
+
+
+def test_process_contest_ttl_recovery_routes_with_existing_dependencies() -> None:
+    body = {
+        "task_type": "PROCESS_CONTEST_TTL_RECOVERY",
+        "start_key": {
+            "pk": "CONTEST_TTL_OUTBOX",
+            "sk": "CHAT#-1001#ROOT#0000000000011",
+        },
+    }
+    contest_repo = MagicMock()
+    sqs_repo = MagicMock()
+    with patch("services.sqs_task_router.process_contest_ttl_recovery_task") as recovery:
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            contest_repo=contest_repo,
+            sqs_repo=sqs_repo,
+        )
+
+    recovery.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
+
+
+def test_contest_ttl_recovery_failure_bubbles_for_independent_queue_retry() -> None:
+    body = {"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}
+    with (
+        patch(
+            "services.sqs_task_router.process_contest_ttl_recovery_task",
+            side_effect=RuntimeError("recovery boom"),
+        ),
+        pytest.raises(RuntimeError, match="recovery boom"),
+    ):
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            contest_repo=MagicMock(),
+            sqs_repo=MagicMock(),
+        )
+
+
+def test_process_contest_ttl_sweep_routes_with_existing_dependencies() -> None:
+    body = {
+        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
+        "chat_id": -1001,
+        "root_message_id": 11,
+    }
+    contest_repo = MagicMock()
+    sqs_repo = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_contest_ttl_sweep_task") as sweep,
+    ):
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            contest_repo=contest_repo,
+            sqs_repo=sqs_repo,
+        )
+    sweep.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
+
+
+def test_contest_ttl_sweep_failure_bubbles_for_queue_retry() -> None:
+    body = {
+        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
+        "chat_id": -1001,
+        "root_message_id": 11,
+    }
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch(
+            "services.sqs_task_router.process_contest_ttl_sweep_task",
+            side_effect=RuntimeError("sweep boom"),
+        ),
+        pytest.raises(RuntimeError, match="sweep boom"),
+    ):
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            contest_repo=MagicMock(),
+            sqs_repo=MagicMock(),
+        )
+
+
+def test_contest_ttl_cleanup_survives_chat_configuration_removal() -> None:
+    body = {
+        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
+        "chat_id": -1001,
+        "root_message_id": 11,
+    }
+    contest_repo = MagicMock()
+    sqs_repo = MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=False),
+        patch("services.sqs_task_router.process_contest_ttl_sweep_task") as sweep,
+    ):
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            MagicMock(),
+            MagicMock(),
+            contest_repo=contest_repo,
+            sqs_repo=sqs_repo,
+        )
+    sweep.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
+
+
 def test_process_vector_memory_routes() -> None:
     body = {
         "task_type": "PROCESS_VECTOR_MEMORY",

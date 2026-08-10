@@ -35,6 +35,7 @@ class TelegramClient:
         self.api_base = f"{TELEGRAM_API_BASE}{self.bot_token}"
         file_base = TELEGRAM_API_BASE.replace("/bot", "/file/bot", 1)
         self.file_api_base = f"{file_base}{self.bot_token}"
+        self._me: dict[str, Any] | None = None
         logger.info("TelegramClient initialized", extra={"api_base": TELEGRAM_API_BASE})
 
     def _post(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -254,6 +255,16 @@ class TelegramClient:
         payload: dict[str, Any] = {"chat_id": chat_id}
         result = self._post("getChat", payload)
         return result.get("result", {})
+
+    def get_me(self) -> dict[str, Any]:
+        """Return and cache this Bot's Telegram identity for permission checks."""
+        if self._me is None:
+            result = self._post("getMe", {})
+            me = result.get("result", {})
+            if not isinstance(me, dict) or not me.get("id"):
+                raise TelegramAPIError(502, "Telegram getMe returned an invalid result")
+            self._me = me
+        return dict(self._me)
 
     def get_chat_member(self, chat_id: int | str, user_id: int) -> dict[str, Any]:
         """Get chat member info (use ``result['status']`` for admin check)."""

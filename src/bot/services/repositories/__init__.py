@@ -1,6 +1,7 @@
 """Data-access layer: DynamoDB repositories and SQS task helpers."""
 
 from services.repositories.captcha import CaptchaRepository
+from services.repositories.contest import ContestRepository
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.lambda_invoker import LambdaInvoker
 from services.repositories.quiz import QuizRepository
@@ -11,6 +12,7 @@ from services.repositories.votes import VoteRepository
 
 __all__ = [
     "CaptchaRepository",
+    "ContestRepository",
     "GroupMemoryRepository",
     "LambdaInvoker",
     "QuizRepository",

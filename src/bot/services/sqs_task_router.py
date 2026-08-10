@@ -9,11 +9,17 @@ from typing import Any
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
 from services.ambient_reactions import process_ambient_reaction_task
+from services.contest import (
+    process_contest_ttl_recovery_task,
+    process_contest_ttl_sweep_task,
+)
 from services.group_agent import process_proactive_candidate_task
 from services.group_memory_processor import process_daily_group_summaries_task, process_group_memory_task
 from services.handlers import process_group_ask_task, process_timeout_task
 from services.repositories.captcha import CaptchaRepository
+from services.repositories.contest import ContestRepository
 from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.sqs import SQSClient
 from services.spam.processor import process_spam_check_task
 from services.telegram import TelegramClient
 from services.vector_memory import process_vector_memory_backfill_task, process_vector_memory_task
@@ -64,6 +70,9 @@ def process_sqs_event(
     bot: TelegramClient,
     captcha_repo: CaptchaRepository,
     memory_repo: GroupMemoryRepository | None = None,
+    *,
+    contest_repo: ContestRepository | None = None,
+    sqs_repo: SQSClient | None = None,
 ) -> None:
     """Process main bot SQS tasks. Vector tasks are handled by the vector-indexer Lambda."""
     logger.debug(
@@ -74,10 +83,13 @@ def process_sqs_event(
     for record in event["Records"]:
         try:
             body = _load_task_body(record)
-            if _should_skip_unconfigured_chat(body):
+            task_type = body.get("task_type")
+            if task_type not in {
+                "PROCESS_CONTEST_TTL_SWEEP",
+                "PROCESS_CONTEST_TTL_RECOVERY",
+            } and _should_skip_unconfigured_chat(body):
                 continue
 
-            task_type = body.get("task_type")
             t0 = time.monotonic()
             if task_type == "CHECK_TIMEOUT":
                 body["_captcha_repo"] = captcha_repo
@@ -100,6 +112,22 @@ def process_sqs_event(
                 process_group_memory_task(body, repo=memory_repo)
             elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":
                 process_daily_group_summaries_task(body, repo=memory_repo)
+            elif task_type == "PROCESS_CONTEST_TTL_RECOVERY":
+                if contest_repo is None:
+                    raise RuntimeError("PROCESS_CONTEST_TTL_RECOVERY requires contest_repo")
+                process_contest_ttl_recovery_task(
+                    body,
+                    repo=contest_repo,
+                    sqs_repo=sqs_repo or SQSClient(),
+                )
+            elif task_type == "PROCESS_CONTEST_TTL_SWEEP":
+                if contest_repo is None:
+                    raise RuntimeError("PROCESS_CONTEST_TTL_SWEEP requires contest_repo")
+                process_contest_ttl_sweep_task(
+                    body,
+                    repo=contest_repo,
+                    sqs_repo=sqs_repo or SQSClient(),
+                )
             else:
                 logger.warning(
                     "Unexpected SQS record: unsupported task_type, ignoring",

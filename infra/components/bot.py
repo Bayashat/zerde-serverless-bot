@@ -367,6 +367,21 @@ class BotConstruct(Construct):
             )
         )
 
+        if is_prod:
+            contest_recovery_rule = events.Rule(
+                self,
+                f"{CONSTRUCT_PREFIX}ContestTTLRecoveryRule",
+                rule_name=f"{RESOURCE_PREFIX}-contest-ttl-recovery-{env_name}",
+                description="Recover durable contest TTL cleanup work",
+                schedule=events.Schedule.cron(minute="50", hour="20", day="*", month="*", year="*"),
+            )
+            contest_recovery_rule.add_target(
+                events_targets.SqsQueue(
+                    queue,
+                    message=events.RuleTargetInput.from_object({"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}),
+                )
+            )
+
         if is_prod and chat_lang_map:
             summary_rule = events.Rule(
                 self,

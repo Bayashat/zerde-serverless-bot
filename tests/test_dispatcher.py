@@ -41,6 +41,7 @@ def test_registered_public_command_surface(mock_bot, mock_stats_repo, mock_sqs_r
     assert "/memory" in dp.command_handlers
     assert "/agent" in dp.command_handlers
     assert "/ask" in dp.command_handlers
+    assert "/contest" in dp.command_handlers
     assert "/wtf" not in dp.command_handlers
     assert "/explain" not in dp.command_handlers
     assert "/memory_on" not in dp.command_handlers
