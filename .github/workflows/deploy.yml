@@ -87,7 +87,8 @@ jobs:
           GEMINI_EMBEDDING_RPD_LIMIT: ${{ vars.GEMINI_EMBEDDING_RPD_LIMIT || '1000' }}
           GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
           FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
-          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
+          GROQ_SPAM_MODEL: ${{ vars.GROQ_SPAM_MODEL || 'openai/gpt-oss-safeguard-20b' }}
           GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
           DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
           DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
@@ -130,13 +131,13 @@ jobs:
           AGENT_RECENT_CONTEXT_LIMIT: ${{ vars.AGENT_RECENT_CONTEXT_LIMIT || '100' }}
           AGENT_DAILY_PROACTIVE_LIMIT: ${{ vars.AGENT_DAILY_PROACTIVE_LIMIT || '10' }}
           AGENT_PROACTIVE_FINAL_THRESHOLD: ${{ vars.AGENT_PROACTIVE_FINAL_THRESHOLD || '0.72' }}
-          AGENT_PROACTIVE_DECISION_GROQ_MODELS: ${{ vars.AGENT_PROACTIVE_DECISION_GROQ_MODELS || 'llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b' }}
+          AGENT_PROACTIVE_DECISION_GROQ_MODELS: ${{ vars.AGENT_PROACTIVE_DECISION_GROQ_MODELS || 'openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b' }}
           AGENT_PROACTIVE_DECISION_CONTEXT_CHARS: ${{ vars.AGENT_PROACTIVE_DECISION_CONTEXT_CHARS || '4000' }}
           AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK: ${{ vars.AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK || 'false' }}
           AMBIENT_REACTIONS_ENABLED: ${{ vars.AMBIENT_REACTIONS_ENABLED || 'true' }}
           AMBIENT_REACTIONS_SAMPLE_RATE: ${{ vars.AMBIENT_REACTIONS_SAMPLE_RATE || '0.80' }}
           AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD: ${{ vars.AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD || '0.80' }}
-          AMBIENT_REACTIONS_DECISION_GROQ_MODELS: ${{ vars.AMBIENT_REACTIONS_DECISION_GROQ_MODELS || 'llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct' }}
+          AMBIENT_REACTIONS_DECISION_GROQ_MODELS: ${{ vars.AMBIENT_REACTIONS_DECISION_GROQ_MODELS || 'openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b' }}
           AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS: ${{ vars.AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS || '3000' }}
           AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS: ${{ vars.AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS || '60' }}
           AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS: ${{ vars.AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS || '300' }}

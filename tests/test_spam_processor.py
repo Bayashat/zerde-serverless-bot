@@ -6,6 +6,7 @@ import pytest
 from core.config import TELEGRAM_CHANNEL_POST_ACTOR_USER_ID
 from services.spam.groq_detector import SpamCheckResult
 from services.spam.processor import process_spam_check_task
+from zerde_common.ai_errors import ProviderResponseError
 
 _BODY = {
     "task_type": "SPAM_CHECK",
@@ -89,13 +90,14 @@ def test_spam_low_confidence_does_not_enforce(mock_get_detector, mock_enforcer_c
 @patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
-def test_api_error_does_not_enforce(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_api_error_reraises_for_sqs_retry(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
     mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.0, error=True)
     mock_enforcer = mock_enforcer_cls.return_value
 
-    process_spam_check_task(mock_bot, _BODY)
+    with pytest.raises(ProviderResponseError, match="spam classifier failed"):
+        process_spam_check_task(mock_bot, _BODY)
 
     mock_enforcer.enforce.assert_not_called()
 

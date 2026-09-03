@@ -89,6 +89,7 @@ ADMIN_USER_ID: int = require_int("ADMIN_USER_ID")
 # ── Groq parameters ──────────────────────────────────────────────────────────
 GROQ_API_BASE: str = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
 GROQ_MODEL: str | None = os.environ.get("GROQ_MODEL")
+GROQ_SPAM_MODEL: str = os.environ.get("GROQ_SPAM_MODEL", "openai/gpt-oss-safeguard-20b")
 
 # ── DeepSeek fallback parameters ───────────────────────────────────────────
 DEEPSEEK_API_BASE: str = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
@@ -247,7 +248,7 @@ AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_S
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
 AGENT_PROACTIVE_DECISION_GROQ_MODELS: tuple[str, ...] = _env_csv(
     "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
-    "llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b",
+    "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b",
 )
 AGENT_PROACTIVE_DECISION_CONTEXT_CHARS: int = max(
     0, int(os.environ.get("AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", "4000"))
@@ -263,7 +264,7 @@ AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD: float = max(
 )
 AMBIENT_REACTIONS_DECISION_GROQ_MODELS: tuple[str, ...] = _env_csv(
     "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
-    "llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct",
+    "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b",
 )
 AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS: int = max(
     0, int(os.environ.get("AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", "3000"))
