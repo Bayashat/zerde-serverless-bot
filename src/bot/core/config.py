@@ -7,16 +7,9 @@ from typing import Any
 from zerde_common.config import require, require_int, require_json
 from zerde_common.secrets import load_ssm_secrets_if_needed
 
-# ── SSM: one GetParameters batch at import when SSM_SECRET_PREFIX is set (warm path avoids SSM). ─
+# Secrets are loaded only by the accessors below.  This keeps workers such as
+# the vector indexer from needing permission to read unrelated bot secrets.
 _SSM_SECRET_PREFIX: str = os.environ.get("SSM_SECRET_PREFIX", "")
-_SSM_KEY_MAP: dict[str, str] = {
-    "bot-token": "BOT_TOKEN",
-    "webhook-secret-token": "WEBHOOK_SECRET_TOKEN",
-    "groq-api-key": "GROQ_API_KEY",
-    "gemini-api-key": "GEMINI_API_KEY",
-}
-if _SSM_SECRET_PREFIX:
-    load_ssm_secrets_if_needed(_SSM_SECRET_PREFIX, _SSM_KEY_MAP)
 _LAZY_SECRET_ATTRS: frozenset[str] = frozenset(
     {"BOT_TOKEN", "WEBHOOK_SECRET_TOKEN", "GROQ_API_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"}
 )

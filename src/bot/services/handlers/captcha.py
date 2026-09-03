@@ -50,7 +50,7 @@ def _delete_timeout_messages(
 ) -> None:
     for message_id in message_ids:
         try:
-            bot.delete_message(chat_id, message_id)
+            bot.delete_message(chat_id, message_id, ignore_not_found=True)
         except Exception as e:
             logger.warning("Failed to delete captcha timeout message %s: %s", message_id, e)
 
@@ -206,7 +206,7 @@ def _delete_all_captcha_messages(ctx: Context, pending: dict, extra_ids: list[in
         ids_to_delete += extra_ids
     for msg_id in ids_to_delete:
         try:
-            ctx.bot.delete_message(ctx.chat_id, msg_id)
+            ctx.bot.delete_message(ctx.chat_id, msg_id, ignore_not_found=True)
         except Exception:
             pass
 
@@ -217,7 +217,7 @@ def _handle_wrong_captcha_attempt(ctx: Context, pending: dict) -> None:
     remaining = CAPTCHA_MAX_ATTEMPTS - new_attempts
 
     try:
-        ctx.bot.delete_message(ctx.chat_id, ctx.message_id)
+        ctx.bot.delete_message(ctx.chat_id, ctx.message_id, ignore_not_found=True)
     except Exception:
         pass
 
@@ -263,7 +263,7 @@ def handle_captcha_answer(ctx: Context) -> None:
         ids_to_delete = [pending["verify_msg_id"], ctx.message_id] + pending.get("wrong_msg_ids", [])
         for msg_id in ids_to_delete:
             try:
-                ctx.bot.delete_message(ctx.chat_id, msg_id)
+                ctx.bot.delete_message(ctx.chat_id, msg_id, ignore_not_found=True)
             except Exception:
                 pass
 

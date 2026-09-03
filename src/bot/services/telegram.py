@@ -27,6 +27,17 @@ class TelegramFileTooLargeError(Exception):
     """Raised when a Telegram file exceeds the configured download limit."""
 
 
+def _is_message_not_found(error: TelegramAPIError) -> bool:
+    if error.status != 400:
+        return False
+    try:
+        payload = json.loads(error.body)
+        description = str(payload.get("description") or "") if isinstance(payload, dict) else ""
+    except (json.JSONDecodeError, TypeError):
+        description = error.body
+    return description.strip().casefold().endswith("message to delete not found")
+
+
 class TelegramClient:
     """HTTP wrapper around the Telegram Bot API."""
 
@@ -323,11 +334,25 @@ class TelegramClient:
         finally:
             resp.release_conn()
 
-    def delete_message(self, chat_id: int | str, message_id: int) -> None:
+    def delete_message(
+        self,
+        chat_id: int | str,
+        message_id: int,
+        *,
+        ignore_not_found: bool = False,
+    ) -> None:
         """Delete a message from Telegram."""
         payload = {"chat_id": chat_id, "message_id": message_id}
         try:
             self._post("deleteMessage", payload)
+        except TelegramAPIError as e:
+            if ignore_not_found and _is_message_not_found(e):
+                return
+            logger.error(
+                "Failed to delete message",
+                extra={"message_id": message_id, "error": str(e)},
+            )
+            raise
         except Exception as e:
             logger.error(
                 "Failed to delete message",

@@ -98,6 +98,39 @@ def test_ban_chat_member_posts_permanent_ban_without_until_date(monkeypatch):
     assert payload == {"chat_id": -100123, "user_id": 42}
 
 
+def test_delete_message_can_ignore_already_missing_message(monkeypatch):
+    fake_http = _FakeHttp(
+        [
+            _Response(
+                status=400,
+                data=b'{"ok":false,"error_code":400,"description":"Bad Request: message to delete not found"}',
+            )
+        ]
+    )
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+
+    client.delete_message(-100123, 42, ignore_not_found=True)
+
+    assert fake_http.requests[0]["url"].endswith("/deleteMessage")
+
+
+def test_delete_message_does_not_ignore_other_api_errors(monkeypatch):
+    fake_http = _FakeHttp(
+        [
+            _Response(
+                status=400,
+                data=b'{"ok":false,"error_code":400,"description":"Bad Request: message cannot be deleted"}',
+            )
+        ]
+    )
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+
+    with pytest.raises(TelegramAPIError):
+        client.delete_message(-100123, 42, ignore_not_found=True)
+
+
 class _Response:
     def __init__(self, *, status, data=b"", headers=None, chunks=None):
         self.status = status

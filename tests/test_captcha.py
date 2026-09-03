@@ -41,11 +41,11 @@ def test_correct_answer_unrestricts_user():
     ctx.bot.restrict_chat_member.assert_called_once()
     captcha_repo.mark_verified.assert_called_once_with(-100123, 42)
     captcha_repo.delete_pending.assert_not_called()
-    ctx.bot.delete_message.assert_any_call(-100123, 6)
-    ctx.bot.delete_message.assert_any_call(-100123, 7)
-    ctx.bot.delete_message.assert_any_call(-100123, 8)
-    ctx.bot.delete_message.assert_any_call(-100123, 10)
-    assert call(-100123, 5) not in ctx.bot.delete_message.call_args_list
+    ctx.bot.delete_message.assert_any_call(-100123, 6, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 7, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 8, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 10, ignore_not_found=True)
+    assert call(-100123, 5, ignore_not_found=True) not in ctx.bot.delete_message.call_args_list
 
 
 def test_wrong_answer_increments_attempts():
@@ -87,7 +87,7 @@ def test_non_digit_text_during_captcha_counts_as_wrong_attempt():
     handle_captcha_answer(ctx)
 
     captcha_repo.increment_attempts.assert_called_once_with(-100123, 42)
-    ctx.bot.delete_message.assert_called_once_with(-100123, 10)
+    ctx.bot.delete_message.assert_called_once_with(-100123, 10, ignore_not_found=True)
     ctx.bot.kick_chat_member.assert_not_called()
     captcha_repo.append_wrong_message.assert_called_once_with(-100123, 42, 777)
 
@@ -112,11 +112,11 @@ def test_third_wrong_answer_kicks_user():
 
     ctx.bot.kick_chat_member.assert_called_once_with(-100123, 42)
     captcha_repo.delete_pending.assert_called_once()
-    ctx.bot.delete_message.assert_any_call(-100123, 5)
-    ctx.bot.delete_message.assert_any_call(-100123, 6)
-    ctx.bot.delete_message.assert_any_call(-100123, 7)
-    ctx.bot.delete_message.assert_any_call(-100123, 8)
-    ctx.bot.delete_message.assert_any_call(-100123, 10)
+    ctx.bot.delete_message.assert_any_call(-100123, 5, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 6, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 7, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 8, ignore_not_found=True)
+    ctx.bot.delete_message.assert_any_call(-100123, 10, ignore_not_found=True)
 
 
 def test_no_pending_captcha_ignored():
@@ -158,10 +158,10 @@ def test_timeout_with_matching_pending_challenge_kicks_user():
 
     bot.kick_chat_member.assert_called_once_with(-100123, 42)
     bot.get_chat_member.assert_not_called()
-    bot.delete_message.assert_any_call(-100123, 5)
-    bot.delete_message.assert_any_call(-100123, 6)
-    bot.delete_message.assert_any_call(-100123, 7)
-    bot.delete_message.assert_any_call(-100123, 8)
+    bot.delete_message.assert_any_call(-100123, 5, ignore_not_found=True)
+    bot.delete_message.assert_any_call(-100123, 6, ignore_not_found=True)
+    bot.delete_message.assert_any_call(-100123, 7, ignore_not_found=True)
+    bot.delete_message.assert_any_call(-100123, 8, ignore_not_found=True)
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
 
 
@@ -219,9 +219,9 @@ def test_timeout_with_verified_challenge_does_not_kick_user():
 
     bot.kick_chat_member.assert_not_called()
     bot.get_chat_member.assert_not_called()
-    bot.delete_message.assert_any_call(-100123, 6)
-    bot.delete_message.assert_any_call(-100123, 7)
-    assert call(-100123, 5) not in bot.delete_message.call_args_list
+    bot.delete_message.assert_any_call(-100123, 6, ignore_not_found=True)
+    bot.delete_message.assert_any_call(-100123, 7, ignore_not_found=True)
+    assert call(-100123, 5, ignore_not_found=True) not in bot.delete_message.call_args_list
     captcha_repo.delete_pending.assert_called_once_with(-100123, 42)
 
 
