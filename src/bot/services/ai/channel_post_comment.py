@@ -23,6 +23,7 @@ from zerde_common.ai_errors import (
     ZerdeProviderError,
     map_http_status_to_provider_error,
 )
+from zerde_common.groq_chat import apply_groq_chat_options
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -141,6 +142,12 @@ class OpenAICompatibleChannelPostCommentProvider:
             "max_tokens": max(80, min(420, int(max_output_tokens))),
             "response_format": {"type": "json_object"},
         }
+        if self.provider_name == "groq":
+            apply_groq_chat_options(
+                payload,
+                model=self._model,
+                max_output_tokens=max(80, min(420, int(max_output_tokens))),
+            )
 
         logger.info(
             "Channel post fallback provider request started",

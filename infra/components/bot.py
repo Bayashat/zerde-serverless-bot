@@ -47,6 +47,7 @@ class BotConstruct(Construct):
         gemini_embedding_rpd_limit: str,
         groq_api_base: str,
         groq_model: str,
+        groq_spam_model: str,
         deepseek_api_base: str,
         deepseek_model: str,
         spam_rule_enforce_threshold: str,
@@ -244,6 +245,7 @@ class BotConstruct(Construct):
             # -- Groq parameters (non-secret) ──────────────────────────────────
             "GROQ_API_BASE": groq_api_base,
             "GROQ_MODEL": groq_model,
+            "GROQ_SPAM_MODEL": groq_spam_model,
             # -- DeepSeek parameters (non-secret) ──────────────────────────────
             "DEEPSEEK_API_BASE": deepseek_api_base,
             "DEEPSEEK_MODEL": deepseek_model,

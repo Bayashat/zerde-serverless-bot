@@ -30,6 +30,7 @@ from zerde_common.ai_errors import (
     ZerdeProviderError,
     map_http_status_to_provider_error,
 )
+from zerde_common.groq_chat import apply_groq_chat_options
 from zerde_common.logging_utils import llm_text_log_fields
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -197,6 +198,8 @@ class OpenAICompatibleQuizProvider(QuizLLMProvider):
             "temperature": temperature,
             "response_format": {"type": "json_object"},
         }
+        if self._provider_name == "Groq":
+            apply_groq_chat_options(payload, model=self._model, max_output_tokens=1024)
 
         logger.info(
             "Quiz fallback provider request started",

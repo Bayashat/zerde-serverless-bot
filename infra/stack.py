@@ -99,7 +99,8 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── Groq parameters ──────────────────────────────────────────────────
         groq_api_base = os.environ.get("GROQ_API_BASE", "https://api.groq.com/openai/v1")
-        groq_model = os.environ.get("GROQ_MODEL")
+        groq_model = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+        groq_spam_model = os.environ.get("GROQ_SPAM_MODEL", "openai/gpt-oss-safeguard-20b")
         spam_rule_enforce_threshold = os.environ.get("SPAM_RULE_ENFORCE_THRESHOLD", "0.8")
         spam_rule_ai_threshold = os.environ.get("SPAM_RULE_AI_THRESHOLD", "0.15")
         spam_ai_confidence_threshold = os.environ.get("SPAM_AI_CONFIDENCE_THRESHOLD", "0.85")
@@ -152,7 +153,7 @@ class ZerdeTelegramBotStack(Stack):
         agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
         agent_proactive_decision_groq_models = os.environ.get(
             "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
-            "llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b",
+            "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b",
         )
         agent_proactive_decision_context_chars = os.environ.get("AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", "4000")
         agent_proactive_decision_allow_deepseek_fallback = os.environ.get(
@@ -163,7 +164,7 @@ class ZerdeTelegramBotStack(Stack):
         ambient_reactions_confidence_threshold = os.environ.get("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", "0.80")
         ambient_reactions_decision_groq_models = os.environ.get(
             "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
-            "llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct",
+            "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b",
         )
         ambient_reactions_decision_context_chars = os.environ.get("AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", "3000")
         ambient_reactions_min_gap_per_chat_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
@@ -247,6 +248,7 @@ class ZerdeTelegramBotStack(Stack):
             gemini_embedding_rpd_limit=gemini_embedding_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
+            groq_spam_model=groq_spam_model,
             deepseek_api_base=deepseek_api_base,
             deepseek_model=deepseek_model,
             spam_rule_enforce_threshold=spam_rule_enforce_threshold,

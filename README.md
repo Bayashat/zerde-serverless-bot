@@ -181,11 +181,18 @@ Common group-memory retention settings:
 
 `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` retention settings fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted. `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term memory still stores explicit `expires_at` metadata from `expires_in_days`; DynamoDB TTL uses the shorter of that explicit expiry and the configured long-term retention.
 
+Groq model settings:
+
+| Env var | Applies to | Default |
+|---------|------------|---------|
+| `GROQ_MODEL` | General text/JSON fallback for group replies, channel comments, and quiz generation | `openai/gpt-oss-120b` |
+| `GROQ_SPAM_MODEL` | Dedicated Layer-2 spam policy classifier | `openai/gpt-oss-safeguard-20b` |
+
 Proactive decision settings:
 
 | Env var | Applies to | Default |
 |---------|------------|---------|
-| `AGENT_PROACTIVE_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for ordinary proactive decisions | `llama-3.1-8b-instant,meta-llama/llama-4-scout-17b-16e-instruct,qwen/qwen3-32b` |
+| `AGENT_PROACTIVE_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for ordinary proactive decisions | `openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b` |
 | `AGENT_PROACTIVE_DECISION_CONTEXT_CHARS` | Max recent/query-filtered context characters sent to decision models | `4000` |
 | `AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK` | Opt-in DeepSeek fallback for proactive decisions when every Groq model fails | `false` |
 
@@ -196,7 +203,7 @@ Ambient reaction settings:
 | `AMBIENT_REACTIONS_ENABLED` | Enables async ambient emoji reactions | `true` |
 | `AMBIENT_REACTIONS_SAMPLE_RATE` | Fraction of eligible messages sampled before SQS enqueue | `0.80` |
 | `AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD` | Minimum classifier confidence before reacting | `0.80` |
-| `AMBIENT_REACTIONS_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for reaction decisions | `llama-3.1-8b-instant,qwen/qwen3-32b,meta-llama/llama-4-scout-17b-16e-instruct` |
+| `AMBIENT_REACTIONS_DECISION_GROQ_MODELS` | Comma-separated Groq model pool for reaction decisions | `openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b` |
 | `AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS` | Max previous/reply context characters sent to reaction decision models | `3000` |
 | `AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS` | Minimum seconds between reactions in one chat | `60` |
 | `AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS` | Minimum seconds between reactions to one user's messages in a chat | `300` |

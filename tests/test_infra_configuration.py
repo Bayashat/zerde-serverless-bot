@@ -412,6 +412,10 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
         "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
         "DEEPSEEK_API_BASE",
         "DEEPSEEK_MODEL",
+        "GROQ_MODEL",
+        "GROQ_SPAM_MODEL",
+        "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
+        "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
     ):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
@@ -444,6 +448,14 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS"] == "300"
     assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR"] == "12"
     assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY"] == "100"
+    assert env_vars["GROQ_MODEL"] == "openai/gpt-oss-120b"
+    assert env_vars["GROQ_SPAM_MODEL"] == "openai/gpt-oss-safeguard-20b"
+    assert env_vars["AGENT_PROACTIVE_DECISION_GROQ_MODELS"] == (
+        "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b"
+    )
+    assert env_vars["AMBIENT_REACTIONS_DECISION_GROQ_MODELS"] == (
+        "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b"
+    )
     assert env_vars["DEEPSEEK_API_BASE"] == "https://api.deepseek.com"
     assert env_vars["DEEPSEEK_MODEL"] == "deepseek-chat"
     assert env_vars["MULTIMODAL_ENABLED"] == "true"

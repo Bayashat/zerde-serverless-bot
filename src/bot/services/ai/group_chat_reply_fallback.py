@@ -22,6 +22,7 @@ from zerde_common.ai_errors import (
     ZerdeProviderError,
     map_http_status_to_provider_error,
 )
+from zerde_common.groq_chat import apply_groq_chat_options
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -200,6 +201,12 @@ class OpenAICompatibleGroupChatReplyProvider:
             "temperature": 0.55,
             "max_tokens": max(80, min(700, int(max_output_tokens))),
         }
+        if self.provider_name == "groq":
+            apply_groq_chat_options(
+                payload,
+                model=self._model,
+                max_output_tokens=max(80, min(700, int(max_output_tokens))),
+            )
 
         logger.info(
             "Group chat reply fallback provider request started",

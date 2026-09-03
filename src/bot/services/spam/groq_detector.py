@@ -1,11 +1,19 @@
-"""Groq LLaMA spam classifier: Layer-2 async AI classification via SQS worker."""
+"""Groq spam classifier: Layer-2 async AI classification via SQS worker."""
 
 import json
 from dataclasses import dataclass, field
 
 import urllib3
-from core.config import GROQ_API_BASE, GROQ_MODEL, get_groq_api_key
+from core.config import GROQ_API_BASE, GROQ_SPAM_MODEL, get_groq_api_key
 from core.logger import LoggerAdapter, get_logger
+from urllib3.exceptions import HTTPError
+from zerde_common.ai_errors import (
+    ProviderResponseError,
+    ProviderTransportError,
+    ZerdeProviderError,
+    map_http_status_to_provider_error,
+)
+from zerde_common.groq_chat import apply_groq_chat_options
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -144,7 +152,7 @@ class GroqSpamDetector:
 
     def __init__(self) -> None:
         self.api_base = GROQ_API_BASE
-        self.model = GROQ_MODEL
+        self.model = GROQ_SPAM_MODEL
         api_key = get_groq_api_key()
         if not api_key:
             raise ValueError("GROQ_API_KEY must be set to initialize GroqSpamDetector")
@@ -152,12 +160,14 @@ class GroqSpamDetector:
         logger.info("GroqSpamDetector initialized", extra={"model": self.model})
 
     def classify(self, text: str) -> SpamCheckResult:
-        """Classify text as SPAM or NOT_SPAM. Never raises — returns error result on failure."""
+        """Classify text as SPAM or NOT_SPAM, raising on provider failure."""
         try:
             return self._call_api(text)
         except Exception as e:
             logger.error("GroqSpamDetector classify failed", extra={"error": e})
-            return SpamCheckResult(label="NOT_SPAM", confidence=0.0, error=True)
+            if isinstance(e, ZerdeProviderError):
+                raise
+            raise ProviderResponseError(f"Groq spam response invalid: {e}") from e
 
     def _call_api(self, text: str) -> SpamCheckResult:
         payload = {
@@ -167,35 +177,64 @@ class GroqSpamDetector:
                 {"role": "user", "content": f"Classify this structured spam review context:\n{text}"},
             ],
             "temperature": 0.0,
-            "max_tokens": 64,
+            "response_format": {"type": "json_object"},
         }
+        apply_groq_chat_options(payload, model=self.model, max_output_tokens=128)
         url = f"{self.api_base}/chat/completions"
         logger.info(
             "Groq spam classification request started",
-            extra={"model": self.model, "message_chars": len(text), "max_tokens": payload["max_tokens"]},
-        )
-        resp = _http.request(
-            "POST",
-            url,
-            body=json.dumps(payload),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
+            extra={
+                "model": self.model,
+                "message_chars": len(text),
+                "max_completion_tokens": payload["max_completion_tokens"],
             },
-            retries=False,
         )
+        try:
+            resp = _http.request(
+                "POST",
+                url,
+                body=json.dumps(payload),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.api_key}",
+                },
+                retries=False,
+            )
+        except (HTTPError, OSError) as exc:
+            raise ProviderTransportError(f"Groq spam transport error: {exc}") from exc
 
         if resp.status >= 400:
-            body_text = resp.data.decode("utf-8")
-            logger.error("Groq spam API error", extra={"status": resp.status, "body": body_text})
-            return SpamCheckResult(label="NOT_SPAM", confidence=0.0, error=True)
+            body_text = resp.data.decode("utf-8", errors="replace")
+            logger.error("Groq spam API error", extra={"status": resp.status, "body": body_text[:500]})
+            raise map_http_status_to_provider_error(
+                resp.status,
+                f"Groq spam API {resp.status}: {body_text[:200]}",
+            )
 
-        data = json.loads(resp.data.decode("utf-8"))
-        content = data["choices"][0]["message"]["content"].strip()
-        result = json.loads(content)
-        label = result["label"]
-        confidence = float(result["confidence"])
-        reason = result.get("reason", "unknown")
+        try:
+            data = json.loads(resp.data.decode("utf-8"))
+            raw_content = data["choices"][0]["message"]["content"]
+        except json.JSONDecodeError as exc:
+            raise ProviderResponseError(f"Groq spam response was not valid JSON: {exc}") from exc
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ProviderResponseError(f"Groq spam response schema invalid: {exc}") from exc
+        if not isinstance(raw_content, str) or not raw_content.strip():
+            raise ProviderResponseError("Groq returned empty spam classification content")
+
+        content = raw_content.strip()
+        try:
+            result = json.loads(content)
+            if not isinstance(result, dict):
+                raise TypeError("classification JSON was not an object")
+            label = result["label"]
+            if label not in {"SPAM", "NOT_SPAM"}:
+                raise ValueError("label must be SPAM or NOT_SPAM")
+            confidence = float(result["confidence"])
+            if not 0.0 <= confidence <= 1.0:
+                raise ValueError("confidence must be between 0 and 1")
+            reason = str(result["reason"])
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            raise ProviderResponseError(f"Groq returned invalid spam classification JSON: {exc}") from exc
         logger.info(
             "Groq spam classification result",
             extra={

@@ -22,6 +22,7 @@ from services.spam.enforcer import SpamEnforcer, resolve_spam_target_mention, tr
 from services.spam.groq_detector import GroqSpamDetector
 from services.spam.message_text import format_spam_ai_context
 from services.telegram import TelegramClient
+from zerde_common.ai_errors import ProviderResponseError
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -124,7 +125,7 @@ def process_spam_check_task(
         )
 
         if result.error:
-            return
+            raise ProviderResponseError("spam classifier failed")
 
         if auto_enforce:
             SpamEnforcer(bot, StatsRepository()).enforce(
@@ -143,6 +144,7 @@ def process_spam_check_task(
             extra={"chat_id": chat_id, "user_id": user_id, "error": e},
             exc_info=True,
         )
+        raise
 
 
 def _has_pending_captcha(captcha_repo: CaptchaRepository | None, chat_id: int, user_id: int) -> bool:

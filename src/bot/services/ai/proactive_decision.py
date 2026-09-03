@@ -26,6 +26,7 @@ from zerde_common.ai_errors import (
     ZerdeProviderError,
     map_http_status_to_provider_error,
 )
+from zerde_common.groq_chat import apply_groq_chat_options
 
 logger = LoggerAdapter(get_logger(__name__), {})
 _RATE_LIMIT_COOLDOWN_SECONDS = 60 * 60
@@ -192,6 +193,8 @@ class OpenAICompatibleProactiveDecisionProvider:
             "max_tokens": 260,
             "response_format": {"type": "json_object"},
         }
+        if self.provider_name.startswith("groq:"):
+            apply_groq_chat_options(payload, model=self._model, max_output_tokens=260)
 
         logger.info(
             "Proactive decision provider request started",
