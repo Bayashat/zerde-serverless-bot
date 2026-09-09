@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from botocore.exceptions import ClientError
-from services import group_agent, group_memory, group_memory_processor
+from services import group_agent, group_memory, group_memory_processor, telegram_media
 from services.ai import channel_post_comment, gemini_client, proactive_decision
 from services.ai.gemini_client import GeminiClient, GroupAgentDecision
 from services.ai.proactive_decision import ProactiveDecision
@@ -23,7 +23,7 @@ from services.repositories.group_memory import (
     normalise_chat_style_profile,
 )
 from services.repositories.sqs import SQSClient
-from services.telegram_media import PreparedMedia
+from services.telegram_media import PreparedMedia, PreparedMediaCollection
 from zerde_common.ai_errors import ProviderRateLimitError, ProviderResponseError, ProviderTransportError
 
 
@@ -135,6 +135,33 @@ def test_observe_update_ignores_normal_media_without_text(monkeypatch):
 
     repo.store_message.assert_not_called()
     sqs.send_group_memory_task.assert_not_called()
+
+
+def test_observe_media_group_stores_metadata_only_for_opted_in_chat(monkeypatch):
+    repo = MagicMock()
+    repo.is_memory_enabled.return_value = True
+    monkeypatch.setattr(telegram_media, "MULTIMODAL_ENABLED", True)
+    update = {
+        "message": {
+            "message_id": 91,
+            "date": 1_700_000_000,
+            "media_group_id": "album-1",
+            "photo": [{"file_id": "photo-id", "file_unique_id": "photo-u", "file_size": 200}],
+            "chat": {"id": -100123, "type": "supergroup"},
+            "from": {"id": 42, "first_name": "Ada", "username": "ada", "is_bot": False},
+        }
+    }
+
+    telegram_media.observe_media_group(repo, update)
+
+    kwargs = repo.store_media_group_item.call_args.kwargs
+    assert kwargs["chat_id"] == -100123
+    assert kwargs["media_group_id"] == "album-1"
+    assert kwargs["message_id"] == 91
+    assert kwargs["media_ref"]["media_type"] == "photo"
+    assert kwargs["media_ref"]["file_id"] == "photo-id"
+    assert "inline_data" not in json.dumps(kwargs["media_ref"])
+    assert "data" not in kwargs["media_ref"]
 
 
 def test_observe_update_stores_reply_metadata(monkeypatch):
@@ -517,6 +544,41 @@ def test_store_message_persists_reply_metadata_on_msg_item():
     assert item["reply_to_bot"] is True
     assert item["reply_to_self_bot"] is True
     assert item["thread_root_message_id"] == 5
+
+
+def test_media_group_repository_stores_ttl_metadata_and_reads_refs(monkeypatch):
+    repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
+    repo.table = MagicMock()
+    monkeypatch.setattr("services.repositories.group_memory.time.time", lambda: 1_700_000_100)
+
+    repo.store_media_group_item(
+        chat_id=-100123,
+        media_group_id="album-1",
+        message_id=91,
+        media_ref={
+            "media_type": "photo",
+            "file_id": "photo-id",
+            "file_unique_id": "photo-u",
+            "file_size": 200,
+            "media_group_id": "album-1",
+            "source_message_id": 91,
+            "unexpected": "drop-me",
+        },
+        created_at=1_700_000_000,
+    )
+
+    item = repo.table.put_item.call_args.kwargs["Item"]
+    assert item["sk"] == "MEDIA_GROUP#album-1#00000000000000000091"
+    assert item["kind"] == "media_group_item"
+    assert item["ttl"] == 1_700_000_100 + 30 * 24 * 60 * 60
+    assert item["media_ref"]["file_id"] == "photo-id"
+    assert "unexpected" not in item["media_ref"]
+
+    repo.table.query.return_value = {"Items": [item]}
+    refs = repo.get_media_group_refs(-100123, "album-1")
+
+    assert refs == [item["media_ref"]]
+    assert repo.table.query.call_args.kwargs["ConsistentRead"] is True
 
 
 def test_format_user_profile_context_uses_target_profile_not_third_party_label():
@@ -1534,6 +1596,47 @@ def test_sqs_client_sends_group_ask_task_with_thread_context(monkeypatch):
     assert "file_id" not in queued_log
 
 
+def test_sqs_client_sends_group_ask_task_with_album_refs(monkeypatch):
+    fake_client = MagicMock()
+    logger = MagicMock()
+    monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
+    monkeypatch.setattr(sqs_module, "logger", logger)
+    sqs = SQSClient.__new__(SQSClient)
+    sqs.queue_url = "queue-url"
+    media_refs = [
+        {
+            "media_type": "video",
+            "file_id": "video-id",
+            "source_message_id": 90,
+            "media_group_id": "album-1",
+        },
+        {
+            "media_type": "photo",
+            "file_id": "photo-id",
+            "source_message_id": 91,
+            "media_group_id": "album-1",
+        },
+    ]
+
+    sqs.send_group_ask_task(
+        update_id=123,
+        chat_id=-100123,
+        reply_to_message_id=99,
+        user_text="analyze the album",
+        lang="en",
+        media_refs=media_refs,
+    )
+
+    payload = json.loads(fake_client.send_message.call_args.kwargs["MessageBody"])
+    assert payload["media_refs"] == media_refs
+    assert "media_ref" not in payload
+    queued_log = logger.info.call_args.kwargs["extra"]
+    assert queued_log["media_item_count"] == 2
+    assert queued_log["media_types"] == ["video", "photo"]
+    assert queued_log["media_group_id"] == "album-1"
+    assert "file_id" not in queued_log
+
+
 def test_sqs_client_sends_vector_memory_task(monkeypatch):
     fake_client = MagicMock()
     monkeypatch.setattr(sqs_module, "_SQS_CLIENT", fake_client)
@@ -1825,8 +1928,8 @@ def test_agent_mention_reply_to_supported_media_queues_async_analysis(
     assert kwargs["update_id"] == 12345
     assert kwargs["chat_id"] == -100123
     assert kwargs["reply_to_message_id"] == 11
-    assert kwargs["media_ref"]["media_type"] == expected_media_type
-    assert kwargs["media_ref"]["source_message_id"] == 8
+    assert kwargs["media_refs"][0]["media_type"] == expected_media_type
+    assert kwargs["media_refs"][0]["source_message_id"] == 8
     assert "@ZerdeBot 帮我分析这个" in kwargs["user_text"]
     assert "@ZerdeBot 帮我分析这个" in kwargs["retrieval_query"]
     assert kwargs["current_user_message"] == "@ZerdeBot 帮我分析这个"
@@ -1859,14 +1962,14 @@ def test_agent_mention_with_attached_photo_queues_async_analysis(monkeypatch):
 
     assert handled is True
     kwargs = sqs.send_group_ask_task.call_args.kwargs
-    assert kwargs["media_ref"]["media_type"] == "photo"
-    assert kwargs["media_ref"]["source_message_id"] == 11
+    assert kwargs["media_refs"][0]["media_type"] == "photo"
+    assert kwargs["media_refs"][0]["source_message_id"] == 11
     answer.assert_not_called()
     bot.get_file.assert_not_called()
     bot.download_file.assert_not_called()
 
 
-def test_agent_mention_reply_to_unsupported_media_reports_it(monkeypatch):
+def test_agent_mention_reply_to_video_queues_async_analysis(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     bot = MagicMock()
@@ -1886,13 +1989,60 @@ def test_agent_mention_reply_to_unsupported_media_reports_it(monkeypatch):
     handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
 
     assert handled is True
-    sqs.send_group_ask_task.assert_not_called()
+    media_ref = sqs.send_group_ask_task.call_args.kwargs["media_refs"][0]
+    assert media_ref["media_type"] == "video"
+    assert media_ref["mime_type"] == "video/mp4"
     answer.assert_not_called()
-    bot.send_message.assert_called_once_with(
-        -100123,
-        group_agent.get_translated_text("ask_media_unsupported", "zh"),
-        reply_to_message_id=11,
-    )
+    bot.send_message.assert_not_called()
+
+
+def test_agent_mention_reply_to_video_album_expands_sibling_photo(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    repo.get_media_group_refs.return_value = [
+        {
+            "media_type": "video",
+            "file_id": "video-id",
+            "file_unique_id": "video-u",
+            "mime_type": "video/mp4",
+            "source_message_id": 90,
+            "media_group_id": "album-1",
+        },
+        {
+            "media_type": "photo",
+            "file_id": "photo-id",
+            "file_unique_id": "photo-u",
+            "mime_type": "image/jpeg",
+            "source_message_id": 91,
+            "media_group_id": "album-1",
+        },
+    ]
+    bot = MagicMock()
+    sqs = MagicMock()
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "zh")
+
+    update = _group_update("@ZerdeBot 帮我分析整个相册")
+    update["message"]["reply_to_message"] = {
+        "message_id": 90,
+        "media_group_id": "album-1",
+        "caption": "华为招人了",
+        "video": {
+            "file_id": "video-id",
+            "file_unique_id": "video-u",
+            "mime_type": "video/mp4",
+        },
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    repo.get_media_group_refs.assert_called_once_with(-100123, "album-1")
+    media_refs = sqs.send_group_ask_task.call_args.kwargs["media_refs"]
+    assert [item["media_type"] for item in media_refs] == ["video", "photo"]
+    assert [item["source_message_id"] for item in media_refs] == [90, 91]
+    assert "华为招人了" in sqs.send_group_ask_task.call_args.kwargs["retrieval_query"]
 
 
 def test_agent_reply_to_bot_reaction_is_skipped(monkeypatch):
@@ -4011,7 +4161,7 @@ def test_handle_ask_enqueues_group_context_answer():
         current_user_message="what happened yesterday?",
         source_message_context="",
         parent_bot_message_id=None,
-        media_ref=None,
+        media_refs=None,
     )
     ctx.react.assert_called_once_with("👀")
     ctx.reply.assert_not_called()
@@ -4135,13 +4285,14 @@ def test_handle_ask_reply_to_photo_enqueues_media_ref_without_bytes(monkeypatch)
     handle_ask(ctx)
 
     kwargs = ctx.sqs_repo.send_group_ask_task.call_args.kwargs
-    assert kwargs["media_ref"]["media_type"] == "photo"
-    assert kwargs["media_ref"]["file_id"] == "large"
-    assert kwargs["media_ref"]["file_unique_id"] == "u-large"
-    assert kwargs["media_ref"]["source_message_id"] == 8
-    assert "bytes" not in json.dumps(kwargs["media_ref"]).lower()
-    assert "inline_data" not in json.dumps(kwargs["media_ref"]).lower()
-    assert "data" not in kwargs["media_ref"]
+    media_ref = kwargs["media_refs"][0]
+    assert media_ref["media_type"] == "photo"
+    assert media_ref["file_id"] == "large"
+    assert media_ref["file_unique_id"] == "u-large"
+    assert media_ref["source_message_id"] == 8
+    assert "bytes" not in json.dumps(media_ref).lower()
+    assert "inline_data" not in json.dumps(media_ref).lower()
+    assert "data" not in media_ref
     ctx.bot.get_file.assert_not_called()
     ctx.bot.download_file.assert_not_called()
     ctx.reply.assert_not_called()
@@ -4181,7 +4332,7 @@ def test_handle_ask_reply_to_voice_enqueues_media_ref():
 
     handle_ask(ctx)
 
-    media_ref = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["media_ref"]
+    media_ref = ctx.sqs_repo.send_group_ask_task.call_args.kwargs["media_refs"][0]
     assert media_ref["media_type"] == "voice"
     assert media_ref["mime_type"] == "audio/ogg"
 
@@ -4213,7 +4364,7 @@ def test_handle_ask_without_text_with_media_uses_default_prompt():
     assert "Explain what is shown in this image" in kwargs["user_text"]
     assert "Explain what is shown in this image" in kwargs["retrieval_query"]
     assert kwargs["current_user_message"].startswith("Explain what is shown in this image")
-    assert kwargs["media_ref"]["media_type"] == "photo"
+    assert kwargs["media_refs"][0]["media_type"] == "photo"
     ctx.reply.assert_not_called()
 
 
@@ -4280,7 +4431,7 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
     answer = MagicMock(return_value=True)
     logger = MagicMock()
     prepare = MagicMock(
-        return_value=PreparedMedia(
+        return_value=PreparedMediaCollection(
             media_parts=[{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}],
             media_context="Explicit media context:\n- media_type: photo",
             agent_reply_metadata={
@@ -4289,11 +4440,15 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
                 "media_analysis_available": True,
             },
             downloaded_bytes=4,
-            content_mode="inline_data",
+            requested_count=1,
+            prepared_count=1,
+            skipped_count=0,
+            skipped_reasons={},
+            content_modes=["inline_data"],
         )
     )
     monkeypatch.setattr(commands, "answer_group_question", answer)
-    monkeypatch.setattr(commands, "prepare_media_for_gemini", prepare)
+    monkeypatch.setattr(commands, "prepare_media_collection_for_gemini", prepare)
     monkeypatch.setattr(commands, "logger", logger)
 
     commands.process_group_ask_task(
@@ -4313,7 +4468,10 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
         },
     )
 
-    prepare.assert_called_once_with(bot, {"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u1"})
+    prepare.assert_called_once_with(
+        bot,
+        [{"media_type": "photo", "file_id": "photo-id", "file_unique_id": "u1"}],
+    )
     assert answer.call_args.kwargs["media_parts"] == [{"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}]
     assert "media_type: photo" in answer.call_args.kwargs["media_context"]
     assert answer.call_args.kwargs["media_metadata"]["file_unique_id"] == "u1"
@@ -4321,8 +4479,10 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
     assert prepared_log["media_type"] == "photo"
     assert prepared_log["file_unique_id"] == "u1"
     assert prepared_log["downloaded_bytes"] == 4
-    assert prepared_log["content_mode"] == "inline_data"
+    assert prepared_log["content_modes"] == ["inline_data"]
     assert prepared_log["media_part_count"] == 1
+    assert prepared_log["media_prepared_count"] == 1
+    assert prepared_log["media_skipped_count"] == 0
     assert prepared_log["media_context_chars"] == len("Explicit media context:\n- media_type: photo")
     assert "file_id" not in prepared_log
     assert "AAAA" not in json.dumps(prepared_log)
@@ -4333,7 +4493,7 @@ def test_process_group_ask_task_reports_media_too_large(monkeypatch):
     bot = MagicMock()
     monkeypatch.setattr(
         commands,
-        "prepare_media_for_gemini",
+        "prepare_media_collection_for_gemini",
         MagicMock(side_effect=commands.MediaTooLargeError()),
     )
     answer = MagicMock()

@@ -79,9 +79,11 @@ from services.telegram_media import (
     MediaUnavailableError,
     MediaUnsupportedError,
     detect_media_reference,
+    detect_media_references,
     has_any_media,
     media_reference_log_extra,
-    media_retrieval_query,
+    media_references_log_extra,
+    media_references_retrieval_query,
     prepare_media_for_gemini,
 )
 from services.vector_memory import (
@@ -254,6 +256,9 @@ def _agent_reply_media_context(item: dict[str, Any]) -> str:
     if media_type:
         lines.append(f"media_type={media_type}")
     for key in (
+        "media_types",
+        "media_item_count",
+        "media_group_id",
         "mime_type",
         "file_name",
         "caption",
@@ -1106,8 +1111,14 @@ def handle_update(
         )
         return True
 
-    media_ref = detect_media_reference(message)
-    if media_ref is not None:
+    media_refs = detect_media_references(
+        message,
+        media_group_loader=lambda media_group_id: repo.get_media_group_refs(chat_id, media_group_id),
+    )
+    if media_refs:
+        media_log = media_references_log_extra(media_refs)
+        if len(media_refs) == 1:
+            media_log.update(media_reference_log_extra(media_refs[0]))
         if sqs_repo is None:
             logger.warning(
                 "Group agent explicit media request could not be queued",
@@ -1115,7 +1126,7 @@ def handle_update(
                     "chat_id": chat_id,
                     "message_id": message_id,
                     "reason": "missing_sqs_repo",
-                    **media_reference_log_extra(media_ref),
+                    **media_log,
                 },
             )
             bot.send_message(
@@ -1126,7 +1137,7 @@ def handle_update(
             return True
 
         question_context = build_explicit_question_context(repo, chat_id, message)
-        retrieval_query = media_retrieval_query(question_context.retrieval_query, media_ref)
+        retrieval_query = media_references_retrieval_query(question_context.retrieval_query, media_refs)
         requester = message.get("from") or {}
         try:
             bot.set_message_reaction(chat_id, message_id, "👀")
@@ -1149,7 +1160,7 @@ def handle_update(
                 current_user_message=question_context.current_user_message,
                 source_message_context=question_context.source_message_context,
                 parent_bot_message_id=question_context.parent_bot_message_id,
-                media_ref=media_ref.to_dict(),
+                media_refs=[media_ref.to_dict() for media_ref in media_refs],
             )
         except Exception:
             logger.exception(
@@ -1157,7 +1168,7 @@ def handle_update(
                 extra={
                     "chat_id": chat_id,
                     "message_id": message_id,
-                    **media_reference_log_extra(media_ref),
+                    **media_log,
                 },
             )
             bot.send_message(
@@ -1174,9 +1185,11 @@ def handle_update(
                 "message_id": message_id,
                 "update_id": update.get("update_id"),
                 "media_source": (
-                    "current_message" if media_ref.source_message_id == message_id else "reply_to_message"
+                    "media_group"
+                    if len(media_refs) > 1
+                    else "current_message" if media_refs[0].source_message_id == message_id else "reply_to_message"
                 ),
-                **media_reference_log_extra(media_ref),
+                **media_log,
             },
         )
         return True

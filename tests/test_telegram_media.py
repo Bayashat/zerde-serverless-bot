@@ -3,6 +3,8 @@ from services.telegram_media import (
     MediaTooLargeError,
     agent_reply_media_metadata,
     detect_media_reference,
+    detect_media_references,
+    prepare_media_collection_for_gemini,
     prepare_media_for_gemini,
 )
 
@@ -48,6 +50,59 @@ def test_detect_media_reference_detects_voice_and_audio():
     assert audio_ref is not None
     assert audio_ref.media_type == "audio"
     assert audio_ref.file_name == "clip.mp3"
+
+
+def test_detect_media_reference_detects_video_with_album_metadata():
+    ref = detect_media_reference(
+        {
+            "message_id": 90,
+            "media_group_id": "album-1",
+            "video": {
+                "file_id": "video-id",
+                "file_unique_id": "video-u",
+                "mime_type": "video/mp4",
+                "file_size": 1234,
+                "duration": 18,
+            },
+        }
+    )
+
+    assert ref is not None
+    assert ref.media_type == "video"
+    assert ref.mime_type == "video/mp4"
+    assert ref.duration_seconds == 18
+    assert ref.media_group_id == "album-1"
+
+
+def test_detect_media_references_expands_reply_album_and_keeps_target_first():
+    refs = detect_media_references(
+        {
+            "reply_to_message": {
+                "message_id": 90,
+                "media_group_id": "album-1",
+                "video": {"file_id": "video-id", "file_unique_id": "video-u", "mime_type": "video/mp4"},
+            }
+        },
+        media_group_loader=lambda group_id: [
+            {
+                "media_type": "video",
+                "file_id": "video-id",
+                "file_unique_id": "video-u",
+                "source_message_id": 90,
+                "media_group_id": group_id,
+            },
+            {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "photo-u",
+                "source_message_id": 91,
+                "media_group_id": group_id,
+            },
+        ],
+    )
+
+    assert [ref.media_type for ref in refs] == ["video", "photo"]
+    assert [ref.source_message_id for ref in refs] == [90, 91]
 
 
 def test_detect_media_reference_detects_pdf_and_text_code_documents():
@@ -121,6 +176,82 @@ def test_prepare_media_for_gemini_enforces_inline_limit(monkeypatch):
 
     with pytest.raises(MediaTooLargeError):
         prepare_media_for_gemini(bot, ref)
+
+
+def test_prepare_media_collection_skips_oversized_video_and_keeps_photo(monkeypatch):
+    monkeypatch.setattr("services.telegram_media.MULTIMODAL_INLINE_MAX_BYTES", 5)
+    refs = detect_media_references(
+        {
+            "reply_to_message": {
+                "message_id": 90,
+                "media_group_id": "album-1",
+                "video": {
+                    "file_id": "video-id",
+                    "file_unique_id": "video-u",
+                    "mime_type": "video/mp4",
+                    "file_size": 10,
+                },
+            }
+        },
+        media_group_loader=lambda group_id: [
+            {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "photo-u",
+                "file_size": 4,
+                "mime_type": "image/jpeg",
+                "source_message_id": 91,
+                "media_group_id": group_id,
+            }
+        ],
+    )
+
+    prepared = prepare_media_collection_for_gemini(_media_bot(b"test"), refs)
+
+    assert prepared.prepared_count == 1
+    assert prepared.skipped_count == 1
+    assert prepared.skipped_reasons == {"too_large": 1}
+    assert prepared.media_parts == [{"inline_data": {"mime_type": "image/jpeg", "data": "dGVzdA=="}}]
+    assert prepared.agent_reply_metadata["media_type"] == "photo"
+    assert "Do not claim details from skipped items" in prepared.media_context
+
+
+def test_prepare_media_collection_builds_multiple_parts_and_compact_group_metadata(monkeypatch):
+    monkeypatch.setattr("services.telegram_media.MULTIMODAL_INLINE_MAX_BYTES", 20)
+    refs = detect_media_references(
+        {
+            "reply_to_message": {
+                "message_id": 90,
+                "media_group_id": "album-1",
+                "video": {
+                    "file_id": "video-id",
+                    "file_unique_id": "video-u",
+                    "mime_type": "video/mp4",
+                    "file_size": 4,
+                },
+            }
+        },
+        media_group_loader=lambda group_id: [
+            {
+                "media_type": "photo",
+                "file_id": "photo-id",
+                "file_unique_id": "photo-u",
+                "file_size": 4,
+                "mime_type": "image/jpeg",
+                "source_message_id": 91,
+                "media_group_id": group_id,
+            }
+        ],
+    )
+
+    prepared = prepare_media_collection_for_gemini(_media_bot(b"test"), refs)
+
+    assert prepared.prepared_count == 2
+    assert len(prepared.media_parts) == 2
+    assert prepared.agent_reply_metadata["media_type"] == "media_group"
+    assert prepared.agent_reply_metadata["media_types"] == "video,photo"
+    assert prepared.agent_reply_metadata["media_item_count"] == 2
+    assert prepared.agent_reply_metadata["media_group_id"] == "album-1"
 
 
 def _media_bot(data: bytes):

@@ -164,7 +164,7 @@ TRANSLATIONS = {
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
         "ask_multimodal_unavailable": "😵 Media understanding is not available right now.",
         "ask_media_unsupported": (
-            "I can read images, voice/audio, PDFs, and text/code/log files when explicitly asked, "
+            "I can read images, videos, voice/audio, PDFs, and text/code/log files when explicitly asked, "
             "but not this media type yet."
         ),
         "ask_media_too_large": "I could not read this media because it is too large.",
@@ -432,7 +432,7 @@ TRANSLATIONS = {
         "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
         "ask_multimodal_unavailable": "😵 Медиа түсіну қазір қолжетімсіз.",
         "ask_media_unsupported": (
-            "Нақты сұрағанда мен сурет, voice/audio, PDF және text/code/log файлдарын оқи аламын, "
+            "Нақты сұрағанда мен сурет, видео, voice/audio, PDF және text/code/log файлдарын оқи аламын, "
             "бірақ бұл медиа түрі әзірше қолдау таппайды."
         ),
         "ask_media_too_large": "Бұл медианы оқи алмадым: файл тым үлкен.",
@@ -694,7 +694,7 @@ TRANSLATIONS = {
         "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
         "ask_multimodal_unavailable": "😵 媒体理解功能现在不可用。",
-        "ask_media_unsupported": "明确要求分析时，我可以读取图片、语音/音频、PDF 和文本/代码/日志文件，但暂不支持这种媒体类型。",
+        "ask_media_unsupported": "明确要求分析时，我可以读取图片、视频、语音/音频、PDF 和文本/代码/日志文件，但暂不支持这种媒体类型。",
         "ask_media_too_large": "我无法读取这个媒体：文件太大。",
         "ask_media_unavailable": "我无法读取这个媒体。它可能不可用、已过期，或无法下载。",
         "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
@@ -948,7 +948,7 @@ TRANSLATIONS = {
         "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
         "ask_multimodal_unavailable": "😵 Понимание медиа сейчас недоступно.",
         "ask_media_unsupported": (
-            "По явному запросу я могу читать изображения, voice/audio, PDF и text/code/log файлы, "
+            "По явному запросу я могу читать изображения, видео, voice/audio, PDF и text/code/log файлы, "
             "но этот тип медиа пока не поддерживается."
         ),
         "ask_media_too_large": "Я не смог прочитать это медиа: файл слишком большой.",

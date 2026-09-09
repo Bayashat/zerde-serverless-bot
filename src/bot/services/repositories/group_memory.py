@@ -29,6 +29,7 @@ _DAILY_SUMMARY_PREFIX = "DAILY_SUMMARY#"
 _VECTOR_MEMORY_PREFIXES = (*_LONG_TERM_MEMORY_PREFIXES, _DAILY_SUMMARY_PREFIX)
 _AGENT_REPLY_PREFIX = "AGENT_REPLY#"
 _AMBIENT_REACTION_PREFIX = "AMBIENT_REACTION#"
+_MEDIA_GROUP_PREFIX = "MEDIA_GROUP#"
 _DURABLE_BOT_MEMORY_PREFIXES_BY_KIND = {
     "bot_commitment": "BOT_COMMITMENT#",
     "bot_correction": "BOT_CORRECTION#",
@@ -174,6 +175,14 @@ class GroupMemoryRepository:
     @staticmethod
     def _msg_sk(created_at_ms: int, message_id: int | str) -> str:
         return f"MSG#{created_at_ms:013d}#{message_id}"
+
+    @staticmethod
+    def _media_group_prefix(media_group_id: str) -> str:
+        return f"{_MEDIA_GROUP_PREFIX}{str(media_group_id)[:160]}#"
+
+    @classmethod
+    def _media_group_item_sk(cls, media_group_id: str, message_id: int | str) -> str:
+        return f"{cls._media_group_prefix(media_group_id)}{int(message_id):020d}"
 
     @staticmethod
     def _memory_sk(kind: str, created_at_ms: int, message_id: int | str, user_id: int | str | None = None) -> str:
@@ -1002,6 +1011,81 @@ class GroupMemoryRepository:
             )
         return True
 
+    @staticmethod
+    def _normalise_media_group_ref(media_ref: Mapping[str, Any]) -> dict[str, Any]:
+        """Keep only bounded metadata required to retrieve an album item later."""
+        string_limits = {
+            "media_type": 40,
+            "file_id": 512,
+            "file_unique_id": 160,
+            "mime_type": 120,
+            "file_name": 240,
+            "caption": 500,
+            "media_group_id": 160,
+            "source_username": 160,
+            "source_display_name": 160,
+            "source_sender_type": 80,
+        }
+        item: dict[str, Any] = {}
+        for key, limit in string_limits.items():
+            value = media_ref.get(key)
+            if value not in (None, ""):
+                item[key] = str(value)[:limit]
+        for key in ("file_size", "duration_seconds", "source_message_id"):
+            value = media_ref.get(key)
+            if value is None:
+                continue
+            try:
+                item[key] = int(value)
+            except (TypeError, ValueError):
+                pass
+        source_user_id = media_ref.get("source_user_id")
+        if source_user_id not in (None, ""):
+            item["source_user_id"] = str(source_user_id)[:80]
+        return item
+
+    def store_media_group_item(
+        self,
+        *,
+        chat_id: int | str,
+        media_group_id: str,
+        message_id: int | str,
+        media_ref: Mapping[str, Any],
+        created_at: int | None = None,
+    ) -> None:
+        """Store one metadata-only Telegram album item for explicit reply expansion."""
+        now = int(time.time())
+        ref = self._normalise_media_group_ref(media_ref)
+        if not ref.get("file_id") or not ref.get("media_type"):
+            raise ValueError("media_ref must include media_type and file_id")
+        item = {
+            "pk": self._chat_pk(chat_id),
+            "sk": self._media_group_item_sk(media_group_id, message_id),
+            "kind": "media_group_item",
+            "chat_id": str(chat_id),
+            "media_group_id": str(media_group_id)[:160],
+            "message_id": int(message_id),
+            "media_ref": ref,
+            "created_at": int(created_at or now),
+            "ttl": self._ttl_from_days(now, GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS),
+        }
+        self.table.put_item(Item=item)
+
+    def get_media_group_refs(self, chat_id: int | str, media_group_id: str) -> list[dict[str, Any]]:
+        """Return album item references in Telegram message order."""
+        resp = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._chat_pk(chat_id))
+            & Key("sk").begins_with(self._media_group_prefix(media_group_id)),
+            ScanIndexForward=True,
+            ConsistentRead=True,
+        )
+        refs: list[dict[str, Any]] = []
+        for item in resp.get("Items") or []:
+            media_ref = item.get("media_ref")
+            if isinstance(media_ref, Mapping):
+                refs.append(dict(media_ref))
+        return refs
+
     def _touch_user_profile(
         self,
         *,
@@ -1710,10 +1794,12 @@ class GroupMemoryRepository:
             return {}
         allowed_string_limits = {
             "media_type": 40,
+            "media_types": 200,
             "mime_type": 120,
             "file_unique_id": 160,
             "file_name": 180,
             "caption": 500,
+            "media_group_id": 160,
             "source_username": 160,
             "source_display_name": 160,
             "media_summary": 900,
@@ -1723,7 +1809,7 @@ class GroupMemoryRepository:
             value = metadata.get(key)
             if value not in (None, ""):
                 item[key] = str(value)[:limit]
-        for key in ("file_size", "source_message_id"):
+        for key in ("file_size", "source_message_id", "duration_seconds", "media_item_count"):
             value = metadata.get(key)
             if value is None:
                 continue

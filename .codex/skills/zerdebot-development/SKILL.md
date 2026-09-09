@@ -48,7 +48,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/telegram_actor.py`: shared Telegram actor attribution, including linked-channel discussion mirror detection and `sender_chat` actor selection.
 - `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
 - `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
-- `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
+- `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, metadata-only Telegram album manifests, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
 - `src/bot/services/contest.py`: official contest-root/entry recognition, secure draw/redraw orchestration, fixed Kazakh output, anchored winner evidence, and TTL sweep processing.
 - `src/bot/services/handlers/contest.py`: `/contest` anchor parsing and exact live Telegram creator/administrator authorization.
 - `src/bot/services/repositories/contest.py`: sole contest lifecycle, participant uniqueness, winner history, rules alias, and retention truth owner.
@@ -68,7 +68,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
-- Keep explicit multimodal media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. Explicit `/ask` and @mention/reply media requests send metadata-only `media_ref` through `PROCESS_GROUP_ASK`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
+- Keep explicit multimodal media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. Telegram album observation may persist only bounded `MEDIA_GROUP#...` membership metadata. Explicit `/ask` and @mention/reply media requests send at most four metadata-only `media_refs` through `PROCESS_GROUP_ASK`; the worker downloads under per-item and shared request limits, may continue with successfully prepared siblings, and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity. Keep legacy single-`media_ref` worker compatibility until older queued tasks cannot remain.
 - Keep ambient reactions ephemeral: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed. Command text and sensitive/hostile/serious text may reach the Groq-only classifier pool, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm. Official linked-channel posts are the exception to conservative ambient gating: they bypass sample rate, cooldowns, and rate caps, and fall back to 👀 if the provider cannot choose an emoji.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
@@ -127,6 +127,8 @@ DynamoDB memory key families:
 
 - `SETTINGS` with memory/agent flags and optional chat `style_profile`
 - `MSG#...`
+- `MEDIA_GROUP#<media_group_id>#<message_id>`
+  - Metadata-only supported Telegram album item reference; use raw-message retention and never store downloaded bytes.
 - `USER#...`
 - `USERNAME#...`
 - `EVENT#...`
@@ -156,7 +158,7 @@ DynamoDB memory key families:
 
 Memory items may carry feedback/consolidation metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, and `superseded_by`.
 
-Memory TTLs are type-specific. Use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` for `MSG#...`, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` for `AGENT_REPLY#...`, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` for `EVENT#...` / `USER_FACT#...` / `GROUP_FACT#...` / `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` for `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` for `PROACTIVE#...`. `MSG#...`, long-term memory, and `DAILY_SUMMARY#...` fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Explicit long-term `expires_in_days` still sets `expires_at` and DynamoDB TTL takes the shorter expiry.
+Memory TTLs are type-specific. Use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` for `MSG#...` and `MEDIA_GROUP#...`, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` for `AGENT_REPLY#...`, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` for `EVENT#...` / `USER_FACT#...` / `GROUP_FACT#...` / `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` for `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` for `PROACTIVE#...`. Raw-message, long-term-memory, and daily-summary retention fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Explicit long-term `expires_in_days` still sets `expires_at` and DynamoDB TTL takes the shorter expiry.
 
 ## Common Commands
 

@@ -123,6 +123,7 @@ def test_pending_captcha_message_skips_spam_screening():
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
+        patch("webhook.observe_media_group") as observe_album,
         patch("webhook.observe_group_memory_update") as observe_memory,
         patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
@@ -131,6 +132,7 @@ def test_pending_captcha_message_skips_spam_screening():
 
     screener.run.assert_not_called()
     observe_contest.assert_not_called()
+    observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
     group_agent.assert_not_called()
@@ -160,6 +162,7 @@ def test_enforced_spam_short_circuits_normal_group_flows():
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
+        patch("webhook.observe_media_group") as observe_album,
         patch("webhook.observe_group_memory_update") as observe_memory,
         patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
@@ -169,6 +172,7 @@ def test_enforced_spam_short_circuits_normal_group_flows():
     assert json.loads(resp["body"])["message"] == "ok"
     screener.run.assert_called_once_with(body)
     observe_contest.assert_not_called()
+    observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
     group_agent.assert_not_called()
@@ -198,6 +202,7 @@ def test_queued_spam_short_circuits_normal_group_flows():
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
+        patch("webhook.observe_media_group") as observe_album,
         patch("webhook.observe_group_memory_update") as observe_memory,
         patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
@@ -207,6 +212,7 @@ def test_queued_spam_short_circuits_normal_group_flows():
     assert json.loads(resp["body"])["message"] == "ok"
     screener.run.assert_called_once_with(body)
     observe_contest.assert_not_called()
+    observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
     group_agent.assert_not_called()
@@ -238,13 +244,14 @@ def test_contest_observation_runs_before_existing_memory_ambient_and_agent_flows
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update", side_effect=lambda *args, **kwargs: order.append("contest")),
+        patch("webhook.observe_media_group", side_effect=lambda *args, **kwargs: order.append("album")),
         patch("webhook.observe_group_memory_update", side_effect=lambda *args, **kwargs: order.append("memory")),
         patch("webhook.maybe_enqueue_ambient_reaction", side_effect=lambda *args, **kwargs: order.append("ambient")),
         patch("webhook.handle_group_agent_update", side_effect=lambda *args, **kwargs: order.append("agent") or False),
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
 
-    assert order == ["contest", "memory", "ambient", "agent"]
+    assert order == ["contest", "album", "memory", "ambient", "agent"]
     dispatcher.process_update.assert_called_once_with(body)
 
 
