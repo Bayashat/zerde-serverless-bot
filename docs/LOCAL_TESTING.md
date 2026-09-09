@@ -244,8 +244,8 @@ curl -F "url=https://abc123.execute-api.eu-central-1.amazonaws.com/dev/webhook" 
 5. Reply to any message with `/voteban` to test the vote-to-ban flow.
 6. In a group, run `/memory status` to confirm memory and vector status.
 7. Run `/ask what is this chat discussing?` or reply to a message with `/ask` to test the group agent.
-8. Reply to a photo/screenshot, voice/audio message, PDF, or supported text/code/log file with `/ask` to test explicit multimodal analysis. The webhook should enqueue a metadata-only `media_ref`; the SQS worker should download the file and the answer should still use RAG context.
-9. Post the same media without `/ask` and confirm the bot does not download or analyze it.
+8. Reply to a photo/screenshot, voice/audio message, PDF, or supported text/code/log file with `/ask` to test explicit multimodal analysis. Repeat with a direct @mention in place of `/ask`. In both cases the webhook should enqueue a metadata-only `media_ref`; the SQS worker should download the file and the answer should still use RAG context.
+9. Post the same media without `/ask` or a direct @mention/reply request and confirm the bot does not download or analyze it.
 10. Reply to the bot's answer with a follow-up question to test `AGENT_REPLY#...` thread continuity. This should create short-term reply metadata only, not a vector memory task. For multimodal answers, only compact media metadata/summary should be stored.
 11. With `AMBIENT_REACTIONS_ENABLED=true`, post several group text messages, including command text, and confirm reactions are sampled, rate-limited, classified by the Groq decision pool, and stored only as short-lived `AMBIENT_REACTION#...` rows. Set it to `false` when you want to disable ambient reactions for a local run.
 

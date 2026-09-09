@@ -40,7 +40,7 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - It indexes long-term memory and high-information daily summaries in S3 Vectors for semantic RAG retrieval.
 - Normal bot answers stay in short-term `AGENT_REPLY#...` metadata for thread continuity only; they are not embedded into semantic memory.
 - It answers `/ask`, @mentions, and reply-to-Zerde follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context from a compact retrieval query that is separate from the full Gemini generation prompt.
-- It supports explicit multimodal `/ask` for replied photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Media is downloaded only in the async worker for explicit requests and official linked-channel post comments, not during generic webhook observation or ordinary proactive analysis.
+- It supports explicit multimodal requests through `/ask` or a direct @mention/reply path for photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Media is downloaded only in the async worker for explicit requests and official linked-channel post comments, not during generic webhook observation or ordinary proactive analysis.
 - It supports fair Kazakh linked-channel contests: `#конкурс` on the initial official mirror, one direct `қатысамын` entry per personal Telegram user id, creator-only secure draws, two distinct redraws, and anchored public evidence.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available for generation, while semantic retrieval uses a shorter query based on the current follow-up, previous user request, and original source message.
 - It may proactively answer ordinary group messages only after a short delayed candidate window plus a Groq/DeepSeek AI decision with recent and query-filtered long-term context. Linked channel posts mirrored into discussion groups use a separate immediate comment path.
@@ -103,7 +103,7 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/contest.py` — strict official-root/entry recognition, secure draw/redraw orchestration, fixed Kazakh rendering, anchored evidence fallback, and resumable retention work.
 - `services/handlers/contest.py` — reply-anchor parsing and live creator/administrator command authorization.
 - `services/telegram_actor.py` — Telegram actor attribution helpers, including linked-channel discussion mirror detection and `sender_chat` actor selection.
-- `services/telegram_media.py` — explicit `/ask` media detection, metadata-only references, bounded worker download preparation, and Gemini media part construction.
+- `services/telegram_media.py` — explicit `/ask` and @mention/reply media detection, metadata-only references, bounded worker download preparation, and Gemini media part construction.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
 - `services/repositories/contest.py` — sole contest lifecycle, participant, winner, rules-alias, and expiry truth owner.
@@ -151,7 +151,7 @@ Memory TTLs are type-specific: raw `MSG#...`, `AGENT_REPLY#...`, long-term memor
 
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
 - `SPAM_CHECK` — async Groq spam decision.
-- `PROCESS_GROUP_ASK` — async explicit `/ask` answer.
+- `PROCESS_GROUP_ASK` — async explicit `/ask` answer and explicit @mention/reply media answer.
 - `PROCESS_PROACTIVE_CANDIDATE` — delayed ordinary proactive AI decision with a Groq model pool and answer-generation fallback; linked-channel post candidates use the same worker task with zero delay, a dedicated comment prompt, Gemini retries, and DeepSeek/Groq text-only fallback.
 - `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.

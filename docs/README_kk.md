@@ -26,7 +26,7 @@ Zerde енді тек “соңғы хабарламаны LLM-ге жібере
 - **Hybrid RAG**: long-term memory Gemini embedding арқылы S3 Vectors semantic retrieval-ге түседі, ал DynamoDB lexical fallback және local reranking exact терминдерді ұстайды.
 - **Agent behavior**: `/ask`, @mention, self-reference grounding, bot жауабына reply follow-up, immediate linked-channel post comments, delayed AI-decided ordinary proactive replies, жауап ұзындығы мен style profile басқару, `/agent why` source summary.
 - **Ambient reactions**: optional emoji reactions; Groq model pool арқылы async `setMessageReaction` жасайды, long-term memory жазбайды. Ordinary messages sampled/rate-limited, ал linked-channel post міндетті reaction attempt жасайды және қажет болса 👀 fallback қолданады.
-- **Explicit media understanding**: `/ask` фото/screenshot, voice/audio, PDF және supported text/code/log файлдарға reply ретінде жұмыс істейді. Linked-channel post comment path attached media-ны ephemeral талдай алады. Zerde кәдімгі топ медиасының бәрін автоматты талдамайды.
+- **Explicit media understanding**: `/ask` немесе direct @mention/reply request фото/screenshot, voice/audio, PDF және supported text/code/log файлдарды талдай алады. Linked-channel post comment path attached media-ны ephemeral талдай алады. Zerde кәдімгі топ медиасының бәрін автоматты талдамайды.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, `/agent wrong` / `/memory wrong` feedback related vector cleanup-пен, owner-only group cleanup.
 - **Bot output boundary**: кәдімгі bot жауаптары тек short-term `AGENT_REPLY#...` thread metadata ретінде сақталады, semantic memory-ге embed жасалмайды. Durable bot-authored memory үшін future explicit `BOT_COMMITMENT#...` немесе `BOT_CORRECTION#...` flow қажет.
 
@@ -45,7 +45,7 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | Мүмкіндік | Сипаттама |
 |----------|-----------|
 | Group-chat agent | `/ask`, @mention және bot жауабына reply арқылы қойылған сұрақтарға requester/recent/profile/long-term/lexical/semantic memory контекстімен жауап береді. |
-| Explicit multimodal `/ask` | Фото/screenshot, voice/audio, PDF немесе supported text/code/log файлға reply жасап `/ask` жіберуге болады; async worker медианы тек сол жауап үшін оқиды. |
+| Explicit multimodal request | Фото/screenshot, voice/audio, PDF немесе supported text/code/log файлға reply жасап `/ask` немесе direct @mention жіберуге болады; async worker медианы тек сол жауап үшін оқиды. |
 | RAG memory | Group memory DynamoDB-де сақталады, long-term memory structured Gemini schema + rule fallback арқылы алынады, high-information memory S3 Vectors semantic retrieval үшін индекстеледі және exact-term DynamoDB fallback + local reranking қолданылады. |
 | Reply thread continuity | Bot жауаптары short-term `AGENT_REPLY#...` ретінде сақталады, сондықтан follow-up сұрақтар алдыңғы жауапты біледі; бұл semantic/vector memory емес. |
 | Social timing | Ordinary proactive жауаптар қысқа delay-ден кейін recent context және query-filtered long-term context негізінде Groq/DeepSeek decision арқылы өтеді. Yes болса, chat daily limit reserve жасалып, жауап Gemini арқылы generate болады, DeepSeek/Groq fallback бар. Linked-channel post zero-delay comment path арқылы бөлек өңделеді және supported attached media-ны ephemeral талдай алады. |
