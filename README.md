@@ -30,11 +30,11 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, immediate linked-channel post comments, delayed AI-decided ordinary proactive replies, reply-length/style budgeting, and `/agent why` source summaries.
 - **Ambient reactions**: optional emoji reactions to group messages, classified through a Groq model pool and processed asynchronously without writing long-term memory. Linked-channel posts force a reaction attempt and fall back to 👀.
-- **Explicit media understanding**: `/ask` or a direct @mention/reply request can analyze photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
+- **Explicit media understanding**: `/ask` or a direct @mention/reply request can analyze photos/screenshots, videos, voice/audio, PDFs, supported text/code/log files, and up to four items from a Telegram media album. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
 
-ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path, plus official linked-channel post comments. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. The bot does not store raw bytes or downloaded files; only compact media metadata/summary may be stored in short-lived `AGENT_REPLY#...` rows for follow-up continuity.
+ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked via `/ask` or an explicit mention/reply path, plus official linked-channel post comments. For Telegram albums, the webhook keeps a metadata-only manifest for the raw-message retention window so a later reply to one album item can include its supported siblings. Media analysis is ephemeral and is not written into long-term memory or vector storage by default. The bot does not store raw bytes or downloaded files; only bounded Telegram file references and compact media metadata/summary are retained temporarily.
 
 RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, then ask the LLM to answer with that context. Zerde uses RAG as one layer inside a larger group-chat agent.
 
@@ -45,7 +45,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Feature | Description |
 |---------|-------------|
 | Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with requester, recent, profile, long-term, lexical, and semantic memory context. |
-| Explicit multimodal requests | Reply to photos/screenshots, voice/audio, PDFs, or supported text/code/log files with `/ask` or a direct @mention; the async worker reads that media for the current answer only. |
+| Explicit multimodal requests | Reply to photos/screenshots, videos, voice/audio, PDFs, supported text/code/log files, or a Telegram album with `/ask` or a direct @mention; the async worker reads up to four related items for the current answer only and can continue with available images when another album item is too large. |
 | RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
 | Social timing | Ordinary proactive replies are delayed briefly, then a Groq model pool decides from capped recent and query-filtered long-term context whether the bot can add value. If yes, the chat daily limit is reserved and Gemini generates with DeepSeek/Groq fallback. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
@@ -215,8 +215,8 @@ Explicit multimodal request settings:
 | Env var | Applies to | Default |
 |---------|------------|---------|
 | `MULTIMODAL_ENABLED` | Enables explicit `/ask` and @mention/reply media analysis | `true` |
-| `MULTIMODAL_MAX_DOWNLOAD_BYTES` | Telegram download cap for one explicit media request | `12000000` |
-| `MULTIMODAL_INLINE_MAX_BYTES` | Gemini inline media cap; larger binary media is rejected in this first version | `8000000` |
+| `MULTIMODAL_MAX_DOWNLOAD_BYTES` | Total Telegram download cap across one explicit media request | `12000000` |
+| `MULTIMODAL_INLINE_MAX_BYTES` | Per-item Gemini inline media cap; an oversized album item is skipped when another item can still be analyzed | `8000000` |
 | `MULTIMODAL_TEXT_FILE_MAX_CHARS` | Text/code/log file content included in the prompt | `20000` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and [docs/LOCAL_TESTING.md](docs/LOCAL_TESTING.md) for a full AWS + Telegram walkthrough.

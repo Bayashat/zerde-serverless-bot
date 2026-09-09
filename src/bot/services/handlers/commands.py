@@ -25,12 +25,13 @@ from services.telegram_media import (
     MediaTooLargeError,
     MediaUnavailableError,
     MediaUnsupportedError,
-    default_question_for_media,
-    detect_media_reference,
+    default_question_for_media_refs,
+    detect_media_references,
     has_any_media,
     media_reference_log_extra,
-    media_retrieval_query,
-    prepare_media_for_gemini,
+    media_references_log_extra,
+    media_references_retrieval_query,
+    prepare_media_collection_for_gemini,
 )
 from services.vector_memory import (
     delete_chat_vectors,
@@ -438,8 +439,14 @@ def handle_ask(ctx: Context) -> None:
         return
     question = _command_args(ctx.text)
     ask_message = _message_for_ask_context(ctx, question)
-    media_ref = detect_media_reference(ask_message)
-    if media_ref:
+    media_refs = detect_media_references(
+        ask_message,
+        media_group_loader=lambda media_group_id: ctx.memory_repo.get_media_group_refs(ctx.chat_id, media_group_id),
+    )
+    if media_refs:
+        media_log = media_references_log_extra(media_refs)
+        if len(media_refs) == 1:
+            media_log.update(media_reference_log_extra(media_refs[0]))
         logger.info(
             "Explicit ask media detected",
             extra={
@@ -447,19 +454,21 @@ def handle_ask(ctx: Context) -> None:
                 "message_id": ctx.message_id,
                 "update_id": ctx.update_id,
                 "media_source": (
-                    "current_message" if media_ref.source_message_id == ctx.message_id else "reply_to_message"
+                    "media_group"
+                    if len(media_refs) > 1
+                    else "current_message" if media_refs[0].source_message_id == ctx.message_id else "reply_to_message"
                 ),
-                **media_reference_log_extra(media_ref),
+                **media_log,
             },
         )
-    if not media_ref and has_any_media(ask_message):
+    if not media_refs and has_any_media(ask_message):
         logger.info(
             "Explicit ask media unsupported",
             extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id, "update_id": ctx.update_id},
         )
         ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
         return
-    effective_question = question or (default_question_for_media(media_ref) if media_ref else "")
+    effective_question = question or (default_question_for_media_refs(media_refs) if media_refs else "")
     ask_message = _message_for_ask_context(ctx, effective_question)
     question_context = build_explicit_question_context(
         ctx.memory_repo,
@@ -471,8 +480,8 @@ def handle_ask(ctx: Context) -> None:
         ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
         return
     retrieval_query = question_context.retrieval_query
-    if media_ref:
-        retrieval_query = media_retrieval_query(retrieval_query, media_ref)
+    if media_refs:
+        retrieval_query = media_references_retrieval_query(retrieval_query, media_refs)
     if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
         ctx.reply(get_translated_text("ask_memory_off", ctx.lang_code), ctx.message_id)
         return
@@ -497,7 +506,7 @@ def handle_ask(ctx: Context) -> None:
             current_user_message=question_context.current_user_message,
             source_message_context=question_context.source_message_context,
             parent_bot_message_id=question_context.parent_bot_message_id,
-            media_ref=media_ref.to_dict() if media_ref else None,
+            media_refs=[media_ref.to_dict() for media_ref in media_refs] or None,
         )
     except Exception:
         logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
@@ -524,22 +533,34 @@ def process_group_ask_task(
     media_parts = None
     media_context = ""
     media_metadata = None
-    media_ref = body.get("media_ref")
-    if isinstance(media_ref, dict):
+    raw_media_refs = body.get("media_refs")
+    media_refs = (
+        [value for value in raw_media_refs if isinstance(value, dict)] if isinstance(raw_media_refs, list) else []
+    )
+    legacy_media_ref = body.get("media_ref")
+    if not media_refs and isinstance(legacy_media_ref, dict):
+        media_refs = [legacy_media_ref]
+    if media_refs:
         try:
-            prepared_media = prepare_media_for_gemini(bot, media_ref)
+            prepared_media = prepare_media_collection_for_gemini(bot, media_refs)
             media_parts = prepared_media.media_parts
             media_context = prepared_media.media_context
             media_metadata = prepared_media.agent_reply_metadata
+            media_log = media_references_log_extra(media_refs)
+            if len(media_refs) == 1:
+                media_log.update(media_reference_log_extra(media_refs[0]))
             logger.info(
                 "Explicit ask media prepared",
                 extra={
                     "chat_id": chat_id,
                     "reply_to_message_id": reply_to_message_id,
-                    **media_reference_log_extra(media_ref),
+                    **media_log,
                     "downloaded_bytes": prepared_media.downloaded_bytes,
-                    "content_mode": prepared_media.content_mode,
+                    "content_modes": prepared_media.content_modes,
                     "media_part_count": len(media_parts or []),
+                    "media_prepared_count": prepared_media.prepared_count,
+                    "media_skipped_count": prepared_media.skipped_count,
+                    "media_skipped_reasons": prepared_media.skipped_reasons,
                     "media_context_chars": len(media_context),
                 },
             )

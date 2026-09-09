@@ -22,6 +22,7 @@ from services.repositories.sqs import SQSClient
 from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
 from services.telegram_actor import is_linked_channel_discussion_post
+from services.telegram_media import observe_media_group
 from zerde_common.logging_utils import telegram_update_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -117,6 +118,7 @@ def _handle_api_gateway(
                     extra={"chat_id": chat_id},
                 )
                 return create_response(500, {"message": "Contest update retry required"})
+            observe_media_group(dispatcher.memory_repo, body)
             observe_group_memory_update(dispatcher.memory_repo, body, sqs_repo=_sqs_client)
             maybe_enqueue_ambient_reaction(repo=dispatcher.memory_repo, update=body, sqs_repo=_sqs_client)
 
