@@ -79,7 +79,9 @@ from services.telegram_media import (
     MediaUnavailableError,
     MediaUnsupportedError,
     detect_media_reference,
+    has_any_media,
     media_reference_log_extra,
+    media_retrieval_query,
     prepare_media_for_gemini,
 )
 from services.vector_memory import (
@@ -1101,6 +1103,97 @@ def handle_update(
                 "has_media": bool(media_ref),
                 **(media_reference_log_extra(media_ref) if media_ref else {}),
             },
+        )
+        return True
+
+    media_ref = detect_media_reference(message)
+    if media_ref is not None:
+        if sqs_repo is None:
+            logger.warning(
+                "Group agent explicit media request could not be queued",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    "reason": "missing_sqs_repo",
+                    **media_reference_log_extra(media_ref),
+                },
+            )
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_agent_unavailable", get_chat_lang(chat_id)),
+                reply_to_message_id=message_id,
+            )
+            return True
+
+        question_context = build_explicit_question_context(repo, chat_id, message)
+        retrieval_query = media_retrieval_query(question_context.retrieval_query, media_ref)
+        requester = message.get("from") or {}
+        try:
+            bot.set_message_reaction(chat_id, message_id, "👀")
+        except Exception:
+            logger.debug(
+                "Failed to react to explicit media request before enqueue",
+                extra={"chat_id": chat_id, "message_id": message_id},
+            )
+        try:
+            sqs_repo.send_group_ask_task(
+                update_id=update.get("update_id") or message_id,
+                chat_id=chat_id,
+                reply_to_message_id=message_id,
+                user_text=question_context.user_text,
+                retrieval_query=retrieval_query,
+                lang=get_chat_lang(chat_id),
+                requester_user_id=requester.get("id"),
+                requester_username=requester.get("username"),
+                requester_display_name=display_name(requester),
+                current_user_message=question_context.current_user_message,
+                source_message_context=question_context.source_message_context,
+                parent_bot_message_id=question_context.parent_bot_message_id,
+                media_ref=media_ref.to_dict(),
+            )
+        except Exception:
+            logger.exception(
+                "Failed to enqueue explicit media request",
+                extra={
+                    "chat_id": chat_id,
+                    "message_id": message_id,
+                    **media_reference_log_extra(media_ref),
+                },
+            )
+            bot.send_message(
+                chat_id,
+                get_translated_text("ask_agent_unavailable", get_chat_lang(chat_id)),
+                reply_to_message_id=message_id,
+            )
+            return True
+
+        logger.info(
+            "Group agent explicit media request queued",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "update_id": update.get("update_id"),
+                "media_source": (
+                    "current_message" if media_ref.source_message_id == message_id else "reply_to_message"
+                ),
+                **media_reference_log_extra(media_ref),
+            },
+        )
+        return True
+
+    if has_any_media(message):
+        logger.info(
+            "Group agent explicit media unsupported",
+            extra={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "update_id": update.get("update_id"),
+            },
+        )
+        bot.send_message(
+            chat_id,
+            get_translated_text("ask_media_unsupported", get_chat_lang(chat_id)),
+            reply_to_message_id=message_id,
         )
         return True
 

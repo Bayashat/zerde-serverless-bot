@@ -30,7 +30,7 @@ Zerde is no longer "just call an LLM with the latest message." The bot now has:
 - **Hybrid RAG**: long-term memories embedded with Gemini for S3 Vectors semantic retrieval, plus DynamoDB lexical fallback and local reranking.
 - **Agent behavior**: explicit `/ask`, @mention handling, self-reference grounding, reply-to-bot thread continuity, immediate linked-channel post comments, delayed AI-decided ordinary proactive replies, reply-length/style budgeting, and `/agent why` source summaries.
 - **Ambient reactions**: optional emoji reactions to group messages, classified through a Groq model pool and processed asynchronously without writing long-term memory. Linked-channel posts force a reaction attempt and fall back to 👀.
-- **Explicit media understanding**: `/ask` can be used as a reply to photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
+- **Explicit media understanding**: `/ask` or a direct @mention/reply request can analyze photos/screenshots, voice/audio, PDFs, and supported text/code/log files. Linked-channel post comments may also analyze supported attached media ephemerally. Zerde does not automatically analyze ordinary group media messages.
 - **Memory controls**: `/memory`, `/agent`, `/memory about me`, `/memory forget me`, `/memory forget this` durable source cleanup, and `/agent wrong` / `/memory wrong` feedback with related vector cleanup and owner-only group cleanup commands.
 - **Bot output boundary**: normal bot answers are stored only as short-term `AGENT_REPLY#...` thread metadata, not embedded into semantic memory. Durable bot-authored memory is reserved for explicit future `BOT_COMMITMENT#...` or `BOT_CORRECTION#...` flows.
 
@@ -45,7 +45,7 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | Feature | Description |
 |---------|-------------|
 | Group-chat agent | Answers `/ask`, @mentions, and replies to bot messages with requester, recent, profile, long-term, lexical, and semantic memory context. |
-| Explicit multimodal `/ask` | Reply to photos/screenshots, voice/audio, PDFs, or supported text/code/log files with `/ask`; the async worker reads that media for the current answer only. |
+| Explicit multimodal requests | Reply to photos/screenshots, voice/audio, PDFs, or supported text/code/log files with `/ask` or a direct @mention; the async worker reads that media for the current answer only. |
 | RAG memory | Stores group memory in DynamoDB, extracts long-term memory with a structured Gemini schema plus rule fallback, indexes high-information memory in S3 Vectors for semantic retrieval, and uses exact-term DynamoDB fallback plus local reranking. |
 | Reply thread continuity | Records bot answers in short-term `AGENT_REPLY#...` items so follow-up replies know what the bot just said; these rows are not semantic/vector memory. |
 | Social timing | Ordinary proactive replies are delayed briefly, then a Groq model pool decides from capped recent and query-filtered long-term context whether the bot can add value. If yes, the chat daily limit is reserved and Gemini generates with DeepSeek/Groq fallback. Linked channel posts mirrored into discussion groups use a separate zero-delay comment path and may analyze supported attached media. |
@@ -210,11 +210,11 @@ Ambient reaction settings:
 | `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR` | Per-chat hourly reaction cap | `12` |
 | `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY` | Per-chat daily reaction cap | `100` |
 
-Explicit multimodal `/ask` settings:
+Explicit multimodal request settings:
 
 | Env var | Applies to | Default |
 |---------|------------|---------|
-| `MULTIMODAL_ENABLED` | Enables explicit `/ask` media analysis | `true` |
+| `MULTIMODAL_ENABLED` | Enables explicit `/ask` and @mention/reply media analysis | `true` |
 | `MULTIMODAL_MAX_DOWNLOAD_BYTES` | Telegram download cap for one explicit media request | `12000000` |
 | `MULTIMODAL_INLINE_MAX_BYTES` | Gemini inline media cap; larger binary media is rejected in this first version | `8000000` |
 | `MULTIMODAL_TEXT_FILE_MAX_CHARS` | Text/code/log file content included in the prompt | `20000` |

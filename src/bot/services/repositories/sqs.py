@@ -86,7 +86,7 @@ class SQSClient:
         parent_bot_message_id: int | str | None = None,
         media_ref: dict[str, object] | None = None,
     ) -> None:
-        """Enqueue an explicit /ask request for async group-agent answering."""
+        """Enqueue an explicit agent request for async group-agent answering."""
         payload: dict[str, object] = {
             "task_type": "PROCESS_GROUP_ASK",
             "update_id": update_id,

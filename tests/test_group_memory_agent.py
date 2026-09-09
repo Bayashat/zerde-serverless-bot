@@ -1758,6 +1758,143 @@ def test_agent_mention_reply_to_non_bot_includes_source_message(monkeypatch):
     assert "deploying on Friday evening" in answer.call_args.kwargs["source_message_context"]
 
 
+@pytest.mark.parametrize(
+    ("media_payload", "expected_media_type"),
+    [
+        (
+            {
+                "photo": [
+                    {"file_id": "small", "file_unique_id": "u-small", "file_size": 100},
+                    {"file_id": "large", "file_unique_id": "u-large", "file_size": 200},
+                ]
+            },
+            "photo",
+        ),
+        (
+            {
+                "document": {
+                    "file_id": "pdf-id",
+                    "file_unique_id": "pdf-u",
+                    "file_name": "architecture.pdf",
+                    "mime_type": "application/pdf",
+                    "file_size": 300,
+                }
+            },
+            "pdf",
+        ),
+        (
+            {
+                "voice": {
+                    "file_id": "voice-id",
+                    "file_unique_id": "voice-u",
+                    "mime_type": "audio/ogg",
+                    "file_size": 400,
+                }
+            },
+            "voice",
+        ),
+    ],
+)
+def test_agent_mention_reply_to_supported_media_queues_async_analysis(
+    monkeypatch,
+    media_payload,
+    expected_media_type,
+):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    sqs = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "zh")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot 帮我分析这个")
+    update["update_id"] = 12345
+    update["message"]["reply_to_message"] = {
+        "message_id": 8,
+        "from": {"id": 7, "is_bot": False, "first_name": "Nurt", "username": "nurt"},
+        **media_payload,
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    kwargs = sqs.send_group_ask_task.call_args.kwargs
+    assert kwargs["update_id"] == 12345
+    assert kwargs["chat_id"] == -100123
+    assert kwargs["reply_to_message_id"] == 11
+    assert kwargs["media_ref"]["media_type"] == expected_media_type
+    assert kwargs["media_ref"]["source_message_id"] == 8
+    assert "@ZerdeBot 帮我分析这个" in kwargs["user_text"]
+    assert "@ZerdeBot 帮我分析这个" in kwargs["retrieval_query"]
+    assert kwargs["current_user_message"] == "@ZerdeBot 帮我分析这个"
+    assert kwargs["requester_user_id"] == 42
+    assert kwargs["requester_username"] == "ada"
+    sqs.send_proactive_candidate_task.assert_not_called()
+    answer.assert_not_called()
+    bot.get_file.assert_not_called()
+    bot.download_file.assert_not_called()
+    bot.set_message_reaction.assert_called_once_with(-100123, 11, "👀")
+
+
+def test_agent_mention_with_attached_photo_queues_async_analysis(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    sqs = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "en")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update()
+    update["message"].pop("text")
+    update["message"]["caption"] = "@ZerdeBot what is shown here?"
+    update["message"]["photo"] = [{"file_id": "photo-id", "file_unique_id": "photo-u", "file_size": 100}]
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    kwargs = sqs.send_group_ask_task.call_args.kwargs
+    assert kwargs["media_ref"]["media_type"] == "photo"
+    assert kwargs["media_ref"]["source_message_id"] == 11
+    answer.assert_not_called()
+    bot.get_file.assert_not_called()
+    bot.download_file.assert_not_called()
+
+
+def test_agent_mention_reply_to_unsupported_media_reports_it(monkeypatch):
+    repo = MagicMock()
+    repo.is_agent_enabled.return_value = True
+    bot = MagicMock()
+    sqs = MagicMock()
+    answer = MagicMock(return_value=True)
+    monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
+    monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
+    monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "zh")
+    monkeypatch.setattr(group_agent, "answer_group_question", answer)
+
+    update = _group_update("@ZerdeBot 帮我看看这个视频")
+    update["message"]["reply_to_message"] = {
+        "message_id": 8,
+        "video": {"file_id": "video-id", "mime_type": "video/mp4"},
+    }
+
+    handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
+
+    assert handled is True
+    sqs.send_group_ask_task.assert_not_called()
+    answer.assert_not_called()
+    bot.send_message.assert_called_once_with(
+        -100123,
+        group_agent.get_translated_text("ask_media_unsupported", "zh"),
+        reply_to_message_id=11,
+    )
+
+
 def test_agent_reply_to_bot_reaction_is_skipped(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True

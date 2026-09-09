@@ -511,7 +511,7 @@ def process_group_ask_task(
     bot,
     body: dict[str, object],
 ) -> None:
-    """Process an async /ask request from SQS."""
+    """Process an async explicit agent request from SQS."""
     chat_id = int(body["chat_id"])
     reply_to_message_id = int(body["reply_to_message_id"])
     user_text = str(body["user_text"]).strip()

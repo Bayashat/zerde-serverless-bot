@@ -68,7 +68,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
 - Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
 - Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
-- Keep explicit multimodal `/ask` media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. SQS carries metadata-only `media_ref`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
+- Keep explicit multimodal media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. Explicit `/ask` and @mention/reply media requests send metadata-only `media_ref` through `PROCESS_GROUP_ASK`; the worker downloads bounded media and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity.
 - Keep ambient reactions ephemeral: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed. Command text and sensitive/hostile/serious text may reach the Groq-only classifier pool, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm. Official linked-channel posts are the exception to conservative ambient gating: they bypass sample rate, cooldowns, and rate caps, and fall back to 👀 if the provider cannot choose an emoji.
 - Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
 - Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
@@ -136,7 +136,7 @@ DynamoDB memory key families:
 - `DAILY_SUMMARY#...`
 - `TERM#...`
 - `AGENT_REPLY#...`
-  - Optional compact media metadata/summary for explicit multimodal `/ask` continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
+  - Optional compact media metadata/summary for explicit multimodal request continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
 - `AMBIENT_REACTION#...`
   - Short-lived reaction metadata for cooldowns/debugging only. Do not write ambient reaction context to long-term memory or vectors.
 - `CONTEST#<root_message_id>#META`
