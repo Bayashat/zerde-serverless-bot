@@ -7,6 +7,7 @@ from services.spam.groq_detector import SpamCheckResult
 from services.spam.message_text import build_spam_context_payload, collect_spam_screen_text
 from services.spam.processor import process_spam_check_task
 from services.spam.screening_service import SpamScreeningService
+from services.telegram import TelegramAPIError, TelegramClient
 
 CAPTION = (
     "🍃 \u200bД\u200bEᛠርKO€ \u200bᛖОΛΘԿK0 ᛠYᛠ 👇\n" "https://telegra.ph/AKTUALNAYA-SSYLKA-NA-NASHEGO-BOTA-09-10-246\n"
@@ -58,7 +59,7 @@ def task(msg):
 def test_incident_deleted_without_ai_and_caller_reviewed(review, detector, admin):
     bot = MagicMock()
     process_spam_check_task(bot, task(message()))
-    bot.delete_message.assert_called_once_with(-100123, 42)
+    bot.delete_message.assert_called_once_with(-100123, 42, ignore_not_found=True)
     detector.assert_not_called()
     assert review.call_args.args[2] == 111
     assert review.call_args.kwargs["guest_bot_id"] == 900
@@ -166,10 +167,32 @@ def test_guest_review_buttons_target_caller_not_bot(admin):
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
 @patch("services.spam.processor._send_spam_review_alert")
 def test_deleted_message_replay_still_reviews_caller(review, admin):
-    bot = MagicMock()
-    bot.delete_message.side_effect = RuntimeError("Bad Request: message to delete not found")
+    bot = TelegramClient()
+    bot._post = MagicMock(
+        side_effect=[
+            {"ok": True, "result": True},
+            TelegramAPIError(400, '{"description":"Bad Request: message to delete not found"}'),
+        ]
+    )
     process_spam_check_task(bot, task(message()))
-    review.assert_called_once()
+    process_spam_check_task(bot, task(message()))
+    assert review.call_count == 2
+    assert bot._post.call_count == 2
+
+
+@pytest.mark.parametrize("status", [400, 403, 429])
+@patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
+@patch("services.spam.processor._send_spam_review_alert")
+def test_guest_delete_other_telegram_errors_remain_retryable(review, admin, status):
+    bot = TelegramClient()
+    error = TelegramAPIError(status, '{"description":"message cannot be deleted"}')
+    bot._post = MagicMock(side_effect=error)
+
+    with pytest.raises(TelegramAPIError) as captured:
+        process_spam_check_task(bot, task(message()))
+
+    assert captured.value is error
+    review.assert_not_called()
 
 
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
