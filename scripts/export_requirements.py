@@ -12,6 +12,7 @@ EXPORTS = {
     "src/bot/requirements.txt": ["--only-group", "lambda-bot"],
     "src/news/requirements.txt": ["--only-group", "lambda-news"],
     "src/quiz/requirements.txt": ["--only-group", "lambda-quiz"],
+    "src/operations/requirements.txt": ["--only-group", "lambda-common"],
     "infra/requirements.txt": ["--no-dev"],
 }
 HEADER = "# Generated from root uv.lock by scripts/export_requirements.py; do not edit.\n"

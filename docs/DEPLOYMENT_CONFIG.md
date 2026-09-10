@@ -103,7 +103,7 @@ uv run --frozen cdk diff -c env=dev --no-change-set
 ```
 
 The bundle verifier uses the actual asset paths and shared layer from the CDK
-template. It imports all four handlers inside the pinned AWS Python 3.13 ARM64
+template. It imports all five registered handlers (including operations) inside the pinned AWS Python 3.13 ARM64
 runtime image with networking disabled and only synthetic identifiers. It checks
 that boto3/botocore/urllib3 and native modules load from `/var/task`, verifies
 installed package versions against exports, creates a Pillow PNG and exercises
@@ -133,3 +133,5 @@ That local diff uses defaults, so it also reflects absent local chat/configurati
 variables. It is evidence of synthesis and drift detection, not an approved
 deployment manifest; recreate the release diff with the intended environment's
 variables before deployment.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。

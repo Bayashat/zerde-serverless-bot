@@ -58,6 +58,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/repositories/contest.py`: sole contest lifecycle, participant uniqueness, winner history, rules alias, and retention truth owner.
 - `src/news/`: scheduled news digest Lambda.
 - `src/quiz/`: scheduled and on-demand quiz Lambda.
+- `src/operations/`: independent SNS operational notifier; only private ADMIN_USER_ID and operations# state keys.
 - `src/shared/python/zerde_common/`: shared Lambda layer utilities.
 - `infra/`: AWS CDK stack and constructs.
 - `docs/ARCHITECTURE.md`: current architecture source of truth.
@@ -243,3 +244,5 @@ Legacy deletion must use a closed memory type allowlist, never an entire CHAT pa
 Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
 
 Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions storage only; absent CONTROL rows leave learning stopped.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../../../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。

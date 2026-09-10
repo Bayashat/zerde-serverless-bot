@@ -26,7 +26,7 @@ SYNTHETIC_ENV = {
     "GEMINI_RPD_LIMIT": "500",
     "QUIZ_LLM_RPD": "20",
     "CAPTCHA_TIMEOUT_SECONDS": "120",
-    "KICK_BAN_DURATION_SECONDS": "31",
+    "KICK_BAN_DURATION_SECONDS": "60",
     "CAPTCHA_MAX_ATTEMPTS": "3",
     "VOTEBAN_THRESHOLD": "7",
     "VOTEBAN_FORGIVE_THRESHOLD": "7",
@@ -45,7 +45,7 @@ for distribution in importlib.metadata.distributions(path=['/var/task']):
 modules = ['boto3', 'botocore', 'urllib3']
 if kind == 'bot':
     modules += ['PIL.Image']
-else:
+elif kind in {'news', 'quiz'}:
     modules += ['google.genai', 'pydantic_core', 'cryptography']
 if kind == 'news':
     modules += ['feedparser']
@@ -55,7 +55,7 @@ for name in modules:
 if kind == 'bot':
     from PIL import Image
     Image.new('RGB', (1, 1)).save(io.BytesIO(), format='PNG')
-else:
+elif kind in {'news', 'quiz'}:
     from cryptography.hazmat.primitives import hashes
     assert len(hashes.Hash(hashes.SHA256()).finalize()) == 32
 module_name, function_name = handler.rsplit('.', 1)
@@ -77,8 +77,15 @@ def main() -> None:
         raise SystemExit("Expected one freshly synthesized Zerde stack template")
     resources = json.loads(templates[0].read_text())["Resources"]
     functions = [resource for resource in resources.values() if resource["Type"] == "AWS::Lambda::Function"]
-    if len(functions) != 4:
-        raise SystemExit("Expected the bot, indexer, news and quiz Lambda assets")
+    # Explicit registration prevents unknown handlers from silently escaping the probe.
+    registrations = {
+        "bot": ("bot", "main.lambda_handler"),
+        "vector-indexer": ("bot", "vector_indexer_main.lambda_handler"),
+        "news": ("news", "main.lambda_handler"),
+        "quiz": ("quiz", "main.lambda_handler"),
+        "operations": ("operations", "main.lambda_handler"),
+    }
+    seen = set()
     for function in functions:
         properties = function["Properties"]
         assert properties["Runtime"] == "python3.13" and properties["Architectures"] == ["arm64"]
@@ -89,7 +96,14 @@ def main() -> None:
         layer = assembly / resources[layer_id]["Metadata"]["aws:asset:path"] / "python"
         assert (layer / "zerde_common").is_dir()
         name = properties["FunctionName"]
-        kind = "news" if "-news-" in name else "quiz" if "-quiz-" in name else "bot"
+        match = re.fullmatch(r"zerde-serverless-(.+)-(dev|prod)", name)
+        slug = match[1] if match else None
+        if slug not in registrations or slug in seen:
+            raise SystemExit("Unknown or duplicate Lambda package registration")
+        seen.add(slug)
+        kind, handler = registrations[slug]
+        if properties["Handler"] != handler:
+            raise SystemExit("Lambda handler differs from its package registration")
         expected = dict(re.findall(r"^([\w-]+)==([^\s;]+)", (ROOT / f"src/{kind}/requirements.txt").read_text(), re.M))
         command = [
             "docker",
@@ -113,6 +127,9 @@ def main() -> None:
         subprocess.run(
             command + [args.image, "-c", PROBE, json.dumps(expected), kind, properties["Handler"]], check=True
         )
+
+    if seen != set(registrations):
+        raise SystemExit("Missing registered Lambda asset")
 
 
 if __name__ == "__main__":

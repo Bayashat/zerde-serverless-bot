@@ -1,4 +1,4 @@
-"""CloudWatch alarms for Lambdas and SQS DLQs (no SNS wiring — alarms visible in console)."""
+"""Reusable alarms; their caller owns notification routing and runtime activation."""
 
 from __future__ import annotations
 
@@ -16,12 +16,12 @@ def add_lambda_operational_alarms(
     logical_slug: str,
     fn: _lambda.IFunction,
     duration_p95_threshold_ms: int,
-) -> None:
+) -> list[cloudwatch.Alarm]:
     """Errors, throttles, and duration p95 for a single Lambda function."""
     base = f"{CONSTRUCT_PREFIX}{logical_slug}"
     alarm_name_prefix = f"{RESOURCE_PREFIX}-{logical_slug}-{env_name}"
 
-    cloudwatch.Alarm(
+    errors = cloudwatch.Alarm(
         scope,
         f"{base}ErrorsAlarm",
         alarm_name=f"{alarm_name_prefix}-errors",
@@ -34,7 +34,7 @@ def add_lambda_operational_alarms(
         treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
     )
 
-    cloudwatch.Alarm(
+    throttles = cloudwatch.Alarm(
         scope,
         f"{base}ThrottlesAlarm",
         alarm_name=f"{alarm_name_prefix}-throttles",
@@ -47,7 +47,7 @@ def add_lambda_operational_alarms(
         treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
     )
 
-    cloudwatch.Alarm(
+    duration = cloudwatch.Alarm(
         scope,
         f"{base}DurationP95Alarm",
         alarm_name=f"{alarm_name_prefix}-duration-p95",
@@ -61,6 +61,7 @@ def add_lambda_operational_alarms(
         comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
         treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
     )
+    return [errors, throttles, duration]
 
 
 def add_sqs_dlq_visible_alarm(
@@ -69,12 +70,12 @@ def add_sqs_dlq_visible_alarm(
     env_name: str,
     logical_slug: str,
     dlq: sqs.IQueue,
-) -> None:
+) -> cloudwatch.Alarm:
     """Alert when poison messages land on the DLQ (visible count >= 1)."""
     base = f"{CONSTRUCT_PREFIX}{logical_slug}Dlq"
     alarm_name = f"{RESOURCE_PREFIX}-{logical_slug}-dlq-visible-{env_name}"
 
-    cloudwatch.Alarm(
+    return cloudwatch.Alarm(
         scope,
         f"{base}VisibleAlarm",
         alarm_name=alarm_name,
@@ -83,6 +84,23 @@ def add_sqs_dlq_visible_alarm(
         threshold=1,
         evaluation_periods=1,
         datapoints_to_alarm=1,
+        comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
+    )
+
+
+def add_sqs_age_alarm(
+    scope: Construct, *, env_name: str, logical_slug: str, queue: sqs.IQueue, threshold_seconds: int
+) -> cloudwatch.Alarm:
+    """A worker owner chooses its meaningful backlog age and registers this alarm."""
+    return cloudwatch.Alarm(
+        scope,
+        f"{CONSTRUCT_PREFIX}{logical_slug}QueueAgeAlarm",
+        alarm_name=f"{RESOURCE_PREFIX}-{logical_slug}-queue-age-{env_name}",
+        metric=queue.metric_approximate_age_of_oldest_message(),
+        threshold=threshold_seconds,
+        evaluation_periods=2,
+        datapoints_to_alarm=2,
         comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
         treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
     )

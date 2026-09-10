@@ -300,3 +300,5 @@ For contribution workflow (branching, pre-commit, PRs), see [CONTRIBUTING.md](..
 ## Configuration and package validation
 
 Use uv 0.11.3 for the CI-matched workflow. Follow [DEPLOYMENT_CONFIG.md](DEPLOYMENT_CONFIG.md) to export/check the root lock and import the actual ARM64 Lambda assets before deployment. Raw message retention defaults to 30 days independently of legacy retention; existing database TTL values are unchanged by configuration updates.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。

@@ -58,6 +58,11 @@ flowchart LR
   LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
+  CW["CloudWatch alarms"] --> SNS["Operations SNS"]
+  SNS --> OPS["Operations Lambda"]
+  OPS --> ADMIN["Administrator private chat"]
+  OPS -- "operations# only" --> STATS
+  LAYER -.-> OPS
 ```
 
 ## Lambda Packages
@@ -71,6 +76,7 @@ flowchart LR
 | `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory SQS worker for embedding/indexing and vector backfill paging. |
 | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest and Telegram delivery. |
 | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand multilingual developer quizzes. |
+| `src/operations/` | `main.py:lambda_handler` | Independently executes allowlisted operational notifications; durable deduplication and private administrator delivery. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared env helpers, SSM batch secret loading, provider errors, JSON logging, redaction, Telegram update log truncation. |
 
 ## Bot Request Flow
@@ -307,3 +313,5 @@ Legacy forget commands delete only an explicit memory sort-key allowlist and pre
 Deployment configuration and reproducible dependency exports are documented in [DEPLOYMENT_CONFIG.md](DEPLOYMENT_CONFIG.md). Existing row TTLs are not changed by environment updates.
 
 Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions storage only; absent CONTROL rows leave learning stopped.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
