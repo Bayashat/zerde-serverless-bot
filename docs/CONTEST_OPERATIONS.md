@@ -50,3 +50,9 @@ The expected rows are one `META`, zero or more `PARTICIPANT` rows, an optional `
 For an unreachable `OPEN` or stuck `CREATING` contest, first export the exact query result above to an incident backup. Obtain explicit approval before deleting data. Delete only the exact META, its participant-prefix rows, its stored rules alias, and its exact outbox marker; never delete `CHAT#<chat_id>` broadly. Record the backup location, row count, reason, operator, and UTC timestamp.
 
 After any manual action, repeat the read-only queries and confirm that unrelated contest roots and memory rows remain unchanged.
+
+## DynamoDB transaction serialization (Z19)
+
+The repository uses the DynamoDB **Resource** client's transaction methods. It passes native Python values; boto3 performs AttributeValue serialization once. Do not wrap these values with `TypeSerializer` or change to a plain low-level client without revisiting this boundary. The transaction conditions and outbox atomicity remain unchanged.
+
+`tests/test_contest_dynamodb.py` exercises the real repository and boto3 serialization with Moto: rules activation, unique/replayed registration, winner plus recovery outbox, cancellation, and conditional TTL finalization. It also inspects the request wire shape. These are local simulations, with no AWS writes or Telegram messages; dev delivery and production acceptance remain separate checks. A deployment rollback must keep this serialization fix.
