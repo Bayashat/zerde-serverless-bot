@@ -48,6 +48,7 @@ lambda-quiz = [
     "google-genai>=1.65.0",
 ]
 dev = [
+    "cryptography>=50.0.0",
     "moto[dynamodb]>=5.1.0",
     { include-group = "lambda-bot" },
     { include-group = "lambda-news" },
