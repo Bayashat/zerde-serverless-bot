@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, call
 
 import pytest
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 from botocore.exceptions import ClientError
 from services.repositories.contest import ContestRepository, RegistrationResult
 
@@ -14,7 +13,6 @@ def _repo() -> ContestRepository:
     repo.table.name = "memory-table"
     repo.table_name = "memory-table"
     repo.client = MagicMock()
-    repo._serializer = TypeSerializer()
     return repo
 
 
@@ -25,11 +23,6 @@ def _client_error(code: str, *, cancellation_reasons: list[dict] | None = None) 
     elif code == "TransactionCanceledException":
         response["CancellationReasons"] = [{"Code": "ConditionalCheckFailed"}, {"Code": "None"}]
     return ClientError(response, "operation")
-
-
-def _deserialize(item: dict) -> dict:
-    deserializer = TypeDeserializer()
-    return {key: deserializer.deserialize(value) for key, value in item.items()}
 
 
 def test_create_contest_is_fail_closed_and_idempotent() -> None:
@@ -85,10 +78,10 @@ def test_activate_contest_atomically_attaches_rules_alias() -> None:
 
     tx = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
     update = tx[0]["Update"]
-    alias = _deserialize(tx[1]["Put"]["Item"])
+    alias = dict(tx[1]["Put"]["Item"])
     assert update["TableName"] == "memory-table"
     assert update["ConditionExpression"] == "#status = :creating AND creation_attempt_id = :attempt"
-    assert _deserialize(update["Key"]) == {
+    assert dict(update["Key"]) == {
         "pk": "CHAT#-100123",
         "sk": "CONTEST#0000000000011#META",
     }
@@ -136,10 +129,10 @@ def test_registration_transaction_checks_open_and_unique_user() -> None:
     assert result is RegistrationResult.REGISTERED
     tx = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
     counter = tx[0]["Update"]
-    participant = _deserialize(tx[1]["Put"]["Item"])
+    participant = dict(tx[1]["Put"]["Item"])
     assert counter["ConditionExpression"] == "#status = :open"
     assert "participant_count = if_not_exists(participant_count, :zero) + :one" in counter["UpdateExpression"]
-    assert _deserialize(counter["ExpressionAttributeValues"]) == {
+    assert dict(counter["ExpressionAttributeValues"]) == {
         ":open": "OPEN",
         ":zero": 0,
         ":one": 1,
@@ -169,7 +162,7 @@ def test_registration_preserves_full_telegram_text_limit_for_evidence() -> None:
     )
 
     tx = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
-    participant = _deserialize(tx[1]["Put"]["Item"])
+    participant = dict(tx[1]["Put"]["Item"])
     assert participant["text"] == text
     assert participant["text"].endswith("қатысамын")
 
@@ -271,8 +264,8 @@ def test_first_draw_sets_one_immutable_expiry_and_pending_announcement() -> None
     begin = repo.table.update_item.call_args_list[0].kwargs
     transaction = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
     complete = transaction[0]["Update"]
-    outbox = _deserialize(transaction[1]["Put"]["Item"])
-    complete_values = _deserialize(complete["ExpressionAttributeValues"])
+    outbox = dict(transaction[1]["Put"]["Item"])
+    complete_values = dict(complete["ExpressionAttributeValues"])
     assert begin["ConditionExpression"] == "#status = :open AND draw_count = :zero"
     assert begin["ExpressionAttributeValues"][":attempt"] == "draw-a"
     assert "draw_attempt_id = :attempt" in complete["ConditionExpression"]
@@ -352,8 +345,8 @@ def test_abort_announcement_and_cancel_transitions_are_guarded() -> None:
     assert cancelled and cancelled["status"] == "CANCELLED"
     cancel_tx = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
     cancel = cancel_tx[0]["Update"]
-    cancel_values = _deserialize(cancel["ExpressionAttributeValues"])
-    cancel_outbox = _deserialize(cancel_tx[1]["Put"]["Item"])
+    cancel_values = dict(cancel["ExpressionAttributeValues"])
+    cancel_outbox = dict(cancel_tx[1]["Put"]["Item"])
     assert cancel["ConditionExpression"] == "#status = :open AND attribute_not_exists(expires_at)"
     assert cancel_values[":expires"] == 730 + 30 * 24 * 60 * 60
     assert cancel_outbox["sk"] == "CHAT#-100123#ROOT#0000000000011"
@@ -428,9 +421,9 @@ def test_ttl_sweep_is_idempotent_and_completes_alias_before_meta() -> None:
     alias_call = repo.table.update_item.call_args_list[-1].kwargs
     sweep_tx = repo.client.transact_write_items.call_args.kwargs["TransactItems"]
     meta_call = sweep_tx[0]["Update"]
-    outbox_delete = _deserialize(sweep_tx[1]["Delete"]["Key"])
+    outbox_delete = dict(sweep_tx[1]["Delete"]["Key"])
     assert alias_call["Key"]["sk"] == "CONTEST_RULE#0000000000099"
-    assert _deserialize(meta_call["ExpressionAttributeValues"])[":complete"] == "COMPLETE"
+    assert dict(meta_call["ExpressionAttributeValues"])[":complete"] == "COMPLETE"
     assert "REMOVE ttl_sweep_cursor" in meta_call["UpdateExpression"]
     assert "ttl_sweep_version = :version" in meta_call["ConditionExpression"]
     assert outbox_delete == {

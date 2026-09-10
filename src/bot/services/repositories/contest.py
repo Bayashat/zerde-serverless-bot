@@ -8,7 +8,6 @@ from enum import StrEnum
 from typing import Any
 
 from boto3.dynamodb.conditions import Key
-from boto3.dynamodb.types import TypeSerializer
 from botocore.exceptions import ClientError
 from core.config import MEMORY_TABLE_NAME
 from services.repositories._common import get_dynamodb
@@ -38,7 +37,6 @@ class ContestRepository:
         self.table = get_dynamodb().Table(table_name)
         self.table_name = self.table.name
         self.client = self.table.meta.client
-        self._serializer = TypeSerializer()
 
     @staticmethod
     def _chat_pk(chat_id: int | str) -> str:
@@ -93,8 +91,10 @@ class ContestRepository:
     def _expiry(now: int) -> int:
         return int(now) + CONTEST_RETENTION_DAYS * _SECONDS_PER_DAY
 
-    def _serialize_map(self, value: dict[str, Any]) -> dict[str, Any]:
-        return {key: self._serializer.serialize(item) for key, item in value.items() if item is not None}
+    @staticmethod
+    def _without_none(value: dict[str, Any]) -> dict[str, Any]:
+        """The DynamoDB Resource client serializes native values exactly once."""
+        return {key: item for key, item in value.items() if item is not None}
 
     @staticmethod
     def _is_condition_failure(exc: ClientError) -> bool:
@@ -182,14 +182,14 @@ class ContestRepository:
                     {
                         "Update": {
                             "TableName": self.table_name,
-                            "Key": self._serialize_map(meta_key),
+                            "Key": self._without_none(meta_key),
                             "UpdateExpression": (
                                 "SET #status = :open, rules_message_id = :rules, updated_at = :now "
                                 "REMOVE creation_attempt_id, creation_started_at"
                             ),
                             "ConditionExpression": ("#status = :creating AND creation_attempt_id = :attempt"),
                             "ExpressionAttributeNames": {"#status": "status"},
-                            "ExpressionAttributeValues": self._serialize_map(
+                            "ExpressionAttributeValues": self._without_none(
                                 {
                                     ":open": "OPEN",
                                     ":creating": "CREATING",
@@ -203,7 +203,7 @@ class ContestRepository:
                     {
                         "Put": {
                             "TableName": self.table_name,
-                            "Item": self._serialize_map(alias),
+                            "Item": self._without_none(alias),
                             "ConditionExpression": "attribute_not_exists(pk)",
                         }
                     },
@@ -402,19 +402,19 @@ class ContestRepository:
                     {
                         "Update": {
                             "TableName": self.table_name,
-                            "Key": self._serialize_map({"pk": pk, "sk": self._meta_sk(root_message_id)}),
+                            "Key": self._without_none({"pk": pk, "sk": self._meta_sk(root_message_id)}),
                             "UpdateExpression": (
                                 "SET participant_count = if_not_exists(participant_count, :zero) + :one"
                             ),
                             "ConditionExpression": "#status = :open",
                             "ExpressionAttributeNames": {"#status": "status"},
-                            "ExpressionAttributeValues": self._serialize_map({":open": "OPEN", ":zero": 0, ":one": 1}),
+                            "ExpressionAttributeValues": self._without_none({":open": "OPEN", ":zero": 0, ":one": 1}),
                         }
                     },
                     {
                         "Put": {
                             "TableName": self.table_name,
-                            "Item": self._serialize_map(item),
+                            "Item": self._without_none(item),
                             "ConditionExpression": "attribute_not_exists(pk)",
                         }
                     },
@@ -662,19 +662,19 @@ class ContestRepository:
                         {
                             "Update": {
                                 "TableName": self.table_name,
-                                "Key": self._serialize_map(
+                                "Key": self._without_none(
                                     {"pk": self._chat_pk(chat_id), "sk": self._meta_sk(root_message_id)}
                                 ),
                                 "UpdateExpression": update_expression,
                                 "ConditionExpression": condition,
                                 "ExpressionAttributeNames": {"#status": "status"},
-                                "ExpressionAttributeValues": self._serialize_map(values),
+                                "ExpressionAttributeValues": self._without_none(values),
                             }
                         },
                         {
                             "Put": {
                                 "TableName": self.table_name,
-                                "Item": self._serialize_map(outbox),
+                                "Item": self._without_none(outbox),
                                 "ConditionExpression": "attribute_not_exists(pk)",
                             }
                         },
@@ -786,19 +786,19 @@ class ContestRepository:
                     {
                         "Update": {
                             "TableName": self.table_name,
-                            "Key": self._serialize_map(
+                            "Key": self._without_none(
                                 {"pk": self._chat_pk(chat_id), "sk": self._meta_sk(root_message_id)}
                             ),
                             "UpdateExpression": update_expression,
                             "ConditionExpression": condition,
                             "ExpressionAttributeNames": {"#status": "status"},
-                            "ExpressionAttributeValues": self._serialize_map(values),
+                            "ExpressionAttributeValues": self._without_none(values),
                         }
                     },
                     {
                         "Put": {
                             "TableName": self.table_name,
-                            "Item": self._serialize_map(
+                            "Item": self._without_none(
                                 self._ttl_outbox_item(
                                     chat_id,
                                     root_message_id,
@@ -927,7 +927,7 @@ class ContestRepository:
                     {
                         "Update": {
                             "TableName": self.table_name,
-                            "Key": self._serialize_map(
+                            "Key": self._without_none(
                                 {"pk": self._chat_pk(chat_id), "sk": self._meta_sk(root_message_id)}
                             ),
                             "UpdateExpression": (
@@ -940,13 +940,13 @@ class ContestRepository:
                                 f"{cursor_condition}"
                             ),
                             "ExpressionAttributeNames": {"#ttl": "ttl"},
-                            "ExpressionAttributeValues": self._serialize_map(values),
+                            "ExpressionAttributeValues": self._without_none(values),
                         }
                     },
                     {
                         "Delete": {
                             "TableName": self.table_name,
-                            "Key": self._serialize_map(self._ttl_outbox_key(chat_id, root_message_id)),
+                            "Key": self._without_none(self._ttl_outbox_key(chat_id, root_message_id)),
                         }
                     },
                 ]
