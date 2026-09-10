@@ -98,9 +98,9 @@ class QuizService:
         self._sender = QuizSender()
         self._repo = QuizRepository()
 
-    def get_difficulty(self) -> str:
-        """Return the difficulty level for today (Almaty time)."""
-        weekday = datetime.now(_ALMATY_TZ).weekday()
+    def get_difficulty(self, scheduled: datetime) -> str:
+        """Bind difficulty to the original scheduled day, including delayed retries."""
+        weekday = scheduled.astimezone(_ALMATY_TZ).weekday()
         return _WEEKDAY_DIFFICULTY.get(weekday, "easy")
 
     def build_announcement(self, lang: str, difficulty: str, source_label: str | None = None) -> str:
@@ -646,17 +646,30 @@ class QuizService:
             return {"status": "error", "reason": "daily record conflict; known poll remains scoreable"}
         return {"status": "ok", "sent": 1, "total": 1}
 
-    def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
+    def process_daily_quiz(self, chat_ids: list[str], lang: str, *, scheduled_at=None) -> dict:
         if not chat_ids:
             return {"status": "skipped", "reason": "no chat_ids"}
-        difficulty = self.get_difficulty()
-        day = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
+        try:
+            if type(scheduled_at) is int and scheduled_at > 0:
+                scheduled = datetime.fromtimestamp(scheduled_at, timezone.utc)
+            elif isinstance(scheduled_at, str):
+                scheduled = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+                if scheduled.tzinfo is None:
+                    raise ValueError("Scheduled timestamp needs its timezone")
+            else:
+                raise ValueError("Missing immutable scheduler timestamp")
+            if scheduled.timestamp() > time.time() + 300:
+                raise ValueError("Scheduled timestamp is in the future")
+        except (ValueError, TypeError, OverflowError):
+            return {"status": "error", "reason": "missing or invalid stable scheduled_at", "retryable": False}
+        difficulty = self.get_difficulty(scheduled)
+        day = scheduled.astimezone(_ALMATY_TZ).strftime("%Y-%m-%d")
         sent_chat_ids, failed = [], []
         for chat_id in chat_ids:
             chat_id = str(chat_id)
             try:
                 # A pre-cutover successful daily publication also prevents another send.
-                if self._repo.get_today_quiz_record(chat_id):
+                if self._repo.get_quiz_record(chat_id, f"DATE#{day}"):
                     sent_chat_ids.append(chat_id)
                     continue
                 result = self._publish_request(

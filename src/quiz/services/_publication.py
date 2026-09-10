@@ -199,6 +199,8 @@ class PublicationState:
             "intent": previous.get("intent") or intent,
             "expires_at": previous.get("expires_at", expires_at),
         }
+        if item["state"] in {"GENERATING", "PREPARED"} and int(item["expires_at"]) <= now:
+            item.update(state="EXPIRED", reason="request_expired", lease_until=0)
         self._publication_transaction(self._publication_transition(item, previous))
         return item
 

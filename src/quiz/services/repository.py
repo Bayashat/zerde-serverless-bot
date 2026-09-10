@@ -333,11 +333,11 @@ class QuizRepository(PublicationState):
         difficulty_suffix = f"#{difficulty}" if difficulty else ""
         return self._read_deck(f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}")
 
-    def get_today_quiz_record(self, chat_id: str) -> dict[str, Any] | None:
-        """Return today's quiz record for a chat, or None if not yet sent."""
-        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
+    def get_quiz_record(self, chat_id: str, request_key: str) -> dict[str, Any] | None:
+        """Read the original request's record, never reinterpret a retry as today's job."""
+        self.publication_key(chat_id, request_key)
         resp = self._table.get_item(
-            Key={"PK": f"QUIZ#{chat_id}", "SK": f"DATE#{today}"},
+            Key={"PK": f"QUIZ#{chat_id}", "SK": request_key},
             ConsistentRead=True,
         )
         return resp.get("Item")

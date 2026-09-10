@@ -35,9 +35,17 @@ generation CAS. A 330-second lease exceeds the current maximum 300-second Quiz a
 Bot Lambda writer durations. Increasing either writer timeout requires increasing
 this lease first. A live lease cannot be claimed by another language or invocation.
 
-Daily identity is per chat/date, irrespective of language. On-demand identity is
+Daily identity is per chat/date, irrespective of language, derived from the original
+EventBridge `scheduled_at` (or native event `time`), never the retry's wall clock.
+The same scheduled event crossing Almaty midnight still refers to the previous
+date and its difficulty. Missing or timezone-less scheduler timestamps are explicit
+nonretryable input errors. On-demand identity is
 the originating Telegram command/reply message ID in that chat. Missing IDs are
 nonretryable input errors; random Lambda request IDs cannot stand in for a command.
+Scheduled timestamps over five minutes in the future also fail before persistence.
+The scheduled Lambda converts an input-error result into an exception so a broken
+input transformer triggers the existing Lambda Errors alarm; platform retries are
+bounded but cannot repair the invalid event by choosing the current time.
 The first request persists its language/topic/difficulty before generation, and
 recovery uses that original intent. Unsent daily intents expire at the end of their
 Almaty date; unsent on-demand intents expire after 24 hours. `EXPIRED` never sends.
@@ -145,6 +153,8 @@ their prior semantics and are not automatically retried as publication recovery.
   its five-minute task must run even when no group list is configured.
 - Quiz Lambda `action="recover_publications"` calls
   `QuizService.recover_publications(limit=50)` on a five-minute schedule.
+- Daily EventBridge input must preserve `scheduled_at` from `$.time`; retries and
+  manual replay must pass the original timestamp instead of creating a fresh date.
 - Quiz Lambda `action="reconcile"` requires `chat_id`, `request_key`, `generation`,
   `poll_message`, and `bot_user_id`, supplied by the authorized live-admin adapter.
 - On-demand calls must include their original positive `reply_to_message_id`.

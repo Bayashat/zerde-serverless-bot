@@ -28,6 +28,9 @@ try:
     sender_module = importlib.import_module("services.quiz_sender")
     QuizService = service_module.QuizService
     PublicationRepository = service_module.QuizRepository
+    _main_spec = importlib.util.spec_from_file_location("quiz_publication_main", Path(_quiz_dir) / "main.py")
+    main_module = importlib.util.module_from_spec(_main_spec)
+    _main_spec.loader.exec_module(main_module)
 finally:
     sys.path.remove(_quiz_dir)
     for name in list(sys.modules):
