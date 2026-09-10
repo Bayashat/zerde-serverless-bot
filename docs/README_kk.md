@@ -57,6 +57,9 @@ RAG дегеніміз — **Retrieval-Augmented Generation**: алдымен р
 | IT quizzes | Scheduled және on-demand quiz Lambda көптілді developer quiz жібереді. |
 | Serverless ops | AWS CDK Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM және alarms ресурстарын басқарады. |
 
+Қонақ боттардың жарнамалары да тексеріледі: сипаттама мен сілтеме батырмалары ескеріледі. Сенімді спам өшіріледі; шақырған адамды мәңгі бұғаттамас бұрын админ тексереді. Ботты шақырудың өзі қасақана әрекетті дәлелдемейді.
+
+
 ---
 
 ## Архитектура

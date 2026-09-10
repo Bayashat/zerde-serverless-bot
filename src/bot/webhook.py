@@ -103,6 +103,8 @@ def _handle_api_gateway(
 
         if screener.should_screen(body) and not has_pending_captcha:
             spam_outcome = screener.run(body)
+            if spam_outcome == "error":
+                return create_response(500, {"message": "Spam screening retry required"})
             if spam_outcome in {"enforced", "queued"}:
                 logger.info(
                     "Spam screening handled update; skipping normal group flows", extra={"outcome": spam_outcome}
@@ -226,7 +228,7 @@ def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
     if not captcha_repo:
         return False
 
-    msg = body.get("message")
+    msg = body.get("message") or body.get("edited_message")
     if not isinstance(msg, dict):
         return False
 

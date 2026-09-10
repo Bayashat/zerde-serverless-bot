@@ -1,8 +1,11 @@
 """Rule-based spam pre-filter: fast, zero I/O scoring for incoming messages."""
 
 import re
+import unicodedata
+from collections import Counter
 
 from core.logger import LoggerAdapter, get_logger
+from services.spam.message_text import normalize_spam_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -39,6 +42,9 @@ class RuleBasedSpamFilter:
         """Return (score, triggered_rule_names). Score is capped at 1.0."""
         if not text:
             return 0.0, []
+
+        invisible_count = sum(unicodedata.category(c) == "Cf" for c in text)
+        text = normalize_spam_text(text)
 
         score = 0.0
         triggered: list[str] = []
@@ -84,6 +90,11 @@ class RuleBasedSpamFilter:
         if is_mixed_script:
             score += 0.20
             triggered.append("cis_spam_obfuscation")
+
+        urls = Counter(re.findall(r"https?://[^\s<>]+", text, re.IGNORECASE))
+        if invisible_count >= 3 and is_mixed_script and max(urls.values(), default=0) >= 3:
+            score += 0.15
+            triggered.append("repeated_obfuscated_url")
 
         if has_scam_hook:
             score += 0.25

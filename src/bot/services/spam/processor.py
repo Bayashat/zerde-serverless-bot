@@ -19,8 +19,9 @@ from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.stats import StatsRepository
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import SpamEnforcer, resolve_spam_target_mention, translate_spam_reason
-from services.spam.groq_detector import GroqSpamDetector
+from services.spam.groq_detector import GroqSpamDetector, SpamCheckResult
 from services.spam.message_text import format_spam_ai_context
+from services.spam.rule_filter import RuleBasedSpamFilter
 from services.telegram import TelegramClient
 from zerde_common.ai_errors import ProviderResponseError
 
@@ -102,7 +103,16 @@ def process_spam_check_task(
             rule_score=rule_score,
             triggered_rules=triggered_rules,
         )
-        result = _get_detector().classify(classifier_input)
+        guest = message_context.get("guest_bot") is True
+        # Recompute on CURRENT_MESSAGE only: quoted/replied advertising is not
+        # evidence for deterministic deletion of a guest's current response.
+        _, current_rules = RuleBasedSpamFilter().check(
+            str(message_context.get("current_message") or ""), user_id, chat_id
+        )
+        if guest and "repeated_obfuscated_url" in current_rules:
+            result = SpamCheckResult("SPAM", 1.0, "referral_promo")
+        else:
+            result = _get_detector().classify(classifier_input)
         strong_signal = _has_strong_auto_enforce_signal(triggered_rules)
         auto_enforce = result.label == "SPAM" and result.confidence >= SPAM_AI_CONFIDENCE_THRESHOLD and strong_signal
 
@@ -121,13 +131,40 @@ def process_spam_check_task(
                 "strong_auto_enforce_signal": strong_signal,
                 "auto_enforce": auto_enforce,
                 "recent_context_count": len(recent_context),
+                "decision_source": (
+                    "guest_structure" if guest and "repeated_obfuscated_url" in current_rules else "groq"
+                ),
+                "guest_bot": guest,
+                "guest_caller_user_id": message_context.get("guest_caller_user_id") if guest else None,
             },
         )
 
         if result.error:
             raise ProviderResponseError("spam classifier failed")
 
-        if auto_enforce:
+        if guest and result.label == "SPAM":
+            if auto_enforce:
+                try:
+                    bot.delete_message(chat_id, message_id)
+                except Exception as exc:
+                    # An SQS replay after successful deletion is safe.
+                    if "message to delete not found" not in str(exc).lower():
+                        raise
+                logger.info(
+                    "Guest bot spam message deleted",
+                    extra={"chat_id": chat_id, "message_id": message_id, "bot_user_id": user_id},
+                )
+            caller_id = message_context.get("guest_caller_user_id")
+            if type(caller_id) is int and caller_id > 0:
+                _send_spam_review_alert(
+                    bot, chat_id, caller_id, message_id, result.reason, result.confidence, guest_bot_id=user_id
+                )
+            else:
+                logger.warning(
+                    "Guest spam has no personal caller; no user ban proposed",
+                    extra={"chat_id": chat_id, "message_id": message_id, "bot_user_id": user_id},
+                )
+        elif auto_enforce:
             SpamEnforcer(bot, StatsRepository()).enforce(
                 chat_id=chat_id,
                 user_id=user_id,
@@ -167,6 +204,8 @@ def _send_spam_review_alert(
     message_id: int,
     result_reason: str,
     confidence: float,
+    *,
+    guest_bot_id: int | None = None,
 ) -> None:
     try:
         target = resolve_spam_target_mention(bot, chat_id, user_id)
@@ -174,11 +213,12 @@ def _send_spam_review_alert(
         reason = translate_spam_reason(result_reason, lang)
         confidence_pct = int(confidence * 100)
         notice = get_translated_text(
-            "spam_uncertain_notice",
+            "spam_guest_review_notice" if guest_bot_id else "spam_uncertain_notice",
             lang,
             TARGET=target,
             REASON=reason,
             CONFIDENCE=confidence_pct,
+            BOT=resolve_spam_target_mention(bot, chat_id, guest_bot_id) if guest_bot_id else "",
         )
         admin_mentions = _format_admin_mentions(chat_id)
         if admin_mentions:
@@ -189,6 +229,8 @@ def _send_spam_review_alert(
             reply_markup=_spam_review_keyboard(user_id, message_id, lang),
         )
     except Exception as e:
+        if guest_bot_id:
+            raise
         logger.warning("Failed to send uncertain spam alert", extra={"error": e})
 
 
