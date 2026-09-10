@@ -292,3 +292,5 @@ a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
 SQS enqueue failures return a retryable webhook error; guest deletion/review failures
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
+
+Legacy resource candidates and dependency/backup gates are documented in [LEGACY_AWS_CLEANUP.md](LEGACY_AWS_CLEANUP.md). The runbook does not authorize cloud deletion or include current Memory V2 data.
