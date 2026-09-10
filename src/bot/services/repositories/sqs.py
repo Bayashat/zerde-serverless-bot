@@ -307,6 +307,7 @@ class SQSClient:
             )
         except Exception as e:
             logger.exception("Failed to send spam check task to SQS", extra={"error": e})
+            raise
 
     def send_group_memory_task(
         self,

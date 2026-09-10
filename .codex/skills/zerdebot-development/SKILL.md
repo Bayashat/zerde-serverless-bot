@@ -214,3 +214,20 @@ Choose validation proportional to risk:
 - Shared behavior, AI provider routing, repositories, dispatcher, memory, or Telegram formatting: run `uv run pytest tests/ -q`.
 - Formatting/lint-sensitive work: run `uv run pre-commit run --all-files`.
 - CDK or Lambda env changes: run `cd infra && uv run cdk diff -c env=dev` and report the diff.
+
+
+Guest-bot spam moderation: Telegram guest responses (`from.is_bot` plus
+`guest_bot_caller_user`/`guest_bot_caller_chat`) are screened, including edits,
+while ordinary bot messages and administrator senders keep their exemptions.
+Current caption/text, hidden link targets and URL button text are screened without
+fetching media or opening URLs. NFKC and format-control removal apply only to
+moderation input. Three repeated identical URLs with mixed-script words and at
+least three invisible format controls form a deterministic guest-response deletion
+signal, recomputed from current-message text only; ordinary links still use AI.
+Guest spam never automatically bans the caller or the guest bot. High-confidence
+spam is deleted and a separate, explicitly attributed admin review proposes a
+permanent ban of the Telegram-provided personal caller. A chat caller never becomes
+a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
+SQS enqueue failures return a retryable webhook error; guest deletion/review failures
+retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
+can repeat review notices, but cannot automatically ban a caller.

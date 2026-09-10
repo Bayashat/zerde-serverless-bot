@@ -57,6 +57,9 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | IT quizzes | Scheduled и on-demand quiz Lambda отправляет multilingual developer quizzes. |
 | Serverless ops | AWS CDK управляет Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM и alarms. |
 
+Реклама гостевых ботов тоже проверяется, включая подписи и кнопки со ссылками. Уверенно распознанный спам удаляется; администратор проверяет вызывавшего пользователя перед вечной блокировкой. Сам вызов бота не доказывает злой умысел.
+
+
 ---
 
 ## Архитектура

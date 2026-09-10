@@ -30,17 +30,18 @@ class SpamScreeningService:
     @staticmethod
     def should_screen(body: dict) -> bool:
         """True for non-command, non-bot regular messages that may need spam handling."""
-        if "message" not in body:
+        msg = body.get("message") or body.get("edited_message")
+        if not isinstance(msg, dict):
             return False
-        msg = body["message"]
         if should_skip_spam_for_channel_discussion_mirror(msg):
             return False
         if "new_chat_members" in msg:
             return False
-        if msg.get("from", {}).get("is_bot", False):
+        guest = "guest_bot_caller_user" in msg or "guest_bot_caller_chat" in msg
+        if msg.get("from", {}).get("is_bot", False) and not guest:
             return False
         primary = msg.get("text") or msg.get("caption") or ""
-        if primary.strip().startswith("/"):
+        if primary.strip().startswith("/") and not guest:
             return False
         combined = collect_spam_screen_text(msg)
         if not combined.strip():
@@ -50,7 +51,7 @@ class SpamScreeningService:
     def run(self, body: dict) -> SpamScreeningOutcome:
         """Score message, enforce or queue Groq. Never raises."""
         try:
-            msg = body["message"]
+            msg = body.get("message") or body["edited_message"]
             combined = collect_spam_screen_text(msg)
             if not combined.strip():
                 return "none"
@@ -66,7 +67,10 @@ class SpamScreeningService:
                 return "none"
 
             score, triggered_rules = RuleBasedSpamFilter().check(combined, user_id, chat_id)
-            if score >= SPAM_RULE_ENFORCE_THRESHOLD:
+            guest = msg.get("from", {}).get("is_bot") and (
+                "guest_bot_caller_user" in msg or "guest_bot_caller_chat" in msg
+            )
+            if score >= SPAM_RULE_ENFORCE_THRESHOLD and not guest:
                 logger.info(
                     "Rule-based spam detected, enforcing",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
@@ -78,7 +82,7 @@ class SpamScreeningService:
                     reason=f"rules:{','.join(triggered_rules)}",
                 )
                 return "enforced"
-            if score >= SPAM_RULE_AI_THRESHOLD:
+            if score >= SPAM_RULE_AI_THRESHOLD or guest:
                 logger.info(
                     "Ambiguous spam score, queuing for AI check",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
@@ -104,5 +108,5 @@ class SpamScreeningService:
                 )
             return "none"
         except Exception as e:
-            logger.error("Spam screening error, continuing normal flow", extra={"error": e})
+            logger.error("Spam screening error, webhook retry required", extra={"error": e})
             return "error"

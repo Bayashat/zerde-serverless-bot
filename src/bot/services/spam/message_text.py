@@ -1,5 +1,6 @@
 """Aggregate user-visible text and bounded context for spam screening."""
 
+import unicodedata
 from typing import Any
 
 _SPAM_SEGMENT_SEP = "\n\n---\n"
@@ -16,7 +17,7 @@ def collect_spam_screen_text(msg: dict[str, Any]) -> str:
     """
     segments: list[str] = []
 
-    primary = _message_text(msg)
+    primary = current_spam_text(msg)
     if primary:
         segments.append(primary)
 
@@ -39,11 +40,16 @@ def build_spam_context_payload(
 ) -> dict[str, Any]:
     """Build a compact, JSON-serializable context payload for async AI review."""
     payload: dict[str, Any] = {
-        "current_message": _truncate_text(_message_text(msg), _CONTEXT_TEXT_LIMIT),
+        "current_message": _truncate_text(current_spam_text(msg), _CONTEXT_TEXT_LIMIT),
         "triggered_rules": list(triggered_rules or []),
     }
     if rule_score is not None:
         payload["rule_score"] = float(rule_score)
+    if msg.get("from", {}).get("is_bot") and ("guest_bot_caller_user" in msg or "guest_bot_caller_chat" in msg):
+        payload["guest_bot"] = True
+        caller = msg.get("guest_bot_caller_user") or {}
+        if isinstance(caller, dict) and type(caller.get("id")) is int and caller["id"] > 0 and not caller.get("is_bot"):
+            payload["guest_caller_user_id"] = caller["id"]
 
     reply = msg.get("reply_to_message")
     if isinstance(reply, dict):
@@ -66,6 +72,34 @@ def build_spam_context_payload(
     return payload
 
 
+def normalize_spam_text(text: str) -> str:
+    """Remove invisible format controls without rewriting stored message text."""
+    return "".join(c for c in unicodedata.normalize("NFKC", text) if unicodedata.category(c) != "Cf")
+
+
+def current_spam_text(msg: dict[str, Any]) -> str:
+    """Include current-message hidden link targets and URL buttons, never reply buttons."""
+    primary = _message_text(msg)
+    segments = [primary] if primary else []
+    seen = set()
+    for field in ("entities", "caption_entities"):
+        for entity in msg.get(field) or []:
+            url = entity.get("url") if isinstance(entity, dict) and entity.get("type") == "text_link" else None
+            if isinstance(url, str) and url and url not in primary and url not in seen:
+                segments.append(url)
+                seen.add(url)
+    markup = msg.get("reply_markup") or {}
+    for row in markup.get("inline_keyboard", []) if isinstance(markup, dict) else []:
+        for button in row:
+            url = button.get("url") if isinstance(button, dict) else None
+            if isinstance(url, str) and url:
+                segments.append(str(button.get("text") or "")[:200])
+                if url not in primary and url not in seen:
+                    segments.append(url)
+                    seen.add(url)
+    return "\n".join(segments)
+
+
 def format_spam_ai_context(
     *,
     text: str,
@@ -76,7 +110,9 @@ def format_spam_ai_context(
 ) -> str:
     """Render bounded structured context for the Groq spam classifier."""
     context = message_context or {}
-    current_message = _truncate_text(str(context.get("current_message") or text or ""), _CONTEXT_TEXT_LIMIT)
+    current_message = _truncate_text(
+        normalize_spam_text(str(context.get("current_message") or text or "")), _CONTEXT_TEXT_LIMIT
+    )
     score = rule_score if rule_score is not None else context.get("rule_score")
     rules = triggered_rules if triggered_rules is not None else context.get("triggered_rules") or []
 

@@ -57,6 +57,9 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 | IT quizzes | Scheduled and on-demand quiz Lambda sends multilingual developer quizzes and tracks scores. |
 | Serverless operations | AWS CDK manages Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM, and alarms. |
 
+Guest-bot advertisements are screened too, including captions and link buttons. High-confidence spam is deleted; admins review the actual caller before a permanent ban. Calling a bot alone does not establish malicious intent.
+
+
 ---
 
 ## Architecture
