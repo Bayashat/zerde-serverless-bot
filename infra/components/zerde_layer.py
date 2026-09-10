@@ -10,7 +10,7 @@ from constructs import Construct
 def add_zerde_common_layer(
     scope: Construct,
     construct_id: str = "ZerdeCommonLayer",
-) -> _lambda.ILayer:
+) -> _lambda.ILayerVersion:
     """Layer at ``src/shared`` → ``python/zerde_common`` (AWS Lambda standard layout)."""
     return _lambda.LayerVersion(
         scope,
