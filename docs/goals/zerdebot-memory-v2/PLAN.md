@@ -82,7 +82,7 @@ Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除
 
 详见 [TASKS.md](TASKS.md) 和 `issues/` 中逐任务的范围、契约、替代路径、验证和恢复条件。Epic/issue 是执行镜像；本 PLAN 是跨会话契约来源，EVIDENCE 记录实际状态。
 
-先 Z01-Z04，冻结 Z05 后顺序 Z06-Z11。Z12-Z16 按独立业务模块可并行；共享 webhook/router/config/infra/workflows 由主代理集成并证明组合行为。每任务独立 PR，冲突时根据契约重放而非覆盖别人改动。不擅自合并 dependabot 或其他无关 PR。
+先 Z01-Z04，冻结 Z05 后顺序 Z06-Z11。Z06 还依赖 Z13 的安全审核终态，Z11 还依赖 Z17 的通知与预算观测。Z12-Z16 按独立业务模块可并行；共享 webhook/router/config/infra/workflows 由主代理集成并证明组合行为。每任务独立 PR，冲突时根据契约重放而非覆盖别人改动。不擅自合并 dependabot 或其他无关 PR。
 
 ## 5. 验收门槛
 
