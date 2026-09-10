@@ -155,7 +155,7 @@ Memory items include feedback/consolidation metadata such as `wrong_feedback_cou
 
 Indexed memory items also carry `vector_document_hash`, `vector_schema_version`, `vector_embedding_model`, and `vector_dimensions` so duplicate SQS deliveries can skip unchanged items and future embedding migrations can redrive stale records explicitly.
 
-Memory TTLs are type-specific: raw `MSG#...` and metadata-only `MEDIA_GROUP#...` manifests use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS`; `AGENT_REPLY#...`, long-term memory, `DAILY_SUMMARY#...`, and `PROACTIVE#...` counters use their own retention env vars. Raw-message, long-term-memory, and daily-summary retention fall back to `GROUP_MEMORY_RETENTION_DAYS` when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still records `expires_at` and uses the shorter DynamoDB TTL.
+Memory TTLs are type-specific: raw `MSG#...` and metadata-only `MEDIA_GROUP#...` manifests use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS`; `AGENT_REPLY#...`, long-term memory, `DAILY_SUMMARY#...`, and `PROACTIVE#...` counters use their own retention env vars. Raw-message retention defaults independently to 30 days and never inherits `GROUP_MEMORY_RETENTION_DAYS`; only long-term-memory and daily-summary retention fall back to that legacy variable when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Long-term `expires_in_days` still records `expires_at` and uses the shorter DynamoDB TTL.
 
 ## SQS Tasks
 
@@ -249,3 +249,5 @@ retry through SQS (an already deleted message is tolerated). Duplicate SQS deliv
 can repeat review notices, but cannot automatically ban a caller.
 
 Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and all CONTEST families. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../docs/legacy-memory-deletion.md).
+
+Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.

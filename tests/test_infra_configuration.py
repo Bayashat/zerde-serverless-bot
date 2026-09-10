@@ -1,4 +1,6 @@
 import json
+import re
+import runpy
 import sys
 from pathlib import Path
 from typing import Any
@@ -16,6 +18,135 @@ from components import news as news_component  # noqa: E402
 from components import quiz as quiz_component  # noqa: E402
 from components import vector_indexer as vector_indexer_component  # noqa: E402
 from stack import ZerdeTelegramBotStack  # noqa: E402
+
+_CONFIG_DEFAULTS = {
+    "MAIN_TASK_QUEUE_RETENTION_DAYS": "1",
+    "MAIN_TASK_DLQ_RETENTION_DAYS": "14",
+    "VECTOR_MEMORY_QUEUE_RETENTION_DAYS": "4",
+    "VECTOR_MEMORY_DLQ_RETENTION_DAYS": "14",
+    "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS": "30",
+    "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS": "7",
+    "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS": "3650",
+    "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS": "3650",
+    "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS": "3",
+    "GROUP_MEMORY_EXTRACTOR_PROVIDER": "gemini",
+    "GROUP_MEMORY_EXTRACTOR_MODE": "gemini_candidate_only",
+    "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.65",
+    "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "50",
+    "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "20",
+    "AGENT_BOT_ID": "",
+    "AGENT_PROACTIVE_DELAY_SECONDS": "45",
+    "MULTIMODAL_ENABLED": "true",
+    "MULTIMODAL_MAX_DOWNLOAD_BYTES": "12000000",
+    "MULTIMODAL_INLINE_MAX_BYTES": "8000000",
+    "MULTIMODAL_TEXT_FILE_MAX_CHARS": "20000",
+    "VECTOR_MEMORY_SCHEMA_VERSION": "1",
+    "GROUP_MEMORY_RECENT_LIMIT": "300",
+    "AGENT_RECENT_CONTEXT_LIMIT": "100",
+    "AGENT_DAILY_PROACTIVE_LIMIT": "3",
+    "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": "3",
+}
+_QUEUE_CONFIG_KEYS = {
+    "MAIN_TASK_QUEUE_RETENTION_DAYS",
+    "MAIN_TASK_DLQ_RETENTION_DAYS",
+    "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
+    "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
+}
+
+
+def _workflow_variables(filename: str) -> dict[str, str]:
+    return dict(
+        re.findall(
+            r"^\s+([A-Z][A-Z0-9_]+): (\$\{\{ vars\.[^\n]+)",
+            Path(".github/workflows", filename).read_text(),
+            re.MULTILINE,
+        )
+    )
+
+
+def _runtime_value_as_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, float):
+        return format(value, "g")
+    return str(value)
+
+
+def test_deploy_and_preview_map_the_same_variables_and_defaults() -> None:
+    deploy = _workflow_variables("deploy.yml")
+    preview = _workflow_variables("pr_check.yml")
+    assert preview == deploy
+    defaults = {
+        **_CONFIG_DEFAULTS,
+        "CAPTCHA_TIMEOUT_SECONDS": "120",
+        "KICK_BAN_DURATION_SECONDS": "31",
+        "VOTEBAN_THRESHOLD": "7",
+        "VOTEBAN_FORGIVE_THRESHOLD": "7",
+        "GEMINI_RPD_LIMIT": "500",
+        "QUIZ_LLM_RPD": "20",
+        "GEMINI_MODEL": "gemini-3.1-flash-lite",
+        "NEWS_GEMINI_MODEL": "gemini-3.1-flash-lite",
+        "QUIZ_GEMINI_MODEL": "gemini-3.1-flash-lite",
+        "DEEPSEEK_MODEL": "deepseek-chat",
+    }
+    for key, value in defaults.items():
+        fallback = f" || '{value}'" if value else ""
+        if key in {"GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"}:
+            fallback = " || vars.GROUP_MEMORY_RETENTION_DAYS" + fallback
+        assert deploy[key] == "${{ vars." + key + fallback + " }}"
+    for unused in ("AI_PROVIDER", "WTF_GEMINI_MODEL", "FALLBACK_MODEL"):
+        assert unused not in deploy
+
+
+def test_config_defaults_agree_between_example_runtime_and_lambda_template(monkeypatch: Any) -> None:
+    for key in _CONFIG_DEFAULTS:
+        monkeypatch.delenv(key, raising=False)
+    # Reproduce the deployed legacy value that previously forced raw retention to ten years.
+    monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "3650")
+    runtime = runpy.run_path("src/bot/core/config.py")
+    example = dict(re.findall(r"^([A-Z][A-Z0-9_]+)=(.*)$", Path(".env.example").read_text(), re.MULTILINE))
+    template = _dev_template(monkeypatch)
+    _, bot = _find_resource_by_property(template, "AWS::Lambda::Function", "FunctionName", "zerde-serverless-bot-dev")
+    deployed = bot["Properties"]["Environment"]["Variables"]
+    for key, expected in _CONFIG_DEFAULTS.items():
+        assert example[key] == expected, key
+        if key not in _QUEUE_CONFIG_KEYS:
+            assert deployed[key] == expected, key
+            assert _runtime_value_as_text(runtime[key]) == expected, key
+
+
+def test_typed_config_overrides_reach_bot_runtime_and_indexer(monkeypatch: Any) -> None:
+    overrides = {
+        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS": "11",
+        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS": "5",
+        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS": "180",
+        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS": "90",
+        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS": "2",
+        "GROUP_MEMORY_EXTRACTOR_PROVIDER": "rules",
+        "GROUP_MEMORY_EXTRACTOR_MODE": "off",
+        "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.91",
+        "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "17",
+        "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "8",
+        "AGENT_BOT_ID": "12345",
+        "AGENT_PROACTIVE_DELAY_SECONDS": "62",
+        "MULTIMODAL_ENABLED": "false",
+        "MULTIMODAL_MAX_DOWNLOAD_BYTES": "9000000",
+        "MULTIMODAL_INLINE_MAX_BYTES": "6000000",
+        "MULTIMODAL_TEXT_FILE_MAX_CHARS": "15000",
+        "VECTOR_MEMORY_SCHEMA_VERSION": "2",
+    }
+    for key, value in overrides.items():
+        monkeypatch.setenv(key, value)
+    runtime = runpy.run_path("src/bot/core/config.py")
+    template = _dev_template(monkeypatch)
+    for name in ("zerde-serverless-bot-dev", "zerde-serverless-vector-indexer-dev"):
+        _, function = _find_resource_by_property(template, "AWS::Lambda::Function", "FunctionName", name)
+        deployed = function["Properties"]["Environment"]["Variables"]
+        for key, expected in overrides.items():
+            assert deployed[key] == expected, (name, key)
+            assert _runtime_value_as_text(runtime[key]) == expected, key
 
 
 def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambda_.Function:
@@ -464,7 +595,7 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["MULTIMODAL_TEXT_FILE_MAX_CHARS"] == "20000"
 
 
-def test_broad_memory_type_retention_envs_fallback_to_legacy_retention(monkeypatch: Any) -> None:
+def test_raw_retention_does_not_inherit_legacy_long_term_retention(monkeypatch: Any) -> None:
     monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "42")
     for key in (
         "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
@@ -485,7 +616,7 @@ def test_broad_memory_type_retention_envs_fallback_to_legacy_retention(monkeypat
 
     env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
     assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "42"
-    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "42"
+    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
     assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
     assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "42"
     assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "42"

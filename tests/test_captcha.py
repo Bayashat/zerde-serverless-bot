@@ -537,7 +537,7 @@ def test_webhook_captcha_lookup_failure_returns_500_before_normal_flows(env):
     with (
         patch.object(env.repo, "get_pending", side_effect=dependency_error()),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_group_memory_update") as observe,
+        patch("webhook.observe_contest_update") as observe,
         patch("webhook._spam_screening") as screening,
     ):
         response = _handle_api_gateway(event, dispatcher, env.bot)

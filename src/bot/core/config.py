@@ -208,9 +208,11 @@ def _memory_retention_days(name: str, default_days: int, *, legacy_fallback: boo
 
 MEMORY_TABLE_NAME: str | None = os.environ.get("MEMORY_TABLE_NAME")
 GROUP_MEMORY_ENABLED: bool = _env_bool("GROUP_MEMORY_ENABLED", True)
-GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "80"))
+GROUP_MEMORY_RECENT_LIMIT: int = int(os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300"))
 GROUP_MEMORY_RETENTION_DAYS: int = int(os.environ.get("GROUP_MEMORY_RETENTION_DAYS", "3650"))
-GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS: int = _memory_retention_days("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", 30)
+GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS: int = _memory_retention_days(
+    "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", 30, legacy_fallback=False
+)
 GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS: int = _memory_retention_days(
     "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", 7, legacy_fallback=False
 )
@@ -235,7 +237,7 @@ GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT: int = int(
 AGENT_ENABLED: bool = _env_bool("AGENT_ENABLED", True)
 AGENT_BOT_USERNAME: str = os.environ.get("AGENT_BOT_USERNAME", "").lstrip("@").lower()
 AGENT_BOT_ID: int | None = _env_optional_int("AGENT_BOT_ID")
-AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "40"))
+AGENT_RECENT_CONTEXT_LIMIT: int = int(os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100"))
 AGENT_DAILY_PROACTIVE_LIMIT: int = int(os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3"))
 AGENT_PROACTIVE_DELAY_SECONDS: int = int(os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45"))
 AGENT_PROACTIVE_FINAL_THRESHOLD: float = float(os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72"))
@@ -286,7 +288,7 @@ VECTOR_MEMORY_DIMENSIONS: int = int(os.environ.get("VECTOR_MEMORY_DIMENSIONS", "
 VECTOR_MEMORY_EMBEDDING_MODEL: str = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
 VECTOR_MEMORY_SCHEMA_VERSION: str = os.environ.get("VECTOR_MEMORY_SCHEMA_VERSION", "1").strip() or "1"
 VECTOR_MEMORY_BACKFILL_BATCH_SIZE: int = int(os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50"))
-VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: float = float(os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "0"))
+VECTOR_MEMORY_INDEX_THROTTLE_SECONDS: float = float(os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3"))
 VECTOR_MEMORY_MAX_DISTANCE: float = float(os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85"))
 
 # ── Callback-data prefixes ──────────────────────────────────────────────────

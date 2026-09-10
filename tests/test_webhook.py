@@ -64,8 +64,6 @@ def test_webhook_logs_only_authorized_metadata(chat_type, configured, valid_secr
         patch("webhook.is_configured_group_chat", return_value=configured),
         patch("webhook.observe_contest_update"),
         patch("webhook.observe_media_group"),
-        patch("webhook.observe_group_memory_update"),
-        patch("webhook.maybe_enqueue_ambient_reaction"),
         patch("webhook.handle_group_agent_update", return_value=False),
     ):
         assert _handle_api_gateway(event, dispatcher, MagicMock())["statusCode"] == 200
