@@ -32,8 +32,16 @@ class MemoryConflict(RuntimeError):
     """State changed since the caller's snapshot; read again before retrying."""
 
 
+class MemorySourceConflict(MemoryConflict):
+    """Old or ambiguous source delivery; retrying this same input cannot fix it."""
+
+
 class MemoryUnavailable(RuntimeError):
     """Memory is stopped, opted out, stale, expired or pending deletion."""
+
+
+class MemoryLearningPaused(MemoryUnavailable):
+    """A valid source is temporarily paused; keep its durable pending work."""
 
 
 def positive_id(value: str | int) -> str:

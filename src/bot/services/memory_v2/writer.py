@@ -196,6 +196,30 @@ class FactWriter:
             guard_operations.append({"Update": head_operation})
         else:
             guard_operations.append({"ConditionCheck": head_operation})
+        observation = self.repo.get_observation(chat_id, ref.source_id)
+        if (
+            not observation
+            or observation.get("ambiguous")
+            or observation["revision"] != ref.source_version
+            or observation["epoch"] != ref.epoch
+        ):
+            raise MemoryUnavailable("Source was edited before fact commit")
+        observation_operation = {
+            "TableName": self.repo.table.name,
+            "Key": {"pk": head["pk"], "sk": observation["sk"]},
+            "ConditionExpression": (
+                "#revision = :revision AND epoch = :epoch AND deleted = :false AND #ambiguous = :false"
+            ),
+            "ExpressionAttributeNames": {"#revision": "revision", "#ambiguous": "ambiguous"},
+            "ExpressionAttributeValues": {":revision": ref.source_version, ":epoch": ref.epoch, ":false": False},
+        }
+        if written:
+            observation_operation["UpdateExpression"] = "SET retained_evidence = :true REMOVE #ttl"
+            observation_operation["ExpressionAttributeNames"]["#ttl"] = "ttl"
+            observation_operation["ExpressionAttributeValues"][":true"] = True
+            guard_operations.append({"Update": observation_operation})
+        else:
+            guard_operations.append({"ConditionCheck": observation_operation})
         done = {
             "TableName": self.repo.table.name,
             "Key": {"pk": work["pk"], "sk": work["sk"]},
@@ -218,5 +242,6 @@ class FactWriter:
             done["ConditionExpression"] += " AND lease_token = :token AND lease_until > :now"
             done["ExpressionAttributeValues"][":token"] = lease.token
         guard_operations.append({"Update": done})
+        guard_operations.append(self.repo._coverage_operation(chat_id, "work_done"))
         self.repo._transaction([*guard_operations, *operations])
         return CommitResult(ref, tuple(written), tuple(skipped))
