@@ -292,3 +292,5 @@ a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
 SQS enqueue failures return a retryable webhook error; guest deletion/review failures
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
+
+Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.

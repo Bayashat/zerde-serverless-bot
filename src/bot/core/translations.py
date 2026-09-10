@@ -84,6 +84,15 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>Vote to Ban</b>\n\n" "👤 Initiated by: {INITIATOR}\n" "🎯 Target: {TARGET}"),
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
+        "voteban_closed": "This vote has ended.",
+        "voteban_expired": (
+            "This vote is expired or belongs to an older session. Start a new /voteban command if " "needed."
+        ),
+        "voteban_retry": "Vote processing could not finish. Retry the button or /voteban command.",
+        "voteban_unconfirmed": (
+            "⚠️ The vote for {TARGET} ended without a confirmed ban. An administrator must check the "
+            "result; use a new /voteban for a new decision."
+        ),
         "voteban_banned": (
             "⚖️ <b>User Banned by Vote</b>\n\n"
             "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes.\n\n"
@@ -353,6 +362,15 @@ TRANSLATIONS = {
         ),
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз қабылданды.",
         "voteban_already_voted": "⚠️ Сіз бұл қолданушыны бұғаттауға дауыс беріп қойғансыз.",
+        "voteban_closed": "Бұл дауыс беру аяқталды.",
+        "voteban_expired": (
+            "Бұл дауыс беру аяқталған немесе ескі сессияға тиесілі. Қажет болса, жаңа /voteban " "бастаңыз."
+        ),
+        "voteban_retry": "Дауыс беруді өңдеу аяқталмады. Батырманы немесе /voteban пәрменін қайталаңыз.",
+        "voteban_unconfirmed": (
+            "⚠️ {TARGET} туралы дауыс беру аяқталды, бірақ бұғаттау расталмады. Әкімші нәтижені "
+            "тексеруі керек; жаңа шешім үшін жаңа /voteban бастаңыз."
+        ),
         "voteban_banned": (
             "⚖️ <b>Дауыс беру арқылы бұғаттау</b>\n\n"
             "🎯 {TARGET} қажетті {VOTES_FOR} дауыс жинап, топтан шығарылды.\n\n"
@@ -624,6 +642,10 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>封禁投票</b>\n\n" "👤 发起人：{INITIATOR}\n" "🎯 目标：{TARGET}"),
         "voteban_vote_recorded": "✅ 你的投票已记录。",
         "voteban_already_voted": "⚠️ 你已参与过本次投票。",
+        "voteban_closed": "本次投票已结束。",
+        "voteban_expired": "本次投票已过期或按钮属于旧会话。如有需要，请重新发起 /voteban。",
+        "voteban_retry": "投票处理暂未完成。请重试按钮或 /voteban 命令以恢复处理。",
+        "voteban_unconfirmed": "⚠️ 针对 {TARGET} 的投票已结束，但封禁结果未经确认。请管理员核查；如需重新决策，请发起新的 /voteban。",
         "voteban_banned": (
             "⚖️ <b>用户已被投票封禁</b>\n\n"
             "🎯 {TARGET} 获得 {VOTES_FOR} 票后已被封禁。\n\n"
@@ -871,6 +893,17 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>Голосование за бан</b>\n\n" "👤 Инициатор: {INITIATOR}\n" "🎯 Цель: {TARGET}"),
         "voteban_vote_recorded": "✅ Ваш голос учтен.",
         "voteban_already_voted": "⚠️ Вы уже голосовали в этом голосовании.",
+        "voteban_closed": "Это голосование завершено.",
+        "voteban_expired": (
+            "Это голосование истекло или относится к старой сессии. При необходимости начните новое " "/voteban."
+        ),
+        "voteban_retry": (
+            "Обработка голосования не завершена. Повторите кнопку или команду /voteban для " "восстановления."
+        ),
+        "voteban_unconfirmed": (
+            "⚠️ Голосование по {TARGET} завершено без подтвержденного бана. Администратору нужно "
+            "проверить результат; для нового решения начните новое /voteban."
+        ),
         "voteban_banned": (
             "⚖️ <b>Пользователь забанен голосованием</b>\n\n"
             "🎯 {TARGET} был забанен после {VOTES_FOR} голосов.\n\n"
