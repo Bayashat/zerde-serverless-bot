@@ -183,3 +183,15 @@ def test_unpriced_calls_rejected_before_database(budget, model, purpose):
     with pytest.raises(ValueError):
         repo.reserve("unpriced", purpose=purpose, model=model)
     assert not repo.snapshot()
+
+
+def test_contract_pause_survives_month_rollover(budget):
+    repo, now = budget
+    reservation = repo.reserve("future-contract", purpose="extract")
+    with pytest.raises(MemoryBudgetAccountingError):
+        repo.settle(reservation, usage(inputs=2_000_000, candidates=200_000))
+    now[0] = datetime(2026, 10, 1, tzinfo=timezone.utc).timestamp()
+    with pytest.raises(MemoryBudgetPaused) as error:
+        repo.reserve("new-month-contract", purpose="extract")
+    assert error.value.retry_after == datetime(2026, 11, 1, tzinfo=timezone.utc).timestamp()
+    assert not repo.snapshot()

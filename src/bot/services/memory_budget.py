@@ -30,6 +30,8 @@ RETENTION_SECONDS = 400 * 86400
 class MemoryBudgetPaused(RuntimeError):
     """Optional learning/enhancement must stop; plain explicit asks may continue."""
 
+    retry_after: int | None = None
+
 
 class DuplicateMemoryAttempt(RuntimeError):
     """A reservation already exists; do not make this network attempt again."""
@@ -64,6 +66,11 @@ class MemoryBudgetRepository:
             raise ValueError("An independent V2 table is required")
         self.table = get_dynamodb().Table(table_name)
         self.clock = clock
+
+    def next_month(self):
+        current = datetime.fromtimestamp(self.clock(), timezone.utc)
+        year, month = (current.year + 1, 1) if current.month == 12 else (current.year, current.month + 1)
+        return int(datetime(year, month, 1, tzinfo=timezone.utc).timestamp())
 
     def month(self):
         return datetime.fromtimestamp(self.clock(), timezone.utc).strftime("%Y-%m")
@@ -112,6 +119,14 @@ class MemoryBudgetRepository:
             self.table.meta.client.transact_write_items(
                 TransactItems=[
                     {
+                        "ConditionCheck": {
+                            "TableName": self.table.name,
+                            "Key": {"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL"},
+                            "ConditionExpression": "attribute_not_exists(paused) OR paused = :false",
+                            "ExpressionAttributeValues": {":false": False},
+                        }
+                    },
+                    {
                         "Put": {
                             "TableName": self.table.name,
                             "Item": item,
@@ -149,7 +164,9 @@ class MemoryBudgetRepository:
                 existing = self.table.get_item(Key=key, ConsistentRead=True).get("Item")
                 if existing:
                     raise DuplicateMemoryAttempt("Network attempt already reserved") from exc
-                raise MemoryBudgetPaused("Insufficient conservative model budget or budget paused") from exc
+                error = MemoryBudgetPaused("Insufficient conservative model budget or budget paused")
+                error.retry_after = self.next_month()
+                raise error from exc
             raise  # Database failure cannot authorize an optional provider call.
         return Reservation(month, attempt_id, token, RESERVATION_MICRO_USD)
 
@@ -190,14 +207,34 @@ class MemoryBudgetRepository:
         refund = reservation.reserved_micro_usd - actual
         try:
             self.table.meta.client.transact_write_items(
-                TransactItems=[
+                TransactItems=(
+                    [
+                        {
+                            "Update": {
+                                "TableName": self.table.name,
+                                "Key": {"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL"},
+                                "UpdateExpression": "SET paused = :true, pause_reason = :reason, "
+                                "price_version = :price",
+                                "ExpressionAttributeValues": {
+                                    ":true": True,
+                                    ":price": PRICE_VERSION,
+                                    ":reason": "PROVIDER_USAGE_EXCEEDS_RESERVATION",
+                                },
+                            }
+                        }
+                    ]
+                    if anomaly
+                    else []
+                )
+                + [
                     {
                         "Update": {
                             "TableName": self.table.name,
                             "Key": key,
                             "UpdateExpression": "SET #status = :settled, actual_micro_usd = :actual",
                             "ConditionExpression": "#status = :reserved AND #token = :token "
-                            "AND reserved_micro_usd = :amount AND #month = :month",
+                            "AND reserved_micro_usd = :amount AND #month = :month "
+                            "AND price_version = :price",
                             "ExpressionAttributeNames": {"#status": "status", "#token": "token", "#month": "month"},
                             "ExpressionAttributeValues": {
                                 ":reserved": "RESERVED",
@@ -206,6 +243,7 @@ class MemoryBudgetRepository:
                                 ":amount": reservation.reserved_micro_usd,
                                 ":actual": actual,
                                 ":month": reservation.month,
+                                ":price": PRICE_VERSION,
                             },
                         }
                     },

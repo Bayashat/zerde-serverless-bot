@@ -53,7 +53,10 @@ A conditional reservation plus counter update enforces concurrency; a token and
 month-bound conditional settlement prevents duplicate or wrong-month refunds.
 Database faults propagate and cannot authorize a provider call. When observed
 valid usage exceeds the conservative ceiling, persist the liability and pause the
-ledger, then surface an accounting error. Do not keep calling through a pricing
+ledger and its global control record, then surface an accounting error.
+The contract pause survives month rollover and needs operator review before
+resuming; insufficient-budget exceptions expose a next-UTC-month `retry_after`
+to prevent immediate queue retry loops. Do not keep calling through a pricing
 or provider-contract change. Records contain no chat text/Telegram identities and
 expire after 400 days; outboxes carrying raw messages must not use these keys.
 
