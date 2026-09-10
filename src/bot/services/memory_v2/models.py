@@ -15,6 +15,8 @@ FRESHNESS_SECONDS = 180 * 86400
 WORK_RETENTION_SECONDS = 7 * 86400
 WORK_INDEX_NAME = "work-due"
 WORK_SHARDS = 4
+CANDIDATE_RETENTION_SECONDS = 86400
+WORK_LEASE_SECONDS = 130
 SINGLE_FIELDS = {"occupation", "current_project", "location"}
 MULTI_FIELDS = {"education", "tech_stack", "interests"}
 PREFERENCE_FACETS = {"language", "name", "length", "tone"}
@@ -100,15 +102,7 @@ class SourceEvent:
     source_kind: str = "message"
 
     def validate(self):
-        chat_key(self.chat_id)
-        positive_id(self.message_id)
-        positive_id(self.actor_user_id)
-        integer(self.original_sent_at, minimum=1)
-        integer(self.edited_at)
-        if self.edited_at and self.edited_at < self.original_sent_at:
-            raise MemoryInputError("Edit predates original source")
-        if self.source_kind not in {"message", "confirmation"}:
-            raise MemoryInputError("Unsupported source kind")
+        self.validate_identity()
         if self.is_bot or self.is_forwarded or self.is_sender_chat:
             raise MemoryInputError("Only original personal messages are eligible")
         if not isinstance(self.text, str) or not self.text.strip() or len(self.text) > 20000:
@@ -120,6 +114,20 @@ class SourceEvent:
             integer(end, minimum=1)
             if start >= end or end > len(self.text):
                 raise MemoryInputError("Invalid quote offsets")
+
+    def validate_identity(self):
+        """Metadata invalidation must also accept an empty or unsafe edit body."""
+        chat_key(self.chat_id)
+        positive_id(self.message_id)
+        positive_id(self.actor_user_id)
+        integer(self.original_sent_at, minimum=1)
+        integer(self.edited_at)
+        if self.edited_at and self.edited_at < self.original_sent_at:
+            raise MemoryInputError("Edit predates original source")
+        if self.source_kind not in {"message", "confirmation"}:
+            raise MemoryInputError("Unsupported source kind")
+        if not isinstance(self.text, str):
+            raise MemoryInputError("Source body must be text")
 
 
 @dataclass(frozen=True)
@@ -203,3 +211,23 @@ class CommitResult:
     written_fact_ids: tuple[str, ...]
     skipped: tuple[str, ...] = ()
     duplicate: bool = False
+
+
+@dataclass(frozen=True)
+class ExtractionSource:
+    chat_id: str
+    ref: SourceRef
+    actor_user_id: str
+    text: str
+    quoted_spans: tuple[tuple[int, int], ...]
+    original_sent_at: int
+    edited_at: int = 0
+
+
+@dataclass(frozen=True)
+class ExtractionResult:
+    ref: SourceRef
+    changes: tuple[FactChange, ...] = ()
+    status: str = "complete"
+    reason: str = ""
+    retry_at: int | None = None
