@@ -90,6 +90,22 @@ class MemoryBudgetRepository:
     def snapshot(self, *, month=None):
         return self.table.get_item(Key=self._key(month or self.month(), "MODEL"), ConsistentRead=True).get("Item", {})
 
+    def check_available(self) -> None:
+        """Read-only preflight before consuming shared provider quota; not a permit."""
+        control = (
+            self.table.get_item(Key={"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL"}, ConsistentRead=True).get("Item")
+            or {}
+        )
+        month = self.snapshot()
+        if (
+            control.get("paused")
+            or month.get("paused")
+            or int(month.get("charged_micro_usd", 0)) > MONTHLY_LIMIT_MICRO_USD - RESERVATION_MICRO_USD
+        ):
+            error = MemoryBudgetPaused("Optional memory budget unavailable")
+            error.retry_after = self.next_month()
+            raise error
+
     def reserve(self, attempt_id: str, *, purpose: str, model: str = MODEL) -> Reservation:
         """Only a freshly created reservation authorizes one bounded HTTP attempt.
 
@@ -186,8 +202,11 @@ class MemoryBudgetRepository:
             raise ValueError("Memory calls do not use cache or tools")
         if usage.get("serviceTier", "STANDARD") not in {"STANDARD", "SERVICE_TIER_UNSPECIFIED"}:
             raise ValueError("Unpriced service tier")
-        for detail in usage.get("promptTokensDetails", []):
-            if detail.get("modality") != "TEXT":
+        details = usage.get("promptTokensDetails", [])
+        if not isinstance(details, list):
+            raise ValueError("Invalid modality metadata")
+        for detail in details:
+            if not isinstance(detail, dict) or detail.get("modality") != "TEXT":
                 raise ValueError("Non-text model billing is unsupported")
         return cost_micro_usd(inputs, candidates + thoughts)
 

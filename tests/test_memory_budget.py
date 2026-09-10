@@ -80,6 +80,8 @@ def test_last_reservation_cannot_cross_monthly_limit(budget):
         usage(inputs=True),
         {**usage(), "totalTokenCount": 999},
         {**usage(), "promptTokensDetails": [{"modality": "AUDIO"}]},
+        {**usage(), "promptTokensDetails": ["TEXT"]},
+        {**usage(), "promptTokensDetails": None},
         {**usage(), "serviceTier": "PRIORITY"},
     ],
 )
@@ -194,4 +196,14 @@ def test_contract_pause_survives_month_rollover(budget):
     with pytest.raises(MemoryBudgetPaused) as error:
         repo.reserve("new-month-contract", purpose="extract")
     assert error.value.retry_after == datetime(2026, 11, 1, tzinfo=timezone.utc).timestamp()
+    assert not repo.snapshot()
+
+
+def test_readonly_preflight_does_not_reserve_and_detects_pause(budget):
+    repo, _ = budget
+    assert repo.check_available() is None
+    assert not repo.snapshot()
+    repo.table.put_item(Item={"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL", "paused": True})
+    with pytest.raises(MemoryBudgetPaused):
+        repo.check_available()
     assert not repo.snapshot()
