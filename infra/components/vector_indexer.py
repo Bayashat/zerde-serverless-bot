@@ -26,6 +26,7 @@ class VectorIndexerConstruct(Construct):
         shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
+        runtime_active: bool = True,
         ssm_secret_prefix: str,
         vector_queue: sqs.Queue,
         memory_table: dynamodb.Table,
@@ -46,6 +47,7 @@ class VectorIndexerConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
             timeout=Duration.seconds(300),
             memory_size=1024,
@@ -117,6 +119,7 @@ class VectorIndexerConstruct(Construct):
         vector_indexer_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 vector_queue,
+                enabled=runtime_active,
                 batch_size=1,
                 max_batching_window=Duration.seconds(0),
                 max_concurrency=3,

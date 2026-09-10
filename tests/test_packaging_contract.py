@@ -7,7 +7,7 @@ from pathlib import Path
 
 def test_lambda_locks_include_the_complete_matching_sdk_and_hashes():
     locked = {package["name"]: package["version"] for package in tomllib.loads(Path("uv.lock").read_text())["package"]}
-    for package in ("bot", "news", "quiz"):
+    for package in ("bot", "news", "quiz", "operations"):
         requirements = Path(f"src/{package}/requirements.txt").read_text()
         pins = dict(re.findall(r"^([\w-]+)==([^\s;]+)", requirements, re.MULTILINE))
         for dependency in ("boto3", "botocore", "urllib3"):

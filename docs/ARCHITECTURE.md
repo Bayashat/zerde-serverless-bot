@@ -51,6 +51,11 @@ flowchart LR
   LAYER -.-> VIDX
   LAYER -.-> NEWS
   LAYER -.-> QUIZ
+  CW["CloudWatch alarms"] --> SNS["Operations SNS"]
+  SNS --> OPS["Operations Lambda"]
+  OPS --> ADMIN["Administrator private chat"]
+  OPS -- "operations# only" --> STATS
+  LAYER -.-> OPS
 ```
 
 ## Lambda Packages
@@ -64,6 +69,7 @@ flowchart LR
 | `src/bot/` | `vector_indexer_main.py:lambda_handler` | Dedicated vector memory SQS worker for embedding/indexing and vector backfill paging. |
 | `src/news/` | `main.py:lambda_handler` | Scheduled IT news digest and Telegram delivery. |
 | `src/quiz/` | `main.py:lambda_handler` | Scheduled and on-demand multilingual developer quizzes. |
+| `src/operations/` | `main.py:lambda_handler` | Independently executes allowlisted operational notifications; durable deduplication and private administrator delivery. |
 | `src/shared/python/zerde_common/` | Lambda layer | Shared env helpers, SSM batch secret loading, provider errors, JSON logging, redaction, Telegram update log truncation. |
 
 ## Bot Request Flow
@@ -294,3 +300,5 @@ retry through SQS (an already deleted message is tolerated). Duplicate SQS deliv
 can repeat review notices, but cannot automatically ban a caller.
 
 Deployment configuration and reproducible dependency exports are documented in [DEPLOYMENT_CONFIG.md](DEPLOYMENT_CONFIG.md). Existing row TTLs are not changed by environment updates.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。

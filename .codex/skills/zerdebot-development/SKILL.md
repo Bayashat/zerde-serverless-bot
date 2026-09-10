@@ -54,6 +54,7 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 - `src/bot/services/repositories/contest.py`: sole contest lifecycle, participant uniqueness, winner history, rules alias, and retention truth owner.
 - `src/news/`: scheduled news digest Lambda.
 - `src/quiz/`: scheduled and on-demand quiz Lambda.
+- `src/operations/`: independent SNS operational notifier; only private ADMIN_USER_ID and operations# state keys.
 - `src/shared/python/zerde_common/`: shared Lambda layer utilities.
 - `infra/`: AWS CDK stack and constructs.
 - `docs/ARCHITECTURE.md`: current architecture source of truth.
@@ -233,3 +234,5 @@ retry through SQS (an already deleted message is tolerated). Duplicate SQS deliv
 can repeat review notices, but cannot automatically ban a caller.
 
 Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
+
+运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../../../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。

@@ -42,6 +42,7 @@ class QuizConstruct(Construct):
         shared_layer: _lambda.ILayer,
         env_name: str,
         is_prod: bool,
+        runtime_active: bool = True,
         log_level: str,
         telegram_api_base: str,
         quiz_gemini_model: str,
@@ -68,6 +69,10 @@ class QuizConstruct(Construct):
             removal_policy=removal_policy,
             deletion_protection=is_prod,
             time_to_live_attribute="ttl",
+            point_in_time_recovery_specification=dynamodb.PointInTimeRecoverySpecification(
+                point_in_time_recovery_enabled=is_prod,
+                recovery_period_in_days=7 if is_prod else None,
+            ),
         )
 
         self.quiz_table.add_global_secondary_index(
@@ -86,6 +91,7 @@ class QuizConstruct(Construct):
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
             architecture=_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
             timeout=Duration.seconds(300),
             memory_size=512,
