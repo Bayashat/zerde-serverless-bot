@@ -106,3 +106,7 @@ Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除
 - [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing)
 
 以上方案没有在本产品进行供应商对照实验。V1 明确不迁入 SaaS memory、不引入图数据库或完整 agent 编排框架。
+
+## 执行补充：Z19 抽奖事务 SDK 边界
+
+2026-09-10 两次独立 boto3 + Moto 模拟确认，Resource client 与手工 TypeSerializer 叠加导致抽奖事务双序列化并取消。先前抽奖生命周期的设计可借鉴，但实现的 SDK 层必须修复；原 MagicMock 绿测不足以证明该路径可运行。新增 https://github.com/Bayashat/zerde-serverless-bot/issues/178 独立修复，Z11 的业务保留验收依赖它。未调用 AWS 进行真实写入。

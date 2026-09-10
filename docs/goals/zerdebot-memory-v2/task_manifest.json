@@ -4,25 +4,27 @@
     "title": "FIX: 停用自动互动并隔离旧记忆路径",
     "depends_on": [],
     "body_file": "issues/Z01.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 158,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/180"
   },
   {
     "id": "Z02",
     "title": "FIX: 日志脱敏和 Telegram 内容最小化",
     "depends_on": [],
     "body_file": "issues/Z02.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 159,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/177"
   },
   {
     "id": "Z03",
     "title": "FIX: 旧记忆删除与业务数据边界",
     "depends_on": [],
     "body_file": "issues/Z03.md",
-    "status": "planned",
+    "status": "review",
     "number": 160,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160"
   },
@@ -31,7 +33,7 @@
     "title": "FIX: 统一部署配置和可复现打包",
     "depends_on": [],
     "body_file": "issues/Z04.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 161,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161"
   },
@@ -43,7 +45,7 @@
       "Z04"
     ],
     "body_file": "issues/Z05.md",
-    "status": "planned",
+    "status": "implementing_contract",
     "number": 162,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162"
   },
@@ -115,7 +117,8 @@
       "Z08",
       "Z09",
       "Z10",
-      "Z17"
+      "Z17",
+      "Z19"
     ],
     "body_file": "issues/Z11.md",
     "status": "planned",
@@ -127,16 +130,17 @@
     "title": "FIX: 验证码状态竞争与失败恢复",
     "depends_on": [],
     "body_file": "issues/Z12.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 169,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/179"
   },
   {
     "id": "Z13",
     "title": "FIX: 反垃圾执行结果和重试语义",
     "depends_on": [],
     "body_file": "issues/Z13.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 170,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170"
   },
@@ -184,5 +188,15 @@
     "status": "planned",
     "number": 175,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175"
+  },
+  {
+    "id": "Z19",
+    "title": "FIX: 抽奖事务的 DynamoDB 序列化边界",
+    "depends_on": [],
+    "body_file": "issues/Z19.md",
+    "status": "pr_open",
+    "number": 178,
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181"
   }
 ]

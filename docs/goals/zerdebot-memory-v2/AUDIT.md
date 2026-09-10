@@ -62,3 +62,9 @@ prod vectors8250，与DDB indexed数量相同，仅计数一致，未证明key�
 28 alarms动作全部为空。当前所有queues/DLQs空且alarms OK。30天prod indexer545calls/384Errors，最后错误9月4日，9月5日后无错误；不能说当前仍持续故障。prod stats/memory有PITR，quiz没有。
 
 参考：[SQS scaling](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-scaling.html)、[SQS pricing](https://aws.amazon.com/sqs/pricing/)。
+
+## 执行补充：Z19 抽奖事务 SDK 边界
+
+2026-09-10 两次独立 boto3 + Moto 模拟确认，Resource client 与手工 TypeSerializer 叠加导致抽奖事务双序列化并取消。先前抽奖生命周期的设计可借鉴，但实现的 SDK 层必须修复；原 MagicMock 绿测不足以证明该路径可运行。新增 https://github.com/Bayashat/zerde-serverless-bot/issues/178 独立修复，Z11 的业务保留验收依赖它。未调用 AWS 进行真实写入。
+
+执行时补充：GitHub Dependabot API确认uv.lock存在24项open advisories。Z04纳入定向修复：Pillow12.3.0、urllib32.7.0、idna3.15、pyasn10.6.4、cryptography50.0.0、CDK2.253.0为advisory给出的最低修复版本；实际可用版本、依赖约束及运行时影响由锁解算与构建验证，不盲目全升级。

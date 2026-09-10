@@ -21,3 +21,22 @@
 - 独立 POST/maintainer review ALIGNED：补齐Z06依赖Z13、Z11依赖Z17，以及Z11限定旧实现退役范围。
 - pre-commit全项通过；本PR仅计划文档，不改变运行行为，无需重复全量业务测试。
 - Z01主代理只读勘察；Z02/Z12隔离worktree实现中，未部署/未生产验收。
+
+## 执行补充：Z19 抽奖事务 SDK 边界
+
+2026-09-10 两次独立 boto3 + Moto 模拟确认，Resource client 与手工 TypeSerializer 叠加导致抽奖事务双序列化并取消。先前抽奖生命周期的设计可借鉴，但实现的 SDK 层必须修复；原 MagicMock 绿测不足以证明该路径可运行。新增 https://github.com/Bayashat/zerde-serverless-bot/issues/178 独立修复，Z11 的业务保留验收依赖它。未调用 AWS 进行真实写入。
+
+## 第一批源代码交付（2026-09-10；无部署）
+
+| 工单 | PR / commit | 本地完整测试 | 独立审查 |
+|---|---|---|---|
+| Z01 | #180 / ccc49e2 | 609 passed | ALIGNED，269重点；补断spam旧MSG与wrong旧事实入口 |
+| Z02 | #177 / 63f15ea（继5b2a900） | 631 passed | ALIGNED，85初审+32最终兼容回归 |
+| Z12 | #179 / 7592ad3 | 626 passed | ALIGNED，83重点；补旧答案不能影响新join |
+| Z19 | #181 / 0c1c833 | 597 passed | ALIGNED，21重点，实际SDK+Moto事务 |
+
+以上为各自基于2f3abe7的独立分支，测试数量不能相加当作集成证据。尚未合并、部署或验证真实Telegram效果。Z12上线需同批Z13修复SPAM_CHECK的captcha读故障调用方。Z01上线需Bot+indexer同修订、停旧客户端/schedule并排空旧实例。Z03/Z04仍在实现/复审；Z05只开展独立契约，不提前启用学习。
+
+GitHub #176的两个CI检查通过，但reviewDecision=REVIEW_REQUIRED；平台审阅门槛尚未满足，不将其描述为已合并。
+
+依赖补充：GitHub Dependabot当前uv.lock有24个open advisories（18high、5medium、1low），涉及Pillow/urllib3/idna/pyasn1/cryptography/CDK。Z04按官方advisory修复版本做定向升级与真实ARM包导入回归；不能只把带漏洞的旧依赖锁成可复现。
