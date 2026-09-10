@@ -4,6 +4,9 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+import pytest
+from services.repositories._quiz_answers import QuizAnswerRetryRequiredError
+
 os.environ.setdefault("AWS_DEFAULT_REGION", "eu-central-1")
 os.environ.setdefault("BOT_TOKEN", "test-bot-token")
 os.environ.setdefault("WEBHOOK_SECRET_TOKEN", "test-webhook-secret")
@@ -23,94 +26,43 @@ bot_config.CHAT_LANG_MAP[_QUIZSTATS_TEST_CHAT_KEY] = "en"
 
 
 class TestHandlePollAnswer:
-    def _make_ctx(self, poll_id, user_id, option_id, quiz_repo):
-        update = {
-            "poll_answer": {
-                "poll_id": poll_id,
-                "user": {"id": user_id, "first_name": "Test"},
-                "option_ids": [option_id],
-            }
-        }
-        bot = MagicMock()
-        ctx = Context(update, bot, quiz_repo=quiz_repo)
-        return ctx
+    def _ctx(self, quiz_repo):
+        update = {"update_id": 123, "poll_answer": {"poll_id": "poll123", "user": {"id": 456}, "option_ids": [0]}}
+        return Context(update, MagicMock(), quiz_repo=quiz_repo, sqs_repo=MagicMock())
 
-    def test_correct_answer_updates_score_with_poll_id(self):
-        quiz_repo = MagicMock()
-        quiz_repo.lookup_poll.return_value = {
-            "PK": "QUIZ#-100123",
-            "SK": "DATE#2026-04-05",
-            "correct_option_id": 2,
-            "points": 3,
-        }
-        ctx = self._make_ctx("poll123", 456, 2, quiz_repo)
-
+    def test_persist_before_queue_and_no_inline_lookup(self):
+        repo = MagicMock()
+        repo.persist_answer.return_value = {"state": "PENDING", "poll_id": "poll123", "user_id": "456"}
+        ctx = self._ctx(repo)
         handle_poll_answer(ctx)
+        repo.persist_answer.assert_called_once_with(ctx.poll_answer, 123)
+        repo.lookup_poll.assert_not_called()
+        ctx.sqs_repo.send_quiz_answer_task.assert_called_once_with("poll123", "456")
 
-        quiz_repo.update_score_correct.assert_called_once_with(
-            "-100123",
-            "456",
-            "Test",
-            poll_id="poll123",
-            points=3,
-            weekly_points=3,
-        )
-
-    def test_on_demand_correct_answer_does_not_add_weekly_points(self):
-        quiz_repo = MagicMock()
-        quiz_repo.lookup_poll.return_value = {
-            "PK": "QUIZ#-100123",
-            "SK": "ONDEMAND#poll123",
-            "correct_option_id": 2,
-            "points": 3,
-        }
-        ctx = self._make_ctx("poll123", 456, 2, quiz_repo)
-
+    def test_enqueue_failure_keeps_durable_receipt(self):
+        repo = MagicMock()
+        repo.persist_answer.return_value = {"state": "PENDING", "poll_id": "poll123", "user_id": "456"}
+        ctx = self._ctx(repo)
+        ctx.sqs_repo.send_quiz_answer_task.side_effect = RuntimeError("synthetic")
         handle_poll_answer(ctx)
+        repo.persist_answer.assert_called_once()
 
-        quiz_repo.update_score_correct.assert_called_once_with(
-            "-100123",
-            "456",
-            "Test",
-            poll_id="poll123",
-            points=3,
-            weekly_points=0,
-        )
+    def test_missing_repo_requires_webhook_redelivery(self):
+        with pytest.raises(QuizAnswerRetryRequiredError):
+            handle_poll_answer(self._ctx(None))
 
-    def test_wrong_answer_updates_score(self):
-        quiz_repo = MagicMock()
-        quiz_repo.lookup_poll.return_value = {
-            "PK": "QUIZ#-100123",
-            "SK": "DATE#2026-04-05",
-            "correct_option_id": 2,
-        }
-        ctx = self._make_ctx("poll123", 456, 0, quiz_repo)
+    def test_database_failure_requires_webhook_redelivery(self):
+        repo = MagicMock()
+        repo.persist_answer.side_effect = RuntimeError("synthetic")
+        with pytest.raises(QuizAnswerRetryRequiredError):
+            handle_poll_answer(self._ctx(repo))
 
+    def test_terminal_duplicate_is_not_queued(self):
+        repo = MagicMock()
+        repo.persist_answer.return_value = {"state": "SCORED"}
+        ctx = self._ctx(repo)
         handle_poll_answer(ctx)
-
-        quiz_repo.update_score_wrong.assert_called_once_with("-100123", "456", "Test", poll_id="poll123")
-
-    def test_unknown_poll_id_ignored(self):
-        quiz_repo = MagicMock()
-        quiz_repo.lookup_poll.return_value = None
-        ctx = self._make_ctx("unknown_poll", 456, 0, quiz_repo)
-
-        handle_poll_answer(ctx)
-
-        quiz_repo.update_score_correct.assert_not_called()
-        quiz_repo.update_score_wrong.assert_not_called()
-
-    def test_no_quiz_repo_skips(self):
-        update = {
-            "poll_answer": {
-                "poll_id": "poll123",
-                "user": {"id": 456, "first_name": "Test"},
-                "option_ids": [0],
-            }
-        }
-        bot = MagicMock()
-        ctx = Context(update, bot)  # No quiz_repo
-        handle_poll_answer(ctx)  # Should not raise
+        ctx.sqs_repo.send_quiz_answer_task.assert_not_called()
 
 
 class TestHandleQuizstats:

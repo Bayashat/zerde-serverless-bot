@@ -1,249 +1,94 @@
-"""Tests for quiz streak calculation logic."""
+"""Persisted streak outcomes through the single score/receipt transaction."""
 
-from unittest.mock import MagicMock, patch
+from datetime import datetime, timedelta, timezone
 
-from botocore.exceptions import ClientError
+import pytest
 
-FROZEN_TODAY = "2025-07-15"
-FROZEN_YESTERDAY = "2025-07-14"
-FROZEN_TWO_DAYS_AGO = "2025-07-13"
+from tests import quiz_support
 
-_PATCH_TODAY = patch("services.repositories.quiz._today_almaty", return_value=FROZEN_TODAY)
-_PATCH_YESTERDAY = patch("services.repositories.quiz._yesterday_almaty", return_value=FROZEN_YESTERDAY)
+quiz_env = quiz_support.quiz_env
 
 
-def _conditional_check_failed():
-    """Build a ClientError that mimics DynamoDB ConditionalCheckFailedException."""
-    err = ClientError(
-        {"Error": {"Code": "ConditionalCheckFailedException", "Message": "condition failed"}},
-        "UpdateItem",
-    )
-    return err
+def publish(env, request_id=1):
+    env.svc.process_on_demand_quiz("-100123", "en", "python", "medium", request_id=request_id)
 
 
-class TestStreakCorrectAnswer:
-    """Test update_score_correct streak logic."""
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_first_correct_answer_streak_is_1(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(return_value=None)
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1")
-
-        mock_table.update_item.assert_called_once()
-        call_kwargs = mock_table.update_item.call_args[1]
-        vals = call_kwargs["ExpressionAttributeValues"]
-        assert vals[":pts"] == 1
-        assert vals[":week_pts"] == 1
-        assert vals[":streak"] == 1
-        assert vals[":best"] == 1
-        assert vals[":poll_id"] == "poll-1"
-        assert vals[":poll_list"] == ["poll-1"]
-        assert "answered_poll_ids" in call_kwargs["ConditionExpression"]
-        assert "last_answered_date <> :today" not in call_kwargs["ConditionExpression"]
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_on_demand_correct_answer_can_skip_weekly_points(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(return_value=None)
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1", points=3, weekly_points=0)
-
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert vals[":pts"] == 3
-        assert vals[":week_pts"] == 0
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_consecutive_day_streak_increments(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(
-            return_value={
-                "total_score": 5,
-                "week_score": 3,
-                "current_streak": 3,
-                "best_streak": 3,
-                "last_correct_date": FROZEN_YESTERDAY,
-                "last_answered_date": FROZEN_YESTERDAY,
-                "first_name": "Test",
+@pytest.mark.parametrize("age,streak,best,expected", [(None, 0, 0, 1), (0, 4, 4, 4), (1, 3, 3, 4), (2, 5, 8, 1)])
+def test_correct_streak_is_persisted_without_losing_best(quiz_env, age, streak, best, expected):
+    env = quiz_env
+    publish(env)
+    if age is not None:
+        day = datetime.fromtimestamp(env.clock.now, timezone(timedelta(hours=5))).date() - timedelta(days=age)
+        env.table.put_item(
+            Item={
+                "PK": "SCORE#-100123",
+                "SK": "USER#7",
+                "current_streak": streak,
+                "best_streak": best,
+                "last_correct_date": str(day),
             }
         )
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-2")
-
-        mock_table.update_item.assert_called_once()
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert vals[":pts"] == 1
-        assert vals[":streak"] == 4
-        assert vals[":best"] == 4
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_gap_resets_streak_to_1(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(
-            return_value={
-                "total_score": 10,
-                "week_score": 6,
-                "current_streak": 5,
-                "best_streak": 8,
-                "last_correct_date": FROZEN_TWO_DAYS_AGO,
-                "last_answered_date": FROZEN_TWO_DAYS_AGO,
-                "first_name": "Test",
-            }
-        )
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-3")
-
-        mock_table.update_item.assert_called_once()
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert vals[":pts"] == 1
-        assert vals[":streak"] == 1
-        assert vals[":best"] == 8  # Preserved
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_second_correct_same_day_keeps_streak(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(
-            return_value={
-                "total_score": 5,
-                "week_score": 3,
-                "current_streak": 4,
-                "best_streak": 4,
-                "last_correct_date": FROZEN_TODAY,
-                "last_answered_date": FROZEN_TODAY,
-                "answered_poll_ids": ["poll-1"],
-                "first_name": "Test",
-            }
-        )
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-4")
-
-        mock_table.update_item.assert_called_once()
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert vals[":streak"] == 4
-        assert vals[":best"] == 4
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_different_poll_same_day_is_allowed_by_condition(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(
-            return_value={
-                "current_streak": 1,
-                "best_streak": 1,
-                "last_correct_date": FROZEN_TODAY,
-                "last_answered_date": FROZEN_TODAY,
-                "answered_poll_ids": ["poll-1"],
-            }
-        )
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-2")
-
-        condition = mock_table.update_item.call_args[1]["ConditionExpression"]
-        vals = mock_table.update_item.call_args[1]["ExpressionAttributeValues"]
-        assert "NOT contains(answered_poll_ids, :poll_id)" in condition
-        assert vals[":poll_id"] == "poll-2"
-
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_duplicate_correct_same_day_is_noop(self, mock_dynamo, _m_today, _m_yday):
-        """DynamoDB ConditionExpression blocks the duplicate; the method must swallow it."""
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.update_item.side_effect = _conditional_check_failed()
-
-        from services.repositories.quiz import QuizRepository
-
-        repo = QuizRepository()
-        repo.get_user_score = MagicMock(
-            return_value={
-                "total_score": 5,
-                "week_score": 3,
-                "current_streak": 3,
-                "best_streak": 3,
-                "last_correct_date": FROZEN_TODAY,
-                "last_answered_date": FROZEN_TODAY,
-                "first_name": "Test",
-            }
-        )
-        # Must not raise
-        repo.update_score_correct("chat1", "user1", "Test", poll_id="poll-1")
-        mock_table.update_item.assert_called_once()
+    env.answer()
+    assert env.process()["state"] == "SCORED"
+    score = env.bot.get_user_score("-100123", "7")
+    assert score["current_streak"] == expected
+    assert score["best_streak"] == max(best, expected)
+    assert score["total_score"] == 3
+    assert score["week_score"] == 0
+    assert "answered_poll_ids" not in score
 
 
-class TestStreakWrongAnswer:
-    """Test update_score_wrong streak logic."""
+def test_duplicate_answer_does_not_score_twice_but_different_poll_does(quiz_env):
+    env = quiz_env
+    publish(env)
+    env.answer()
+    env.process()
+    env.answer(update_id=99)
+    env.process()
+    publish(env, 2)
+    env.answer("poll-1", update_id=100)
+    env.process("poll-1")
+    assert env.bot.get_user_score("-100123", "7")["total_score"] == 6
+    assert env.bot.answer_coverage()["scored"] == 2
 
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_wrong_answer_resets_streak(self, mock_dynamo, _m_today, _m_yday):
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
 
-        from services.repositories.quiz import QuizRepository
+def test_wrong_then_correct_same_day_restores_streak_one(quiz_env):
+    env = quiz_env
+    publish(env)
+    env.answer(option=1)
+    env.process()
+    assert env.bot.get_user_score("-100123", "7")["current_streak"] == 0
+    publish(env, 2)
+    env.answer("poll-1", update_id=2)
+    env.process("poll-1")
+    assert env.bot.get_user_score("-100123", "7")["current_streak"] == 1
 
-        repo = QuizRepository()
-        repo.update_score_wrong("chat1", "user1", "Test", poll_id="poll-1")
 
-        mock_table.update_item.assert_called_once()
-        call_kwargs = mock_table.update_item.call_args[1]
-        vals = call_kwargs["ExpressionAttributeValues"]
-        assert vals[":zero"] == 0
-        assert vals[":today"] == FROZEN_TODAY
-        assert vals[":poll_id"] == "poll-1"
-        # streak reset is expressed via :zero in the UpdateExpression
-        assert "current_streak = :zero" in call_kwargs["UpdateExpression"]
-        assert "answered_poll_ids" in call_kwargs["ConditionExpression"]
+def test_daily_earned_points_count_in_current_week(quiz_env):
+    env = quiz_env
+    draft = env.svc._draft(quiz_support.question(), "python", "en", "medium")
+    env.svc._prepare_daily_publication = lambda *args: (draft, [])
+    assert env.svc.process_daily_quiz(["-100123"], "en")["status"] == "ok"
+    env.answer()
+    env.process()
+    assert env.bot.get_user_score("-100123", "7")["week_score"] == 3
 
-    @_PATCH_YESTERDAY
-    @_PATCH_TODAY
-    @patch("services.repositories.quiz.get_dynamodb")
-    def test_duplicate_wrong_same_day_is_noop(self, mock_dynamo, _m_today, _m_yday):
-        """DynamoDB ConditionExpression blocks the duplicate; the method must swallow it."""
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.update_item.side_effect = _conditional_check_failed()
 
-        from services.repositories.quiz import QuizRepository
+def test_legacy_answer_dedupe_is_preserved(quiz_env):
+    env = quiz_env
+    publish(env)
+    env.table.put_item(Item={"PK": "SCORE#-100123", "SK": "USER#7", "total_score": 99, "answered_poll_ids": ["poll-0"]})
+    env.answer()
+    assert env.process()["state"] == "DUPLICATE"
+    assert env.bot.get_user_score("-100123", "7")["total_score"] == 99
 
-        repo = QuizRepository()
-        # Must not raise
-        repo.update_score_wrong("chat1", "user1", "Test", poll_id="poll-1")
-        mock_table.update_item.assert_called_once()
+
+def test_late_older_wrong_answer_cannot_reset_newer_streak(quiz_env):
+    env = quiz_env
+    publish(env)
+    env.answer(option=1, update_id=1)
+    publish(env, 2)
+    env.answer("poll-1", update_id=2)
+    env.process("poll-1")
+    env.process("poll-0")
+    assert env.bot.get_user_score("-100123", "7")["current_streak"] == 1
