@@ -1,6 +1,6 @@
 """NewsFetcher: Fetch IT news from RSS feeds with TTL filtering."""
 
-import concurrent.futures
+import asyncio
 import html
 import re
 from datetime import datetime, timedelta, timezone
@@ -9,12 +9,11 @@ from typing import Optional
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
 import feedparser
-import urllib3
 from core.logger import LoggerAdapter, get_logger
+from services.deadline import request_bytes
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-http = urllib3.PoolManager(timeout=urllib3.Timeout(total=10))
 
 _KZ_DOMAINS = ("digitalbusiness.kz", "profit.kz")
 _REGIONAL_DOMAINS = ("tproger.ru",)
@@ -92,58 +91,69 @@ class NewsFetcher:
         "https://tproger.ru/feed/",
     ]
 
-    def fetch_raw_news(self, max_age_hours: int = 24) -> list[dict]:
-        """Fetch raw news pool from RSS."""
+    async def fetch_raw_news(self, deadline, max_age_hours: int = 24) -> list[dict]:
+        """Bound all RSS work to 15 seconds, retaining completed sources on timeout."""
         raw_news = []
+        completed = []
         cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+        semaphore = asyncio.Semaphore(5)
 
-        def fetch_single_feed(feed_url: str) -> list[dict]:
-            local_news = []
-            try:
-                resp = http.request("GET", feed_url, timeout=10)
-                feed = feedparser.parse(resp.data)
-                logger.debug("Feed parsed", extra={"entries": len(feed.entries)})
-                for entry in feed.entries:
-                    pub_date_str = (
-                        entry.get("published")
-                        or entry.get("updated")
-                        or entry.get("lastmod")
-                        or entry.get("news_publication_date")
+        async def fetch_single_feed(feed_url):
+            async with semaphore:
+                try:
+                    status, body = await request_bytes(
+                        "GET", feed_url, deadline=deadline, cap=10, max_bytes=512000, follow_redirects=True
                     )
-                    pub_date = self._parse_date(pub_date_str)
-                    if pub_date is None or pub_date < cutoff_time:
-                        continue
-                    link = normalize_url(entry.get("link", ""))
-                    local_news.append(
-                        {
-                            "title": entry.get("title", "No title"),
-                            "link": link,
-                            "summary": clean_html_text(entry.get("summary", ""))[:350],
-                            "domain": extract_domain(link),
-                            "source_region": classify_source_region(link),
-                            "feed_url": feed_url,
-                        }
-                    )
-                    # logger.debug(
-                    #     "News item added",
-                    #     extra={"title": entry.get("title", "No title"), "link": entry.get("link", "")},
-                    # )
-            except Exception as e:
-                logger.warning("Feed fetch failed", extra={"feed_url": feed_url, "error": str(e)})
-            return local_news
+                    if status >= 400:
+                        raise ValueError("RSS HTTP failure")
+                    feed = feedparser.parse(body)
+                    if feed.bozo and not feed.entries:
+                        raise ValueError("RSS did not contain a readable feed")
+                    local = []
+                    for entry in feed.entries[:200]:
+                        stamp = (
+                            entry.get("published")
+                            or entry.get("updated")
+                            or entry.get("lastmod")
+                            or entry.get("news_publication_date")
+                        )
+                        published = self._parse_date(stamp)
+                        if published is None or published < cutoff_time:
+                            continue
+                        link = normalize_url(entry.get("link", ""))
+                        local.append(
+                            {
+                                "title": entry.get("title", "No title"),
+                                "link": link,
+                                "summary": clean_html_text(entry.get("summary", ""))[:350],
+                                "domain": extract_domain(link),
+                                "source_region": classify_source_region(link),
+                                "feed_url": feed_url,
+                            }
+                        )
+                    raw_news.extend(local)
+                    completed.append(feed_url)
+                except Exception as exc:
+                    logger.warning("News feed failed", extra={"error_type": type(exc).__name__})
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.RSS_FEEDS)) as executor:
-            results = executor.map(fetch_single_feed, self.RSS_FEEDS)
-
-        for res in results:
-            raw_news.extend(res)
-
-        for i, news in enumerate(raw_news):
-            news["index"] = i
-        logger.info("Raw news pool fetched", extra={"count": len(raw_news), "feeds": len(self.RSS_FEEDS)})
+        tasks = [asyncio.create_task(fetch_single_feed(url)) for url in self.RSS_FEEDS]
+        try:
+            async with deadline.timeout(15):
+                await asyncio.gather(*tasks)
+        except TimeoutError:
+            logger.warning("RSS stage deadline reached", extra={"completed_feeds": len(completed)})
+        finally:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+        if not completed:
+            raise RuntimeError("No news feed completed successfully")
+        for index, article in enumerate(raw_news):
+            article["index"] = index
+        logger.info("Raw news pool fetched", extra={"count": len(raw_news), "completed_feeds": len(completed)})
         return raw_news
 
-    def fetch_deep_article_data(self, url: str) -> dict:
+    async def fetch_deep_article_data(self, url: str, deadline) -> dict:
         """Scrape the article page for og:image (or first img) and main paragraph text."""
         url = normalize_url(url)
         headers = {
@@ -153,11 +163,13 @@ class NewsFetcher:
             "Accept-Language": "en-US,en;q=0.5",
         }
         try:
-            resp = http.request("GET", url, headers=headers, timeout=8)
-            if resp.status >= 400:
-                logger.warning("Deep scrape HTTP error", extra={"url": url, "status": resp.status})
+            status, body = await request_bytes(
+                "GET", url, deadline=deadline, cap=8, max_bytes=1000000, headers=headers, follow_redirects=True
+            )
+            if status >= 400:
+                logger.warning("Deep scrape HTTP error", extra={"url": url, "status": status})
                 return {"image_url": "", "full_text": "", "full_text_chars": 0}
-            html_content = resp.data.decode("utf-8", errors="replace")
+            html_content = body.decode("utf-8", errors="replace")
             image_url = ""
 
             # Prefer og:image / twitter:image, then first content img
@@ -184,7 +196,7 @@ class NewsFetcher:
             logger.debug("Deep scrape success", extra={"url": url, "image_found": image_url})
             return {"image_url": image_url, "full_text": full_text, "full_text_chars": len(full_text)}
         except Exception as e:
-            logger.warning("Deep scrape failed", extra={"url": url, "error": str(e)})
+            logger.warning("Deep scrape failed", extra={"error_type": type(e).__name__})
             return {"image_url": "", "full_text": "", "full_text_chars": 0}
 
     def _parse_date(self, date_string: Optional[str]) -> Optional[datetime]:
