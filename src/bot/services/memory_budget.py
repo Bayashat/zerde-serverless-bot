@@ -7,11 +7,13 @@ Telegram identities belong here. The table must be the independent V2 table.
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from botocore.exceptions import ClientError
 from services.repositories._common import get_dynamodb
@@ -61,11 +63,19 @@ class Reservation:
 
 
 class MemoryBudgetRepository:
-    def __init__(self, table_name: str, *, clock=time.time):
+    def __init__(self, table_name: str, *, clock=time.time, inventory_version=None):
         if not isinstance(table_name, str) or not table_name.strip():
             raise ValueError("An independent V2 table is required")
         self.table = get_dynamodb().Table(table_name)
         self.clock = clock
+        self.inventory_version = inventory_version or ""
+        if not self.inventory_version:
+            from services.memory_v2._cost_catalog import UnverifiedCost, parse_inventory
+
+            try:
+                self.inventory_version = parse_inventory(os.environ.get("MEMORY_COST_INVENTORY", "")).version
+            except (ValueError, TypeError, KeyError, UnverifiedCost):
+                pass  # Invalid/missing deployment metadata cannot create an AWS permit.
 
     def next_month(self):
         current = datetime.fromtimestamp(self.clock(), timezone.utc)
@@ -90,18 +100,69 @@ class MemoryBudgetRepository:
     def snapshot(self, *, month=None):
         return self.table.get_item(Key=self._key(month or self.month(), "MODEL"), ConsistentRead=True).get("Item", {})
 
+    def _aws_permit(self, month, now):
+        from services.memory_v2._cost_state import AWS_STOP, FRESH_SECONDS, PRICE_VERSION
+
+        row = self.table.get_item(Key=self._key(month, "AWS"), ConsistentRead=True).get("Item") or {}
+        try:
+
+            def integer(field, default=0):
+                value = row.get(field, default)
+                if isinstance(value, bool) or not isinstance(value, (int, Decimal)) or int(value) != value:
+                    raise ValueError("Malformed AWS observation")
+                return int(value)
+
+            numbers_valid = (
+                integer("revision") > 0
+                and 0 <= integer("estimate_micro_usd", -1) < AWS_STOP
+                and now - FRESH_SECONDS < integer("observed_at") <= now
+                and now - FRESH_SECONDS < integer("covered_until") <= now
+                and now < integer("valid_until") <= integer("observed_at") + FRESH_SECONDS
+            )
+        except (TypeError, ValueError, OverflowError):
+            numbers_valid = False
+        if (
+            not numbers_valid
+            or not self.inventory_version
+            or row.get("inventory_version") != self.inventory_version
+            or row.get("price_version") != PRICE_VERSION
+            or row.get("measurement_state") != "ESTIMATE_VERIFIED"
+            or type(row.get("paused")) is not bool
+            or row["paused"]
+        ):
+            error = MemoryBudgetPaused("Optional memory AWS estimate is paused, incomplete or stale")
+            error.retry_after = self.next_month() if row.get("paused") else now + 300
+            raise error
+        return row
+
     def check_available(self) -> None:
         """Read-only preflight before consuming shared provider quota; not a permit."""
+        self._check_model_control()
+        self._aws_permit(self.month(), int(self.clock()))
+        month = self.snapshot()
+        if (
+            month.get("paused")
+            or int(month.get("charged_micro_usd", 0)) > MONTHLY_LIMIT_MICRO_USD - RESERVATION_MICRO_USD
+        ):
+            error = MemoryBudgetPaused("Optional memory budget unavailable")
+            error.retry_after = self.next_month()
+            raise error
+
+    def check_aws_available(self) -> None:
+        """Read-only preflight for optional AWS work, independent of model headroom.
+
+        Deterministic profile/forget commands and the monitor itself must not be
+        routed through the combined model gate. This read is not a lasting permit.
+        """
+        self._aws_permit(self.month(), int(self.clock()))
+
+    def _check_model_control(self):
+        """Accounting anomalies remain global and retain their existing retry semantics."""
         control = (
             self.table.get_item(Key={"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL"}, ConsistentRead=True).get("Item")
             or {}
         )
-        month = self.snapshot()
-        if (
-            control.get("paused")
-            or month.get("paused")
-            or int(month.get("charged_micro_usd", 0)) > MONTHLY_LIMIT_MICRO_USD - RESERVATION_MICRO_USD
-        ):
+        if control.get("paused"):
             error = MemoryBudgetPaused("Optional memory budget unavailable")
             error.retry_after = self.next_month()
             raise error
@@ -117,8 +178,12 @@ class MemoryBudgetRepository:
             raise ValueError("Unpriced model or purpose")
         month = self.month()
         key = self._attempt_key(month, attempt_id)
+        if self.table.get_item(Key=key, ConsistentRead=True).get("Item"):
+            raise DuplicateMemoryAttempt("Network attempt already reserved")
         token = uuid.uuid4().hex
         now = int(self.clock())
+        self._check_model_control()
+        aws = self._aws_permit(month, now)
         item = {
             **key,
             "status": "RESERVED",
@@ -134,6 +199,24 @@ class MemoryBudgetRepository:
         try:
             self.table.meta.client.transact_write_items(
                 TransactItems=[
+                    {
+                        "ConditionCheck": {
+                            "TableName": self.table.name,
+                            "Key": self._key(month, "AWS"),
+                            "ConditionExpression": "#revision = :revision AND paused = :false "
+                            "AND valid_until > :now AND inventory_version = :inventory "
+                            "AND measurement_state = :verified AND price_version = :price",
+                            "ExpressionAttributeNames": {"#revision": "revision"},
+                            "ExpressionAttributeValues": {
+                                ":revision": aws["revision"],
+                                ":false": False,
+                                ":now": now,
+                                ":inventory": self.inventory_version,
+                                ":verified": "ESTIMATE_VERIFIED",
+                                ":price": aws["price_version"],
+                            },
+                        }
+                    },
                     {
                         "ConditionCheck": {
                             "TableName": self.table.name,
@@ -180,6 +263,12 @@ class MemoryBudgetRepository:
                 existing = self.table.get_item(Key=key, ConsistentRead=True).get("Item")
                 if existing:
                     raise DuplicateMemoryAttempt("Network attempt already reserved") from exc
+                # An hourly measurement can change its revision between the read
+                # and transaction. No permit escaped: allow a later bounded retry.
+                if reasons and reasons[0].get("Code") == "ConditionalCheckFailed":
+                    error = MemoryBudgetPaused("AWS measurement changed before reservation")
+                    error.retry_after = now + 300
+                    raise error from exc
                 error = MemoryBudgetPaused("Insufficient conservative model budget or budget paused")
                 error.retry_after = self.next_month()
                 raise error from exc
