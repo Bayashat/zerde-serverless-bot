@@ -27,7 +27,7 @@ class OperationsConstruct(Construct):
         env_name: str,
         is_prod: bool,
         runtime_active: bool,
-        shared_layer: lambda_.ILayer,
+        shared_layer: lambda_.ILayerVersion,
         stats_table: dynamodb.ITable,
         admin_user_id: str,
         ssm_secret_prefix: str,

@@ -31,7 +31,7 @@ class BotConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        shared_layer: _lambda.ILayer,
+        shared_layer: _lambda.ILayerVersion,
         env_name: str,
         is_prod: bool,
         runtime_active: bool = True,
