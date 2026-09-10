@@ -323,3 +323,5 @@ Memory V2 webhook/moderation admission, dedicated queue/worker, shared project b
 
 
 News deadlines, frozen manifests, per-chat delivery receipts, and operator recovery are documented in `docs/NEWS_DELIVERY.md`.
+
+Background delivery runtime: News and daily Quiz bind original EventBridge time. Quiz publication and answer recovery run every five minutes, independent of configured chat lists, with dev activation following the existing on-demand switch. Bot webhook returns HTTP 500 only when Quiz answer persistence failed; a durable answer with lost enqueue acknowledgement is recovered. `/quizreconcile` authenticates a live group administrator and own-bot poll before a restricted Quiz invoke. See [Quiz recovery](QUIZ_RECOVERY.md).

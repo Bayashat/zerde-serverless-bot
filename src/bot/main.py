@@ -10,6 +10,7 @@ from app import (
     get_dispatcher,
     get_memory_ingestion,
     get_memory_repo,
+    get_quiz_repo,
     get_sqs_repo,
 )
 from core.logger import LoggerAdapter, get_logger
@@ -40,6 +41,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None
                 contest_repo=get_contest_repo(),
                 sqs_repo=get_sqs_repo(),
                 memory_ingestion=get_memory_ingestion(),
+                quiz_repo=get_quiz_repo(),
             )
         finally:
             elapsed_ms = int((time.monotonic() - started) * 1000)

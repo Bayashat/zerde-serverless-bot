@@ -6,6 +6,7 @@ from typing import Any
 
 from aws_cdk import CfnOutput, Stack, Tags
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
+from components.background_recovery import add_background_recovery
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from components.memory_v2 import MemoryV2Construct
 from components.memory_worker import MemoryWorkerConstruct, grant_project_budget
@@ -352,6 +353,7 @@ class ZerdeTelegramBotStack(Stack):
             deepseek_api_base=deepseek_api_base,
             deepseek_model=deepseek_model,
             log_level=log_level,
+            stats_table=bot.stats_table,
         )
 
         quiz = QuizConstruct(
@@ -378,6 +380,15 @@ class ZerdeTelegramBotStack(Stack):
         bot.handler_lambda.add_environment("QUIZ_TABLE_NAME", quiz.quiz_table.table_name)
         quiz.quiz_lambda.grant_invoke(bot.handler_lambda)
         bot.handler_lambda.add_environment("QUIZ_LAMBDA_NAME", quiz.quiz_lambda.function_name)
+        add_background_recovery(
+            self,
+            env_name=env_name,
+            runtime_active=self.runtime_active,
+            quiz_lambda=quiz.quiz_lambda,
+            news_lambda=news.news_lambda,
+            queue=messaging.queue,
+            dlq=messaging.dlq,
+        )
 
         # Independent notification transport, also reused by future worker owners.
         self.operations = OperationsConstruct(

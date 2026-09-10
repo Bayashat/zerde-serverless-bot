@@ -9,6 +9,10 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 TRANSLATIONS = {
     "en": {
+        "quiz_reconcile_usage": "Reply to this bot's quiz: /quizreconcile &lt;request_key&gt; &lt;generation&gt;",
+        "quiz_reconcile_admin": "Only a current group administrator can reconcile a quiz.",
+        "quiz_reconcile_ok": "The existing quiz has been verified and its scoring record restored.",
+        "quiz_reconcile_unknown": "The quiz is not confirmed. Check the delivery record before trying again.",
         "memory_rebuilding": (
             "Memory is being rebuilt. Learning and automatic interactions are disabled. /ask, direct "
             "mentions and requested replies remain available without long-term memory."
@@ -293,6 +297,12 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 Too many wrong attempts. You have been removed.",
     },
     "kk": {
+        "quiz_reconcile_usage": (
+            "Осы боттың викторинасына жауап беріңіз: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
+        ),
+        "quiz_reconcile_admin": "Викторинаны тек топтың қазіргі әкімшісі растай алады.",
+        "quiz_reconcile_ok": "Бар викторина расталды, ұпай санау жазбасы қалпына келтірілді.",
+        "quiz_reconcile_unknown": "Викторина расталмады. Қайта әрекеттенбес бұрын жіберу жазбасын тексеріңіз.",
         "memory_rebuilding": (
             "Жад қайта жасалып жатыр. Ақпаратты есте сақтау және автоматты әрекеттер өшірілген. /ask, "
             "тікелей белгілеу және ботқа қойылған нақты сұрақтар ұзақ мерзімді жадсыз жұмыс істейді."
@@ -592,6 +602,10 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 Тым көп қате енгізілді. Топтан шығарылдыңыз.",
     },
     "zh": {
+        "quiz_reconcile_usage": "回复此 bot 已发出的题目：/quizreconcile &lt;request_key&gt; &lt;generation&gt;",
+        "quiz_reconcile_admin": "只有当前群管理员可以核对并恢复题目记录。",
+        "quiz_reconcile_ok": "已核对现有题目并恢复其计分记录。",
+        "quiz_reconcile_unknown": "题目尚未核实，请先检查发送记录再重试。",
         "start_message": (
             "👋 <b>你好！我是 Zerde —— 面向 IT 社群的智能助手。</b> 🤖\n\n"
             "我的主要职责是保护群聊免受垃圾机器人干扰，并收集有价值的统计数据。\n\n"
@@ -843,6 +857,12 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 错误次数过多，已将您移出群组。",
     },
     "ru": {
+        "quiz_reconcile_usage": (
+            "Ответьте на викторину этого бота: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
+        ),
+        "quiz_reconcile_admin": "Подтвердить викторину может только текущий администратор группы.",
+        "quiz_reconcile_ok": "Существующая викторина подтверждена, запись для подсчёта баллов восстановлена.",
+        "quiz_reconcile_unknown": "Викторина не подтверждена. Перед повтором проверьте запись об отправке.",
         "memory_rebuilding": (
             "Память перестраивается. Запоминание и автоматические взаимодействия отключены. /ask, "
             "прямые упоминания и явные вопросы в ответ боту доступны без долговременной памяти."

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from aws_cdk import Duration, RemovalPolicy, Stack
+from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_iam as iam
@@ -36,6 +37,7 @@ class NewsConstruct(Construct):
         deepseek_api_base: str,
         deepseek_model: str,
         log_level: str,
+        stats_table: dynamodb.ITable,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -63,6 +65,7 @@ class NewsConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "STATS_TABLE_NAME": stats_table.table_name,
                 "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "NEWS_GEMINI_MODEL": news_gemini_model,
                 "DEEPSEEK_API_BASE": deepseek_api_base,
@@ -71,6 +74,15 @@ class NewsConstruct(Construct):
         )
 
         stack = Stack.of(self)
+        self.news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["dynamodb:GetItem", "dynamodb:UpdateItem"],
+                resources=[stats_table.table_arn],
+                conditions={
+                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": ["news_manifest#*", "news_delivery#*"]}
+                },
+            )
+        )
         self.news_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 sid="ReadZerdeSSMSecrets",
@@ -119,6 +131,8 @@ class NewsConstruct(Construct):
                                 {
                                     "chat_ids": chat_ids,
                                     "lang": lang,
+                                    "scheduled_at": events.EventField.time,
+                                    "schedule_slot": slot,
                                 }
                             ),
                         )

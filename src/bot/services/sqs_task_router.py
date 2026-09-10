@@ -71,6 +71,7 @@ def process_sqs_event(
     contest_repo: ContestRepository | None = None,
     sqs_repo: SQSClient | None = None,
     memory_ingestion=None,
+    quiz_repo=None,
 ) -> None:
     """Process main bot SQS tasks. Vector tasks are handled by the vector-indexer Lambda."""
     logger.debug(
@@ -98,6 +99,17 @@ def process_sqs_event(
                 body["_captcha_repo"] = captcha_repo
                 body["_sqs_repo"] = sqs_repo or SQSClient()
                 process_timeout_task(bot, body)
+            elif task_type in {"PROCESS_QUIZ_ANSWER", "PROCESS_QUIZ_ANSWER_RECOVERY"}:
+                from services.quiz_answers import process_quiz_answer_task, recover_quiz_answers
+
+                if quiz_repo is None:
+                    raise RuntimeError("Quiz answer repository is unavailable")
+                if task_type == "PROCESS_QUIZ_ANSWER":
+                    process_quiz_answer_task(repo=quiz_repo, body=body)
+                else:
+                    if body != {"schema": 2, "task_type": "PROCESS_QUIZ_ANSWER_RECOVERY"}:
+                        raise ValueError("Unsupported quiz recovery envelope")
+                    recover_quiz_answers(repo=quiz_repo, sqs_repo=sqs_repo or SQSClient())
             elif task_type == "SPAM_CHECK":
                 outcome = process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)
                 if outcome == "clean" and body.get("source_ref") and memory_ingestion is not None:

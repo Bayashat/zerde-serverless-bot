@@ -11,7 +11,7 @@ from aws_cdk.assertions import Template
 
 INFRA_DIR = Path("infra").resolve()
 if str(INFRA_DIR) not in sys.path:
-    sys.path.insert(0, str(INFRA_DIR))
+    sys.path.append(str(INFRA_DIR))
 
 from components import bot as bot_component  # noqa: E402
 from components import memory_worker as memory_worker_component  # noqa: E402

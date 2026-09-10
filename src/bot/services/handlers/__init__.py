@@ -26,6 +26,7 @@ from services.handlers.commands import (
 )
 from services.handlers.contest import handle_contest
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
+from services.handlers.quiz_reconcile import handle_quiz_reconcile
 from services.handlers.spam_review import handle_spam_review_callback, is_spam_review_callback
 from services.handlers.voteban import handle_vote_callback, handle_voteban_command
 
@@ -72,3 +73,4 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)
     dp.command("genquiz")(handle_quiz_generate)
+    dp.command("quizreconcile")(handle_quiz_reconcile)

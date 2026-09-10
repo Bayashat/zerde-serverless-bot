@@ -67,6 +67,7 @@ def test_main_sqs_boundary_passes_contest_and_shared_queue_dependencies() -> Non
         patch.object(main, "get_memory_repo", return_value=memory),
         patch.object(main, "get_contest_repo", return_value=contest),
         patch.object(main, "get_sqs_repo", return_value=sqs),
+        patch.object(main, "get_quiz_repo", return_value=None),
         patch.object(main, "process_sqs_event") as process,
     ):
         assert main.lambda_handler(event, context) is None
@@ -79,4 +80,5 @@ def test_main_sqs_boundary_passes_contest_and_shared_queue_dependencies() -> Non
         contest_repo=contest,
         sqs_repo=sqs,
         memory_ingestion=None,
+        quiz_repo=None,
     )

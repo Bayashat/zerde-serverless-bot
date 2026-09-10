@@ -262,3 +262,5 @@ Voteban session identities, conditional decisions, temporary-ban recovery, and r
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
 
 News deadlines, frozen manifests, per-chat delivery receipts, and operator recovery are documented in `docs/NEWS_DELIVERY.md`.
+
+News/Quiz recovery: preserve original scheduled_at and News slot in EventBridge input; never derive a retry publication identity from current time. Five-minute Quiz publication/answer recovery and both Lambda async failure destinations are required public wiring. The destination DLQ contains inspection envelopes, not blindly replayable task bodies. `/quizreconcile` requires live group-admin and own-bot poll checks. See docs/QUIZ_RECOVERY.md.

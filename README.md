@@ -243,3 +243,5 @@ This project is licensed under the MIT License.
 Memory V2 storage is being introduced behind a stopped control state; deployment alone does not enable learning. The [domain contract](docs/memory-v2-domain.md) defines the independent table, source versions and evidence-backed facts.
 
 The [runtime integration](docs/MEMORY_V2_RUNTIME.md) adds a dedicated memory queue and worker with recoverable admission; learning remains stopped until an explicit validated cutover.
+
+Quiz answers are persisted before queue delivery and recovered every five minutes. A live group administrator can reconcile an uncertain existing poll with `/quizreconcile <request_key> <generation>` while replying to that poll. News retries keep their original scheduled slot and do not resend confirmed delivery steps.

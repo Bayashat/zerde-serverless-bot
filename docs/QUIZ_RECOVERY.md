@@ -2,8 +2,9 @@
 
 This implements the local code contract in [Z16](goals/zerdebot-memory-v2/issues/Z16.md).
 It does not deploy resources, invoke Telegram, or prove a real poll is scoreable.
-The public Bot router/webhook, SQS producer, live-admin command and schedules are
-integrated separately. All those pieces and the old-writer drain below are release gates.
+The public Bot router/webhook, SQS producer, live-admin command and five-minute
+recovery schedules are wired in the integration slice. Deployment readback and the
+old-writer drain below remain release gates.
 
 ## One owner for each state
 
@@ -177,3 +178,27 @@ the workers still read the same stale score before competing. This is simulator
 evidence, not real DynamoDB isolation, GSI propagation, Lambda timing or Telegram
 delivery evidence. Actual dev then production poll/answer tests, deployment readback
 and a real uncertain-send reconciliation remain unproven until separately authorized.
+
+## Runtime wiring
+
+`/quizreconcile <request_key> <generation>` must reply to this bot's existing poll
+in a configured group. The adapter calls live `getChatMember`, requires that exact
+user to be administrator/creator, and constructs only the restricted `reconcile`
+event. Bot ownership alone does not bypass group authorization.
+
+Both recovery rules exist even without configured chat lists and follow the
+existing dev on-demand switch. News and Quiz async invocation failures retain
+Lambda destination envelopes in the unconsumed main DLQ after at most two retries
+and six hours. EventBridge target delivery separately has three retries and a
+one-hour age limit. Operators must inspect those envelopes and replay the original
+business identity; destination envelopes are not SQS task bodies.
+
+News receives only `GetItem`/`UpdateItem` for `news_manifest#*` and `news_delivery#*`
+in the existing stats table. Daily Quiz and each News slot retain EventBridge's
+original timestamp; a retry cannot create a new publication date.
+
+Runtime integration evidence (2026-09-11): full local suite 1,178 passed on Python
+3.13.6; independent public/domain/IAM review ran 129 focused cases. A fresh dev CDK
+synthesis built all six real assets, imported in the pinned ARM64 Lambda Python
+3.13.15 image with networking disabled. This verifies packaging and local wiring,
+not deployed permissions or a real Telegram poll. No cloud mutation was performed.

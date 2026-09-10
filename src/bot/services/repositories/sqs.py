@@ -74,6 +74,15 @@ class SQSClient:
             logger.exception("Failed to send timeout task to SQS", extra={"error": e})
             raise
 
+    def send_quiz_answer_task(self, poll_id, user_id, delay_seconds=0):
+        from services.repositories._quiz_answers import _identity
+
+        _identity(poll_id, user_id)
+        payload = {"schema": 2, "task_type": "PROCESS_QUIZ_ANSWER", "poll_id": poll_id, "user_id": str(user_id)}
+        self.sqs_client.send_message(
+            QueueUrl=self.queue_url, MessageBody=json.dumps(payload), DelaySeconds=max(0, min(900, int(delay_seconds)))
+        )
+
     def send_group_ask_task(
         self,
         *,

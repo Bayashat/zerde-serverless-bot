@@ -252,3 +252,5 @@ Voteban session identities, conditional decisions, temporary-ban recovery, and r
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
 
 News deadlines, frozen manifests, per-chat delivery receipts, and operator recovery are documented in `docs/NEWS_DELIVERY.md`.
+
+News/Quiz public integration: keep original scheduled_at in daily inputs and stable News slot. Quiz answer persistence failure must produce HTTP 500; enqueue failure after durable acceptance relies on five-minute recovery. Keep recovery schedules without chat lists, gate dev with runtime activation, and send bounded async failures to the unconsumed DLQ for inspection. Never replay Lambda destination envelopes as task bodies. `/quizreconcile` requires live administrator and own-bot poll evidence; see docs/QUIZ_RECOVERY.md.

@@ -171,6 +171,7 @@ class QuizConstruct(Construct):
                                 {
                                     "chat_ids": chat_ids,
                                     "lang": lang,
+                                    "scheduled_at": events.EventField.time,
                                 }
                             ),
                         )

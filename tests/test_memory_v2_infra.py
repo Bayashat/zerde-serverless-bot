@@ -6,7 +6,7 @@ from pathlib import Path
 from aws_cdk import App, Stack
 from aws_cdk.assertions import Template
 
-sys.path.insert(0, str(Path("infra").resolve()))
+sys.path.append(str(Path("infra").resolve()))
 from components.memory_v2 import MemoryV2Construct  # noqa: E402
 
 

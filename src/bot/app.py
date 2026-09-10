@@ -27,6 +27,7 @@ _memory_repo: GroupMemoryRepository | None = None
 _memory_v2_repo = None
 _contest_repo: ContestRepository | None = None
 _sqs_repo: SQSClient | None = None
+_quiz_repo: QuizRepository | None = None
 _dispatcher: Dispatcher | None = None
 
 
@@ -86,6 +87,15 @@ def get_sqs_repo() -> SQSClient:
     return _sqs_repo
 
 
+def get_quiz_repo():
+    global _quiz_repo
+    if not QUIZ_TABLE_NAME:
+        return None
+    if _quiz_repo is None:
+        _quiz_repo = QuizRepository()
+    return _quiz_repo
+
+
 def get_dispatcher() -> Dispatcher:
     """Wire the webhook dispatcher lazily and reuse it across warm invocations."""
     global _dispatcher
@@ -95,7 +105,7 @@ def get_dispatcher() -> Dispatcher:
             StatsRepository(),
             get_sqs_repo(),
             VoteRepository(),
-            QuizRepository() if QUIZ_TABLE_NAME else None,
+            get_quiz_repo(),
             LambdaInvoker() if QUIZ_LAMBDA_NAME else None,
             captcha_repo=get_captcha_repo(),
             memory_repo=get_memory_repo(),
