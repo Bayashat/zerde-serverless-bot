@@ -32,6 +32,16 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     chat_ids = event.get("chat_ids", [])
     lang = event.get("lang", "kk")
 
+    if event.get("action") == "recover_publications":
+        return quiz_service.recover_publications(limit=50)
+
+    if event.get("action") == "reconcile":
+        # Only the restricted Bot invoke role may call this action; its public
+        # adapter must freshly verify live administrator and replied own-bot poll.
+        return quiz_service.reconcile_poll_receipt(
+            event["chat_id"], event["request_key"], event["generation"], event["poll_message"], event["bot_user_id"]
+        )
+
     if event.get("action") == "leaderboard":
         return quiz_service.process_leaderboard(chat_ids, lang)
 
@@ -59,4 +69,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
         )
 
-    return quiz_service.process_daily_quiz(chat_ids, lang)
+    result = quiz_service.process_daily_quiz(chat_ids, lang)
+    if result.get("failed"):
+        raise RuntimeError("Daily quiz publication is incomplete; inspect durable execution states")
+    return result
