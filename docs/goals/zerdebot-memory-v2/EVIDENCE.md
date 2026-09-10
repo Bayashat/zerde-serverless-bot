@@ -62,3 +62,16 @@ Z06/Z07/Z08/Z17实施中。Z06明确使用短期候选、统一观察版本与�
 - Z06独立复核发现两项P2并完成定向回归：暂停学习不能误清待审批候选；并发已ACCEPTED不能被另一worker反向ACK为EXPIRED。最终96 domain/ingestion独审ALIGNED，主PR发布中；公共Webhook/SQS/worker/infra仍由root集成验证。
 
 Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_id/version、发送前强验证、释放；删除先STOPPING阻新租约，等在途结束再确认。Z15分群逐步骤交付与Z16poll/answer恢复实现中。真实群七天试运行、数据清零、AWS资源清理、部署和合并门槛尚未执行；不能把上述PR状态当作上线或产品验收。
+
+## 第四批与实际后台入口（2026-09-11；无部署）
+
+- Z06 #190 / 16f2ee9：691 full；独立96。OBS/RAW/WORK准入、CLEAN回执与恢复事务。
+- Z09 #191 / b09cc5d：737 full；独立46。统一删除/更正及发送租约。Z08集成复核又补了查询者本人删除栅栏，避免 A 查询 B 时 A 的晚建 receipt 越过 forget；追加修复尚在 Z08 分支。
+- Memory V2 runtime #192 / b605cb6：1,045 full；真实6个ARM64资产禁网导入通过。独立worker120秒、740秒队列可见期、5分钟恢复，默认无CONTROL即停止。
+- Z15 #193 / 0bef5bb：871 full；独立57。News 固定原始日期/slot/manifest，逐群逐步骤持久状态，UNKNOWN不盲重发，网络DNS与抓取总时限。
+- Z16 #194 / 93236dc：870 full 在原实现f558b5b；独立最终79含跨午夜时间修复，不把最后追加用例虚报为新full。Quiz poll发布/强一致lookup/答题与计分outbox；原始scheduled_at错误必须触发Lambda失败。
+- 后台公开接线 #197 / 4bef23b：**1,178 full passed**（Python3.13.6，87.76秒）；独立129 focused，scoped hooks通过。fresh dev CDK synth生成6真实产物，在固定ARM64 Lambda Python3.13.15镜像、network=none下导入通过。包括News限定分区IAM、Quiz webhook失败500/持久后投递恢复、每5分钟两类恢复、live-admin own-poll核对及失败DLQ。
+- Z10 #195 / 016e2c8：1,072 full；独立61。精确白名单、加密7天备份、代码HEAD/dirty gate、manifest digest、完整旧writer及alias drain、可恢复清理journal。未生成生产manifest、未备份/清理生产数据。AGENT_REPLY/MEDIA_GROUP旧公开路径退出仍为执行前门槛。
+- Z11 #196 / dbb553e：1,070 full；独立42。240多轮/516唯一事实/256未知问题；四语言各60场景。只有本地评分器和静态合成gold，标签独立复核PENDING，真实provider NOT_VERIFIED，dev/七天pilot NOT_RUN；完整runtime replay adapter仍需补接。
+
+上表各自分支full不相加。全部PR尚未合并main或部署。feat/zerde-reviewed-foundation与feat/zerde-background-foundation仅固定已审阅依赖，不能当作生产release。Z08正在接显式问答/命令、临时媒体与源删除、群话题、AWS用量仪表和预算监测。模型质量门槛、单群7天样本、管理员真实通知、成本标签激活和生产旧数据清零均未执行。
