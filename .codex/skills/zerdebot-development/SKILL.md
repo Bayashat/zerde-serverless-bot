@@ -100,6 +100,8 @@ Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wr
 
 ## SQS And Persistence
 
+Captcha recovery is generation-scoped: persist and enqueue before restricting/sending; serialize verification versus timeout with revision CAS and a live action lease; persist terminal decisions before Telegram calls and reconcile ambiguous results by membership readback. Never unconditionally delete current captcha state from a timeout, and never map database failures to NotFound. Keep the lease longer than the Bot Lambda timeout. Legacy queued timeouts require both exact anchors. Follow the rollout gate in `docs/captcha-lifecycle.md` so old in-flight unconditional writers finish before new creation starts.
+
 SQS handler failures should re-raise when retry/DLQ semantics are intended. Current main bot SQS task types:
 
 - `CHECK_TIMEOUT`

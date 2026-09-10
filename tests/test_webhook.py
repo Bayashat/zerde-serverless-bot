@@ -127,6 +127,7 @@ def test_pending_captcha_message_skips_spam_screening():
         patch("webhook.observe_group_memory_update") as observe_memory,
         patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
+        patch("webhook.handle_captcha_answer") as captcha_answer,
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
 
@@ -136,7 +137,9 @@ def test_pending_captcha_message_skips_spam_screening():
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
     group_agent.assert_not_called()
-    dispatcher.process_update.assert_called_once_with(body)
+    dispatcher.process_update.assert_not_called()
+    captcha_answer.assert_called_once()
+    assert captcha_answer.call_args.args[0].text == body["message"]["text"]
 
 
 def test_enforced_spam_short_circuits_normal_group_flows():

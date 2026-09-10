@@ -1,6 +1,6 @@
 """Captcha verification: grid image challenge, answer checking, timeout kick."""
 
-import re
+import time
 from typing import Any
 
 from core.config import CAPTCHA_MAX_ATTEMPTS, CAPTCHA_TIMEOUT_SECONDS
@@ -9,6 +9,13 @@ from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from core.utils import format_mention
 from services.captcha_image import generate_grid_captcha
+from services.repositories.captcha import (
+    TERMINAL_STATUSES,
+    CaptchaBusyError,
+    CaptchaRetryRequiredError,
+    action_completed,
+)
+from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -43,235 +50,279 @@ _TEXT_ONLY_PERMISSIONS: dict[str, bool] = {
 _CAPTCHA_BLOCKED_PERMISSIONS = tuple(key for key, value in _TEXT_ONLY_PERMISSIONS.items() if value is False)
 
 
-def _delete_timeout_messages(
-    bot: TelegramClient,
-    chat_id: int | str,
-    message_ids: list[int],
-) -> None:
-    for message_id in message_ids:
+def _delete_messages(bot: TelegramClient, chat_id: int | str, message_ids: list[int]) -> None:
+    # Cleanup is best effort; it must not undo a durable verification decision.
+    for message_id in dict.fromkeys(int(value) for value in message_ids if value):
         try:
             bot.delete_message(chat_id, message_id, ignore_not_found=True)
-        except Exception as e:
-            logger.warning("Failed to delete captcha timeout message %s: %s", message_id, e)
-
-
-def _challenge_matches_timeout_task(
-    challenge: dict[str, Any],
-    join_message_id: int,
-    verification_message_id: int,
-) -> bool:
-    return int(challenge.get("join_msg_id", 0)) == int(join_message_id) and int(
-        challenge.get("verify_msg_id", 0)
-    ) == int(verification_message_id)
+        except Exception:
+            logger.warning("Captcha message cleanup failed", extra={"chat_id": chat_id, "message_id": message_id})
 
 
 def _is_captcha_text_only_restricted(member: dict[str, Any]) -> bool:
-    if (member.get("status") or "").lower() != "restricted":
-        return False
-    if member.get("can_send_messages") is not True:
-        return False
-    return all(member.get(permission) is False for permission in _CAPTCHA_BLOCKED_PERMISSIONS)
+    return (
+        member.get("status") == "restricted"
+        and member.get("can_send_messages") is True
+        and all(member.get(permission) is False for permission in _CAPTCHA_BLOCKED_PERMISSIONS)
+    )
 
 
-def _delete_pending_state(captcha_repo: Any, chat_id: int | str, user_id: int) -> None:
-    if not captcha_repo:
-        return
-    try:
-        captcha_repo.delete_pending(chat_id, user_id)
-    except Exception as e:
-        logger.warning("Failed to clean up captcha state on timeout: %s", e)
+def _matches_task(challenge: dict[str, Any], task: dict[str, Any]) -> bool:
+    if int(challenge["join_msg_id"]) != int(task.get("join_message_id") or 0):
+        return False
+    if task.get("generation"):
+        return challenge.get("generation") == task["generation"]
+    # Old CHECK_TIMEOUT messages may still be in SQS/DLQ. Never fall back to
+    # inspecting permissions without proving the exact old challenge identity.
+    return bool(task.get("verification_message_id")) and int(challenge.get("verify_msg_id", 0)) == int(
+        task["verification_message_id"]
+    )
+
+
+def _schedule_recovery(sqs_repo, chat_id, user_id, challenge, *, delay_seconds=None) -> None:
+    remaining = max(1, int(challenge.get("expires_at", 0)) - int(time.time()))
+    sqs_repo.send_timeout_task(
+        chat_id,
+        user_id,
+        join_message_id=int(challenge["join_msg_id"]),
+        verification_message_id=int(challenge.get("verify_msg_id", 0)),
+        generation=challenge.get("generation"),
+        delay_seconds=remaining if delay_seconds is None else delay_seconds,
+    )
+
+
+def _cleanup_decision(bot, chat_id, challenge) -> None:
+    ids = [challenge.get("verify_msg_id"), challenge.get("answer_msg_id"), *challenge.get("wrong_msg_ids", [])]
+    if challenge.get("status") == "rejected":
+        ids.append(challenge["join_msg_id"])
+    _delete_messages(bot, chat_id, ids)
+
+
+def _apply_decision(repo, bot, chat_id, user_id, challenge, *, stats_repo=None):
+    """Reconcile a durable decision; ambiguous Telegram results remain pending.
+
+    A live lease protects against a newer join replacing this generation. A
+    readback avoids repeating an already-applied kick/unrestrict after a lost
+    response. Telegram and DynamoDB cannot provide an atomic exactly-once send.
+    """
+    if challenge.get("status") not in TERMINAL_STATUSES or action_completed(challenge):
+        return challenge
+    member = bot.get_chat_member(chat_id, user_id)
+    if not isinstance(member, dict) or member.get("status") not in {
+        "member",
+        "restricted",
+        "left",
+        "kicked",
+        "administrator",
+        "creator",
+    }:
+        raise CaptchaRetryRequiredError("Captcha member state could not be verified")
+    repo.assert_owned(challenge)
+    outcome = "already_applied_or_permissions_changed"
+    if _is_captcha_text_only_restricted(member):
+        if challenge["status"] == "rejected":
+            bot.kick_chat_member(chat_id, user_id)
+            outcome = "kicked"
+        else:
+            bot.restrict_chat_member(chat_id, user_id, _FULL_PERMISSIONS)
+            outcome = "unrestricted"
+    # Never override an administrator's different restriction or promotion.
+    challenge = repo.save(challenge, action_done=True, action_result=outcome, completed_at=int(time.time()))
+    if challenge["status"] == "verified" and stats_repo:
+        try:
+            stats_repo.increment_verified_users(chat_id)
+        except Exception:
+            logger.warning("Captcha verification stats update failed", extra={"chat_id": chat_id})
+    _cleanup_decision(bot, chat_id, challenge)
+    return challenge
 
 
 def process_timeout_task(bot: TelegramClient, task_data: dict[str, Any]) -> None:
-    """Process CHECK_TIMEOUT task: kick user if still restricted, clean up captcha state."""
-    chat_id = task_data.get("chat_id")
-    user_id = task_data.get("user_id")
-    join_message_id = task_data.get("join_message_id")
-    verification_message_id = task_data.get("verification_message_id")
-    captcha_repo = task_data.get("_captcha_repo")
-
-    if not all([chat_id, user_id, join_message_id, verification_message_id]):
-        logger.warning("Timeout task missing required fields", task_data=task_data)
+    """Decide timeout or resume an action for this exact generation only."""
+    chat_id, user_id = task_data.get("chat_id"), task_data.get("user_id")
+    if not chat_id or not user_id or not task_data.get("join_message_id"):
+        raise ValueError("Captcha timeout task lacks challenge identity")
+    repo = task_data.get("_captcha_repo")
+    if repo is None:
+        raise CaptchaRetryRequiredError("Captcha timeout requires its state repository")
+    challenge = repo.get_challenge(chat_id, user_id)
+    if not challenge or not _matches_task(challenge, task_data):
+        logger.info("Ignoring missing or superseded captcha timeout", extra={"chat_id": chat_id, "user_id": user_id})
         return
-    should_cleanup_state = False
+    if action_completed(challenge):
+        _cleanup_decision(bot, chat_id, challenge)
+        return
+    sqs_repo = task_data.get("_sqs_repo") or SQSClient()
     try:
-        challenge = None
-        if captcha_repo:
-            challenge = captcha_repo.get_challenge(chat_id, user_id)
-            if challenge is None:
-                should_cleanup_state = True
-                logger.info("Captcha timeout state missing. Ignoring timeout.", extra={"user_id": user_id})
+        owned = repo.acquire(challenge)
+    except CaptchaBusyError as exc:
+        _schedule_recovery(sqs_repo, chat_id, user_id, challenge, delay_seconds=exc.retry_after)
+        return
+    try:
+        status = owned.get("status", "pending")
+        if status == "pending":
+            expires_at = int(owned.get("expires_at", owned.get("ttl", 0)))
+            if expires_at > int(time.time()):
+                _schedule_recovery(sqs_repo, chat_id, user_id, owned, delay_seconds=expires_at - int(time.time()))
                 return
-            if not _challenge_matches_timeout_task(challenge, join_message_id, verification_message_id):
-                logger.info(
-                    "Stale captcha timeout task ignored",
-                    extra={
-                        "user_id": user_id,
-                        "task_join_message_id": join_message_id,
-                        "task_verification_message_id": verification_message_id,
-                    },
-                )
-                return
-            if challenge.get("status") == "verified":
-                should_cleanup_state = True
-                wrong_message_ids = list(challenge.get("wrong_msg_ids", []))
-                _delete_timeout_messages(bot, chat_id, [verification_message_id, *wrong_message_ids])
-                logger.info("User %s already verified. Ignoring timeout.", user_id)
-                return
-            if challenge.get("status") != "pending":
-                logger.warning(
-                    "Captcha timeout state has unexpected status; ignoring timeout",
-                    extra={"user_id": user_id, "captcha_status": challenge.get("status")},
-                )
-                return
-        else:
-            member = bot.get_chat_member(chat_id, user_id)
-            if not _is_captcha_text_only_restricted(member):
-                return
-
-        logger.info("User %s timed out. Kicking.", user_id)
-        bot.kick_chat_member(chat_id, user_id)
-        should_cleanup_state = True
-        wrong_message_ids = list(challenge.get("wrong_msg_ids", [])) if challenge else []
-        _delete_timeout_messages(bot, chat_id, [join_message_id, verification_message_id, *wrong_message_ids])
-    except Exception as e:
-        logger.exception("Timeout task error (user may have left or message deleted): %s", e)
-        raise
+            owned = repo.save(owned, status="rejected", decision_reason="timeout", decided_at=int(time.time()))
+        elif status in {"preparing", "creating"}:
+            # A crash before activation must restore permissions, never kick a
+            # person who may not have received a usable challenge.
+            owned = repo.save(
+                owned, status="cancelled", decision_reason="creation_incomplete", decided_at=int(time.time())
+            )
+        elif status not in TERMINAL_STATUSES:
+            raise ValueError("Unknown captcha lifecycle state")
+        _apply_decision(repo, bot, chat_id, user_id, owned)
     finally:
-        if should_cleanup_state:
-            _delete_pending_state(captcha_repo, chat_id, user_id)
+        repo.release(owned)
+
+
+def _create_challenge(ctx: Context, member: dict[str, Any]) -> None:
+    repo, sqs_repo = ctx.captcha_repo, ctx.sqs_repo
+    if repo is None or sqs_repo is None:
+        raise CaptchaRetryRequiredError("Captcha creation requires state and recovery queue")
+    user_id = int(member["id"])
+    challenge = repo.prepare(ctx.chat_id, user_id, int(ctx.message_id))
+    if challenge is None or action_completed(challenge) or challenge.get("status") == "pending":
+        return
+    owned = repo.acquire(challenge)
+    try:
+        if owned["status"] != "preparing":
+            if owned["status"] == "creating":
+                owned = repo.save(owned, status="cancelled", decision_reason="creation_incomplete")
+            _apply_decision(repo, ctx.bot, ctx.chat_id, user_id, owned, stats_repo=ctx.stats_repo)
+            return
+        # No member is restricted until durable state AND a recovery message
+        # exist. If enqueue response is lost, duplicates are identity-scoped.
+        _schedule_recovery(sqs_repo, ctx.chat_id, user_id, owned)
+        image_bytes, expected = generate_grid_captcha()
+        owned = repo.save(owned, status="creating", expected=expected)
+        try:
+            repo.assert_owned(owned)
+            ctx.bot.restrict_chat_member(ctx.chat_id, user_id, _TEXT_ONLY_PERMISSIONS)
+            mention = format_mention(user_id, member.get("username"), member.get("first_name", "User"))
+            caption = get_translated_text(
+                "captcha_image_challenge", ctx.lang_code, MENTION=mention, TIMEOUT=CAPTCHA_TIMEOUT_SECONDS
+            )
+            sent = ctx.bot.send_photo(ctx.chat_id, image_bytes, caption=caption)
+            verify_msg_id = sent.get("message_id") if isinstance(sent, dict) else None
+            if not isinstance(verify_msg_id, int) or verify_msg_id <= 0:
+                raise RuntimeError("Captcha image delivery has no confirmed message id")
+            owned = repo.save(
+                owned,
+                status="pending",
+                verify_msg_id=verify_msg_id,
+                expires_at=int(time.time()) + CAPTCHA_TIMEOUT_SECONDS,
+            )
+        except Exception:
+            # A successful write whose response was lost can already be PENDING.
+            # Never overwrite that state with a stale snapshot. Failed reads or
+            # writes propagate; the pre-existing queue message recovers later.
+            actual = repo.get_challenge(ctx.chat_id, user_id)
+            if actual and actual.get("lease_owner") == owned["lease_owner"] and actual.get("status") == "pending":
+                owned = actual
+            else:
+                if actual and actual.get("lease_owner") == owned["lease_owner"]:
+                    owned = actual
+                owned = repo.save(owned, status="cancelled", decision_reason="creation_failed")
+                _apply_decision(repo, ctx.bot, ctx.chat_id, user_id, owned)
+                logger.warning("Captcha creation cancelled; permissions reconciled", extra={"chat_id": ctx.chat_id})
+                return
+        if ctx.stats_repo:
+            try:
+                ctx.stats_repo.increment_total_joins(ctx.chat_id)
+            except Exception:
+                logger.warning("Captcha join stats update failed", extra={"chat_id": ctx.chat_id})
+    finally:
+        repo.release(owned)
 
 
 def handle_new_member(ctx: Context) -> None:
-    """Mute new members, send grid image captcha, save state, queue timeout."""
-    try:
-        members = ctx.message.get("new_chat_members", [])
-        for member in members:
-            if member.get("is_bot"):
-                continue
-
-            user_id = member.get("id")
-            ctx.bot.restrict_chat_member(ctx.chat_id, user_id, _TEXT_ONLY_PERMISSIONS)
-
-            image_bytes, expected = generate_grid_captcha()
-            mention = format_mention(user_id, member.get("username"), member.get("first_name", "User"))
-            caption = get_translated_text(
-                "captcha_image_challenge",
-                ctx.lang_code,
-                MENTION=mention,
-                TIMEOUT=CAPTCHA_TIMEOUT_SECONDS,
-            )
-
-            try:
-                sent_message = ctx.bot.send_photo(ctx.chat_id, image_bytes, caption=caption)
-            except Exception:
-                ctx.bot.restrict_chat_member(ctx.chat_id, user_id, _FULL_PERMISSIONS)
-                raise
-            msg_id = sent_message.get("message_id") if sent_message else None
-
-            if msg_id is not None:
-                if ctx.captcha_repo:
-                    ctx.captcha_repo.save_pending(
-                        ctx.chat_id,
-                        user_id,
-                        expected=expected,
-                        join_msg_id=ctx.message_id,
-                        verify_msg_id=msg_id,
-                    )
-
-                if ctx.sqs_repo:
-                    ctx.sqs_repo.send_timeout_task(
-                        ctx.chat_id,
-                        user_id,
-                        join_message_id=ctx.message_id,
-                        verification_message_id=msg_id,
-                        delay_seconds=CAPTCHA_TIMEOUT_SECONDS,
-                    )
-                    logger.info("Sent delayed timeout task", extra={"user_id": user_id})
-
-            if ctx.stats_repo:
-                ctx.stats_repo.increment_total_joins(ctx.chat_id)
-
-    except Exception as e:
-        logger.exception(f"handle_new_member error: {e}")
-        if ctx.chat_id:
-            ctx.reply(get_translated_text("error_occurred", ctx.lang_code), ctx.message_id)
-
-
-def _delete_all_captcha_messages(ctx: Context, pending: dict, extra_ids: list[int] | None = None) -> None:
-    """Delete join message, captcha image, all error messages, and any extra IDs."""
-    ids_to_delete = [pending["join_msg_id"], pending["verify_msg_id"]]
-    ids_to_delete += pending.get("wrong_msg_ids", [])
-    if extra_ids:
-        ids_to_delete += extra_ids
-    for msg_id in ids_to_delete:
+    """Start/recover each join independently; failed joins request redelivery."""
+    failures = []
+    for member in ctx.message.get("new_chat_members", []):
+        if member.get("is_bot"):
+            continue
         try:
-            ctx.bot.delete_message(ctx.chat_id, msg_id, ignore_not_found=True)
-        except Exception:
-            pass
-
-
-def _handle_wrong_captcha_attempt(ctx: Context, pending: dict) -> None:
-    """Delete the user's message, increment attempts, and kick after max failures."""
-    new_attempts = ctx.captcha_repo.increment_attempts(ctx.chat_id, ctx.user_id)
-    remaining = CAPTCHA_MAX_ATTEMPTS - new_attempts
-
-    try:
-        ctx.bot.delete_message(ctx.chat_id, ctx.message_id, ignore_not_found=True)
-    except Exception:
-        pass
-
-    if remaining <= 0:
-        ctx.captcha_repo.delete_pending(ctx.chat_id, ctx.user_id)
-        _delete_all_captcha_messages(ctx, pending)
-        ctx.bot.kick_chat_member(ctx.chat_id, ctx.user_id)
-        logger.info("User %s kicked after %d wrong captcha attempts.", ctx.user_id, new_attempts)
-        return
-
-    error_msg = ctx.reply(
-        get_translated_text("captcha_wrong_answer", ctx.lang_code, ATTEMPTS_LEFT=remaining),
-        reply_to_message_id=pending["verify_msg_id"],
-    )
-    if error_msg and error_msg.get("message_id"):
-        ctx.captcha_repo.append_wrong_message(ctx.chat_id, ctx.user_id, error_msg["message_id"])
-    logger.info("User %s wrong captcha attempt %d/%d.", ctx.user_id, new_attempts, CAPTCHA_MAX_ATTEMPTS)
+            _create_challenge(ctx, member)
+        except Exception as exc:
+            failures.append(exc)
+    if failures:
+        raise CaptchaRetryRequiredError("Captcha join processing requires retry") from failures[0]
 
 
 def handle_captcha_answer(ctx: Context) -> None:
-    """Check plain-text message from restricted user against their captcha answer."""
+    """Persist an immutable decision before any kick or unrestriction."""
     if not ctx.captcha_repo or not ctx.user_id or not ctx.chat_id:
         return
+    try:
+        _handle_captcha_answer(ctx)
+    except Exception as exc:
+        raise CaptchaRetryRequiredError("Captcha answer processing requires retry") from exc
 
-    pending = ctx.captcha_repo.get_pending(ctx.chat_id, ctx.user_id)
-    if not pending:
-        return  # not a pending captcha user — ignore
 
-    expected = pending["expected"]
-    answer = ctx.text.strip()
-
-    # Any non-answer text from a pending user is treated as a failed captcha attempt.
-    if not re.match(rf"^\d{{{len(expected)}}}$", answer):
-        _handle_wrong_captcha_attempt(ctx, pending)
+def _handle_captcha_answer(ctx: Context) -> None:
+    repo = ctx.captcha_repo
+    challenge = repo.get_pending(ctx.chat_id, ctx.user_id)
+    if not challenge:
         return
-
-    if answer == expected:
-        # ── Correct ─────────────────────────────────────────────────────────
-        ctx.bot.restrict_chat_member(ctx.chat_id, ctx.user_id, _FULL_PERMISSIONS)
-        ctx.captcha_repo.mark_verified(ctx.chat_id, ctx.user_id)
-
-        # Delete captcha image, wrong-answer messages, and user's answer — keep system join message
-        ids_to_delete = [pending["verify_msg_id"], ctx.message_id] + pending.get("wrong_msg_ids", [])
-        for msg_id in ids_to_delete:
-            try:
-                ctx.bot.delete_message(ctx.chat_id, msg_id, ignore_not_found=True)
-            except Exception:
-                pass
-
-        if ctx.stats_repo:
-            ctx.stats_repo.increment_verified_users(ctx.chat_id)
-
-        logger.info("User %s passed captcha.", ctx.user_id)
-
-    else:
-        # ── Wrong answer ─────────────────────────────────────────────────────
-        _handle_wrong_captcha_attempt(ctx, pending)
+    # Telegram message ids identify the input's generation, including edits of
+    # old messages delivered after a rejoin. Messages sent before the challenge
+    # photo cannot be answers to it and must not consume attempts or be deleted.
+    answer_boundary = max(int(challenge.get("join_msg_id", 0)), int(challenge.get("verify_msg_id", 0)))
+    if not ctx.message_id or int(ctx.message_id) <= answer_boundary:
+        return
+    owned = repo.acquire(challenge)
+    try:
+        status = owned.get("status", "pending")
+        if status in TERMINAL_STATUSES:
+            _apply_decision(repo, ctx.bot, ctx.chat_id, ctx.user_id, owned, stats_repo=ctx.stats_repo)
+            return
+        if status != "pending":
+            raise CaptchaRetryRequiredError("Captcha challenge is not ready")
+        now = int(time.time())
+        if int(owned.get("expires_at", owned.get("ttl", 0))) <= now:
+            owned = repo.save(owned, status="rejected", decision_reason="timeout", decided_at=now)
+        elif ctx.message_id not in owned.get("handled_message_ids", []):
+            handled = [*owned.get("handled_message_ids", []), ctx.message_id]
+            if ctx.text.strip() == owned["expected"]:
+                owned = repo.save(
+                    owned,
+                    status="verified",
+                    decision_reason="correct_answer",
+                    decided_at=now,
+                    handled_message_ids=handled,
+                    answer_msg_id=ctx.message_id,
+                )
+            else:
+                attempts = int(owned.get("attempts", 0)) + 1
+                changes = {
+                    "attempts": attempts,
+                    "handled_message_ids": handled,
+                    "wrong_msg_ids": [*owned.get("wrong_msg_ids", []), ctx.message_id],
+                }
+                if attempts >= CAPTCHA_MAX_ATTEMPTS:
+                    changes.update(status="rejected", decision_reason="wrong_attempts", decided_at=now)
+                owned = repo.save(owned, **changes)
+                _delete_messages(ctx.bot, ctx.chat_id, [ctx.message_id])
+                if attempts < CAPTCHA_MAX_ATTEMPTS:
+                    try:
+                        reply = ctx.reply(
+                            get_translated_text(
+                                "captcha_wrong_answer", ctx.lang_code, ATTEMPTS_LEFT=CAPTCHA_MAX_ATTEMPTS - attempts
+                            ),
+                            reply_to_message_id=int(owned["verify_msg_id"]),
+                        )
+                    except Exception:
+                        logger.warning(
+                            "Captcha wrong-answer notice could not be completed", extra={"chat_id": ctx.chat_id}
+                        )
+                        return
+                    if reply and reply.get("message_id"):
+                        owned = repo.save(owned, wrong_msg_ids=[*owned["wrong_msg_ids"], reply["message_id"]])
+                    return
+        _apply_decision(repo, ctx.bot, ctx.chat_id, ctx.user_id, owned, stats_repo=ctx.stats_repo)
+    finally:
+        repo.release(owned)

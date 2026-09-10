@@ -40,6 +40,8 @@ class SQSClient:
         join_message_id: int,
         verification_message_id: int,
         delay_seconds: int = 120,
+        *,
+        generation: str | None = None,
     ) -> None:
         """Send a delayed message to SQS to check verification timeout."""
         payload = {
@@ -49,11 +51,13 @@ class SQSClient:
             "join_message_id": join_message_id,
             "verification_message_id": verification_message_id,
         }
+        if generation is not None:
+            payload["generation"] = generation
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
                 MessageBody=json.dumps(payload),
-                DelaySeconds=delay_seconds,
+                DelaySeconds=max(0, min(_MAX_SQS_DELAY_SECONDS, int(delay_seconds))),
             )
             logger.debug(
                 "Queued timeout task",
