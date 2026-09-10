@@ -33,7 +33,7 @@ def render_report(report):
             f"{_percent(row['source_support'])} ({row['supported_assertions']}/{row['assertions']}) | "
             f"{_percent(row['unknown_abstention'])} ({row['unknown_abstained']}/{row['unknown_questions']}) |"
         )
-    lines += ["", "已知问题完整回答比例另报；不能用未知拒答率代表正常问答能力：", ""]
+    lines += ["", "已知问题完整回答比例逐语言必须 ≥90%；不能用未知拒答率代表正常问答能力：", ""]
     for label, row in report["languages"].items():
         lines.append(
             f"- {label}: {_percent(row['supported_answer_recall'])} "
