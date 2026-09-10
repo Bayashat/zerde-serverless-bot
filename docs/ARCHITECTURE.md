@@ -316,3 +316,5 @@ Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
 Legacy resource candidates and dependency/backup gates are documented in [LEGACY_AWS_CLEANUP.md](LEGACY_AWS_CLEANUP.md). The runbook does not authorize cloud deletion or include current Memory V2 data.
+
+Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
