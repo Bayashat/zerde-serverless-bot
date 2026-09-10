@@ -7,10 +7,8 @@ from typing import Any
 from aws_cdk import CfnOutput, Stack
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
-from components.observability import (
-    add_lambda_operational_alarms,
-    add_sqs_dlq_visible_alarm,
-)
+from components.memory_v2 import MemoryV2Construct
+from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
 from components.zerde_layer import add_zerde_common_layer
 from constructs import Construct
 from dotenv import load_dotenv
@@ -310,6 +308,10 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
             vector_memory_index_name=vector_memory_index_name,
         )
+
+        memory_v2 = MemoryV2Construct(self, f"{CONSTRUCT_PREFIX}MemoryV2", env_name=env_name, is_prod=is_prod)
+        memory_v2.table.grant_read_write_data(bot.handler_lambda)
+        bot.handler_lambda.add_environment("MEMORY_V2_TABLE_NAME", memory_v2.table.table_name)
 
         vector_indexer = VectorIndexerConstruct(
             self,

@@ -236,3 +236,5 @@ a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
 SQS enqueue failures return a retryable webhook error; guest deletion/review failures
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
+
+Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions storage only; absent CONTROL rows leave learning stopped.
