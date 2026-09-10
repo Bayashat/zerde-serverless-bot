@@ -1138,6 +1138,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "boto3" },
+    { name = "cryptography" },
     { name = "dnspython" },
     { name = "feedparser" },
     { name = "google-genai" },
@@ -1186,6 +1187,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "boto3", specifier = ">=1.42.38" },
+    { name = "cryptography", specifier = ">=50.0.0" },
     { name = "dnspython", specifier = ">=2.8.0" },
     { name = "feedparser", specifier = ">=6.0.12" },
     { name = "google-genai", specifier = ">=1.65.0" },
