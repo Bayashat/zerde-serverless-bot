@@ -244,3 +244,38 @@ def test_incompatible_test_injection_is_rejected():
         async_http.bounded_async_client(
             timeout=1, resolver=synthetic_resolve, transport=httpx.MockTransport(lambda r: None)
         )
+
+
+def test_default_tcp_backend_uses_literal_ip_without_threaded_dns(monkeypatch):
+    async def run():
+        async def handler(reader, writer):
+            try:
+                await reader.readuntil(b"\r\n\r\n")
+                writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK")
+                await writer.drain()
+            finally:
+                writer.close()
+                await writer.wait_closed()
+
+        server = await asyncio.start_server(handler, "127.0.0.1", 0)
+        port = server.sockets[0].getsockname()[1]
+        loop = asyncio.get_running_loop()
+
+        async def forbidden(*args, **kwargs):
+            raise AssertionError("Default TCP backend must not call threaded DNS for an IP")
+
+        monkeypatch.setattr(loop, "getaddrinfo", forbidden)
+
+        async def local_resolve(host, timeout):
+            assert host == "synthetic.invalid"
+            return ["127.0.0.1"]
+
+        try:
+            async with async_http.bounded_async_client(timeout=1, resolver=local_resolve) as client:
+                assert (await client.get(f"http://synthetic.invalid:{port}")).text == "OK"
+            assert loop._default_executor is None
+        finally:
+            server.close()
+            await server.wait_closed()
+
+    asyncio.run(run())
