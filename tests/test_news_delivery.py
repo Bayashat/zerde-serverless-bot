@@ -94,6 +94,26 @@ def test_news_sender_sanitizes_photo_caption_payload(monkeypatch):
     assert payload["caption"] == "<b>Title</b>\n<i>Body</i>"
 
 
+def test_news_sender_logs_http_failure_metadata_without_response_body(monkeypatch):
+    telegram = _load_news_module("news_telegram_failure_test", "services/telegram.py")
+    body = b'{"description":"private-provider-response"}'
+    monkeypatch.setattr(telegram, "http", MagicMock(request=MagicMock(return_value=FakeResponse(400, body))))
+    logger = MagicMock()
+    monkeypatch.setattr(telegram, "logger", logger)
+
+    assert telegram.TelegramSender("fake-token").send_message("chat", "private-message-text") == (False, 400)
+
+    assert logger.warning.call_args.kwargs["extra"] == {
+        "chat_id": "chat",
+        "attempt": 1,
+        "max_retries": 3,
+        "status": 400,
+        "response_chars": len(body),
+    }
+    assert "private-provider-response" not in str(logger.mock_calls)
+    assert "private-message-text" not in str(logger.mock_calls)
+
+
 def test_news_fetcher_normalizes_rss_urls_with_whitespace():
     news_fetcher = _load_news_module("news_fetcher_test", "services/news_fetcher.py")
 

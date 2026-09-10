@@ -3,6 +3,7 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
 from services.contest import ContestRetryRequiredError
 from webhook import (
     _handle_api_gateway,
@@ -26,6 +27,58 @@ def test_verify_invalid_token():
 def test_verify_missing_token():
     event = {"headers": {}}
     assert verify_webhook_secret_token(event) is False
+
+
+@pytest.mark.parametrize(
+    ("chat_type", "configured", "valid_secret", "expect_update_log"),
+    [
+        ("private", True, True, False),
+        ("supergroup", False, True, False),
+        ("supergroup", True, False, False),
+        ("supergroup", True, True, True),
+    ],
+)
+def test_webhook_logs_only_authorized_metadata(chat_type, configured, valid_secret, expect_update_log):
+    body = {
+        "update_id": 987,
+        "message": {
+            "message_id": 4,
+            "chat": {"id": -100123, "type": chat_type, "title": "private-title"},
+            "from": {"id": 42, "first_name": "private-name"},
+            "text": "private-conversation",
+            "contact": {"phone_number": "private-phone"},
+            "document": {"file_id": "private-file-reference"},
+        },
+    }
+    event = {
+        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret" if valid_secret else "invalid"},
+        "body": json.dumps(body),
+    }
+    dispatcher = MagicMock()
+    dispatcher.captcha_repo.get_pending.return_value = None
+    screener = MagicMock()
+    screener.should_screen.return_value = False
+    with (
+        patch("webhook.logger") as logger,
+        patch("webhook._spam_screening", return_value=screener),
+        patch("webhook.is_configured_group_chat", return_value=configured),
+        patch("webhook.observe_contest_update"),
+        patch("webhook.observe_media_group"),
+        patch("webhook.observe_group_memory_update"),
+        patch("webhook.maybe_enqueue_ambient_reaction"),
+        patch("webhook.handle_group_agent_update", return_value=False),
+    ):
+        assert _handle_api_gateway(event, dispatcher, MagicMock())["statusCode"] == 200
+    update_logs = [call for call in logger.info.call_args_list if call.args == ("Telegram webhook update received",)]
+    assert len(update_logs) == int(expect_update_log)
+    if expect_update_log:
+        assert update_logs[0].kwargs["extra"] == {
+            "event_type": "message",
+            "update_id": 987,
+            "text_chars": len("private-conversation"),
+        }
+    for private in ("private-title", "private-name", "private-conversation", "private-phone", "private-file-reference"):
+        assert private not in str(logger.mock_calls)
 
 
 def test_parse_json_body():

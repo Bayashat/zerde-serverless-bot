@@ -144,12 +144,8 @@ def process_spam_check_task(
 
         if guest and result.label == "SPAM":
             if auto_enforce:
-                try:
-                    bot.delete_message(chat_id, message_id)
-                except Exception as exc:
-                    # An SQS replay after successful deletion is safe.
-                    if "message to delete not found" not in str(exc).lower():
-                        raise
+                # Use structured Telegram error classification, not safe log text.
+                bot.delete_message(chat_id, message_id, ignore_not_found=True)
                 logger.info(
                     "Guest bot spam message deleted",
                     extra={"chat_id": chat_id, "message_id": message_id, "bot_user_id": user_id},

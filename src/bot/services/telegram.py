@@ -7,7 +7,6 @@ from typing import Any
 import urllib3
 from core.config import KICK_BAN_DURATION_SECONDS, TELEGRAM_API_BASE, get_bot_token
 from core.logger import LoggerAdapter, get_logger
-from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -21,6 +20,13 @@ class TelegramAPIError(Exception):
         self.status = status
         self.body = body
         super().__init__(status, body)
+
+    def __str__(self) -> str:
+        # Keep body available for Telegram error classification, but never include it in exception logs.
+        return f"Telegram API HTTP {self.status} (response_chars={len(self.body)})"
+
+    def __repr__(self) -> str:
+        return f"TelegramAPIError(status={self.status}, response_chars={len(self.body)})"
 
 
 class TelegramFileTooLargeError(Exception):
@@ -98,7 +104,7 @@ class TelegramClient:
                 extra={
                     "chat_id": chat_id,
                     "status": e.status,
-                    "response_preview": truncate_log_text(e.body),
+                    "response_chars": len(e.body),
                 },
             )
             raise
@@ -137,7 +143,7 @@ class TelegramClient:
                 extra={
                     "chat_id": chat_id,
                     "status": e.status,
-                    "response_preview": truncate_log_text(e.body),
+                    "response_chars": len(e.body),
                 },
             )
             raise
@@ -388,7 +394,7 @@ class TelegramClient:
                 extra={
                     "message_id": message_id,
                     "status": e.status,
-                    "response_preview": truncate_log_text(e.body),
+                    "response_chars": len(e.body),
                 },
             )
             raise
