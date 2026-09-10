@@ -159,6 +159,8 @@ Memory TTLs are type-specific: raw `MSG#...` and metadata-only `MEDIA_GROUP#...`
 
 ## SQS Tasks
 
+Captcha `CHECK_TIMEOUT` tasks also recover incomplete creation and pending terminal actions. The stats-table challenge owns generation/revision, a 360-second lease (longer than the Bot Lambda timeout), and immutable verified/rejected/cancelled decisions. Enqueue recovery before restricting a member; never treat database failures as missing state. Legacy tasks require exact join and verification IDs. See `docs/captcha-lifecycle.md`, including its old-invocation rollout gate.
+
 - `CHECK_TIMEOUT` — captcha timeout enforcement.
 - `SPAM_CHECK` — async Groq spam decision.
 - `PROCESS_GROUP_ASK` — async explicit `/ask` answer and explicit @mention/reply media answer, carrying bounded metadata-only `media_refs` with legacy single-`media_ref` compatibility.

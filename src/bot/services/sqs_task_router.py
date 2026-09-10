@@ -95,6 +95,7 @@ def process_sqs_event(
             t0 = time.monotonic()
             if task_type == "CHECK_TIMEOUT":
                 body["_captcha_repo"] = captcha_repo
+                body["_sqs_repo"] = sqs_repo or SQSClient()
                 process_timeout_task(bot, body)
             elif task_type == "SPAM_CHECK":
                 process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)

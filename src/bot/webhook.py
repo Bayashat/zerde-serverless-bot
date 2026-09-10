@@ -10,12 +10,14 @@ from core.config import (
     get_webhook_secret_token,
     is_configured_group_chat,
 )
-from core.dispatcher import Dispatcher
+from core.dispatcher import Context, Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.contest import ContestRetryRequiredError, observe_contest_update
 from services.group_agent import handle_update as handle_group_agent_update
 from services.handlers import process_timeout_task
+from services.handlers.captcha import handle_captcha_answer
+from services.repositories.captcha import CaptchaRetryRequiredError
 from services.repositories.sqs import SQSClient
 from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
@@ -95,6 +97,21 @@ def _handle_api_gateway(
         logger.info("Telegram webhook update received", extra=telegram_update_log_extra(body))
 
         has_pending_captcha = _has_pending_captcha(dispatcher, body)
+        if has_pending_captcha:
+            # Pending members cannot bypass captcha with a command/document.
+            captcha_update = dict(body)
+            if "message" not in captcha_update and "edited_message" in captcha_update:
+                captcha_update["message"] = captcha_update["edited_message"]
+            handle_captcha_answer(
+                Context(
+                    captcha_update,
+                    bot,
+                    stats_repo=dispatcher.stats_repo,
+                    sqs_repo=dispatcher.sqs_repo,
+                    captcha_repo=dispatcher.captcha_repo,
+                )
+            )
+            return create_response(200, {"message": "ok"})
 
         if screener.should_screen(body) and not has_pending_captcha:
             spam_outcome = screener.run(body)
@@ -134,6 +151,9 @@ def _handle_api_gateway(
         else:
             dispatcher.process_update(body)
 
+    except CaptchaRetryRequiredError:
+        logger.exception("Captcha processing requires Telegram redelivery")
+        return create_response(500, {"message": "Captcha retry required"})
     except ContestRetryRequiredError as e:
         logger.exception(
             "Contest command requires Telegram redelivery",
@@ -224,6 +244,8 @@ def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
     msg = body.get("message") or body.get("edited_message")
     if not isinstance(msg, dict):
         return False
+    if msg.get("new_chat_members"):
+        return False
 
     chat_id = msg.get("chat", {}).get("id")
     user_id = msg.get("from", {}).get("id")
@@ -237,7 +259,7 @@ def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
             "Failed to check pending captcha before spam screening",
             extra={"chat_id": chat_id, "user_id": user_id, "error": str(e)},
         )
-        return False
+        raise CaptchaRetryRequiredError("Captcha state read requires retry") from e
 
 
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:
