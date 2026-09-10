@@ -1,6 +1,6 @@
 # Memory V2 最近话题贡献（Z08 派生服务）
 
-此 slice 将已有 `aggregate_trends` 的固定技术词表接到唯一 `TrendService`，提供可恢复的每日摄取扫描与可核验的群话题读取。没有调用模型，没有新增个人兴趣/关系/人格推断，也没有独立群事实写入路径。群规则/决定仍由 FactWriter 的管理员确认接口拥有。
+此 slice 将已有 `aggregate_trends` 的固定技术词表接到唯一 `TrendService`，提供可恢复的摄取扫描与可核验的群话题读取。没有调用模型，没有新增个人兴趣/关系/人格推断，也没有独立群事实写入路径。群规则/决定仍由 FactWriter 的管理员确认接口拥有。
 
 ## 数据归属与失效
 
@@ -39,3 +39,7 @@ service.validate_snapshot(view)
 这仍不能让 Telegram 发送与 DynamoDB 删除原子化。公共发送必须在此验证基础上按 Z09 协议登记/绑定 `source_refs/evidence_authors` 的 answer lease，在发送前复验；forget 确认需等待这些已登记发送完成或到期。当前 slice 不修改公共 answer/lease/runtime 文件，也不声称完成其接线。只有源作者处理器会写贡献，模型不能指定任意作者或跨群 source。
 
 每日 schedule、worker 成功后的可选贡献调用、展示和 lease 扩展由集成负责人统一接入。未部署、未调用真实 AWS/Telegram，实际 Lambda 运行时长、DynamoDB 延迟与群样本覆盖率待 dev/生产证据。测试使用 Moto 的 DynamoDB Resource 原生事务与条件语义模拟，不等同于真实 AWS 验收。
+
+## 公共集成补充
+
+Z08 runtime 已接入后台贡献和五分钟恢复；`/memory about group` 使用最多十个有效来源的样本，与最多八个群事实共用一条发送 lease，逐次发送前复验。界面显示样本、来源、七天窗口和最近遍历时间。命令确认来源不进入话题样本；只有普通已准入 message 来源可贡献。维护受 AWS-only 预算门槛控制；样本读取不调用模型。旧段落中“由集成负责人接入”描述的是原派生服务 PR 边界，当前状态以 [runtime](MEMORY_V2_RUNTIME.md) 和证据账本为准。

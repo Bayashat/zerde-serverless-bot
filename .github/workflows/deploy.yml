@@ -77,6 +77,7 @@ jobs:
       - name: CDK Deploy
         working-directory: ./infra
         env:
+          MEMORY_COST_METERING_STARTED_AT: ${{ vars.MEMORY_COST_METERING_STARTED_AT || '0' }}
           MAIN_TASK_QUEUE_RETENTION_DAYS: ${{ vars.MAIN_TASK_QUEUE_RETENTION_DAYS || '1' }}
           MAIN_TASK_DLQ_RETENTION_DAYS: ${{ vars.MAIN_TASK_DLQ_RETENTION_DAYS || '14' }}
           VECTOR_MEMORY_QUEUE_RETENTION_DAYS: ${{ vars.VECTOR_MEMORY_QUEUE_RETENTION_DAYS || '4' }}

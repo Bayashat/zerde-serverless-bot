@@ -386,7 +386,7 @@ class MemoryCostMonitor:
             reason = type(exc).__name__
         # Always include alarms, telemetry calls/unknown scans and a lag/operations
         # allowance. Never subtract account Free Tier, credits, tax or refunds.
-        estimate += micro(5, "standard_alarm_month") + _UNCERTAINTY_MICRO_USD
+        estimate += micro(self.inventory.value["alarm_count"], "standard_alarm_month") + _UNCERTAINTY_MICRO_USD
         days = calendar.monthrange(_utc(now).year, _utc(now).month)[1]
         # Reserve all scheduled hourly monitor API calls for the month up front.
         estimate += micro(max(self.telemetry.api_units, 64) * 24 * days, "metric_query")

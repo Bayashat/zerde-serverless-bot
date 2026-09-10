@@ -31,7 +31,7 @@ AWS 服务不会因此获得硬封顶：已有基础业务、停用后的固定�
   使用精确 `/aws/lambda/{name}` 日志组。
 - 两个 `zerde-serverless-memory-v2-{env}` 表及 `work-due` GSI；登记各表 PITR 状态。
 - 两个 `zerde-serverless-memory-v2-queue-{env}` 和两个 `zerde-serverless-memory-v2-dlq-{env}`。
-- 5 个新增标准 CloudWatch 告警，每月按 USD 0.50 全额预留。
+- 两个环境最多 10 个新增标准 CloudWatch 告警，每月按 USD 1.00 全额预留；dev 关闭时也不扣回。
 
 专用 worker 按所有 REPORT 的完整 billed duration 和请求数计价。触及 V2 的共享 Bot
 调用也按**整次** REPORT 计价，包含原有业务花费的时间；这是共享调用上估，不能描述成
@@ -203,7 +203,7 @@ monitor.run()  # 在现有 Bot 的 metered span 里；不得新增第二个通�
 ```
 
 env JSON 的精确字段为 `schema=1, region="eu-central-1", account_id=<已解析12位账号>,
-metering_started_at=<批准UTC秒>, alarm_count=5`，典型长度约 130 bytes。重复字段、未解析
+metering_started_at=<批准UTC秒>, alarm_count=10`，典型长度约 130 bytes。重复字段、未解析
 token、额外字段或完整资源 JSON 不能作为第二种 env 格式。parser 展开上面的两环境闭合清单，
 固定 `work-due`、dev PITR false / prod PITR true，再计算完整资源的 hash。直接
 `CostInventory(full_document)` 仅用于显式程序构造/测试，不是第二个部署配置来源。
@@ -231,3 +231,7 @@ SNS 全为 fake；同跑 `tests/test_memory_budget.py` 和 extraction budget 回
 
 上线前仍须公共仪表/全部入口接线、实际配置读回、真实无正文查询结果、零/非零样本、
 暂停后无可选 provider attempt、恢复/私聊和账单差异核对证据。测试数不能替代这些验收。
+
+### 暂停范围
+
+模型门槛暂停个人事实抽取和记忆增强问答；AWS 估算门槛还暂停可选话题维护。为履行短期留存、故障恢复及未处理覆盖率契约，来源观察、30 天消息保存、待处理任务、安全审核恢复与更正/删除控制继续运行并可能产生 AWS 费用；暂停期间不会生成新的模型事实。恢复后只能处理仍有效且未逻辑到期的来源，过期必须计入覆盖率。此策略不声称停掉全部 memory AWS 消耗，也不提供 AWS 账单硬上限。若未来要停止新原文摄取，应作为单独数据覆盖率/恢复契约变更评审。

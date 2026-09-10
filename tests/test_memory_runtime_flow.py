@@ -131,3 +131,62 @@ def test_approved_spam_receipt_promotes_original_source_and_leased_worker_writes
     assert result == {"batchItemFailures": []}
     assert [fact["value"] for fact in env.repo.get_profile(CHAT, USER)] == ["Python"]
     assert env.repo.get_work(chat_id, ref)["state"] == "DONE"
+
+
+def test_plain_explicit_authorization_transport_failure_returns_webhook_500():
+    from services.memory_v2.telegram_api import TelegramReadRetryRequired
+    from webhook import _handle_api_gateway
+
+    dispatcher, bot, screener = Mock(), Mock(), Mock()
+    dispatcher.captcha_repo.get_pending.return_value = None
+    screener.should_screen.return_value = False
+    body = {
+        "message": {
+            "message_id": 90,
+            "date": 2000000000,
+            "chat": {"id": CHAT, "type": "supergroup"},
+            "from": {"id": int(USER)},
+            "text": "@zerde_bot Explain SQL",
+        }
+    }
+    with (
+        patch("webhook.is_configured_group_chat", return_value=True),
+        patch("webhook.verify_webhook_secret_token", return_value=True),
+        patch("webhook._spam_screening", return_value=screener),
+        patch("services.memory_v2.runtime.get_memory_ingestion", return_value=None),
+        patch("webhook.observe_contest_update"),
+        patch("webhook.observe_media_group"),
+        patch("webhook.handle_group_agent_update", side_effect=TelegramReadRetryRequired("safe read failure")),
+    ):
+        result = _handle_api_gateway({"headers": {}, "body": json.dumps(body)}, dispatcher, bot)
+    assert result["statusCode"] == 500
+
+
+def test_direct_plain_source_database_failure_is_retryable_before_provider():
+    from botocore.exceptions import ClientError
+    from services.group_agent import handle_update
+    from services.memory_v2.public_answers import MemoryPublicRetryRequiredError
+
+    update = {
+        "message": {
+            "message_id": 90,
+            "date": 2000000000,
+            "chat": {"id": CHAT, "type": "supergroup"},
+            "from": {"id": int(USER)},
+            "text": "Explain SQL",
+        }
+    }
+    with (
+        patch("services.group_agent._trigger_kind", return_value="explicit"),
+        patch("services.group_agent.detect_media_references", return_value=[]),
+        patch("services.memory_v2.public_answers.try_memory_answer", return_value=False),
+        patch("services.group_agent.build_explicit_question_context", return_value=Mock()),
+        patch(
+            "services.memory_v2.explicit_request_gate.capture_configured",
+            side_effect=ClientError({"Error": {"Code": "InternalServerError"}}, "GetItem"),
+        ),
+        patch("services.group_agent.answer_group_question") as provider,
+    ):
+        with pytest.raises(MemoryPublicRetryRequiredError):
+            handle_update(repo=Mock(), bot=Mock(), update=update)
+    provider.assert_not_called()

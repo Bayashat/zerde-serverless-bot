@@ -26,7 +26,7 @@ def test_app_dispatcher_reuses_and_injects_contest_and_queue_dependencies(monkey
     with (
         patch.object(app, "TelegramClient", return_value=bot),
         patch.object(app, "CaptchaRepository", return_value=captcha),
-        patch.object(app, "GroupMemoryRepository", return_value=memory),
+        patch("services.repositories.explicit_context_repository.ExplicitContextRepository", return_value=memory),
         patch.object(app, "ContestRepository", return_value=contest),
         patch.object(app, "SQSClient", return_value=sqs),
         patch.object(app, "StatsRepository", return_value=MagicMock()),

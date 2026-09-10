@@ -38,7 +38,7 @@ def inventory(start):
             "schema": 1,
             "region": "eu-central-1",
             "metering_started_at": start,
-            "alarm_count": 5,
+            "alarm_count": 10,
             "functions": [
                 {
                     "name": f"zerde-serverless-{kind}-{env}",
@@ -544,3 +544,21 @@ def test_aws_only_preflight_does_not_inherit_model_exhaustion(budget):
     write_measurement(repo, now, amount=2_700_000)
     with pytest.raises(MemoryBudgetPaused):
         repo.check_aws_available()
+
+
+def test_monitor_uses_inventory_alarm_allowance_in_actual_recorded_estimate(budget):
+    service, _, _ = monitor(budget)
+    estimates = []
+    original = service.inventory.value
+    for count in (5, 10):
+        service.inventory = CostInventory({**original, "alarm_count": count})
+        with patch.object(service.telemetry, "resources", side_effect=UnverifiedCost("synthetic missing inventory")):
+            with pytest.raises(UnverifiedCost):
+                service.run()
+        row = service.state.budget.table.get_item(Key=service.state.budget._key(service.state.budget.month(), "AWS"))[
+            "Item"
+        ]
+        estimates.append(int(row["estimate_micro_usd"]))
+    assert estimates[1] - estimates[0] == 500_000
+    with pytest.raises(UnverifiedCost):
+        parse_inventory(compact(CostInventory({**original, "alarm_count": 5})))

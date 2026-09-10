@@ -4096,6 +4096,7 @@ def test_answer_group_question_scopes_self_reference_to_requester(monkeypatch):
 def test_handle_ask_enqueues_group_context_answer():
     ctx = MagicMock()
     ctx.text = "/ask what happened yesterday?"
+    ctx.message = {"date": 1_800_000_000}
     ctx.update_id = 12345
     ctx.chat_id = -100123
     ctx.message_id = 99
@@ -4116,6 +4117,7 @@ def test_handle_ask_enqueues_group_context_answer():
         retrieval_query="what happened yesterday?",
         lang="en",
         requester_user_id=42,
+        request_sent_at=1_800_000_000,
         requester_username="ada",
         requester_display_name="Ada",
         current_user_message="what happened yesterday?",
@@ -4531,48 +4533,19 @@ def test_memory_status_includes_vector_status(monkeypatch):
     assert ctx.memory_repo.mock_calls == []
 
 
-def test_memory_command_routes_subcommands(monkeypatch):
-    ctx = _command_ctx(user_id=1)
-    ctx.text = "/memory forget me"
-    forget_me = MagicMock()
-    monkeypatch.setattr(commands, "handle_forget_me", forget_me)
+@pytest.mark.parametrize("command", ["forget me", "about me", "forget this", "wrong"])
+def test_memory_commands_use_v2_and_never_dispatch_legacy_memory_owner(monkeypatch, command):
+    from services.memory_v2 import public_commands
 
-    commands.handle_memory(ctx)
-
-    forget_me.assert_called_once_with(ctx)
-
-
-def test_memory_command_routes_about_me(monkeypatch):
     ctx = _command_ctx(user_id=42)
-    ctx.text = "/memory about me"
-    about_me = MagicMock()
-    monkeypatch.setattr(commands, "handle_memory_about_me", about_me)
-
+    ctx.text = "/memory " + command
+    current = MagicMock()
+    monkeypatch.setattr(public_commands, "handle_memory_v2", current)
+    for old in ("handle_forget_me", "handle_memory_about_me", "handle_forget_this", "handle_wrong_memory_feedback"):
+        monkeypatch.setattr(commands, old, lambda *_: pytest.fail("legacy memory dispatch"))
     commands.handle_memory(ctx)
-
-    about_me.assert_called_once_with(ctx)
-
-
-def test_memory_command_routes_forget_this(monkeypatch):
-    ctx = _command_ctx(user_id=42)
-    ctx.text = "/memory forget this"
-    forget_this = MagicMock()
-    monkeypatch.setattr(commands, "handle_forget_this", forget_this)
-
-    commands.handle_memory(ctx)
-
-    forget_this.assert_called_once_with(ctx)
-
-
-def test_memory_command_routes_wrong_feedback(monkeypatch):
-    ctx = _command_ctx(user_id=42)
-    ctx.text = "/memory wrong"
-    wrong = MagicMock()
-    monkeypatch.setattr(commands, "handle_wrong_memory_feedback", wrong)
-
-    commands.handle_memory(ctx)
-
-    wrong.assert_called_once_with(ctx)
+    current.assert_called_once_with(ctx)
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_agent_command_routes_why(monkeypatch):

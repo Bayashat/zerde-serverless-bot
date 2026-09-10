@@ -6,7 +6,7 @@ import re
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from core.config import (
     AGENT_BOT_ID,
@@ -317,6 +317,7 @@ def _try_gemini_group_chat_reply(
     chat_id: int,
     reply_to_message_id: int,
     proactive: bool,
+    before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str] | None:
     gemini = _get_gemini()
     if not gemini:
@@ -329,6 +330,8 @@ def _try_gemini_group_chat_reply(
     max_attempts = max(1, int(GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS))
     last_error: Exception | None = None
     for attempt in range(1, max_attempts + 1):
+        if before_attempt is not None:
+            before_attempt()
         try:
             answer, _ = gemini.group_chat_reply(
                 user_message=user_message,
@@ -343,6 +346,7 @@ def _try_gemini_group_chat_reply(
                 media_parts=media_parts,
                 media_context=media_context,
                 proactive=proactive,
+                **({"before_attempt": before_attempt} if before_attempt is not None else {}),
             )
             if not answer.strip():
                 raise ProviderResponseError("gemini returned empty group chat reply")
@@ -411,6 +415,7 @@ def _fallback_group_chat_reply(
     media_parts: list[dict[str, Any]] | None,
     media_context: str,
     proactive: bool,
+    before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str]:
     fallback = _get_group_chat_reply_fallback()
     if fallback is None:
@@ -431,6 +436,7 @@ def _fallback_group_chat_reply(
         lang=lang,
         text_only_media_context=text_only_media_context,
         proactive=proactive,
+        **({"before_attempt": before_attempt} if before_attempt is not None else {}),
     )
     if not answer.strip():
         raise ProviderResponseError(f"{provider_name} returned empty group chat reply")
@@ -453,6 +459,7 @@ def _generate_group_chat_reply(
     chat_id: int,
     reply_to_message_id: int,
     proactive: bool = False,
+    before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str]:
     answer_provider = _try_gemini_group_chat_reply(
         user_message=user_message,
@@ -469,6 +476,7 @@ def _generate_group_chat_reply(
         chat_id=chat_id,
         reply_to_message_id=reply_to_message_id,
         proactive=proactive,
+        **({"before_attempt": before_attempt} if before_attempt is not None else {}),
     )
     if answer_provider is not None:
         return answer_provider
@@ -485,6 +493,7 @@ def _generate_group_chat_reply(
         media_parts=media_parts,
         media_context=media_context,
         proactive=proactive,
+        **({"before_attempt": before_attempt} if before_attempt is not None else {}),
     )
 
 
@@ -1060,6 +1069,7 @@ def handle_update(
                 retrieval_query=retrieval_query,
                 lang=get_chat_lang(chat_id),
                 requester_user_id=requester.get("id"),
+                request_sent_at=message.get("date"),
                 requester_username=requester.get("username"),
                 requester_display_name=display_name(requester),
                 current_user_message=question_context.current_user_message,
@@ -1115,22 +1125,39 @@ def handle_update(
         )
         return True
 
+    from services.memory_v2.public_answers import MemoryPublicRetryRequiredError, try_memory_answer
+
+    if try_memory_answer(message, question=extract_message_text(message), lang=get_chat_lang(chat_id)):
+        return True
     question_context = build_explicit_question_context(repo, chat_id, message)
-    handled = answer_group_question(
-        repo=repo,
-        bot=bot,
-        chat_id=chat_id,
-        reply_to_message_id=message_id,
-        user_text=question_context.user_text,
-        retrieval_query=question_context.retrieval_query,
-        lang=get_chat_lang(chat_id),
-        requester_user_id=(message.get("from") or {}).get("id"),
-        requester_username=(message.get("from") or {}).get("username"),
-        requester_display_name=display_name(message.get("from") or {}),
-        current_user_message=question_context.current_user_message,
-        source_message_context=question_context.source_message_context,
-        parent_bot_message_id=question_context.parent_bot_message_id,
-    )
+    from services.memory_v2.explicit_delivery import configured_delivery
+    from services.memory_v2.explicit_request_gate import capture_configured
+    from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
+
+    actor = (message.get("from") or {}).get("id")
+    try:
+        gate = capture_configured(chat_id, actor, message_id, message.get("date"))
+        body = {"chat_id": chat_id, "requester_user_id": actor, "reply_to_message_id": message_id, "request_gate": gate}
+        with configured_delivery(repo, bot, body) as (delivery, _):
+            handled = answer_group_question(
+                repo=repo,
+                bot=delivery,
+                chat_id=chat_id,
+                reply_to_message_id=message_id,
+                user_text=question_context.user_text,
+                retrieval_query=question_context.retrieval_query,
+                lang=get_chat_lang(chat_id),
+                requester_user_id=(message.get("from") or {}).get("id"),
+                requester_username=(message.get("from") or {}).get("username"),
+                requester_display_name=display_name(message.get("from") or {}),
+                current_user_message=question_context.current_user_message,
+                source_message_context=question_context.source_message_context,
+                parent_bot_message_id=question_context.parent_bot_message_id,
+            )
+    except (MemoryConflict, MemoryInputError, MemoryUnavailable):
+        return True
+    except Exception:
+        raise MemoryPublicRetryRequiredError("Explicit answer state requires redelivery") from None
     if handled:
         logger.info(
             "Group agent handled update",
@@ -1694,6 +1721,9 @@ def answer_group_question(
     raise_on_unavailable: bool = False,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
+    from services.memory_v2.explicit_delivery import ExplicitDelivery
+
+    before_attempt = bot.check if isinstance(bot, ExplicitDelivery) else None
     current_user_message = user_text if current_user_message is None else current_user_message
     guarded_answer = _guardrail_reply(user_text, lang)
     if guarded_answer:
@@ -1744,6 +1774,7 @@ def answer_group_question(
             chat_id=chat_id,
             reply_to_message_id=reply_to_message_id,
             proactive=False,
+            **({"before_attempt": before_attempt} if before_attempt is not None else {}),
         )
     except (GeminiUnavailableError, ZerdeProviderError) as exc:
         logger.warning(
@@ -1765,7 +1796,7 @@ def answer_group_question(
         return True
     except Exception:
         logger.exception("Group agent failed", extra={"chat_id": chat_id})
-        if raise_on_unavailable:
+        if raise_on_unavailable or before_attempt is not None:
             raise
         return False
 

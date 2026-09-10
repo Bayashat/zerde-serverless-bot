@@ -2,7 +2,7 @@
 
 ## Current memory cutover boundary
 
-Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use empty long-term/recent/profile/vector context and versioned short reply threads. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership metadata and contest/business data retain their existing ownership. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
+Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership uses one-day V2 source-fenced metadata; contest/business data retain their existing ownership. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
 
 
 This is the current developer-facing map of ZerdeBot. Keep it updated when changing memory, agent behavior, SQS task routing, DynamoDB schemas, vector retrieval, or CDK wiring.
@@ -320,3 +320,5 @@ Legacy resource candidates and dependency/backup gates are documented in [LEGACY
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
 
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
+
+Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.

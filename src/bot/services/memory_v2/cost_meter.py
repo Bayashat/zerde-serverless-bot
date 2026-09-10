@@ -163,6 +163,22 @@ class InvocationCostMeter:
             return True
 
     @contextmanager
+    def bind_invocation(self):
+        """Install a lazy owner in the outer context before async/thread copies.
+
+        No Start is emitted until touch(). Enter and reset always occur in this
+        same calling context; activation is shared mutable invocation state.
+        """
+        previous = _SCOPE.get()
+        if previous is not None and previous is not self:
+            previous.complete = self.complete = False
+        token = _SCOPE.set(self)
+        try:
+            yield self
+        finally:
+            _SCOPE.reset(token)
+
+    @contextmanager
     def span(self):
         active = self.touch()
         if active:
@@ -334,7 +350,7 @@ def _wire_quote(service, operation, request, inventory):
 
 def _before_parameters(params, model, **kwargs):
     meter = _SCOPE.get()
-    if meter is not None and not meter.closed and model.name in _DDB_CC_OPERATIONS:
+    if meter is not None and meter.started_at is not None and not meter.closed and model.name in _DDB_CC_OPERATIONS:
         # TOTAL includes table/index consumption; do not downgrade explicit INDEXES.
         if params.get("ReturnConsumedCapacity") in {None, "NONE"}:
             params["ReturnConsumedCapacity"] = "TOTAL"
@@ -342,7 +358,7 @@ def _before_parameters(params, model, **kwargs):
 
 def _before_call(model, context, *, service, client_id, **kwargs):
     meter = _SCOPE.get()
-    if meter is None or meter.closed:
+    if meter is None or meter.started_at is None or meter.closed:
         return
     state = _Call(meter, service, model.name, client_id)
     context[_STATE_KEY] = state
@@ -353,7 +369,7 @@ def _before_call(model, context, *, service, client_id, **kwargs):
 
 def _before_send(request, event_name, *, service, client_id, **kwargs):
     meter = _SCOPE.get()
-    if meter is None:
+    if meter is None or meter.started_at is None:
         return
     stack = _CALLS.get()
     operation = event_name.rsplit(".", 1)[-1]

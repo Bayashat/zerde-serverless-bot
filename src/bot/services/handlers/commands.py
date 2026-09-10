@@ -268,25 +268,9 @@ def handle_memory_about_me(ctx: Context) -> None:
 
 
 def handle_memory(ctx: Context) -> None:
-    action = _normalized_subcommand(_command_args(ctx.text))
-    if action == "on":
-        handle_memory_on(ctx)
-    elif action == "off":
-        handle_memory_off(ctx)
-    elif action == "status":
-        handle_memory_status(ctx)
-    elif action == "about me":
-        handle_memory_about_me(ctx)
-    elif action == "forget me":
-        handle_forget_me(ctx)
-    elif action == "forget this":
-        handle_forget_this(ctx)
-    elif action == "forget group":
-        handle_forget_group(ctx)
-    elif action == "wrong":
-        handle_wrong_memory_feedback(ctx)
-    else:
-        ctx.reply(get_translated_text("memory_usage", ctx.lang_code), ctx.message_id)
+    from services.memory_v2.public_commands import handle_memory_v2
+
+    handle_memory_v2(ctx)
 
 
 def handle_agent_status(ctx: Context) -> None:
@@ -347,6 +331,12 @@ def handle_ask(ctx: Context) -> None:
         ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
         return
     effective_question = question or (default_question_for_media_refs(media_refs) if media_refs else "")
+    if not media_refs and effective_question:
+        from services.memory_v2.public_answers import try_memory_answer
+
+        if try_memory_answer(ctx.message, question=effective_question, lang=ctx.lang_code):
+            return
+
     ask_message = _message_for_ask_context(ctx, effective_question)
     question_context = build_explicit_question_context(
         ctx.memory_repo,
@@ -376,6 +366,7 @@ def handle_ask(ctx: Context) -> None:
             retrieval_query=retrieval_query,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
+            request_sent_at=ctx.message.get("date"),
             requester_username=ctx.username,
             requester_display_name=display_name(ctx.user_data),
             current_user_message=question_context.current_user_message,
@@ -389,7 +380,20 @@ def handle_ask(ctx: Context) -> None:
         return
 
 
-def process_group_ask_task(
+def process_group_ask_task(*, repo, bot, body):
+    from services.memory_v2.explicit_delivery import configured_delivery
+    from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
+
+    if not is_current_explicit_task(body):
+        return
+    try:
+        with configured_delivery(repo, bot, body) as (guarded_bot, current):
+            _process_group_ask_task(repo=repo, bot=guarded_bot, body=current)
+    except (MemoryConflict, MemoryInputError, MemoryUnavailable):
+        return  # Duplicate/invalidated/uncertain external delivery cannot be replayed.
+
+
+def _process_group_ask_task(
     *,
     repo,
     bot,
@@ -397,6 +401,13 @@ def process_group_ask_task(
 ) -> None:
     """Process only new explicit requests; legacy payloads may contain old memory."""
     if not is_current_explicit_task(body):
+        return
+    from services.memory_v2.explicit_request_gate import validate_configured
+    from services.memory_v2.models import MemoryInputError, MemoryUnavailable
+
+    try:
+        validate_configured(body)
+    except (MemoryInputError, MemoryUnavailable):
         return
     chat_id = int(body["chat_id"])
     reply_to_message_id = int(body["reply_to_message_id"])
@@ -471,6 +482,10 @@ def process_group_ask_task(
                 reply_to_message_id=reply_to_message_id,
             )
             return
+    from services.memory_v2.explicit_delivery import ExplicitDelivery
+
+    if isinstance(bot, ExplicitDelivery):
+        bot.check()  # Validate again after downloads and immediately before provider use.
     handled = answer_group_question(
         repo=repo,
         bot=bot,

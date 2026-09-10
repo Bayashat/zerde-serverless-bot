@@ -52,7 +52,9 @@ def get_memory_repo() -> GroupMemoryRepository | None:
     if not MEMORY_TABLE_NAME:
         return None
     if _memory_repo is None:
-        _memory_repo = GroupMemoryRepository()
+        from services.repositories.explicit_context_repository import ExplicitContextRepository
+
+        _memory_repo = ExplicitContextRepository(memory_v2_repo=get_memory_v2_repo())
     return _memory_repo
 
 

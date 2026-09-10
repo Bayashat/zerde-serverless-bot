@@ -7,6 +7,7 @@ from typing import Any
 from aws_cdk import CfnOutput, Stack, Tags
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
+from components.memory_cost import MemoryCostConstruct
 from components.memory_v2 import MemoryV2Construct
 from components.memory_worker import MemoryWorkerConstruct, grant_project_budget
 from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
@@ -410,6 +411,15 @@ class ZerdeTelegramBotStack(Stack):
         bot.handler_lambda.add_environment("OPERATIONS_TOPIC_ARN", self.operations.topic.topic_arn)
         grant_project_budget(bot.handler_lambda, self.memory_worker.budget_table)
         self.operations.grant_budget_publish(bot.handler_lambda)
+        MemoryCostConstruct(
+            self,
+            "MemoryCost",
+            bot_function=bot.handler_lambda,
+            worker_function=self.memory_worker.handler_lambda,
+            main_dlq=messaging.dlq,
+            env_name=env_name,
+            metering_started_at=int(os.environ.get("MEMORY_COST_METERING_STARTED_AT", "0") or "0"),
+        )
         for construct, component in (
             (bot, "bot"),
             (vector_indexer, "vector-indexer"),

@@ -67,8 +67,8 @@ class CostInventory:
             raise UnverifiedCost("Unknown cost inventory schema or unpriced region")
         if type(value["metering_started_at"]) is not int or value["metering_started_at"] <= 0:
             raise UnverifiedCost("A reviewed metering start is required")
-        if type(value["alarm_count"]) is not int or value["alarm_count"] != 5:
-            raise UnverifiedCost("The five incremental alarms must be included")
+        if type(value["alarm_count"]) is not int or value["alarm_count"] not in {5, 10}:
+            raise UnverifiedCost("The reviewed incremental alarm allowance is required")
         self.value = json.loads(json.dumps(value))
         self.functions, self.tables, self.queues = (self.value[key] for key in ("functions", "tables", "queues"))
         fields = {
@@ -145,6 +145,8 @@ def parse_inventory(raw):
     fields = {"schema", "region", "account_id", "metering_started_at", "alarm_count"}
     if not isinstance(value, dict) or set(value) != fields or not isinstance(value.get("account_id"), str):
         raise UnverifiedCost("Unknown compact inventory declaration")
+    if value["alarm_count"] != 10:
+        raise UnverifiedCost("Compact deployment must reserve both environments alarms")
     account = value["account_id"]
     if not re.fullmatch(r"[0-9]{12}", account):
         raise UnverifiedCost("An actual resolved project account is required")

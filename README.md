@@ -241,3 +241,5 @@ This project is licensed under the MIT License.
 Memory V2 storage is being introduced behind a stopped control state; deployment alone does not enable learning. The [domain contract](docs/memory-v2-domain.md) defines the independent table, source versions and evidence-backed facts.
 
 The [runtime integration](docs/MEMORY_V2_RUNTIME.md) adds a dedicated memory queue and worker with recoverable admission; learning remains stopped until an explicit validated cutover.
+
+Explicit V2 answers and `/memory` controls now share source/version/deletion guards. The [runtime contract](docs/MEMORY_V2_RUNTIME.md) covers sourced profiles, bounded topic samples, metered costs and the separate first-deployment/activation gates. This is local implementation, not production acceptance.

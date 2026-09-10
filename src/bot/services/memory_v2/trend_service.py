@@ -66,7 +66,8 @@ class TrendService:
         control, subject, head, raw = self.repo.source_snapshot(chat_id, ref, learning=False)
         observation = self.repo.get_observation(chat_id, ref.source_id)
         if (
-            not observation
+            head.get("source_kind") != "message"
+            or not observation
             or observation.get("deleted")
             or observation.get("ambiguous")
             or observation.get("revision") != ref.source_version

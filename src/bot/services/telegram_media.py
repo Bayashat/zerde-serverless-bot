@@ -136,6 +136,7 @@ class MediaReference:
     source_username: str | None = None
     source_display_name: str | None = None
     source_sender_type: str | None = None
+    ephemeral_source_ref: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a compact JSON-serializable representation."""
@@ -159,6 +160,7 @@ class MediaReference:
             source_username=_optional_str(value.get("source_username")),
             source_display_name=_optional_str(value.get("source_display_name")),
             source_sender_type=_optional_str(value.get("source_sender_type")),
+            ephemeral_source_ref=value.get("ephemeral_source_ref"),
         )
 
 
