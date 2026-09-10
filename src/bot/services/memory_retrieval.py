@@ -415,19 +415,23 @@ def _hydrate_candidate_feedback(
     repo: GroupMemoryRepository,
     chat_id: int | str,
     candidate: MemoryCandidate,
-) -> MemoryCandidate:
-    if not candidate.source_sk:
-        return candidate
+) -> MemoryCandidate | None:
+    if not candidate.source_sk or not GroupMemoryRepository.is_vectorizable_sk(candidate.source_sk):
+        return None
     try:
         item = repo.get_memory_item(chat_id, candidate.source_sk)
     except Exception:
-        return candidate
-    if not isinstance(item, dict):
-        return candidate
+        return None
+    if not isinstance(item, dict) or not item:
+        return None
+    now = int(time.time())
+    if any(field in item and _int_value(item[field]) <= now for field in ("ttl", "expires_at")):
+        return None
+    text = _item_memory_text(item)
+    if not text or not is_memory_learning_safe(text):
+        return None
     feedback_metadata = _feedback_metadata_from_item(item)
-    if not feedback_metadata:
-        return candidate
-    return replace(candidate, metadata={**candidate.metadata, **feedback_metadata})
+    return replace(candidate, text=text, metadata={**candidate.metadata, **feedback_metadata})
 
 
 def _format_lexical_memory_context(candidates: list[MemoryCandidate]) -> str:
@@ -557,9 +561,10 @@ def retrieve_candidates(
         memory_kinds=memory_kinds,
     )
     semantic_candidates = [
-        _hydrate_candidate_feedback(repo, chat_id, candidate)
+        hydrated
         for row in semantic_rows
         if (candidate := _semantic_candidate(row)) is not None
+        if (hydrated := _hydrate_candidate_feedback(repo, chat_id, candidate)) is not None
     ]
     lexical_terms = extract_lexical_terms(user_text)
     lexical_rows = lexical_search_fn(repo, chat_id, lexical_terms, lexical_limit) if lexical_terms else []

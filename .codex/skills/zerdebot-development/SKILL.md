@@ -231,3 +231,5 @@ a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
 SQS enqueue failures return a retryable webhook error; guest deletion/review failures
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
+
+Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and all CONTEST families. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../../../docs/legacy-memory-deletion.md).

@@ -206,6 +206,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "Vector memory cleanup requested for {deleted} indexed item(s).",
         "vector_cleanup_skipped": "Vector memory cleanup is not configured.",
         "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
+        "memory_cleanup_pending": (
+            "Cleanup is incomplete: source records are deleted, but vector deletion is still pending. Retry "
+            "the forget command to resume; administrators can also recover the saved cleanup work."
+        ),
+        "forget_me_scope": (
+            "Only directly owned records were removed. Shared group facts and summaries remain; complete "
+            "historical cleanup is handled separately."
+        ),
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
         "why_reply_message": (
             "🧾 <b>Why I replied</b>\n"
@@ -481,6 +489,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "{deleted} indexed vector жад элементін өшіру сұралды.",
         "vector_cleanup_skipped": "Vector жадын тазалау бапталмаған.",
         "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
+        "memory_cleanup_pending": (
+            "Тазалау аяқталмады: бастапқы жазбалар өшірілді, vector тазалауы күтілуде. Жалғастыру үшін өшіру "
+            "пәрменін қайталаңыз; әкімші сақталған тапсырманы қалпына келтіре алады."
+        ),
+        "forget_me_scope": (
+            "Тек өзіңізге тиесілі жазбалар өшірілді. Ортақ топ фактілері мен түйіндемелер сақталады; толық "
+            "тарихи тазалау бөлек орындалады."
+        ),
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
         "why_reply_message": (
             "🧾 <b>Неге жауап бердім</b>\n"
@@ -731,6 +747,8 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "已请求删除 {deleted} 条已索引向量记忆。",
         "vector_cleanup_skipped": "未配置向量记忆清理。",
         "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
+        "memory_cleanup_pending": "清理尚未完成：来源记录已删除，向量清理仍待处理。请重试遗忘命令恢复；管理员也可恢复已保存的清理任务。",
+        "forget_me_scope": "仅删除明确归属本人的记录。共享群事实及摘要保留，完整历史清零另行处理。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
         "why_reply_message": (
             "🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}\n" "{sources}"
@@ -999,6 +1017,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "Запрошено удаление indexed vector-памяти: {deleted}.",
         "vector_cleanup_skipped": "Очистка vector-памяти не настроена.",
         "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",
+        "memory_cleanup_pending": (
+            "Очистка не завершена: исходные записи удалены, векторы ожидают удаления. Повторите команду "
+            "забывания; администратор также может возобновить сохранённую задачу."
+        ),
+        "forget_me_scope": (
+            "Удалены только записи, принадлежащие вам. Общие факты и сводки группы остаются; полная "
+            "историческая очистка выполняется отдельно."
+        ),
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
         "why_reply_message": (
             "🧾 <b>Почему я ответил</b>\n"

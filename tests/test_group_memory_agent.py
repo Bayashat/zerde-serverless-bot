@@ -3698,7 +3698,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert reply_kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
     assert reply_kwargs["recent_context"] == "Nurt AI: @bayashat токсик"
     assert reply_kwargs["long_term_memory_context"] == ""
-    assert reply_kwargs["semantic_memory_context"] == "[semantic_memory kind=event] OpenSearch was too expensive"
+    assert reply_kwargs["semantic_memory_context"] == ""  # No source identity: never use orphan vector text.
     assert reply_kwargs["user_profile_context"] == "Trusted profile: username=@bayashat own_topic_terms: opensearch"
     assert reply_kwargs["requester_profile_context"] == "Requester profile: username=@ada own_topic_terms: lambda"
     assert "Answer in 2-5 concise sentences" in reply_kwargs["reply_instructions"]
@@ -3715,7 +3715,7 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert repo.record_agent_reply.call_args.kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
     assert repo.record_agent_reply.call_args.kwargs["requester_user_id"] == 42
     retrieval_sources = repo.record_agent_reply.call_args.kwargs["retrieval_sources"]
-    assert any(source["source"] == "semantic" for source in retrieval_sources)
+    assert not any(source["source"] == "semantic" for source in retrieval_sources)
     assert any(source["source"] == "target_profile" for source in retrieval_sources)
     assert any(source["source"] == "requester_profile" for source in retrieval_sources)
 
@@ -3886,6 +3886,7 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
 
 def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkeypatch):
     repo = MagicMock()
+    repo.get_memory_item.return_value = {"summary": "The group may have picked DynamoDB for the prototype."}
     repo.get_chat_settings.return_value = {"style_profile": normalise_chat_style_profile(None)}
     repo.search_long_term_memories_by_terms.return_value = []
     bot = MagicMock()
@@ -4708,9 +4709,8 @@ def test_forget_group_allows_only_bot_owner(monkeypatch):
 
 def test_forget_group_deletes_vector_memory_when_configured(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
     delete_vectors = MagicMock(return_value=2)
-    monkeypatch.setattr(commands, "delete_chat_vectors", delete_vectors)
+    monkeypatch.setattr(commands, "recover_pending_memory_vector_deletes", delete_vectors)
     ctx = _command_ctx(user_id=1, status="member")
     ctx.memory_repo.delete_chat_memory.return_value = 3
 
@@ -4933,7 +4933,7 @@ def test_memory_overview_reads_cumulative_vector_backfill_status():
     assert overview["vector_backfill_next_token"] == {"__vector_prefix": "USER_FACT#"}
 
 
-def test_user_related_vector_items_include_matching_daily_summaries():
+def test_user_related_vector_items_do_not_include_shared_daily_summaries():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     repo.table = MagicMock()
     repo.table.get_item.return_value = {
@@ -4968,11 +4968,10 @@ def test_user_related_vector_items_include_matching_daily_summaries():
     assert [item["sk"] for item in items] == [
         "EVENT#1#3",
         "USER_FACT#42#1#2",
-        "DAILY_SUMMARY#2026-06-10",
     ]
 
 
-def test_delete_user_memory_removes_matching_daily_summaries():
+def test_delete_user_memory_preserves_shared_daily_summaries():
     repo = GroupMemoryRepository.__new__(GroupMemoryRepository)
     batch = MagicMock()
     repo.table = MagicMock()
@@ -5003,21 +5002,23 @@ def test_delete_user_memory_removes_matching_daily_summaries():
 
     deleted = repo.delete_user_memory(-100123, 42)
 
-    assert deleted == 3
-    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
-    assert deleted_sks == ["USER#42", "MSG#1#2", "DAILY_SUMMARY#2026-06-10"]
+    assert deleted == 2
+    deleted_sks = [
+        call.kwargs["TransactItems"][0]["Delete"]["Key"]["sk"]
+        for call in repo.table.meta.client.transact_write_items.call_args_list
+    ]
+    assert deleted_sks == ["USER#42", "MSG#1#2"]
 
 
 def test_forget_me_deletes_vector_memory_when_configured(monkeypatch):
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
     delete_vectors = MagicMock(return_value=1)
-    monkeypatch.setattr(commands, "delete_user_vectors", delete_vectors)
+    monkeypatch.setattr(commands, "recover_pending_memory_vector_deletes", delete_vectors)
     ctx = _command_ctx(user_id=42)
     ctx.memory_repo.delete_user_memory.return_value = 5
 
     commands.handle_forget_me(ctx)
 
-    delete_vectors.assert_called_once_with(-100123, 42, repo=ctx.memory_repo)
+    delete_vectors.assert_called_once_with(-100123, repo=ctx.memory_repo)
     ctx.memory_repo.delete_user_memory.assert_called_once_with(-100123, 42)
 
 
@@ -5053,7 +5054,6 @@ def test_memory_about_me_empty_profile_is_friendly():
 
 
 def test_forget_this_reply_to_own_source_message_deletes_message_memory(monkeypatch):
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
     ctx = _command_ctx(user_id=42, status="member")
     ctx.reply_to_message = {
         "message_id": 8,
@@ -5087,7 +5087,6 @@ def test_forget_this_rejects_other_users_source_message():
 
 def test_forget_this_group_owner_can_delete_group_source_message(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
     ctx = _command_ctx(user_id=42, status="creator")
     ctx.reply_to_message = {
         "message_id": 8,
@@ -5105,7 +5104,6 @@ def test_forget_this_group_owner_can_delete_group_source_message(monkeypatch):
 
 
 def test_forget_this_bot_answer_does_not_delete_user_profile_source(monkeypatch):
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
     ctx = _command_ctx(user_id=42, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
@@ -5126,7 +5124,6 @@ def test_forget_this_bot_answer_does_not_delete_user_profile_source(monkeypatch)
 
 
 def test_forget_this_bot_answer_deletes_user_fact_owned_by_current_user(monkeypatch):
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: False)
     ctx = _command_ctx(user_id=42, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
@@ -5181,9 +5178,8 @@ def test_forget_this_bot_answer_deletes_user_fact_owned_by_current_user(monkeypa
 
 def test_forget_this_bot_answer_bot_owner_deletes_group_sources(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "vector_memory_configured", lambda: True)
     delete_vectors = MagicMock(return_value=1)
-    monkeypatch.setattr(commands, "delete_memory_vectors_for_items", delete_vectors)
+    monkeypatch.setattr(commands, "recover_pending_memory_vector_deletes", delete_vectors)
     ctx = _command_ctx(user_id=1, status="member")
     ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
     item = {"pk": "CHAT#-100123", "sk": "GROUP_FACT#0000000001000#8"}
@@ -5198,7 +5194,7 @@ def test_forget_this_bot_answer_bot_owner_deletes_group_sources(monkeypatch):
         -100123,
         ["GROUP_FACT#0000000001000#8"],
     )
-    delete_vectors.assert_called_once_with(-100123, [item])
+    delete_vectors.assert_called_once_with(-100123, repo=ctx.memory_repo)
     assert "1" in ctx.reply.call_args.args[0]
 
 
@@ -5343,8 +5339,11 @@ def test_delete_memory_items_by_sks_deletes_existing_unique_items():
     deleted = repo.delete_memory_items_by_sks(-100123, ["USER#42", "USER#42", "MISSING#1"])
 
     assert deleted == [item]
-    assert repo.table.get_item.call_count == 2
-    batch.delete_item.assert_called_once_with(Key={"pk": "CHAT#-100123", "sk": "USER#42"})
+    assert repo.table.get_item.call_count == 1
+    assert repo.table.meta.client.transact_write_items.call_args.kwargs["TransactItems"][0]["Delete"]["Key"] == {
+        "pk": "CHAT#-100123",
+        "sk": "USER#42",
+    }
 
 
 def test_delete_memory_items_by_sks_deletes_lexical_index_rows():
@@ -5365,7 +5364,11 @@ def test_delete_memory_items_by_sks_deletes_lexical_index_rows():
     deleted = repo.delete_memory_items_by_sks(-100123, [item["sk"]])
 
     assert deleted == [item]
-    deleted_sks = [call.kwargs["Key"]["sk"] for call in batch.delete_item.call_args_list]
+    deleted_sks = [
+        op["Delete"]["Key"]["sk"]
+        for op in repo.table.meta.client.transact_write_items.call_args.kwargs["TransactItems"]
+        if "Delete" in op
+    ]
     assert deleted_sks == [
         "GROUP_FACT#0001700000000000#8",
         "TERM#e1027#1700000000000#GROUP_FACT#0001700000000000#8",

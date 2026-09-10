@@ -292,3 +292,7 @@ a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
 SQS enqueue failures return a retryable webhook error; guest deletion/review failures
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
+
+## Legacy Memory Deletion Boundary
+
+Legacy forget commands delete only an explicit memory sort-key allowlist and preserve SETTINGS, all CONTEST families, unknown rows and other chats. Personal forgetting uses key/owner identity and preserves shared group facts and summaries. Vectorizable source deletion atomically creates a reference-only `MEMORY_VECTOR_DELETE#<chat_id>` outbox marker, which is removed only after confirmed vector deletion. Missing or unreadable sources cannot supply semantic prompt text. See [the deletion and recovery contract](legacy-memory-deletion.md) for retries, Z01 release gates, Z10 cleanup ownership and acceptance limits.

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import time
+import uuid
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -38,6 +40,24 @@ _DURABLE_BOT_MEMORY_PREFIXES = tuple(_DURABLE_BOT_MEMORY_PREFIXES_BY_KIND.values
 _USERNAME_ALIAS_PREFIX = "USERNAME#"
 _LEXICAL_INDEX_PREFIX = "TERM#"
 _VECTOR_PREFIX_TOKEN_KEY = "__vector_prefix"
+_MEMORY_DELETE_PREFIXES = (
+    "MSG#",
+    "MEDIA_GROUP#",
+    "USER#",
+    "USERNAME#",
+    "EVENT#",
+    "USER_FACT#",
+    "GROUP_FACT#",
+    "JOKE#",
+    "DAILY_SUMMARY#",
+    "TERM#",
+    "AGENT_REPLY#",
+    "AMBIENT_REACTION#",
+    "PROACTIVE#",
+    "BOT_COMMITMENT#",
+    "BOT_CORRECTION#",
+)
+_VECTOR_DELETE_OUTBOX_PREFIX = "MEMORY_VECTOR_DELETE#"
 _AMBIENT_REACTION_RETENTION_DAYS = 7
 CHAT_STYLE_TONES = {"concise", "professional", "friendly"}
 CHAT_STYLE_LOW_CONFIDENCE_BEHAVIORS = {"cautious", "avoid_weak_memory", "none"}
@@ -231,6 +251,16 @@ class GroupMemoryRepository:
         return sk.startswith(_VECTOR_MEMORY_PREFIXES)
 
     @staticmethod
+    def is_deletable_memory_sk(sk: str) -> bool:
+        """Closed allowlist: shared settings, contests and unknown types are never memory."""
+        return sk == "VECTOR_BACKFILL" or sk.startswith(_MEMORY_DELETE_PREFIXES)
+
+    @staticmethod
+    def memory_vector_key(chat_id: int | str, source_sk: str) -> str:
+        digest = hashlib.sha256(f"{chat_id}:{source_sk}".encode()).hexdigest()
+        return f"memory/{digest}"
+
+    @staticmethod
     def is_agent_reply_sk(sk: str) -> bool:
         return sk.startswith(_AGENT_REPLY_PREFIX)
 
@@ -322,32 +352,6 @@ class GroupMemoryRepository:
                 seen.add(key)
                 items.append(text[:180])
         return items[-12:]
-
-    @staticmethod
-    def _cleanup_terms_from_profile(profile: dict[str, Any]) -> set[str]:
-        terms: set[str] = set()
-        for field in ("username", "display_name", "requester_username", "requester_display_name"):
-            value = str(profile.get(field) or "").strip().lower().lstrip("@")
-            if value and value not in {"unknown", "user"}:
-                terms.add(value)
-        return terms
-
-    @staticmethod
-    def _daily_summary_mentions_terms(item: dict[str, Any], terms: set[str]) -> bool:
-        if not terms:
-            return False
-        fields = [
-            item.get("summary"),
-            item.get("topics"),
-            item.get("notable_events"),
-            item.get("inside_jokes"),
-            item.get("active_participants"),
-            item.get("tension_points"),
-        ]
-        searchable = " ".join(
-            str(part) for value in fields for part in (value if isinstance(value, list) else [value]) if part
-        ).lower()
-        return any(term in searchable for term in terms)
 
     @staticmethod
     def _normalise_lexical_term(raw: str) -> str:
@@ -534,19 +538,11 @@ class GroupMemoryRepository:
     @classmethod
     def _delete_sks_for_item(cls, item: dict[str, Any]) -> list[str]:
         sk = str(item.get("sk") or "")
-        if not sk:
+        if not cls.is_deletable_memory_sk(sk):
             return []
 
         keys = [sk]
         seen = {sk}
-        if sk.startswith("USER#"):
-            username = cls._normalise_username(str(item.get("username") or ""))
-            if username:
-                alias_sk = cls._username_alias_sk(username)
-                if alias_sk not in seen:
-                    seen.add(alias_sk)
-                    keys.append(alias_sk)
-
         for index_sk in cls._lexical_index_sks_for_item(item):
             if index_sk not in seen:
                 seen.add(index_sk)
@@ -582,27 +578,28 @@ class GroupMemoryRepository:
                 pass
         return ids
 
-    def _matches_user_memory_item(self, item: dict[str, Any], user_id: int | str, cleanup_terms: set[str]) -> bool:
-        user_id_str = str(user_id)
-        sk = str(item.get("sk") or "")
-        return bool(
-            str(item.get("user_id") or "") == user_id_str
-            or str(item.get("source_user_id") or "") == user_id_str
-            or sk == self._user_sk(user_id)
-            or sk.startswith(f"USER_FACT#{user_id_str}#")
-            or (sk.startswith("DAILY_SUMMARY#") and self._daily_summary_mentions_terms(item, cleanup_terms))
-        )
-
     @classmethod
     def is_memory_item_related_to_user(cls, item: dict[str, Any], user_id: int | str) -> bool:
         """Return whether a stored memory item directly belongs to one user."""
         user_id_str = str(user_id)
         sk = str(item.get("sk") or "")
-        return bool(
-            str(item.get("user_id") or "") == user_id_str
-            or sk == cls._user_sk(user_id)
-            or sk.startswith(f"USER_FACT#{user_id_str}#")
-        )
+        if not cls.is_deletable_memory_sk(sk):
+            return False
+        if sk.startswith("USER#"):
+            return sk == cls._user_sk(user_id)
+        if sk.startswith("USER_FACT#"):
+            return sk.startswith(f"USER_FACT#{user_id_str}#")
+        if sk.startswith("USERNAME#"):
+            return (
+                item.get("target_sk") == cls._user_sk(user_id) and str(item.get("user_id", user_id_str)) == user_id_str
+            )
+        if sk.startswith("AGENT_REPLY#"):
+            return str(item.get("requester_user_id") or "") == user_id_str
+        # Shared facts/summaries have contributors, not a personal owner. Never
+        # erase them via a name substring or arbitrary user_id field.
+        if sk.startswith(("GROUP_FACT#", "DAILY_SUMMARY#", "TERM#", "PROACTIVE#")) or sk == "VECTOR_BACKFILL":
+            return False
+        return str(item.get("user_id") or "") == user_id_str
 
     @staticmethod
     def _item_matches_message_id(item: dict[str, Any], message_id: int | str) -> bool:
@@ -684,33 +681,83 @@ class GroupMemoryRepository:
                     break
         return matched
 
-    def delete_memory_items_by_sks(self, chat_id: int | str, source_sks: list[str]) -> list[dict[str, Any]]:
-        """Delete explicit memory items and return the items that existed."""
-        unique_sks: list[str] = []
-        seen: set[str] = set()
-        for source_sk in source_sks:
-            sk = str(source_sk or "").strip()
-            if sk and sk not in seen:
-                seen.add(sk)
-                unique_sks.append(sk)
-        if not unique_sks:
-            return []
+    @staticmethod
+    def _vector_delete_pk(chat_id: int | str) -> str:
+        return f"{_VECTOR_DELETE_OUTBOX_PREFIX}{chat_id}"
 
-        items: list[dict[str, Any]] = []
-        for sk in unique_sks:
-            resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": sk})
-            item = resp.get("Item") or {}
+    def list_pending_vector_deletes(self, chat_id: int | str, *, limit: int = 100) -> list[dict[str, Any]]:
+        """A bounded recovery page; markers have no TTL and carry no memory text."""
+        response = self.table.query(
+            KeyConditionExpression=Key("pk").eq(self._vector_delete_pk(chat_id)),
+            ConsistentRead=True,
+            Limit=max(1, min(100, limit)),
+        )
+        return response.get("Items") or []
+
+    def complete_vector_delete(self, chat_id: int | str, marker: dict[str, Any]) -> bool:
+        if marker.get("pk") != self._vector_delete_pk(chat_id) or not self.is_vectorizable_sk(
+            str(marker.get("sk") or "")
+        ):
+            raise ValueError("Invalid vector deletion marker identity")
+        try:
+            self.table.delete_item(
+                Key={"pk": marker["pk"], "sk": marker["sk"]},
+                ConditionExpression="generation = :generation",
+                ExpressionAttributeValues={":generation": marker["generation"]},
+            )
+            return True
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+                return False
+            raise
+
+    def _delete_memory_items(self, chat_id: int | str, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        deleted = []
+        pk = self._chat_pk(chat_id)
+        for item in items:
+            sk = str(item.get("sk") or "")
+            if item.get("pk") != pk or not self.is_deletable_memory_sk(sk):
+                continue
+            operations = [
+                {"Delete": {"TableName": self.table.name, "Key": {"pk": pk, "sk": key}}}
+                for key in self._delete_sks_for_item(item)
+            ]
+            if sk.startswith("USERNAME#"):
+                # A username can be reassigned after the query. Do not erase a
+                # newly assigned alias using the previous owner's snapshot.
+                if "target_sk" in item:
+                    operations[0]["Delete"].update(
+                        ConditionExpression="target_sk = :target",
+                        ExpressionAttributeValues={":target": item["target_sk"]},
+                    )
+                else:
+                    operations[0]["Delete"]["ConditionExpression"] = "attribute_not_exists(target_sk)"
+            if self.is_vectorizable_sk(sk):
+                marker = {
+                    "pk": self._vector_delete_pk(chat_id),
+                    "sk": sk,
+                    "chat_id": str(chat_id),
+                    "vector_key": self.memory_vector_key(chat_id, sk),
+                    "generation": uuid.uuid4().hex,
+                    "created_at": int(time.time()),
+                }
+                operations.append({"Put": {"TableName": self.table.name, "Item": marker}})
+            # The resource client serializes Python values, including transaction
+            # maps. Do not pass TypeSerializer output here (double serialization).
+            self.table.meta.client.transact_write_items(TransactItems=operations)
+            deleted.append(item)
+        return deleted
+
+    def delete_memory_items_by_sks(self, chat_id: int | str, source_sks: list[str]) -> list[dict[str, Any]]:
+        """Delete only approved memory types; atomically retain vector cleanup work."""
+        items = []
+        for sk in dict.fromkeys(str(value or "").strip() for value in source_sks):
+            if not self.is_deletable_memory_sk(sk):
+                continue
+            item = self.get_memory_item(chat_id, sk)
             if item:
                 items.append(item)
-        if not items:
-            return []
-
-        with self.table.batch_writer() as batch:
-            for item in items:
-                pk = item.get("pk") or self._chat_pk(chat_id)
-                for sk in self._delete_sks_for_item(item):
-                    batch.delete_item(Key={"pk": pk, "sk": sk})
-        return items
+        return self._delete_memory_items(chat_id, items)
 
     def delete_memory_for_message(self, chat_id: int | str, message_id: int | str) -> list[dict[str, Any]]:
         """Delete the stored raw message and long-term memories derived from it."""
@@ -1442,7 +1489,7 @@ class GroupMemoryRepository:
         return copied
 
     def get_memory_item(self, chat_id: int | str, source_sk: str) -> dict[str, Any]:
-        resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": source_sk})
+        resp = self.table.get_item(Key={"pk": self._chat_pk(chat_id), "sk": source_sk}, ConsistentRead=True)
         return resp.get("Item") or {}
 
     def list_vectorizable_memory_items(
@@ -1454,9 +1501,6 @@ class GroupMemoryRepository:
         user_id: int | str | None = None,
     ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
         """Return one page of memory items eligible for vector indexing."""
-        cleanup_terms = (
-            self._cleanup_terms_from_profile(self.get_user_profile(chat_id, user_id)) if user_id is not None else set()
-        )
         limit = max(1, int(limit))
         items: list[dict[str, Any]] = []
         start_prefix = self._vector_prefix_for_start_key(start_key)
@@ -1477,7 +1521,7 @@ class GroupMemoryRepository:
 
             resp = self.table.query(**kwargs)
             for item in resp.get("Items") or []:
-                if user_id is not None and not self._matches_user_memory_item(item, user_id, cleanup_terms):
+                if user_id is not None and not self.is_memory_item_related_to_user(item, user_id):
                     continue
                 items.append(item)
 
@@ -2030,56 +2074,35 @@ class GroupMemoryRepository:
             if not start_key:
                 return counts
 
-    def delete_user_memory(self, chat_id: int | str, user_id: int | str) -> int:
+    def _delete_scoped_memory(self, chat_id: int | str, user_id: int | str | None = None) -> int:
         deleted = 0
-        cleanup_terms = self._cleanup_terms_from_profile(self.get_user_profile(chat_id, user_id))
         start_key: dict[str, Any] | None = None
         while True:
             kwargs: dict[str, Any] = {
                 "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
+                "ConsistentRead": True,
+                "Limit": 100,
             }
             if start_key:
                 kwargs["ExclusiveStartKey"] = start_key
-            resp = self.table.query(**kwargs)
-            to_delete = []
-            for item in resp.get("Items") or []:
-                if self._matches_user_memory_item(item, user_id, cleanup_terms):
-                    to_delete.append(item)
-            if to_delete:
-                with self.table.batch_writer() as batch:
-                    deleted_keys: set[tuple[str, str]] = set()
-                    for item in to_delete:
-                        pk = item.get("pk") or self._chat_pk(chat_id)
-                        item_sk = str(item.get("sk") or "")
-                        for sk in self._delete_sks_for_item(item):
-                            key = (str(pk), sk)
-                            if key in deleted_keys:
-                                continue
-                            deleted_keys.add(key)
-                            batch.delete_item(Key={"pk": pk, "sk": sk})
-                        if item_sk and not self._is_internal_index_sk(item_sk):
-                            deleted += 1
-            start_key = resp.get("LastEvaluatedKey")
+            response = self.table.query(**kwargs)
+            selected = []
+            for item in response.get("Items") or []:
+                sk = str(item.get("sk") or "")
+                if not self.is_deletable_memory_sk(sk):
+                    continue
+                if user_id is None or self.is_memory_item_related_to_user(item, user_id):
+                    selected.append(item)
+            removed = self._delete_memory_items(chat_id, selected)
+            deleted += sum(not self._is_internal_index_sk(str(item["sk"])) for item in removed)
+            start_key = response.get("LastEvaluatedKey")
             if not start_key:
                 return deleted
 
+    def delete_user_memory(self, chat_id: int | str, user_id: int | str) -> int:
+        """Delete directly owned memory, never shared facts via name matching."""
+        return self._delete_scoped_memory(chat_id, user_id)
+
     def delete_chat_memory(self, chat_id: int | str) -> int:
-        deleted = 0
-        start_key: dict[str, Any] | None = None
-        while True:
-            kwargs: dict[str, Any] = {
-                "KeyConditionExpression": Key("pk").eq(self._chat_pk(chat_id)),
-                "ProjectionExpression": "pk, sk",
-            }
-            if start_key:
-                kwargs["ExclusiveStartKey"] = start_key
-            resp = self.table.query(**kwargs)
-            items = resp.get("Items") or []
-            if items:
-                with self.table.batch_writer() as batch:
-                    for item in items:
-                        batch.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
-                        deleted += 1
-            start_key = resp.get("LastEvaluatedKey")
-            if not start_key:
-                return deleted
+        """Delete the memory allowlist, preserving settings and all business rows."""
+        return self._delete_scoped_memory(chat_id)
