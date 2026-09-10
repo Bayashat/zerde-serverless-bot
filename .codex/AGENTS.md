@@ -2,6 +2,10 @@
 
 This file guides Codex when working in this repository. Keep it current with `docs/ARCHITECTURE.md` and `.codex/skills/zerdebot-development/SKILL.md`.
 
+## Approved Memory V2 execution
+
+The owner approved `docs/goals/zerdebot-memory-v2/PLAN.md` on 2026-09-10. Read its `GOAL.md`, `TASKS.md`, and `EVIDENCE.md` before continuing that work. The plan is the target contract; the architecture below describes the deployed baseline until each cutover is implemented and verified. Do not revive legacy memory or automatic social behavior when implementing the approved plan. Track implementation, deployment, and real-user evidence separately.
+
 ## Commands
 
 ```bash
