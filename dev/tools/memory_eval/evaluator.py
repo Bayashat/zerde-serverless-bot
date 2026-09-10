@@ -132,6 +132,7 @@ def _summary(counts):
     recall = _ratio(counts["tp"], counts["tp"] + counts["fn"])
     support = _ratio(counts["supported_assertions"], counts["assertions"])
     unknown = _ratio(counts["unknown_abstained"], counts["unknown_questions"])
+    known = _ratio(counts["supported_answers_complete"], counts["supported_questions"])
     return {
         **{
             key: counts[key]
@@ -154,10 +155,10 @@ def _summary(counts):
         "recall": recall,
         "source_support": support,
         "unknown_abstention": unknown,
-        "supported_answer_recall": _ratio(counts["supported_answers_complete"], counts["supported_questions"]),
+        "supported_answer_recall": known,
         "thresholds_pass": all(
             value is not None and value >= bound
-            for value, bound in ((precision, 0.95), (recall, 0.90), (support, 1.0), (unknown, 0.95))
+            for value, bound in ((precision, 0.95), (recall, 0.90), (support, 1.0), (unknown, 0.95), (known, 0.90))
         ),
     }
 
@@ -274,11 +275,25 @@ def evaluate(corpus, predictions, *, provenance=None):
                     zero_counts.update(violations)
                 if query["expected"] == "supported":
                     counts["supported_questions"] += 1
-                    counts["supported_answers_complete"] += int(
+                    complete_answer = (
                         answer is not None
                         and not answer["abstained"]
                         and answer_supported_ids == set(query["supporting_fact_ids"])
                     )
+                    counts["supported_answers_complete"] += int(complete_answer)
+                    if answer is not None and not complete_answer:
+                        problems.append(
+                            {
+                                "scenario_id": key[0],
+                                "checkpoint_id": key[1],
+                                "question_id": query["question_id"],
+                                "reason": "incomplete_supported_answer",
+                                "missing_supported_fact_ids": sorted(
+                                    set(query["supporting_fact_ids"]) - answer_supported_ids
+                                ),
+                                "abstained": answer["abstained"],
+                            }
+                        )
                 if answer is None or (
                     query["expected"] == "abstain" and not (answer["abstained"] and not answer["assertions"])
                 ):
@@ -318,6 +333,10 @@ def evaluate(corpus, predictions, *, provenance=None):
                 )
             before, after = traces.get("business_before"), traces.get("business_after")
             protected = scenario.get("protected_business", {})
+            if traces.get("business_trace_schema") == 2:
+                from .replay_input import business_hashes
+
+                protected = business_hashes(scenario["events"][0]["chat_id"], protected)
             if (
                 isinstance(before, dict)
                 and isinstance(after, dict)
@@ -386,7 +405,12 @@ def evaluate(corpus, predictions, *, provenance=None):
         for gate in ZERO_GATES
     }
     slices = {language: _summary(counts) for language, counts in language_counts.items()}
-    complete = not total["missing_checkpoints"] and not total["missing_answers"]
+    unsupported = [
+        {"scenario_id": item["scenario_id"], "checkpoint_id": item["checkpoint_id"]}
+        for item in predictions
+        if item.get("replay", {}).get("state") == "UNSUPPORTED"
+    ]
+    complete = not total["missing_checkpoints"] and not total["missing_answers"] and not unsupported
     numeric_pass = (
         complete
         and corpus_info["size_gate"]
@@ -402,6 +426,10 @@ def evaluate(corpus, predictions, *, provenance=None):
         "corpus": corpus_info,
         "prediction_sha256": fingerprint(predictions),
         "complete": complete,
+        "runtime_replay": {
+            "unsupported_checkpoints": unsupported,
+            "executed_checkpoints": sum(item.get("replay", {}).get("state") == "EXECUTED" for item in predictions),
+        },
         "numeric_thresholds_pass": numeric_pass,
         "overall": _summary(total),
         "languages": slices,

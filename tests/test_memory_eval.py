@@ -70,6 +70,40 @@ def test_missing_cases_and_missing_questions_do_not_count_as_successful_abstenti
     assert report["overall"]["unknown_abstained"] == 0
 
 
+def test_abstaining_on_every_known_question_cannot_pass_quality_gate(corpus):
+    observations = oracle(corpus)
+    for checkpoint in observations:
+        for answer in checkpoint["answers"]:
+            answer.update(abstained=True, assertions=[])
+    report = evaluate(corpus, observations, provenance={"provider_kind": "synthetic_oracle"})
+    assert report["complete"]  # All observations exist; their answer quality fails.
+    assert report["overall"]["recall"] == report["overall"]["unknown_abstention"] == 1
+    assert report["overall"]["supported_answer_recall"] == 0
+    assert not report["numeric_thresholds_pass"]
+    assert all(not row["thresholds_pass"] for row in report["languages"].values())
+    assert sum(p["reason"] == "incomplete_supported_answer" for p in report["diagnostics"]) == 224
+
+
+@pytest.mark.parametrize("removed, passes", [(5, True), (6, False)])
+def test_known_answer_recall_gate_applies_at_ninety_percent_per_language(corpus, removed, passes):
+    observations = oracle(corpus)
+    known = [
+        answer
+        for row in observations
+        if row["scenario_id"].startswith("kk-")
+        for answer in row["answers"]
+        if not answer["abstained"]
+    ]
+    assert len(known) == 56
+    for answer in known[:removed]:
+        answer.update(abstained=True, assertions=[])
+    report = evaluate(corpus, observations)
+    assert report["languages"]["kk"]["supported_answer_recall"] == (56 - removed) / 56
+    assert report["languages"]["kk"]["thresholds_pass"] is passes
+    assert report["languages"]["en"]["thresholds_pass"]
+    assert report["numeric_thresholds_pass"] is passes
+
+
 def test_precision_recall_have_exact_denominators_and_duplicate_fact_is_false_positive(corpus):
     small = selected(corpus)
     observations = oracle(small)

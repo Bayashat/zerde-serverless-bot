@@ -15,7 +15,15 @@ class ObservationAdapter(Protocol):
 def collect_observations(corpus, adapter: ObservationAdapter):
     if adapter.provider_kind not in {"fake_provider", "recorded_provider", "synthetic_oracle"}:
         raise ValueError("Offline adapter must declare its evidence kind")
-    return [record for scenario in corpus for record in adapter.observe_scenario(scenario)]
+    from .replay_input import project_scenario
+
+    return [
+        record
+        for scenario in corpus
+        for record in adapter.observe_scenario(
+            project_scenario(scenario) if getattr(adapter, "requires_projected_input", False) else scenario
+        )
+    ]
 
 
 class OracleSelfCheck:
