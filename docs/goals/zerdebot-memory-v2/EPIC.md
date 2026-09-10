@@ -7,6 +7,10 @@
 - [审阅与 AWS 账单快照](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/AUDIT.md)
 - [下一会话执行入口](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/GOAL.md)
 - [证据记录](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/EVIDENCE.md)
+- [最终代码集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)
+- [代码交付后继续执行](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/HANDOFF.md)
+
+当前 Z01–Z19 均已有独立代码/工具/手册 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
 
 ## 不可漂移的边界
 

@@ -75,3 +75,30 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 - Z11 #196 / dbb553e：1,070 full；独立42。240多轮/516唯一事实/256未知问题；四语言各60场景。只有本地评分器和静态合成gold，标签独立复核PENDING，真实provider NOT_VERIFIED，dev/七天pilot NOT_RUN；完整runtime replay adapter仍需补接。
 
 上表各自分支full不相加。全部PR尚未合并main或部署。feat/zerde-reviewed-foundation与feat/zerde-background-foundation仅固定已审阅依赖，不能当作生产release。Z08正在接显式问答/命令、临时媒体与源删除、群话题、AWS用量仪表和预算监测。模型质量门槛、单群7天样本、管理员真实通知、成本标签激活和生产旧数据清零均未执行。
+
+## 第五批：显式问答、控制、成本与临时媒体（2026-09-11；无部署）
+
+- 群趋势 #198 / 2f2c21a：1,112 full；独立47。七天贡献回源、编辑/删除失效；当前公开显示最多10条经核验来源的技术话题样本，不能表述为全群完整统计。
+- 临时媒体 #199 / 06a5599：1,127 full；独立36。一天 metadata-only album 缓存，退出旧 MEDIA_GROUP/AGENT_REPLY；显式媒体不生成长期个人事实。
+- SDK计量 #200 / d9fa52f：1,129 full；独立38。实际 botocore wire hook按每次尝试计费上界，未知结果不退款。
+- AWS成本监测 #201 / 042623d：1,136 full；独立67。闭合项目资源清单、分块日志/指标/存储估算、原子告警outbox；不是FreeTier/credits分摊或AWS账单硬封顶。
+- Z08实际入口 #202 / **9031c16**：**1,407 full passed / 122.83秒**；pre-commit全项、diffcheck通过。fresh dev CDK synth，6个真实产物在固定ARM64 Lambda Python3.13.15禁网环境导入通过。独立core96、cost115，root控制42及模型调用边界/runtime46重点复验通过。
+- #202补齐调用者本人/所有引用主体/source版本的发送租约；统一无记忆问答与有记忆问答的消息身份；每次Gemini重试和备用调用前回源。控制命令使用持久回执及原子栅栏，编辑后不误重新学习管理员命令。预算按完整调用预留，无证据不授权可选记忆。
+- #202修复计量第一次发生在async/thread时outer context无法清理的问题；实际SDK跨context测试通过。实际成本上界保守包含dev/prod最多10个Memory告警，即使dev当前停用也不少计。成本计费epoch默认0、首次专属资源部署时配置；不同于后来群学习epoch，不能推进它抹去费用历史。
+- #202暂停语义：停止模型学习/记忆增强，AWS阈值还停趋势；RAW/OBS准入、待处理恢复和控制继续运行，以保留覆盖与删除能力。这些仍会产生AWS用量，不声称停止全部AWS工作。
+- Z10最终跨树独审ALIGNED：原工具61项及原生Moto演练确认17类V2键/独立表受保护；两实际旧task router各14类重放不写回、不发言。切换文档已更新旧实例/alias排空与当前explicit-v2-sources协议；没有生产清理manifest、备份或删除。
+
+这些证据仅证明本地实现和真实打包边界。Logs Insights实际执行、共享用量归因、真实管理员通知、模型质量、Telegram来源链接、dev canary及单群七天仍待验证。旧实现暂留隔离状态，按Z11验收后才退役，不提前恢复任何旧记忆读取。
+
+## 最终组合与交接（2026-09-11；PR_OPEN）
+
+- 完整代码 [PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，源码提交 **c2bed1b**。该提交已组合全部独立修复、公共入口、清零工具和最终评估工具。后续计划/证据归档为文档变更。
+- **1,620 tests passed / 150.64秒**，Python3.13.6；all-files pre-commit和diffcheck通过。集成前1,539/127.03秒也通过，但最终证据以1,620为准，不累加各分支测试。
+- fresh dev CDK synth与6真实Lambda资产ARM64/Python3.13.15禁网导入通过。此后只加入dev评估工具/语料/文档，不改变Lambda源码、资产或锁文件。共享入口独审191项ALIGNED，保留Memory与News/Quiz的所有路由、依赖注入、HTTP500、IAM和恢复调度。
+- 最终评估 [PR #203](https://github.com/Bayashat/zerde-serverless-bot/pull/203) / 7be7370（作者分支1,488 full）。独审81项、3个原生Moto故障注入和18场景/36检查点/16种事件的独立CLI回放通过工程检查。修复管理员确认类型、同一检查点前写入又删除的敏感RAW漏报、全部known问题拒答仍假PASS三项P2。
+- 集成分支再次独立CLI执行 **240场景/404检查点/16类事件**，无缺fixture、无网络调用；813个WORK为797DONE、4PENDING、4PAUSED、8EXPIRED。没有把暂停或过期算完成。执行源码指纹 `ee65efe71a61600ed0a87b5caf63a40ee2110789728bd8a7670816c1c703b662`，覆盖129个指定源码/锁文件；不是已安装依赖或生产镜像认证。
+- [固定provider报告](evidence/2026-09-11-fixed-provider/report.md)与provenance已归档。**数值FAIL、模型NOT_VERIFIED、观测不完整**：profile precision95.83%/recall21.07%，来源250/260，未知244/256，known完整回答21/224，缺16个答案。fixture刻意有限，并非Gemini；不能据此声称真实模型达标或不达标。六项零容忍在这批合成输入均0，不代表生产证明；所有延迟来自合成时钟。raw观测约4.66MB保留在本地 `/tmp/zerde-complete-evaluation/observations.jsonl`，仓库保留报告、provenance、命令/摘要与完整可重现语料。
+- GitHub只读快照：main仍为2f3abe7；#204 OPEN、REVIEW_REQUIRED、BLOCKED，未绕过审阅门槛。全部工单保持代码/部署/真实验收分离；Z11和#134来源链接不因测试通过关闭。
+- 最终dev只读diff：CDK CLI2.1119.0，`cdk diff -c env=dev --no-change-set --method=template` exit0，1个stack有差异；直接模板比较/lookup role，不创建change set。33新增、29修改、14删除，删除全是旧dev告警；新增operations/worker、V2表、4队列、SNS、恢复规则/映射/IAM，既有4Lambda更新。默认dev预览6Lambda并发0、3mapping false、3rules DISABLED、0alarms、4表PITR关闭；共享Layer替换仅模板推断。管理员未配置、计量epoch0，**这是本地默认配置与已部署dev的差异，不是生产release manifest，不能原样部署**。私有原始日志 `/tmp/zerde-final-readonly-dev-diff.log` 权限0600；没有云写或生产diff。
+
+继续执行以 [HANDOFF](HANDOFF.md) 为入口。未执行合并、部署、真实模型调用、Telegram发信、成本标签激活、生产manifest/备份/清零、旧AWS资源删除、dev canary或七天群试运行。当前已批准的Z18交付仍仅清理手册。生产物理副本清除和验收后旧实现退役仍是明确未完成项。

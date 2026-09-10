@@ -7,7 +7,12 @@
     "status": "pr_open",
     "number": 158,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/180"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/180",
+    "integration_prs": [
+      199,
+      202,
+      204
+    ]
   },
   {
     "id": "Z02",
@@ -17,7 +22,10 @@
     "status": "pr_open",
     "number": 159,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/177"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/177",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z03",
@@ -27,7 +35,10 @@
     "status": "pr_open",
     "number": 160,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/182"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/182",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z04",
@@ -37,7 +48,10 @@
     "status": "pr_open",
     "number": 161,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/183"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/183",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z05",
@@ -50,7 +64,10 @@
     "status": "pr_open",
     "number": 162,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/186"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/186",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z06",
@@ -65,7 +82,9 @@
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/190",
     "integration_prs": [
-      192
+      192,
+      202,
+      204
     ]
   },
   {
@@ -78,7 +97,12 @@
     "status": "pr_open",
     "number": 164,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/188"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/188",
+    "integration_prs": [
+      198,
+      202,
+      204
+    ]
   },
   {
     "id": "Z08",
@@ -87,9 +111,15 @@
       "Z07"
     ],
     "body_file": "issues/Z08.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 165,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/202",
+    "integration_prs": [
+      200,
+      201,
+      204
+    ]
   },
   {
     "id": "Z09",
@@ -102,7 +132,11 @@
     "status": "pr_open",
     "number": 166,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/191"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/191",
+    "integration_prs": [
+      202,
+      204
+    ]
   },
   {
     "id": "Z10",
@@ -116,7 +150,11 @@
     "status": "pr_open",
     "number": 167,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/195"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/195",
+    "integration_prs": [
+      202,
+      204
+    ]
   },
   {
     "id": "Z11",
@@ -134,7 +172,11 @@
     "status": "pr_open",
     "number": 168,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196",
+    "integration_prs": [
+      203,
+      204
+    ]
   },
   {
     "id": "Z12",
@@ -144,7 +186,10 @@
     "status": "pr_open",
     "number": 169,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/179"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/179",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z13",
@@ -154,7 +199,10 @@
     "status": "pr_open",
     "number": 170,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/185"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/185",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z14",
@@ -164,7 +212,10 @@
     "status": "pr_open",
     "number": 171,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/189"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/189",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z15",
@@ -176,7 +227,8 @@
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/193",
     "integration_prs": [
-      197
+      197,
+      204
     ]
   },
   {
@@ -189,7 +241,8 @@
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/194",
     "integration_prs": [
-      197
+      197,
+      204
     ]
   },
   {
@@ -200,7 +253,13 @@
     "status": "pr_open",
     "number": 174,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187",
+    "integration_prs": [
+      200,
+      201,
+      202,
+      204
+    ]
   },
   {
     "id": "Z18",
@@ -210,7 +269,10 @@
     "status": "pr_open",
     "number": 175,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/184"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/184",
+    "integration_prs": [
+      204
+    ]
   },
   {
     "id": "Z19",
@@ -220,6 +282,9 @@
     "status": "pr_open",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181"
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
+    "integration_prs": [
+      204
+    ]
   }
 ]

@@ -2,6 +2,8 @@
 
 使用 Krypton Execution 执行同目录 [PLAN.md](PLAN.md)，由 [TASKS.md](TASKS.md) 选择依赖已满足的未完成工单。开始前读取 [EVIDENCE.md](EVIDENCE.md) 及对应 issue，检查当前分支/PR/部署，避免重复创建或覆盖正在执行的工作。
 
+本次代码交付后的继续执行步骤见 [HANDOFF.md](HANDOFF.md)。完整实现位于 `feat/zerde-complete-integration`；PR_OPEN 不等于生产验收完成。
+
 - PLAN 是已批准契约；GitHub Epic/子工单镜像执行进度。
 - 坚持唯一事实 writer、独立 V2 表、epoch/revision、明确自述、跨群隔离、可更正/遗忘、来源支持。
 - 旧 memory 与自动社交不得成为 fallback；无记忆 ask 是安全回退。
