@@ -69,7 +69,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
             reply_to_message_id=reply_to_message_id if isinstance(reply_to_message_id, int) else None,
         )
 
-    result = quiz_service.process_daily_quiz(chat_ids, lang)
-    if result.get("failed"):
+    result = quiz_service.process_daily_quiz(chat_ids, lang, scheduled_at=event.get("scheduled_at", event.get("time")))
+    if result.get("failed") or result.get("status") in {"error", "partial"}:
         raise RuntimeError("Daily quiz publication is incomplete; inspect durable execution states")
     return result

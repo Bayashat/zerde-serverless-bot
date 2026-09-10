@@ -33,11 +33,11 @@ def test_two_daily_invocations_share_one_execution_before_first_send(quiz_env):
     nested = []
 
     def prepare(*args):
-        nested.append(env.svc.process_daily_quiz([CHAT], "ru"))
+        nested.append(env.svc.process_daily_quiz([CHAT], "ru", scheduled_at=env.clock.now))
         return env.svc._draft(question(), "python", "en", "medium"), []
 
     env.svc._prepare_daily_publication = prepare
-    assert env.svc.process_daily_quiz([CHAT], "en")["status"] == "ok"
+    assert env.svc.process_daily_quiz([CHAT], "en", scheduled_at=env.clock.now)["status"] == "ok"
     assert nested[0]["status"] == "error"
     assert nested[0]["failed"][0]["step"] == "pending"
     assert len(env.sent) == 1
@@ -430,3 +430,43 @@ def test_malformed_or_expired_poll_ttl_is_not_scoreable(quiz_env, ttl):
         record["ttl"] = ttl
     env.table.put_item(Item=record)
     assert env.bot.lookup_poll("poll-0") is None
+
+
+def test_same_scheduled_event_across_midnight_cannot_publish_next_day(quiz_env, monkeypatch):
+    env = quiz_env
+    env.clock.now = int(datetime(2026, 9, 10, 23, 59, tzinfo=timezone(timedelta(hours=5))).timestamp())
+    env.svc._prepare_daily_publication = lambda *args: (env.svc._draft(question(), "python", "en", "medium"), [])
+    monkeypatch.setattr(quiz_support.main_module, "_quiz_service", env.svc)
+    event = {"chat_ids": [CHAT], "lang": "en", "scheduled_at": "2026-09-10T18:59:00Z"}
+
+    def send(**kwargs):
+        env.receipt(**kwargs)
+        raise sender_module.PollSendUnknown("synthetic lost acknowledgement")
+
+    env.svc._sender.send_quiz_poll.side_effect = send
+    for _ in range(2):
+        with pytest.raises(RuntimeError):
+            quiz_support.main_module.lambda_handler(event, Mock(aws_request_id="retry"))
+        env.clock.now += 120
+    assert len(env.sent) == 1
+    assert env.repo._publication_read(env.repo.publication_key(CHAT, "DATE#2026-09-10"))["state"] == "UNKNOWN"
+    assert env.repo._publication_read(env.repo.publication_key(CHAT, "DATE#2026-09-11")) == {}
+
+
+def test_daily_missing_scheduler_identity_is_explicit_nonretryable(quiz_env):
+    assert quiz_env.svc.process_daily_quiz([CHAT], "en")["retryable"] is False
+    assert not quiz_env.sent
+
+
+@pytest.mark.parametrize("scheduled", [None, "invalid", "2026-09-10T13:00:00", "future"])
+def test_bad_scheduler_identity_is_an_observable_lambda_failure(quiz_env, monkeypatch, scheduled):
+    env = quiz_env
+    if scheduled == "future":
+        scheduled = env.clock.now + 301
+    monkeypatch.setattr(quiz_support.main_module, "_quiz_service", env.svc)
+    event = {"chat_ids": [CHAT], "lang": "en", "scheduled_at": scheduled}
+    with pytest.raises(RuntimeError):
+        quiz_support.main_module.lambda_handler(event, Mock(aws_request_id="bad-event"))
+    assert env.table.scan()["Items"] == []
+    env.svc._generator.generate_question.assert_not_called()
+    assert not env.sent

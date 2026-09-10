@@ -68,7 +68,7 @@ def test_daily_earned_points_count_in_current_week(quiz_env):
     env = quiz_env
     draft = env.svc._draft(quiz_support.question(), "python", "en", "medium")
     env.svc._prepare_daily_publication = lambda *args: (draft, [])
-    assert env.svc.process_daily_quiz(["-100123"], "en")["status"] == "ok"
+    assert env.svc.process_daily_quiz(["-100123"], "en", scheduled_at=env.clock.now)["status"] == "ok"
     env.answer()
     env.process()
     assert env.bot.get_user_score("-100123", "7")["week_score"] == 3
