@@ -476,8 +476,6 @@ def observe_media_group(repo: Any, update: Mapping[str, Any]) -> None:
     if ref is None:
         return
     try:
-        if not repo.is_memory_enabled(chat_id):
-            return
         repo.store_media_group_item(
             chat_id=chat_id,
             media_group_id=group_id,

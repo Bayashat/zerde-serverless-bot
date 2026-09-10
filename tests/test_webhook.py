@@ -124,8 +124,8 @@ def test_pending_captcha_message_skips_spam_screening():
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
-        patch("webhook.observe_group_memory_update") as observe_memory,
-        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("services.group_memory.observe_update") as observe_memory,
+        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
@@ -163,8 +163,8 @@ def test_enforced_spam_short_circuits_normal_group_flows():
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
-        patch("webhook.observe_group_memory_update") as observe_memory,
-        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("services.group_memory.observe_update") as observe_memory,
+        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
     ):
         resp = _handle_api_gateway(event, dispatcher, MagicMock())
@@ -203,8 +203,8 @@ def test_queued_spam_short_circuits_normal_group_flows():
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
-        patch("webhook.observe_group_memory_update") as observe_memory,
-        patch("webhook.maybe_enqueue_ambient_reaction") as ambient_reaction,
+        patch("services.group_memory.observe_update") as observe_memory,
+        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
         patch("webhook.handle_group_agent_update") as group_agent,
     ):
         resp = _handle_api_gateway(event, dispatcher, MagicMock())
@@ -245,13 +245,16 @@ def test_contest_observation_runs_before_existing_memory_ambient_and_agent_flows
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update", side_effect=lambda *args, **kwargs: order.append("contest")),
         patch("webhook.observe_media_group", side_effect=lambda *args, **kwargs: order.append("album")),
-        patch("webhook.observe_group_memory_update", side_effect=lambda *args, **kwargs: order.append("memory")),
-        patch("webhook.maybe_enqueue_ambient_reaction", side_effect=lambda *args, **kwargs: order.append("ambient")),
+        patch("services.group_memory.observe_update", side_effect=lambda *args, **kwargs: order.append("memory")),
+        patch(
+            "services.ambient_reactions.maybe_enqueue_ambient_reaction",
+            side_effect=lambda *args, **kwargs: order.append("ambient"),
+        ),
         patch("webhook.handle_group_agent_update", side_effect=lambda *args, **kwargs: order.append("agent") or False),
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
 
-    assert order == ["contest", "album", "memory", "ambient", "agent"]
+    assert order == ["contest", "album", "agent"]
     dispatcher.process_update.assert_called_once_with(body)
 
 
@@ -279,8 +282,8 @@ def test_contest_persistence_failure_returns_500_before_acknowledging_update():
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update", side_effect=RuntimeError("ddb unavailable")),
-        patch("webhook.observe_group_memory_update") as observe_memory,
-        patch("webhook.maybe_enqueue_ambient_reaction") as ambient,
+        patch("services.group_memory.observe_update") as observe_memory,
+        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient,
     ):
         response = _handle_api_gateway(event, dispatcher, MagicMock())
 
@@ -314,8 +317,8 @@ def test_contest_command_retry_error_returns_500_for_telegram_redelivery():
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.observe_contest_update"),
-        patch("webhook.observe_group_memory_update"),
-        patch("webhook.maybe_enqueue_ambient_reaction"),
+        patch("services.group_memory.observe_update"),
+        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction"),
         patch("webhook.handle_group_agent_update", return_value=False),
     ):
         response = _handle_api_gateway(event, dispatcher, MagicMock())

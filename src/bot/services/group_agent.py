@@ -14,7 +14,6 @@ from core.config import (
     AGENT_DAILY_PROACTIVE_LIMIT,
     AGENT_ENABLED,
     AGENT_PROACTIVE_DECISION_CONTEXT_CHARS,
-    AGENT_PROACTIVE_DELAY_SECONDS,
     AGENT_PROACTIVE_FINAL_THRESHOLD,
     AGENT_RECENT_CONTEXT_LIMIT,
     get_chat_lang,
@@ -54,6 +53,7 @@ from services.group_memory import (
     format_requester_profile_context,
     format_user_profile_context,
 )
+from services.memory_cutover import EXPLICIT_CONTEXT_VERSION, is_current_explicit_reply
 from services.memory_retrieval import build_agent_memory_context
 from services.memory_safety import (
     looks_like_future_answer_directive,
@@ -66,11 +66,7 @@ from services.repositories.group_memory import (
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
 from services.telegram_actor import (
-    actor_display_name,
-    actor_sender_type,
-    actor_username,
     is_linked_channel_discussion_post,
-    message_actor,
 )
 from services.telegram_media import (
     MediaDisabledError,
@@ -78,7 +74,6 @@ from services.telegram_media import (
     MediaTooLargeError,
     MediaUnavailableError,
     MediaUnsupportedError,
-    detect_media_reference,
     detect_media_references,
     has_any_media,
     media_reference_log_extra,
@@ -217,7 +212,7 @@ def _load_agent_reply_context(
     except Exception:
         logger.exception("Failed to load previous agent reply context", extra={"chat_id": chat_id})
         return {}
-    return item if isinstance(item, dict) else {}
+    return item if isinstance(item, dict) and is_current_explicit_reply(item) else {}
 
 
 def _agent_reply_thread_context(
@@ -554,6 +549,9 @@ def build_explicit_question_context(
             chat_id,
             bot_message_id=parent_bot_message_id or 0,
         )
+        if not item:
+            # A Telegram quote of a pre-cutover bot answer can itself contain old facts.
+            return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
         thread_context = _agent_reply_thread_context(
             item,
             telegram_reply_text=replied_text,
@@ -958,28 +956,17 @@ def _channel_post_proactive_skip_reason(text: str) -> str | None:
 
 
 def _trigger_kind(update: dict[str, Any]) -> str | None:
-    if not AGENT_ENABLED:
-        return None
     message = update.get("message")
     if not isinstance(message, dict):
         return None
-    chat = message.get("chat") or {}
-    if chat.get("type") not in {"group", "supergroup"}:
+    if (message.get("chat") or {}).get("type") not in {"group", "supergroup"}:
         return None
-    if is_linked_channel_discussion_post(message):
-        return "channel_post"
-    if not _is_plain_text_message(update):
+    if is_linked_channel_discussion_post(message) or not _is_plain_text_message(update):
         return None
     text = extract_message_text(message)
-    if _mentions_bot(text):
+    if _mentions_bot(text) or (_replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None):
         return "explicit"
-    if _replies_to_bot(message) and _reply_to_bot_followup_skip_reason(text) is None:
-        return "explicit"
-    if _replies_to_any_bot(message):
-        return None
-    if _starts_with_other_user_mention(message):
-        return None
-    return "proactive"
+    return None
 
 
 def _log_skipped_reply_to_bot_followup(update: dict[str, Any]) -> None:
@@ -1014,15 +1001,9 @@ def handle_update(
     update: dict[str, Any],
     sqs_repo: SQSClient | None = None,
 ) -> bool:
-    """Handle non-/ask group prompts when agent participation is enabled.
+    """Handle explicit mentions and requested followups independently of learning.
 
-    ``agent_enabled`` gates proactive, @mention, and reply-to-bot
-    participation. Explicit ``/ask`` requests are handled by the command path
-    and remain available while group memory is enabled. Proactive candidates
-    are queued for a delayed final decision; explicit triggers answer now.
-
-    Returns True when the agent handled the update and the dispatcher should not
-    continue routing it as a plain message.
+    Ordinary chatter and channel mirrors never enqueue automatic interactions.
     """
     trigger_kind = _trigger_kind(update)
     if trigger_kind is None:
@@ -1033,83 +1014,7 @@ def handle_update(
 
     message = update["message"]
     chat_id = message["chat"]["id"]
-    if not repo.is_agent_enabled(chat_id):
-        return False
     message_id = message["message_id"]
-    if trigger_kind == "proactive":
-        actor = message_actor(message)
-        if sqs_repo is None:
-            logger.warning(
-                "Group agent proactive candidate could not be queued",
-                extra={
-                    "chat_id": chat_id,
-                    "message_id": message_id,
-                    "reason": "missing_sqs_repo",
-                },
-            )
-            return False
-        sqs_repo.send_proactive_candidate_task(
-            update_id=update.get("update_id"),
-            chat_id=chat_id,
-            trigger_message_id=message_id,
-            trigger_user_id=actor.get("id") if actor else None,
-            user_text=extract_message_text(message),
-            lang=get_chat_lang(chat_id),
-            trigger_username=actor_username(actor),
-            trigger_display_name=actor_display_name(actor) if actor else None,
-            trigger_sender_type=actor_sender_type(actor),
-            created_at=message.get("date"),
-            delay_seconds=AGENT_PROACTIVE_DELAY_SECONDS,
-        )
-        logger.info(
-            "Group agent proactive candidate queued",
-            extra={
-                "chat_id": chat_id,
-                "message_id": message_id,
-                "delay_seconds": AGENT_PROACTIVE_DELAY_SECONDS,
-            },
-        )
-        return True
-    if trigger_kind == "channel_post":
-        actor = message_actor(message)
-        media_ref = detect_media_reference(message, prefer_reply=False)
-        if sqs_repo is None:
-            logger.warning(
-                "Group agent proactive candidate could not be queued",
-                extra={
-                    "chat_id": chat_id,
-                    "message_id": message_id,
-                    "reason": "missing_sqs_repo",
-                    "candidate_kind": "channel_post",
-                },
-            )
-            return False
-        sqs_repo.send_proactive_candidate_task(
-            update_id=update.get("update_id"),
-            chat_id=chat_id,
-            trigger_message_id=message_id,
-            trigger_user_id=actor.get("id") if actor else None,
-            user_text=extract_message_text(message),
-            lang=get_chat_lang(chat_id),
-            candidate_kind="channel_post",
-            trigger_username=actor_username(actor),
-            trigger_display_name=actor_display_name(actor) if actor else None,
-            trigger_sender_type=actor_sender_type(actor),
-            media_ref=media_ref.to_dict() if media_ref else None,
-            created_at=message.get("date"),
-            delay_seconds=0,
-        )
-        logger.info(
-            "Group agent linked channel post candidate queued",
-            extra={
-                "chat_id": chat_id,
-                "message_id": message_id,
-                "delay_seconds": 0,
-                "has_media": bool(media_ref),
-                **(media_reference_log_extra(media_ref) if media_ref else {}),
-            },
-        )
-        return True
 
     media_refs = detect_media_references(
         message,
@@ -1801,6 +1706,7 @@ def answer_group_question(
                 bot_message_id=bot_message_id,
                 trigger_message_id=reply_to_message_id,
                 trigger_kind="explicit",
+                context_version=EXPLICIT_CONTEXT_VERSION,
                 reason="Guardrail blocked a subjective ranking or persistent future-answer directive.",
                 answer_text=guarded_answer,
                 user_message=user_text,
@@ -1811,57 +1717,26 @@ def answer_group_question(
             )
         return True
 
-    ignored_usernames = {AGENT_BOT_USERNAME} if AGENT_BOT_USERNAME else set()
-    memory_bundle = build_agent_memory_context(
-        repo=repo,
-        chat_id=chat_id,
-        user_text=user_text,
-        retrieval_query=retrieval_query,
-        requester_user_id=requester_user_id,
-        requester_username=requester_username,
-        requester_display_name=requester_display_name,
-        ignored_usernames=ignored_usernames,
-        recent_limit=AGENT_RECENT_CONTEXT_LIMIT,
-        semantic_limit=8,
-        recent_context_fn=format_recent_context,
-        long_term_context_fn=format_long_term_memory_context,
-        semantic_retrieval_fn=retrieve_relevant_memories,
-        semantic_context_fn=format_semantic_memory_context,
-        user_profile_context_fn=format_user_profile_context,
-        requester_profile_context_fn=format_requester_profile_context,
-    )
-    logger.info(
-        "Group agent memory retrieval context prepared",
-        extra={
-            "chat_id": chat_id,
-            "candidate_count": len(memory_bundle.candidates),
-            "retrieval_source_count": len(memory_bundle.retrieval_sources),
-            "semantic_context_item_count": (
-                len(memory_bundle.semantic_memory_context.splitlines()) if memory_bundle.semantic_memory_context else 0
-            ),
-            "semantic_context_chars": len(memory_bundle.semantic_memory_context),
-            "self_reference": memory_bundle.intent.is_self_reference,
-            "requester_filter_applied": bool(memory_bundle.intent.is_self_reference and requester_user_id is not None),
-            "target_username_count": len(memory_bundle.intent.target_usernames),
-            "retrieval_query_chars": len((retrieval_query or user_text).strip()),
-        },
-    )
     style_profile = _load_chat_style_profile(repo, chat_id)
     reply_policy = _reply_policy(
         user_text,
         style_profile=style_profile,
-        low_confidence_retrieval=_has_low_confidence_retrieval(memory_bundle.retrieval_sources),
+        low_confidence_retrieval=False,
     )
 
     try:
         answer, provider_name = _generate_group_chat_reply(
             user_message=user_text,
-            recent_context=memory_bundle.recent_context,
-            long_term_memory_context=memory_bundle.long_term_memory_context,
-            semantic_memory_context=memory_bundle.semantic_memory_context,
-            user_profile_context=memory_bundle.user_profile_context,
-            requester_profile_context=memory_bundle.requester_profile_context,
-            reply_instructions=reply_policy.instructions,
+            recent_context="",
+            long_term_memory_context="",
+            semantic_memory_context="",
+            user_profile_context="",
+            requester_profile_context="",
+            reply_instructions=(
+                reply_policy.instructions + " Long-term memory is disabled. "
+                "Do not claim to know personal or group facts absent from this explicit request. "
+                "When the request lacks evidence, say you do not know and ask for current context."
+            ),
             max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
             media_parts=media_parts,
@@ -1907,9 +1782,10 @@ def answer_group_question(
             bot_message_id=bot_message_id,
             trigger_message_id=reply_to_message_id,
             trigger_kind="explicit",
+            context_version=EXPLICIT_CONTEXT_VERSION,
             reason=(
                 "I was mentioned, replied to, or called through /ask, "
-                "so I answered with recent, semantic, and trusted memory context."
+                "so I answered using only this explicit request and its current thread."
             ),
             answer_text=answer_text,
             user_message=user_text,
@@ -1919,7 +1795,7 @@ def answer_group_question(
             requester_user_id=requester_user_id,
             requester_username=requester_username,
             requester_display_name=requester_display_name,
-            retrieval_sources=memory_bundle.retrieval_sources,
+            retrieval_sources=[],
             media_metadata=media_reply_metadata or None,
         )
     logger.info(

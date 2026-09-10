@@ -8,21 +8,18 @@ from typing import Any
 
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
-from services.ambient_reactions import process_ambient_reaction_task
 from services.contest import (
     process_contest_ttl_recovery_task,
     process_contest_ttl_sweep_task,
 )
-from services.group_agent import process_proactive_candidate_task
-from services.group_memory_processor import process_daily_group_summaries_task, process_group_memory_task
 from services.handlers import process_group_ask_task, process_timeout_task
+from services.memory_cutover import RETIRED_TASK_TYPES, is_current_explicit_task
 from services.repositories.captcha import CaptchaRepository
 from services.repositories.contest import ContestRepository
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 from services.spam.processor import process_spam_check_task
 from services.telegram import TelegramClient
-from services.vector_memory import process_vector_memory_backfill_task, process_vector_memory_task
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -84,6 +81,11 @@ def process_sqs_event(
         try:
             body = _load_task_body(record)
             task_type = body.get("task_type")
+            if task_type in RETIRED_TASK_TYPES or (
+                task_type == "PROCESS_GROUP_ASK" and not is_current_explicit_task(body)
+            ):
+                logger.info("Discarded retired task", extra={"task_type": task_type})
+                continue
             if task_type not in {
                 "PROCESS_CONTEST_TTL_SWEEP",
                 "PROCESS_CONTEST_TTL_RECOVERY",
@@ -95,23 +97,11 @@ def process_sqs_event(
                 body["_captcha_repo"] = captcha_repo
                 process_timeout_task(bot, body)
             elif task_type == "SPAM_CHECK":
-                process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=memory_repo)
+                process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)
             elif task_type == "PROCESS_GROUP_ASK":
                 if memory_repo is None:
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")
                 process_group_ask_task(repo=memory_repo, bot=bot, body=body)
-            elif task_type == "PROCESS_PROACTIVE_CANDIDATE":
-                if memory_repo is None:
-                    raise RuntimeError("PROCESS_PROACTIVE_CANDIDATE requires memory_repo")
-                process_proactive_candidate_task(repo=memory_repo, bot=bot, body=body)
-            elif task_type == "PROCESS_AMBIENT_REACTION":
-                if memory_repo is None:
-                    raise RuntimeError("PROCESS_AMBIENT_REACTION requires memory_repo")
-                process_ambient_reaction_task(repo=memory_repo, bot=bot, body=body)
-            elif task_type == "PROCESS_GROUP_MEMORY":
-                process_group_memory_task(body, repo=memory_repo)
-            elif task_type == "PROCESS_DAILY_GROUP_SUMMARIES":
-                process_daily_group_summaries_task(body, repo=memory_repo)
             elif task_type == "PROCESS_CONTEST_TTL_RECOVERY":
                 if contest_repo is None:
                     raise RuntimeError("PROCESS_CONTEST_TTL_RECOVERY requires contest_repo")
@@ -159,16 +149,13 @@ def process_vector_sqs_event(
                 continue
 
             task_type = body.get("task_type")
+            if task_type in RETIRED_TASK_TYPES or (
+                task_type == "PROCESS_GROUP_ASK" and not is_current_explicit_task(body)
+            ):
+                logger.info("Discarded retired task", extra={"task_type": task_type})
+                continue
             t0 = time.monotonic()
-            if task_type == "PROCESS_VECTOR_MEMORY":
-                process_vector_memory_task(body, repo=memory_repo)
-            elif task_type == "PROCESS_VECTOR_MEMORY_BACKFILL":
-                process_vector_memory_backfill_task(body, repo=memory_repo)
-            else:
-                logger.warning(
-                    "Unexpected vector SQS record: unsupported task_type, ignoring",
-                    extra={"task_type": task_type},
-                )
+            logger.warning("Unsupported vector task ignored", extra={"task_type": task_type})
             _log_task_completed(record, body, task_type, t0)
 
         except Exception as e:

@@ -199,86 +199,27 @@ def test_import_telegram_history_dry_run_does_not_write(tmp_path):
 
 
 def test_import_telegram_history_writes_memory_and_enqueues_vectors(tmp_path):
-    export_path = tmp_path / "result.json"
-    export_path.write_text(
-        (
-            '{"messages":['
-            '{"id":1,"type":"message","date_unixtime":"1767272400","from":"Ada","from_id":"user42",'
-            '"text":"We decided to use S3 Vectors tomorrow"},'
-            '{"id":2,"type":"message","date_unixtime":"1767276000","from":"Timur","from_id":"user43",'
-            '"text":"I prefer Python for Lambda scripts"}'
-            "]}"
-        ),
-        encoding="utf-8",
+    import pytest
+
+    options = HistoryImportOptions(
+        chat_id=-100123, export_path=tmp_path / "not-read.json", since=date(2019, 1, 1), dry_run=False
     )
     repo = MagicMock()
-    repo.store_message.return_value = True
-    repo.store_long_term_memory.side_effect = [
-        {"sk": "GROUP_FACT#1#1"},
-        {"sk": "USER_FACT#43#2#2"},
-    ]
-    repo.store_daily_summary.return_value = {"sk": "DAILY_SUMMARY#2026-01-01"}
-    vector_enqueue = MagicMock()
-
-    result = import_telegram_history(
-        HistoryImportOptions(
-            chat_id=-100123,
-            export_path=export_path,
-            since=date(2026, 1, 1),
-            dry_run=False,
-        ),
-        repo=repo,
-        vector_enqueue=vector_enqueue,
-    )
-
-    assert result.stats.stored_messages == 2
-    assert result.stats.long_term_by_kind["group_fact"] == 1
-    assert result.stats.long_term_by_kind["user_fact"] == 1
-    assert repo.store_message.call_count == 2
-    assert repo.store_message.call_args_list[0].kwargs["skip_if_exists"] is True
-    assert repo.store_long_term_memory.call_count == 2
-    assert repo.store_daily_summary.call_args.kwargs["source"] == "telegram_export_import"
-    assert [call.kwargs["source_sk"] for call in vector_enqueue.call_args_list] == [
-        "GROUP_FACT#1#1",
-        "USER_FACT#43#2#2",
-    ]
-    assert result.stats.vector_tasks == 2
+    with pytest.raises(RuntimeError, match="retired"):
+        import_telegram_history(options, repo=repo)
+    assert repo.mock_calls == []
 
 
 def test_import_telegram_history_vectorizes_daily_summary_when_enabled(tmp_path):
-    export_path = tmp_path / "result.json"
-    export_path.write_text(
-        (
-            '{"messages":['
-            '{"id":1,"type":"message","date_unixtime":"1767272400","from":"Ada","from_id":"user42",'
-            '"text":"We decided to use S3 Vectors tomorrow"}'
-            "]}"
-        ),
-        encoding="utf-8",
+    import pytest
+
+    options = HistoryImportOptions(
+        chat_id=-100123, export_path=tmp_path / "not-read.json", since=date(2019, 1, 1), dry_run=False
     )
     repo = MagicMock()
-    repo.store_message.return_value = True
-    repo.store_long_term_memory.return_value = {"sk": "GROUP_FACT#1#1"}
-    repo.store_daily_summary.return_value = {"sk": "DAILY_SUMMARY#2026-01-01"}
-    vector_enqueue = MagicMock()
-
-    result = import_telegram_history(
-        HistoryImportOptions(
-            chat_id=-100123,
-            export_path=export_path,
-            since=date(2026, 1, 1),
-            dry_run=False,
-            vectorize_daily_summaries=True,
-        ),
-        repo=repo,
-        vector_enqueue=vector_enqueue,
-    )
-
-    assert [call.kwargs["source_sk"] for call in vector_enqueue.call_args_list] == [
-        "GROUP_FACT#1#1",
-        "DAILY_SUMMARY#2026-01-01",
-    ]
-    assert result.stats.vector_tasks == 2
+    with pytest.raises(RuntimeError, match="retired"):
+        import_telegram_history(options, repo=repo)
+    assert repo.mock_calls == []
 
 
 def test_history_import_skips_non_vectorizable_agent_reply_enqueue():

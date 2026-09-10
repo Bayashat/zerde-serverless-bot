@@ -1,5 +1,10 @@
 # AGENTS.md
 
+## Current cutover boundary (Z01)
+
+Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Only new, unexpired `explicit-only-2026-09` reply threads can be read. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
+
+
 This file guides Codex when working in this repository. Keep it current with `docs/ARCHITECTURE.md` and `.codex/skills/zerdebot-development/SKILL.md`.
 
 ## Commands
