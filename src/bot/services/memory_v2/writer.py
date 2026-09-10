@@ -12,8 +12,10 @@ from .models import (
     MemoryConflict,
     MemoryInputError,
     MemoryUnavailable,
+    SelfConfirmation,
     SourceRef,
     WorkLease,
+    integer,
     positive_id,
 )
 from .repository import MemoryRepository
@@ -50,29 +52,100 @@ class FactWriter:
         expected_subject_revision: int,
         changes: list[FactChange],
         confirmation: AdminConfirmation,
+        expected_fact=None,
     ) -> CommitResult:
         if not isinstance(confirmation, AdminConfirmation) or confirmation.confirmed is not True:
             raise MemoryInputError("Group facts require trusted explicit administrator confirmation")
         positive_id(confirmation.actor_user_id)
-        return self._apply(chat_id, source_ref, changes, expected_subject_revision, None, confirmation=confirmation)
+        return self._apply(
+            chat_id,
+            source_ref,
+            changes,
+            expected_subject_revision,
+            None,
+            confirmation=confirmation,
+            expected_fact=expected_fact,
+        )
 
-    def _apply(self, chat_id, ref, changes, expected_revision, generation, *, lease=None, confirmation=None):
+    def confirm_self_fact(
+        self, chat_id, source_ref, *, expected_subject_revision, changes, confirmation, expected_fact=None
+    ):
+        if not isinstance(confirmation, SelfConfirmation) or confirmation.confirmed is not True:
+            raise MemoryInputError("Personal corrections require authenticated self confirmation")
+        positive_id(confirmation.actor_user_id)
+        return self._apply(
+            chat_id,
+            source_ref,
+            changes,
+            expected_subject_revision,
+            None,
+            confirmation=confirmation,
+            expected_fact=expected_fact,
+        )
+
+    def reject_fact(self, chat_id, fact_id, *, expected_fact_version, confirmation):
+        """Reject one fact version without resetting its ordering or prior feedback."""
+        if not isinstance(confirmation, (SelfConfirmation, AdminConfirmation)) or confirmation.confirmed is not True:
+            raise MemoryInputError("Fact rejection requires authenticated confirmation")
+        actor = positive_id(confirmation.actor_user_id)
+        integer(expected_fact_version, minimum=1)
+        if not isinstance(fact_id, str) or not fact_id.startswith("FACT#"):
+            raise MemoryInputError("Expected a fact identity")
+        control = self.repo._active_control(chat_id)
+        old = self.repo._read(chat_id, fact_id)
+        if not old or old.get("epoch") != control["epoch"]:
+            raise MemoryUnavailable("Fact is not current")
+        personal = old["subject_id"] == "USER#" + actor
+        group = old["subject_id"] == "GROUP" and isinstance(confirmation, AdminConfirmation)
+        if not (personal or group):
+            raise MemoryInputError("Cannot reject another person's fact")
+        subject = self.repo._active_subject(chat_id, "GROUP" if group else actor, control)
+        if old["subject_generation"] != subject["generation"]:
+            raise MemoryUnavailable("Fact belongs to a deleted generation")
+        if old.get("rejected_fact_version") == expected_fact_version and old["status"] == "REJECTED":
+            return old
+        if old["revision"] != expected_fact_version or old["status"] != "ACTIVE":
+            raise MemoryConflict("Fact version changed before rejection")
+        updated = {
+            **old,
+            "revision": int(old["revision"]) + 1,
+            "fact_version": int(old["revision"]) + 1,
+            "status": "REJECTED",
+            "rejected_fact_version": expected_fact_version,
+            "wrong_feedback_count": int(old.get("wrong_feedback_count", 0)) + 1,
+            "feedback_status": "WRONG",
+            "rejected_at": self.repo.now(),
+            "rejected_by": actor,
+        }
+        self.repo._transaction(
+            [
+                self.repo._check_snapshot(control),
+                self.repo._put_cas({**subject, "revision": int(subject["revision"]) + 1}, subject),
+                self.repo._put_cas(updated, old),
+            ]
+        )
+        return updated
+
+    def _apply(
+        self, chat_id, ref, changes, expected_revision, generation, *, lease=None, confirmation=None, expected_fact=None
+    ):
         if not isinstance(ref, SourceRef) or not isinstance(changes, list) or len(changes) > 16:
             raise MemoryInputError("Invalid fact commit size or identity")
-        group = confirmation is not None
+        group = isinstance(confirmation, AdminConfirmation)
+        explicit = confirmation is not None
         work = self.repo.get_work(chat_id, ref)
         if not work or work.get("source_ref") != ref.as_dict():
             raise MemoryUnavailable("Source work is missing or obsolete")
         if work["state"] == "DONE":
             return CommitResult(ref, (), duplicate=True)
-        control, author, head, raw = self.repo.source_snapshot(chat_id, ref, learning=not group)
-        if group:
+        control, author, head, raw = self.repo.source_snapshot(chat_id, ref, learning=not explicit)
+        if explicit:
             if head["source_kind"] != "confirmation" or head["actor_user_id"] != confirmation.actor_user_id:
                 raise MemoryInputError("Confirmation must reference the authorized actor's explicit command")
-            subject = self.repo._ensure_subject(chat_id, "GROUP", control)
+            subject = self.repo._ensure_subject(chat_id, "GROUP", control) if group else author
             if work["state"] != "PENDING":
                 raise MemoryConflict("Confirmation source work is already owned")
-            name = "GROUP"
+            name = "GROUP" if group else f"USER#{head['actor_user_id']}"
         else:
             if head["source_kind"] != "message" or work["state"] != "LEASED" or work["lease_token"] != lease.token:
                 raise MemoryUnavailable("Extraction lease is no longer owned")
@@ -118,6 +191,12 @@ class FactWriter:
                 raise MemoryInputError("Conflicting changes to one fact slot")
             seen.add(key)
             old = self.repo._read(chat_id, key)
+            if (
+                expected_fact
+                and key == expected_fact["fact_id"]
+                and old.get("revision") != expected_fact["fact_version"]
+            ):
+                raise MemoryConflict("Correction targets a changed fact version")
             current = (
                 old if old.get("epoch") == ref.epoch and old.get("subject_generation") == subject["generation"] else {}
             )
@@ -162,12 +241,14 @@ class FactWriter:
                 operations.append(self.repo._put_cas(history, {}))
             operations.append(self.repo._put_cas(fact, old))
             written.append(key)
+        if expected_fact and expected_fact["fact_id"] not in seen:
+            raise MemoryInputError("Correction did not address its selected fact")
         # Re-read time after validation/lookups (and after the caller's model
         # request). DDB conditions use this fresh value, not the lease start.
         now = self.repo.now()
         if int(head["expires_at"]) <= now or int(raw["expires_at"]) <= now or int(work["expires_at"]) <= now:
             raise MemoryUnavailable("Source work expired before commit")
-        if not group and (int(work["lease_until"]) <= now or lease.lease_until != work["lease_until"]):
+        if not explicit and (int(work["lease_until"]) <= now or lease.lease_until != work["lease_until"]):
             raise MemoryUnavailable("Extraction lease expired before commit")
         changed_subject = {**subject, "revision": int(subject["revision"]) + 1}
         guard_operations = [self.repo._check_snapshot(control), self.repo._put_cas(changed_subject, subject)]
@@ -235,10 +316,10 @@ class FactWriter:
                 ":ttl": now + WORK_RETENTION_SECONDS,
                 ":one": 1,
                 ":revision": work["revision"],
-                ":expected": "PENDING" if group else "LEASED",
+                ":expected": "PENDING" if explicit else "LEASED",
             },
         }
-        if not group:
+        if not explicit:
             done["ConditionExpression"] += " AND lease_token = :token AND lease_until > :now"
             done["ExpressionAttributeValues"][":token"] = lease.token
         guard_operations.append({"Update": done})
