@@ -214,6 +214,14 @@ class AdminConfirmation:
 
 
 @dataclass(frozen=True)
+class SelfConfirmation:
+    """Created by the authenticated personal correction command adapter only."""
+
+    actor_user_id: str
+    confirmed: bool
+
+
+@dataclass(frozen=True)
 class CommitResult:
     source_ref: SourceRef
     written_fact_ids: tuple[str, ...]

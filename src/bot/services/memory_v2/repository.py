@@ -118,7 +118,7 @@ class MemoryRepository:
             "state": "ACTIVE",
             "learning_enabled": True,
             "epoch": uuid.uuid4().hex,
-            "learning_started_at": self.now(),
+            "learning_started_at": max(self.now(), int(previous.get("purged_through", -1)) + 1),
             "revision": expected_revision + 1,
         }
         self._transaction([self._put_cas(item, previous)])
@@ -209,7 +209,12 @@ class MemoryRepository:
         previous = self.get_subject(chat_id, user_id)
         if not previous or previous["revision"] != expected_revision or previous["state"] != "ACTIVE":
             raise MemoryConflict("Unexpected subject opt-in revision")
-        item = {**previous, "optout": False, "learning_started_at": self.now(), "revision": expected_revision + 1}
+        item = {
+            **previous,
+            "optout": False,
+            "learning_started_at": max(self.now(), int(previous["learning_started_at"])),
+            "revision": expected_revision + 1,
+        }
         self._transaction([self._check_snapshot(control), self._put_cas(item, previous)])
         return item
 
@@ -846,7 +851,7 @@ class MemoryRepository:
         )
 
     def recovery_checkpoint(self, name):
-        if name not in {"admissions", "clean", "work0", "work1", "work2", "work3"}:
+        if name not in {"admissions", "clean", "purges", "work0", "work1", "work2", "work3"}:
             raise MemoryInputError("Unknown recovery cursor")
         return self.table.get_item(Key={"pk": "RECOVERY", "sk": name}, ConsistentRead=True).get("Item") or {}
 
