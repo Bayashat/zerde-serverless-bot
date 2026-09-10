@@ -259,6 +259,7 @@ def test_semantic_and_lexical_candidates_dedupe_by_source_sk():
 
 def test_lexical_context_skips_rows_already_present_in_semantic_results():
     repo = MagicMock()
+    repo.get_memory_item.return_value = {"summary": "OpenSearch indexing failed with E1027."}
     source_sk = "USER_FACT#42#1#2"
     semantic_row = {
         "distance": 0.12,
@@ -574,11 +575,12 @@ def test_semantic_candidate_hydrates_feedback_metadata_for_ranking():
     repo.get_memory_item.side_effect = [
         {
             "sk": "USER_FACT#42#1#2",
+            "summary": "Ada owns OpenSearch indexing.",
             "wrong_feedback_count": 2,
             "negative_feedback_count": 2,
             "feedback_status": "wrong",
         },
-        {},
+        {"summary": "The group chose OpenSearch indexing."},
     ]
     semantic_rows = [
         {
@@ -639,6 +641,10 @@ def test_candidate_driven_context_prefers_user_fact_over_daily_summary_prompt_in
             },
         },
     ]
+
+    repo.get_memory_item.side_effect = lambda chat, sk: next(
+        {"summary": row["metadata"]["text"]} for row in semantic_rows if row["metadata"]["source_sk"] == sk
+    )
 
     bundle = build_agent_memory_context(
         repo=repo,

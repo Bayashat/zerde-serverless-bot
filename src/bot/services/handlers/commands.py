@@ -32,12 +32,7 @@ from services.telegram_media import (
     media_references_retrieval_query,
     prepare_media_collection_for_gemini,
 )
-from services.vector_memory import (
-    delete_chat_vectors,
-    delete_memory_vectors_for_items,
-    delete_user_vectors,
-    vector_memory_configured,
-)
+from services.vector_memory import recover_pending_memory_vector_deletes
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -506,8 +501,8 @@ def handle_forget_group(ctx: Context) -> None:
         return
     if not _require_admin_user(ctx):
         return
-    vector_note = _delete_chat_vectors_note(ctx)
     deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
+    vector_note = _memory_vector_cleanup_note(ctx)
     ctx.reply(
         get_translated_text("forget_group_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
         ctx.message_id,
@@ -520,8 +515,8 @@ def handle_forget_me(ctx: Context) -> None:
     if not ctx.user_id:
         ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
         return
-    vector_note = _delete_user_vectors_note(ctx, ctx.user_id)
     deleted = ctx.memory_repo.delete_user_memory(ctx.chat_id, ctx.user_id)
+    vector_note = _memory_vector_cleanup_note(ctx) + "\n" + get_translated_text("forget_me_scope", ctx.lang_code)
     ctx.reply(
         get_translated_text("forget_me_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
         ctx.message_id,
@@ -537,15 +532,13 @@ def _is_reply_to_bot_message(reply_to_message: dict[str, Any]) -> bool:
     return bool(isinstance(sender, dict) and sender.get("is_bot"))
 
 
-def _delete_items_vectors_note(ctx: Context, items: list[dict[str, Any]]) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
+def _memory_vector_cleanup_note(ctx: Context) -> str:
     try:
-        deleted = delete_memory_vectors_for_items(ctx.chat_id, items)
+        deleted = recover_pending_memory_vector_deletes(ctx.chat_id, repo=ctx.memory_repo)
         return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
     except Exception:
-        logger.exception("Failed to delete selected vector memory", extra={"chat_id": ctx.chat_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
+        logger.warning("Memory vector cleanup remains pending", extra={"chat_id": ctx.chat_id})
+        return get_translated_text("memory_cleanup_pending", ctx.lang_code)
 
 
 def _source_sk_values(retrieval_sources: Any) -> list[str]:
@@ -619,14 +612,19 @@ def _handle_forget_this_bot_answer(ctx: Context, bot_message_id: int | str | Non
         can_delete_group_memory=can_delete_group_memory,
     )
     if not deletable_sks:
-        ctx.reply(get_translated_text("forget_this_not_allowed", ctx.lang_code), ctx.message_id)
+        # Sources may already be absent after a previous partial cleanup. The
+        # durable marker is the authority for retrying its vector deletion.
+        vector_note = _memory_vector_cleanup_note(ctx)
+        ctx.reply(get_translated_text("forget_this_not_allowed", ctx.lang_code) + "\n" + vector_note, ctx.message_id)
         return
 
     deleted_items = ctx.memory_repo.delete_memory_items_by_sks(ctx.chat_id, deletable_sks)
+    vector_note = _memory_vector_cleanup_note(ctx)
     if not deleted_items:
-        ctx.reply(get_translated_text("forget_this_nothing_deleted", ctx.lang_code), ctx.message_id)
+        ctx.reply(
+            get_translated_text("forget_this_nothing_deleted", ctx.lang_code) + "\n" + vector_note, ctx.message_id
+        )
         return
-    vector_note = _delete_items_vectors_note(ctx, deleted_items)
     ctx.reply(
         get_translated_text(
             "forget_this_done",
@@ -651,10 +649,12 @@ def _handle_forget_this_source_message(ctx: Context, source_message: dict[str, A
         return
 
     deleted_items = ctx.memory_repo.delete_memory_for_message(ctx.chat_id, message_id)
+    vector_note = _memory_vector_cleanup_note(ctx)
     if not deleted_items:
-        ctx.reply(get_translated_text("forget_this_nothing_deleted", ctx.lang_code), ctx.message_id)
+        ctx.reply(
+            get_translated_text("forget_this_nothing_deleted", ctx.lang_code) + "\n" + vector_note, ctx.message_id
+        )
         return
-    vector_note = _delete_items_vectors_note(ctx, deleted_items)
     ctx.reply(
         get_translated_text(
             "forget_this_done",
@@ -684,28 +684,6 @@ def handle_forget_this(ctx: Context) -> None:
 def handle_wrong_memory_feedback(ctx: Context) -> None:
     """All legacy facts are already excluded; V2 corrections have a new owner."""
     ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
-
-
-def _delete_chat_vectors_note(ctx: Context) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
-    try:
-        deleted = delete_chat_vectors(ctx.chat_id, repo=ctx.memory_repo)
-        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
-    except Exception:
-        logger.exception("Failed to delete chat vector memory", extra={"chat_id": ctx.chat_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
-
-
-def _delete_user_vectors_note(ctx: Context, user_id: int | str) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
-    try:
-        deleted = delete_user_vectors(ctx.chat_id, user_id, repo=ctx.memory_repo)
-        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
-    except Exception:
-        logger.exception("Failed to delete user vector memory", extra={"chat_id": ctx.chat_id, "user_id": user_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
 
 
 _WHY_SOURCE_ORDER = (
