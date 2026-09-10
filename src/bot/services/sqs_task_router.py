@@ -70,6 +70,7 @@ def process_sqs_event(
     *,
     contest_repo: ContestRepository | None = None,
     sqs_repo: SQSClient | None = None,
+    memory_ingestion=None,
 ) -> None:
     """Process main bot SQS tasks. Vector tasks are handled by the vector-indexer Lambda."""
     logger.debug(
@@ -98,7 +99,12 @@ def process_sqs_event(
                 body["_sqs_repo"] = sqs_repo or SQSClient()
                 process_timeout_task(bot, body)
             elif task_type == "SPAM_CHECK":
-                process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)
+                outcome = process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)
+                if outcome == "clean" and body.get("source_ref") and memory_ingestion is not None:
+                    # Persisted CLEAN plus staged original source authorize admission.
+                    # The moderation task's text is never used as the source body.
+                    case = memory_ingestion.moderation_repo.ensure_case(body)
+                    memory_ingestion.promote_clean(case["case_id"])
             elif task_type == "PROCESS_GROUP_ASK":
                 if memory_repo is None:
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")

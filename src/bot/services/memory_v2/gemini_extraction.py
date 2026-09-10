@@ -4,6 +4,7 @@ import asyncio
 import json
 
 import httpx
+from zerde_common.async_http import bounded_async_client
 
 from .extraction_prompt import MODEL, validate_request
 
@@ -28,10 +29,10 @@ class GeminiExtractionProvider:
             async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
                 if self._client is not None:
                     return await self._generate(self._client, request)
-                async with httpx.AsyncClient(
-                    transport=httpx.AsyncHTTPTransport(retries=0),
-                    timeout=httpx.Timeout(REQUEST_TIMEOUT_SECONDS, connect=3),
-                    follow_redirects=False,
+                async with bounded_async_client(
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                    connect_timeout=3,
+                    max_connections=1,
                 ) as client:
                     return await self._generate(client, request)
         except Exception:

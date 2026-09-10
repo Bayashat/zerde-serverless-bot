@@ -6,6 +6,7 @@ from core.config import MEMORY_TABLE_NAME, MEMORY_V2_TABLE_NAME, QUIZ_LAMBDA_NAM
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
+from services.memory_v2.runtime import get_memory_ingestion  # noqa: F401 -- public bot composition export
 from services.repositories import (
     CaptchaRepository,
     ContestRepository,
@@ -61,9 +62,9 @@ def get_memory_v2_repo():
     if not MEMORY_V2_TABLE_NAME:
         return None
     if _memory_v2_repo is None:
-        from services.memory_v2.repository import MemoryRepository
+        from services.memory_v2.runtime import get_memory_v2_repo as get_configured_repo
 
-        _memory_v2_repo = MemoryRepository(MEMORY_V2_TABLE_NAME)
+        _memory_v2_repo = get_configured_repo()
     return _memory_v2_repo
 
 

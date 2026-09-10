@@ -78,4 +78,5 @@ def test_main_sqs_boundary_passes_contest_and_shared_queue_dependencies() -> Non
         memory,
         contest_repo=contest,
         sqs_repo=sqs,
+        memory_ingestion=None,
     )

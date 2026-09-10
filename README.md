@@ -239,3 +239,5 @@ Zerde was originally built from the [serverless-tg-bot-starter](https://github.c
 This project is licensed under the MIT License.
 
 Memory V2 storage is being introduced behind a stopped control state; deployment alone does not enable learning. The [domain contract](docs/memory-v2-domain.md) defines the independent table, source versions and evidence-backed facts.
+
+The [runtime integration](docs/MEMORY_V2_RUNTIME.md) adds a dedicated memory queue and worker with recoverable admission; learning remains stopped until an explicit validated cutover.

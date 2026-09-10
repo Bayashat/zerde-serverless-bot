@@ -14,6 +14,7 @@ if str(INFRA_DIR) not in sys.path:
     sys.path.insert(0, str(INFRA_DIR))
 
 from components import bot as bot_component  # noqa: E402
+from components import memory_worker as memory_worker_component  # noqa: E402
 from components import news as news_component  # noqa: E402
 from components import operations as operations_component  # noqa: E402
 from components import quiz as quiz_component  # noqa: E402
@@ -174,6 +175,7 @@ def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambd
 
 
 def _template(monkeypatch: Any, *, env_name: str) -> Template:
+    monkeypatch.setattr(memory_worker_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(operations_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(bot_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(news_component, "PythonFunction", _stub_python_function)
@@ -697,10 +699,10 @@ def test_idle_dev_stops_ingress_and_consumers_without_alarm_spend(monkeypatch):
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
     template = _dev_template(monkeypatch)
     functions = template.find_resources("AWS::Lambda::Function")
-    assert len(functions) == 5
+    assert len(functions) == 6
     assert all(fn["Properties"]["ReservedConcurrentExecutions"] == 0 for fn in functions.values())
     mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
-    assert len(mappings) == 2
+    assert len(mappings) == 3
     assert all(mapping["Properties"]["Enabled"] is False for mapping in mappings.values())
     assert not template.find_resources("AWS::CloudWatch::Alarm")
 
@@ -709,7 +711,7 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
     template = _dev_template(monkeypatch)
     alarms = template.find_resources("AWS::CloudWatch::Alarm")
-    assert len(alarms) == 17
+    assert len(alarms) == 22
     for alarm in alarms.values():
         props = alarm["Properties"]
         assert len(props["AlarmActions"]) == 1
@@ -721,7 +723,7 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
         "zerde-serverless-operations-dev",
     )
     variables = notifier["Properties"]["Environment"]["Variables"]
-    assert len(json.loads(variables["OPERATIONS_ALARM_NAMES"])) == 17
+    assert len(json.loads(variables["OPERATIONS_ALARM_NAMES"])) == 22
     assert notifier["Properties"]["Timeout"] == 60
     assert "DeadLetterConfig" in notifier["Properties"]
     subscription = next(iter(template.find_resources("AWS::SNS::Subscription").values()))
@@ -762,7 +764,7 @@ def test_prod_ignores_dev_idle_flag_preserves_vector_limit_and_enables_quiz_pitr
     assert sorted(
         m["Properties"]["ScalingConfig"]["MaximumConcurrency"]
         for m in template.find_resources("AWS::Lambda::EventSourceMapping").values()
-    ) == [3, 10]
-    assert len(template.find_resources("AWS::CloudWatch::Alarm")) == 17
+    ) == [2, 3, 10]
+    assert len(template.find_resources("AWS::CloudWatch::Alarm")) == 22
     tags = {tag["Key"]: tag["Value"] for tag in quiz["Properties"]["Tags"]}
     assert tags == {"Project": "ZerdeBot", "Environment": "prod", "Component": "quiz"}

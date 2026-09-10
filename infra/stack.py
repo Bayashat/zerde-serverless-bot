@@ -8,6 +8,7 @@ from aws_cdk import CfnOutput, Stack, Tags
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from components.memory_v2 import MemoryV2Construct
+from components.memory_worker import MemoryWorkerConstruct, grant_project_budget
 from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
 from components.operations import OperationsConstruct
 from components.zerde_layer import add_zerde_common_layer
@@ -390,6 +391,25 @@ class ZerdeTelegramBotStack(Stack):
             admin_user_id=os.environ.get("ADMIN_USER_ID", ""),
             ssm_secret_prefix=ssm_secret_prefix,
         )
+        self.memory_worker = MemoryWorkerConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}MemoryWorker",
+            env_name=env_name,
+            is_prod=is_prod,
+            runtime_active=self.runtime_active,
+            shared_layer=zerde_layer,
+            memory_table=memory_v2.table,
+            stats_table=bot.stats_table,
+            bot_environment=bot.bot_environment,
+            operations=self.operations,
+        )
+        self.memory_worker.queue.grant_send_messages(bot.handler_lambda)
+        bot.handler_lambda.add_environment("MEMORY_V2_QUEUE_URL", self.memory_worker.queue.queue_url)
+        bot.handler_lambda.add_environment("MEMORY_BUDGET_TABLE_NAME", self.memory_worker.budget_table.table_name)
+        bot.handler_lambda.add_environment("ENVIRONMENT", env_name)
+        bot.handler_lambda.add_environment("OPERATIONS_TOPIC_ARN", self.operations.topic.topic_arn)
+        grant_project_budget(bot.handler_lambda, self.memory_worker.budget_table)
+        self.operations.grant_budget_publish(bot.handler_lambda)
         for construct, component in (
             (bot, "bot"),
             (vector_indexer, "vector-indexer"),

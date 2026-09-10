@@ -96,6 +96,15 @@ def _handle_api_gateway(
 
         logger.info("Telegram webhook update received", extra=telegram_update_log_extra(body))
 
+        from services.memory_v2.runtime import get_memory_ingestion
+        from services.memory_v2.telegram_ingestion import TelegramMemoryAdmission
+
+        try:
+            admission = TelegramMemoryAdmission(get_memory_ingestion(), body)
+        except Exception:
+            logger.error("Memory source observation requires redelivery")
+            return create_response(500, {"message": "Memory source retry required"})
+
         has_pending_captcha = _has_pending_captcha(dispatcher, body)
         if has_pending_captcha:
             # Pending members cannot bypass captcha with a command/document.
@@ -114,7 +123,9 @@ def _handle_api_gateway(
             return create_response(200, {"message": "ok"})
 
         if screener.should_screen(body) and not has_pending_captcha:
-            spam_outcome = screener.run(body)
+            spam_outcome = (
+                screener.run(body, prepare_candidate=admission.prepare) if admission.eligible else screener.run(body)
+            )
             if spam_outcome == "error":
                 return create_response(500, {"message": "Spam screening retry required"})
             if spam_outcome in {"enforced", "queued"}:
@@ -122,6 +133,12 @@ def _handle_api_gateway(
                     "Spam screening handled update; skipping normal group flows", extra={"outcome": spam_outcome}
                 )
                 return create_response(200, {"message": "ok"})
+
+        try:
+            admission.accept_safe()
+        except Exception:
+            logger.error("Memory admission requires redelivery")
+            return create_response(500, {"message": "Memory admission retry required"})
 
         if not has_pending_captcha:
             try:

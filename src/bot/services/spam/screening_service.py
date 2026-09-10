@@ -48,7 +48,7 @@ class SpamScreeningService:
             return False
         return True
 
-    def run(self, body: dict) -> SpamScreeningOutcome:
+    def run(self, body: dict, *, prepare_candidate=None) -> SpamScreeningOutcome:
         """Score message, enforce or queue Groq. Never raises."""
         try:
             msg = body.get("message") or body["edited_message"]
@@ -82,6 +82,8 @@ class SpamScreeningService:
                     reason=f"rules:{','.join(triggered_rules)}",
                 )
                 if result.state == "failed":
+                    message_context = build_spam_context_payload(msg)
+                    source_ref = prepare_candidate(combined, message_context) if prepare_candidate else None
                     report_rule_enforcement_failure(
                         self._bot,
                         {
@@ -89,7 +91,8 @@ class SpamScreeningService:
                             "user_id": user_id,
                             "message_id": message_id,
                             "text": combined,
-                            "message_context": build_spam_context_payload(msg),
+                            "message_context": message_context,
+                            **({"source_ref": source_ref} if source_ref else {}),
                         },
                         reason=f"rules:{','.join(triggered_rules)}",
                     )
@@ -102,6 +105,8 @@ class SpamScreeningService:
                     "Ambiguous spam score, queuing for AI check",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
                 )
+                message_context = build_spam_context_payload(msg, rule_score=score, triggered_rules=triggered_rules)
+                source_ref = prepare_candidate(combined, message_context) if prepare_candidate else None
                 self._sqs.send_spam_check_task(
                     chat_id=chat_id,
                     user_id=user_id,
@@ -109,11 +114,8 @@ class SpamScreeningService:
                     text=combined,
                     triggered_rules=triggered_rules,
                     rule_score=score,
-                    message_context=build_spam_context_payload(
-                        msg,
-                        rule_score=score,
-                        triggered_rules=triggered_rules,
-                    ),
+                    message_context=message_context,
+                    **({"source_ref": source_ref} if source_ref else {}),
                 )
                 return "queued"
             if triggered_rules:

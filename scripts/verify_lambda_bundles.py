@@ -49,6 +49,8 @@ elif kind in {'news', 'quiz'}:
     modules += ['google.genai', 'pydantic_core', 'cryptography']
 if kind == 'news':
     modules += ['feedparser']
+if kind in {'bot', 'news'}:
+    modules += ['dns.asyncresolver', 'httpcore']
 for name in modules:
     module = importlib.import_module(name)
     assert module.__file__.startswith('/var/task/'), (name, module.__file__)
@@ -58,6 +60,9 @@ if kind == 'bot':
 elif kind in {'news', 'quiz'}:
     from cryptography.hazmat.primitives import hashes
     assert len(hashes.Hash(hashes.SHA256()).finalize()) == 32
+if kind in {'bot', 'news'}:
+    module = importlib.import_module('zerde_common.async_http')
+    assert module.__file__.startswith('/opt/python/'), module.__file__
 module_name, function_name = handler.rsplit('.', 1)
 assert callable(getattr(importlib.import_module(module_name), function_name))
 print(json.dumps({'package': kind, 'handler': handler, 'architecture': platform.machine(),
@@ -84,6 +89,7 @@ def main() -> None:
         "news": ("news", "main.lambda_handler"),
         "quiz": ("quiz", "main.lambda_handler"),
         "operations": ("operations", "main.lambda_handler"),
+        "memory-v2-worker": ("bot", "memory_worker_main.lambda_handler"),
     }
     seen = set()
     for function in functions:

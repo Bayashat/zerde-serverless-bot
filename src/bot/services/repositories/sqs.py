@@ -281,6 +281,7 @@ class SQSClient:
         triggered_rules: list[str],
         rule_score: float | None = None,
         message_context: dict[str, object] | None = None,
+        source_ref: dict[str, object] | None = None,
     ) -> None:
         """Enqueue a SPAM_CHECK task for async Layer-2 Groq classification."""
         payload = {
@@ -295,6 +296,10 @@ class SQSClient:
             payload["rule_score"] = float(rule_score)
         if message_context:
             payload["message_context"] = message_context
+        if source_ref is not None:
+            from services.memory_v2.models import SourceRef
+
+            payload["source_ref"] = SourceRef(**source_ref).as_dict()
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,

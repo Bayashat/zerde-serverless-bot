@@ -243,8 +243,10 @@ Legacy deletion must use a closed memory type allowlist, never an entire CHAT pa
 
 Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
 
-Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions storage only; absent CONTROL rows leave learning stopped.
+Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions infrastructure but never seeds ACTIVE controls; absent CONTROL rows leave learning stopped.
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../../../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
 
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
+
+Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.

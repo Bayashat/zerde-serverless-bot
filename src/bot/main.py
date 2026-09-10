@@ -3,7 +3,15 @@
 import time
 from typing import Any
 
-from app import get_bot, get_captcha_repo, get_contest_repo, get_dispatcher, get_memory_repo, get_sqs_repo
+from app import (
+    get_bot,
+    get_captcha_repo,
+    get_contest_repo,
+    get_dispatcher,
+    get_memory_ingestion,
+    get_memory_repo,
+    get_sqs_repo,
+)
 from core.logger import LoggerAdapter, get_logger
 from services.sqs_task_router import process_sqs_event
 from webhook import handle_event
@@ -31,6 +39,7 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None
                 get_memory_repo(),
                 contest_repo=get_contest_repo(),
                 sqs_repo=get_sqs_repo(),
+                memory_ingestion=get_memory_ingestion(),
             )
         finally:
             elapsed_ms = int((time.monotonic() - started) * 1000)
