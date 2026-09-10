@@ -1,86 +1,23 @@
-# Telegram History Import
+# Telegram history import (retired)
 
-Use this for one-time import of Telegram Desktop JSON exports into ZerdeBot group memory and RAG retrieval.
+Historical Telegram imports are retired by the approved Memory V2 cutover. The CLI
+and library apply path reject writes before opening exports or accessing AWS. Do not
+re-enable the importer, enqueue a backfill, or use old exports to initialize V2.
 
-The importer is for bootstrapping memory when Telegram cannot give the bot old group history. It writes DynamoDB memory items first, then optionally enqueues vector indexing on the vector-memory SQS queue so the dedicated vector-indexer Lambda can index historical facts into S3 Vectors.
+V2 begins from a newly enabled group epoch and derives personal facts only from
+explicit self-statements under the new source, moderation and deletion contracts.
+The user's original Telegram export files are outside cleanup scope and remain theirs.
 
-## Export
+All legacy imported **and** realtime memory must be removed through the reviewed
+[Z10 cleanup process](legacy-memory-cleanup.md), after every legacy reader/writer
+(including explicit reply threads and album membership) has stopped and drained.
+That process backs up only the exact selected AWS records/vectors into temporary
+local encrypted archives, protects mixed-table business records, and never deletes
+original export files. An old audit report is not an executable deletion manifest.
 
-In Telegram Desktop, open a group, choose **Export chat history**, and export JSON. Media files are not needed for the first import pass; text-only JSON is enough.
+See [the approved plan](goals/zerdebot-memory-v2/PLAN.md),
+[Z01 deployment gates](MEMORY_CUTOVER.md), and
+[Z03 type/marker boundaries](legacy-memory-deletion.md).
 
-Suggested groups:
-
-- `@timurdaninfochat` from `2026-01-01`
-- `@amanchikworld` from `2026-01-01`
-- `@kz_it_chat` from `2026-01-01`
-
-The bot cannot fetch old Telegram history itself. This importer uses the JSON exported by your own Telegram account.
-
-## Dry Run
-
-Run dry-run first. It does not write DynamoDB or enqueue SQS.
-
-```bash
-uv run python dev/tools/import_telegram_history.py \
-  --chat-id -1001234567890 \
-  --export ~/Downloads/Telegram/result.json \
-  --since 2026-01-01
-```
-
-The report shows parsed messages, skipped sensitive/command/service messages, estimated long-term memories, daily summaries, and vector tasks. Review this before writing because imported memory can influence future agent answers.
-
-## Import
-
-When the dry-run looks right, run with `--apply`:
-
-```bash
-uv run python dev/tools/import_telegram_history.py \
-  --chat-id -1001234567890 \
-  --export ~/Downloads/Telegram/result.json \
-  --since 2026-01-01 \
-  --table-name zerde-serverless-bot-memory-dev \
-  --queue-url https://sqs.eu-central-1.amazonaws.com/123456789012/zerde-serverless-vector-memory-tasks-queue-dev \
-  --apply
-```
-
-Repeat once per group/export file.
-
-`--queue-url` must be the vector-memory queue URL. The main timeout/tasks queue is for Bot Lambda work such as captcha, spam, `/ask`, group memory extraction, and daily summaries.
-
-## What Gets Imported
-
-- `MSG#...` raw text records for non-sensitive messages, with `USER#...` profile updates derived from the speaker's own text.
-- `EVENT#...`, `USER_FACT#...`, `GROUP_FACT#...`, and `JOKE#...` long-term memory items.
-- `DAILY_SUMMARY#YYYY-MM-DD` summaries for each imported day.
-- `PROCESS_VECTOR_MEMORY` tasks for each vectorizable long-term memory item.
-- `TERM#...` lexical index rows for a bounded set of exact terms on long-term memory items and daily summaries.
-
-The importer skips commands, empty/system messages, and secret/sensitive-looking content. It does not embed every raw message directly; only vectorizable long-term memory items go to S3 Vectors by default, and the vector-indexer Lambda performs that embedding/indexing work. Bot answer metadata such as `AGENT_REPLY#...` is not imported or enqueued as semantic memory.
-
-By default, imported `DAILY_SUMMARY#...` items are stored in DynamoDB but not vectorized, because generic import summaries are low-information retrieval candidates. Use `--vectorize-daily-summaries` only after inspecting summary quality.
-
-Imported long-term memory is later used by `/ask` and proactive agent replies through a mix of query-filtered DynamoDB reads, exact-term `TERM#...` lexical lookup, and semantic vector retrieval. Keep joke-like or sarcastic memories narrow; a one-off roast should not become a permanent user fact.
-
-## Useful Options
-
-- `--max-messages 1000` for a small smoke test.
-- `--until YYYY-MM-DD` to limit the date range.
-- `--no-vector-enqueue` to import DynamoDB memory without queueing embeddings.
-- `--vectorize-daily-summaries` to also enqueue imported `DAILY_SUMMARY#...` items for embeddings after inspection.
-- `--no-raw-messages` to skip raw `MSG#...` records and user profile updates.
-- `--no-long-term` to skip event/fact/joke extraction.
-- `--no-daily-summaries` to skip daily summaries.
-
-If you import with `--no-vector-enqueue`, run a vector backfill later before expecting semantic retrieval to find long-term history. Backfill records cumulative `processed_total`, `enqueued_total`, `failures_total`, start/update timestamps, optional completion time, and continuation tokens on the chat's `VECTOR_BACKFILL` item; `/memory status` shows the cumulative queueing progress. Imported daily summaries should stay out of semantic retrieval unless you have inspected them and decided they are useful.
-
-Vector indexing is idempotent for unchanged items. Backfills and duplicate SQS deliveries skip embedding when the stored `vector_document_hash`, `vector_schema_version`, `vector_embedding_model`, and `vector_dimensions` still match the current rendered document and config. Bump `VECTOR_MEMORY_SCHEMA_VERSION`, change `VECTOR_MEMORY_EMBEDDING_MODEL`, or change `VECTOR_MEMORY_DIMENSIONS` when you intentionally want a backfill to rebuild existing vectors.
-
-## Cleanup And Pollution Control
-
-Before importing a large group, do a small `--max-messages` dry run and inspect whether user facts, group facts, and jokes look trustworthy. If polluted records are written, clean both sides of memory:
-
-- Delete the narrow DynamoDB keys for bad `USER#...`, `USER_FACT#...`, `GROUP_FACT#...`, `JOKE#...`, or `DAILY_SUMMARY#...` items.
-- Delete matching vector keys for vectorized long-term memory and any explicitly vectorized daily summaries.
-- Back up the exact items and vector keys before production cleanup.
-
-Do not rely on vector backfill to fix bad source data. If DynamoDB memory is polluted, the agent can still retrieve it through non-vector long-term context.
+This documentation and the tool's offline tests do not establish that a production
+backup, cleanup, physical erasure, or V2 rollout has occurred.
