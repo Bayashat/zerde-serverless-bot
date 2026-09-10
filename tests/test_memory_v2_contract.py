@@ -585,6 +585,11 @@ def test_final_writer_rechecks_sensitive_excerpt_even_if_upstream_gate_was_bypas
         UpdateExpression="SET content_hash = :hash",
         ExpressionAttributeValues={":hash": raw["content_hash"]},
     )
+    env.table.update_item(
+        Key={"pk": raw["pk"], "sk": "OBSERVATION#8"},
+        UpdateExpression="SET content_hash = :hash",
+        ExpressionAttributeValues={":hash": raw["content_hash"]},
+    )
     with pytest.raises(MemoryInputError, match="public memory"):
         commit(env, ref, [change(raw["text"], "Developer", "occupation")])
     assert not list(env.repo._list(CHAT, "FACT#"))

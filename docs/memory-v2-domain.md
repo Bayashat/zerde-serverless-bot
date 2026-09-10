@@ -1,8 +1,9 @@
 # Memory V2 domain contract (Z05 / #162)
 
 This package owns the independent Memory V2 table's controls, accepted sources
-and facts. It is not connected to Telegram ingestion, an extraction model or a
-worker by this slice. The table name is mandatory; there is no legacy-table
+and facts. Z06 extends its source/work lifecycle as described in
+[memory-v2-ingestion.md](memory-v2-ingestion.md); production entrypoint and model
+activation still require the separately reviewed integration. The table name is mandatory; there is no legacy-table
 fallback. `FactWriter` is the only fact mutation service. Profiles are validated
 reads of current facts, not another writable model.
 
@@ -15,6 +16,7 @@ names are values and never merge identities across people or groups.
 | --- | --- |
 | CONTROL | Group state, independent learning_enabled, epoch, learning_started_at and CAS revision. Missing means STOPPED. |
 | SUBJECT#USER#id / SUBJECT#GROUP | State, optout, generation, activation boundary and revision. Changes serialize writes for that subject. |
+| OBSERVATION#message_id | Z06 metadata-only source version owner; edits invalidate prior facts before review. |
 | HEAD#message_id | Accepted source version, original/edit time, actor, content hash, epoch/generation, deletion and evidence-retention flags. |
 | RAW#message_id | Safety-checked original text, quote offsets and identity; logical expires_at and physical ttl are original_sent_at + 30 days. |
 | WORK#message_id#version | Reference-only PENDING work, source_ref, actor/generation, lease fields, attempts and due time. |
@@ -24,17 +26,19 @@ names are values and never merge identities across people or groups.
 `source_ref = {source_id: str, source_version: int, epoch: str}`. Source authors
 come from stored HEAD/RAW, never extraction output. The content hash covers text,
 quote offsets and message/confirmation kind. Same edit time with a different
-hash is an ambiguous conflict; old revisions cannot win. Original send time must
+hash is an ambiguous conflict; Z06 first invalidates the observation and requires
+a strictly later edit before further learning. Old revisions cannot win. Original send time must
 be in the current group and subject learning window, including for message edits.
 Timestamps are UTC seconds, matching Telegram's source timestamp precision.
 
 Source registration creates HEAD + RAW + PENDING and advances the subject
 revision in one transaction. Duplicate delivery with the same source fingerprint
-returns the existing reference without changing state. Source edit advances HEAD
-and makes every old-version derived fact immediately invalid on reads.
+returns the existing reference without changing state. Z06 observes edits first;
+OBSERVATION advances before approval and makes old derived facts invalid even while
+HEAD still points to the previous accepted revision.
 
 HEAD initially expires with RAW. A transaction that writes facts also removes
-HEAD's TTL and sets retained_evidence. Raw text still expires after 30 days, but
+HEAD's and OBSERVATION's TTL and sets retained_evidence. Raw text still expires after 30 days, but
 facts retain their exact evidence excerpt and can validate against HEAD after raw
 expiry. Empty extraction finishes WORK without retaining HEAD forever. Z09 owns
 removing retained heads when their final fact/history reference is gone; this
