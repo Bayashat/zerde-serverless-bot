@@ -1,0 +1,10 @@
+{
+  "code_commit": "c2bed1be94a77f64bd8253194006ab6925060a75",
+  "kind": "offline_fake_provider_not_model_acceptance",
+  "command": "uv run --frozen --python 3.13.6 python -m dev.tools.memory_eval replay --provider-fixtures tests/fixtures/memory_v2_eval/provider_fixtures.jsonl --output /tmp/zerde-complete-evaluation",
+  "exit_code": 2,
+  "raw_observations_checked_in": false,
+  "raw_observations_bytes": 4659913,
+  "raw_observations_sha256": "fd231a05550edc41f01aaef696ce0a981d319d5eb3916cecbc4cf76142258c32",
+  "reason": "Raw synthetic replay output is reproducible using the versioned corpus and fixtures; report and provenance are preserved here. No actual provider, AWS or Telegram calls."
+}

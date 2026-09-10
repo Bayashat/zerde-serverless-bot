@@ -52,3 +52,53 @@ GitHub #176的两个CI检查通过，但reviewDecision=REVIEW_REQUIRED；平台�
 本地 integration 分支 f14bd08 整合 Z01-Z04、Z12、Z19 及计划；首次709/714，通过5项失效mock隔离点修正后 **714 full passed**。保留Z04安全依赖版本并加入Moto，不用旧lock覆盖安全修复。实际CDK synth及禁网Python3.13.15/aarch64四handler导入全通过（bot/indexer/news/quiz），验证测试和真实打包依赖一致。此为本地合并验证，GitHub main未合入，生产未变。
 
 Z06/Z07/Z08/Z17实施中。Z06明确使用短期候选、统一观察版本与跨表CLEAN审批条件；编辑先使旧事实失效。Z08预算API由唯一预算owner实现，抽取与有记忆回答共用，未知调用保守占用，不复用旧fail-open RPD作为成本账本。
+
+## 第三批与摄取/问答接口冻结（2026-09-10；无部署）
+
+- Z17 [#187](https://github.com/Bayashat/zerde-serverless-bot/pull/187) / 9e566ed：624 full；独立42初审+22最终。dev默认按需停用；有效告警及恢复通过独立SNS/operations发送管理员私聊，真实5个ARM64包禁网导入通过。项目成本标签尚未激活，未发送真实通知。
+- Z07 [#188](https://github.com/Bayashat/zerde-serverless-bot/pull/188) / 7b7b228：747 full；独立102抽取/趋势/预算，ALIGNED。固定结构化Gemini请求、每次HTTP独立预留费用、拒绝规则生成个人事实。全为合成/模拟provider结果，尚无实际多语言质量分数。
+- Z14 [#189](https://github.com/Bayashat/zerde-serverless-bot/pull/189) / bbe4bcc：673 full；独立67投票与执行结果，ALIGNED。generation绑定按钮、临时封禁确认后计数、终态恢复。basic group/缺chat.type及超过365天时长无法保证临时封禁，保守转UNCONFIRMED，不冒险调用；正常阈值和时长不改。
+- Z08预算ba1c392 / 75fa928 / 53e344f已被Z07引用：22实际SDK+Moto测试、独立ALIGNED。全项目共享UTC月账本，dev不另获$7。按照模型完整输入上限及额外thinking余量每次先预留$0.458752，有可信实际usage才退差额；缺失/不明计费继续占用。price异常全局暂停跨月保留。此为保守控制额度，不是供应商账单或AWS硬封顶。
+- Z06独立复核发现两项P2并完成定向回归：暂停学习不能误清待审批候选；并发已ACCEPTED不能被另一worker反向ACK为EXPIRED。最终96 domain/ingestion独审ALIGNED，主PR发布中；公共Webhook/SQS/worker/infra仍由root集成验证。
+
+Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_id/version、发送前强验证、释放；删除先STOPPING阻新租约，等在途结束再确认。Z15分群逐步骤交付与Z16poll/answer恢复实现中。真实群七天试运行、数据清零、AWS资源清理、部署和合并门槛尚未执行；不能把上述PR状态当作上线或产品验收。
+
+## 第四批与实际后台入口（2026-09-11；无部署）
+
+- Z06 #190 / 16f2ee9：691 full；独立96。OBS/RAW/WORK准入、CLEAN回执与恢复事务。
+- Z09 #191 / b09cc5d：737 full；独立46。统一删除/更正及发送租约。Z08集成复核又补了查询者本人删除栅栏，避免 A 查询 B 时 A 的晚建 receipt 越过 forget；追加修复尚在 Z08 分支。
+- Memory V2 runtime #192 / b605cb6：1,045 full；真实6个ARM64资产禁网导入通过。独立worker120秒、740秒队列可见期、5分钟恢复，默认无CONTROL即停止。
+- Z15 #193 / 0bef5bb：871 full；独立57。News 固定原始日期/slot/manifest，逐群逐步骤持久状态，UNKNOWN不盲重发，网络DNS与抓取总时限。
+- Z16 #194 / 93236dc：870 full 在原实现f558b5b；独立最终79含跨午夜时间修复，不把最后追加用例虚报为新full。Quiz poll发布/强一致lookup/答题与计分outbox；原始scheduled_at错误必须触发Lambda失败。
+- 后台公开接线 #197 / 4bef23b：**1,178 full passed**（Python3.13.6，87.76秒）；独立129 focused，scoped hooks通过。fresh dev CDK synth生成6真实产物，在固定ARM64 Lambda Python3.13.15镜像、network=none下导入通过。包括News限定分区IAM、Quiz webhook失败500/持久后投递恢复、每5分钟两类恢复、live-admin own-poll核对及失败DLQ。
+- Z10 #195 / 016e2c8：1,072 full；独立61。精确白名单、加密7天备份、代码HEAD/dirty gate、manifest digest、完整旧writer及alias drain、可恢复清理journal。未生成生产manifest、未备份/清理生产数据。AGENT_REPLY/MEDIA_GROUP旧公开路径退出仍为执行前门槛。
+- Z11 #196 / dbb553e：1,070 full；独立42。240多轮/516唯一事实/256未知问题；四语言各60场景。只有本地评分器和静态合成gold，标签独立复核PENDING，真实provider NOT_VERIFIED，dev/七天pilot NOT_RUN；完整runtime replay adapter仍需补接。
+
+上表各自分支full不相加。全部PR尚未合并main或部署。feat/zerde-reviewed-foundation与feat/zerde-background-foundation仅固定已审阅依赖，不能当作生产release。Z08正在接显式问答/命令、临时媒体与源删除、群话题、AWS用量仪表和预算监测。模型质量门槛、单群7天样本、管理员真实通知、成本标签激活和生产旧数据清零均未执行。
+
+## 第五批：显式问答、控制、成本与临时媒体（2026-09-11；无部署）
+
+- 群趋势 #198 / 2f2c21a：1,112 full；独立47。七天贡献回源、编辑/删除失效；当前公开显示最多10条经核验来源的技术话题样本，不能表述为全群完整统计。
+- 临时媒体 #199 / 06a5599：1,127 full；独立36。一天 metadata-only album 缓存，退出旧 MEDIA_GROUP/AGENT_REPLY；显式媒体不生成长期个人事实。
+- SDK计量 #200 / d9fa52f：1,129 full；独立38。实际 botocore wire hook按每次尝试计费上界，未知结果不退款。
+- AWS成本监测 #201 / 042623d：1,136 full；独立67。闭合项目资源清单、分块日志/指标/存储估算、原子告警outbox；不是FreeTier/credits分摊或AWS账单硬封顶。
+- Z08实际入口 #202 / **9031c16**：**1,407 full passed / 122.83秒**；pre-commit全项、diffcheck通过。fresh dev CDK synth，6个真实产物在固定ARM64 Lambda Python3.13.15禁网环境导入通过。独立core96、cost115，root控制42及模型调用边界/runtime46重点复验通过。
+- #202补齐调用者本人/所有引用主体/source版本的发送租约；统一无记忆问答与有记忆问答的消息身份；每次Gemini重试和备用调用前回源。控制命令使用持久回执及原子栅栏，编辑后不误重新学习管理员命令。预算按完整调用预留，无证据不授权可选记忆。
+- #202修复计量第一次发生在async/thread时outer context无法清理的问题；实际SDK跨context测试通过。实际成本上界保守包含dev/prod最多10个Memory告警，即使dev当前停用也不少计。成本计费epoch默认0、首次专属资源部署时配置；不同于后来群学习epoch，不能推进它抹去费用历史。
+- #202暂停语义：停止模型学习/记忆增强，AWS阈值还停趋势；RAW/OBS准入、待处理恢复和控制继续运行，以保留覆盖与删除能力。这些仍会产生AWS用量，不声称停止全部AWS工作。
+- Z10最终跨树独审ALIGNED：原工具61项及原生Moto演练确认17类V2键/独立表受保护；两实际旧task router各14类重放不写回、不发言。切换文档已更新旧实例/alias排空与当前explicit-v2-sources协议；没有生产清理manifest、备份或删除。
+
+这些证据仅证明本地实现和真实打包边界。Logs Insights实际执行、共享用量归因、真实管理员通知、模型质量、Telegram来源链接、dev canary及单群七天仍待验证。旧实现暂留隔离状态，按Z11验收后才退役，不提前恢复任何旧记忆读取。
+
+## 最终组合与交接（2026-09-11；PR_OPEN）
+
+- 完整代码 [PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，源码提交 **c2bed1b**。该提交已组合全部独立修复、公共入口、清零工具和最终评估工具。后续计划/证据归档为文档变更。
+- **1,620 tests passed / 150.64秒**，Python3.13.6；all-files pre-commit和diffcheck通过。集成前1,539/127.03秒也通过，但最终证据以1,620为准，不累加各分支测试。
+- fresh dev CDK synth与6真实Lambda资产ARM64/Python3.13.15禁网导入通过。此后只加入dev评估工具/语料/文档，不改变Lambda源码、资产或锁文件。共享入口独审191项ALIGNED，保留Memory与News/Quiz的所有路由、依赖注入、HTTP500、IAM和恢复调度。
+- 最终评估 [PR #203](https://github.com/Bayashat/zerde-serverless-bot/pull/203) / 7be7370（作者分支1,488 full）。独审81项、3个原生Moto故障注入和18场景/36检查点/16种事件的独立CLI回放通过工程检查。修复管理员确认类型、同一检查点前写入又删除的敏感RAW漏报、全部known问题拒答仍假PASS三项P2。
+- 集成分支再次独立CLI执行 **240场景/404检查点/16类事件**，无缺fixture、无网络调用；813个WORK为797DONE、4PENDING、4PAUSED、8EXPIRED。没有把暂停或过期算完成。执行源码指纹 `ee65efe71a61600ed0a87b5caf63a40ee2110789728bd8a7670816c1c703b662`，覆盖129个指定源码/锁文件；不是已安装依赖或生产镜像认证。
+- [固定provider报告](evidence/2026-09-11-fixed-provider/report.md)与provenance已归档。**数值FAIL、模型NOT_VERIFIED、观测不完整**：profile precision95.83%/recall21.07%，来源250/260，未知244/256，known完整回答21/224，缺16个答案。fixture刻意有限，并非Gemini；不能据此声称真实模型达标或不达标。六项零容忍在这批合成输入均0，不代表生产证明；所有延迟来自合成时钟。raw观测约4.66MB保留在本地 `/tmp/zerde-complete-evaluation/observations.jsonl`，仓库保留报告、provenance、命令/摘要与完整可重现语料。
+- GitHub只读快照：main仍为2f3abe7；#204 OPEN、REVIEW_REQUIRED、BLOCKED，未绕过审阅门槛。全部工单保持代码/部署/真实验收分离；Z11和#134来源链接不因测试通过关闭。
+- 最终dev只读diff：CDK CLI2.1119.0，`cdk diff -c env=dev --no-change-set --method=template` exit0，1个stack有差异；直接模板比较/lookup role，不创建change set。33新增、29修改、14删除，删除全是旧dev告警；新增operations/worker、V2表、4队列、SNS、恢复规则/映射/IAM，既有4Lambda更新。默认dev预览6Lambda并发0、3mapping false、3rules DISABLED、0alarms、4表PITR关闭；共享Layer替换仅模板推断。管理员未配置、计量epoch0，**这是本地默认配置与已部署dev的差异，不是生产release manifest，不能原样部署**。私有原始日志 `/tmp/zerde-final-readonly-dev-diff.log` 权限0600；没有云写或生产diff。
+
+继续执行以 [HANDOFF](HANDOFF.md) 为入口。未执行合并、部署、真实模型调用、Telegram发信、成本标签激活、生产manifest/备份/清零、旧AWS资源删除、dev canary或七天群试运行。当前已批准的Z18交付仍仅清理手册。生产物理副本清除和验收后旧实现退役仍是明确未完成项。
