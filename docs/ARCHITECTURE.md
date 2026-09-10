@@ -2,6 +2,8 @@
 
 This is the current developer-facing map of ZerdeBot. Keep it updated when changing memory, agent behavior, SQS task routing, DynamoDB schemas, vector retrieval, or CDK wiring.
 
+An approved [Memory V2 migration and reliability plan](goals/zerdebot-memory-v2/PLAN.md) is being executed. The runtime described below is the baseline, not a claim that the migration has shipped. Consult the [evidence ledger](goals/zerdebot-memory-v2/EVIDENCE.md) for implementation and deployment status.
+
 ## Product Direction
 
 ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram group-chat agent:

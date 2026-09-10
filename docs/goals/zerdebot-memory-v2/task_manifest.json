@@ -1,0 +1,150 @@
+[
+  {
+    "id": "Z01",
+    "title": "FIX: 停用自动互动并隔离旧记忆路径",
+    "depends_on": [],
+    "body_file": "issues/Z01.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z02",
+    "title": "FIX: 日志脱敏和 Telegram 内容最小化",
+    "depends_on": [],
+    "body_file": "issues/Z02.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z03",
+    "title": "FIX: 旧记忆删除与业务数据边界",
+    "depends_on": [],
+    "body_file": "issues/Z03.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z04",
+    "title": "FIX: 统一部署配置和可复现打包",
+    "depends_on": [],
+    "body_file": "issues/Z04.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z05",
+    "title": "FEATURE: Memory V2 身份、事实和控制契约",
+    "depends_on": [
+      "Z01",
+      "Z04"
+    ],
+    "body_file": "issues/Z05.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z06",
+    "title": "FEATURE: 可靠消息摄取与后台恢复",
+    "depends_on": [
+      "Z05"
+    ],
+    "body_file": "issues/Z06.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z07",
+    "title": "FEATURE: 明确自述抽取与个人和群档案",
+    "depends_on": [
+      "Z06"
+    ],
+    "body_file": "issues/Z07.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z08",
+    "title": "FEATURE: 有来源的记忆问答与预算控制",
+    "depends_on": [
+      "Z07"
+    ],
+    "body_file": "issues/Z08.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z09",
+    "title": "FEATURE: 更正、遗忘、退出与来源编辑闭环",
+    "depends_on": [
+      "Z05",
+      "Z08"
+    ],
+    "body_file": "issues/Z09.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z10",
+    "title": "FIX: 旧记忆清零工具和切换演练",
+    "depends_on": [
+      "Z01",
+      "Z03",
+      "Z09"
+    ],
+    "body_file": "issues/Z10.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z11",
+    "title": "FEATURE: 多语言评估、单群试运行与推广",
+    "depends_on": [
+      "Z02",
+      "Z04",
+      "Z08",
+      "Z09",
+      "Z10"
+    ],
+    "body_file": "issues/Z11.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z12",
+    "title": "FIX: 验证码状态竞争与失败恢复",
+    "depends_on": [],
+    "body_file": "issues/Z12.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z13",
+    "title": "FIX: 反垃圾执行结果和重试语义",
+    "depends_on": [],
+    "body_file": "issues/Z13.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z14",
+    "title": "FIX: Voteban 会话身份和逻辑过期",
+    "depends_on": [],
+    "body_file": "issues/Z14.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z15",
+    "title": "FIX: 新闻抓取时限与分群交付恢复",
+    "depends_on": [],
+    "body_file": "issues/Z15.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z16",
+    "title": "FIX: Quiz 发布、计分与答案恢复",
+    "depends_on": [],
+    "body_file": "issues/Z16.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z17",
+    "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
+    "depends_on": [],
+    "body_file": "issues/Z17.md",
+    "status": "planned"
+  },
+  {
+    "id": "Z18",
+    "title": "CHORE: 旧 AWS 资源清理清单与执行手册",
+    "depends_on": [],
+    "body_file": "issues/Z18.md",
+    "status": "planned"
+  }
+]
