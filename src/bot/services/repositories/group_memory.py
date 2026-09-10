@@ -1843,6 +1843,7 @@ class GroupMemoryRepository:
         requester_display_name: str | None = None,
         retrieval_sources: list[dict[str, Any]] | None = None,
         media_metadata: dict[str, Any] | None = None,
+        context_version: str | None = None,
     ) -> None:
         now = int(time.time())
         ttl = self._ttl_from_days(now, GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS)
@@ -1859,6 +1860,8 @@ class GroupMemoryRepository:
             "ttl": ttl,
             **self._feedback_metadata_defaults(),
         }
+        if context_version:
+            item["context_version"] = context_version
         if answer_text:
             item["answer_text"] = answer_text[:3000]
         if user_message:

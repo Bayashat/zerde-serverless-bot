@@ -5,6 +5,10 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 # ZerdeBot Development
 
+## Approved cutover overrides
+
+The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Retain old helpers only until the separately gated V2 acceptance and removal task. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
+
 ## Operating Posture
 
 Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wrapper. The bot combines serverless community tooling with RAG memory and social agent behavior:

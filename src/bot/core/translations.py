@@ -9,6 +9,10 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 TRANSLATIONS = {
     "en": {
+        "memory_rebuilding": (
+            "Memory is being rebuilt. Learning and automatic interactions are disabled. /ask, direct "
+            "mentions and requested replies remain available without long-term memory."
+        ),
         "start_message": (
             "👋 <b>Hello! I am Zerde — a smart assistant for IT communities.</b> 🤖\n\n"
             "My main task is to protect chats from spam bots and gather useful statistics.\n\n"
@@ -271,6 +275,10 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 Too many wrong attempts. You have been removed.",
     },
     "kk": {
+        "memory_rebuilding": (
+            "Жад қайта жасалып жатыр. Ақпаратты есте сақтау және автоматты әрекеттер өшірілген. /ask, "
+            "тікелей белгілеу және ботқа қойылған нақты сұрақтар ұзақ мерзімді жадсыз жұмыс істейді."
+        ),
         "start_message": (
             "👋 <b>Сәлем! Мен Zerde — IT қауымдастығына арналған ақылды көмекшімін.</b> 🤖\n\n"
             "Менің негізгі міндетім — чатты спам-боттардан қорғау және пайдалы статистика жинау.\n\n"
@@ -790,6 +798,10 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 错误次数过多，已将您移出群组。",
     },
     "ru": {
+        "memory_rebuilding": (
+            "Память перестраивается. Запоминание и автоматические взаимодействия отключены. /ask, "
+            "прямые упоминания и явные вопросы в ответ боту доступны без долговременной памяти."
+        ),
         "start_message": (
             "👋 <b>Привет! Я Zerde — умный помощник для IT-сообществ.</b> 🤖\n\n"
             "Моя главная задача — защищать чаты от спам-ботов и собирать полезную статистику.\n\n"

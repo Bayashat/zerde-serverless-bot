@@ -5,6 +5,7 @@ import json
 import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
+from services.memory_cutover import EXPLICIT_CONTEXT_VERSION
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram_media import media_reference_log_extra, media_references_log_extra
 
@@ -90,6 +91,7 @@ class SQSClient:
         """Enqueue an explicit agent request for async group-agent answering."""
         payload: dict[str, object] = {
             "task_type": "PROCESS_GROUP_ASK",
+            "context_version": EXPLICIT_CONTEXT_VERSION,
             "update_id": update_id,
             "chat_id": chat_id,
             "reply_to_message_id": reply_to_message_id,

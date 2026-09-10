@@ -1,4 +1,5 @@
 import json
+import time
 from decimal import Decimal
 from unittest.mock import MagicMock
 
@@ -16,6 +17,7 @@ from services.group_memory_processor import (
 )
 from services.handlers import commands
 from services.handlers.commands import handle_ask
+from services.memory_cutover import EXPLICIT_CONTEXT_VERSION
 from services.memory_extractor import classify_long_term_memory_rule_based
 from services.repositories import sqs as sqs_module
 from services.repositories.group_memory import (
@@ -1708,13 +1710,11 @@ def test_agent_proactive_path_does_not_download_media(monkeypatch):
 
     handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
 
-    assert handled is True
-    sqs.send_proactive_candidate_task.assert_called_once()
-    bot.get_file.assert_not_called()
-    bot.download_file.assert_not_called()
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
 
 
-def test_agent_off_does_not_answer_mentions(monkeypatch):
+def test_old_agent_off_does_not_disable_explicit_mentions(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = False
     bot = MagicMock()
@@ -1729,9 +1729,9 @@ def test_agent_off_does_not_answer_mentions(monkeypatch):
         update=_group_update("hey @ZerdeBot what did we decide?"),
     )
 
-    assert handled is False
-    repo.is_agent_enabled.assert_called_once_with(-100123)
-    answer.assert_not_called()
+    assert handled is True
+    repo.is_agent_enabled.assert_not_called()
+    answer.assert_called_once()
     bot.send_message.assert_not_called()
 
 
@@ -1739,6 +1739,8 @@ def test_agent_reply_to_bot_includes_replied_bot_message_context(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     repo.get_agent_reply_explanation.return_value = {
+        "context_version": EXPLICIT_CONTEXT_VERSION,
+        "ttl": int(time.time()) + 3600,
         "current_user_message": "Who is the original author talking about?",
         "source_message_context": (
             "Original replied-to message:\n"
@@ -2119,21 +2121,21 @@ def test_agent_reply_to_bot_with_explicit_mention_overrides_gate(monkeypatch):
     assert "@ZerdeBot haha" in answer.call_args.kwargs["user_text"]
 
 
-def test_agent_considers_plain_chatter_for_ai_proactive_decision(monkeypatch):
+def test_agent_ignores_plain_chatter_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("just talking to the group")) is True
+    assert group_agent.should_answer(_group_update("just talking to the group")) is False
 
 
-def test_agent_can_consider_open_question_when_enabled(monkeypatch):
+def test_agent_ignores_open_question_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("does anyone know how OpenSearch pricing works?")) is True
+    assert group_agent.should_answer(_group_update("does anyone know how OpenSearch pricing works?")) is False
 
 
-def test_agent_can_consider_telegram_bot_stack_question_when_enabled(monkeypatch):
+def test_agent_ignores_telegram_bot_stack_question_when_enabled(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
@@ -2142,10 +2144,10 @@ def test_agent_can_consider_telegram_bot_stack_question_when_enabled(monkeypatch
         "соған нақты техникалық стэк керек болып тұр, қандай ұсына аласыздар???"
     )
 
-    assert group_agent.should_answer(_group_update(text)) is True
+    assert group_agent.should_answer(_group_update(text)) is False
 
 
-def test_agent_considers_multilingual_suggestion_requests_for_ai_decision(monkeypatch):
+def test_agent_ignores_multilingual_suggestion_requests_for_ai_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
     cases = (
@@ -2159,7 +2161,7 @@ def test_agent_considers_multilingual_suggestion_requests_for_ai_decision(monkey
     )
 
     for text in cases:
-        assert group_agent.should_answer(_group_update(text)) is True
+        assert group_agent.should_answer(_group_update(text)) is False
 
 
 def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
@@ -2195,14 +2197,14 @@ def test_proactive_agent_considers_kazakh_idea_request(monkeypatch):
     repo.try_reserve_proactive_reply.assert_not_called()
 
 
-def test_agent_considers_bot_meta_question_for_ai_proactive_decision(monkeypatch):
+def test_agent_ignores_bot_meta_question_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is True
+    assert group_agent.should_answer(_group_update("қазір кез келген хатты оқитын болған ба?")) is False
 
 
-def test_agent_queues_bot_meta_question_for_ai_decision(monkeypatch):
+def test_agent_ignores_bot_meta_question_for_ai_decision(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     sqs = MagicMock()
@@ -2216,8 +2218,8 @@ def test_agent_queues_bot_meta_question_for_ai_decision(monkeypatch):
         sqs_repo=sqs,
     )
 
-    assert handled is True
-    sqs.send_proactive_candidate_task.assert_called_once()
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
 
 
 def test_agent_skips_human_directed_leading_mention_for_proactive_decision(monkeypatch):
@@ -2249,21 +2251,20 @@ def test_agent_keeps_leading_bot_mention_as_explicit(monkeypatch):
     assert group_agent.should_answer(_group_update("@zerde_kz_bot 支持中文了吗？")) is True
 
 
-def test_agent_considers_stop_cue_for_ai_proactive_decision(monkeypatch):
+def test_agent_ignores_stop_cue_for_ai_proactive_decision(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
 
-    assert group_agent.should_answer(_group_update("болды жазба енді?")) is True
+    assert group_agent.should_answer(_group_update("болды жазба енді?")) is False
 
 
-def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch):
+def test_proactive_candidate_is_ignored(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     sqs = MagicMock()
     bot = MagicMock()
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
-    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DELAY_SECONDS", 30)
     monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
 
     handled = group_agent.handle_update(
@@ -2273,32 +2274,17 @@ def test_proactive_candidate_is_enqueued_instead_of_immediate_reply(monkeypatch)
         sqs_repo=sqs,
     )
 
-    assert handled is True
-    sqs.send_proactive_candidate_task.assert_called_once_with(
-        update_id=None,
-        chat_id=-100123,
-        trigger_message_id=11,
-        trigger_user_id=42,
-        user_text="does anyone know how OpenSearch pricing works?",
-        lang="kk",
-        trigger_username="ada",
-        trigger_display_name="Ada",
-        trigger_sender_type="user",
-        created_at=1_700_000_000,
-        delay_seconds=30,
-    )
-    repo.try_reserve_proactive_reply.assert_not_called()
-    bot.send_message.assert_not_called()
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
 
 
-def test_linked_channel_post_candidate_queues_with_channel_actor(monkeypatch):
+def test_linked_channel_post_candidate_ignores_with_channel_actor(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     sqs = MagicMock()
     bot = MagicMock()
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     monkeypatch.setattr(group_agent, "AGENT_BOT_USERNAME", "zerdebot")
-    monkeypatch.setattr(group_agent, "AGENT_PROACTIVE_DELAY_SECONDS", 30)
     monkeypatch.setattr(group_agent, "get_chat_lang", lambda chat_id: "kk")
 
     handled = group_agent.handle_update(
@@ -2308,26 +2294,11 @@ def test_linked_channel_post_candidate_queues_with_channel_actor(monkeypatch):
         sqs_repo=sqs,
     )
 
-    assert handled is True
-    sqs.send_proactive_candidate_task.assert_called_once_with(
-        update_id=123,
-        chat_id=-100123,
-        trigger_message_id=11,
-        trigger_user_id=-1001037498558,
-        user_text=_linked_channel_post_update()["message"]["text"],
-        lang="kk",
-        candidate_kind="channel_post",
-        trigger_username="timurdaninfo",
-        trigger_display_name="Тимурдан Инфо | it&tech",
-        trigger_sender_type="channel",
-        media_ref=None,
-        created_at=1_700_000_000,
-        delay_seconds=0,
-    )
-    bot.send_message.assert_not_called()
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
 
 
-def test_linked_channel_photo_post_queues_immediate_media_comment(monkeypatch):
+def test_linked_channel_photo_post_ignores_immediate_media_comment(monkeypatch):
     repo = MagicMock()
     repo.is_agent_enabled.return_value = True
     sqs = MagicMock()
@@ -2354,23 +2325,14 @@ def test_linked_channel_photo_post_queues_immediate_media_comment(monkeypatch):
 
     handled = group_agent.handle_update(repo=repo, bot=bot, update=update, sqs_repo=sqs)
 
-    assert handled is True
-    kwargs = sqs.send_proactive_candidate_task.call_args.kwargs
-    assert kwargs["candidate_kind"] == "channel_post"
-    assert kwargs["delay_seconds"] == 0
-    assert kwargs["media_ref"]["media_type"] == "photo"
-    assert kwargs["media_ref"]["file_id"] == "large"
-    assert kwargs["media_ref"]["file_unique_id"] == "u-large"
-    assert kwargs["media_ref"]["source_user_id"] == -1001037498558
-    assert kwargs["media_ref"]["source_sender_type"] == "channel"
-    bot.send_message.assert_not_called()
+    assert handled is False
+    sqs.send_proactive_candidate_task.assert_not_called()
 
 
-def test_normal_long_message_is_queued_for_ai_proactive_decision(monkeypatch):
+def test_normal_long_message_is_ignored(monkeypatch):
     monkeypatch.setattr(group_agent, "AGENT_ENABLED", True)
     long_question = "does anyone know " + ("how OpenSearch pricing works " * 40)
-
-    assert group_agent.should_answer(_group_update(long_question)) is True
+    assert group_agent.should_answer(_group_update(long_question)) is False
 
 
 def test_delayed_proactive_candidate_stays_silent_when_ai_says_humans_answered(monkeypatch):
@@ -3143,6 +3105,8 @@ def test_reply_to_bot_context_preserves_generation_answer_but_compacts_retrieval
 ):
     repo = MagicMock()
     repo.get_agent_reply_explanation.return_value = {
+        "context_version": EXPLICIT_CONTEXT_VERSION,
+        "ttl": int(time.time()) + 3600,
         "current_user_message": "what did we decide about S3 Vectors?",
         "answer_text": "We decided to use S3 Vectors because the previous answer needs continuity.",
         "source_message_context": (
@@ -3644,7 +3608,7 @@ def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
     assert "prompt_block_reason=SAFETY" in str(exc_info.value)
 
 
-def test_answer_group_question_passes_target_profile_context(monkeypatch):
+def test_answer_group_question_excludes_all_legacy_context(monkeypatch):
     repo = MagicMock()
     bot = MagicMock()
     bot.send_message.return_value = {"message_id": 1000}
@@ -3696,11 +3660,11 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert handled is True
     reply_kwargs = gemini.group_chat_reply.call_args.kwargs
     assert reply_kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
-    assert reply_kwargs["recent_context"] == "Nurt AI: @bayashat токсик"
+    assert reply_kwargs["recent_context"] == ""
     assert reply_kwargs["long_term_memory_context"] == ""
-    assert reply_kwargs["semantic_memory_context"] == "[semantic_memory kind=event] OpenSearch was too expensive"
-    assert reply_kwargs["user_profile_context"] == "Trusted profile: username=@bayashat own_topic_terms: opensearch"
-    assert reply_kwargs["requester_profile_context"] == "Requester profile: username=@ada own_topic_terms: lambda"
+    assert reply_kwargs["semantic_memory_context"] == ""
+    assert reply_kwargs["user_profile_context"] == ""
+    assert reply_kwargs["requester_profile_context"] == ""
     assert "Answer in 2-5 concise sentences" in reply_kwargs["reply_instructions"]
     assert "Tone: concise and direct" in reply_kwargs["reply_instructions"]
     assert reply_kwargs["max_output_tokens"] == 300
@@ -3715,9 +3679,8 @@ def test_answer_group_question_passes_target_profile_context(monkeypatch):
     assert repo.record_agent_reply.call_args.kwargs["user_message"] == "@zerde_kz_bot @bayashat кім"
     assert repo.record_agent_reply.call_args.kwargs["requester_user_id"] == 42
     retrieval_sources = repo.record_agent_reply.call_args.kwargs["retrieval_sources"]
-    assert any(source["source"] == "semantic" for source in retrieval_sources)
-    assert any(source["source"] == "target_profile" for source in retrieval_sources)
-    assert any(source["source"] == "requester_profile" for source in retrieval_sources)
+    assert retrieval_sources == []
+    assert repo.record_agent_reply.call_args.kwargs["context_version"] == EXPLICIT_CONTEXT_VERSION
 
 
 def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatch):
@@ -3761,7 +3724,7 @@ def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatc
     )
 
     assert handled is True
-    memory_context.assert_called_once()
+    memory_context.assert_not_called()
     assert gemini.group_chat_reply.call_args.kwargs["media_parts"] == [
         {"inline_data": {"mime_type": "image/jpeg", "data": "AAAA"}}
     ]
@@ -3775,6 +3738,8 @@ def test_answer_group_question_passes_media_parts_and_records_summary(monkeypatc
 def test_followup_to_bot_answer_includes_previous_media_summary():
     repo = MagicMock()
     repo.get_agent_reply_explanation.return_value = {
+        "context_version": EXPLICIT_CONTEXT_VERSION,
+        "ttl": int(time.time()) + 3600,
         "current_user_message": "what is wrong in this screenshot?",
         "answer_text": "The screenshot shows a Lambda timeout.",
         "media_metadata": {
@@ -3884,7 +3849,7 @@ def test_answer_group_question_uses_brief_budget_for_followup(monkeypatch):
     assert "1-3 short sentences" in gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
 
 
-def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkeypatch):
+def test_answer_group_question_ignores_low_confidence_legacy_memory(monkeypatch):
     repo = MagicMock()
     repo.get_chat_settings.return_value = {"style_profile": normalise_chat_style_profile(None)}
     repo.search_long_term_memories_by_terms.return_value = []
@@ -3927,8 +3892,8 @@ def test_answer_group_question_adds_uncertainty_for_low_confidence_memory(monkey
 
     assert handled is True
     instructions = gemini.group_chat_reply.call_args.kwargs["reply_instructions"]
-    assert "I may be remembering this imperfectly" in instructions
-    assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"][0]["confidence"] == 0.31
+    assert "I may be remembering this imperfectly" not in instructions
+    assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"] == []
 
 
 def test_answer_group_question_retrieves_with_compact_query_but_generates_from_full_prompt(
@@ -3982,11 +3947,8 @@ def test_answer_group_question_retrieves_with_compact_query_but_generates_from_f
     )
 
     assert handled is True
-    assert retrieve.call_args.args[1] == retrieval_query
-    assert retrieve.call_args.kwargs["memory_kinds"] == ("group_fact", "daily_summary")
-    assert "Previous bot answer" not in retrieve.call_args.args[1]
+    retrieve.assert_not_called()
     assert gemini.group_chat_reply.call_args.kwargs["user_message"] == full_prompt
-    assert "Previous bot answer" in gemini.group_chat_reply.call_args.kwargs["user_message"]
 
 
 def test_answer_group_question_notifies_when_gemini_unavailable(monkeypatch):
@@ -4126,11 +4088,8 @@ def test_answer_group_question_scopes_self_reference_to_requester(monkeypatch):
     )
 
     assert handled is True
-    retrieve.assert_called_once()
-    assert retrieve.call_args.kwargs["user_id"] == 42
-    assert gemini.group_chat_reply.call_args.kwargs["requester_profile_context"] == (
-        "Requester profile: username=@ada own_topic_terms: lambda"
-    )
+    retrieve.assert_not_called()
+    assert gemini.group_chat_reply.call_args.kwargs["requester_profile_context"] == ""
 
 
 def test_handle_ask_enqueues_group_context_answer():
@@ -4185,7 +4144,7 @@ def test_handle_ask_still_enqueues_when_agent_off():
 
     ctx.sqs_repo.send_group_ask_task.assert_called_once()
     assert ctx.sqs_repo.send_group_ask_task.call_args.kwargs["user_text"] == "what happened yesterday?"
-    ctx.memory_repo.is_memory_enabled.assert_called_once_with(-100123)
+    ctx.memory_repo.is_memory_enabled.assert_not_called()
     ctx.memory_repo.is_agent_enabled.assert_not_called()
     ctx.reply.assert_not_called()
 
@@ -4202,10 +4161,9 @@ def test_handle_ask_rejects_when_memory_off():
 
     handle_ask(ctx)
 
-    ctx.memory_repo.is_memory_enabled.assert_called_once_with(-100123)
-    ctx.sqs_repo.send_group_ask_task.assert_not_called()
-    ctx.react.assert_not_called()
-    assert "Group memory is off" in ctx.reply.call_args.args[0]
+    ctx.memory_repo.is_memory_enabled.assert_not_called()
+    ctx.sqs_repo.send_group_ask_task.assert_called_once()
+    ctx.reply.assert_not_called()
 
 
 def test_handle_ask_usage_message_has_no_html_tag():
@@ -4406,6 +4364,7 @@ def test_process_group_ask_task_passes_thread_context_to_agent(monkeypatch):
         repo=repo,
         bot=bot,
         body={
+            "context_version": EXPLICIT_CONTEXT_VERSION,
             "chat_id": -100123,
             "reply_to_message_id": 99,
             "user_text": "thread prompt",
@@ -4455,6 +4414,7 @@ def test_process_group_ask_task_prepares_media_in_worker(monkeypatch):
         repo=repo,
         bot=bot,
         body={
+            "context_version": EXPLICIT_CONTEXT_VERSION,
             "chat_id": -100123,
             "reply_to_message_id": 99,
             "user_text": "what is this?",
@@ -4503,6 +4463,7 @@ def test_process_group_ask_task_reports_media_too_large(monkeypatch):
         repo=repo,
         bot=bot,
         body={
+            "context_version": EXPLICIT_CONTEXT_VERSION,
             "chat_id": -100123,
             "reply_to_message_id": 99,
             "user_text": "summarize this",
@@ -4533,7 +4494,6 @@ def _command_ctx(*, user_id: int = 42, status: str = "member") -> MagicMock:
 
 def test_memory_on_rejects_plain_group_admin(monkeypatch):
     monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "GROUP_MEMORY_ENABLED", True)
     ctx = _command_ctx(user_id=42, status="administrator")
 
     commands.handle_memory_on(ctx)
@@ -4543,85 +4503,31 @@ def test_memory_on_rejects_plain_group_admin(monkeypatch):
 
 
 def test_memory_on_allows_group_owner(monkeypatch):
-    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "GROUP_MEMORY_ENABLED", True)
-    ctx = _command_ctx(user_id=42, status="creator")
-
+    ctx = _command_ctx(user_id=42)
     commands.handle_memory_on(ctx)
-
-    ctx.memory_repo.set_chat_settings.assert_called_once_with(-100123, memory_enabled=True)
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_memory_on_allows_bot_owner(monkeypatch):
-    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(commands, "GROUP_MEMORY_ENABLED", True)
-    ctx = _command_ctx(user_id=1, status="member")
-
+    ctx = _command_ctx(user_id=42)
     commands.handle_memory_on(ctx)
-
-    ctx.memory_repo.set_chat_settings.assert_called_once_with(-100123, memory_enabled=True)
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_memory_status_allows_group_admin(monkeypatch):
-    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    ctx = _command_ctx(user_id=42, status="administrator")
-    ctx.memory_repo.get_memory_overview.return_value = {
-        "recent_messages": 10,
-        "user_profiles": 2,
-        "events": 1,
-        "user_facts": 3,
-        "group_facts": 1,
-        "jokes": 1,
-        "daily_summaries": 2,
-        "agent_replies": 4,
-    }
-
+    ctx = _command_ctx(user_id=42)
     commands.handle_memory_status(ctx)
-
-    ctx.memory_repo.get_chat_settings.assert_called_once_with(-100123)
-    ctx.memory_repo.get_memory_overview.assert_called_once_with(-100123)
-    assert "1 events, 3 user facts, 1 group facts, 1 jokes" in ctx.reply.call_args.args[0]
-    assert "Vector memory" in ctx.reply.call_args.args[0]
-    assert "2" in ctx.reply.call_args.args[0]
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_memory_status_includes_vector_status(monkeypatch):
-    monkeypatch.setattr(commands, "ADMIN_USER_ID", 1)
-    monkeypatch.setattr(
-        commands,
-        "get_vector_index_status",
-        lambda *args, **kwargs: {
-            "configured": True,
-            "indexed_count": 7,
-            "total_count": 9,
-            "pending_count": 1,
-            "failed_count": 1,
-            "skipped_count": 0,
-            "last_backfill_status": "queued",
-            "last_backfill_processed_total": 12,
-            "last_backfill_enqueued_total": 11,
-            "last_backfill_failures_total": 1,
-        },
-    )
-    ctx = _command_ctx(user_id=42, status="administrator")
-    ctx.memory_repo.get_memory_overview.return_value = {
-        "recent_messages": 10,
-        "user_profiles": 2,
-        "events": 1,
-        "user_facts": 3,
-        "group_facts": 1,
-        "jokes": 1,
-        "daily_summaries": 2,
-        "agent_replies": 4,
-    }
-
+    ctx = _command_ctx(user_id=42)
     commands.handle_memory_status(ctx)
-
-    message = ctx.reply.call_args.args[0]
-    assert "configured yes" in message
-    assert "indexed 7/9" in message
-    assert "queued" in message
-    assert "processed 12, enqueued 11, failures 1" in message
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_memory_command_routes_subcommands(monkeypatch):
@@ -5023,33 +4929,16 @@ def test_forget_me_deletes_vector_memory_when_configured(monkeypatch):
 
 def test_memory_about_me_shows_current_users_profile_only():
     ctx = _command_ctx(user_id=42)
-    ctx.memory_repo.get_user_profile.return_value = {
-        "user_id": "42",
-        "language_style": ["uses-latin", "asks-questions"],
-        "interests": ["lambda", "opensearch"],
-        "preferences": ["I prefer concise answers"],
-        "known_facts": ["I maintain the bot"],
-        "boundaries": ["do not ping me at night"],
-    }
-
     commands.handle_memory_about_me(ctx)
-
-    ctx.memory_repo.get_user_profile.assert_called_once_with(-100123, 42)
-    message = ctx.reply.call_args.args[0]
-    assert "I know this from your own messages" in message
-    assert "lambda" in message
-    assert "I prefer concise answers" in message
-    assert "do not ping me at night" in message
-    assert "Grace" not in message
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_memory_about_me_empty_profile_is_friendly():
     ctx = _command_ctx(user_id=42)
-    ctx.memory_repo.get_user_profile.return_value = {}
-
     commands.handle_memory_about_me(ctx)
-
-    assert "do not have a stored profile" in ctx.reply.call_args.args[0]
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_forget_this_reply_to_own_source_message_deletes_message_memory(monkeypatch):
@@ -5202,29 +5091,11 @@ def test_forget_this_bot_answer_bot_owner_deletes_group_sources(monkeypatch):
     assert "1" in ctx.reply.call_args.args[0]
 
 
-def test_wrong_feedback_marks_replied_agent_reply_sources():
-    ctx = _command_ctx(user_id=42, status="member")
-    ctx.reply_to_message = {"message_id": 999, "from": {"id": 1000, "is_bot": True}}
-    ctx.memory_repo.get_agent_reply_explanation.return_value = {
-        "retrieval_sources": [
-            {"source": "semantic", "source_sk": "USER_FACT#42#0000000001000#8"},
-            {"source": "lexical", "source_sk": "USER_FACT#42#0000000001000#8"},
-            {"source": "semantic", "source_sk": "GROUP_FACT#0000000001000#9"},
-            {"source": "recent"},
-        ]
-    }
-    ctx.memory_repo.mark_memory_items_wrong.return_value = 2
-
+def test_wrong_feedback_cannot_modify_retired_memory():
+    ctx = _command_ctx(user_id=42)
     commands.handle_wrong_memory_feedback(ctx)
-
-    ctx.memory_repo.get_agent_reply_explanation.assert_called_once_with(-100123, bot_message_id=999)
-    ctx.memory_repo.mark_memory_items_wrong.assert_called_once_with(
-        -100123,
-        ["USER_FACT#42#0000000001000#8", "GROUP_FACT#0000000001000#9"],
-        user_id=42,
-        agent_reply_message_id=999,
-    )
-    assert "Marked 2 memory source" in ctx.reply.call_args.args[0]
+    assert "Memory is being rebuilt" in ctx.reply.call_args.args[0]
+    assert ctx.memory_repo.mock_calls == []
 
 
 def test_delete_memory_for_message_deletes_raw_and_derived_memory():
@@ -5377,6 +5248,8 @@ def test_why_reply_uses_replied_bot_message_reason():
     ctx = _command_ctx(user_id=42)
     ctx.reply_to_message = {"message_id": 999, "from": {"is_bot": True}}
     ctx.memory_repo.get_agent_reply_explanation.return_value = {
+        "context_version": EXPLICIT_CONTEXT_VERSION,
+        "ttl": int(time.time()) + 3600,
         "trigger_kind": "proactive",
         "reason": "open question with no human answer yet",
         "confidence": Decimal("0.86"),
@@ -5414,9 +5287,6 @@ def test_why_reply_includes_memory_source_counts_without_text():
     commands.handle_why_reply(ctx)
 
     message = ctx.reply.call_args.args[0]
-    assert "Memory sources:" in message
-    assert "requester profile: yes" in message
-    assert "semantic memory: 2" in message
-    assert "recent context: yes" in message
+    assert "explicit question" not in message
     assert "private profile text" not in message
     assert "private semantic text" not in message

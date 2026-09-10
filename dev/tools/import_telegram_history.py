@@ -84,10 +84,8 @@ def _make_vector_enqueue(queue_url: str | None):
 
 def main() -> int:
     args = _parse_args()
-    if args.apply and not args.table_name:
-        raise SystemExit("--table-name is required with --apply")
-    if args.apply and not args.no_vector_enqueue and not args.queue_url:
-        raise SystemExit("--queue-url is required with --apply unless --no-vector-enqueue is set")
+    if args.apply:
+        raise SystemExit("Historical memory import is retired. Only local dry-run inspection is available.")
 
     _prepare_import_path()
     _seed_required_env(args)

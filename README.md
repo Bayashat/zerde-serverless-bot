@@ -1,5 +1,7 @@
 # Zerde Bot
 
+> Memory is being rebuilt. Automatic group participation, channel comments and ambient reactions are disabled in the new code. `/ask`, direct mentions and requested bot followups remain available without long-term memory. Historical imports cannot write data. See [cutover operations](docs/MEMORY_CUTOVER.md); deployment and deletion are tracked separately.
+
 [English](README.md) | [Қазақша](docs/README_kk.md) | [Русский](docs/README_ru.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)

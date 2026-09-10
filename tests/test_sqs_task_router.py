@@ -6,6 +6,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
+from services.memory_cutover import EXPLICIT_CONTEXT_VERSION
 from services.repositories.captcha import CaptchaRepository
 from services.sqs_task_router import process_sqs_event, process_vector_sqs_event
 
@@ -37,6 +38,7 @@ def test_check_timeout_routes_and_injects_captcha_repo() -> None:
 def test_process_group_ask_routes() -> None:
     body = {
         "task_type": "PROCESS_GROUP_ASK",
+        "context_version": EXPLICIT_CONTEXT_VERSION,
         "chat_id": -1001,
         "update_id": 99,
         "reply_to_message_id": 3,
@@ -66,10 +68,10 @@ def test_process_proactive_candidate_routes() -> None:
     bot = MagicMock()
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_proactive_candidate_task") as mock_pc,
+        patch("services.group_agent.process_proactive_candidate_task") as mock_pc,
     ):
         process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
-    mock_pc.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
+    mock_pc.assert_not_called()
 
 
 def test_process_ambient_reaction_routes() -> None:
@@ -85,10 +87,10 @@ def test_process_ambient_reaction_routes() -> None:
     bot = MagicMock()
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_ambient_reaction_task") as mock_ar,
+        patch("services.ambient_reactions.process_ambient_reaction_task") as mock_ar,
     ):
         process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
-    mock_ar.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
+    mock_ar.assert_not_called()
 
 
 def test_spam_check_routes() -> None:
@@ -108,7 +110,7 @@ def test_spam_check_routes() -> None:
         bot = MagicMock()
         memory_repo = MagicMock()
         process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory_repo)
-    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha, memory_repo=memory_repo)
+    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha, memory_repo=None)
 
 
 def test_process_group_memory_routes() -> None:
@@ -122,10 +124,10 @@ def test_process_group_memory_routes() -> None:
     }
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_group_memory_task") as mock_pm,
+        patch("services.group_memory_processor.process_group_memory_task") as mock_pm,
     ):
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pm.assert_called_once_with(body, repo=None)
+    mock_pm.assert_not_called()
 
 
 def test_process_daily_group_summaries_routes() -> None:
@@ -134,9 +136,9 @@ def test_process_daily_group_summaries_routes() -> None:
         "chat_ids": [-1001, -1002],
         "summary_date": "2026-06-10",
     }
-    with patch("services.sqs_task_router.process_daily_group_summaries_task") as mock_pd:
+    with patch("services.group_memory_processor.process_daily_group_summaries_task") as mock_pd:
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pd.assert_called_once_with(body, repo=None)
+    mock_pd.assert_not_called()
 
 
 def test_daily_summary_task_does_not_share_contest_recovery_failure_domain() -> None:
@@ -147,7 +149,7 @@ def test_daily_summary_task_does_not_share_contest_recovery_failure_domain() -> 
     contest_repo = MagicMock()
     sqs_repo = MagicMock()
     memory_repo = MagicMock()
-    with patch("services.sqs_task_router.process_daily_group_summaries_task") as summary:
+    with patch("services.group_memory_processor.process_daily_group_summaries_task") as summary:
         process_sqs_event(
             {"Records": [_record(body)]},
             MagicMock(),
@@ -158,7 +160,7 @@ def test_daily_summary_task_does_not_share_contest_recovery_failure_domain() -> 
         )
 
     sqs_repo.send_contest_ttl_recovery_task.assert_not_called()
-    summary.assert_called_once_with(body, repo=memory_repo)
+    summary.assert_not_called()
 
 
 def test_process_contest_ttl_recovery_routes_with_existing_dependencies() -> None:
@@ -277,10 +279,10 @@ def test_process_vector_memory_routes() -> None:
     memory_repo = MagicMock()
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_vector_memory_task") as mock_pv,
+        patch("services.vector_memory.process_vector_memory_task") as mock_pv,
     ):
         process_vector_sqs_event({"Records": [_record(body)]}, memory_repo)
-    mock_pv.assert_called_once_with(body, repo=memory_repo)
+    mock_pv.assert_not_called()
 
 
 def test_process_vector_memory_backfill_routes() -> None:
@@ -292,10 +294,10 @@ def test_process_vector_memory_backfill_routes() -> None:
     memory_repo = MagicMock()
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_vector_memory_backfill_task") as mock_pb,
+        patch("services.vector_memory.process_vector_memory_backfill_task") as mock_pb,
     ):
         process_vector_sqs_event({"Records": [_record(body)]}, memory_repo)
-    mock_pb.assert_called_once_with(body, repo=memory_repo)
+    mock_pb.assert_not_called()
 
 
 def test_main_sqs_router_ignores_vector_tasks() -> None:
@@ -306,7 +308,7 @@ def test_main_sqs_router_ignores_vector_tasks() -> None:
     }
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_vector_memory_task") as mock_pv,
+        patch("services.vector_memory.process_vector_memory_task") as mock_pv,
     ):
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), MagicMock())
     mock_pv.assert_not_called()
@@ -315,6 +317,7 @@ def test_main_sqs_router_ignores_vector_tasks() -> None:
 def test_vector_sqs_router_ignores_main_tasks() -> None:
     body = {
         "task_type": "PROCESS_GROUP_ASK",
+        "context_version": EXPLICIT_CONTEXT_VERSION,
         "chat_id": -1001,
         "update_id": 99,
         "reply_to_message_id": 3,
@@ -349,6 +352,7 @@ def test_non_whitelisted_chat_skips_handlers() -> None:
 def test_handler_failure_reraises_for_sqs_retry() -> None:
     body = {
         "task_type": "PROCESS_GROUP_ASK",
+        "context_version": EXPLICIT_CONTEXT_VERSION,
         "chat_id": -1001,
         "update_id": 1,
         "reply_to_message_id": 1,
@@ -375,9 +379,8 @@ def test_vector_handler_failure_reraises_for_sqs_retry() -> None:
     with (
         patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
         patch(
-            "services.sqs_task_router.process_vector_memory_task",
+            "services.vector_memory.process_vector_memory_task",
             side_effect=RuntimeError("vector boom"),
         ),
     ):
-        with pytest.raises(RuntimeError, match="vector boom"):
-            process_vector_sqs_event({"Records": [_record(body)]}, MagicMock())
+        process_vector_sqs_event({"Records": [_record(body)]}, MagicMock())

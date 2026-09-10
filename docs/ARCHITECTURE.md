@@ -1,5 +1,10 @@
 # ZerdeBot Architecture
 
+## Current memory cutover boundary
+
+Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use empty long-term/recent/profile/vector context and versioned short reply threads. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership metadata and contest/business data retain their existing ownership. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
+
+
 This is the current developer-facing map of ZerdeBot. Keep it updated when changing memory, agent behavior, SQS task routing, DynamoDB schemas, vector retrieval, or CDK wiring.
 
 An approved [Memory V2 migration and reliability plan](goals/zerdebot-memory-v2/PLAN.md) is being executed. The runtime described below is the baseline, not a claim that the migration has shipped. Consult the [evidence ledger](goals/zerdebot-memory-v2/EVIDENCE.md) for implementation and deployment status.

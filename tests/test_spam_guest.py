@@ -197,7 +197,7 @@ def test_screening_failure_retries_webhook_and_skips_memory():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_group_memory_update") as observe,
+        patch("services.group_memory.observe_update") as observe,
     ):
         result = _handle_api_gateway(event, dispatcher, MagicMock())
     assert result["statusCode"] == 500
