@@ -18,17 +18,41 @@ keywords = [
     "python3.13"
 ]
 dependencies = [
-    "aws-cdk-aws-lambda-python-alpha>=2.248.0a0",
-    "aws-cdk-lib>=2.236.0",
+    "aws-cdk-aws-lambda-python-alpha>=2.253.0a0",
+    "aws-cdk-lib>=2.253.0",
     "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]
-dev = [
+lambda-common = [
     "boto3>=1.42.38",
+    "urllib3>=2.7.0",
+]
+lambda-bot = [
+    { include-group = "lambda-common" },
+    "Pillow>=12.3.0",
+]
+lambda-news = [
+    { include-group = "lambda-common" },
     "feedparser>=6.0.12",
     "google-genai>=1.65.0",
-    "Pillow>=11.0.0",
+]
+lambda-quiz = [
+    { include-group = "lambda-common" },
+    "google-genai>=1.65.0",
+]
+dev = [
+    { include-group = "lambda-bot" },
+    { include-group = "lambda-news" },
+    { include-group = "lambda-quiz" },
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
+]
+
+[tool.uv]
+# Patched floors for transitive Lambda dependencies (GitHub security alerts, Z04).
+constraint-dependencies = [
+    "idna>=3.15",
+    "pyasn1>=0.6.4",
+    "cryptography>=50.0.0",
 ]

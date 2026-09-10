@@ -296,3 +296,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
 | Test | Chat with bot, test captcha/voteban, `/memory status`, `/ask`, and reply-to-bot follow-ups |
 
 For contribution workflow (branching, pre-commit, PRs), see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## Configuration and package validation
+
+Use uv 0.11.3 for the CI-matched workflow. Follow [DEPLOYMENT_CONFIG.md](DEPLOYMENT_CONFIG.md) to export/check the root lock and import the actual ARM64 Lambda assets before deployment. Raw message retention defaults to 30 days independently of legacy retention; existing database TTL values are unchanged by configuration updates.

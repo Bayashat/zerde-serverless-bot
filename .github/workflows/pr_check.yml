@@ -29,12 +29,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
+          version: "0.11.3"
           enable-cache: true
 
       - name: Install project dependencies with uv
         run: |
           uv sync --frozen
+          uv run python scripts/export_requirements.py --check
 
       - name: Run pre-commit hooks
         run: |
@@ -52,19 +53,37 @@ jobs:
 
     # API keys and tokens are stored in SSM Parameter Store — CDK only needs non-secret config.
     env:
+      MAIN_TASK_QUEUE_RETENTION_DAYS: ${{ vars.MAIN_TASK_QUEUE_RETENTION_DAYS || '1' }}
+      MAIN_TASK_DLQ_RETENTION_DAYS: ${{ vars.MAIN_TASK_DLQ_RETENTION_DAYS || '14' }}
+      VECTOR_MEMORY_QUEUE_RETENTION_DAYS: ${{ vars.VECTOR_MEMORY_QUEUE_RETENTION_DAYS || '4' }}
+      VECTOR_MEMORY_DLQ_RETENTION_DAYS: ${{ vars.VECTOR_MEMORY_DLQ_RETENTION_DAYS || '14' }}
+      GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS || '30' }}
+      GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS || '7' }}
+      GROUP_MEMORY_LONG_TERM_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_LONG_TERM_RETENTION_DAYS || vars.GROUP_MEMORY_RETENTION_DAYS || '3650' }}
+      GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS || vars.GROUP_MEMORY_RETENTION_DAYS || '3650' }}
+      GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS: ${{ vars.GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS || '3' }}
+      GROUP_MEMORY_EXTRACTOR_PROVIDER: ${{ vars.GROUP_MEMORY_EXTRACTOR_PROVIDER || 'gemini' }}
+      GROUP_MEMORY_EXTRACTOR_MODE: ${{ vars.GROUP_MEMORY_EXTRACTOR_MODE || 'gemini_candidate_only' }}
+      GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE: ${{ vars.GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE || '0.65' }}
+      GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT: ${{ vars.GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT || '50' }}
+      GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT: ${{ vars.GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT || '20' }}
+      AGENT_BOT_ID: ${{ vars.AGENT_BOT_ID }}
+      AGENT_PROACTIVE_DELAY_SECONDS: ${{ vars.AGENT_PROACTIVE_DELAY_SECONDS || '45' }}
+      MULTIMODAL_ENABLED: ${{ vars.MULTIMODAL_ENABLED || 'true' }}
+      MULTIMODAL_MAX_DOWNLOAD_BYTES: ${{ vars.MULTIMODAL_MAX_DOWNLOAD_BYTES || '12000000' }}
+      MULTIMODAL_INLINE_MAX_BYTES: ${{ vars.MULTIMODAL_INLINE_MAX_BYTES || '8000000' }}
+      MULTIMODAL_TEXT_FILE_MAX_CHARS: ${{ vars.MULTIMODAL_TEXT_FILE_MAX_CHARS || '20000' }}
+      VECTOR_MEMORY_SCHEMA_VERSION: ${{ vars.VECTOR_MEMORY_SCHEMA_VERSION || '1' }}
       DEFAULT_LANG: ${{ vars.DEFAULT_LANG || 'kk' }}
       TELEGRAM_API_BASE: ${{ vars.TELEGRAM_API_BASE || 'https://api.telegram.org/bot' }}
-      AI_PROVIDER: ${{ vars.AI_PROVIDER || 'gemini' }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-      WTF_GEMINI_MODEL: ${{ vars.WTF_GEMINI_MODEL }}
-      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
+      GEMINI_RPD_LIMIT: ${{ vars.GEMINI_RPD_LIMIT || '500' }}
       GEMINI_EMBEDDING_RPD_LIMIT: ${{ vars.GEMINI_EMBEDDING_RPD_LIMIT || '1000' }}
       GEMINI_API_BASE: ${{ vars.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/models' }}
-      FALLBACK_MODEL: ${{ vars.FALLBACK_MODEL }}
       GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
       GROQ_SPAM_MODEL: ${{ vars.GROQ_SPAM_MODEL || 'openai/gpt-oss-safeguard-20b' }}
       GROQ_API_BASE: ${{ vars.GROQ_API_BASE || 'https://api.groq.com/openai/v1' }}
-      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+      DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL || 'deepseek-chat' }}
       DEEPSEEK_API_BASE: ${{ vars.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}
       SPAM_RULE_ENFORCE_THRESHOLD: ${{ vars.SPAM_RULE_ENFORCE_THRESHOLD || '0.8' }}
       SPAM_RULE_AI_THRESHOLD: ${{ vars.SPAM_RULE_AI_THRESHOLD || '0.15' }}
@@ -74,14 +93,14 @@ jobs:
       CHATS_KK: ${{ vars.CHATS_KK }}
       CHATS_ZH: ${{ vars.CHATS_ZH }}
       CHATS_RU: ${{ vars.CHATS_RU }}
-      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS }}
-      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS }}
-      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD }}
-      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD }}
+      CAPTCHA_TIMEOUT_SECONDS: ${{ vars.CAPTCHA_TIMEOUT_SECONDS || '120' }}
+      KICK_BAN_DURATION_SECONDS: ${{ vars.KICK_BAN_DURATION_SECONDS || '31' }}
+      VOTEBAN_THRESHOLD: ${{ vars.VOTEBAN_THRESHOLD || '7' }}
+      VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
       CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
-      QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD }}
-      NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL }}
-      QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL }}
+      QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD || '20' }}
+      NEWS_GEMINI_MODEL: ${{ vars.NEWS_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
+      QUIZ_GEMINI_MODEL: ${{ vars.QUIZ_GEMINI_MODEL || 'gemini-3.1-flash-lite' }}
       QUIZ_CHATS_KK: ${{ vars.QUIZ_CHATS_KK }}
       QUIZ_CHATS_ZH: ${{ vars.QUIZ_CHATS_ZH }}
       QUIZ_CHATS_RU: ${{ vars.QUIZ_CHATS_RU }}
@@ -105,7 +124,7 @@ jobs:
       AGENT_ENABLED: ${{ vars.AGENT_ENABLED || 'true' }}
       AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME || '@zerde_kz_bot' }}
       AGENT_RECENT_CONTEXT_LIMIT: ${{ vars.AGENT_RECENT_CONTEXT_LIMIT || '100' }}
-      AGENT_DAILY_PROACTIVE_LIMIT: ${{ vars.AGENT_DAILY_PROACTIVE_LIMIT || '10' }}
+      AGENT_DAILY_PROACTIVE_LIMIT: ${{ vars.AGENT_DAILY_PROACTIVE_LIMIT || '3' }}
       AGENT_PROACTIVE_FINAL_THRESHOLD: ${{ vars.AGENT_PROACTIVE_FINAL_THRESHOLD || '0.72' }}
       AGENT_PROACTIVE_DECISION_GROQ_MODELS: ${{ vars.AGENT_PROACTIVE_DECISION_GROQ_MODELS || 'openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b' }}
       AGENT_PROACTIVE_DECISION_CONTEXT_CHARS: ${{ vars.AGENT_PROACTIVE_DECISION_CONTEXT_CHARS || '4000' }}
@@ -134,7 +153,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "latest"
+          version: "0.11.3"
           enable-cache: true
 
       # npm package "aws-cdk" is the CLI only; its version is NOT the same as Python "aws-cdk-lib"
@@ -146,6 +165,7 @@ jobs:
       - name: Install project dependencies with uv
         run: |
           uv sync --frozen --no-dev
+          uv run --no-dev python scripts/export_requirements.py --check
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -158,12 +178,15 @@ jobs:
         run: |
           uv run cdk synth -c env=dev
 
+      - name: Verify ARM64 Lambda imports from bundled assets
+        run: uv run --frozen --no-dev python scripts/verify_lambda_bundles.py
+
       - name: CDK Diff (Preview Changes)
         id: cdk-diff
         working-directory: ./infra
         run: |
           set +e
-          uv run cdk diff -c env=dev > /tmp/cdk-diff.txt 2>&1
+          uv run cdk diff -c env=dev --no-change-set > /tmp/cdk-diff.txt 2>&1
           diffexit=$?
           set -e
           # CDK: 0 = no changes, 1 = differences, other = real failure

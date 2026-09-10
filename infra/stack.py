@@ -121,7 +121,7 @@ class ZerdeTelegramBotStack(Stack):
         group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
         group_memory_retention_days = legacy_group_memory_retention_days or "3650"
         group_memory_raw_message_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30"
+            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30", legacy_fallback=False
         )
         group_memory_agent_reply_retention_days = _memory_retention_days_env(
             "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", "7", legacy_fallback=False
