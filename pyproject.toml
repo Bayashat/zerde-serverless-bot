@@ -31,9 +31,15 @@ lambda-common = [
 lambda-bot = [
     { include-group = "lambda-common" },
     "Pillow>=12.3.0",
+    "httpx>=0.28.1,<1",
+    "httpcore>=1.0.9,<2",
+    "dnspython>=2.8.0",
 ]
 lambda-news = [
     { include-group = "lambda-common" },
+    "httpx>=0.28.1,<1",
+    "httpcore>=1.0.9,<2",
+    "dnspython>=2.8.0",
     "feedparser>=6.0.12",
     "google-genai>=1.65.0",
 ]
