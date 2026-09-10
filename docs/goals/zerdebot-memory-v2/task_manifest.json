@@ -24,18 +24,20 @@
     "title": "FIX: 旧记忆删除与业务数据边界",
     "depends_on": [],
     "body_file": "issues/Z03.md",
-    "status": "review",
+    "status": "pr_open",
     "number": 160,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/182"
   },
   {
     "id": "Z04",
     "title": "FIX: 统一部署配置和可复现打包",
     "depends_on": [],
     "body_file": "issues/Z04.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 161,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/183"
   },
   {
     "id": "Z05",
@@ -45,9 +47,10 @@
       "Z04"
     ],
     "body_file": "issues/Z05.md",
-    "status": "implementing_contract",
+    "status": "pr_open",
     "number": 162,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/186"
   },
   {
     "id": "Z06",
@@ -57,7 +60,7 @@
       "Z13"
     ],
     "body_file": "issues/Z06.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 163,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163"
   },
@@ -68,7 +71,7 @@
       "Z06"
     ],
     "body_file": "issues/Z07.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 164,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164"
   },
@@ -79,7 +82,7 @@
       "Z07"
     ],
     "body_file": "issues/Z08.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 165,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165"
   },
@@ -140,9 +143,10 @@
     "title": "FIX: 反垃圾执行结果和重试语义",
     "depends_on": [],
     "body_file": "issues/Z13.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 170,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/185"
   },
   {
     "id": "Z14",
@@ -176,7 +180,7 @@
     "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
     "depends_on": [],
     "body_file": "issues/Z17.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 174,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174"
   },
@@ -185,9 +189,10 @@
     "title": "CHORE: 旧 AWS 资源清理清单与执行手册",
     "depends_on": [],
     "body_file": "issues/Z18.md",
-    "status": "planned",
+    "status": "pr_open",
     "number": 175,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/184"
   },
   {
     "id": "Z19",

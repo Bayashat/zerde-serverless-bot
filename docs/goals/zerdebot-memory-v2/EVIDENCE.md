@@ -40,3 +40,15 @@
 GitHub #176的两个CI检查通过，但reviewDecision=REVIEW_REQUIRED；平台审阅门槛尚未满足，不将其描述为已合并。
 
 依赖补充：GitHub Dependabot当前uv.lock有24个open advisories（18high、5medium、1low），涉及Pillow/urllib3/idna/pyasn1/cryptography/CDK。Z04按官方advisory修复版本做定向升级与真实ARM包导入回归；不能只把带漏洞的旧依赖锁成可复现。
+
+## 第二批与本地集成证据（2026-09-10；无部署）
+
+- Z03 #182 / 2489044：删除白名单与向量清理outbox，615 full（最终TTL0/invalid补充2项后仅重点复验，未将其虚报为新full）；root269重点和独立24 TTL复验。
+- Z04 #183 / 321e5c4：599 full，单uv.lock及四个实际ARM64包导入通过；readonly dev diff只是本地默认配置的预览，不能当作生产release manifest。
+- Z05 #186 / 0e140a7：645 full，独立52 domain/infra ALIGNED；独立表、事实writer、source+WORK事务，默认STOPPED，尚未接学习入口。
+- Z13 #185 / b48cad7：629 full，独立85 ALIGNED；真实SDK事务、发送前ban决定栅栏与CLEAN receipt。临时自动kick安全下限改60秒，固定deadline不延长，防止31秒设置在网络延迟后被Telegram解释成永久ban；Z17同步infra/workflow默认。
+- Z18 #184 / 9ea265a：精确资源清理手册，独立ALIGNED；四个日志组再次只读确认0B。无任何删除。
+
+本地 integration 分支 f14bd08 整合 Z01-Z04、Z12、Z19 及计划；首次709/714，通过5项失效mock隔离点修正后 **714 full passed**。保留Z04安全依赖版本并加入Moto，不用旧lock覆盖安全修复。实际CDK synth及禁网Python3.13.15/aarch64四handler导入全通过（bot/indexer/news/quiz），验证测试和真实打包依赖一致。此为本地合并验证，GitHub main未合入，生产未变。
+
+Z06/Z07/Z08/Z17实施中。Z06明确使用短期候选、统一观察版本与跨表CLEAN审批条件；编辑先使旧事实失效。Z08预算API由唯一预算owner实现，抽取与有记忆回答共用，未知调用保守占用，不复用旧fail-open RPD作为成本账本。
