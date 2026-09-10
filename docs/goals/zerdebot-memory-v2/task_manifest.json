@@ -71,9 +71,10 @@
       "Z06"
     ],
     "body_file": "issues/Z07.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 164,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/188"
   },
   {
     "id": "Z08",
@@ -94,7 +95,7 @@
       "Z08"
     ],
     "body_file": "issues/Z09.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 166,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166"
   },
@@ -153,16 +154,17 @@
     "title": "FIX: Voteban 会话身份和逻辑过期",
     "depends_on": [],
     "body_file": "issues/Z14.md",
-    "status": "planned",
+    "status": "pr_open",
     "number": 171,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/189"
   },
   {
     "id": "Z15",
     "title": "FIX: 新闻抓取时限与分群交付恢复",
     "depends_on": [],
     "body_file": "issues/Z15.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 172,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172"
   },
@@ -171,7 +173,7 @@
     "title": "FIX: Quiz 发布、计分与答案恢复",
     "depends_on": [],
     "body_file": "issues/Z16.md",
-    "status": "planned",
+    "status": "implementing",
     "number": 173,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173"
   },
@@ -180,9 +182,10 @@
     "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
     "depends_on": [],
     "body_file": "issues/Z17.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 174,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187"
   },
   {
     "id": "Z18",

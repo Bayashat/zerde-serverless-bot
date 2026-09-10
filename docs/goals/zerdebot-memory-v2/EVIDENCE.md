@@ -52,3 +52,13 @@ GitHub #176的两个CI检查通过，但reviewDecision=REVIEW_REQUIRED；平台�
 本地 integration 分支 f14bd08 整合 Z01-Z04、Z12、Z19 及计划；首次709/714，通过5项失效mock隔离点修正后 **714 full passed**。保留Z04安全依赖版本并加入Moto，不用旧lock覆盖安全修复。实际CDK synth及禁网Python3.13.15/aarch64四handler导入全通过（bot/indexer/news/quiz），验证测试和真实打包依赖一致。此为本地合并验证，GitHub main未合入，生产未变。
 
 Z06/Z07/Z08/Z17实施中。Z06明确使用短期候选、统一观察版本与跨表CLEAN审批条件；编辑先使旧事实失效。Z08预算API由唯一预算owner实现，抽取与有记忆回答共用，未知调用保守占用，不复用旧fail-open RPD作为成本账本。
+
+## 第三批与摄取/问答接口冻结（2026-09-10；无部署）
+
+- Z17 [#187](https://github.com/Bayashat/zerde-serverless-bot/pull/187) / 9e566ed：624 full；独立42初审+22最终。dev默认按需停用；有效告警及恢复通过独立SNS/operations发送管理员私聊，真实5个ARM64包禁网导入通过。项目成本标签尚未激活，未发送真实通知。
+- Z07 [#188](https://github.com/Bayashat/zerde-serverless-bot/pull/188) / 7b7b228：747 full；独立102抽取/趋势/预算，ALIGNED。固定结构化Gemini请求、每次HTTP独立预留费用、拒绝规则生成个人事实。全为合成/模拟provider结果，尚无实际多语言质量分数。
+- Z14 [#189](https://github.com/Bayashat/zerde-serverless-bot/pull/189) / bbe4bcc：673 full；独立67投票与执行结果，ALIGNED。generation绑定按钮、临时封禁确认后计数、终态恢复。basic group/缺chat.type及超过365天时长无法保证临时封禁，保守转UNCONFIRMED，不冒险调用；正常阈值和时长不改。
+- Z08预算ba1c392 / 75fa928 / 53e344f已被Z07引用：22实际SDK+Moto测试、独立ALIGNED。全项目共享UTC月账本，dev不另获$7。按照模型完整输入上限及额外thinking余量每次先预留$0.458752，有可信实际usage才退差额；缺失/不明计费继续占用。price异常全局暂停跨月保留。此为保守控制额度，不是供应商账单或AWS硬封顶。
+- Z06独立复核发现两项P2并完成定向回归：暂停学习不能误清待审批候选；并发已ACCEPTED不能被另一worker反向ACK为EXPIRED。最终96 domain/ingestion独审ALIGNED，主PR发布中；公共Webhook/SQS/worker/infra仍由root集成验证。
+
+Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_id/version、发送前强验证、释放；删除先STOPPING阻新租约，等在途结束再确认。Z15分群逐步骤交付与Z16poll/answer恢复实现中。真实群七天试运行、数据清零、AWS资源清理、部署和合并门槛尚未执行；不能把上述PR状态当作上线或产品验收。
