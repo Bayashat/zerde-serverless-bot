@@ -241,3 +241,5 @@ can repeat review notices, but cannot automatically ban a caller.
 Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and all CONTEST families. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../../../docs/legacy-memory-deletion.md).
 
 Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
+
+Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions storage only; absent CONTROL rows leave learning stopped.

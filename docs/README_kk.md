@@ -173,3 +173,5 @@ Zerde бастапқыда [serverless-tg-bot-starter](https://github.com/Bayash
 ## License
 
 MIT License.
+
+Memory V2 қоймасы үйрену өшірілген күйде енгізіледі; жай орналастыру оны қоспайды. [Келісімде](memory-v2-domain.md) жеке кесте, дереккөз нұсқалары және дәлелі бар фактілер сипатталған.

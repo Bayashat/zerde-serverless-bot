@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from core.config import MEMORY_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
+from core.config import MEMORY_TABLE_NAME, MEMORY_V2_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
@@ -23,6 +23,7 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
 _memory_repo: GroupMemoryRepository | None = None
+_memory_v2_repo = None
 _contest_repo: ContestRepository | None = None
 _sqs_repo: SQSClient | None = None
 _dispatcher: Dispatcher | None = None
@@ -52,6 +53,18 @@ def get_memory_repo() -> GroupMemoryRepository | None:
     if _memory_repo is None:
         _memory_repo = GroupMemoryRepository()
     return _memory_repo
+
+
+def get_memory_v2_repo():
+    """Independent lazy V2 storage. A configured table does not activate learning."""
+    global _memory_v2_repo
+    if not MEMORY_V2_TABLE_NAME:
+        return None
+    if _memory_v2_repo is None:
+        from services.memory_v2.repository import MemoryRepository
+
+        _memory_v2_repo = MemoryRepository(MEMORY_V2_TABLE_NAME)
+    return _memory_v2_repo
 
 
 def get_contest_repo() -> ContestRepository | None:
