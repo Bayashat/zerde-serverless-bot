@@ -11,7 +11,7 @@ webhook can return quickly and avoid duplicate update retries.
 import json
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import urllib3
 from core.config import GEMINI_API_BASE, GEMINI_MODEL, get_gemini_api_key
@@ -208,7 +208,10 @@ class GeminiClient:
         url: str,
         body: str,
         headers: dict[str, str],
+        before_attempt: Callable[[], None] | None = None,
     ) -> bytes:
+        if before_attempt is not None:
+            before_attempt()  # Outside transport handling: a failed source fence cannot fall back.
         started_at = time.monotonic()
         try:
             resp = _http.request("POST", url, body=body, headers=headers, retries=False)
@@ -288,6 +291,7 @@ class GeminiClient:
         media_parts: list[dict[str, Any]] | None = None,
         media_context: str = "",
         proactive: bool = False,
+        before_attempt: Callable[[], None] | None = None,
     ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
         if _circuit_is_open():
@@ -438,6 +442,7 @@ class GeminiClient:
             url=url,
             body=body,
             headers=headers,
+            **({"before_attempt": before_attempt} if before_attempt is not None else {}),
         )
 
         try:

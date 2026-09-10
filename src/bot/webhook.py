@@ -17,6 +17,8 @@ from services.contest import ContestRetryRequiredError, observe_contest_update
 from services.group_agent import handle_update as handle_group_agent_update
 from services.handlers import process_timeout_task
 from services.handlers.captcha import handle_captcha_answer
+from services.memory_v2.public_answers import MemoryPublicRetryRequiredError
+from services.memory_v2.telegram_api import TelegramReadRetryRequired
 from services.repositories._quiz_answers import QuizAnswerRetryRequiredError
 from services.repositories.captcha import CaptchaRetryRequiredError
 from services.repositories.sqs import SQSClient
@@ -137,6 +139,11 @@ def _handle_api_gateway(
 
         try:
             admission.accept_safe()
+            from services.memory_v2.identity import observe_accepted_alias
+
+            observe_accepted_alias(
+                admission, ((body.get("message") or body.get("edited_message") or {}).get("from") or {})
+            )
         except Exception:
             logger.error("Memory admission requires redelivery")
             return create_response(500, {"message": "Memory admission retry required"})
@@ -172,6 +179,10 @@ def _handle_api_gateway(
     except QuizAnswerRetryRequiredError:
         logger.error("Quiz answer requires Telegram redelivery")
         return create_response(500, {"message": "Quiz answer retry required"})
+
+    except (MemoryPublicRetryRequiredError, TelegramReadRetryRequired):
+        logger.error("Memory operation requires authenticated update redelivery")
+        return create_response(500, {"message": "Memory retry required"})
     except CaptchaRetryRequiredError:
         logger.exception("Captcha processing requires Telegram redelivery")
         return create_response(500, {"message": "Captcha retry required"})

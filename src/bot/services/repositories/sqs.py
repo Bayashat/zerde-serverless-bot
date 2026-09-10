@@ -19,6 +19,9 @@ def _get_sqs_client():
     global _SQS_CLIENT
     if _SQS_CLIENT is None:
         _SQS_CLIENT = boto3.client("sqs")
+    from services.memory_v2.cost_meter import register_client
+
+    register_client(_SQS_CLIENT)
     return _SQS_CLIENT
 
 
@@ -96,6 +99,7 @@ class SQSClient:
         requester_username: str | None = None,
         requester_display_name: str | None = None,
         current_user_message: str | None = None,
+        request_sent_at: int | None = None,
         source_message_context: str | None = None,
         parent_bot_message_id: int | str | None = None,
         media_ref: dict[str, object] | None = None,
@@ -111,6 +115,11 @@ class SQSClient:
             "user_text": user_text,
             "lang": lang,
         }
+        from services.memory_v2.explicit_request_gate import capture_configured
+
+        gate = capture_configured(chat_id, requester_user_id, reply_to_message_id, request_sent_at)
+        if gate is not None:
+            payload["request_gate"] = gate
         if retrieval_query:
             payload["retrieval_query"] = retrieval_query
         if requester_user_id is not None:

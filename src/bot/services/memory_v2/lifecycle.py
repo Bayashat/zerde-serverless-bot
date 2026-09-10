@@ -107,7 +107,11 @@ class MemoryLifecycle:
             if job["scope"] == "group" or not row.get("bound"):
                 return True
             if job["scope"] == "subject":
-                return job["target"] in row.get("subject_ids", []) or job["target"] in row.get("evidence_authors", [])
+                return (
+                    row.get("actor_user_id") == job["target"]
+                    or job["target"] in row.get("subject_ids", [])
+                    or job["target"] in row.get("evidence_authors", [])
+                )
             return any(ref.get("source_id") == job["target"] for ref in row.get("source_refs", []))
         if row.get("kind") == "WORK" and row.get("state") == "LEASED":
             return int(row.get("lease_until", 0)) > self.repo.now() and self._belongs(job, row)
@@ -210,6 +214,8 @@ class MemoryLifecycle:
         return {"Delete": operation}
 
     def _retained(self, job, row):
+        if row["sk"].startswith("CONTROL_COMMAND#"):
+            return True  # Body-free, seven-day command tombstones prevent destructive replay.
         if row["sk"] == "CONTROL" or row["sk"].startswith("PURGE#"):
             return True
         if row["sk"].startswith("SUBJECT#"):

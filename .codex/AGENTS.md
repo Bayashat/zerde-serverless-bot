@@ -2,7 +2,7 @@
 
 ## Current cutover boundary (Z01)
 
-Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Only new, unexpired `explicit-only-2026-09` reply threads can be read. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
+Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
 
 
 This file guides Codex when working in this repository. Keep it current with `docs/ARCHITECTURE.md` and `.codex/skills/zerdebot-development/SKILL.md`.
@@ -264,3 +264,5 @@ Memory V2 webhook/moderation admission, dedicated queue/worker, shared project b
 News deadlines, frozen manifests, per-chat delivery receipts, and operator recovery are documented in `docs/NEWS_DELIVERY.md`.
 
 News/Quiz recovery: preserve original scheduled_at and News slot in EventBridge input; never derive a retry publication identity from current time. Five-minute Quiz publication/answer recovery and both Lambda async failure destinations are required public wiring. The destination DLQ contains inspection envelopes, not blindly replayable task bodies. `/quizreconcile` requires live group-admin and own-bot poll checks. See docs/QUIZ_RECOVERY.md.
+
+Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.

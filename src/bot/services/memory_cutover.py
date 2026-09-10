@@ -7,7 +7,7 @@ V2 will introduce its own versioned source-reference protocol and control owner.
 import time
 from typing import Any
 
-EXPLICIT_CONTEXT_VERSION = "explicit-only-2026-09"
+EXPLICIT_CONTEXT_VERSION = "explicit-v2-sources-2026-09"
 RETIRED_TASK_TYPES = frozenset(
     {
         "PROCESS_PROACTIVE_CANDIDATE",

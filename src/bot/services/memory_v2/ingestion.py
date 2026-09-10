@@ -40,6 +40,9 @@ class MemoryQueue:
     def send(self, chat_id, ref):
         if self.client is None:
             self.client = boto3.client("sqs")
+        from .cost_meter import register_client
+
+        register_client(self.client)
         self.client.send_message(QueueUrl=self.queue_url, MessageBody=json.dumps(task_payload(chat_id, ref)))
 
 

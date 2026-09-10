@@ -43,7 +43,17 @@ def budget(monkeypatch):
         )
         monkeypatch.setattr("services.memory_budget.get_dynamodb", lambda: resource)
         now = [datetime(2026, 9, 10, tzinfo=timezone.utc).timestamp()]
-        repo = MemoryBudgetRepository("memory-budget-test", clock=lambda: now[0])
+        repo = MemoryBudgetRepository("memory-budget-test", clock=lambda: now[0], inventory_version="test-inventory")
+        from services.memory_v2._cost_state import CostState
+
+        CostState(repo, clock=lambda: now[0]).record_measurement(
+            repo.month(),
+            inventory_version="test-inventory",
+            verified=True,
+            estimate=0,
+            covered_until=int(now[0]),
+            reason="SYNTHETIC_COMPLETE_MEASUREMENT",
+        )
         yield repo, now
 
 
@@ -116,6 +126,16 @@ def test_month_rollover_does_not_reuse_attempt_or_refund_new_month(budget):
     now[0] = datetime(2026, 10, 1, tzinfo=timezone.utc).timestamp()
     with pytest.raises(DuplicateMemoryAttempt):
         repo.reserve("same-attempt", purpose="answer")
+    from services.memory_v2._cost_state import CostState
+
+    CostState(repo, clock=lambda: now[0]).record_measurement(
+        repo.month(),
+        inventory_version="test-inventory",
+        verified=True,
+        estimate=0,
+        covered_until=int(now[0]),
+        reason="SYNTHETIC_COMPLETE_MEASUREMENT",
+    )
     current = repo.reserve("new-attempt", purpose="answer")
     repo.settle(old, usage())
     assert repo.snapshot()["charged_micro_usd"] == RESERVATION_MICRO_USD

@@ -245,3 +245,5 @@ Memory V2 storage is being introduced behind a stopped control state; deployment
 The [runtime integration](docs/MEMORY_V2_RUNTIME.md) adds a dedicated memory queue and worker with recoverable admission; learning remains stopped until an explicit validated cutover.
 
 Quiz answers are persisted before queue delivery and recovered every five minutes. A live group administrator can reconcile an uncertain existing poll with `/quizreconcile <request_key> <generation>` while replying to that poll. News retries keep their original scheduled slot and do not resend confirmed delivery steps.
+
+Explicit V2 answers and `/memory` controls now share source/version/deletion guards. The [runtime contract](docs/MEMORY_V2_RUNTIME.md) covers sourced profiles, bounded topic samples, metered costs and the separate first-deployment/activation gates. This is local implementation, not production acceptance.

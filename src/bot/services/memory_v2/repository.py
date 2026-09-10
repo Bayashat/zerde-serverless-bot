@@ -53,10 +53,16 @@ class MemoryRepository:
         return int(self.clock())
 
     def _read(self, chat_id, sk):
+        from .cost_runtime import touch
+
+        touch()
         response = self.table.get_item(Key={"pk": chat_key(chat_id), "sk": sk}, ConsistentRead=True)
         return response.get("Item") or {}
 
     def _transaction(self, operations):
+        from .cost_runtime import touch
+
+        touch()
         try:
             # Resource client owns serialization, including transaction values.
             self.table.meta.client.transact_write_items(TransactItems=operations)
