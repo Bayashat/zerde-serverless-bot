@@ -7,7 +7,6 @@ from typing import Optional
 
 import urllib3
 from core.logger import LoggerAdapter, get_logger
-from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -92,8 +91,14 @@ class TelegramSender:
                 status_code = resp.status
                 response_text = resp.data.decode("utf-8")
                 logger.warning(
-                    f"Attempt {attempt + 1}/{max_retries} to {chat_id} failed (HTTPError) "
-                    f"(status_code={status_code}, response_text={response_text})"
+                    "Telegram sendMessage failed",
+                    extra={
+                        "chat_id": chat_id,
+                        "attempt": attempt + 1,
+                        "max_retries": max_retries,
+                        "status": status_code,
+                        "response_chars": len(response_text),
+                    },
                 )
 
                 if status_code == 429:
@@ -160,7 +165,7 @@ class TelegramSender:
                     "Send photo failed",
                     extra={
                         "status": resp.status,
-                        "body_preview": truncate_log_text(body),
+                        "response_chars": len(body),
                         "chat_id": chat_id,
                         "attempt": attempt + 1,
                     },

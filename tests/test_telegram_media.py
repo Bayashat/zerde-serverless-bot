@@ -1,9 +1,11 @@
 import pytest
 from services.telegram_media import (
+    MediaReference,
     MediaTooLargeError,
     agent_reply_media_metadata,
     detect_media_reference,
     detect_media_references,
+    media_reference_context,
     prepare_media_collection_for_gemini,
     prepare_media_for_gemini,
 )
@@ -128,6 +130,32 @@ def test_detect_media_reference_rejects_unsupported_document():
     )
 
     assert ref is None
+
+
+def test_media_reference_context_preserves_caption_words_that_resemble_log_secrets():
+    caption = "Please inspect this diagram: monkey=banana, key=middle C, token=bear."
+    ref = detect_media_reference({"photo": [{"file_id": "photo-id"}], "caption": caption})
+
+    context = media_reference_context(ref)
+
+    assert f"- caption: {caption}" in context
+
+
+@pytest.mark.parametrize("caption_length", [499, 500, 501])
+def test_media_reference_context_keeps_caption_normalization_and_size_limit(caption_length):
+    normalized_caption = "a b" + "c" * (caption_length - 3)
+    ref = MediaReference(
+        media_type="photo",
+        file_id="photo-id",
+        caption="  a\nb" + "c" * (caption_length - 3) + "  ",
+    )
+
+    context = media_reference_context(ref)
+
+    expected_caption = normalized_caption[:500]
+    if caption_length > 500:
+        expected_caption += f"…(truncated,{caption_length} chars)"
+    assert f"- caption: {expected_caption}" in context.splitlines()
 
 
 def test_prepare_media_for_gemini_builds_bounded_text_part(monkeypatch):

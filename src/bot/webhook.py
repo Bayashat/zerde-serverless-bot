@@ -23,7 +23,7 @@ from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
 from services.telegram_actor import is_linked_channel_discussion_post
 from services.telegram_media import observe_media_group
-from zerde_common.logging_utils import telegram_update_log_extra
+from zerde_common.logging_utils import api_gateway_event_summary, telegram_update_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -45,7 +45,7 @@ def handle_event(
 
     if event_type == "api_gateway":
         return _handle_api_gateway(event, dispatcher, bot)
-    logger.warning("Unknown event type received", extra={"event": event})
+    logger.warning("Unknown event type received", extra=api_gateway_event_summary(event))
 
     return None
 
@@ -83,11 +83,6 @@ def _handle_api_gateway(
             return create_response(200, {"message": "Invalid request"})
 
         chat_id, chat_type = _extract_chat_context(body)
-        update_log = telegram_update_log_extra(body)
-        update_log["chat_id"] = chat_id
-        update_log["chat_type"] = chat_type
-        logger.info("Telegram webhook update received", extra=update_log)
-
         if chat_type == "private":
             dispatcher.bot.send_message(
                 chat_id,
@@ -96,8 +91,10 @@ def _handle_api_gateway(
             return create_response(200, {"message": "ok"})
 
         if chat_type in {"group", "supergroup"} and not is_configured_group_chat(chat_id):
-            logger.debug("Silently ignoring event from non-whitelisted chat", extra={"chat_id": chat_id})
+            logger.debug("Silently ignoring event from non-whitelisted chat")
             return create_response(200, {"message": "ok"})
+
+        logger.info("Telegram webhook update received", extra=telegram_update_log_extra(body))
 
         has_pending_captcha = _has_pending_captcha(dispatcher, body)
 
