@@ -61,6 +61,8 @@ RAG means **Retrieval-Augmented Generation**: retrieve relevant memory first, th
 
 Guest-bot advertisements are screened too, including captions and link buttons. High-confidence spam is deleted; admins review the actual caller before a permanent ban. Calling a bot alone does not establish malicious intent.
 
+News retries resume failed groups and unfinished messages from the saved digest; confirmed deliveries are skipped. When Telegram delivery is uncertain, automatic resending stops until an operator checks the result. See [news delivery and recovery](docs/NEWS_DELIVERY.md) for the implementation and rollout requirements.
+
 
 ---
 

@@ -1,14 +1,19 @@
 """DigestService: orchestrates the full news digest pipeline."""
 
+import asyncio
 import re
+import time
+import uuid
 from typing import Any
 from urllib.parse import urlsplit
 
 from core.logger import LoggerAdapter, get_logger
-from core.utils import extract_event, get_intro_text
+from core.utils import get_intro_text
 from services.ai_client import NewsAIClientBase
+from services.deadline import Deadline, NewsDeadlineError
+from services.delivery_state import NewsDeliveryRepository, parse_job
 from services.news_fetcher import NewsFetcher, classify_source_region, extract_domain
-from services.telegram import TelegramSender
+from services.telegram import TelegramSender, prepare_step
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -182,21 +187,12 @@ class DigestService:
         fetcher: NewsFetcher,
         ai: NewsAIClientBase,
         sender: TelegramSender,
+        repository: NewsDeliveryRepository | None = None,
     ) -> None:
         self._fetcher = fetcher
         self._ai = ai
         self._sender = sender
-
-    def _notify_chats_digest_failure(self, chat_ids: list[str], message: str) -> None:
-        """Best-effort alert to every configured chat (errors are logged, not raised)."""
-        for chat_id in chat_ids:
-            try:
-                self._sender.send_message(chat_id, message)
-            except Exception:
-                logger.exception(
-                    "Failed to send digest failure notification",
-                    extra={"chat_id": chat_id},
-                )
+        self._repository = repository or NewsDeliveryRepository()
 
     def _dedupe_and_limit_candidates(self, raw_news: list[dict]) -> list[dict]:
         """Remove obvious duplicates and bound deep scraping work."""
@@ -233,109 +229,142 @@ class DigestService:
         )
         return limited
 
-    def _enrich_news_candidates(self, raw_news: list[dict]) -> list[dict]:
-        """Fetch article metadata/text before selection so ranking has evidence."""
+    async def _enrich_news_candidates(self, raw_news, deadline):
+        """At most 45 candidates, five concurrent requests, and 45 seconds for the whole stage."""
         candidates = self._dedupe_and_limit_candidates(raw_news)
-        enriched: list[dict] = []
+        semaphore = asyncio.Semaphore(5)
+
+        async def enrich(article):
+            async with semaphore:
+                article.update(await self._fetcher.fetch_deep_article_data(article["link"], deadline))
+
+        tasks = [asyncio.create_task(enrich(article)) for article in candidates]
+        try:
+            async with deadline.timeout(45):
+                await asyncio.gather(*tasks)
+        except TimeoutError:
+            logger.warning("News enrichment deadline reached; retaining source summaries")
+        finally:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
         for article in candidates:
-            deep_data = self._fetcher.fetch_deep_article_data(article["link"])
-            article.update(deep_data)
             article["full_text_chars"] = int(article.get("full_text_chars") or len(article.get("full_text") or ""))
             article["has_image"] = bool(article.get("image_url"))
             article["quality_score"], article["quality_reasons"] = _score_article_quality(article)
-            enriched.append(article)
-
-        enriched.sort(key=lambda item: float(item.get("quality_score", 0)), reverse=True)
-        for index, article in enumerate(enriched):
+        candidates.sort(key=lambda item: float(item.get("quality_score", 0)), reverse=True)
+        for index, article in enumerate(candidates):
             article["index"] = index
-        logger.info(
-            "News candidates enriched",
-            extra={
-                "candidate_count": len(enriched),
-                "selectable_count": sum(
-                    1 for item in enriched if float(item.get("quality_score", 0)) >= _MIN_SELECTABLE_QUALITY_SCORE
-                ),
-            },
-        )
-        return enriched
+        return candidates
 
-    def run(self, event: dict[str, Any]) -> dict[str, Any]:
-        """Execute the digest pipeline for a language group.
-
-        Expects event keys: chat_ids (list[str]), lang (str).
-        Generates the digest once and sends it to all chat_ids.
-        Returns an API-Gateway-style response dict.
-        """
-        logger.info("Starting daily news digest job")
-        chat_ids, lang = extract_event(event)
+    def run(self, event: dict[str, Any], context=None, *, budget_seconds=240) -> dict[str, Any]:
+        """Raise on incomplete work: a statusCode 500 return is not a Lambda failure."""
+        seconds = min(240, budget_seconds)
+        if context is not None:
+            seconds = min(seconds, context.get_remaining_time_in_millis() / 1000 - 15)
+        deadline = Deadline(seconds)
         try:
-            raw_news = self._fetcher.fetch_raw_news()
-            if not raw_news:
-                logger.info("No news items found within TTL; skipping digest")
-                return {"statusCode": 200, "body": "No news"}
+            return asyncio.run(self._run(event, deadline))
+        except TimeoutError:
+            raise NewsDeadlineError("News invocation reached its end-to-end deadline") from None
 
-            enriched_news = self._enrich_news_candidates(raw_news)
-            if not enriched_news:
-                logger.info("No usable news candidates after enrichment; skipping digest")
-                return {"statusCode": 200, "body": "No usable news"}
-
-            selections = self._ai.select_top_news(enriched_news)
-            top_indices = _selection_indices(selections)
-            logger.info(
-                "Top news selected",
-                extra={
-                    "indices": top_indices,
-                    "count": len(top_indices),
-                    "selection_reasons": [selection.get("score_reason", "")[:120] for selection in selections],
-                },
-            )
-
-            deep_news = [enriched_news[idx] for idx in top_indices]
-            logger.info("Selected enriched articles", extra={"articles": len(deep_news)})
-
-            intro = get_intro_text(lang)
-            digests = self._ai.generate_digests_per_article(deep_news, lang)
-
-            sent_chats: list[str] = []
-            failed: list[dict] = []
-            for chat_id in chat_ids:
-                logger.info("Sending digest to chat", extra={"chat_id": chat_id})
-                ok = True
-                if not self._sender.send_message(chat_id, intro)[0]:
-                    failed.append({"chat_id": str(chat_id), "step": "intro"})
-                    continue
-                for i, article in enumerate(deep_news):
-                    image_url = article.get("image_url") or ""
-                    digest_text = digests[i] if i < len(digests) else f"<b>{article['title']}</b>\n{article['link']}"
-                    logger.info(
-                        "Sending message with photo",
-                        extra={"chat_id": chat_id, "has_image": bool(image_url), "index": i},
-                    )
-                    if not self._sender.send_message_with_photo(chat_id, digest_text, image_url):
-                        ok = False
-                        failed.append(
-                            {
-                                "chat_id": str(chat_id),
-                                "step": f"article_{i}",
-                                "article_index": i,
-                            },
+    async def _run(self, event, deadline):
+        async with deadline.timeout(deadline.remaining()):
+            job = parse_job(event)
+            deadline.remaining(reserve=10)
+            owner, manifest = self._repository.claim_manifest(job)
+            if owner:
+                try:
+                    raw_news = await self._fetcher.fetch_raw_news(deadline)
+                    if raw_news:
+                        enriched = await self._enrich_news_candidates(raw_news, deadline)
+                        selections = await self._ai.select_top_news(enriched, deadline)
+                        articles = [enriched[index] for index in _selection_indices(selections)]
+                        if not articles:
+                            raise RuntimeError("No news articles could be selected")
+                        digests = await self._ai.generate_digests_per_article(articles, job["lang"], deadline)
+                        if len(digests) != len(articles) or any(
+                            not isinstance(x, str) or not x.strip() for x in digests
+                        ):
+                            raise RuntimeError("News generation returned incomplete content")
+                        steps = [prepare_step(get_intro_text(job["lang"]))]
+                        steps.extend(
+                            prepare_step(text, article.get("image_url") or "")
+                            for text, article in zip(digests, articles, strict=True)
                         )
-                if ok:
-                    sent_chats.append(str(chat_id))
-                    logger.info("Digest sent successfully", extra={"chat_id": chat_id})
-
+                    else:
+                        # Successful RSS reads with no fresh items are a real no-news result, not a timeout fallback.
+                        steps = []
+                    deadline.remaining(reserve=20)
+                    manifest = self._repository.freeze_manifest(job, owner, steps)
+                finally:
+                    self._repository.release_manifest(job, owner)
+            failed = 0
+            sent = []
+            for chat_id in manifest["chat_ids"]:
+                deadline.remaining(reserve=10)
+                try:
+                    complete = await self._send_chat(manifest, chat_id, deadline)
+                except NewsDeadlineError:
+                    raise
+                except Exception as exc:
+                    logger.warning(
+                        "News chat delivery incomplete", extra={"chat_id": chat_id, "error_type": type(exc).__name__}
+                    )
+                    complete = False
+                if complete:
+                    sent.append(chat_id)
+                else:
+                    failed += 1
+            if failed:
+                raise RuntimeError(f"News delivery incomplete for {failed} chat(s); inspect delivery receipts")
             return {
                 "statusCode": 200,
-                "body": "Agentic Digest Sent",
-                "sent_chat_ids": sent_chats,
-                "failed": failed,
+                "body": "Digest delivered" if manifest["steps"] else "No fresh news",
+                "sent_chat_ids": sent,
+                "content_hash": manifest["content_hash"],
             }
 
-        except Exception as e:
-            logger.exception("Error in news digest pipeline")
-            # Avoid putting raw exception text in Telegram (may contain URLs or internal detail).
-            self._notify_chats_digest_failure(
-                chat_ids,
-                f"⚠️ News digest failed ({type(e).__name__}). Check CloudWatch logs for details.",
-            )
-            return {"statusCode": 500, "body": "Internal server error"}
+    async def _send_chat(self, manifest, chat_id, deadline):
+        owner, row = self._repository.claim_delivery(manifest, chat_id)
+        try:
+            for index, content in enumerate(manifest["steps"]):
+                step = dict(row["steps"][index])
+                if step["state"] == "SENT":
+                    continue
+                if step["state"] == "UNKNOWN" or int(step.get("not_before", 0)) > int(time.time()):
+                    return False
+                # At most a photo attempt and its explicitly rejected text fallback; never retry an unknown send.
+                for _ in range(2):
+                    deadline.remaining(reserve=15)
+                    step = {
+                        **row["steps"][index],
+                        "state": "UNKNOWN",
+                        "attempt_id": uuid.uuid4().hex,
+                        "attempt": int(row["steps"][index]["attempt"]) + 1,
+                        "started_at": int(time.time()),
+                    }
+                    self._repository.save_step(row, owner, index, step)
+                    result = await self._sender.send_step(chat_id, content, step["mode"], deadline)
+                    if result.state == "SENT":
+                        self._repository.save_step(
+                            row, owner, index, {**step, "state": "SENT", "message_id": result.message_id}
+                        )
+                        break
+                    if result.state == "UNKNOWN":
+                        return False  # Durable before HTTP, including cancellation or crash before a response.
+                    photo_fallback = result.state == "REJECTED" and step["mode"] == "photo"
+                    step.update(
+                        state="PENDING",
+                        last_result=result.state,
+                        last_status=result.status or 0,
+                        not_before=0 if photo_fallback else int(time.time()) + max(1, result.retry_after),
+                    )
+                    if photo_fallback:
+                        step["mode"] = "text"
+                    self._repository.save_step(row, owner, index, step)
+                    if not photo_fallback:
+                        return False
+            return True
+        finally:
+            self._repository.release_delivery(row, owner)
