@@ -16,9 +16,14 @@ from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.captcha import CaptchaRepository
 from services.repositories.group_memory import GroupMemoryRepository
-from services.repositories.stats import StatsRepository
+from services.repositories.spam import SpamRepository
 from services.spam.chat_member import is_chat_admin_or_creator
-from services.spam.enforcer import SpamEnforcer, resolve_spam_target_mention, translate_spam_reason
+from services.spam.enforcer import (
+    SpamEnforcer,
+    permanent_telegram_failure,
+    resolve_spam_target_mention,
+    translate_spam_reason,
+)
 from services.spam.groq_detector import GroqSpamDetector, SpamCheckResult
 from services.spam.message_text import format_spam_ai_context
 from services.spam.rule_filter import RuleBasedSpamFilter
@@ -58,7 +63,8 @@ def process_spam_check_task(
     body: dict,
     captcha_repo: CaptchaRepository | None = None,
     memory_repo: GroupMemoryRepository | None = None,
-) -> None:
+    moderation_repo: SpamRepository | None = None,
+) -> str | None:
     """Process a SPAM_CHECK SQS task: classify with Groq and enforce if confident."""
     try:
         chat_id: int = body["chat_id"]
@@ -87,14 +93,25 @@ def process_spam_check_task(
         )
         return
 
-    if is_chat_admin_or_creator(bot, chat_id, user_id):
+    administrator_exempt = is_chat_admin_or_creator(bot, chat_id, user_id, raise_on_error=True)
+    if administrator_exempt:
         logger.info(
             "Skipping SPAM_CHECK for administrator/creator",
             extra={"chat_id": chat_id, "user_id": user_id},
         )
-        return
 
+    moderation_repo = moderation_repo or SpamRepository()
+    case = moderation_repo.ensure_case(body)
+    if case["state"] in {"clean", "blocked", "ignored"} or case.get("alert_sent") or case.get("selected_action"):
+        return case["state"]
+    owner, case = moderation_repo.claim(case["case_id"])
     try:
+        if case["state"] in {"clean", "blocked", "ignored"} or case.get("alert_sent") or case.get("selected_action"):
+            return case["state"]
+        if administrator_exempt:
+            moderation_repo.update(case["case_id"], owner, {"reason": "administrator_exempt"})
+            moderation_repo.finish_clean(case, owner)
+            return "clean"
         recent_context = _load_recent_context(memory_repo, chat_id, message_id)
         classifier_input = format_spam_ai_context(
             text=text,
@@ -109,7 +126,9 @@ def process_spam_check_task(
         _, current_rules = RuleBasedSpamFilter().check(
             str(message_context.get("current_message") or ""), user_id, chat_id
         )
-        if guest and "repeated_obfuscated_url" in current_rules:
+        if case.get("decision_label"):
+            result = SpamCheckResult(case["decision_label"], int(case["confidence_ppm"]) / 1_000_000, case["reason"])
+        elif guest and "repeated_obfuscated_url" in current_rules:
             result = SpamCheckResult("SPAM", 1.0, "referral_promo")
         else:
             result = _get_detector().classify(classifier_input)
@@ -141,35 +160,65 @@ def process_spam_check_task(
 
         if result.error:
             raise ProviderResponseError("spam classifier failed")
+        if result.label not in {"SPAM", "NOT_SPAM"}:
+            raise ProviderResponseError("spam classifier returned an unknown label")
+        moderation_repo.update(
+            case["case_id"],
+            owner,
+            {
+                "decision_label": result.label,
+                "confidence_ppm": int(result.confidence * 1_000_000),
+                "reason": result.reason,
+            },
+        )
+
+        if result.label == "NOT_SPAM":
+            moderation_repo.finish_clean(case, owner)
+            return "clean"
 
         if guest and result.label == "SPAM":
             if auto_enforce:
-                # Use structured Telegram error classification, not safe log text.
-                bot.delete_message(chat_id, message_id, ignore_not_found=True)
+                try:
+                    bot.delete_message(chat_id, message_id, ignore_not_found=True)
+                except Exception as exc:
+                    failure = permanent_telegram_failure(exc)
+                    if failure is None:
+                        raise
+                    moderation_repo.update(case["case_id"], owner, {"enforcement_error": failure})
                 logger.info(
-                    "Guest bot spam message deleted",
+                    "Guest bot spam deletion processed",
                     extra={"chat_id": chat_id, "message_id": message_id, "bot_user_id": user_id},
                 )
             caller_id = message_context.get("guest_caller_user_id")
             if type(caller_id) is int and caller_id > 0:
-                _send_spam_review_alert(
-                    bot, chat_id, caller_id, message_id, result.reason, result.confidence, guest_bot_id=user_id
+                _request_review(
+                    moderation_repo, case, owner, bot, caller_id, result.reason, result.confidence, guest_bot_id=user_id
                 )
+                return "review"
             else:
                 logger.warning(
                     "Guest spam has no personal caller; no user ban proposed",
                     extra={"chat_id": chat_id, "message_id": message_id, "bot_user_id": user_id},
                 )
+                moderation_repo.update(case["case_id"], owner, {"state": "blocked"})
+                return "blocked"
         elif auto_enforce:
-            SpamEnforcer(bot, StatsRepository()).enforce(
+            enforcement = SpamEnforcer(bot, moderation_repo).enforce(
                 chat_id=chat_id,
                 user_id=user_id,
                 message_id=message_id,
                 reason=result.reason,
             )
+            if enforcement.state == "failed":
+                moderation_repo.update(case["case_id"], owner, {"enforcement_error": enforcement.reason})
+                _request_review(moderation_repo, case, owner, bot, user_id, result.reason, result.confidence)
+                return "review"
+            moderation_repo.update(case["case_id"], owner, {"state": "blocked"})
+            return "blocked"
         elif result.label == "SPAM":
             # Low-confidence or weak-signal SPAM: alert admins without taking automated action.
-            _send_spam_review_alert(bot, chat_id, user_id, message_id, result.reason, result.confidence)
+            _request_review(moderation_repo, case, owner, bot, user_id, result.reason, result.confidence)
+            return "review"
 
     except Exception as e:
         logger.error(
@@ -178,19 +227,44 @@ def process_spam_check_task(
             exc_info=True,
         )
         raise
+    finally:
+        moderation_repo.release(case["case_id"], owner)
 
 
 def _has_pending_captcha(captcha_repo: CaptchaRepository | None, chat_id: int, user_id: int) -> bool:
     if not captcha_repo:
         return False
+    # Unknown verification state must not become permission to classify or learn.
+    return captcha_repo.get_pending(chat_id, user_id) is not None
+
+
+def _request_review(repo, case, owner, bot, target_user_id, reason, confidence, *, guest_bot_id=None):
+    repo.update(case["case_id"], owner, {"state": "review", "review_target_user_id": target_user_id})
+    _send_spam_review_alert(
+        bot,
+        int(case["chat_id"]),
+        target_user_id,
+        int(case["message_id"]),
+        reason,
+        confidence,
+        guest_bot_id=guest_bot_id,
+        case_id=case["case_id"],
+    )
+    repo.update(case["case_id"], owner, {"alert_sent": True})
+
+
+def report_rule_enforcement_failure(bot, body: dict, *, reason: str) -> None:
+    """Keep a permanent rule-action failure reviewable without treating it as clean."""
+    repo = SpamRepository()
+    case = repo.ensure_case(body)
+    if case.get("alert_sent") or case.get("selected_action") or case["state"] in {"clean", "blocked", "ignored"}:
+        return
+    owner, case = repo.claim(case["case_id"])
     try:
-        return captcha_repo.get_pending(chat_id, user_id) is not None
-    except Exception as e:
-        logger.warning(
-            "Failed to check pending captcha before SPAM_CHECK",
-            extra={"chat_id": chat_id, "user_id": user_id, "error": e},
-        )
-        return False
+        if not case.get("alert_sent") and not case.get("selected_action"):
+            _request_review(repo, case, owner, bot, int(body["user_id"]), reason, 1.0)
+    finally:
+        repo.release(case["case_id"], owner)
 
 
 def _send_spam_review_alert(
@@ -202,6 +276,7 @@ def _send_spam_review_alert(
     confidence: float,
     *,
     guest_bot_id: int | None = None,
+    case_id: str | None = None,
 ) -> None:
     try:
         target = resolve_spam_target_mention(bot, chat_id, user_id)
@@ -222,12 +297,11 @@ def _send_spam_review_alert(
         bot.send_message(
             chat_id,
             notice,
-            reply_markup=_spam_review_keyboard(user_id, message_id, lang),
+            reply_markup=_spam_review_keyboard(user_id, message_id, lang, case_id=case_id),
         )
     except Exception as e:
-        if guest_bot_id:
-            raise
         logger.warning("Failed to send uncertain spam alert", extra={"error": e})
+        raise
 
 
 def _load_recent_context(
@@ -306,17 +380,18 @@ def _format_admin_mentions(chat_id: int) -> str:
     return " ".join(mentions)
 
 
-def _spam_review_keyboard(user_id: int, message_id: int, lang: str) -> dict:
+def _spam_review_keyboard(user_id: int, message_id: int, lang: str, *, case_id: str | None = None) -> dict:
+    target = case_id.removeprefix("decision#") if case_id else f"{user_id}:{message_id}"
     return {
         "inline_keyboard": [
             [
                 {
                     "text": get_translated_text("spam_review_ban_button", lang),
-                    "callback_data": f"{SPAM_REVIEW_BAN_PREFIX}{user_id}:{message_id}",
+                    "callback_data": f"{SPAM_REVIEW_BAN_PREFIX}{target}",
                 },
                 {
                     "text": get_translated_text("spam_review_ignore_button", lang),
-                    "callback_data": f"{SPAM_REVIEW_IGNORE_PREFIX}{user_id}:{message_id}",
+                    "callback_data": f"{SPAM_REVIEW_IGNORE_PREFIX}{target}",
                 },
             ]
         ]

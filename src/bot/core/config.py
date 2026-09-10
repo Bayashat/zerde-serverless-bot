@@ -192,7 +192,9 @@ def is_configured_group_chat(chat_id: int | str | None) -> bool:
 
 # ── Timing parameters ──────────────────────────────────────────────────
 CAPTCHA_TIMEOUT_SECONDS: int = require_int("CAPTCHA_TIMEOUT_SECONDS")
-KICK_BAN_DURATION_SECONDS: int = require_int("KICK_BAN_DURATION_SECONDS")
+KICK_BAN_CONFIGURED_DURATION_SECONDS: int = int(os.environ.get("KICK_BAN_DURATION_SECONDS", "60"))
+# Telegram interprets a deadline <30 seconds away as permanent; allow transport margin.
+KICK_BAN_DURATION_SECONDS: int = max(60, KICK_BAN_CONFIGURED_DURATION_SECONDS)
 
 # ── Vote-to-ban thresholds ──────────────────────────────────────────────────
 VOTEBAN_THRESHOLD: int = require_int("VOTEBAN_THRESHOLD")

@@ -55,7 +55,7 @@ class TelegramClient:
         self._me: dict[str, Any] | None = None
         logger.info("TelegramClient initialized", extra={"api_base": TELEGRAM_API_BASE})
 
-    def _post(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def _post(self, method: str, payload: dict[str, Any], *, retries: bool | None = None) -> dict[str, Any]:
         """POST JSON to the Telegram Bot API and return the parsed result."""
         url = f"{self.api_base}/{method}"
         resp = http.request(
@@ -63,6 +63,7 @@ class TelegramClient:
             url,
             body=json.dumps(payload),
             headers={"Content-Type": "application/json"},
+            **({"retries": retries} if retries is not None else {}),
         )
         body = resp.data.decode("utf-8")
         if resp.status >= 400:
@@ -235,16 +236,16 @@ class TelegramClient:
             )
             raise
 
-    def kick_chat_member(self, chat_id: int | str, user_id: int) -> None:
+    def kick_chat_member(self, chat_id: int | str, user_id: int, *, until_date: int | None = None) -> None:
         """Kick (temp-ban) a chat member."""
-        until_date = int(time.time()) + KICK_BAN_DURATION_SECONDS
+        until_date = until_date if until_date is not None else int(time.time()) + KICK_BAN_DURATION_SECONDS
         payload = {
             "chat_id": chat_id,
             "user_id": user_id,
             "until_date": until_date,
         }
         try:
-            self._post("banChatMember", payload)
+            self._confirmed_moderation_post("banChatMember", payload)
         except Exception as e:
             logger.error(
                 "Failed to kick chat member",
@@ -259,13 +260,19 @@ class TelegramClient:
             "user_id": user_id,
         }
         try:
-            self._post("banChatMember", payload)
+            self._confirmed_moderation_post("banChatMember", payload)
         except Exception as e:
             logger.error(
                 "Failed to ban chat member",
                 extra={"user_id": user_id, "error": str(e)},
             )
             raise
+
+    def _confirmed_moderation_post(self, method: str, payload: dict[str, Any]) -> None:
+        # The state owner retries moderation; hidden HTTP retries can extend its deadline.
+        response = self._post(method, payload, retries=False)
+        if not isinstance(response, dict) or response.get("ok") is not True or response.get("result") is not True:
+            raise RuntimeError("Telegram moderation success was not confirmed")
 
     def get_chat(self, chat_id: int | str) -> dict[str, Any]:
         """Return chat metadata (``title``, ``type``, ``username``, …) from ``getChat``."""
@@ -350,7 +357,7 @@ class TelegramClient:
         """Delete a message from Telegram."""
         payload = {"chat_id": chat_id, "message_id": message_id}
         try:
-            self._post("deleteMessage", payload)
+            self._confirmed_moderation_post("deleteMessage", payload)
         except TelegramAPIError as e:
             if ignore_not_found and _is_message_not_found(e):
                 return

@@ -8,6 +8,8 @@ from services.spam.groq_detector import SpamCheckResult
 from services.spam.processor import process_spam_check_task
 from zerde_common.ai_errors import ProviderResponseError
 
+from tests import spam_fakes
+
 _BODY = {
     "task_type": "SPAM_CHECK",
     "chat_id": -1001234567890,
@@ -20,7 +22,9 @@ _BODY = {
 
 @pytest.fixture
 def mock_bot():
-    return MagicMock()
+    bot = MagicMock()
+    bot.get_chat_member.return_value = {"status": "member"}
+    return bot
 
 
 def _make_result(
@@ -40,10 +44,9 @@ def _make_result(
 # ---------------------------------------------------------------------------
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
-def test_spam_high_confidence_calls_enforce(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_spam_high_confidence_calls_enforce(mock_get_detector, mock_enforcer_cls, mock_bot):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
     mock_detector.classify.return_value = _make_result("SPAM", 0.95, reason="job_offer")
@@ -59,10 +62,9 @@ def test_spam_high_confidence_calls_enforce(mock_get_detector, mock_enforcer_cls
     )
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
-def test_not_spam_does_not_call_enforce(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_not_spam_does_not_call_enforce(mock_get_detector, mock_enforcer_cls, mock_bot):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
     mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.98)
@@ -73,10 +75,9 @@ def test_not_spam_does_not_call_enforce(mock_get_detector, mock_enforcer_cls, mo
     mock_enforcer.enforce.assert_not_called()
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
-def test_spam_low_confidence_does_not_enforce(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_spam_low_confidence_does_not_enforce(mock_get_detector, mock_enforcer_cls, mock_bot):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
     mock_detector.classify.return_value = _make_result("SPAM", 0.70)
@@ -87,10 +88,9 @@ def test_spam_low_confidence_does_not_enforce(mock_get_detector, mock_enforcer_c
     mock_enforcer.enforce.assert_not_called()
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
-def test_api_error_reraises_for_sqs_retry(mock_get_detector, mock_enforcer_cls, mock_stats_cls, mock_bot):
+def test_api_error_reraises_for_sqs_retry(mock_get_detector, mock_enforcer_cls, mock_bot):
     mock_detector = MagicMock()
     mock_get_detector.return_value = mock_detector
     mock_detector.classify.return_value = _make_result("NOT_SPAM", 0.0, error=True)
@@ -140,7 +140,6 @@ def test_malformed_body_does_not_raise(mock_get_detector, mock_bot):
             pytest.fail(f"process_spam_check_task raised {e!r} for body={bad_body!r}")
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
@@ -148,7 +147,6 @@ def test_spam_low_confidence_sends_alert(
     mock_get_detector,
     _mock_lang,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ):
     mock_detector = MagicMock()
@@ -166,11 +164,12 @@ def test_spam_low_confidence_sends_alert(
     assert "@suspicious_user" in args[1]
     assert "DM redirect scam" in args[1]
     assert "70%" in args[1]
-    assert kwargs["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == "spam_ban:111222333:42"
-    assert kwargs["reply_markup"]["inline_keyboard"][0][1]["callback_data"] == "spam_ignore:111222333:42"
+    buttons = kwargs["reply_markup"]["inline_keyboard"][0]
+    assert buttons[0]["callback_data"].startswith("spam_ban:")
+    assert buttons[1]["callback_data"].startswith("spam_ignore:")
+    assert buttons[0]["callback_data"].split(":")[1] == buttons[1]["callback_data"].split(":")[1]
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
@@ -178,7 +177,6 @@ def test_money_only_high_confidence_spam_sends_review_not_auto_ban(
     mock_get_detector,
     _mock_lang,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ) -> None:
     mock_detector = MagicMock()
@@ -205,7 +203,6 @@ def test_money_only_high_confidence_spam_sends_review_not_auto_ban(
     assert "selling digital services" in mock_bot.send_message.call_args[0][1]
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
@@ -213,7 +210,6 @@ def test_job_rule_alone_high_confidence_spam_sends_review_not_auto_ban(
     mock_get_detector,
     _mock_lang,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ) -> None:
     mock_detector = MagicMock()
@@ -238,7 +234,6 @@ def test_job_rule_alone_high_confidence_spam_sends_review_not_auto_ban(
     mock_bot.send_message.assert_called_once()
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor.get_spam_review_admin_mentions", return_value=("bayashat", "yeskabyl"))
@@ -248,7 +243,6 @@ def test_spam_review_alert_mentions_configured_admins(
     _mock_mentions,
     _mock_lang,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ) -> None:
     mock_detector = MagicMock()
@@ -263,13 +257,11 @@ def test_spam_review_alert_mentions_configured_admins(
     mock_enforcer_cls.return_value.enforce.assert_not_called()
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor._get_detector")
 def test_spam_processor_adds_bounded_recent_context(
     mock_get_detector,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ) -> None:
     mock_detector = MagicMock()
@@ -291,7 +283,6 @@ def test_spam_processor_adds_bounded_recent_context(
     mock_enforcer_cls.return_value.enforce.assert_not_called()
 
 
-@patch("services.spam.processor.StatsRepository")
 @patch("services.spam.processor.SpamEnforcer")
 @patch("services.spam.processor.get_chat_lang", return_value="en")
 @patch("services.spam.processor._get_detector")
@@ -299,7 +290,6 @@ def test_spam_low_confidence_alert_uses_clickable_mention_without_username(
     mock_get_detector,
     _mock_lang,
     mock_enforcer_cls,
-    mock_stats_cls,
     mock_bot,
 ):
     mock_detector = MagicMock()
@@ -316,3 +306,6 @@ def test_spam_low_confidence_alert_uses_clickable_mention_without_username(
     assert '<a href="tg://user?id=111222333">Алена &lt;bad&gt; Coney</a>' in text
     assert "ID:111222333" not in text
     mock_enforcer_cls.return_value.enforce.assert_not_called()
+
+
+spam_repo = spam_fakes.spam_repo

@@ -269,6 +269,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Ban",
         "spam_review_ignore_button": "Ignore",
         "spam_review_admin_only": "Only group admins can review spam alerts.",
+        "spam_review_action_failed": "Ban not confirmed. Check bot permissions and the user status, then retry.",
         "spam_review_banned_toast": "User banned.",
         "spam_review_ignored_toast": "Alert ignored.",
         "spam_review_banned_notice": "✅ Admin reviewed this alert and banned the user.",
@@ -556,6 +557,9 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Бан",
         "spam_review_ignore_button": "Елемеу",
         "spam_review_admin_only": "Спам ескертулерін тек топ админдері тексере алады.",
+        "spam_review_action_failed": (
+            "Бұғаттау расталмады. Бот құқықтары мен пайдаланушы күйін тексеріп, қайта көріңіз."
+        ),
         "spam_review_banned_toast": "Пайдаланушы бұғатталды.",
         "spam_review_ignored_toast": "Ескерту еленбеді.",
         "spam_review_banned_notice": "✅ Админ бұл ескертуді тексеріп, пайдаланушыны бұғаттады.",
@@ -802,6 +806,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "封禁",
         "spam_review_ignore_button": "忽略",
         "spam_review_admin_only": "只有群管理员可以处理垃圾信息提醒。",
+        "spam_review_action_failed": "尚未确认封禁成功。请检查机器人权限和用户状态后重试。",
         "spam_review_banned_toast": "用户已封禁。",
         "spam_review_ignored_toast": "已忽略。",
         "spam_review_banned_notice": "✅ 管理员已核查此提醒，并封禁了该用户。",
@@ -1088,6 +1093,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Бан",
         "spam_review_ignore_button": "Игнор",
         "spam_review_admin_only": "Проверять спам-алерты могут только админы группы.",
+        "spam_review_action_failed": "Бан не подтверждён. Проверьте права бота и статус пользователя, затем повторите.",
         "spam_review_banned_toast": "Пользователь забанен.",
         "spam_review_ignored_toast": "Алерт проигнорирован.",
         "spam_review_banned_notice": "✅ Админ проверил этот алерт и забанил пользователя.",
