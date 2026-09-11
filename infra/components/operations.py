@@ -13,7 +13,7 @@ from aws_cdk import aws_sns as sns
 from aws_cdk import aws_sns_subscriptions as subscriptions
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from components.observability import add_sqs_dlq_visible_alarm
 from constructs import Construct
 
@@ -80,6 +80,7 @@ class OperationsConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=lambda_.Architecture.ARM_64,
             layers=[shared_layer],
             timeout=Duration.seconds(60),

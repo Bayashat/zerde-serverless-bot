@@ -8,7 +8,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
 # Language → list of (hour_utc, minute_utc) trigger times
@@ -51,6 +51,7 @@ class NewsConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=_lambda.Architecture.ARM_64,
             reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],

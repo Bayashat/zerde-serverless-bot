@@ -10,7 +10,7 @@ from aws_cdk import aws_lambda_event_sources as lambda_events
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from components.observability import add_lambda_operational_alarms, add_sqs_age_alarm, add_sqs_dlq_visible_alarm
 from constructs import Construct
 
@@ -105,6 +105,7 @@ class MemoryWorkerConstruct(Construct):
             index="memory_worker_main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=lambda_.Architecture.ARM_64,
             layers=[shared_layer],
             memory_size=512,

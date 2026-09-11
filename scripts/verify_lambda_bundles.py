@@ -67,8 +67,31 @@ module_name, function_name = handler.rsplit('.', 1)
 assert callable(getattr(importlib.import_module(module_name), function_name))
 print(json.dumps({'package': kind, 'handler': handler, 'architecture': platform.machine(),
     'python': platform.python_version(), 'boto3': importlib.metadata.version('boto3'),
-    'urllib3': importlib.metadata.version('urllib3'), 'imports': 'passed', 'network': 'disabled'}))
+    'urllib3': importlib.metadata.version('urllib3'), 'imports': 'passed', 'network': 'disabled',
+    'first_party_assets': 'clean'}))
 """
+
+
+def verify_first_party_assets(asset: Path, layer: Path, kind: str) -> None:
+    """Reject copied local caches without mistaking pip's dependency caches for ours."""
+    source = ROOT / "src" / kind
+    owned_directories = [asset / path.name for path in source.iterdir() if path.is_dir() and path.name != "__pycache__"]
+    owned_directories.append(layer / "zerde_common")
+    for directory in owned_directories:
+        for path in directory.rglob("*"):
+            if path.name == "__pycache__" or path.suffix in {".pyc", ".pyo"}:
+                raise SystemExit(f"First-party Python cache in Lambda asset: {path}")
+    # pip may compile top-level dependencies (e.g. typing_extensions). Only the
+    # actual first-party module names belong to the root-level cache check.
+    for module in source.glob("*.py"):
+        candidates = [asset / f"{module.stem}{suffix}" for suffix in (".pyc", ".pyo")]
+        candidates.extend((asset / "__pycache__").glob(f"{module.stem}.*"))
+        if any(path.exists() for path in candidates):
+            raise SystemExit(f"First-party Python cache in Lambda asset: {module.stem}")
+    if kind == "bot":
+        for directory in ("services", "services/handlers", "services/repositories"):
+            if any((asset / directory / f"contest{suffix}").exists() for suffix in (".py", ".pyc", ".pyo")):
+                raise SystemExit(f"Retired contest module in Lambda asset: {directory}")
 
 
 def main() -> None:
@@ -110,6 +133,7 @@ def main() -> None:
         kind, handler = registrations[slug]
         if properties["Handler"] != handler:
             raise SystemExit("Lambda handler differs from its package registration")
+        verify_first_party_assets(asset, layer, kind)
         expected = dict(re.findall(r"^([\w-]+)==([^\s;]+)", (ROOT / f"src/{kind}/requirements.txt").read_text(), re.M))
         command = [
             "docker",

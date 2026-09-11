@@ -175,6 +175,26 @@ def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambd
     )
 
 
+def test_all_six_functions_filter_local_python_caches(monkeypatch: Any) -> None:
+    from components.constants import LAMBDA_BUNDLING
+
+    seen = set()
+    original_stub = _stub_python_function
+
+    def capture(scope, construct_id, **kwargs):
+        assert kwargs["bundling"] is LAMBDA_BUNDLING
+        assert set(kwargs["bundling"].asset_excludes) == {"__pycache__", "*.pyc", "*.pyo"}
+        seen.add(kwargs["function_name"])
+        return original_stub(scope, construct_id, **kwargs)
+
+    monkeypatch.setattr(sys.modules[__name__], "_stub_python_function", capture)
+    _dev_template(monkeypatch)
+    assert seen == {
+        f"zerde-serverless-{name}-dev"
+        for name in ("bot", "vector-indexer", "news", "quiz", "operations", "memory-v2-worker")
+    }
+
+
 def _template(monkeypatch: Any, *, env_name: str) -> Template:
     # Tests provide synthetic configuration; never load a developer's real .env.
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)

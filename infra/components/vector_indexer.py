@@ -11,7 +11,7 @@ from aws_cdk import aws_logs as logs
 from aws_cdk import aws_s3vectors as s3vectors
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
 
@@ -46,6 +46,7 @@ class VectorIndexerConstruct(Construct):
             index="vector_indexer_main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=_lambda.Architecture.ARM_64,
             reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
