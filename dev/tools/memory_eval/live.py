@@ -22,7 +22,7 @@ from .contract import fingerprint, read_jsonl, validate_corpus
 from .evaluator import evaluate
 from .fixture_provider import FixtureCatalog
 from .gemini_broker import MAX_FRAME_BYTES, ROOT, runtime_environment
-from .live_session import SessionError, atomic_json, exclusive_lock, initialise_session
+from .live_session import SessionError, atomic_json, exclusive_lock, initialise_session, summarize_attempts
 from .replay_input import project_scenario
 from .reporting import write_report
 
@@ -120,17 +120,11 @@ class RemoteProvider:
 def provider_summary(directory):
     path = directory / "attempts.sqlite3"
     if not path.exists():
-        return {"attempts_reserved": 0, "charged_upper_micro_usd": 0, "cache_hits": 0, "unknown_attempts": 0}
+        return summarize_attempts([])
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as db:
+        db.row_factory = sqlite3.Row
         rows = db.execute("SELECT state,charged_micro_usd,hits,evidence_json FROM attempts").fetchall()
-    return {
-        "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
-        "attempts_reserved": len(rows),
-        "charged_upper_micro_usd": sum(row[1] for row in rows),
-        "cache_hits": sum(row[2] for row in rows),
-        "unknown_attempts": sum(row[0] != "RESPONSE" for row in rows),
-        "usage_verified_attempts": sum(bool(json.loads(row[3] or "{}").get("usage_verified")) for row in rows),
-    }
+    return summarize_attempts(rows)
 
 
 def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None):

@@ -18,7 +18,7 @@ from services.memory_v2.models import ExtractionSource, SourceRef
 from dev.tools.memory_eval.contract import read_jsonl
 from dev.tools.memory_eval.fixture_provider import FixtureCatalog, gemini_payload
 from dev.tools.memory_eval.gemini_broker import BrokerEngine, ObservedClient, gemini_attempt, runtime_environment
-from dev.tools.memory_eval.live import BrokerClient, RemoteProvider, build_manifest, run_scenarios
+from dev.tools.memory_eval.live import BrokerClient, RemoteProvider, build_manifest, provider_summary, run_scenarios
 from dev.tools.memory_eval.live_session import AttemptLedger, SessionError, exclusive_lock, initialise_session
 
 
@@ -80,6 +80,41 @@ def test_reserve_before_wire_atomic_response_and_cached_no_second_charge(tmp_pat
     reopened = AttemptLedger(tmp_path, manifest())
     assert reopened.cached(call())["payload"] == first["payload"]
     reopened.close()
+
+
+def test_summary_separates_response_availability_from_verified_billing_without_mutation(tmp_path):
+    ledger = AttemptLedger(tmp_path, manifest())
+    paid = ledger.reserve(call(0))
+    ledger.finish(paid, good_payload(), {})
+    zero = good_payload()
+    zero["usageMetadata"] = {"promptTokenCount": 0, "candidatesTokenCount": 0, "totalTokenCount": 0}
+    ledger.finish(ledger.reserve(call(1)), zero, {})
+    unverified = good_payload()
+    unverified.pop("usageMetadata")
+    ledger.finish(ledger.reserve(call(2)), unverified, {})
+    ledger.finish(ledger.reserve(call(3)), None, {})
+    ledger.reserve(call(4))  # A crash can leave this full hold in INFLIGHT.
+    assert ledger.cached(call(2))["ok"] is True
+    before = [tuple(row) for row in ledger.db.execute("SELECT * FROM attempts ORDER BY logical_id")]
+    summary = ledger.summary()
+    assert summary == provider_summary(tmp_path)
+    assert summary["responses"] == 3 and summary["unknown_attempts"] == 2
+    assert summary["usage_verified_attempts"] == 2  # Includes verified zero usage.
+    assert summary["unknown_billing_attempts"] == 3
+    assert summary["unverified_usage_responses"] == 1
+    assert summary["verified_token_micro_usd"] == 175
+    assert summary["unknown_hold_micro_usd"] == 3 * RESERVATION_MICRO_USD
+    assert summary["charged_upper_micro_usd"] == summary["verified_token_micro_usd"] + summary["unknown_hold_micro_usd"]
+    assert summary["cache_hits"] == 1
+    assert before == [tuple(row) for row in ledger.db.execute("SELECT * FROM attempts ORDER BY logical_id")]
+    ledger.close()
+
+
+def test_missing_ledger_reports_explicit_zero_billing_without_creating_a_database(tmp_path):
+    summary = provider_summary(tmp_path)
+    assert summary["unknown_billing_attempts"] == summary["unverified_usage_responses"] == 0
+    assert summary["verified_token_micro_usd"] == summary["unknown_hold_micro_usd"] == 0
+    assert not (tmp_path / "attempts.sqlite3").exists()
 
 
 @pytest.mark.parametrize("crash", [False, True])

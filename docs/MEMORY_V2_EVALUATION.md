@@ -100,6 +100,8 @@ RAW 证据在实际 DynamoDB SDK 成功 `PutItem`、`UpdateItem`、`TransactWrit
 
 来源文件可声明 `provider_kind=fake_provider|recorded_provider|synthetic_oracle|unverified_observations`，并附模型、运行时间、请求 trace 摘要和独立复核引用。这个标签只是证据来源描述，评分器不会把 `recorded_provider` 字符串当作真实性认证。真实 trace 应存于受控位置，公共仓库只留脱敏引用和摘要。
 
+受控真实 runner 的本地 SQLite 汇总把响应可用性与费用核实分开。`responses` 和旧字段 `unknown_attempts` 仅按 RESPONSE/其他持久状态分类；RESPONSE 或 broker `ok=true` 不代表 schema、语言质量或 usage 已通过。`unverified_usage_responses` 计有响应但 usage 未核实的次数，`unknown_billing_attempts` 还包括 UNKNOWN/INFLIGHT 等未知费用尝试。`verified_token_micro_usd` 是已核实 usage 的标准价代币成本（含真实零值），`unknown_hold_micro_usd` 是未核实的完整预留；两者之和等于 `charged_upper_micro_usd`，不能将预留称为实际账单。缓存回放仍只复用原响应，不新增 HTTP、不重复计费，也不借汇总重新核实或释放历史预留。领域解析和真实账单验收保持各自独立。
+
 ## 指标和缺口
 
 - 每种语言分别给 TP、FP、FN 与分母；事实 precision 至少 95%，明确自述 recall 至少 90%。事实值正确但引用错误不会混成语义值错误，而会单独降低来源支持率并触发相应安全门槛。

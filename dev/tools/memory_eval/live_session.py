@@ -15,6 +15,33 @@ class SessionError(EvaluationInputError):
     pass
 
 
+def summarize_attempts(rows):
+    """Report persisted transport and billing evidence separately, without refunding.
+
+    An available response can have unknown usage. A verified zero-cost response
+    is still verified; an accounting anomaly can have known usage. Never infer
+    verification from RESPONSE status or from a positive charge.
+    """
+    rows = list(rows)
+    verified = [json.loads(row["evidence_json"] or "{}").get("usage_verified") is True for row in rows]
+    return {
+        "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
+        "attempts_reserved": len(rows),
+        "charged_upper_micro_usd": sum(row["charged_micro_usd"] for row in rows),
+        "cache_hits": sum(row["hits"] for row in rows),
+        "responses": sum(row["state"] == "RESPONSE" for row in rows),
+        # Legacy field: transport uncertainty, not billing uncertainty.
+        "unknown_attempts": sum(row["state"] != "RESPONSE" for row in rows),
+        "usage_verified_attempts": sum(verified),
+        "unknown_billing_attempts": sum(not known for known in verified),
+        "unverified_usage_responses": sum(
+            row["state"] == "RESPONSE" and not known for row, known in zip(rows, verified)
+        ),
+        "verified_token_micro_usd": sum(row["charged_micro_usd"] for row, known in zip(rows, verified) if known),
+        "unknown_hold_micro_usd": sum(row["charged_micro_usd"] for row, known in zip(rows, verified) if not known),
+    }
+
+
 def atomic_json(path, document):
     path = Path(path)
     temporary = path.with_name(path.name + ".tmp")
@@ -213,14 +240,4 @@ class AttemptLedger:
             "SELECT * FROM attempts" + (" WHERE scenario_id=?" if scenario_id else ""),
             (scenario_id,) if scenario_id else (),
         ).fetchall()
-        return {
-            "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
-            "attempts_reserved": len(rows),
-            "charged_upper_micro_usd": sum(row["charged_micro_usd"] for row in rows),
-            "cache_hits": sum(row["hits"] for row in rows),
-            "responses": sum(row["state"] == "RESPONSE" for row in rows),
-            "unknown_attempts": sum(row["state"] != "RESPONSE" for row in rows),
-            "usage_verified_attempts": sum(
-                bool(json.loads(row["evidence_json"] or "{}").get("usage_verified")) for row in rows
-            ),
-        }
+        return summarize_attempts(rows)
