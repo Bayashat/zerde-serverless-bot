@@ -5,6 +5,7 @@ import json
 import boto3
 from core.config import QUEUE_URL, VECTOR_MEMORY_QUEUE_URL
 from core.logger import LoggerAdapter, get_logger
+from services.memory_cutover import EXPLICIT_CONTEXT_VERSION
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram_media import media_reference_log_extra, media_references_log_extra
 
@@ -18,6 +19,9 @@ def _get_sqs_client():
     global _SQS_CLIENT
     if _SQS_CLIENT is None:
         _SQS_CLIENT = boto3.client("sqs")
+    from services.memory_v2.cost_meter import register_client
+
+    register_client(_SQS_CLIENT)
     return _SQS_CLIENT
 
 
@@ -40,6 +44,8 @@ class SQSClient:
         join_message_id: int,
         verification_message_id: int,
         delay_seconds: int = 120,
+        *,
+        generation: str | None = None,
     ) -> None:
         """Send a delayed message to SQS to check verification timeout."""
         payload = {
@@ -49,11 +55,13 @@ class SQSClient:
             "join_message_id": join_message_id,
             "verification_message_id": verification_message_id,
         }
+        if generation is not None:
+            payload["generation"] = generation
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
                 MessageBody=json.dumps(payload),
-                DelaySeconds=delay_seconds,
+                DelaySeconds=max(0, min(_MAX_SQS_DELAY_SECONDS, int(delay_seconds))),
             )
             logger.debug(
                 "Queued timeout task",
@@ -69,6 +77,15 @@ class SQSClient:
             logger.exception("Failed to send timeout task to SQS", extra={"error": e})
             raise
 
+    def send_quiz_answer_task(self, poll_id, user_id, delay_seconds=0):
+        from services.repositories._quiz_answers import _identity
+
+        _identity(poll_id, user_id)
+        payload = {"schema": 2, "task_type": "PROCESS_QUIZ_ANSWER", "poll_id": poll_id, "user_id": str(user_id)}
+        self.sqs_client.send_message(
+            QueueUrl=self.queue_url, MessageBody=json.dumps(payload), DelaySeconds=max(0, min(900, int(delay_seconds)))
+        )
+
     def send_group_ask_task(
         self,
         *,
@@ -82,6 +99,7 @@ class SQSClient:
         requester_username: str | None = None,
         requester_display_name: str | None = None,
         current_user_message: str | None = None,
+        request_sent_at: int | None = None,
         source_message_context: str | None = None,
         parent_bot_message_id: int | str | None = None,
         media_ref: dict[str, object] | None = None,
@@ -90,12 +108,18 @@ class SQSClient:
         """Enqueue an explicit agent request for async group-agent answering."""
         payload: dict[str, object] = {
             "task_type": "PROCESS_GROUP_ASK",
+            "context_version": EXPLICIT_CONTEXT_VERSION,
             "update_id": update_id,
             "chat_id": chat_id,
             "reply_to_message_id": reply_to_message_id,
             "user_text": user_text,
             "lang": lang,
         }
+        from services.memory_v2.explicit_request_gate import capture_configured
+
+        gate = capture_configured(chat_id, requester_user_id, reply_to_message_id, request_sent_at)
+        if gate is not None:
+            payload["request_gate"] = gate
         if retrieval_query:
             payload["retrieval_query"] = retrieval_query
         if requester_user_id is not None:
@@ -275,6 +299,7 @@ class SQSClient:
         triggered_rules: list[str],
         rule_score: float | None = None,
         message_context: dict[str, object] | None = None,
+        source_ref: dict[str, object] | None = None,
     ) -> None:
         """Enqueue a SPAM_CHECK task for async Layer-2 Groq classification."""
         payload = {
@@ -289,6 +314,10 @@ class SQSClient:
             payload["rule_score"] = float(rule_score)
         if message_context:
             payload["message_context"] = message_context
+        if source_ref is not None:
+            from services.memory_v2.models import SourceRef
+
+            payload["source_ref"] = SourceRef(**source_ref).as_dict()
         try:
             self.sqs_client.send_message(
                 QueueUrl=self.queue_url,
@@ -439,61 +468,5 @@ class SQSClient:
         except Exception as e:
             logger.exception(
                 "Failed to send vector memory backfill task to SQS", extra={"error": e, "chat_id": chat_id}
-            )
-            raise
-
-    def send_contest_ttl_sweep_task(
-        self,
-        *,
-        chat_id: int,
-        root_message_id: int,
-    ) -> None:
-        """Enqueue one retention page; DynamoDB owns the durable cursor."""
-        payload: dict[str, object] = {
-            "task_type": "PROCESS_CONTEST_TTL_SWEEP",
-            "chat_id": chat_id,
-            "root_message_id": root_message_id,
-        }
-        try:
-            self.sqs_client.send_message(
-                QueueUrl=self.queue_url,
-                MessageBody=json.dumps(payload),
-            )
-            logger.info(
-                "Queued contest TTL sweep page",
-                extra={
-                    "chat_id": chat_id,
-                    "root_message_id": root_message_id,
-                },
-            )
-        except Exception as e:
-            logger.exception(
-                "Failed to enqueue contest TTL sweep",
-                extra={"error": e, "chat_id": chat_id, "root_message_id": root_message_id},
-            )
-            raise
-
-    def send_contest_ttl_recovery_task(
-        self,
-        *,
-        start_key: dict[str, object] | None = None,
-    ) -> None:
-        """Enqueue one bounded page of durable contest cleanup discovery."""
-        payload: dict[str, object] = {"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}
-        if start_key:
-            payload["start_key"] = start_key
-        try:
-            self.sqs_client.send_message(
-                QueueUrl=self.queue_url,
-                MessageBody=json.dumps(payload),
-            )
-            logger.info(
-                "Queued contest TTL outbox recovery page",
-                extra={"has_start_key": bool(start_key)},
-            )
-        except Exception as e:
-            logger.exception(
-                "Failed to enqueue contest TTL outbox recovery",
-                extra={"error": e},
             )
             raise

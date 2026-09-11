@@ -3,8 +3,17 @@
 import time
 from typing import Any
 
-from app import get_bot, get_captcha_repo, get_contest_repo, get_dispatcher, get_memory_repo, get_sqs_repo
+from app import (
+    get_bot,
+    get_captcha_repo,
+    get_dispatcher,
+    get_memory_ingestion,
+    get_memory_repo,
+    get_quiz_repo,
+    get_sqs_repo,
+)
 from core.logger import LoggerAdapter, get_logger
+from services.memory_v2.cost_runtime import MONITOR_EVENT, metered, run_monitor
 from services.sqs_task_router import process_sqs_event
 from webhook import handle_event
 from zerde_common.logging_utils import api_gateway_event_summary
@@ -13,8 +22,11 @@ logger = LoggerAdapter(get_logger(__name__), {})
 logger.info("Bot Lambda initialized")
 
 
+@metered()
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None:
     """Route API Gateway or SQS events. Exceptions on SQS bubble up for retry/DLQ."""
+    if event == MONITOR_EVENT:
+        return run_monitor(event)
     request_id = getattr(context, "aws_request_id", "unknown")
     logger.extra["request_id"] = request_id
     records = event.get("Records")
@@ -29,8 +41,9 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None
                 get_bot(),
                 get_captcha_repo(),
                 get_memory_repo(),
-                contest_repo=get_contest_repo(),
                 sqs_repo=get_sqs_repo(),
+                memory_ingestion=get_memory_ingestion(),
+                quiz_repo=get_quiz_repo(),
             )
         finally:
             elapsed_ms = int((time.monotonic() - started) * 1000)

@@ -34,4 +34,4 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     ex = api_gateway_event_summary(event) if isinstance(event, dict) else {"event_type": "non_dict"}
     ex["lambda_request_id"] = request_id
     logger.info("News Lambda handler called", extra=ex)
-    return _get_digest_service().run(event)
+    return _get_digest_service().run(event, context)

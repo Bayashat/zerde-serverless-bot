@@ -1,0 +1,22 @@
+{
+  "dev": {
+    "removed": [],
+    "added": [],
+    "changed": []
+  },
+  "prod": {
+    "removed": [
+      {
+        "logical_id": "ZerdeServerlessBotZerdeServerlessContestTTLRecoveryRule33932BAC",
+        "type": "AWS::Events::Rule"
+      }
+    ],
+    "added": [],
+    "changed": [
+      {
+        "logical_id": "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksQueuePolicyABA92A57",
+        "type": "AWS::SQS::QueuePolicy"
+      }
+    ]
+  }
+}

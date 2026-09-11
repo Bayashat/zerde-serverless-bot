@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from core.config import MEMORY_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
+from core.config import MEMORY_TABLE_NAME, MEMORY_V2_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
+from services.memory_v2.runtime import get_memory_ingestion  # noqa: F401 -- public bot composition export
 from services.repositories import (
     CaptchaRepository,
-    ContestRepository,
     GroupMemoryRepository,
     LambdaInvoker,
     QuizRepository,
@@ -23,8 +23,9 @@ logger = LoggerAdapter(get_logger(__name__), {})
 _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
 _memory_repo: GroupMemoryRepository | None = None
-_contest_repo: ContestRepository | None = None
+_memory_v2_repo = None
 _sqs_repo: SQSClient | None = None
+_quiz_repo: QuizRepository | None = None
 _dispatcher: Dispatcher | None = None
 
 
@@ -50,18 +51,22 @@ def get_memory_repo() -> GroupMemoryRepository | None:
     if not MEMORY_TABLE_NAME:
         return None
     if _memory_repo is None:
-        _memory_repo = GroupMemoryRepository()
+        from services.repositories.explicit_context_repository import ExplicitContextRepository
+
+        _memory_repo = ExplicitContextRepository(memory_v2_repo=get_memory_v2_repo())
     return _memory_repo
 
 
-def get_contest_repo() -> ContestRepository | None:
-    """Return the contest truth owner when the shared memory table is configured."""
-    global _contest_repo
-    if not MEMORY_TABLE_NAME:
+def get_memory_v2_repo():
+    """Independent lazy V2 storage. A configured table does not activate learning."""
+    global _memory_v2_repo
+    if not MEMORY_V2_TABLE_NAME:
         return None
-    if _contest_repo is None:
-        _contest_repo = ContestRepository()
-    return _contest_repo
+    if _memory_v2_repo is None:
+        from services.memory_v2.runtime import get_memory_v2_repo as get_configured_repo
+
+        _memory_v2_repo = get_configured_repo()
+    return _memory_v2_repo
 
 
 def get_sqs_repo() -> SQSClient:
@@ -70,6 +75,15 @@ def get_sqs_repo() -> SQSClient:
     if _sqs_repo is None:
         _sqs_repo = SQSClient()
     return _sqs_repo
+
+
+def get_quiz_repo():
+    global _quiz_repo
+    if not QUIZ_TABLE_NAME:
+        return None
+    if _quiz_repo is None:
+        _quiz_repo = QuizRepository()
+    return _quiz_repo
 
 
 def get_dispatcher() -> Dispatcher:
@@ -81,11 +95,10 @@ def get_dispatcher() -> Dispatcher:
             StatsRepository(),
             get_sqs_repo(),
             VoteRepository(),
-            QuizRepository() if QUIZ_TABLE_NAME else None,
+            get_quiz_repo(),
             LambdaInvoker() if QUIZ_LAMBDA_NAME else None,
             captcha_repo=get_captcha_repo(),
             memory_repo=get_memory_repo(),
-            contest_repo=get_contest_repo(),
         )
         register_handlers(dispatcher)
         _dispatcher = dispatcher

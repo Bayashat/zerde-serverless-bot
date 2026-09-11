@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, patch
 
 from services.spam.screening_service import SpamScreeningService
 
+from tests import spam_fakes
+
 
 def _body(text: str = "vpn реклама @spam_bot") -> dict:
     return {
@@ -16,10 +18,9 @@ def _body(text: str = "vpn реклама @spam_bot") -> dict:
     }
 
 
-@patch("services.spam.screening_service.StatsRepository")
 @patch("services.spam.screening_service.SpamEnforcer")
 @patch("services.spam.screening_service.is_chat_admin_or_creator", return_value=False)
-def test_rule_enforced_spam_returns_enforced(_mock_admin, mock_enforcer_cls, _mock_stats_cls) -> None:
+def test_rule_enforced_spam_returns_enforced(_mock_admin, mock_enforcer_cls) -> None:
     sqs = MagicMock()
     service = SpamScreeningService(MagicMock(), sqs)
 
@@ -85,3 +86,6 @@ def test_screening_exception_returns_error(_mock_admin, mock_filter_cls) -> None
     service = SpamScreeningService(MagicMock(), MagicMock())
 
     assert service.run(_body()) == "error"
+
+
+spam_repo = spam_fakes.spam_repo

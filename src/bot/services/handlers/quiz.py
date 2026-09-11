@@ -48,60 +48,23 @@ def _html_chat_title_for_pm(bot: TelegramClient, chat_id: int | str) -> str:
 
 
 def handle_poll_answer(ctx: Context) -> None:
-    """Process a poll_answer update — look up poll, update score/streak."""
+    """Persist before enqueue; lost delivery is recovered from the durable outbox."""
+    from services.repositories._quiz_answers import QuizAnswerRetryRequiredError
+
     if not ctx.poll_answer:
         return
-
-    poll_id = str(ctx.poll_answer.get("poll_id", ""))
-    user = ctx.poll_answer.get("user", {})
-    user_id = str(user.get("id", ""))
-    first_name = user.get("first_name", "User")
-    option_ids = ctx.poll_answer.get("option_ids", [])
-
-    if not poll_id or not user_id or not option_ids:
-        logger.warning("Incomplete poll_answer data", extra={"poll_answer": ctx.poll_answer})
-        return
-
     if not ctx.quiz_repo:
-        logger.warning("QuizRepository not available, skipping poll_answer")
+        raise QuizAnswerRetryRequiredError("Quiz repository is unavailable")
+    try:
+        answer = ctx.quiz_repo.persist_answer(ctx.poll_answer, ctx.update_id)
+    except Exception as exc:
+        raise QuizAnswerRetryRequiredError("Quiz answer persistence requires redelivery") from exc
+    if answer["state"] not in {"PENDING", "UNRESOLVED"}:
         return
-
-    # Look up the quiz record by poll_id
-    quiz_record = ctx.quiz_repo.lookup_poll(poll_id)
-    if not quiz_record:
-        logger.warning("poll_answer for unknown poll_id, ignoring", extra={"poll_id": poll_id})
-        return
-
-    chat_id = quiz_record["PK"].replace("QUIZ#", "")
-    correct_option_id = int(quiz_record["correct_option_id"])
-    selected_option = option_ids[0]
-
-    points = int(quiz_record.get("points", 1))
-    record_key = str(quiz_record.get("SK", ""))
-    weekly_points = points if record_key.startswith("DATE#") else 0
-
-    if selected_option == correct_option_id:
-        ctx.quiz_repo.update_score_correct(
-            chat_id,
-            user_id,
-            first_name,
-            poll_id=poll_id,
-            points=points,
-            weekly_points=weekly_points,
-        )
-        logger.info(
-            "Correct answer recorded",
-            extra={
-                "user_id": user_id,
-                "chat_id": chat_id,
-                "points": points,
-                "weekly_points": weekly_points,
-                "quiz_record_key": record_key,
-            },
-        )
-    else:
-        ctx.quiz_repo.update_score_wrong(chat_id, user_id, first_name, poll_id=poll_id)
-        logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id})
+    try:
+        ctx.sqs_repo.send_quiz_answer_task(answer["poll_id"], answer["user_id"])
+    except Exception as exc:
+        logger.warning("Quiz answer retained for recovery", extra={"error_type": type(exc).__name__})
 
 
 def handle_quizstats(ctx: Context) -> None:

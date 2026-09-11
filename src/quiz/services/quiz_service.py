@@ -3,14 +3,16 @@
 import html
 import random
 import re
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
+from services._publication import QuizPublicationBusy, QuizPublicationUnknown, validate_poll_receipt
 from services.llm_provider import create_provider
 from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, SUBTOPIC_POOL, QuizGenerator
-from services.quiz_sender import QuizSender
+from services.quiz_sender import PollSendRejected, PollSendUnknown, QuizSender
 from services.repository import QuizRepository
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -96,9 +98,9 @@ class QuizService:
         self._sender = QuizSender()
         self._repo = QuizRepository()
 
-    def get_difficulty(self) -> str:
-        """Return the difficulty level for today (Almaty time)."""
-        weekday = datetime.now(_ALMATY_TZ).weekday()
+    def get_difficulty(self, scheduled: datetime) -> str:
+        """Bind difficulty to the original scheduled day, including delayed retries."""
+        weekday = scheduled.astimezone(_ALMATY_TZ).weekday()
         return _WEEKDAY_DIFFICULTY.get(weekday, "easy")
 
     def build_announcement(self, lang: str, difficulty: str, source_label: str | None = None) -> str:
@@ -225,7 +227,7 @@ class QuizService:
                 logger.error("Failed to send leaderboard", extra={"chat_id": chat_id})
 
         return {
-            "status": "ok",
+            "status": "partial" if failed and sent_count else "error" if failed else "ok",
             "action": "leaderboard",
             "sent": sent_count,
             "total": len(chat_ids),
@@ -332,7 +334,6 @@ class QuizService:
                 )
             logger.warning("AI bank question missing, skipping", extra={"uuid": q_uuid})
 
-        self._repo.save_question_queue(category, chat_id, remaining, difficulty, scope)
         return None
 
     def _pick_banked_question_for_chat(
@@ -393,8 +394,7 @@ class QuizService:
                 )
             logger.warning("Bank question missing, skipping", extra={"uuid": q_uuid})
 
-        # All entries were corrupt/missing — persist empty queue so next call refills from bank.
-        self._repo.save_question_queue(category, chat_id, remaining, difficulty)
+        # No publication occurred, so leave the shared deck untouched.
         return None
 
     def _pick_banked_question_for_genquiz(
@@ -456,323 +456,340 @@ class QuizService:
                 )
             logger.warning("Genquiz bank question missing, skipping", extra={"uuid": q_uuid})
 
-        # All entries were corrupt/missing — persist empty queue so next call refills from bank.
-        self._repo.save_genquiz_question_queue(category, chat_id, remaining, difficulty)
+        # No publication occurred, so leave the shared deck untouched.
         return None
 
-    def process_daily_quiz(self, chat_ids: list[str], lang: str) -> dict:
-        """Generate and send the daily quiz to each chat with independent category rotation."""
-        if not chat_ids:
-            logger.warning("No chat_ids in event payload")
-            return {"status": "skipped", "reason": "no chat_ids"}
+    def _prepare_daily_publication(self, chat_id, lang, difficulty):
+        category, remaining = self._pick_category_for_chat(str(chat_id))
+        generated = None
+        used_category = category
+        # Holds the bank queue to commit only after a successful poll send (Bug #2).
+        bank_remaining: list[str] | None = None
+        bank_scope: str | None = None
+        bank_source: str | None = None
+        bank_uuid: str | None = None
+        used_subtopic: str | None = None
+        subtopic_remaining: list[str] | None = None
+        commit_subtopic_deck = False
 
-        difficulty = self.get_difficulty()
-        logger.info("Difficulty for today", extra={"difficulty": difficulty, "lang": lang})
+        used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(category, str(chat_id), difficulty)
+        ai_bank_result = self._pick_ai_bank_question_for_chat(category, str(chat_id), difficulty, used_subtopic)
+        if ai_bank_result:
+            generated, bank_remaining = ai_bank_result
+            bank_scope = generated.get("bank_scope")
+            bank_source = generated.get("bank_source")
+            bank_uuid = generated.get("bank_uuid")
+            commit_subtopic_deck = True
+            if lang != "en":
+                translated = self._generator.translate_question(generated, lang)
+                if translated:
+                    generated = translated
+                else:
+                    logger.warning(
+                        "AI bank translation failed, falling back to English bank question",
+                        extra={"chat_id": chat_id, "lang": lang},
+                    )
 
-        sent_count = 0
-        sent_chat_ids: list[str] = []
-        failed: list[dict] = []
-
-        for chat_id in chat_ids:
-            existing = self._repo.get_today_quiz_record(str(chat_id))
-            if existing:
-                logger.info(
-                    "Daily quiz already sent for this chat today, skipping",
-                    extra={"chat_id": chat_id, "poll_id": existing.get("poll_id")},
-                )
-                sent_count += 1
-                sent_chat_ids.append(str(chat_id))
-                continue
-
-            category, remaining = self._pick_category_for_chat(str(chat_id))
-            generated = None
-            used_category = category
-            # Holds the bank queue to commit only after a successful poll send (Bug #2).
-            bank_remaining: list[str] | None = None
-            bank_scope: str | None = None
-            bank_source: str | None = None
-            bank_uuid: str | None = None
-            used_subtopic: str | None = None
-            subtopic_remaining: list[str] | None = None
-            commit_subtopic_deck = False
-
-            used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(category, str(chat_id), difficulty)
-            ai_bank_result = self._pick_ai_bank_question_for_chat(category, str(chat_id), difficulty, used_subtopic)
-            if ai_bank_result:
-                generated, bank_remaining = ai_bank_result
-                bank_scope = generated.get("bank_scope")
-                bank_source = generated.get("bank_source")
-                bank_uuid = generated.get("bank_uuid")
-                commit_subtopic_deck = True
-                if lang != "en":
-                    translated = self._generator.translate_question(generated, lang)
+        if not generated and category in _BANKED_CATEGORIES:
+            # Draw from pre-built question bank
+            banked_result = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
+            if banked_result:
+                banked, bank_remaining = banked_result
+                if lang == "en":
+                    generated = banked
+                else:
+                    translated = self._generator.translate_question(banked, lang)
                     if translated:
                         generated = translated
                     else:
                         logger.warning(
-                            "AI bank translation failed, falling back to English bank question",
+                            "Translation failed, falling back to English bank question",
                             extra={"chat_id": chat_id, "lang": lang},
                         )
-
-            if not generated and category in _BANKED_CATEGORIES:
-                # Draw from pre-built question bank
-                banked_result = self._pick_banked_question_for_chat(category, str(chat_id), difficulty)
-                if banked_result:
-                    banked, bank_remaining = banked_result
-                    if lang == "en":
                         generated = banked
-                    else:
-                        translated = self._generator.translate_question(banked, lang)
+            else:
+                logger.warning(
+                    "Bank empty, falling back to AI",
+                    extra={"chat_id": chat_id, "category": category},
+                )
+                ai_result = self._generator.generate_question(category, lang, difficulty, used_subtopic)
+                if ai_result:
+                    generated = ai_result
+                    commit_subtopic_deck = True
+
+        if not generated:
+            # AI path for non-banked categories (or bank + AI both failed).
+            # Track categories tried-but-failed so they can be reinserted at the back
+            # of the queue, preserving the "each category appears once per cycle" guarantee.
+            candidates = [category] + remaining
+            tried_and_failed: list[str] = []
+            restarted = False
+            while candidates:
+                cat = candidates.pop(0)
+                used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(cat, str(chat_id), difficulty)
+                ai_bank_result = self._pick_ai_bank_question_for_chat(cat, str(chat_id), difficulty, used_subtopic)
+                if ai_bank_result:
+                    generated, bank_remaining = ai_bank_result
+                    bank_scope = generated.get("bank_scope")
+                    bank_source = generated.get("bank_source")
+                    bank_uuid = generated.get("bank_uuid")
+                    commit_subtopic_deck = True
+                    if lang != "en":
+                        translated = self._generator.translate_question(generated, lang)
                         if translated:
                             generated = translated
-                        else:
-                            logger.warning(
-                                "Translation failed, falling back to English bank question",
-                                extra={"chat_id": chat_id, "lang": lang},
-                            )
-                            generated = banked
-                else:
-                    logger.warning(
-                        "Bank empty, falling back to AI",
-                        extra={"chat_id": chat_id, "category": category},
-                    )
-                    ai_result = self._generator.generate_question(category, lang, difficulty, used_subtopic)
-                    if ai_result:
-                        generated = ai_result
-                        commit_subtopic_deck = True
-
-            if not generated:
-                # AI path for non-banked categories (or bank + AI both failed).
-                # Track categories tried-but-failed so they can be reinserted at the back
-                # of the queue, preserving the "each category appears once per cycle" guarantee.
-                candidates = [category] + remaining
-                tried_and_failed: list[str] = []
-                restarted = False
-                while candidates:
-                    cat = candidates.pop(0)
-                    used_subtopic, subtopic_remaining = self._pick_subtopic_for_chat(cat, str(chat_id), difficulty)
-                    ai_bank_result = self._pick_ai_bank_question_for_chat(cat, str(chat_id), difficulty, used_subtopic)
-                    if ai_bank_result:
-                        generated, bank_remaining = ai_bank_result
-                        bank_scope = generated.get("bank_scope")
-                        bank_source = generated.get("bank_source")
-                        bank_uuid = generated.get("bank_uuid")
-                        commit_subtopic_deck = True
-                        if lang != "en":
-                            translated = self._generator.translate_question(generated, lang)
-                            if translated:
-                                generated = translated
-                    if not generated:
-                        generated = self._generator.generate_question(cat, lang, difficulty, used_subtopic)
-                        if generated:
-                            commit_subtopic_deck = True
+                if not generated:
+                    generated = self._generator.generate_question(cat, lang, difficulty, used_subtopic)
                     if generated:
-                        used_category = cat
-                        # Restore skipped categories at the back so they still appear this cycle.
-                        remaining = candidates if restarted else candidates + tried_and_failed
-                        logger.info(
-                            "Question generated",
-                            extra={"chat_id": chat_id, "category": cat, "lang": lang, "difficulty": difficulty},
-                        )
-                        break
-                    tried_and_failed.append(cat)
-                    if not candidates and not restarted:
-                        restarted = True
-                        candidates = list(CATEGORY_POOL)
-                        random.shuffle(candidates)
-                        tried_and_failed.clear()
-                        logger.warning(
-                            "Queue exhausted, starting fresh category round",
-                            extra={"chat_id": chat_id},
-                        )
-
-            if not generated:
-                logger.error(
-                    "Failed to generate a valid question after all categories",
-                    extra={"chat_id": chat_id},
-                )
-                failed.append({"chat_id": str(chat_id), "step": "generate"})
-                continue
-
-            announcement = self.build_announcement(lang, difficulty, source_label=generated.get("source_label"))
-            if not self._sender.send_message(str(chat_id), announcement):
-                failed.append({"chat_id": str(chat_id), "step": "announcement"})
-                continue
-
-            poll_result = self._sender.send_quiz_poll(
-                chat_id=chat_id,
-                question=generated["question"],
-                options=generated["options"],
-                correct_option_id=generated["correct_option_index"],
-                explanation=generated.get("explanation"),
-            )
-            if poll_result:
-                poll_id = str(poll_result.get("poll", {}).get("id", ""))
-                message_id = poll_result.get("message_id", 0)
-                self._repo.save_quiz_record(
-                    chat_id=chat_id,
-                    question=generated["question"],
-                    options=generated["options"],
-                    correct_option_id=generated["correct_option_index"],
-                    explanation=generated.get("explanation"),
-                    category=used_category,
-                    lang=lang,
-                    poll_id=poll_id,
-                    message_id=message_id,
-                    difficulty=difficulty,
-                    points=generated["points"],
-                    subtopic=generated.get("subtopic"),
-                    fingerprint=generated.get("fingerprint"),
-                )
-                # Commit bank question queue only after confirmed send (Bug #2 fix).
-                if bank_remaining is not None:
-                    self._repo.save_question_queue(used_category, str(chat_id), bank_remaining, difficulty, bank_scope)
-                if bank_source and bank_uuid:
-                    self._repo.mark_bank_question_used(used_category, bank_source, bank_uuid)
-                if commit_subtopic_deck and used_subtopic is not None and subtopic_remaining is not None:
-                    self._repo.save_subtopic_queue(
-                        str(chat_id), used_category, difficulty, subtopic_remaining, used_subtopic
+                        commit_subtopic_deck = True
+                if generated:
+                    used_category = cat
+                    # Restore skipped categories at the back so they still appear this cycle.
+                    remaining = candidates if restarted else candidates + tried_and_failed
+                    logger.info(
+                        "Question generated",
+                        extra={"chat_id": chat_id, "category": cat, "lang": lang, "difficulty": difficulty},
                     )
-                self._repo.save_category_queue(remaining, used_category, str(chat_id))
-                sent_count += 1
-                sent_chat_ids.append(str(chat_id))
-            else:
-                failed.append({"chat_id": str(chat_id), "step": "sendPoll"})
+                    break
+                tried_and_failed.append(cat)
+                if not candidates and not restarted:
+                    restarted = True
+                    candidates = list(CATEGORY_POOL)
+                    random.shuffle(candidates)
+                    tried_and_failed.clear()
+                    logger.warning(
+                        "Queue exhausted, starting fresh category round",
+                        extra={"chat_id": chat_id},
+                    )
 
-        logger.info(
-            "Quiz Lambda completed",
-            extra={"sent": sent_count, "total": len(chat_ids), "failed_count": len(failed)},
+        if not generated:
+            return None
+        draft = self._draft(generated, used_category, lang, difficulty)
+        draft["announcement"] = self.build_announcement(lang, difficulty, source_label=generated.get("source_label"))
+        rotations = self._repo.publication_rotations(
+            chat_id,
+            category=used_category,
+            category_remaining=remaining,
+            bank_remaining=bank_remaining,
+            bank_scope=bank_scope,
+            bank_source=bank_source,
+            bank_uuid=bank_uuid,
+            difficulty=difficulty,
+            subtopic=used_subtopic if commit_subtopic_deck else None,
+            subtopic_remaining=subtopic_remaining if commit_subtopic_deck else None,
         )
+        return draft, rotations
+
+    @staticmethod
+    def _draft(question, category, lang, difficulty, *, poll_question=None):
         return {
-            "status": "ok",
-            "sent": sent_count,
+            "question": poll_question or question["question"],
+            "options": question["options"],
+            "correct_option_id": question["correct_option_index"],
+            "explanation": question.get("explanation"),
+            "category": category,
+            "lang": lang,
+            "difficulty": difficulty,
+            "points": question["points"],
+            "subtopic": question.get("subtopic"),
+            "fingerprint": question.get("fingerprint"),
+        }
+
+    def _publish_request(self, chat_id, request_key, intent=None):
+        try:
+            execution = self._repo.claim_publication(chat_id, request_key, intent)
+        except QuizPublicationBusy:
+            return {"status": "pending", "reason": "publication in progress"}
+        if execution["state"] == "DONE":
+            return {"status": "ok", "sent": 1, "total": 1}
+        if execution["state"] == "EXPIRED":
+            return {"status": "expired", "reason": "quiz request expired before publication"}
+        if execution["state"] in {"UNKNOWN", "CONFLICT"}:
+            return {"status": "unknown", "reason": "poll outcome needs administrator verification"}
+        if execution["state"] != "SENT":
+            if execution["state"] == "GENERATING":
+                self._repo._deck_snapshots = {}
+                stored = execution["intent"]
+                prepared = (
+                    self._prepare_daily_publication(chat_id, stored["lang"], stored["difficulty"])
+                    if stored["kind"] == "daily"
+                    else self._prepare_on_demand_publication(
+                        chat_id, stored["lang"], stored["topic"], stored["difficulty"], stored["interactive"]
+                    )
+                )
+                if not prepared:
+                    self._repo.mark_publication_failed(execution, unknown=False, reason="generation_failed")
+                    return {"status": "error", "reason": "no valid question"}
+                execution = self._repo.prepare_publication(execution, *prepared)
+            draft = execution["draft"]
+            if draft.get("announcement") and not execution.get("announcement_attempted"):
+                execution = self._repo.mark_announcement_attempted(execution)
+                self._sender.send_message(chat_id, draft["announcement"])
+            execution = self._repo.mark_publication_sending(execution)
+            try:
+                result = self._sender.send_quiz_poll(
+                    chat_id=chat_id,
+                    question=draft["question"],
+                    options=draft["options"],
+                    correct_option_id=int(draft["correct_option_id"]),
+                    explanation=draft.get("explanation"),
+                )
+                execution = self._repo.persist_poll_receipt(execution, result)
+            except PollSendRejected:
+                self._repo.mark_publication_failed(execution, unknown=False, reason="send_rejected")
+                return {"status": "error", "reason": "Telegram rejected the quiz poll"}
+            except (PollSendUnknown, QuizPublicationUnknown):
+                self._repo.mark_publication_failed(execution, unknown=True, reason="send_unknown")
+                return {"status": "unknown", "reason": "poll outcome needs administrator verification"}
+        complete = self._repo.finalize_publication(execution)
+        if complete["state"] != "DONE":
+            return {"status": "error", "reason": "daily record conflict; known poll remains scoreable"}
+        return {"status": "ok", "sent": 1, "total": 1}
+
+    def process_daily_quiz(self, chat_ids: list[str], lang: str, *, scheduled_at=None) -> dict:
+        if not chat_ids:
+            return {"status": "skipped", "reason": "no chat_ids"}
+        try:
+            if type(scheduled_at) is int and scheduled_at > 0:
+                scheduled = datetime.fromtimestamp(scheduled_at, timezone.utc)
+            elif isinstance(scheduled_at, str):
+                scheduled = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+                if scheduled.tzinfo is None:
+                    raise ValueError("Scheduled timestamp needs its timezone")
+            else:
+                raise ValueError("Missing immutable scheduler timestamp")
+            if scheduled.timestamp() > time.time() + 300:
+                raise ValueError("Scheduled timestamp is in the future")
+        except (ValueError, TypeError, OverflowError):
+            return {"status": "error", "reason": "missing or invalid stable scheduled_at", "retryable": False}
+        difficulty = self.get_difficulty(scheduled)
+        day = scheduled.astimezone(_ALMATY_TZ).strftime("%Y-%m-%d")
+        sent_chat_ids, failed = [], []
+        for chat_id in chat_ids:
+            chat_id = str(chat_id)
+            try:
+                # A pre-cutover successful daily publication also prevents another send.
+                if self._repo.get_quiz_record(chat_id, f"DATE#{day}"):
+                    sent_chat_ids.append(chat_id)
+                    continue
+                result = self._publish_request(
+                    chat_id, f"DATE#{day}", {"kind": "daily", "lang": lang, "difficulty": difficulty}
+                )
+                if result["status"] == "ok":
+                    sent_chat_ids.append(chat_id)
+                else:
+                    failed.append({"chat_id": chat_id, "step": result["status"], "reason": result["reason"]})
+            except Exception as exc:
+                logger.error(
+                    "Daily quiz remains incomplete", extra={"chat_id": chat_id, "error_type": type(exc).__name__}
+                )
+                failed.append({"chat_id": chat_id, "step": "dependency"})
+        return {
+            "status": "partial" if failed and sent_chat_ids else "error" if failed else "ok",
+            "sent": len(sent_chat_ids),
             "total": len(chat_ids),
             "sent_chat_ids": sent_chat_ids,
             "failed": failed,
         }
 
-    def process_on_demand_quiz(
-        self,
-        chat_id: str,
-        lang: str,
-        topic: str,
-        difficulty: str,
-        *,
-        interactive: bool = False,
-    ) -> dict:
-        """Generate and send a single on-demand quiz to one chat.
-
-        For topics that map to a banked category (e.g. "cloud", "aws"), questions are drawn
-        from the question bank using a per-chat genquiz queue that is independent from the
-        daily rotation.  The RPD footer is omitted for bank-sourced questions (no AI used).
-        """
-        logger.info(
-            "On-demand quiz requested",
-            extra={"chat_id": chat_id, "topic": topic, "lang": lang, "difficulty": difficulty},
-        )
-
-        def save_sent_poll(question: dict, poll_question: str, poll_result: dict, category: str) -> bool:
-            poll_id = str(poll_result.get("poll", {}).get("id", ""))
-            if not poll_id:
-                logger.error("On-demand poll result missing poll id", extra={"chat_id": chat_id, "topic": topic})
-                return False
-            return self._repo.save_quiz_record(
-                chat_id=chat_id,
-                question=poll_question,
-                options=question["options"],
-                correct_option_id=question["correct_option_index"],
-                explanation=question.get("explanation"),
-                category=category,
-                lang=lang,
-                poll_id=poll_id,
-                message_id=int(poll_result.get("message_id", 0)),
-                difficulty=difficulty,
-                points=question["points"],
-                subtopic=question.get("subtopic"),
-                fingerprint=question.get("fingerprint"),
-                record_key=f"ONDEMAND#{poll_id}",
-            )
-
-        # ── Bank path ────────────────────────────────────────────────────────
+    def _prepare_on_demand_publication(self, chat_id, lang, topic, difficulty, interactive):
         banked_category = _GENQUIZ_TOPIC_TO_BANKED.get(topic.lower().strip())
         if banked_category:
             banked_result = self._pick_banked_question_for_genquiz(banked_category, str(chat_id), difficulty)
             if banked_result:
-                banked, genquiz_remaining = banked_result
-                question = banked
+                question, remaining = banked_result
                 if lang != "en":
-                    if interactive:
-                        translated = self._generator.translate_question(banked, lang, interactive=True)
-                    else:
-                        translated = self._generator.translate_question(banked, lang)
-                    if translated:
-                        question = translated
-                    else:
-                        logger.warning(
-                            "Genquiz translation failed, using English original",
-                            extra={"chat_id": chat_id, "lang": lang},
-                        )
-                # Prepend source label inline in the question text (no separate announcement)
-                source_label = question.get("source_label", "")
-                if source_label:
-                    prefix = f"<b>📚 {source_label}</b>\n\n"
-                    q_text = question["question"][: 300 - len(prefix)]
-                    poll_question = prefix + q_text
-                else:
-                    poll_question = question["question"]
-                poll_result = self._sender.send_quiz_poll(
-                    chat_id=chat_id,
-                    question=poll_question,
-                    options=question["options"],
-                    correct_option_id=question["correct_option_index"],
-                    explanation=question.get("explanation"),
-                    question_parse_mode="HTML",
-                )
-                if poll_result:
-                    logger.info(
-                        "Genquiz sent from bank",
-                        extra={"chat_id": chat_id, "category": banked_category, "lang": lang},
+                    translated = (
+                        self._generator.translate_question(question, lang, interactive=True)
+                        if interactive
+                        else self._generator.translate_question(question, lang)
                     )
-                    if not save_sent_poll(question, poll_question, poll_result, banked_category):
-                        logger.error("Failed to save genquiz poll lookup", extra={"chat_id": chat_id})
-                        return {"status": "error", "reason": "failed to save poll record"}
-                    # Commit question queue only after confirmed send (Bug #2 fix).
-                    self._repo.save_genquiz_question_queue(banked_category, str(chat_id), genquiz_remaining, difficulty)
-                    return {"status": "ok", "sent": 1, "total": 1}
-                logger.error("Failed to send genquiz poll from bank", extra={"chat_id": chat_id})
-                return {"status": "error", "reason": "failed to send poll"}
-            # Bank exhausted (shouldn't happen in practice) — fall through to AI
-            logger.warning(
-                "Genquiz bank empty for topic, falling back to AI",
-                extra={"chat_id": chat_id, "topic": topic},
-            )
-
-        # ── AI path ──────────────────────────────────────────────────────────
-        if interactive:
-            question = self._generator.generate_question(topic, lang, difficulty, interactive=True)
-        else:
-            question = self._generator.generate_question(topic, lang, difficulty)
+                    question = translated or question
+                source_label = question.get("source_label", "")
+                prefix = f"📚 {source_label}\n\n" if source_label else ""
+                poll_question = prefix + question["question"][: 300 - len(prefix)]
+                draft = self._draft(question, banked_category, lang, difficulty, poll_question=poll_question)
+                rotations = self._repo.publication_rotations(
+                    chat_id, category=banked_category, difficulty=difficulty, bank_remaining=remaining, genquiz=True
+                )
+                return draft, rotations
+        question = (
+            self._generator.generate_question(topic, lang, difficulty, interactive=True)
+            if interactive
+            else self._generator.generate_question(topic, lang, difficulty)
+        )
         if not question:
-            logger.error("Failed to generate on-demand question", extra={"topic": topic})
-            return {"status": "error", "reason": "no valid question"}
+            return None
+        return self._draft(question, topic, lang, difficulty), []
 
-        poll_result = self._sender.send_quiz_poll(
-            chat_id=chat_id,
-            question=question["question"],
-            options=question["options"],
-            correct_option_id=question["correct_option_index"],
-            explanation=question.get("explanation"),
+    def process_on_demand_quiz(
+        self, chat_id: str, lang: str, topic: str, difficulty: str, *, request_id: int | None = None, interactive=False
+    ) -> dict:
+        if type(request_id) is not int or request_id <= 0:
+            return {"status": "error", "reason": "missing stable request identity", "retryable": False}
+        return self._publish_request(
+            str(chat_id),
+            f"REQUEST#{request_id}",
+            {"kind": "on_demand", "lang": lang, "topic": topic, "difficulty": difficulty, "interactive": interactive},
         )
 
-        if poll_result:
-            logger.info("On-demand quiz sent via AI", extra={"chat_id": chat_id, "topic": topic})
-            if not save_sent_poll(question, question["question"], poll_result, topic):
-                logger.error("Failed to save on-demand quiz poll lookup", extra={"chat_id": chat_id, "topic": topic})
-                return {"status": "error", "reason": "failed to save poll record"}
+    def reconcile_poll_receipt(self, chat_id, request_key, generation, poll_message, bot_user_id):
+        # The caller's live-admin proof comes from the restricted Bot -> Quiz invoke
+        # adapter; this entry validates the exact stored execution and own-bot poll.
+        execution = self._repo._publication_read(self._repo.publication_key(chat_id, request_key))
+        if not execution or execution.get("generation") != generation:
+            return {"status": "unknown", "reason": "execution identity does not match"}
+        if execution["state"] == "DONE":
+            try:
+                identity = validate_poll_receipt(
+                    execution["draft"], poll_message, chat_id=chat_id, bot_user_id=bot_user_id
+                )
+            except QuizPublicationUnknown:
+                return {"status": "unknown", "reason": "poll metadata does not match"}
+            if identity["poll_id"] != execution["poll_id"]:
+                return {"status": "unknown", "reason": "poll identity does not match"}
             return {"status": "ok", "sent": 1, "total": 1}
+        try:
+            sent = self._repo.persist_poll_receipt(
+                execution, poll_message, bot_user_id=bot_user_id, reconciliation=True
+            )
+            complete = self._repo.finalize_publication(sent)
+        except QuizPublicationUnknown:
+            return {"status": "unknown", "reason": "poll metadata is incomplete or does not match"}
+        return {"status": "ok" if complete["state"] == "DONE" else "error", "poll_id": complete["poll_id"]}
 
-        logger.error("Failed to send on-demand quiz poll", extra={"chat_id": chat_id})
-        return {"status": "error", "reason": "failed to send poll"}
+    def recover_publications(self, limit=50):
+        """Resume a bounded page; UNKNOWN always remains a manual reconciliation case."""
+        previous, rows, cursor = self._repo.publication_recovery_page(limit)
+        counts = {"seen": len(rows), "recovered": 0, "unknown": 0, "expired": 0, "future": 0, "errors": 0}
+        started = time.monotonic()
+        for index, row in enumerate(rows):
+            if time.monotonic() - started >= 200:
+                break
+            # Advance before potentially slow generation; a crash cannot starve later
+            # rows, and the durable outbox is revisited on the next traversal.
+            next_cursor = {"PK": row["PK"], "SK": row["SK"]} if index < len(rows) - 1 else cursor
+            self._repo.checkpoint_publication_recovery(previous, next_cursor)
+            previous = self._repo._publication_read({"PK": "QUIZ_PUBLICATION_RECOVERY", "SK": "CURSOR"})
+            if int(row["next_attempt_at"]) > int(time.time()):
+                counts["future"] += 1
+                continue
+            try:
+                if not self._repo._publication_read(self._repo.publication_key(row["chat_id"], row["request_key"])):
+                    self._repo.expire_publication_orphan(row)
+                    counts["expired"] += 1
+                    continue
+                result = self._publish_request(row["chat_id"], row["request_key"])
+                bucket = {"ok": "recovered", "unknown": "unknown", "expired": "expired"}.get(result["status"], "errors")
+                counts[bucket] += 1
+            except Exception as exc:
+                logger.error("Quiz publication recovery failed", extra={"error_type": type(exc).__name__})
+                counts["errors"] += 1
+        if not rows:
+            self._repo.checkpoint_publication_recovery(previous, cursor)
+        if counts["errors"]:
+            raise RuntimeError("Quiz publication recovery has retryable failures")
+        return counts
 
     def build_generated_question_bank(
         self,
@@ -847,7 +864,9 @@ class QuizService:
         reply_to_message_id: int | None = None,
     ) -> dict:
         """Run on-demand quiz and notify the user when async generation fails."""
-        result = self.process_on_demand_quiz(chat_id, lang, topic, difficulty, interactive=True)
+        result = self.process_on_demand_quiz(
+            chat_id, lang, topic, difficulty, request_id=reply_to_message_id, interactive=True
+        )
         if result.get("status") == "ok":
             return result
 

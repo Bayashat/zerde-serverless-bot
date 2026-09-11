@@ -307,7 +307,9 @@ def import_telegram_history(
     repo: GroupMemoryRepository | None = None,
     vector_enqueue: VectorEnqueue | None = None,
 ) -> HistoryImportResult:
-    """Import one Telegram Desktop JSON export into group memory."""
+    """Inspect an export locally; durable historical import has been retired."""
+    if not options.dry_run:
+        raise RuntimeError("Historical memory import is retired; use dry_run inspection only")
     stats = HistoryImportStats()
     data = load_telegram_export(options.export_path)
     messages = parse_telegram_export_messages(data, since=options.since, until=options.until, stats=stats)

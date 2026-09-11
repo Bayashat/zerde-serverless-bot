@@ -6,11 +6,22 @@ from typing import Any
 import urllib3
 from core.config import TELEGRAM_API_BASE, get_bot_token
 from core.logger import LoggerAdapter, get_logger
-from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 http = urllib3.PoolManager(maxsize=4, timeout=urllib3.Timeout(total=10))
+
+
+class PollSendRejected(RuntimeError):
+    """Telegram positively rejected the request; a later retry may be safe."""
+
+    def __init__(self, status):
+        self.status = status
+        super().__init__("Telegram rejected the quiz poll")
+
+
+class PollSendUnknown(RuntimeError):
+    """Telegram may have accepted the poll; do not automatically send it again."""
 
 
 class QuizSender:
@@ -41,12 +52,13 @@ class QuizSender:
                 url,
                 body=json.dumps(payload),
                 headers={"Content-Type": "application/json"},
+                retries=False,
             )
             if resp.status >= 400:
                 body = resp.data.decode("utf-8")
                 logger.error(
                     "sendMessage failed",
-                    extra={"chat_id": chat_id, "status": resp.status, "body_preview": truncate_log_text(body)},
+                    extra={"chat_id": chat_id, "status": resp.status, "response_chars": len(body)},
                 )
                 return None
             result = json.loads(resp.data.decode("utf-8"))
@@ -63,8 +75,8 @@ class QuizSender:
         correct_option_id: int,
         explanation: str | None = None,
         question_parse_mode: str | None = None,
-    ) -> dict[str, Any] | None:
-        """Send a quiz poll to a chat. Returns the Telegram response result or None on failure."""
+    ) -> dict[str, Any]:
+        """One transport attempt; distinguish a confirmed rejection from an unknown send."""
         url = f"{self._base_url}/sendPoll"
         payload: dict[str, Any] = {
             "chat_id": chat_id,
@@ -72,7 +84,9 @@ class QuizSender:
             "options": [{"text": opt} for opt in options],
             "type": "quiz",
             "is_anonymous": False,
-            "correct_option_id": correct_option_id,
+            "correct_option_ids": [correct_option_id],
+            "allows_multiple_answers": False,
+            "allows_revoting": False,
             "shuffle_options": True,
             "open_period": 3600 * 5,
         }
@@ -87,19 +101,19 @@ class QuizSender:
                 url,
                 body=json.dumps(payload),
                 headers={"Content-Type": "application/json"},
+                retries=False,
             )
-            if resp.status >= 400:
-                body = resp.data.decode("utf-8")
-                logger.error(
-                    "sendPoll failed",
-                    extra={"chat_id": chat_id, "status": resp.status, "body_preview": truncate_log_text(body)},
-                )
-                return None
-
+            if resp.status >= 500:
+                raise PollSendUnknown("Telegram returned an uncertain server error")
             result = json.loads(resp.data.decode("utf-8"))
+            if 400 <= resp.status < 500 and result.get("ok") is False and result.get("error_code") == resp.status:
+                raise PollSendRejected(resp.status)
+            if result.get("ok") is not True or not isinstance(result.get("result"), dict):
+                raise PollSendUnknown("Telegram response has no confirmed poll result")
             logger.info("Quiz poll sent", extra={"chat_id": chat_id})
-            return result.get("result")
-
-        except Exception as e:
-            logger.error("sendPoll error", extra={"chat_id": chat_id, "error": str(e)})
-            return None
+            return result["result"]
+        except (PollSendRejected, PollSendUnknown):
+            raise
+        except Exception as exc:
+            logger.warning("sendPoll outcome unknown", extra={"chat_id": chat_id, "error_type": type(exc).__name__})
+            raise PollSendUnknown("Telegram poll transport outcome is unknown") from exc

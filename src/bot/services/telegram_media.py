@@ -16,7 +16,6 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from services.telegram import TelegramAPIError, TelegramFileTooLargeError
 from services.telegram_actor import actor_display_name, actor_sender_type, actor_username, message_actor
-from zerde_common.logging_utils import truncate_log_text
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -137,6 +136,7 @@ class MediaReference:
     source_username: str | None = None
     source_display_name: str | None = None
     source_sender_type: str | None = None
+    ephemeral_source_ref: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a compact JSON-serializable representation."""
@@ -160,6 +160,7 @@ class MediaReference:
             source_username=_optional_str(value.get("source_username")),
             source_display_name=_optional_str(value.get("source_display_name")),
             source_sender_type=_optional_str(value.get("source_sender_type")),
+            ephemeral_source_ref=value.get("ephemeral_source_ref"),
         )
 
 
@@ -476,8 +477,6 @@ def observe_media_group(repo: Any, update: Mapping[str, Any]) -> None:
     if ref is None:
         return
     try:
-        if not repo.is_memory_enabled(chat_id):
-            return
         repo.store_media_group_item(
             chat_id=chat_id,
             media_group_id=group_id,
@@ -638,7 +637,11 @@ def media_reference_context(ref: MediaReference) -> str:
     if ref.media_group_id:
         lines.append(f"- media_group_id: {ref.media_group_id}")
     if ref.caption:
-        lines.append(f"- caption: {truncate_log_text(ref.caption, max_chars=500)}")
+        # This is model input, not diagnostic output: preserve the user's words.
+        caption = str(ref.caption).replace("\n", " ").strip()
+        if len(caption) > 500:
+            caption = f"{caption[:500]}…(truncated,{len(caption)} chars)"
+        lines.append(f"- caption: {caption}")
     if ref.source_message_id is not None:
         lines.append(f"- source_message_id: {ref.source_message_id}")
     if ref.source_user_id is not None:

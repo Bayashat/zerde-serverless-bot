@@ -1,6 +1,6 @@
 """Quiz score and streak repository for the Bot Lambda."""
 
-from datetime import datetime, timedelta, timezone
+import time
 from typing import Any
 
 from boto3.dynamodb.conditions import Key
@@ -8,21 +8,12 @@ from botocore.exceptions import ClientError
 from core.config import QUIZ_TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 from services.repositories._common import get_dynamodb
+from services.repositories._quiz_answers import AnswerState
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
-_ALMATY_TZ = timezone(timedelta(hours=5))
 
-
-def _today_almaty() -> str:
-    return datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
-
-
-def _yesterday_almaty() -> str:
-    return (datetime.now(_ALMATY_TZ) - timedelta(days=1)).strftime("%Y-%m-%d")
-
-
-class QuizRepository:
+class QuizRepository(AnswerState):
     """Reads/writes quiz scores, streaks, and poll lookups via DynamoDB."""
 
     def __init__(self) -> None:
@@ -33,152 +24,30 @@ class QuizRepository:
         return get_dynamodb().Table(QUIZ_TABLE_NAME)
 
     def lookup_poll(self, poll_id: str) -> dict[str, Any] | None:
-        """Look up a quiz record by poll_id using the GSI."""
-        try:
-            resp = self._table.query(
-                IndexName="PollIdIndex",
-                KeyConditionExpression=Key("poll_id").eq(str(poll_id)),
-                Limit=1,
-            )
-            items = resp.get("Items", [])
-            return items[0] if items else None
-        except ClientError as e:
-            logger.error("Failed to lookup poll", extra={"poll_id": poll_id, "error": str(e)})
-            return None
+        """Strong primary lookup for new polls; a legacy GSI miss stays retryable."""
+
+        def active(item):
+            try:
+                return not isinstance(item["ttl"], bool) and int(item["ttl"]) > int(time.time())
+            except (KeyError, TypeError, ValueError):
+                return False
+
+        item = self._answer_read({"PK": f"POLL#{poll_id}", "SK": "META"})
+        if item:
+            return item if active(item) else None
+        kwargs = {"IndexName": "PollIdIndex", "KeyConditionExpression": Key("poll_id").eq(str(poll_id))}
+        while True:
+            response = self._table.query(**kwargs)
+            for candidate in response.get("Items", []):
+                if str(candidate.get("PK", "")).startswith("QUIZ#") and active(candidate):
+                    return candidate
+            if not response.get("LastEvaluatedKey"):
+                return None
+            kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
 
     def get_user_score(self, chat_id: str, user_id: str) -> dict[str, Any] | None:
-        """Get a user's score record for a chat."""
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
-                ConsistentRead=False,
-            )
-            return resp.get("Item")
-        except ClientError as e:
-            logger.error("Failed to get user score", extra={"error": str(e)})
-            return None
-
-    def update_score_correct(
-        self,
-        chat_id: str,
-        user_id: str,
-        first_name: str,
-        *,
-        poll_id: str,
-        points: int = 1,
-        weekly_points: int | None = None,
-    ) -> None:
-        """Update user score for a correct answer with streak logic.
-
-        Atomic conditional write prevents double-counting duplicate poll_answer events
-        while still allowing multiple different quiz polls on the same day.
-        """
-        today = _today_almaty()
-        yesterday = _yesterday_almaty()
-        current = self.get_user_score(chat_id, user_id)
-
-        if current and current.get("last_correct_date") == today:
-            new_streak = int(current.get("current_streak", 1))
-        elif current and current.get("last_correct_date") == yesterday:
-            new_streak = int(current.get("current_streak", 0)) + 1
-        else:
-            new_streak = 1
-        best_streak = max(new_streak, int((current or {}).get("best_streak", 0)))
-
-        week_points = points if weekly_points is None else weekly_points
-
-        try:
-            self._table.update_item(
-                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
-                UpdateExpression=(
-                    "SET total_score = if_not_exists(total_score, :zero) + :pts,"
-                    "    week_score = if_not_exists(week_score, :zero) + :week_pts,"
-                    "    current_streak = :streak,"
-                    "    best_streak = :best,"
-                    "    last_correct_date = :today,"
-                    "    last_answered_date = :today,"
-                    "    answered_poll_ids = list_append(if_not_exists(answered_poll_ids, :empty_list), :poll_list),"
-                    "    first_name = :name"
-                ),
-                ConditionExpression=(
-                    "attribute_not_exists(answered_poll_ids) OR NOT contains(answered_poll_ids, :poll_id)"
-                ),
-                ExpressionAttributeValues={
-                    ":zero": 0,
-                    ":pts": points,
-                    ":week_pts": week_points,
-                    ":streak": new_streak,
-                    ":best": best_streak,
-                    ":today": today,
-                    ":name": first_name,
-                    ":empty_list": [],
-                    ":poll_list": [poll_id],
-                    ":poll_id": poll_id,
-                },
-            )
-            logger.info(
-                "Correct answer recorded",
-                extra={
-                    "user_id": user_id,
-                    "chat_id": chat_id,
-                    "poll_id": poll_id,
-                    "points": points,
-                    "weekly_points": week_points,
-                },
-            )
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                logger.info(
-                    "Duplicate poll_answer ignored",
-                    extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id},
-                )
-                return
-            logger.error("Failed to update score (correct)", extra={"error": str(e)})
-            raise
-
-    def update_score_wrong(self, chat_id: str, user_id: str, first_name: str, *, poll_id: str) -> None:
-        """Update user record for a wrong answer — reset streak.
-
-        Uses if_not_exists to avoid a pre-read; conditional write blocks duplicate
-        answers for the same poll, not other polls on the same day.
-        """
-        today = _today_almaty()
-        try:
-            self._table.update_item(
-                Key={"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"},
-                UpdateExpression=(
-                    "SET total_score = if_not_exists(total_score, :zero),"
-                    "    week_score = if_not_exists(week_score, :zero),"
-                    "    current_streak = :zero,"
-                    "    best_streak = if_not_exists(best_streak, :zero),"
-                    "    last_answered_date = :today,"
-                    "    answered_poll_ids = list_append(if_not_exists(answered_poll_ids, :empty_list), :poll_list),"
-                    "    first_name = :name,"
-                    "    last_correct_date = if_not_exists(last_correct_date, :empty)"
-                ),
-                ConditionExpression=(
-                    "attribute_not_exists(answered_poll_ids) OR NOT contains(answered_poll_ids, :poll_id)"
-                ),
-                ExpressionAttributeValues={
-                    ":zero": 0,
-                    ":today": today,
-                    ":name": first_name,
-                    ":empty": "",
-                    ":empty_list": [],
-                    ":poll_list": [poll_id],
-                    ":poll_id": poll_id,
-                },
-            )
-            logger.info("Wrong answer recorded", extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id})
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                logger.info(
-                    "Duplicate poll_answer ignored",
-                    extra={"user_id": user_id, "chat_id": chat_id, "poll_id": poll_id},
-                )
-                return
-            logger.error("Failed to update score (wrong)", extra={"error": str(e)})
-            raise
+        """Read score strongly; a dependency failure is never a missing score."""
+        return self._answer_read({"PK": f"SCORE#{chat_id}", "SK": f"USER#{user_id}"}) or None
 
     def get_leaderboard(self, chat_id: str) -> list[dict[str, Any]]:
         """Get all user scores for a chat, sorted by week_score descending."""

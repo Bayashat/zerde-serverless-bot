@@ -12,11 +12,11 @@ from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from core.config import TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
+from services._publication import PublicationState
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _ALMATY_TZ = timezone(timedelta(hours=5))
-_TTL_DAYS = 90
 
 
 def _question_fingerprint(question: str) -> str:
@@ -26,83 +26,27 @@ def _question_fingerprint(question: str) -> str:
     return hashlib.sha1(normalized.encode("utf-8")).hexdigest()
 
 
-class QuizRepository:
+class QuizRepository(PublicationState):
     """Writes daily quiz records and category metadata to DynamoDB."""
 
     def __init__(self) -> None:
         self._table = boto3.resource("dynamodb").Table(TABLE_NAME)
         logger.info("QuizRepository initialized", extra={"table": TABLE_NAME})
 
+    def _read_deck(self, pk):
+        item = self._publication_read({"PK": pk, "SK": "LATEST"})
+        if not hasattr(self, "_deck_snapshots"):
+            self._deck_snapshots = {}
+        self._deck_snapshots[pk] = item
+        return list(item.get("remaining", []))
+
     def get_category_queue(self, chat_id: str) -> list[str]:
         """Read the per-chat remaining category queue from metadata."""
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"META#category#{chat_id}", "SK": "LATEST"},
-                ConsistentRead=False,
-            )
-            item = resp.get("Item")
-            if item and "remaining" in item:
-                return list(item["remaining"])
-            return []
-        except Exception as e:
-            logger.error("Failed to get category queue", extra={"error": str(e)})
-            return []
-
-    def save_category_queue(self, remaining: list[str], used_category: str, chat_id: str) -> None:
-        """Write the per-chat updated category queue and last-used category."""
-        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
-        try:
-            self._table.put_item(
-                Item={
-                    "PK": f"META#category#{chat_id}",
-                    "SK": "LATEST",
-                    "remaining": remaining,
-                    "category": used_category,
-                    "date": today,
-                }
-            )
-        except Exception as e:
-            logger.error("Failed to save category queue", extra={"error": str(e)})
+        return self._read_deck(f"META#category#{chat_id}")
 
     def get_subtopic_queue(self, chat_id: str, category: str, difficulty: str) -> list[str]:
         """Read the per-chat subtopic deck for a category/difficulty pair."""
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"META#subtopic#{category}#{difficulty}#{chat_id}", "SK": "LATEST"},
-                ConsistentRead=False,
-            )
-            item = resp.get("Item")
-            if item and "remaining" in item:
-                return list(item["remaining"])
-            return []
-        except Exception as e:
-            logger.error("Failed to get subtopic queue", extra={"error": str(e)})
-            return []
-
-    def save_subtopic_queue(
-        self,
-        chat_id: str,
-        category: str,
-        difficulty: str,
-        remaining: list[str],
-        used_subtopic: str,
-    ) -> None:
-        """Write the updated per-chat subtopic deck."""
-        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
-        try:
-            self._table.put_item(
-                Item={
-                    "PK": f"META#subtopic#{category}#{difficulty}#{chat_id}",
-                    "SK": "LATEST",
-                    "remaining": remaining,
-                    "category": category,
-                    "difficulty": difficulty,
-                    "subtopic": used_subtopic,
-                    "date": today,
-                }
-            )
-        except Exception as e:
-            logger.error("Failed to save subtopic queue", extra={"error": str(e)})
+        return self._read_deck(f"META#subtopic#{category}#{difficulty}#{chat_id}")
 
     def _query_all_pages(self, chat_id: str) -> list[dict[str, Any]]:
         """Paginate through all DynamoDB items for a SCORE#{chat_id} partition."""
@@ -376,166 +320,24 @@ class QuizRepository:
             )
             return None
 
-    def mark_bank_question_used(self, category: str, source: str, uuid: str) -> None:
-        """Record best-effort usage timestamp on a bank question."""
-        try:
-            self._table.update_item(
-                Key={"PK": f"BANK#{category}#{source}", "SK": f"Q#{uuid}"},
-                UpdateExpression="SET last_used_at = :now ADD use_count :one",
-                ExpressionAttributeValues={":now": datetime.now(_ALMATY_TZ).isoformat(), ":one": 1},
-            )
-        except Exception as e:
-            logger.warning(
-                "Failed to mark bank question used",
-                extra={"category": category, "source": source, "uuid": uuid, "error": str(e)},
-            )
-
     def get_question_queue(
         self, category: str, chat_id: str, difficulty: str | None = None, scope: str | None = None
     ) -> list[str]:
         """Read the per-chat per-category question queue (list of 'source::uuid' keys)."""
         difficulty_suffix = f"#{difficulty}" if difficulty else ""
         scope_suffix = f"#{scope}" if scope else ""
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"META#q_queue#{category}{difficulty_suffix}{scope_suffix}#{chat_id}", "SK": "LATEST"},
-                ConsistentRead=False,
-            )
-            item = resp.get("Item")
-            if item and "remaining" in item:
-                return list(item["remaining"])
-            return []
-        except Exception as e:
-            logger.error("Failed to get question queue", extra={"error": str(e)})
-            return []
-
-    def save_question_queue(
-        self,
-        category: str,
-        chat_id: str,
-        remaining: list[str],
-        difficulty: str | None = None,
-        scope: str | None = None,
-    ) -> None:
-        """Write the per-chat per-category question queue."""
-        difficulty_suffix = f"#{difficulty}" if difficulty else ""
-        scope_suffix = f"#{scope}" if scope else ""
-        try:
-            self._table.put_item(
-                Item={
-                    "PK": f"META#q_queue#{category}{difficulty_suffix}{scope_suffix}#{chat_id}",
-                    "SK": "LATEST",
-                    "remaining": remaining,
-                }
-            )
-        except Exception as e:
-            logger.error("Failed to save question queue", extra={"error": str(e)})
-
-    # ── Genquiz (on-demand) question queue — separate from daily rotation ─────
+        return self._read_deck(f"META#q_queue#{category}{difficulty_suffix}{scope_suffix}#{chat_id}")
 
     def get_genquiz_question_queue(self, category: str, chat_id: str, difficulty: str | None = None) -> list[str]:
         """Read the per-chat on-demand genquiz question queue (independent of daily rotation)."""
         difficulty_suffix = f"#{difficulty}" if difficulty else ""
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}", "SK": "LATEST"},
-                ConsistentRead=False,
-            )
-            item = resp.get("Item")
-            if item and "remaining" in item:
-                return list(item["remaining"])
-            return []
-        except Exception as e:
-            logger.error("Failed to get genquiz question queue", extra={"error": str(e)})
-            return []
+        return self._read_deck(f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}")
 
-    def save_genquiz_question_queue(
-        self, category: str, chat_id: str, remaining: list[str], difficulty: str | None = None
-    ) -> None:
-        """Write the per-chat on-demand genquiz question queue."""
-        difficulty_suffix = f"#{difficulty}" if difficulty else ""
-        try:
-            self._table.put_item(
-                Item={
-                    "PK": f"META#genquiz_q_queue#{category}{difficulty_suffix}#{chat_id}",
-                    "SK": "LATEST",
-                    "remaining": remaining,
-                }
-            )
-        except Exception as e:
-            logger.error("Failed to save genquiz question queue", extra={"error": str(e)})
-
-    def get_today_quiz_record(self, chat_id: str) -> dict[str, Any] | None:
-        """Return today's quiz record for a chat, or None if not yet sent."""
-        today = datetime.now(_ALMATY_TZ).strftime("%Y-%m-%d")
-        try:
-            resp = self._table.get_item(
-                Key={"PK": f"QUIZ#{chat_id}", "SK": f"DATE#{today}"},
-                ConsistentRead=True,
-            )
-            return resp.get("Item")
-        except ClientError as e:
-            logger.error("Failed to read today quiz record", extra={"chat_id": chat_id, "error": str(e)})
-            return None
-
-    def save_quiz_record(
-        self,
-        chat_id: str,
-        question: str,
-        options: list[str],
-        correct_option_id: int,
-        explanation: str | None,
-        category: str,
-        lang: str,
-        poll_id: str,
-        message_id: int,
-        difficulty: str = "easy",
-        points: int = 1,
-        subtopic: str | None = None,
-        fingerprint: str | None = None,
-        record_key: str | None = None,
-    ) -> bool:
-        """Write a quiz poll lookup record for a chat.
-
-        Daily quizzes use ``DATE#YYYY-MM-DD``. On-demand quizzes pass a unique
-        ``record_key`` (normally ``ONDEMAND#<poll_id>``) so their poll answers can
-        be scored without colliding with the daily idempotency record.
-        """
-        now = datetime.now(_ALMATY_TZ)
-        today = now.strftime("%Y-%m-%d")
-        sk = record_key or f"DATE#{today}"
-        ttl = int(time.time()) + (_TTL_DAYS * 86400)
-
-        try:
-            self._table.put_item(
-                Item={
-                    "PK": f"QUIZ#{chat_id}",
-                    "SK": sk,
-                    "question": question,
-                    "options": options,
-                    "correct_option_id": correct_option_id,
-                    "explanation": explanation,
-                    "category": category,
-                    "lang": lang,
-                    "poll_id": str(poll_id),
-                    "message_id": message_id,
-                    "difficulty": difficulty,
-                    "points": points,
-                    "subtopic": subtopic,
-                    "fingerprint": fingerprint or _question_fingerprint(question),
-                    "sent_at": now.isoformat(),
-                    "ttl": ttl,
-                },
-                ConditionExpression=Attr("PK").not_exists(),
-            )
-            logger.info("Quiz record saved", extra={"chat_id": chat_id, "sk": sk, "poll_id": poll_id})
-            return True
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                logger.warning(
-                    "Quiz record already exists, skipping save",
-                    extra={"chat_id": chat_id, "sk": sk, "poll_id": poll_id},
-                )
-                return False
-            logger.error("Failed to save quiz record", extra={"chat_id": chat_id, "error": str(e)})
-            raise
+    def get_quiz_record(self, chat_id: str, request_key: str) -> dict[str, Any] | None:
+        """Read the original request's record, never reinterpret a retry as today's job."""
+        self.publication_key(chat_id, request_key)
+        resp = self._table.get_item(
+            Key={"PK": f"QUIZ#{chat_id}", "SK": request_key},
+            ConsistentRead=True,
+        )
+        return resp.get("Item")

@@ -9,6 +9,14 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 TRANSLATIONS = {
     "en": {
+        "quiz_reconcile_usage": "Reply to this bot's quiz: /quizreconcile &lt;request_key&gt; &lt;generation&gt;",
+        "quiz_reconcile_admin": "Only a current group administrator can reconcile a quiz.",
+        "quiz_reconcile_ok": "The existing quiz has been verified and its scoring record restored.",
+        "quiz_reconcile_unknown": "The quiz is not confirmed. Check the delivery record before trying again.",
+        "memory_rebuilding": (
+            "Memory is being rebuilt. Learning and automatic interactions are disabled. /ask, direct "
+            "mentions and requested replies remain available without long-term memory."
+        ),
         "start_message": (
             "👋 <b>Hello! I am Zerde — a smart assistant for IT communities.</b> 🤖\n\n"
             "My main task is to protect chats from spam bots and gather useful statistics.\n\n"
@@ -84,6 +92,15 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>Vote to Ban</b>\n\n" "👤 Initiated by: {INITIATOR}\n" "🎯 Target: {TARGET}"),
         "voteban_vote_recorded": "✅ Your vote has been recorded.",
         "voteban_already_voted": "⚠️ You have already voted on this ban.",
+        "voteban_closed": "This vote has ended.",
+        "voteban_expired": (
+            "This vote is expired or belongs to an older session. Start a new /voteban command if " "needed."
+        ),
+        "voteban_retry": "Vote processing could not finish. Retry the button or /voteban command.",
+        "voteban_unconfirmed": (
+            "⚠️ The vote for {TARGET} ended without a confirmed ban. An administrator must check the "
+            "result; use a new /voteban for a new decision."
+        ),
         "voteban_banned": (
             "⚖️ <b>User Banned by Vote</b>\n\n"
             "🎯 {TARGET} has been banned after receiving {VOTES_FOR} votes.\n\n"
@@ -206,6 +223,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "Vector memory cleanup requested for {deleted} indexed item(s).",
         "vector_cleanup_skipped": "Vector memory cleanup is not configured.",
         "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
+        "memory_cleanup_pending": (
+            "Cleanup is incomplete: source records are deleted, but vector deletion is still pending. Retry "
+            "the forget command to resume; administrators can also recover the saved cleanup work."
+        ),
+        "forget_me_scope": (
+            "Only directly owned records were removed. Shared group facts and summaries remain; complete "
+            "historical cleanup is handled separately."
+        ),
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
         "why_reply_message": (
             "🧾 <b>Why I replied</b>\n"
@@ -257,6 +282,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Ban",
         "spam_review_ignore_button": "Ignore",
         "spam_review_admin_only": "Only group admins can review spam alerts.",
+        "spam_review_action_failed": "Ban not confirmed. Check bot permissions and the user status, then retry.",
         "spam_review_banned_toast": "User banned.",
         "spam_review_ignored_toast": "Alert ignored.",
         "spam_review_banned_notice": "✅ Admin reviewed this alert and banned the user.",
@@ -271,6 +297,16 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 Too many wrong attempts. You have been removed.",
     },
     "kk": {
+        "quiz_reconcile_usage": (
+            "Осы боттың викторинасына жауап беріңіз: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
+        ),
+        "quiz_reconcile_admin": "Викторинаны тек топтың қазіргі әкімшісі растай алады.",
+        "quiz_reconcile_ok": "Бар викторина расталды, ұпай санау жазбасы қалпына келтірілді.",
+        "quiz_reconcile_unknown": "Викторина расталмады. Қайта әрекеттенбес бұрын жіберу жазбасын тексеріңіз.",
+        "memory_rebuilding": (
+            "Жад қайта жасалып жатыр. Ақпаратты есте сақтау және автоматты әрекеттер өшірілген. /ask, "
+            "тікелей белгілеу және ботқа қойылған нақты сұрақтар ұзақ мерзімді жадсыз жұмыс істейді."
+        ),
         "start_message": (
             "👋 <b>Сәлем! Мен Zerde — IT қауымдастығына арналған ақылды көмекшімін.</b> 🤖\n\n"
             "Менің негізгі міндетім — чатты спам-боттардан қорғау және пайдалы статистика жинау.\n\n"
@@ -352,6 +388,15 @@ TRANSLATIONS = {
         ),
         "voteban_vote_recorded": "✅ Сіздің дауысыңыз қабылданды.",
         "voteban_already_voted": "⚠️ Сіз бұл қолданушыны бұғаттауға дауыс беріп қойғансыз.",
+        "voteban_closed": "Бұл дауыс беру аяқталды.",
+        "voteban_expired": (
+            "Бұл дауыс беру аяқталған немесе ескі сессияға тиесілі. Қажет болса, жаңа /voteban " "бастаңыз."
+        ),
+        "voteban_retry": "Дауыс беруді өңдеу аяқталмады. Батырманы немесе /voteban пәрменін қайталаңыз.",
+        "voteban_unconfirmed": (
+            "⚠️ {TARGET} туралы дауыс беру аяқталды, бірақ бұғаттау расталмады. Әкімші нәтижені "
+            "тексеруі керек; жаңа шешім үшін жаңа /voteban бастаңыз."
+        ),
         "voteban_banned": (
             "⚖️ <b>Дауыс беру арқылы бұғаттау</b>\n\n"
             "🎯 {TARGET} қажетті {VOTES_FOR} дауыс жинап, топтан шығарылды.\n\n"
@@ -481,6 +526,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "{deleted} indexed vector жад элементін өшіру сұралды.",
         "vector_cleanup_skipped": "Vector жадын тазалау бапталмаған.",
         "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
+        "memory_cleanup_pending": (
+            "Тазалау аяқталмады: бастапқы жазбалар өшірілді, vector тазалауы күтілуде. Жалғастыру үшін өшіру "
+            "пәрменін қайталаңыз; әкімші сақталған тапсырманы қалпына келтіре алады."
+        ),
+        "forget_me_scope": (
+            "Тек өзіңізге тиесілі жазбалар өшірілді. Ортақ топ фактілері мен түйіндемелер сақталады; толық "
+            "тарихи тазалау бөлек орындалады."
+        ),
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
         "why_reply_message": (
             "🧾 <b>Неге жауап бердім</b>\n"
@@ -532,6 +585,9 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Бан",
         "spam_review_ignore_button": "Елемеу",
         "spam_review_admin_only": "Спам ескертулерін тек топ админдері тексере алады.",
+        "spam_review_action_failed": (
+            "Бұғаттау расталмады. Бот құқықтары мен пайдаланушы күйін тексеріп, қайта көріңіз."
+        ),
         "spam_review_banned_toast": "Пайдаланушы бұғатталды.",
         "spam_review_ignored_toast": "Ескерту еленбеді.",
         "spam_review_banned_notice": "✅ Админ бұл ескертуді тексеріп, пайдаланушыны бұғаттады.",
@@ -546,6 +602,10 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 Тым көп қате енгізілді. Топтан шығарылдыңыз.",
     },
     "zh": {
+        "quiz_reconcile_usage": "回复此 bot 已发出的题目：/quizreconcile &lt;request_key&gt; &lt;generation&gt;",
+        "quiz_reconcile_admin": "只有当前群管理员可以核对并恢复题目记录。",
+        "quiz_reconcile_ok": "已核对现有题目并恢复其计分记录。",
+        "quiz_reconcile_unknown": "题目尚未核实，请先检查发送记录再重试。",
         "start_message": (
             "👋 <b>你好！我是 Zerde —— 面向 IT 社群的智能助手。</b> 🤖\n\n"
             "我的主要职责是保护群聊免受垃圾机器人干扰，并收集有价值的统计数据。\n\n"
@@ -620,6 +680,10 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>封禁投票</b>\n\n" "👤 发起人：{INITIATOR}\n" "🎯 目标：{TARGET}"),
         "voteban_vote_recorded": "✅ 你的投票已记录。",
         "voteban_already_voted": "⚠️ 你已参与过本次投票。",
+        "voteban_closed": "本次投票已结束。",
+        "voteban_expired": "本次投票已过期或按钮属于旧会话。如有需要，请重新发起 /voteban。",
+        "voteban_retry": "投票处理暂未完成。请重试按钮或 /voteban 命令以恢复处理。",
+        "voteban_unconfirmed": "⚠️ 针对 {TARGET} 的投票已结束，但封禁结果未经确认。请管理员核查；如需重新决策，请发起新的 /voteban。",
         "voteban_banned": (
             "⚖️ <b>用户已被投票封禁</b>\n\n"
             "🎯 {TARGET} 获得 {VOTES_FOR} 票后已被封禁。\n\n"
@@ -731,6 +795,8 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "已请求删除 {deleted} 条已索引向量记忆。",
         "vector_cleanup_skipped": "未配置向量记忆清理。",
         "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
+        "memory_cleanup_pending": "清理尚未完成：来源记录已删除，向量清理仍待处理。请重试遗忘命令恢复；管理员也可恢复已保存的清理任务。",
+        "forget_me_scope": "仅删除明确归属本人的记录。共享群事实及摘要保留，完整历史清零另行处理。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
         "why_reply_message": (
             "🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}\n" "{sources}"
@@ -776,6 +842,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "封禁",
         "spam_review_ignore_button": "忽略",
         "spam_review_admin_only": "只有群管理员可以处理垃圾信息提醒。",
+        "spam_review_action_failed": "尚未确认封禁成功。请检查机器人权限和用户状态后重试。",
         "spam_review_banned_toast": "用户已封禁。",
         "spam_review_ignored_toast": "已忽略。",
         "spam_review_banned_notice": "✅ 管理员已核查此提醒，并封禁了该用户。",
@@ -790,6 +857,16 @@ TRANSLATIONS = {
         "captcha_failed_kicked": "🚫 错误次数过多，已将您移出群组。",
     },
     "ru": {
+        "quiz_reconcile_usage": (
+            "Ответьте на викторину этого бота: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
+        ),
+        "quiz_reconcile_admin": "Подтвердить викторину может только текущий администратор группы.",
+        "quiz_reconcile_ok": "Существующая викторина подтверждена, запись для подсчёта баллов восстановлена.",
+        "quiz_reconcile_unknown": "Викторина не подтверждена. Перед повтором проверьте запись об отправке.",
+        "memory_rebuilding": (
+            "Память перестраивается. Запоминание и автоматические взаимодействия отключены. /ask, "
+            "прямые упоминания и явные вопросы в ответ боту доступны без долговременной памяти."
+        ),
         "start_message": (
             "👋 <b>Привет! Я Zerde — умный помощник для IT-сообществ.</b> 🤖\n\n"
             "Моя главная задача — защищать чаты от спам-ботов и собирать полезную статистику.\n\n"
@@ -866,6 +943,17 @@ TRANSLATIONS = {
         "voteban_initiated": ("🗳️ <b>Голосование за бан</b>\n\n" "👤 Инициатор: {INITIATOR}\n" "🎯 Цель: {TARGET}"),
         "voteban_vote_recorded": "✅ Ваш голос учтен.",
         "voteban_already_voted": "⚠️ Вы уже голосовали в этом голосовании.",
+        "voteban_closed": "Это голосование завершено.",
+        "voteban_expired": (
+            "Это голосование истекло или относится к старой сессии. При необходимости начните новое " "/voteban."
+        ),
+        "voteban_retry": (
+            "Обработка голосования не завершена. Повторите кнопку или команду /voteban для " "восстановления."
+        ),
+        "voteban_unconfirmed": (
+            "⚠️ Голосование по {TARGET} завершено без подтвержденного бана. Администратору нужно "
+            "проверить результат; для нового решения начните новое /voteban."
+        ),
         "voteban_banned": (
             "⚖️ <b>Пользователь забанен голосованием</b>\n\n"
             "🎯 {TARGET} был забанен после {VOTES_FOR} голосов.\n\n"
@@ -999,6 +1087,14 @@ TRANSLATIONS = {
         "vector_cleanup_deleted": "Запрошено удаление indexed vector-памяти: {deleted}.",
         "vector_cleanup_skipped": "Очистка vector-памяти не настроена.",
         "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",
+        "memory_cleanup_pending": (
+            "Очистка не завершена: исходные записи удалены, векторы ожидают удаления. Повторите команду "
+            "забывания; администратор также может возобновить сохранённую задачу."
+        ),
+        "forget_me_scope": (
+            "Удалены только записи, принадлежащие вам. Общие факты и сводки группы остаются; полная "
+            "историческая очистка выполняется отдельно."
+        ),
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
         "why_reply_message": (
             "🧾 <b>Почему я ответил</b>\n"
@@ -1050,6 +1146,7 @@ TRANSLATIONS = {
         "spam_review_ban_button": "Бан",
         "spam_review_ignore_button": "Игнор",
         "spam_review_admin_only": "Проверять спам-алерты могут только админы группы.",
+        "spam_review_action_failed": "Бан не подтверждён. Проверьте права бота и статус пользователя, затем повторите.",
         "spam_review_banned_toast": "Пользователь забанен.",
         "spam_review_ignored_toast": "Алерт проигнорирован.",
         "spam_review_banned_notice": "✅ Админ проверил этот алерт и забанил пользователя.",

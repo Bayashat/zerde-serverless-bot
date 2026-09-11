@@ -98,9 +98,9 @@ def test_genquiz_aws_medium_falls_back_to_ai_instead_of_clf_bank() -> None:
     svc._sender.send_quiz_poll.return_value = {"poll": {"id": "poll-ai"}, "message_id": 7}
     svc._repo.save_quiz_record.return_value = True
 
-    result = svc.process_on_demand_quiz("-100123", "en", "aws", "medium")
+    result = svc._prepare_on_demand_publication("-100123", "en", "aws", "medium", False)
 
-    assert result == {"status": "ok", "sent": 1, "total": 1}
+    assert result[0]["question"]
     svc._repo.get_genquiz_question_queue.assert_not_called()
     svc._repo.get_bank_question_ids.assert_not_called()
     svc._generator.generate_question.assert_called_once_with("aws", "en", "medium")
@@ -119,9 +119,9 @@ def test_genquiz_dva_does_not_use_clf_foundation_bank() -> None:
     svc._sender.send_quiz_poll.return_value = {"poll": {"id": "poll-dva"}, "message_id": 9}
     svc._repo.save_quiz_record.return_value = True
 
-    result = svc.process_on_demand_quiz("-100123", "en", "dva", "easy")
+    result = svc._prepare_on_demand_publication("-100123", "en", "dva", "easy", False)
 
-    assert result == {"status": "ok", "sent": 1, "total": 1}
+    assert result[0]["question"]
     svc._repo.get_genquiz_question_queue.assert_not_called()
     svc._repo.get_bank_question_ids.assert_not_called()
     svc._generator.generate_question.assert_called_once_with("dva", "en", "easy")
@@ -149,20 +149,13 @@ def test_daily_ai_quiz_uses_subtopic_deck_and_saves_it_after_send() -> None:
     svc._sender.send_quiz_poll.return_value = {"poll": {"id": "poll-daily"}, "message_id": 42}
     svc._repo.save_quiz_record.return_value = True
 
-    result = svc.process_daily_quiz(["-100123"], "en")
+    result = svc._prepare_daily_publication("-100123", "en", "medium")
 
-    assert result["sent"] == 1
+    assert result[0]["subtopic"] == "DNS / TTL"
+    assert result[0]["fingerprint"] == "fp-dns"
     svc._generator.generate_question.assert_called_once_with("networking", "en", "medium", "DNS / TTL")
-    svc._repo.save_quiz_record.assert_called_once()
-    assert svc._repo.save_quiz_record.call_args.kwargs["subtopic"] == "DNS / TTL"
-    assert svc._repo.save_quiz_record.call_args.kwargs["fingerprint"] == "fp-dns"
-    svc._repo.save_subtopic_queue.assert_called_once_with(
-        "-100123",
-        "networking",
-        "medium",
-        ["HTTP / caching"],
-        "DNS / TTL",
-    )
+    assert svc._repo.publication_rotations.call_args.kwargs["subtopic_remaining"] == ["HTTP / caching"]
+    svc._repo.save_subtopic_queue.assert_not_called()
 
 
 def test_daily_quiz_prefers_ai_generated_bank_for_selected_subtopic() -> None:
@@ -187,41 +180,14 @@ def test_daily_quiz_prefers_ai_generated_bank_for_selected_subtopic() -> None:
     svc._sender.send_quiz_poll.return_value = {"poll": {"id": "poll-bank"}, "message_id": 99}
     svc._repo.save_quiz_record.return_value = True
 
-    result = svc.process_daily_quiz(["-100123"], "en")
+    result = svc._prepare_daily_publication("-100123", "en", "medium")
 
-    assert result["sent"] == 1
+    assert result[0]["fingerprint"] == "fp-bank"
     svc._generator.generate_question.assert_not_called()
-    svc._repo.save_question_queue.assert_called_once()
-    assert svc._repo.save_question_queue.call_args.args[:4] == ("database", "-100123", [], "medium")
-    assert "ai-generated" in svc._repo.save_question_queue.call_args.args[4]
-    svc._repo.mark_bank_question_used.assert_called_once_with("database", "ai-generated", "q1")
-
-
-def test_daily_ai_quiz_does_not_commit_subtopic_deck_when_poll_send_fails() -> None:
-    svc = _make_service()
-    svc.get_difficulty = MagicMock(return_value="medium")
-    svc._repo.get_today_quiz_record.return_value = None
-    svc._repo.get_category_queue.return_value = ["database"]
-    svc._repo.get_subtopic_queue.return_value = ["indexes / transactions"]
-    svc._repo.get_question_queue.return_value = []
-    svc._repo.get_bank_question_ids.return_value = []
-    svc._generator.generate_question.return_value = {
-        "question": "Which index helps this query?",
-        "options": ["A", "B", "C", "D"],
-        "correct_option_index": 0,
-        "explanation": "Use the matching index.",
-        "difficulty": "medium",
-        "points": 3,
-        "subtopic": "indexes / transactions",
-        "fingerprint": "fp-db",
-    }
-    svc._sender.send_message.return_value = True
-    svc._sender.send_quiz_poll.return_value = None
-
-    result = svc.process_daily_quiz(["-100123"], "en")
-
-    assert result["failed"] == [{"chat_id": "-100123", "step": "sendPoll"}]
-    svc._repo.save_subtopic_queue.assert_not_called()
+    rotation = svc._repo.publication_rotations.call_args.kwargs
+    assert rotation["bank_source"] == "ai-generated"
+    assert rotation["bank_uuid"] == "q1"
+    assert rotation["bank_remaining"] == []
 
 
 def test_question_bank_builder_tops_up_and_skips_duplicate_fingerprint() -> None:

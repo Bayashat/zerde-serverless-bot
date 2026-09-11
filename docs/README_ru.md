@@ -1,5 +1,7 @@
 # Zerde Bot
 
+> Память перестраивается. В новом коде отключены автоматические ответы в группе, комментарии канала и реакции. `/ask`, прямые упоминания и явные вопросы в ответ боту работают без долговременной памяти. Импорт старой переписки больше не записывает данные. [Порядок переключения](MEMORY_CUTOVER.md); развёртывание и удаление данных учитываются отдельно.
+
 [English](../README.md) | [Қазақша](README_kk.md) | [Русский](README_ru.md)
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue.svg)
@@ -50,7 +52,6 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Reply thread continuity | Ответы бота сохраняются как short-term `AGENT_REPLY#...`, поэтому follow-up вопросы знают предыдущий ответ; эти записи не являются semantic/vector memory. |
 | Social timing | Ordinary proactive replies ждут короткий delay, затем Groq/DeepSeek решает по recent context и query-filtered long-term context, может ли бот добавить пользу. Если да, резервируется chat daily limit, а ответ генерирует Gemini с DeepSeek/Groq fallback. Linked-channel post обрабатывается отдельным zero-delay comment path и может ephemeral анализировать supported attached media. |
 | Ambient reactions | Optional `setMessageReaction` presence feature; ordinary funny/useful/thoughtful/warm/interesting messages получают sampled/rate-limited emoji reaction, а linked-channel post всегда получает reaction attempt. |
-| Честные linked-channel конкурсы | Official linked-channel post с `#конкурс` открывает конкурс на казахском языке в discussion supergroup. Прямые replies личных аккаунтов с `қатысамын` учитываются один раз по Telegram user id; розыгрыш запускает только владелец группы. |
 | Captcha и anti-spam | Проверка новых участников; сообщения pending captcha идут только в captcha flow, strong high-confidence spam удаляется тихо, а weak/ambiguous случаи уходят на admin review с optional admin @mentions. |
 | Community voteban | `/voteban` позволяет сообществу голосовать за ban/forgive. |
 | Daily AI news | News Lambda по EventBridge обогащает RSS-кандидаты текстом/картинками статей, выбирает high-signal новости для разработчиков и отправляет fact-first multilingual digest через Gemini/DeepSeek-compatible paths. |
@@ -58,6 +59,8 @@ RAG означает **Retrieval-Augmented Generation**: сначала найт
 | Serverless ops | AWS CDK управляет Lambda, API Gateway, DynamoDB, SQS, EventBridge, S3 Vectors, IAM и alarms. |
 
 Реклама гостевых ботов тоже проверяется, включая подписи и кнопки со ссылками. Уверенно распознанный спам удаляется; администратор проверяет вызывавшего пользователя перед вечной блокировкой. Сам вызов бота не доказывает злой умысел.
+
+Повторный запуск новостей продолжает доставку сохранённого дайджеста в группы с ошибками и пропускает уже подтверждённые сообщения. Если результат отправки в Telegram неизвестен, автоматическая повторная отправка останавливается до проверки оператором. Подробности реализации и условия внедрения: [доставка новостей и восстановление](NEWS_DELIVERY.md).
 
 
 ---
@@ -128,17 +131,6 @@ Bot Lambda может query/delete S3 Vectors для retrieval и memory cleanup
 | `/memory about me` | Все | Показать profile fields текущего пользователя, сохраненные из его собственных сообщений, без чужих оценок. |
 | `/memory on/off/status/forget .../wrong` | Group owner или bot owner для settings; users могут удалить свою memory или отметить answer sources как wrong | Управление group memory и cleanup. `forget this` удаляет durable long-term memory из replied bot answer или raw/derived memory при прямом reply на source message; `USER#` profile не удаляется. `wrong` помечает источники памяти replied bot answer как ошибочные без удаления. |
 | `/agent on/off/status/why/wrong` | Group owner или bot owner для settings; users могут inspect или отметить replied answer sources | Управление участием agent-а и объяснение, почему бот ответил, включая типы/count источников памяти без полного текста memory. `/agent wrong` помечает источники памяти replied bot answer как ошибочные. `/agent off` выключает proactive, mention и reply-thread участие; `/ask` остается доступен, если память включена. |
-| `/contest draw/redraw/cancel` | Только текущий Telegram creator группы | Команда должна быть reply на корневой пост конкурса или правила Zerde. `draw` фиксирует уникальный список и безопасно выбирает победителя; максимум два `redraw` выбирают ранее не выигрывавших участников. |
-| `/contest status` | Creator или administrators | Reply на корневой пост или правила показывает состояние, число уникальных участников и число розыгрышей. |
-
-### Конкурсы linked-channel
-
-- В исходном тексте или media caption официального channel post должен быть отдельный `#конкурс`. Hashtag, добавленный позднее через edit, конкурс не активирует.
-- Личный аккаунт должен ответить непосредственно на корневой пост текстом с `қатысамын`, без учета регистра. Replies на другие comments, captions, bots, channels и anonymous administrators не учитываются.
-- Для каждого Telegram user id сохраняется только первый валидный comment, на который ставится поддерживаемая Bot API reaction `🎉`; повторные сообщения не дают дополнительный шанс.
-- Текущий Telegram creator группы запускает розыгрыш вручную. Результат отвечает на первый валидный comment победителя и публикует число участников и номер розыгрыша. Если comment удален, Zerde отвечает на root с сохраненным snapshot; результат без anchor в main chat не отправляется.
-- Первый успешный draw или cancel фиксирует 30-дневное хранение. Новые участники больше не принимаются, разрешены не более двух distinct redraw, срок при этом не продлевается.
-- Zerde должен быть administrator в discussion supergroup. Если известный webhook outage длиннее окна хранения Telegram updates, fairness потеряна: такой открытый конкурс нужно отменить, а не разыгрывать.
 
 ---
 
@@ -171,3 +163,11 @@ Zerde изначально был построен на базе [serverless-tg-
 ## License
 
 MIT License.
+
+Хранилище Memory V2 создаётся с выключенным обучением: само развёртывание не включает его. [Контракт](memory-v2-domain.md) описывает отдельную таблицу, версии источников и факты с доказательствами.
+
+[Интеграция](MEMORY_V2_RUNTIME.md) добавляет отдельную очередь памяти и worker с восстановлением обработки. Обучение остаётся выключенным до проверенного переключения.
+
+Ответы викторины сохраняются до отправки в очередь; восстановление выполняется каждые пять минут. Администратор группы может ответить на уже отправленный опрос командой `/quizreconcile <request_key> <generation>`, чтобы проверить неопределённый результат публикации. Повторная доставка новостей сохраняет исходный слот и не повторяет подтверждённые шаги.
+
+Ответы Memory V2 и команды `/memory` используют общие проверки источника, версии и удаления. [Контракт выполнения](MEMORY_V2_RUNTIME.md) описывает доказательства профилей, выборку тем, учёт затрат и отдельные этапы первого развёртывания и включения обучения. Приёмка в production ещё не завершена.

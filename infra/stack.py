@@ -4,13 +4,15 @@ import os
 from pathlib import Path
 from typing import Any
 
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput, Stack, Tags
 from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
+from components.background_recovery import add_background_recovery
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
-from components.observability import (
-    add_lambda_operational_alarms,
-    add_sqs_dlq_visible_alarm,
-)
+from components.memory_cost import MemoryCostConstruct
+from components.memory_v2 import MemoryV2Construct
+from components.memory_worker import MemoryWorkerConstruct, grant_project_budget
+from components.observability import add_lambda_operational_alarms, add_sqs_dlq_visible_alarm
+from components.operations import OperationsConstruct
 from components.zerde_layer import add_zerde_common_layer
 from constructs import Construct
 from dotenv import load_dotenv
@@ -27,6 +29,13 @@ class ZerdeTelegramBotStack(Stack):
 
         project_root = Path(__file__).parent.parent
         load_dotenv(dotenv_path=project_root / ".env")
+        dev_runtime_enabled = os.environ.get("DEV_RUNTIME_ENABLED", "false").lower()
+        if dev_runtime_enabled not in {"true", "false"}:
+            raise ValueError("DEV_RUNTIME_ENABLED must be true or false")
+        self.runtime_active = is_prod or dev_runtime_enabled == "true"
+        Tags.of(self).add("Project", "ZerdeBot")
+        Tags.of(self).add("Environment", env_name)
+        Tags.of(self).add("Component", "shared")
 
         def _parse_chat_ids(key: str) -> list[str]:
             value = os.environ.get(key, "")
@@ -77,7 +86,7 @@ class ZerdeTelegramBotStack(Stack):
 
         # ── Timing parameters ──────────────────────────────────────────────────
         captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120")
-        kick_ban_duration_seconds = os.environ.get("KICK_BAN_DURATION_SECONDS", "31")
+        kick_ban_duration_seconds = str(max(60, int(os.environ.get("KICK_BAN_DURATION_SECONDS", "60"))))
         captcha_max_attempts = os.environ.get("CAPTCHA_MAX_ATTEMPTS", "3")
 
         # ── Vote-to-ban thresholds ──────────────────────────────────────────
@@ -121,7 +130,7 @@ class ZerdeTelegramBotStack(Stack):
         group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
         group_memory_retention_days = legacy_group_memory_retention_days or "3650"
         group_memory_raw_message_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30"
+            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30", legacy_fallback=False
         )
         group_memory_agent_reply_retention_days = _memory_retention_days_env(
             "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", "7", legacy_fallback=False
@@ -235,6 +244,7 @@ class ZerdeTelegramBotStack(Stack):
             shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
+            runtime_active=self.runtime_active,
             log_level=log_level,
             telegram_api_base=telegram_api_base,
             default_lang=default_lang,
@@ -311,12 +321,17 @@ class ZerdeTelegramBotStack(Stack):
             vector_memory_index_name=vector_memory_index_name,
         )
 
+        memory_v2 = MemoryV2Construct(self, f"{CONSTRUCT_PREFIX}MemoryV2", env_name=env_name, is_prod=is_prod)
+        memory_v2.table.grant_read_write_data(bot.handler_lambda)
+        bot.handler_lambda.add_environment("MEMORY_V2_TABLE_NAME", memory_v2.table.table_name)
+
         vector_indexer = VectorIndexerConstruct(
             self,
             f"{CONSTRUCT_PREFIX}VectorIndexer",
             shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
+            runtime_active=self.runtime_active,
             ssm_secret_prefix=ssm_secret_prefix,
             vector_queue=messaging.vector_queue,
             memory_table=bot.memory_table,
@@ -332,12 +347,14 @@ class ZerdeTelegramBotStack(Stack):
             shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
+            runtime_active=self.runtime_active,
             ssm_secret_prefix=ssm_secret_prefix,
             chats=news_chats,
             news_gemini_model=news_gemini_model,
             deepseek_api_base=deepseek_api_base,
             deepseek_model=deepseek_model,
             log_level=log_level,
+            stats_table=bot.stats_table,
         )
 
         quiz = QuizConstruct(
@@ -346,6 +363,7 @@ class ZerdeTelegramBotStack(Stack):
             shared_layer=zerde_layer,
             env_name=env_name,
             is_prod=is_prod,
+            runtime_active=self.runtime_active,
             log_level=log_level,
             telegram_api_base=telegram_api_base,
             quiz_gemini_model=quiz_gemini_model,
@@ -363,48 +381,88 @@ class ZerdeTelegramBotStack(Stack):
         bot.handler_lambda.add_environment("QUIZ_TABLE_NAME", quiz.quiz_table.table_name)
         quiz.quiz_lambda.grant_invoke(bot.handler_lambda)
         bot.handler_lambda.add_environment("QUIZ_LAMBDA_NAME", quiz.quiz_lambda.function_name)
-
-        # ── CloudWatch alarms (no SNS action — view / subscribe in AWS console) ─
-        add_lambda_operational_alarms(
+        add_background_recovery(
             self,
             env_name=env_name,
-            logical_slug="bot",
-            fn=bot.handler_lambda,
-            duration_p95_threshold_ms=80_000,
-        )
-        add_lambda_operational_alarms(
-            self,
-            env_name=env_name,
-            logical_slug="vector-indexer",
-            fn=vector_indexer.handler_lambda,
-            duration_p95_threshold_ms=240_000,
-        )
-        add_lambda_operational_alarms(
-            self,
-            env_name=env_name,
-            logical_slug="news",
-            fn=news.news_lambda,
-            duration_p95_threshold_ms=240_000,
-        )
-        add_lambda_operational_alarms(
-            self,
-            env_name=env_name,
-            logical_slug="quiz",
-            fn=quiz.quiz_lambda,
-            duration_p95_threshold_ms=48_000,
-        )
-        add_sqs_dlq_visible_alarm(
-            self,
-            env_name=env_name,
-            logical_slug="timeout-tasks",
+            runtime_active=self.runtime_active,
+            quiz_lambda=quiz.quiz_lambda,
+            news_lambda=news.news_lambda,
+            queue=messaging.queue,
             dlq=messaging.dlq,
         )
-        add_sqs_dlq_visible_alarm(
+
+        # Independent notification transport, also reused by future worker owners.
+        self.operations = OperationsConstruct(
             self,
+            f"{CONSTRUCT_PREFIX}Operations",
             env_name=env_name,
-            logical_slug="vector-memory-tasks",
-            dlq=messaging.vector_dlq,
+            is_prod=is_prod,
+            runtime_active=self.runtime_active,
+            shared_layer=zerde_layer,
+            stats_table=bot.stats_table,
+            admin_user_id=os.environ.get("ADMIN_USER_ID", ""),
+            ssm_secret_prefix=ssm_secret_prefix,
         )
+        self.memory_worker = MemoryWorkerConstruct(
+            self,
+            f"{CONSTRUCT_PREFIX}MemoryWorker",
+            env_name=env_name,
+            is_prod=is_prod,
+            runtime_active=self.runtime_active,
+            shared_layer=zerde_layer,
+            memory_table=memory_v2.table,
+            stats_table=bot.stats_table,
+            bot_environment=bot.bot_environment,
+            operations=self.operations,
+        )
+        self.memory_worker.queue.grant_send_messages(bot.handler_lambda)
+        bot.handler_lambda.add_environment("MEMORY_V2_QUEUE_URL", self.memory_worker.queue.queue_url)
+        bot.handler_lambda.add_environment("MEMORY_BUDGET_TABLE_NAME", self.memory_worker.budget_table.table_name)
+        bot.handler_lambda.add_environment("ENVIRONMENT", env_name)
+        bot.handler_lambda.add_environment("OPERATIONS_TOPIC_ARN", self.operations.topic.topic_arn)
+        grant_project_budget(bot.handler_lambda, self.memory_worker.budget_table)
+        self.operations.grant_budget_publish(bot.handler_lambda)
+        MemoryCostConstruct(
+            self,
+            "MemoryCost",
+            bot_function=bot.handler_lambda,
+            worker_function=self.memory_worker.handler_lambda,
+            main_dlq=messaging.dlq,
+            env_name=env_name,
+            metering_started_at=int(os.environ.get("MEMORY_COST_METERING_STARTED_AT", "0") or "0"),
+        )
+        for construct, component in (
+            (bot, "bot"),
+            (vector_indexer, "vector-indexer"),
+            (news, "news"),
+            (quiz, "quiz"),
+            (messaging, "messaging"),
+        ):
+            Tags.of(construct).add("Component", component)
+        if self.runtime_active:
+            for slug, fn, duration in (
+                ("bot", bot.handler_lambda, 80_000),
+                ("vector-indexer", vector_indexer.handler_lambda, 240_000),
+                ("news", news.news_lambda, 240_000),
+                ("quiz", quiz.quiz_lambda, 48_000),
+            ):
+                for alarm in add_lambda_operational_alarms(
+                    self,
+                    env_name=env_name,
+                    logical_slug=slug,
+                    fn=fn,
+                    duration_p95_threshold_ms=duration,
+                ):
+                    self.operations.register(alarm)
+            for slug, dlq in (("timeout-tasks", messaging.dlq), ("vector-memory-tasks", messaging.vector_dlq)):
+                self.operations.register(
+                    add_sqs_dlq_visible_alarm(
+                        self,
+                        env_name=env_name,
+                        logical_slug=slug,
+                        dlq=dlq,
+                    )
+                )
 
         # ── Outputs ────────────────────────────────────────────────────────────
         CfnOutput(

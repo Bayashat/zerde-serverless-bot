@@ -1,8 +1,11 @@
+import io
 import json
+import logging
 
 import pytest
 from services import telegram
 from services.telegram import TelegramAPIError, TelegramClient, TelegramFileTooLargeError
+from zerde_common.logger import JSONFormatter, ZerdeLoggerAdapter
 
 
 def test_get_file_parses_telegram_result(monkeypatch):
@@ -51,6 +54,76 @@ def test_download_file_raises_api_error_safely(monkeypatch):
         client.download_file("photos/missing.jpg", max_bytes=1024)
 
     assert exc_info.value.status == 404
+
+
+def test_telegram_api_error_preserves_body_for_classification_but_not_exception_output():
+    body = '{"description":"private echoed text", "file_id":"private-file-id"}'
+    error = TelegramAPIError(400, body)
+    assert error.body == body
+    assert error.status == 400
+    for rendered in (str(error), repr(error)):
+        assert "private echoed text" not in rendered
+        assert "private-file-id" not in rendered
+        assert "400" in rendered
+
+
+def test_send_message_logs_status_and_response_size_only(monkeypatch):
+    from unittest.mock import MagicMock
+
+    body = b'{"description":"private-response-text"}'
+    fake_http = _FakeHttp([_Response(status=400, data=body)])
+    monkeypatch.setattr(telegram, "http", fake_http)
+    logger = MagicMock()
+    monkeypatch.setattr(telegram, "logger", logger)
+    client = TelegramClient()
+
+    with pytest.raises(TelegramAPIError):
+        client.send_message(-100123, "private-outbound-text")
+
+    extra = logger.error.call_args.kwargs["extra"]
+    assert extra == {"chat_id": -100123, "status": 400, "response_chars": len(body)}
+    assert "private-response-text" not in str(logger.mock_calls)
+    assert "private-outbound-text" not in str(logger.mock_calls)
+
+
+@pytest.mark.parametrize("download", [False, True])
+def test_telegram_network_failures_are_redacted_at_actual_log_output(monkeypatch, download):
+    from unittest.mock import MagicMock
+
+    import urllib3
+
+    output = io.StringIO()
+    handler = logging.StreamHandler(output)
+    handler.setFormatter(JSONFormatter())
+    raw_logger = logging.Logger("telegram-network-test")
+    raw_logger.addHandler(handler)
+    logger = ZerdeLoggerAdapter(raw_logger, {})
+    monkeypatch.setattr(telegram, "logger", logger)
+    token = "987654321:ABCDEFGHIJKLMNOPQRSTUVWXYZ_fake_token"
+    monkeypatch.setattr(telegram, "get_bot_token", lambda: token)
+
+    def fail_request(method, url, **kwargs):
+        raise urllib3.exceptions.MaxRetryError(None, url, reason=OSError("connection failed"))
+
+    monkeypatch.setattr(telegram, "http", MagicMock(request=fail_request))
+    client = TelegramClient()
+    file_path = "documents/private-file-reference.pdf"
+    message_text = "private-message-text"
+    with pytest.raises(urllib3.exceptions.MaxRetryError):
+        try:
+            if download:
+                client.download_file(file_path, max_bytes=1024)
+            else:
+                client.send_message(-100123, message_text)
+        except urllib3.exceptions.MaxRetryError:
+            logger.exception("Worker request failed")
+            raise
+    emitted = output.getvalue()
+    assert token not in emitted
+    assert "private-file-reference" not in emitted
+    assert "private-message-text" not in emitted
+    assert "MaxRetryError" in emitted
+    assert "connection failed" in emitted
 
 
 def test_set_message_reaction_posts_single_emoji(monkeypatch):

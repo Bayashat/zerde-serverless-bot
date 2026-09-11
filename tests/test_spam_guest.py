@@ -7,6 +7,9 @@ from services.spam.groq_detector import SpamCheckResult
 from services.spam.message_text import build_spam_context_payload, collect_spam_screen_text
 from services.spam.processor import process_spam_check_task
 from services.spam.screening_service import SpamScreeningService
+from services.telegram import TelegramAPIError, TelegramClient
+
+from tests import spam_fakes
 
 CAPTION = (
     "🍃 \u200bД\u200bEᛠርKO€ \u200bᛖОΛΘԿK0 ᛠYᛠ 👇\n" "https://telegra.ph/AKTUALNAYA-SSYLKA-NA-NASHEGO-BOTA-09-10-246\n"
@@ -58,7 +61,7 @@ def task(msg):
 def test_incident_deleted_without_ai_and_caller_reviewed(review, detector, admin):
     bot = MagicMock()
     process_spam_check_task(bot, task(message()))
-    bot.delete_message.assert_called_once_with(-100123, 42)
+    bot.delete_message.assert_called_once_with(-100123, 42, ignore_not_found=True)
     detector.assert_not_called()
     assert review.call_args.args[2] == 111
     assert review.call_args.kwargs["guest_bot_id"] == 900
@@ -152,22 +155,25 @@ def test_normal_unicode_and_repeated_links_do_not_match_incident(caption):
 
 
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
-def test_guest_review_buttons_target_caller_not_bot(admin):
+def test_guest_review_buttons_target_caller_not_bot(admin, spam_repo):
     bot = MagicMock()
     bot.get_chat_member.return_value = {"status": "member", "user": {"first_name": "User"}}
     process_spam_check_task(bot, task(message()))
     kwargs = bot.send_message.call_args.kwargs
     callbacks = [b["callback_data"] for r in kwargs["reply_markup"]["inline_keyboard"] for b in r]
-    assert all(":111:42" in value for value in callbacks)
-    assert all(":900:42" not in value for value in callbacks)
+    case_id = "decision#" + callbacks[0].split(":", 1)[1]
+    assert spam_repo.get(case_id)["review_target_user_id"] == 111
+    assert all(len(value.encode()) <= 64 for value in callbacks)
     bot.ban_chat_member.assert_not_called()
 
 
 @patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
 @patch("services.spam.processor._send_spam_review_alert")
 def test_deleted_message_replay_still_reviews_caller(review, admin):
-    bot = MagicMock()
-    bot.delete_message.side_effect = RuntimeError("Bad Request: message to delete not found")
+    bot = TelegramClient()
+    bot._post = MagicMock(
+        side_effect=TelegramAPIError(400, '{"description":"Bad Request: message to delete not found"}')
+    )
     process_spam_check_task(bot, task(message()))
     review.assert_called_once()
 
@@ -197,9 +203,24 @@ def test_screening_failure_retries_webhook_and_skips_memory():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_group_memory_update") as observe,
+        patch("webhook.observe_media_group") as observe,
     ):
         result = _handle_api_gateway(event, dispatcher, MagicMock())
     assert result["statusCode"] == 500
     observe.assert_not_called()
     dispatcher.process_update.assert_not_called()
+
+
+spam_repo = spam_fakes.spam_repo
+
+
+@patch("services.spam.processor.is_chat_admin_or_creator", return_value=False)
+@patch("services.spam.processor._send_spam_review_alert")
+def test_guest_delete_real_rate_limit_error_remains_retryable(review, admin):
+    bot = TelegramClient()
+    error = TelegramAPIError(429, '{"description":"rate limit"}')
+    bot._post = MagicMock(side_effect=error)
+    with pytest.raises(TelegramAPIError) as captured:
+        process_spam_check_task(bot, task(message()))
+    assert captured.value is error
+    review.assert_not_called()

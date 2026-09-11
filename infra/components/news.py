@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from aws_cdk import Duration, RemovalPolicy, Stack
+from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
 # Language → list of (hour_utc, minute_utc) trigger times
@@ -26,15 +27,17 @@ class NewsConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        shared_layer: _lambda.ILayer,
+        shared_layer: _lambda.ILayerVersion,
         env_name: str,
         is_prod: bool,
+        runtime_active: bool = True,
         ssm_secret_prefix: str,
         chats: dict[str, list[str]],
         news_gemini_model: str,
         deepseek_api_base: str,
         deepseek_model: str,
         log_level: str,
+        stats_table: dynamodb.ITable,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -48,7 +51,9 @@ class NewsConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
             timeout=Duration.minutes(5),
             memory_size=512,
@@ -61,6 +66,7 @@ class NewsConstruct(Construct):
             ),
             environment={
                 "LOG_LEVEL": log_level,
+                "STATS_TABLE_NAME": stats_table.table_name,
                 "SSM_SECRET_PREFIX": ssm_secret_prefix,
                 "NEWS_GEMINI_MODEL": news_gemini_model,
                 "DEEPSEEK_API_BASE": deepseek_api_base,
@@ -69,6 +75,15 @@ class NewsConstruct(Construct):
         )
 
         stack = Stack.of(self)
+        self.news_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["dynamodb:GetItem", "dynamodb:UpdateItem"],
+                resources=[stats_table.table_arn],
+                conditions={
+                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": ["news_manifest#*", "news_delivery#*"]}
+                },
+            )
+        )
         self.news_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 sid="ReadZerdeSSMSecrets",
@@ -117,6 +132,8 @@ class NewsConstruct(Construct):
                                 {
                                     "chat_ids": chat_ids,
                                     "lang": lang,
+                                    "scheduled_at": events.EventField.time,
+                                    "schedule_slot": slot,
                                 }
                             ),
                         )

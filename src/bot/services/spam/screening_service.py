@@ -7,11 +7,11 @@ from typing import Literal
 from core.config import SPAM_RULE_AI_THRESHOLD, SPAM_RULE_ENFORCE_THRESHOLD
 from core.logger import LoggerAdapter, get_logger
 from services.repositories.sqs import SQSClient
-from services.repositories.stats import StatsRepository
 from services.spam.channel_post import should_skip_spam_for_channel_discussion_mirror
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import SpamEnforcer
 from services.spam.message_text import build_spam_context_payload, collect_spam_screen_text
+from services.spam.processor import report_rule_enforcement_failure
 from services.spam.rule_filter import RuleBasedSpamFilter
 from services.telegram import TelegramClient
 
@@ -48,7 +48,7 @@ class SpamScreeningService:
             return False
         return True
 
-    def run(self, body: dict) -> SpamScreeningOutcome:
+    def run(self, body: dict, *, prepare_candidate=None) -> SpamScreeningOutcome:
         """Score message, enforce or queue Groq. Never raises."""
         try:
             msg = body.get("message") or body["edited_message"]
@@ -75,18 +75,38 @@ class SpamScreeningService:
                     "Rule-based spam detected, enforcing",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
                 )
-                SpamEnforcer(self._bot, StatsRepository()).enforce(
+                result = SpamEnforcer(self._bot).enforce(
                     chat_id=chat_id,
                     user_id=user_id,
                     message_id=message_id,
                     reason=f"rules:{','.join(triggered_rules)}",
                 )
+                if result.state == "failed":
+                    message_context = build_spam_context_payload(msg)
+                    source_ref = prepare_candidate(combined, message_context) if prepare_candidate else None
+                    report_rule_enforcement_failure(
+                        self._bot,
+                        {
+                            "chat_id": chat_id,
+                            "user_id": user_id,
+                            "message_id": message_id,
+                            "text": combined,
+                            "message_context": message_context,
+                            **({"source_ref": source_ref} if source_ref else {}),
+                        },
+                        reason=f"rules:{','.join(triggered_rules)}",
+                    )
+                    return "queued"
+                if result.state == "skipped" and result.reason == "protected_member":
+                    return "none"
                 return "enforced"
             if score >= SPAM_RULE_AI_THRESHOLD or guest:
                 logger.info(
                     "Ambiguous spam score, queuing for AI check",
                     extra={"chat_id": chat_id, "user_id": user_id, "score": score, "rules": triggered_rules},
                 )
+                message_context = build_spam_context_payload(msg, rule_score=score, triggered_rules=triggered_rules)
+                source_ref = prepare_candidate(combined, message_context) if prepare_candidate else None
                 self._sqs.send_spam_check_task(
                     chat_id=chat_id,
                     user_id=user_id,
@@ -94,11 +114,8 @@ class SpamScreeningService:
                     text=combined,
                     triggered_rules=triggered_rules,
                     rule_score=score,
-                    message_context=build_spam_context_payload(
-                        msg,
-                        rule_score=score,
-                        triggered_rules=triggered_rules,
-                    ),
+                    message_context=message_context,
+                    **({"source_ref": source_ref} if source_ref else {}),
                 )
                 return "queued"
             if triggered_rules:

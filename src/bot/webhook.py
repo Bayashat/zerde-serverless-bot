@@ -10,20 +10,22 @@ from core.config import (
     get_webhook_secret_token,
     is_configured_group_chat,
 )
-from core.dispatcher import Dispatcher
+from core.dispatcher import Context, Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.ambient_reactions import maybe_enqueue_ambient_reaction
-from services.contest import ContestRetryRequiredError, observe_contest_update
 from services.group_agent import handle_update as handle_group_agent_update
-from services.group_memory import observe_update as observe_group_memory_update
 from services.handlers import process_timeout_task
+from services.handlers.captcha import handle_captcha_answer
+from services.memory_v2.public_answers import MemoryPublicRetryRequiredError
+from services.memory_v2.telegram_api import TelegramReadRetryRequired
+from services.repositories._quiz_answers import QuizAnswerRetryRequiredError
+from services.repositories.captcha import CaptchaRetryRequiredError
 from services.repositories.sqs import SQSClient
 from services.spam.screening_service import SpamScreeningService
 from services.telegram import TelegramClient
 from services.telegram_actor import is_linked_channel_discussion_post
 from services.telegram_media import observe_media_group
-from zerde_common.logging_utils import telegram_update_log_extra
+from zerde_common.logging_utils import api_gateway_event_summary, telegram_update_log_extra
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -45,7 +47,7 @@ def handle_event(
 
     if event_type == "api_gateway":
         return _handle_api_gateway(event, dispatcher, bot)
-    logger.warning("Unknown event type received", extra={"event": event})
+    logger.warning("Unknown event type received", extra=api_gateway_event_summary(event))
 
     return None
 
@@ -83,11 +85,6 @@ def _handle_api_gateway(
             return create_response(200, {"message": "Invalid request"})
 
         chat_id, chat_type = _extract_chat_context(body)
-        update_log = telegram_update_log_extra(body)
-        update_log["chat_id"] = chat_id
-        update_log["chat_type"] = chat_type
-        logger.info("Telegram webhook update received", extra=update_log)
-
         if chat_type == "private":
             dispatcher.bot.send_message(
                 chat_id,
@@ -96,13 +93,41 @@ def _handle_api_gateway(
             return create_response(200, {"message": "ok"})
 
         if chat_type in {"group", "supergroup"} and not is_configured_group_chat(chat_id):
-            logger.debug("Silently ignoring event from non-whitelisted chat", extra={"chat_id": chat_id})
+            logger.debug("Silently ignoring event from non-whitelisted chat")
             return create_response(200, {"message": "ok"})
 
+        logger.info("Telegram webhook update received", extra=telegram_update_log_extra(body))
+
+        from services.memory_v2.runtime import get_memory_ingestion
+        from services.memory_v2.telegram_ingestion import TelegramMemoryAdmission
+
+        try:
+            admission = TelegramMemoryAdmission(get_memory_ingestion(), body)
+        except Exception:
+            logger.error("Memory source observation requires redelivery")
+            return create_response(500, {"message": "Memory source retry required"})
+
         has_pending_captcha = _has_pending_captcha(dispatcher, body)
+        if has_pending_captcha:
+            # Pending members cannot bypass captcha with a command/document.
+            captcha_update = dict(body)
+            if "message" not in captcha_update and "edited_message" in captcha_update:
+                captcha_update["message"] = captcha_update["edited_message"]
+            handle_captcha_answer(
+                Context(
+                    captcha_update,
+                    bot,
+                    stats_repo=dispatcher.stats_repo,
+                    sqs_repo=dispatcher.sqs_repo,
+                    captcha_repo=dispatcher.captcha_repo,
+                )
+            )
+            return create_response(200, {"message": "ok"})
 
         if screener.should_screen(body) and not has_pending_captcha:
-            spam_outcome = screener.run(body)
+            spam_outcome = (
+                screener.run(body, prepare_candidate=admission.prepare) if admission.eligible else screener.run(body)
+            )
             if spam_outcome == "error":
                 return create_response(500, {"message": "Spam screening retry required"})
             if spam_outcome in {"enforced", "queued"}:
@@ -111,18 +136,19 @@ def _handle_api_gateway(
                 )
                 return create_response(200, {"message": "ok"})
 
+        try:
+            admission.accept_safe()
+            from services.memory_v2.identity import observe_accepted_alias
+
+            observe_accepted_alias(
+                admission, ((body.get("message") or body.get("edited_message") or {}).get("from") or {})
+            )
+        except Exception:
+            logger.error("Memory admission requires redelivery")
+            return create_response(500, {"message": "Memory admission retry required"})
+
         if not has_pending_captcha:
-            try:
-                observe_contest_update(dispatcher.contest_repo, bot, body, sqs_repo=_sqs_client)
-            except Exception:
-                logger.exception(
-                    "Contest persistence failed; asking Telegram to retry the update",
-                    extra={"chat_id": chat_id},
-                )
-                return create_response(500, {"message": "Contest update retry required"})
             observe_media_group(dispatcher.memory_repo, body)
-            observe_group_memory_update(dispatcher.memory_repo, body, sqs_repo=_sqs_client)
-            maybe_enqueue_ambient_reaction(repo=dispatcher.memory_repo, update=body, sqs_repo=_sqs_client)
 
         if not is_event_relevant_to_bot(body):
             logger.info("Event not relevant to bot, ignoring")
@@ -141,12 +167,16 @@ def _handle_api_gateway(
         else:
             dispatcher.process_update(body)
 
-    except ContestRetryRequiredError as e:
-        logger.exception(
-            "Contest command requires Telegram redelivery",
-            extra={"error": e, "chat_id": chat_id if "chat_id" in locals() else None},
-        )
-        return create_response(500, {"message": "Contest command retry required"})
+    except QuizAnswerRetryRequiredError:
+        logger.error("Quiz answer requires Telegram redelivery")
+        return create_response(500, {"message": "Quiz answer retry required"})
+
+    except (MemoryPublicRetryRequiredError, TelegramReadRetryRequired):
+        logger.error("Memory operation requires authenticated update redelivery")
+        return create_response(500, {"message": "Memory retry required"})
+    except CaptchaRetryRequiredError:
+        logger.exception("Captcha processing requires Telegram redelivery")
+        return create_response(500, {"message": "Captcha retry required"})
     except Exception as e:
         logger.exception("Unexpected error in webhook handler", extra={"error": e})
 
@@ -231,6 +261,8 @@ def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
     msg = body.get("message") or body.get("edited_message")
     if not isinstance(msg, dict):
         return False
+    if msg.get("new_chat_members"):
+        return False
 
     chat_id = msg.get("chat", {}).get("id")
     user_id = msg.get("from", {}).get("id")
@@ -244,7 +276,7 @@ def _has_pending_captcha(dispatcher: Dispatcher, body: dict[str, Any]) -> bool:
             "Failed to check pending captcha before spam screening",
             extra={"chat_id": chat_id, "user_id": user_id, "error": str(e)},
         )
-        return False
+        raise CaptchaRetryRequiredError("Captcha state read requires retry") from e
 
 
 def is_event_relevant_to_bot(body: dict[str, Any]) -> bool:

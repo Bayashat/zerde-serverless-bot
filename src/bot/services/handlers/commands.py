@@ -6,8 +6,6 @@ from typing import Any
 
 from core.config import (
     ADMIN_USER_ID,
-    AGENT_ENABLED,
-    GROUP_MEMORY_ENABLED,
     QUIZ_LAMBDA_NAME,
     VALID_DIFFICULTIES,
     VALID_LANGS,
@@ -19,6 +17,7 @@ from core.translations import get_translated_text
 from services.group_agent import answer_group_question, build_explicit_question_context
 from services.group_memory import display_name
 from services.handlers.quiz import react_genquiz_processing
+from services.memory_cutover import is_current_explicit_reply, is_current_explicit_task
 from services.repositories.group_memory import GroupMemoryRepository
 from services.telegram_media import (
     MediaDisabledError,
@@ -33,13 +32,7 @@ from services.telegram_media import (
     media_references_retrieval_query,
     prepare_media_collection_for_gemini,
 )
-from services.vector_memory import (
-    delete_chat_vectors,
-    delete_memory_vectors_for_items,
-    delete_user_vectors,
-    get_vector_index_status,
-    vector_memory_configured,
-)
+from services.vector_memory import recover_pending_memory_vector_deletes
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -203,116 +196,28 @@ def handle_stats(ctx: Context) -> None:
 
 
 def handle_memory_on(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not GROUP_MEMORY_ENABLED:
-        ctx.reply(get_translated_text("memory_deployment_disabled", ctx.lang_code), ctx.message_id)
-        return
-    if not _require_chat_owner_or_admin_user(ctx):
-        return
-    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True)
-    ctx.reply(get_translated_text("memory_enabled", ctx.lang_code), ctx.message_id)
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def handle_memory_off(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not _require_chat_owner_or_admin_user(ctx):
-        return
-    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=False, agent_enabled=False)
-    ctx.reply(get_translated_text("memory_disabled", ctx.lang_code), ctx.message_id)
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def handle_agent_on(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not AGENT_ENABLED:
-        ctx.reply(get_translated_text("agent_deployment_disabled", ctx.lang_code), ctx.message_id)
-        return
-    if not _require_chat_owner_or_admin_user(ctx):
-        return
-    ctx.memory_repo.set_chat_settings(ctx.chat_id, memory_enabled=True, agent_enabled=True)
-    ctx.reply(get_translated_text("agent_enabled", ctx.lang_code), ctx.message_id)
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def handle_agent_off(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not _require_chat_owner_or_admin_user(ctx):
-        return
-    ctx.memory_repo.set_chat_settings(ctx.chat_id, agent_enabled=False)
-    ctx.reply(get_translated_text("agent_disabled", ctx.lang_code), ctx.message_id)
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def handle_memory_status(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not _require_chat_admin(ctx):
-        return
-    settings = ctx.memory_repo.get_chat_settings(ctx.chat_id)
-    memory = (
-        get_translated_text("status_on", ctx.lang_code)
-        if settings["memory_enabled"]
-        else get_translated_text("status_off", ctx.lang_code)
-    )
-    agent = (
-        get_translated_text("status_on", ctx.lang_code)
-        if settings["agent_enabled"]
-        else get_translated_text("status_off", ctx.lang_code)
-    )
-    overview = ctx.memory_repo.get_memory_overview(ctx.chat_id)
-    vector_status = get_vector_index_status(ctx.chat_id, repo=ctx.memory_repo, overview=overview)
-    vector_configured = get_translated_text(
-        "vector_configured_yes" if vector_status["configured"] else "vector_configured_no",
-        ctx.lang_code,
-    )
-    backfill_status = str(vector_status.get("last_backfill_status") or "")
-    backfill_key = f"vector_backfill_{backfill_status}"
-    if backfill_key not in {
-        "vector_backfill_queued",
-        "vector_backfill_queued_next_page",
-        "vector_backfill_queued_with_failures",
-    }:
-        backfill_key = "vector_backfill_none"
-    vector_backfill = get_translated_text(
-        backfill_key,
-        ctx.lang_code,
-    )
-    backfill_processed_total = int(vector_status.get("last_backfill_processed_total") or 0)
-    backfill_enqueued_total = int(vector_status.get("last_backfill_enqueued_total") or 0)
-    backfill_failures_total = int(vector_status.get("last_backfill_failures_total") or 0)
-    if backfill_processed_total or backfill_enqueued_total or backfill_failures_total:
-        vector_backfill = f"{vector_backfill}; " + get_translated_text(
-            "vector_backfill_progress",
-            ctx.lang_code,
-            processed_total=backfill_processed_total,
-            enqueued_total=backfill_enqueued_total,
-            failures_total=backfill_failures_total,
-        )
-    ctx.reply(
-        get_translated_text(
-            "memory_status_message",
-            ctx.lang_code,
-            memory=memory,
-            agent=agent,
-            recent_messages=overview["recent_messages"],
-            user_profiles=overview["user_profiles"],
-            events=overview["events"],
-            user_facts=overview["user_facts"],
-            group_facts=overview["group_facts"],
-            jokes=overview["jokes"],
-            daily_summaries=overview["daily_summaries"],
-            agent_replies=overview["agent_replies"],
-            vector_configured=vector_configured,
-            vector_indexed=vector_status["indexed_count"],
-            vector_total=vector_status["total_count"],
-            vector_pending=vector_status["pending_count"],
-            vector_failed=vector_status["failed_count"],
-            vector_skipped=vector_status["skipped_count"],
-            vector_backfill=vector_backfill,
-        ),
-        ctx.message_id,
-    )
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def _profile_values(value: Any, *, limit: int = 6) -> list[str]:
@@ -358,57 +263,14 @@ def _profile_line(values: list[str]) -> str:
 
 
 def handle_memory_about_me(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not ctx.user_id:
-        ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
-        return
-    profile = ctx.memory_repo.get_user_profile(ctx.chat_id, ctx.user_id)
-    if not profile:
-        ctx.reply(get_translated_text("memory_about_me_empty", ctx.lang_code), ctx.message_id)
-        return
-    language_style = _profile_values(profile.get("language_style"))
-    common_topics = _profile_topics(profile)
-    preferences = _profile_values(profile.get("preferences"))
-    background = _profile_values(profile.get("known_facts"))
-    boundaries = _profile_values(profile.get("boundaries"))
-    if not any((language_style, common_topics, preferences, background, boundaries)):
-        ctx.reply(get_translated_text("memory_about_me_empty", ctx.lang_code), ctx.message_id)
-        return
-    ctx.reply(
-        get_translated_text(
-            "memory_about_me_message",
-            ctx.lang_code,
-            language_style=_profile_line(language_style),
-            common_topics=_profile_line(common_topics),
-            preferences=_profile_line(preferences),
-            background=_profile_line(background),
-            boundaries=_profile_line(boundaries),
-        ),
-        ctx.message_id,
-    )
+    """Legacy controls cannot turn retired learning or social behavior back on."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 def handle_memory(ctx: Context) -> None:
-    action = _normalized_subcommand(_command_args(ctx.text))
-    if action == "on":
-        handle_memory_on(ctx)
-    elif action == "off":
-        handle_memory_off(ctx)
-    elif action == "status":
-        handle_memory_status(ctx)
-    elif action == "about me":
-        handle_memory_about_me(ctx)
-    elif action == "forget me":
-        handle_forget_me(ctx)
-    elif action == "forget this":
-        handle_forget_this(ctx)
-    elif action == "forget group":
-        handle_forget_group(ctx)
-    elif action == "wrong":
-        handle_wrong_memory_feedback(ctx)
-    else:
-        ctx.reply(get_translated_text("memory_usage", ctx.lang_code), ctx.message_id)
+    from services.memory_v2.public_commands import handle_memory_v2
+
+    handle_memory_v2(ctx)
 
 
 def handle_agent_status(ctx: Context) -> None:
@@ -469,6 +331,12 @@ def handle_ask(ctx: Context) -> None:
         ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
         return
     effective_question = question or (default_question_for_media_refs(media_refs) if media_refs else "")
+    if not media_refs and effective_question:
+        from services.memory_v2.public_answers import try_memory_answer
+
+        if try_memory_answer(ctx.message, question=effective_question, lang=ctx.lang_code):
+            return
+
     ask_message = _message_for_ask_context(ctx, effective_question)
     question_context = build_explicit_question_context(
         ctx.memory_repo,
@@ -482,9 +350,6 @@ def handle_ask(ctx: Context) -> None:
     retrieval_query = question_context.retrieval_query
     if media_refs:
         retrieval_query = media_references_retrieval_query(retrieval_query, media_refs)
-    if not ctx.memory_repo.is_memory_enabled(ctx.chat_id):
-        ctx.reply(get_translated_text("ask_memory_off", ctx.lang_code), ctx.message_id)
-        return
     try:
         ctx.react("👀")
     except Exception:
@@ -501,6 +366,7 @@ def handle_ask(ctx: Context) -> None:
             retrieval_query=retrieval_query,
             lang=ctx.lang_code,
             requester_user_id=ctx.user_id,
+            request_sent_at=ctx.message.get("date"),
             requester_username=ctx.username,
             requester_display_name=display_name(ctx.user_data),
             current_user_message=question_context.current_user_message,
@@ -514,13 +380,35 @@ def handle_ask(ctx: Context) -> None:
         return
 
 
-def process_group_ask_task(
+def process_group_ask_task(*, repo, bot, body):
+    from services.memory_v2.explicit_delivery import configured_delivery
+    from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
+
+    if not is_current_explicit_task(body):
+        return
+    try:
+        with configured_delivery(repo, bot, body) as (guarded_bot, current):
+            _process_group_ask_task(repo=repo, bot=guarded_bot, body=current)
+    except (MemoryConflict, MemoryInputError, MemoryUnavailable):
+        return  # Duplicate/invalidated/uncertain external delivery cannot be replayed.
+
+
+def _process_group_ask_task(
     *,
     repo,
     bot,
     body: dict[str, object],
 ) -> None:
-    """Process an async explicit agent request from SQS."""
+    """Process only new explicit requests; legacy payloads may contain old memory."""
+    if not is_current_explicit_task(body):
+        return
+    from services.memory_v2.explicit_request_gate import validate_configured
+    from services.memory_v2.models import MemoryInputError, MemoryUnavailable
+
+    try:
+        validate_configured(body)
+    except (MemoryInputError, MemoryUnavailable):
+        return
     chat_id = int(body["chat_id"])
     reply_to_message_id = int(body["reply_to_message_id"])
     user_text = str(body["user_text"]).strip()
@@ -594,6 +482,10 @@ def process_group_ask_task(
                 reply_to_message_id=reply_to_message_id,
             )
             return
+    from services.memory_v2.explicit_delivery import ExplicitDelivery
+
+    if isinstance(bot, ExplicitDelivery):
+        bot.check()  # Validate again after downloads and immediately before provider use.
     handled = answer_group_question(
         repo=repo,
         bot=bot,
@@ -624,8 +516,8 @@ def handle_forget_group(ctx: Context) -> None:
         return
     if not _require_admin_user(ctx):
         return
-    vector_note = _delete_chat_vectors_note(ctx)
     deleted = ctx.memory_repo.delete_chat_memory(ctx.chat_id)
+    vector_note = _memory_vector_cleanup_note(ctx)
     ctx.reply(
         get_translated_text("forget_group_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
         ctx.message_id,
@@ -638,8 +530,8 @@ def handle_forget_me(ctx: Context) -> None:
     if not ctx.user_id:
         ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
         return
-    vector_note = _delete_user_vectors_note(ctx, ctx.user_id)
     deleted = ctx.memory_repo.delete_user_memory(ctx.chat_id, ctx.user_id)
+    vector_note = _memory_vector_cleanup_note(ctx) + "\n" + get_translated_text("forget_me_scope", ctx.lang_code)
     ctx.reply(
         get_translated_text("forget_me_done", ctx.lang_code, deleted=deleted, vector_note=vector_note),
         ctx.message_id,
@@ -655,15 +547,13 @@ def _is_reply_to_bot_message(reply_to_message: dict[str, Any]) -> bool:
     return bool(isinstance(sender, dict) and sender.get("is_bot"))
 
 
-def _delete_items_vectors_note(ctx: Context, items: list[dict[str, Any]]) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
+def _memory_vector_cleanup_note(ctx: Context) -> str:
     try:
-        deleted = delete_memory_vectors_for_items(ctx.chat_id, items)
+        deleted = recover_pending_memory_vector_deletes(ctx.chat_id, repo=ctx.memory_repo)
         return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
     except Exception:
-        logger.exception("Failed to delete selected vector memory", extra={"chat_id": ctx.chat_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
+        logger.warning("Memory vector cleanup remains pending", extra={"chat_id": ctx.chat_id})
+        return get_translated_text("memory_cleanup_pending", ctx.lang_code)
 
 
 def _source_sk_values(retrieval_sources: Any) -> list[str]:
@@ -737,14 +627,19 @@ def _handle_forget_this_bot_answer(ctx: Context, bot_message_id: int | str | Non
         can_delete_group_memory=can_delete_group_memory,
     )
     if not deletable_sks:
-        ctx.reply(get_translated_text("forget_this_not_allowed", ctx.lang_code), ctx.message_id)
+        # Sources may already be absent after a previous partial cleanup. The
+        # durable marker is the authority for retrying its vector deletion.
+        vector_note = _memory_vector_cleanup_note(ctx)
+        ctx.reply(get_translated_text("forget_this_not_allowed", ctx.lang_code) + "\n" + vector_note, ctx.message_id)
         return
 
     deleted_items = ctx.memory_repo.delete_memory_items_by_sks(ctx.chat_id, deletable_sks)
+    vector_note = _memory_vector_cleanup_note(ctx)
     if not deleted_items:
-        ctx.reply(get_translated_text("forget_this_nothing_deleted", ctx.lang_code), ctx.message_id)
+        ctx.reply(
+            get_translated_text("forget_this_nothing_deleted", ctx.lang_code) + "\n" + vector_note, ctx.message_id
+        )
         return
-    vector_note = _delete_items_vectors_note(ctx, deleted_items)
     ctx.reply(
         get_translated_text(
             "forget_this_done",
@@ -769,10 +664,12 @@ def _handle_forget_this_source_message(ctx: Context, source_message: dict[str, A
         return
 
     deleted_items = ctx.memory_repo.delete_memory_for_message(ctx.chat_id, message_id)
+    vector_note = _memory_vector_cleanup_note(ctx)
     if not deleted_items:
-        ctx.reply(get_translated_text("forget_this_nothing_deleted", ctx.lang_code), ctx.message_id)
+        ctx.reply(
+            get_translated_text("forget_this_nothing_deleted", ctx.lang_code) + "\n" + vector_note, ctx.message_id
+        )
         return
-    vector_note = _delete_items_vectors_note(ctx, deleted_items)
     ctx.reply(
         get_translated_text(
             "forget_this_done",
@@ -800,60 +697,8 @@ def handle_forget_this(ctx: Context) -> None:
 
 
 def handle_wrong_memory_feedback(ctx: Context) -> None:
-    if not _require_memory_repo(ctx):
-        return
-    if not ctx.user_id:
-        ctx.reply(get_translated_text("forget_me_no_user", ctx.lang_code), ctx.message_id)
-        return
-    if not isinstance(ctx.reply_to_message, dict) or not _is_reply_to_bot_message(ctx.reply_to_message):
-        ctx.reply(get_translated_text("wrong_memory_usage", ctx.lang_code), ctx.message_id)
-        return
-
-    bot_message_id = ctx.reply_to_message.get("message_id")
-    if bot_message_id is None:
-        ctx.reply(get_translated_text("wrong_memory_usage", ctx.lang_code), ctx.message_id)
-        return
-    item = ctx.memory_repo.get_agent_reply_explanation(ctx.chat_id, bot_message_id=bot_message_id)
-    if not item:
-        ctx.reply(get_translated_text("why_reply_missing", ctx.lang_code), ctx.message_id)
-        return
-    source_sks = _source_sk_values(item.get("retrieval_sources"))
-    if not source_sks:
-        ctx.reply(get_translated_text("wrong_memory_no_sources", ctx.lang_code), ctx.message_id)
-        return
-
-    marked = ctx.memory_repo.mark_memory_items_wrong(
-        ctx.chat_id,
-        source_sks,
-        user_id=ctx.user_id,
-        agent_reply_message_id=bot_message_id,
-    )
-    if marked <= 0:
-        ctx.reply(get_translated_text("wrong_memory_no_sources", ctx.lang_code), ctx.message_id)
-        return
-    ctx.reply(get_translated_text("wrong_memory_done", ctx.lang_code, marked=marked), ctx.message_id)
-
-
-def _delete_chat_vectors_note(ctx: Context) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
-    try:
-        deleted = delete_chat_vectors(ctx.chat_id, repo=ctx.memory_repo)
-        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
-    except Exception:
-        logger.exception("Failed to delete chat vector memory", extra={"chat_id": ctx.chat_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
-
-
-def _delete_user_vectors_note(ctx: Context, user_id: int | str) -> str:
-    if not vector_memory_configured():
-        return get_translated_text("vector_cleanup_skipped", ctx.lang_code)
-    try:
-        deleted = delete_user_vectors(ctx.chat_id, user_id, repo=ctx.memory_repo)
-        return get_translated_text("vector_cleanup_deleted", ctx.lang_code, deleted=deleted)
-    except Exception:
-        logger.exception("Failed to delete user vector memory", extra={"chat_id": ctx.chat_id, "user_id": user_id})
-        return get_translated_text("vector_cleanup_delayed", ctx.lang_code)
+    """All legacy facts are already excluded; V2 corrections have a new owner."""
+    ctx.reply(get_translated_text("memory_rebuilding", ctx.lang_code), ctx.message_id)
 
 
 _WHY_SOURCE_ORDER = (
@@ -911,7 +756,7 @@ def handle_why_reply(ctx: Context) -> None:
             bot_message_id = ctx.reply_to_message.get("message_id")
 
     item = ctx.memory_repo.get_agent_reply_explanation(ctx.chat_id, bot_message_id=bot_message_id)
-    if not item:
+    if not is_current_explicit_reply(item):
         ctx.reply(get_translated_text("why_reply_missing", ctx.lang_code), ctx.message_id)
         return
 

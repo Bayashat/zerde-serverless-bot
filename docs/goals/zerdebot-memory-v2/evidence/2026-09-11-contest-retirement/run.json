@@ -1,0 +1,11 @@
+{
+  "code_commit": "158cfe729d0670461b739471b5c976709c2aeca2",
+  "kind": "offline_fake_provider_not_model_acceptance",
+  "command": "uv run --frozen --python 3.13.6 python -m dev.tools.memory_eval replay --provider-fixtures tests/fixtures/memory_v2_eval/provider_fixtures.jsonl --output /tmp/zerde-contest-retired-evaluation",
+  "exit_code": 2,
+  "raw_observations_checked_in": false,
+  "raw_observations_bytes": 4657489,
+  "raw_observations_sha256": "0f98cd326434109eb50839cdfe3a5833d0ab780a5db6482f327f44cc6b497d01",
+  "scope_change": "Retired contest fixtures replaced by actual SETTINGS, CHAT_STATS and CAPTCHA_PENDING storage shapes. Language gold and provider fixtures unchanged.",
+  "reason": "Raw synthetic replay output is reproducible with versioned corpus and fixtures. No actual provider, AWS or Telegram calls."
+}

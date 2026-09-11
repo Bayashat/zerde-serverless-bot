@@ -15,7 +15,7 @@ from aws_cdk import aws_logs as logs
 from aws_cdk import aws_s3vectors as s3vectors
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
 
@@ -31,9 +31,10 @@ class BotConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        shared_layer: _lambda.ILayer,
+        shared_layer: _lambda.ILayerVersion,
         env_name: str,
         is_prod: bool,
+        runtime_active: bool = True,
         log_level: str,
         telegram_api_base: str,
         default_lang: str,
@@ -277,7 +278,9 @@ class BotConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
             timeout=Duration.seconds(300),
             memory_size=1024,
@@ -363,26 +366,12 @@ class BotConstruct(Construct):
         webhook_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
+                enabled=runtime_active,
                 batch_size=1,
                 max_batching_window=Duration.seconds(0),
                 max_concurrency=10,
             )
         )
-
-        if is_prod:
-            contest_recovery_rule = events.Rule(
-                self,
-                f"{CONSTRUCT_PREFIX}ContestTTLRecoveryRule",
-                rule_name=f"{RESOURCE_PREFIX}-contest-ttl-recovery-{env_name}",
-                description="Recover durable contest TTL cleanup work",
-                schedule=events.Schedule.cron(minute="50", hour="20", day="*", month="*", year="*"),
-            )
-            contest_recovery_rule.add_target(
-                events_targets.SqsQueue(
-                    queue,
-                    message=events.RuleTargetInput.from_object({"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}),
-                )
-            )
 
         if is_prod and chat_lang_map:
             summary_rule = events.Rule(

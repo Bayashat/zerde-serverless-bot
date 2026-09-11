@@ -185,8 +185,7 @@ def vector_memory_configured() -> bool:
 
 
 def memory_vector_key(chat_id: int | str, source_sk: str) -> str:
-    digest = hashlib.sha256(f"{chat_id}:{source_sk}".encode("utf-8")).hexdigest()
-    return f"memory/{digest}"
+    return GroupMemoryRepository.memory_vector_key(chat_id, source_sk)
 
 
 def embedding_document_hash(document: str) -> str:
@@ -606,6 +605,40 @@ def delete_memory_vectors_for_items(
         return 0
     vector_repo = vector_repo or S3VectorMemoryRepository()
     return vector_repo.delete_vectors(_vector_keys_for_items(chat_id, items))
+
+
+def recover_pending_memory_vector_deletes(
+    chat_id: int | str,
+    *,
+    repo: GroupMemoryRepository,
+    vector_repo: S3VectorMemoryRepository | None = None,
+) -> int:
+    """Replay one bounded page of durably authorized legacy cleanup work.
+
+    Success means every pending marker for this chat was acknowledged. A disabled
+    index, provider failure or remaining page must not be reported as completion.
+    This deliberately does not enumerate/delete orphan vectors (Z10 owns that).
+    """
+    pending = repo.list_pending_vector_deletes(chat_id)
+    if not pending:
+        return 0
+    if not vector_memory_configured():
+        raise RuntimeError("Pending memory vectors require the configured legacy index")
+    vector_repo = vector_repo or S3VectorMemoryRepository()
+    deleted = 0
+    for marker in pending:
+        source_sk = str(marker.get("sk") or "")
+        expected_key = memory_vector_key(chat_id, source_sk)
+        if not GroupMemoryRepository.is_vectorizable_sk(source_sk) or marker.get("vector_key") != expected_key:
+            raise ValueError("Invalid memory vector cleanup identity")
+        if vector_repo.delete_vectors([expected_key]) != 1:
+            raise RuntimeError("Vector deletion was not confirmed")
+        if not repo.complete_vector_delete(chat_id, marker):
+            raise RuntimeError("Vector deletion marker changed during recovery")
+        deleted += 1
+    if repo.list_pending_vector_deletes(chat_id, limit=1):
+        raise RuntimeError("Memory vector deletion has more pending work")
+    return deleted
 
 
 def delete_chat_vectors(

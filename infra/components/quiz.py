@@ -9,7 +9,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_logs as logs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
-from components.constants import CONSTRUCT_PREFIX, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
+from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
 
 # Language → list of (hour_utc, minute_utc) trigger times for weekday quiz (Mon–Fri UTC)
@@ -39,9 +39,10 @@ class QuizConstruct(Construct):
         scope: Construct,
         construct_id: str,
         *,
-        shared_layer: _lambda.ILayer,
+        shared_layer: _lambda.ILayerVersion,
         env_name: str,
         is_prod: bool,
+        runtime_active: bool = True,
         log_level: str,
         telegram_api_base: str,
         quiz_gemini_model: str,
@@ -68,6 +69,10 @@ class QuizConstruct(Construct):
             removal_policy=removal_policy,
             deletion_protection=is_prod,
             time_to_live_attribute="ttl",
+            point_in_time_recovery_specification=dynamodb.PointInTimeRecoverySpecification(
+                point_in_time_recovery_enabled=is_prod,
+                recovery_period_in_days=7 if is_prod else None,
+            ),
         )
 
         self.quiz_table.add_global_secondary_index(
@@ -85,7 +90,9 @@ class QuizConstruct(Construct):
             index="main.py",
             handler="lambda_handler",
             runtime=LAMBDA_RUNTIME,
+            bundling=LAMBDA_BUNDLING,
             architecture=_lambda.Architecture.ARM_64,
+            reserved_concurrent_executions=None if runtime_active else 0,
             layers=[shared_layer],
             timeout=Duration.seconds(300),
             memory_size=512,
@@ -165,6 +172,7 @@ class QuizConstruct(Construct):
                                 {
                                     "chat_ids": chat_ids,
                                     "lang": lang,
+                                    "scheduled_at": events.EventField.time,
                                 }
                             ),
                         )
