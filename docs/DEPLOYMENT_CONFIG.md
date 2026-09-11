@@ -135,3 +135,57 @@ deployment manifest; recreate the release diff with the intended environment's
 variables before deployment.
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
+
+
+## Lambda environment capacity after legacy retirement
+
+On 2026-09-11 the production update failed because AWS measured the Bot environment
+as **4114 bytes**, above its 4096-byte limit. The earlier 3573-byte check summed only
+key/value text. It missed JSON separators, quotes and escaping inside values such
+as `CHAT_LANG_MAP` and `MEMORY_COST_INVENTORY`. For that exact resolved environment,
+compact JSON reproduces 4114 bytes; JSON with whitespace and a `Variables` wrapper
+measures 4298 bytes. Do not treat unresolved CloudFormation token lengths or a
+key/value-only sum as deployment acceptance.
+
+`infra/components/bot.py` now omits only exact values equal to the runtime defaults
+for 19 retired proactive, ambient-reaction and legacy-extractor tuning keys. The
+remaining Python compatibility modules still define those same defaults in
+`src/bot/core/config.py`. Non-default deploy inputs remain present, and all feature
+switches, bot identity, explicit-question models/context, raw retention, chat lists,
+secret references and queue/table identifiers remain unchanged. Vector indexer
+inherits the compact Bot environment; the V2 worker keeps its existing allowlist.
+Existing `.env.example` and workflow inputs remain valid; an omitted default is
+not a removed configuration option and an override is never silently discarded.
+
+The production candidate omits 15 equal defaults; four non-default retired tuning
+values remain. Its Bot compact JSON becomes **3297 bytes**, or **3451 bytes** with
+the conservative wrapper, leaving at least **645 bytes** under 4096. Vector indexer
+becomes 2657/2793 bytes respectively. These figures identify that release's
+configuration, not a universal promise for larger future chat lists or overrides.
+No Lambda ZIP, model prompt, secret, data, schedule or business behavior changes in
+this capacity correction. The separately reviewed old summary-rule removal has
+its own infrastructure delta.
+
+| Retired settings with equal defaults omitted | Production defaults used |
+| --- | --- |
+| `AGENT_PROACTIVE_DELAY_SECONDS`, `AGENT_PROACTIVE_FINAL_THRESHOLD` | `45`, `0.72` |
+| `AGENT_PROACTIVE_DECISION_GROQ_MODELS` | Existing runtime model-pool default, byte-for-byte unchanged |
+| `AGENT_PROACTIVE_DECISION_CONTEXT_CHARS`, `AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK` | `4000`, `false` |
+| `AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD`, `AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS` | `0.80`, `3000` |
+| `AMBIENT_REACTIONS_DECISION_GROQ_MODELS` | Existing runtime model-pool default, byte-for-byte unchanged |
+| `AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS`, `AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY` | `60`, `100` |
+| `GROUP_MEMORY_EXTRACTOR_PROVIDER`, `GROUP_MEMORY_EXTRACTOR_MODE` | `gemini`, `gemini_candidate_only` |
+| `GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE`, `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT`, `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` | `0.65`, `50`, `20` |
+
+The production call boundary is `main.py` → webhook or `sqs_task_router.py`.
+`memory_cutover.RETIRED_TASK_TYPES` discards legacy learning/social tasks before
+processing. `group_agent.handle_update` routes requested replies, while the V2
+extractor has its own contract; neither reactivates these retired branches. The
+unchanged default values also protect import-time compatibility of old modules.
+
+Tests verify all 19 omissions against the actual runtime defaults, preserve every
+non-default override, resolve account/region/resource references and nested JSON
+for realistic dev/prod environments, and require the conservative serialized Bot
+environment to remain below 3500 bytes. Before release, resolve the real target
+values again and retain the computed size plus actual AWS update/configuration
+readback. No user IDs or credentials belong in repository capacity fixtures.

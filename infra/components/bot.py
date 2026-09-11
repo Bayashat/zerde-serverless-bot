@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
@@ -15,6 +16,40 @@ from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
+
+# These retired paths still import core.config, whose defaults remain compatible.
+# Only equal defaults are omitted; preserve every configured override and all
+# active/enable/identity keys. Tests compare this list against runtime defaults.
+RETIRED_DEFAULT_ENVIRONMENT: dict[str, str] = {
+    "AGENT_DAILY_PROACTIVE_LIMIT": "3",
+    "AGENT_PROACTIVE_DELAY_SECONDS": "45",
+    "AGENT_PROACTIVE_FINAL_THRESHOLD": "0.72",
+    "AGENT_PROACTIVE_DECISION_GROQ_MODELS": "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b",
+    "AGENT_PROACTIVE_DECISION_CONTEXT_CHARS": "4000",
+    "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK": "false",
+    "AMBIENT_REACTIONS_SAMPLE_RATE": "0.80",
+    "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD": "0.80",
+    "AMBIENT_REACTIONS_DECISION_GROQ_MODELS": "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b",
+    "AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS": "3000",
+    "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS": "60",
+    "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS": "300",
+    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR": "12",
+    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY": "100",
+    "GROUP_MEMORY_EXTRACTOR_PROVIDER": "gemini",
+    "GROUP_MEMORY_EXTRACTOR_MODE": "gemini_candidate_only",
+    "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.65",
+    "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "50",
+    "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "20",
+}
+
+
+def omit_retired_default_environment(environment: dict[str, Any]) -> dict[str, Any]:
+    """Drop only exact redundant defaults; never abbreviate values or resources."""
+    return {
+        key: value
+        for key, value in environment.items()
+        if key not in RETIRED_DEFAULT_ENVIRONMENT or value != RETIRED_DEFAULT_ENVIRONMENT[key]
+    }
 
 
 class BotConstruct(Construct):
@@ -267,6 +302,8 @@ class BotConstruct(Construct):
             "VOTEBAN_THRESHOLD": voteban_threshold,
             "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
         }
+
+        bot_environment = omit_retired_default_environment(bot_environment)
 
         webhook_lambda = PythonFunction(
             self,

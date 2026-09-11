@@ -314,3 +314,5 @@ Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, 
 ## Removed experimental contests
 
 PR #204 removes contest commands, observation, persistence and scheduled TTL recovery. The two old `PROCESS_CONTEST_TTL_*` envelopes are acknowledged without reading data, sending messages or enqueueing more work. The remaining main queue still carries captcha, moderation, explicit questions and Quiz recovery; never purge it for retirement. Production residue is handled by the explicit root-scoped cleanup contract in [legacy-memory-cleanup.md](legacy-memory-cleanup.md), after actual old writers and schedules have stopped.
+
+Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.
