@@ -6,7 +6,7 @@
 
 ## 语料与标签
 
-`tests/fixtures/memory_v2_eval/scenarios.jsonl` 是静态、可版本控制的 JSONL，`CATALOG.md` 是其人工可读目录。全部消息、Telegram ID、业务行摘要均为合成数据，AI 编写；不含导入群历史。每条记录明确 `synthetic: true`、`authorship: ai_authored`、`independent_review: PENDING`。独立代码 review 与逐条语言/事实标签复核是不同证据，不能互相替代。标记 `REVIEWED` 必须附 `review_reference`，不额外要求用户亲自审核。
+`tests/fixtures/memory_v2_eval/scenarios.jsonl` 是静态、可版本控制的 JSONL，`CATALOG.md` 是其人工可读目录。全部消息、Telegram ID、业务行摘要均为合成数据，AI 编写；不含导入群历史。每条记录明确 `synthetic: true`、`authorship: ai_authored`；2026-09-11 的模型调用前独立标签复核与批准已完成，冻结内容标记 `independent_review: REVIEWED` 并引用[复核记录](MEMORY_V2_GOLD_REVIEW_2026-09-11.md)。内容改变会自动回到 PENDING。独立代码 review 与逐条语言/事实标签复核是不同证据，不能互相替代。标记 `REVIEWED` 必须附 `review_reference`，不额外要求用户亲自审核。
 
 当前包含 **240 个多轮场景、516 个唯一事实标注、256 个未知问题**。kk、ru、en、mixed 各 60 场景、129 个事实、64 个未知问题。唯一事实按 `(scenario_id, fact_id)` 计数，重复 checkpoint 不增加语料事实数；指标另明确计算 checkpoint 事实观测分母。
 
@@ -14,7 +14,7 @@
 
 覆盖本人明确自述、引用、转发、同名异 ID、同 ID 异群、单值替换、多值撤销、旧来源晚到、同秒歧义编辑、空/敏感编辑、暂停时编辑、provider 失败和恢复、预算暂停、30 天 pending 过期、原文到期后的最小证据、180 天 last-confirmed、旧 epoch 重放、forget 后新学习、optout/optin、群删除范围、管理员群规则确认、历史消息激活边界及 bot 输出。证据为原文 **Python 字符索引** `[start:end]`，不是 UTF-16 偏移或模型生成的引用文本；未来 Telegram adapter 必须先转换偏移。
 
-这是一份可审阅的初始合成语料，仍需要独立标签复核及真实 provider 观测。自然语言等价表达可通过 gold 的 `accepted_values` 明确加入；不能根据被测模型的输出自动扩充正确答案。名称、大小写和空白使用 NFKC/casefold/空白归一化。单值时效标签也必须一致，不能把 last-confirmed 算作当前事实。
+这是一份经过独立标签复核的合成语料，真实 provider 观测仍须单独执行。自然语言等价表达仅使用模型调用前批准的 41 个键/58 个固定 `accepted_values`，按实际源语言和原句限定；不能根据被测模型的输出自动扩充正确答案。名称、大小写和空白使用 NFKC/casefold/空白归一化。单值时效标签也必须一致，不能把 last-confirmed 算作当前事实。
 
 ## 本地命令
 
@@ -34,7 +34,7 @@ uv run --frozen python -m dev.tools.memory_eval evaluate \
 uv run --frozen pytest tests/test_memory_eval.py -q
 ```
 
-`self-check` 显式使用 `OracleSelfCheck` 复制 gold，只验证评分器记账；其输出永远是 `provider_kind=synthetic_oracle`、`model_quality_claim=NOT_VERIFIED`。`evaluate` 必须给独立观测文件，绝不自动补 gold。`replay` 使用真实领域代码、Moto 原生 DynamoDB 事务和独立固定 provider 响应；它不调用真实供应商。所有内置 CLI 均只读写本地文件，没有真实网络或任意模块加载选项。重新编排语料可运行 `python -m dev.tools.memory_eval.corpus_authoring`，必须审阅生成 diff 和新 SHA256。
+`self-check` 显式使用 `OracleSelfCheck` 复制 gold，只验证评分器记账；其输出永远是 `provider_kind=synthetic_oracle`、`model_quality_claim=NOT_VERIFIED`。`evaluate` 必须给独立观测文件，绝不自动补 gold。`replay` 使用真实领域代码、Moto 原生 DynamoDB 事务和独立固定 provider 响应；它不调用真实供应商。上述离线 CLI 均只读写本地文件，没有真实网络或任意模块加载选项。重新编排语料可运行 `python -m dev.tools.memory_eval.corpus_authoring`，必须审阅生成 diff 和新 SHA256。
 
 `validate` 结构或数量失败返回非零；`evaluate`/`self-check` 返回 0 只表示所提供文件的数值门槛满足，不是上线批准或真实模型通过。JSONL 重复属性、NaN/Infinity、重复 checkpoint/问答 ID、未来证据及缺失业务保护快照会拒绝；未知字段不会被当作安全断言，预测自报的 `violations: 0` 完全不参与评分。
 
@@ -103,7 +103,7 @@ RAW 证据在实际 DynamoDB SDK 成功 `PutItem`、`UpdateItem`、`TransactWrit
 ## 指标和缺口
 
 - 每种语言分别给 TP、FP、FN 与分母；事实 precision 至少 95%，明确自述 recall 至少 90%。事实值正确但引用错误不会混成语义值错误，而会单独降低来源支持率并触发相应安全门槛。
-- 来源支持必须 100%：作者/chat 必须与原始事件一致，证据必须完整覆盖 gold 支持跨度，不能引用被编辑、删除、optout、旧 epoch 或有歧义的来源；引用段、forward、bot、激活前消息、未确认群规则不能提供有效证据。
+- 来源支持必须 100%：作者/chat 必须与原始事件一致，证据必须完整覆盖 gold 支持跨度（仅排除句末非语义标点，主语/否定/限定词保持），不能引用被编辑、删除、optout、旧 epoch 或有歧义的来源；引用段、forward、bot、激活前消息、未确认群规则不能提供有效证据。
 - 未知问题必须实际返回 `abstained=true` 且无任何断言，至少 95%；缺问答、已知事实答非所问、或“拒答但仍断言”不能算成功。已知问题的完整回答比例 `supported_answer_recall` 每种语言至少 90%，必须未拒答且包含问题所需的全部有依据事实；未完整回答逐条列入 `diagnostics`。此项补齐原 recall 目标的测量定义，防止“profile 正确、所有问题都拒答”绕过正常问答验收，不更改 gold 标签或接受值。`complete=true` 仅表示观测齐全，质量仍可能不通过。
 - 错误归属、跨群、敏感信息、删除后复活、业务损伤、自动社交各自独立计数。来源/操作元数据与保护快照参与推导；缺原始来源或缺必要 trace 是 `UNVERIFIED`，不是零。单个断言可能违反多个边界，计数不是唯一受影响用户数。
 - 只有 DONE 且有合法耗时的记录进入学习延迟。正常 p95 上限 300 秒，恢复 600 秒，文本 ask 15 秒；暂停、失败、过期不能拿 0 秒填入。延迟无样本为 `UNVERIFIED`。覆盖率列出 paused/expired、待处理最大年龄与观测 checkpoint 数；采样文件本身是否完整仍需来源证据。

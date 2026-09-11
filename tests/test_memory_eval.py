@@ -35,7 +35,7 @@ def test_corpus_size_real_multiturn_language_slices_and_reproducible_catalog(cor
     assert info["totals"] == {"scenarios": 240, "gold_facts": 516, "unknown_questions": 256}
     assert info["size_gate"] and info["unique_conversations"] == 240
     assert {row["scenarios"] for row in info["languages"].values()} == {60}
-    assert info["independent_review"] == "PENDING"
+    assert info["independent_review"] == "REVIEWED"
     assert corpus == build_corpus()
     assert (FIXTURES / "CATALOG.md").read_text() == render_catalog(corpus)
     assert len({case["title"] for case in corpus}) == 60
