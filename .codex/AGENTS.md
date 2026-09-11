@@ -248,6 +248,8 @@ Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
 
+Idle dev must disable all three SQS mappings and omit their maximum concurrency when Lambda reserved concurrency is zero. Active dev and prod retain limits 10/3/2. Verify actual updates/readback, including the transition from existing active mappings; disabled mappings still undergo Lambda configuration validation.
+
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
 
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.

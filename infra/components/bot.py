@@ -369,7 +369,7 @@ class BotConstruct(Construct):
                 enabled=runtime_active,
                 batch_size=1,
                 max_batching_window=Duration.seconds(0),
-                max_concurrency=10,
+                max_concurrency=10 if runtime_active else None,
             )
         )
 

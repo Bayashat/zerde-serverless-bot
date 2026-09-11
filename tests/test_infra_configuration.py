@@ -669,12 +669,21 @@ def test_idle_dev_stops_ingress_and_consumers_without_alarm_spend(monkeypatch):
     mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
     assert len(mappings) == 3
     assert all(mapping["Properties"]["Enabled"] is False for mapping in mappings.values())
+    # Lambda validates SQS limits even when the mapping is disabled.
+    assert all("ScalingConfig" not in mapping["Properties"] for mapping in mappings.values())
     assert not template.find_resources("AWS::CloudWatch::Alarm")
 
 
 def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch):
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
     template = _dev_template(monkeypatch)
+    mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
+    assert all(mapping["Properties"]["Enabled"] is True for mapping in mappings.values())
+    assert sorted(mapping["Properties"]["ScalingConfig"]["MaximumConcurrency"] for mapping in mappings.values()) == [
+        2,
+        3,
+        10,
+    ]
     alarms = template.find_resources("AWS::CloudWatch::Alarm")
     assert len(alarms) == 22
     for alarm in alarms.values():

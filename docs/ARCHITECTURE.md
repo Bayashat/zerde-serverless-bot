@@ -294,6 +294,8 @@ Deployment configuration and reproducible dependency exports are documented in [
 Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions infrastructure but never seeds ACTIVE controls; absent CONTROL rows leave learning stopped.
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
+
+空闲 dev 的六个 Lambda reserved concurrency 为 0，三个 SQS mapping 关闭且不配置 maximum concurrency；启用后才恢复 Bot 10、vector 3、Memory V2 worker 2 的上限。部署验收须读回实际 mapping，不能把 disabled 当作并发参数不受校验。
 Legacy resource candidates and dependency/backup gates are documented in [LEGACY_AWS_CLEANUP.md](LEGACY_AWS_CLEANUP.md). The runbook does not authorize cloud deletion or include current Memory V2 data.
 
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
