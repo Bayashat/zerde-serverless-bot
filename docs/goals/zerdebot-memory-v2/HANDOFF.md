@@ -1,6 +1,6 @@
 # 下一次执行入口
 
-当前阶段是 **PR_OPEN / IMPLEMENTED_UNPROVEN**。已创建 Epic #157、Z01–Z19 工单及独立实现 PR；完整代码在 `feat/zerde-complete-integration`，计划与证据在 `feat/memory-v2-execution-plan`。不要从旧 `main` 重做这些实现，也不要把依赖 anchor 分支当作已部署版本。
+当前阶段是 **PR_OPEN / IMPLEMENTED_UNPROVEN**。2026-09-11用户取消实验性抽奖，要求直接在#204移除后由用户审阅批准合并。已创建 Epic #157、Z01–Z19 工单及实现 PR；完整代码、最新计划与证据都在 `feat/zerde-complete-integration`。`feat/memory-v2-execution-plan` 是早期计划分支，不含本次退役修订。不要从旧 `main` 重做这些实现，也不要把依赖 anchor 分支当作已部署版本。
 
 [最终集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) 面向 main；[评估领域回放 #203](https://github.com/Bayashat/zerde-serverless-bot/pull/203) 和 [Memory 公共入口 #202](https://github.com/Bayashat/zerde-serverless-bot/pull/202) 均已包含其中。审阅应检查最终组合与各独立变更。
 
@@ -10,9 +10,10 @@
 
 - Z01–Z04：自动互动停用、旧记忆隔离、日志脱敏、删除白名单、可复现打包和依赖安全升级。
 - Z05–Z09：独立表、唯一事实 writer、可靠消息摄取/恢复、结构化抽取、当前有效事实档案、有来源问答、群话题样本、更正/遗忘/退出、编辑失效与发送前复验。
+- Z19：移除抽奖命令、观察、存储和定时恢复；两类旧TTL任务无副作用消费。原#181事务修复已被此方向取代，不再安排抽奖验收。
 - Z10：精确 manifest、加密备份、白名单清理、业务记录保护及旧任务回放工具。未运行生产 plan/backup/apply。
 - Z11：四语言合成语料、独立评分器和真实领域代码离线回放。固定假 provider 只测试工程链路；不能当作 Gemini 质量证据。
-- Z12–Z16、Z19：验证码、反垃圾、Voteban、News、Quiz、抽奖 SDK 边界修复，已在共享入口组合验证。
+- Z12–Z16：验证码、反垃圾、Voteban、News、Quiz 修复，已在共享入口组合验证。
 - Z17–Z18：告警/恢复通知、dev 按需开关、模型预留、AWS 计量/监控和旧资源清理手册。成本标签、真实通知和云资源删除均未执行。
 
 ## 审阅与合入
@@ -28,8 +29,8 @@
 1. **通过 GitHub 审阅及当前 CI。** 将最终集成修订与发布锁文件固定。打包必须使用实际 CDK 资产和 ARM64 Lambda 导入，不能仅凭 mocked construct 测试。
 2. **冻结配置并先保持学习 STOPPED。** 两环境成本计费起点相同，覆盖首次 V2 专属资源部署；不能用之后启用学习的日期掩盖早期费用。原始内容保留30天；dev 默认不消费；队列、超时、IAM、日志、告警接收人和共享预算表要读回。缺控制/计费许可时默认不学习。
 3. **完成真实模型与评估证据。** 先独立复核合成 gold 的语言及事实标签，再使用实际 Gemini 输入/usage/输出形成独立 observations。固定 fixture 的分数不是模型效果。不得复制 gold、以全拒答满足来源100%，或因超时/预算暂停跳过样本后宣称完整覆盖。known 问题完整回答召回每语言至少90%，是防止原召回目标被空答绕过的测量补齐。
-4. **dev canary。** 验证 Telegram 成员/管理员权限、每条来源链接、真实预算通知、Logs Insights 查询和用量归因，以及验证码、反垃圾、投票、抽奖、News、Quiz 和显式媒体。恢复路径在真实依赖故障下的结果与合成测试分开记录。
-5. **停旧写入、排空并清零。** 使用最终源码的 `docs/MEMORY_CUTOVER.md` 和 `docs/legacy-memory-cleanup.md`。Bot/indexer/aliases/旧 schedule/外部导入全纳入停写清单；排空实际旧 timeout 最大值加60秒，审计旧 indexer 为900秒。随后按同一个干净提交生成 manifest、备份与 apply；禁止整表删、混合队列 purge、把 V2 表或预算/业务表填入 scope。在线清理与日志/DLQ/PITR/备份副本分别验收。
+4. **dev canary。** 验证 Telegram 成员/管理员权限、每条来源链接、真实预算通知、Logs Insights 查询和用量归因，以及验证码、反垃圾、投票、News、Quiz 和显式媒体。恢复路径在真实依赖故障下的结果与合成测试分开记录。
+5. **停旧写入、排空并清零。** 使用最终源码的 `docs/MEMORY_CUTOVER.md` 和 `docs/legacy-memory-cleanup.md`。Bot/indexer/aliases/旧 schedule/外部导入全纳入停写清单；排空实际旧 timeout 最大值加60秒，审计旧 indexer 为900秒。抽奖退役清理另需显式 `retired_contests` chat/root列表、旧writer/恢复规则停用或已不存在的读回及旧任务拒绝证据；然后按同一个干净提交生成 manifest、备份与 apply；禁止整表删、混合队列 purge、把 V2 表或预算/业务表填入 scope。在线清理与日志/DLQ/PITR/备份副本分别验收。
 6. **单群启用与推广。** 前述门槛通过后，只为获准的试点群建立新学习 epoch。收集至少七天、50个有依据回答和20个未知问题，逐语言统计质量、零容忍、延迟和覆盖。样本不足继续保留 Z11 开放；达标后再推广并退役旧并行实现。
 
 真实 provider 评估与 dev 验证可在清零生产前完成；生产单群学习必须晚于该群旧数据清零、控制与部署核验。AWS 成本起点和群学习时间是两个独立边界。

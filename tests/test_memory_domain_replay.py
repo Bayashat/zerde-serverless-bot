@@ -202,19 +202,60 @@ def test_provider_fixture_file_is_reproducible_from_inputs_without_gold_access()
     assert author_fixture_rows(inputs) == read_jsonl(CORPUS.with_name("provider_fixtures.jsonl"))
 
 
-def test_actual_business_corruption_is_independently_detected_by_scorer():
+@pytest.mark.parametrize("protected", ["SETTINGS", "CHAT_STATS", "CAPTCHA_PENDING"])
+@pytest.mark.parametrize("mutation", ["delete", "change", "add_field"])
+def test_actual_business_corruption_is_independently_detected_by_scorer(protected, mutation):
     from dev.tools.memory_eval.evaluator import evaluate
 
     class CorruptingAdapter(DomainReplayAdapter):
         async def _checkpoint(self, scenario, checkpoint):
-            item = next(iter(self.business_seed.values()))
-            self.business.delete_item(Key={"pk": item["pk"], "sk": item["sk"]})
+            item = self.business_seed[protected]
+            table, key = self._business_storage(item)
+            if mutation == "delete":
+                table.delete_item(Key=key)
+            else:
+                field = {"SETTINGS": "updated_at", "CHAT_STATS": "total_joins", "CAPTCHA_PENDING": "revision"}[
+                    protected
+                ]
+                table.update_item(
+                    Key=key,
+                    UpdateExpression="SET #field = :value",
+                    ExpressionAttributeNames={"#field": "unexpected_field" if mutation == "add_field" else field},
+                    ExpressionAttributeValues={":value": -1},
+                )
             return await super()._checkpoint(scenario, checkpoint)
 
     source = scenario()
     observed = collect_observations([source], CorruptingAdapter(fixtures(source)))
     report = evaluate([source], observed, provenance={"provider_kind": "fake_provider"})
     assert report["zero_tolerance"]["business_damage"]["count"] == 1
+
+
+def test_preserved_business_uses_actual_settings_and_stats_key_schemas():
+    class InspectingAdapter(DomainReplayAdapter):
+        def _setup(self, db, source):
+            super()._setup(db, source)
+            assert self.business.key_schema == [
+                {"AttributeName": "pk", "KeyType": "HASH"},
+                {"AttributeName": "sk", "KeyType": "RANGE"},
+            ]
+            assert self.business_stats.key_schema == [{"AttributeName": "stat_key", "KeyType": "HASH"}]
+            chat = self.chats[0]
+            settings = self.business.get_item(Key={"pk": "CHAT#" + chat, "sk": "SETTINGS"})["Item"]
+            counters = self.business_stats.get_item(Key={"stat_key": chat})["Item"]
+            captcha = self.business_stats.get_item(
+                Key={"stat_key": f"captcha_pending#{chat}#{source['business_seed']['CAPTCHA_PENDING']}"}
+            )["Item"]
+            assert settings["style_profile"] == {"tone": "friendly"}
+            assert counters["total_joins"] == 23 and counters["verified_users"] == 19
+            assert captcha["status"] == "pending" and captcha["verify_msg_id"] == 24
+            assert captcha["handled_message_ids"] == captcha["wrong_msg_ids"] == [25]
+            assert all("fixture_payload" not in row for row in (settings, counters, captcha))
+
+    source = scenario()
+    observed = collect_observations([source], InspectingAdapter(fixtures(source)))[0]
+    assert set(observed["traces"]["business_before"]) == {"SETTINGS", "CHAT_STATS", "CAPTCHA_PENDING"}
+    assert observed["traces"]["business_before"] == observed["traces"]["business_after"]
 
 
 def test_forbidden_network_attempt_cannot_be_swallowed_as_successful_replay(monkeypatch):

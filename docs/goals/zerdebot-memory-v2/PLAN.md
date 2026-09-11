@@ -4,7 +4,7 @@
 **Current Behavior:** 正则 profile、长期事实、摘要、向量存在重复知识来源；旧任务及删除生命周期不完整；生产原文保留 3650 天。
 **Expected Outcome:** 所有自动社交互动停止；新 epoch 之后的消息成为唯一学习来源；旧记忆在线不可用并按清单清除；业务功能保持可用。
 **Target-Perspective Output:** 成员可查看、更正、遗忘或停止记录；同群问答附证据和时间；不知道时明确表达；管理员收到实际故障、恢复和预算通知。
-**Truth Owner:** Memory V2 独立 DynamoDB 表及唯一 fact writer。Profile 是有效 facts 的只读投影。既有 contest repository 继续拥有抽奖业务状态。
+**Truth Owner:** Memory V2 独立 DynamoDB 表及唯一 fact writer。Profile 是有效 facts 的只读投影。抽奖实验已由用户取消，不再保留运行时owner或将其数据迁入新版。
 **Contract Boundary:** Telegram source identity/revision -> durable pending work -> structured facts -> live source validation -> explicit answer。
 **Cutover:** 停止旧 writer/reader/import/backfill/schedules，隔离旧任务并等待在途执行结束；清单备份和按类型清理；验收后逐群启用新 epoch。
 **Displaced Path:** 旧正则 profile 写入、规则失败补事实、旧 memory retrieval/vector fallback、主动插话/reaction/channel comments。
@@ -16,6 +16,8 @@
 **Plan Review Gate:** PRE 已在 2026-09-10 会话独立复查并 ALIGNED；用户明确批准执行。每张实现 PR 仍需 POST/correctness/maintainability review。
 
 ## 1. 已批准的产品边界
+
+用户于2026-09-11追加要求：直接在PR #204移除实验性抽奖，之后由用户审阅、批准和合并。本修订取代此前“保留抽奖”及Z19事务修复的产品要求：移除命令、观察、抽奖存储实现与定时恢复；旧抽奖任务无副作用消费。现存抽奖数据可以按显式退役root清单备份/清理，不迁入Memory V2；公共forget仍仅处理记忆记录，不删除共用表。此次仅修改PR，未授权本轮部署或执行线上清理。
 
 执行期测量补充（2026-09-11）：Z11 独立故障注入发现，仅测 profile 召回和已输出断言的来源支持，会让“所有已知问题均拒答”绕过原召回目标。验收因此同时要求每语言有依据问题的完整回答召回 `supported_answer_recall >= 90%`；缺答、拒答或未覆盖所需事实均失败。原 profile 准确率/召回、来源100%、未知95%和零容忍门槛保持，gold 标签与接受值不因模型输出而调整。这是测量完整性修复，不代表已有模型达到该门槛。
 
@@ -69,10 +71,10 @@ UTC 自然月：USD 7 模型硬计数上限 + USD 3 新增 AWS 用量预留。�
 
 ## 3. 旧数据清零及上线
 
-1. 部署 Z01 guard：停止所有旧 reader/writer/import/backfill/schedule；旧 memory/summary/vector/proactive/reaction 和 legacy ask payload 全部 no-op。保留 captcha/spam/contest 等业务任务。
+1. 部署 Z01 guard和Z19退役改动：停止所有旧 reader/writer/import/backfill/schedule；旧 memory/summary/vector/proactive/reaction、legacy ask及抽奖TTL任务全部 no-op。保留 captcha/spam/quiz 等业务任务。
 2. 等待旧 invocation 退出，核对队列状态；生成精确 DynamoDB key/vector key 清理 manifest、类型计数和业务保护校验。执行时重新读取，不用审计快照当删除名单。
 3. 本地加密备份精确范围数据和向量 key，限七天保留，登记删除日期。禁止把正文/个人标识/secret 放 GitHub、日志或 EVIDENCE。
-4. 允许清理 MSG/MEDIA_GROUP/USER/USERNAME/EVENT/USER_FACT/GROUP_FACT/JOKE/DAILY_SUMMARY/TERM/AGENT_REPLY/AMBIENT_REACTION/PROACTIVE/VECTOR_BACKFILL 及确认为记忆的 BOT_COMMITMENT/BOT_CORRECTION。保留 SETTINGS、CONTEST、CONTEST_RULE、CONTEST_TTL_OUTBOX 和其他业务表。
+4. 允许清理 MSG/MEDIA_GROUP/USER/USERNAME/EVENT/USER_FACT/GROUP_FACT/JOKE/DAILY_SUMMARY/TERM/AGENT_REPLY/AMBIENT_REACTION/PROACTIVE/VECTOR_BACKFILL 及确认为记忆的 BOT_COMMITMENT/BOT_CORRECTION。另以 `retired_contests` 明确列出chat/root，校验实际kind、规范key和主体关联，清理该root的CONTEST、CONTEST_RULE及全局CONTEST_TTL_OUTBOX；不靠任意user_id或整CHAT匹配。停旧抽奖writer、recovery rule及旧任务重放核验是该scope前置。保留 SETTINGS、未知族和其他业务表。
 5. 独立枚举向量，包括孤儿。专用旧 vector queues 在归属确认后处理；混用 main queue/DLQ 按任务类型处理，禁止 purge。无法立即清除副本时报告最迟 TTL/retention 截止，不提前声明物理清零。
 6. 验证旧任务/旧问答不能复活或发言、业务数据 key/count/hash 不变。日志七天、PITR 保留、DLQ 和备份分别登记副本消退证据。恢复旧备份后 memory 默认关闭，禁止自动导回。
 7. dev 合成验收后单群设新 epoch/started_at；至少七天且实际样本门槛满足后推广其余白名单群。失败回到无长期记忆 ask，不能重新开启旧 memory。
@@ -94,7 +96,7 @@ Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除
 - 覆盖引述/转发/否定/变更、同名不同 ID、同 ID 跨群、编辑/乱序/重投、optout、删除重放、混入敏感信息、预算暂停/过期、provider 失败。
 - 故障注入验证 captcha 决定竞争、真实 moderation 执行结果、voteban session、news deadline/分群恢复、quiz poll lookup 延迟/发布冲突/答案重放、实际 Lambda 构建和配置。
 - dev canary 后单群 >=7 天，>=50 有依据问答 + >=20 未知问题；合成与真实证据单列，样本不足保留 IMPLEMENTED_UNPROVEN，不关闭产品验收工单。
-- 自动社交输出为 0；明确问答、captcha、反垃圾、抽奖、news/quiz 相关回归满足契约。
+- 自动社交输出为 0；抽奖命令、入口和存储实现移除，旧抽奖队列任务不读写/发言/重新投递。明确问答、captcha、反垃圾、news/quiz 相关回归满足契约。
 - 每张实现 PR 做 POST plan/correctness/maintainability review；验证范围与风险匹配。合并、部署、config readback、真实产品效果分别记录。
 
 ## 6. 参考方案
@@ -109,6 +111,6 @@ Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除
 
 以上方案没有在本产品进行供应商对照实验。V1 明确不迁入 SaaS memory、不引入图数据库或完整 agent 编排框架。
 
-## 执行补充：Z19 抽奖事务 SDK 边界
+## 执行修订：Z19 移除实验性抽奖
 
-2026-09-10 两次独立 boto3 + Moto 模拟确认，Resource client 与手工 TypeSerializer 叠加导致抽奖事务双序列化并取消。先前抽奖生命周期的设计可借鉴，但实现的 SDK 层必须修复；原 MagicMock 绿测不足以证明该路径可运行。新增 https://github.com/Bayashat/zerde-serverless-bot/issues/178 独立修复，Z11 的业务保留验收依赖它。未调用 AWS 进行真实写入。
+Z19 #178原先负责已确认的抽奖SDK事务问题，历史发现保留在AUDIT/EVIDENCE。用户取消该实验后，Z19改为功能退役，原PR #181不再作为待合入修复。新增改动直接进入PR #204，不再另开实现PR。Z10显式抽奖清理依赖Z19停写/退役证据；Z11保留settings、stats、captcha业务完整性与抽奖输出为零的检查，移除抽奖公平性和真实抽奖验收要求。

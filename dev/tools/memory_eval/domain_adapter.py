@@ -164,6 +164,12 @@ class DomainReplayAdapter:
         self.clock = SimpleNamespace(now=scenario["learning_started_at"])
         table = _table(db, "local-memory-replay", index=True)
         self.business = _table(db, "local-legacy-business")
+        self.business_stats = db.create_table(
+            TableName="local-preserved-stats",
+            KeySchema=[{"AttributeName": "stat_key", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "stat_key", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
         self.repo = MemoryRepository(table.name, clock=lambda: self.clock.now)
         self.raw_capture = []
         self._capture_raw_writes()
@@ -194,7 +200,8 @@ class DomainReplayAdapter:
             self.repo.activate_group(chat, expected_revision=0)
         self.business_seed = business_rows(self.chats[0], scenario["business_seed"])
         for row in self.business_seed.values():
-            self.business.put_item(Item=row)
+            table, _ = self._business_storage(row)
+            table.put_item(Item=row)
         self.before = self._business_snapshot()
         self.extract_provider = FixtureProvider(self.catalog, kind="extraction", trace=self.requests)
         self.answer_provider = FixtureProvider(self.catalog, kind="answer", trace=self.requests)
@@ -264,14 +271,16 @@ class DomainReplayAdapter:
             self.repo.table.meta.client.meta.events.register(f"after-call.dynamodb.{operation}", after_call)
 
     def _business_snapshot(self):
-        return {
-            name: fingerprint(
-                _jsonable(
-                    self.business.get_item(Key={"pk": row["pk"], "sk": row["sk"]}, ConsistentRead=True).get("Item")
-                )
-            )
-            for name, row in self.business_seed.items()
-        }
+        snapshots = {}
+        for name, row in self.business_seed.items():
+            table, key = self._business_storage(row)
+            snapshots[name] = fingerprint(_jsonable(table.get_item(Key=key, ConsistentRead=True).get("Item")))
+        return snapshots
+
+    def _business_storage(self, row):
+        if "stat_key" in row:
+            return self.business_stats, {"stat_key": row["stat_key"]}
+        return self.business, {"pk": row["pk"], "sk": row["sk"]}
 
     async def _run(self, scenario):
         observations = []

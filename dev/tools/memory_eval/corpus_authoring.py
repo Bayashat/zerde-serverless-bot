@@ -1097,9 +1097,9 @@ def build_corpus():
                     "checkpoints": checkpoints,
                     "sensitive_markers": ["SYNTHETIC-SECRET-ONLY", "SYNTHETIC-ACCOUNT-ONLY"],
                     "protected_business": {
-                        "CONTEST#23": "synthetic-contest-hash-v1",
-                        "SETTINGS": "synthetic-settings-hash-v1",
-                        "CONTEST_TTL_OUTBOX": "synthetic-outbox-hash-v1",
+                        "SETTINGS": "friendly",
+                        "CHAT_STATS": "2026-09-11 00:00:00 UTC+5",
+                        "CAPTCHA_PENDING": user,
                     },
                 }
             )

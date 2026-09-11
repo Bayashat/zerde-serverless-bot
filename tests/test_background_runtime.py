@@ -29,7 +29,6 @@ def webhook(quiz_repo, queue):
     with (
         patch("webhook.verify_webhook_secret_token", return_value=True),
         patch("services.memory_v2.runtime.get_memory_ingestion", return_value=None),
-        patch("webhook.observe_contest_update"),
         patch("webhook.observe_media_group"),
         patch("webhook.handle_group_agent_update", return_value=False),
     ):

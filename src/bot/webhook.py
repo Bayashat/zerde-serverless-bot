@@ -13,7 +13,6 @@ from core.config import (
 from core.dispatcher import Context, Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.contest import ContestRetryRequiredError, observe_contest_update
 from services.group_agent import handle_update as handle_group_agent_update
 from services.handlers import process_timeout_task
 from services.handlers.captcha import handle_captcha_answer
@@ -149,14 +148,6 @@ def _handle_api_gateway(
             return create_response(500, {"message": "Memory admission retry required"})
 
         if not has_pending_captcha:
-            try:
-                observe_contest_update(dispatcher.contest_repo, bot, body, sqs_repo=_sqs_client)
-            except Exception:
-                logger.exception(
-                    "Contest persistence failed; asking Telegram to retry the update",
-                    extra={"chat_id": chat_id},
-                )
-                return create_response(500, {"message": "Contest update retry required"})
             observe_media_group(dispatcher.memory_repo, body)
 
         if not is_event_relevant_to_bot(body):
@@ -186,12 +177,6 @@ def _handle_api_gateway(
     except CaptchaRetryRequiredError:
         logger.exception("Captcha processing requires Telegram redelivery")
         return create_response(500, {"message": "Captcha retry required"})
-    except ContestRetryRequiredError as e:
-        logger.exception(
-            "Contest command requires Telegram redelivery",
-            extra={"error": e, "chat_id": chat_id if "chat_id" in locals() else None},
-        )
-        return create_response(500, {"message": "Contest command retry required"})
     except Exception as e:
         logger.exception("Unexpected error in webhook handler", extra={"error": e})
 

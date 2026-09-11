@@ -1,5 +1,8 @@
 # AGENTS.md
 
+The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore contest commands, writers, TTL recovery or fairness requirements from historical plans. Old queued contest tasks are discarded; cleanup uses explicit retired-root scope while public memory deletion remains memory-only. See docs/MEMORY_CUTOVER.md.
+
+
 ## Current cutover boundary (Z01)
 
 Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
@@ -50,7 +53,6 @@ ZerdeBot started as a simple serverless Telegram bot and LLM wrapper. It is now 
 - Normal bot answers stay in short-term `AGENT_REPLY#...` metadata for thread continuity only; they are not embedded into semantic memory.
 - It answers `/ask`, @mentions, and reply-to-Zerde follow-ups through a retrieval pipeline that gathers requester, profile, recent, long-term, and semantic context from a compact retrieval query that is separate from the full Gemini generation prompt.
 - It supports explicit multimodal requests through `/ask` or a direct @mention/reply path for photos/screenshots, videos, voice/audio, PDFs, supported text/code/log files, and up to four supported items from one Telegram album. Media is downloaded only in the async worker for explicit requests and official linked-channel post comments; generic webhook observation may persist metadata-only album membership but never media bytes.
-- It supports fair Kazakh linked-channel contests: `#конкурс` on the initial official mirror, one direct `қатысамын` entry per personal Telegram user id, creator-only secure draws, two distinct redraws, and anchored public evidence.
 - Reply-thread follow-ups carry the captured quoted source message, previous user request, and previous bot answer when available for generation, while semantic retrieval uses a shorter query based on the current follow-up, previous user request, and original source message.
 - It may proactively answer ordinary group messages only after a short delayed candidate window plus a Groq/DeepSeek AI decision with recent and query-filtered long-term context. Linked channel posts mirrored into discussion groups use a separate immediate comment path.
 - It still supports captcha, anti-spam, voteban, daily news, and quizzes.
@@ -101,8 +103,8 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 
 - `main.py` — detects API Gateway vs main SQS tasks and delegates.
 - `vector_indexer_main.py` — consumes only vector memory SQS tasks.
-- `app.py` — lazy wiring for Telegram client, dispatcher, captcha repo, memory repo, contest repo, and main queue client.
-- `webhook.py` — verifies Telegram secret, screens spam, observes contests before memory/ambient/agent flows, filters irrelevant events, routes agent/commands.
+- `app.py` — lazy wiring for Telegram client, dispatcher, captcha repo, memory repo and main queue client.
+- `webhook.py` — verifies Telegram secret, screens spam before memory/ambient/agent flows, filters irrelevant events, routes agent/commands.
 - `services/sqs_task_router.py` — routes main and vector SQS task families and re-raises failures for retry/DLQ semantics.
 - `services/group_memory.py` — stores recent group context, formats prompt context, requester/target-user profile context, and query-filtered long-term memory.
 - `services/memory_retrieval.py` — Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and source tracking.
@@ -110,13 +112,10 @@ Detailed architecture lives in `docs/ARCHITECTURE.md`.
 - `services/group_memory_processor.py` — async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
 - `services/group_agent.py` — agent trigger policy, ordinary proactive AI decision orchestration, linked-channel post immediate comments with provider fallback, reply-thread continuity, answer length/style policy.
 - `services/ambient_reactions.py` — ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
-- `services/contest.py` — strict official-root/entry recognition, secure draw/redraw orchestration, fixed Kazakh rendering, anchored evidence fallback, and resumable retention work.
-- `services/handlers/contest.py` — reply-anchor parsing and live creator/administrator command authorization.
 - `services/telegram_actor.py` — Telegram actor attribution helpers, including linked-channel discussion mirror detection and `sender_chat` actor selection.
 - `services/telegram_media.py` — explicit `/ask` and @mention/reply media detection, metadata-only Telegram album observation/expansion, bounded multi-item worker download preparation, and Gemini media part construction.
 - `services/vector_memory.py` — embedding, S3 Vectors indexing, semantic retrieval, cleanup/backfill.
 - `services/repositories/group_memory.py` — DynamoDB single-table layout for settings, messages, metadata-only media-group manifests, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
-- `services/repositories/contest.py` — sole contest lifecycle, participant, winner, rules-alias, and expiry truth owner.
 - `services/ai/gemini_client.py` — Gemini calls for agent answers, multimodal linked-channel post comment decisions, summaries, embeddings.
 - `services/ai/proactive_decision.py` — Groq model-pool strict-JSON decision chain for ordinary proactive group answers, with DeepSeek decision fallback disabled by default.
 - `services/ai/group_chat_reply_fallback.py` — DeepSeek then Groq text-only fallback chain for group answer generation when Gemini fails.
@@ -139,10 +138,6 @@ Single table partitioned by `pk=CHAT#<chat_id>`:
 - `TERM#<term>#<created_at_ms>#<source_sk>` — bounded exact-term lexical index rows for long-term memories and daily summaries.
 - `AGENT_REPLY#<bot_message_id>` — short-term bot answer text, triggering/current user message, optional quoted source-message context, optional compact media metadata/summary, parent bot message id, requester metadata, retrieval source metadata with deletion policy, and reason for reply-thread continuity, `/agent why`, `/agent wrong`, `/memory wrong`, and `/memory forget this`; not long-term semantic memory.
 - `AMBIENT_REACTION#<created_at_ms>#<message_id>` — seven-day reaction metadata for cooldowns/debugging only; not long-term semantic memory.
-- `CONTEST#<root_message_id>#META` — fail-closed lifecycle, rules anchor, frozen count, winner history, announcement state, logical expiry, and TTL cursor.
-- `CONTEST#<root_message_id>#PARTICIPANT#<user_id>` — one immutable first eligible comment snapshot per personal Telegram user id.
-- `CONTEST_RULE#<rules_message_id>` — command lookup alias to the contest root.
-- `pk=CONTEST_TTL_OUTBOX`, `sk=CHAT#<chat_id>#ROOT#<root_message_id>` — durable cleanup marker created with first draw/cancel and consumed only after the TTL sweep completes.
 - `BOT_COMMITMENT#...` — reserved future durable bot commitment rows for explicit command/admin flows only.
 - `BOT_CORRECTION#...` — reserved future durable bot correction rows for explicit user/admin correction flows only.
 - `VECTOR_BACKFILL` — cumulative vector backfill status with processed/enqueued/failure totals,
@@ -169,8 +164,6 @@ Captcha `CHECK_TIMEOUT` tasks also recover incomplete creation and pending termi
 - `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
 - `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
-- `PROCESS_CONTEST_TTL_SWEEP` — idempotent, cursor-based participant/rules/META expiry stamping after draw or cancellation.
-- `PROCESS_CONTEST_TTL_RECOVERY` — bounded global-outbox recovery page, scheduled independently in production and resumable through SQS.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
 - `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.
 
@@ -203,8 +196,6 @@ both DLQs default to 14 days for incident inspection and redrive. Tune these at 
 - **Memory Retrieval Pipeline V1**: `services.memory_retrieval.build_agent_memory_context` retrieves profile, semantic, lexical, long-term, and recent candidates from `retrieval_query`, scores/dedupes them locally, renders prompt sections only from selected top candidates, and persists compact metadata for the selected retrieval sources used by `/agent why` and wrong-source feedback. Username target profiles use `USERNAME#...` aliases, exact lexical retrieval uses `TERM#...` index rows before falling back to recent legacy candidates, and negative feedback on a source lowers its future retrieval score.
 - **Explicit multimodal boundary**: ZerdeBot does not automatically analyze every group media message. It analyzes media only when explicitly asked through `/ask` or an explicit mention/reply path, plus the official linked-channel post comment path. For Telegram albums the webhook may store only bounded `MEDIA_GROUP#...` membership metadata, and a later reply resolves at most four supported sibling references. Explicit request flows send metadata-only `media_refs` through SQS, download each item only in the async worker under per-item and shared request limits, and may continue with prepared items when another sibling is unsupported, unavailable, or oversized. `AGENT_REPLY#...` stores only compact media metadata/summary. Raw bytes, downloaded files, OCR/transcripts, and media-derived facts are not long-term memory and are not indexed in S3 Vectors by default.
 - **Ambient reaction boundary**: ambient reactions are enabled by default and must stay ephemeral. Ordinary ambient reactions may use bounded recent/reply text context for Groq-only classification, but must not use long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context. Command text and sensitive/hostile/serious text may reach the classifier, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm. Official linked-channel posts force a reaction attempt, bypass sampling/cooldowns/rate caps, and fall back to 👀 when provider output is unavailable or says no. Only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed.
-- **Contest fairness boundary**: keep contest recognition deterministic and ahead of memory/ambient/agent handling but behind captcha/spam short-circuits. Only current official linked-channel mirrors with an initial standalone `#конкурс` may create. Only direct first-level personal-account text replies containing `қатысамын` may register, transactionally once per user id while incrementing the exact participant count. First draw closes registration before a strong full-page `secrets.randbelow` reservoir sample; creator-only mutations, distinct redraws, persisted-before-delivery winners, same-winner replay, and anchored evidence are invariants. Never infer entries from memory/AI, choose from a partial page, grant `ADMIN_USER_ID` a mutation exception, or send a winner result without a reply anchor.
-- **Contest retention boundary**: `OPEN` does not auto-expire. First successful draw/cancel atomically fixes 30-day logical expiry and creates a global durable cleanup marker; redraw never extends it. The idempotent cursor-based `PROCESS_CONTEST_TTL_SWEEP` stamps participants and the rules alias before META TTL, then atomically consumes the marker. Sweep payloads carry only contest identity; META cursor/version is the sole sweep-progress truth. Initial enqueue is best-effort so cleanup outages never block winner/status delivery. An always-on production EventBridge rule queues bounded `PROCESS_CONTEST_TTL_RECOVERY` pages against the global outbox even when no chat remains configured. A known webhook outage beyond Telegram's update-retention window requires cancelling the affected contest rather than drawing from an incomplete list.
 - **Intent-aware retrieval filters**: obvious self-reference and target-user questions narrow semantic/lexical memory to user facts; group-decision questions narrow to group facts and daily summaries; past-event questions narrow to events and daily summaries; joke/meme questions narrow to jokes and daily summaries.
 - **User-facing memory controls**: `/memory about me` shows only the current user's own profile. `/memory forget this` deletes only durable long-term memory (`EVENT#`, `USER_FACT#`, `GROUP_FACT#`, `JOKE#`, allowed `DAILY_SUMMARY#`) from a replied bot answer, or raw/derived memory when replying directly to a source message, with vector cleanup when configured. It must not delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources. `/agent wrong` and `/memory wrong` mark a replied bot answer's recorded memory sources as wrong without deleting them. Regular users can delete only their own durable memory; the group owner or bot owner can delete group durable memory.
 - **Memory extraction budget**: default `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` means ordinary safe chatter falls back to rules without calling Gemini. `GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT` and `GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT` bound candidate Gemini extraction before it can consume shared generate RPD.
@@ -249,7 +240,7 @@ SQS enqueue failures return a retryable webhook error; guest deletion/review fai
 retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
 can repeat review notices, but cannot automatically ban a caller.
 
-Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and all CONTEST families. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../docs/legacy-memory-deletion.md).
+Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and unrelated non-memory rows. Retired contest residue is removable only through explicit retirement scope in the offline cleanup tool, never through public memory-forget commands. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../docs/legacy-memory-deletion.md).
 
 Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
 

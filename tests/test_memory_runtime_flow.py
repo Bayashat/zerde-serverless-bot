@@ -48,7 +48,6 @@ def test_real_webhook_and_screener_preserve_admission_gate(score, pending_captch
         patch("webhook._sqs_client", sqs),
         patch("webhook.is_configured_group_chat", return_value=True),
         patch("webhook.verify_webhook_secret_token", return_value=True),
-        patch("webhook.observe_contest_update"),
         patch("webhook.observe_media_group"),
         patch("webhook.handle_group_agent_update", return_value=False),
         patch("webhook.handle_captcha_answer"),
@@ -154,7 +153,6 @@ def test_plain_explicit_authorization_transport_failure_returns_webhook_500():
         patch("webhook.verify_webhook_secret_token", return_value=True),
         patch("webhook._spam_screening", return_value=screener),
         patch("services.memory_v2.runtime.get_memory_ingestion", return_value=None),
-        patch("webhook.observe_contest_update"),
         patch("webhook.observe_media_group"),
         patch("webhook.handle_group_agent_update", side_effect=TelegramReadRetryRequired("safe read failure")),
     ):

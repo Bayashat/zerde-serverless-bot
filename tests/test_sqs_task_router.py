@@ -15,6 +15,53 @@ def _record(body: dict) -> dict:
     return {"messageId": "mid-1", "body": json.dumps(body)}
 
 
+@pytest.mark.parametrize("task", ["PROCESS_CONTEST_TTL_SWEEP", "PROCESS_CONTEST_TTL_RECOVERY"])
+@pytest.mark.parametrize("router", ["main", "vector"])
+@pytest.mark.parametrize(
+    "chat_fields", [{}, {"chat_id": None}, {"chat_id": "obsolete-invalid-chat"}, {"chat_id": -1001}]
+)
+def test_retired_contest_tasks_ack_without_any_dependency_or_chat_lookup(task, router, chat_fields):
+    body = {
+        "task_type": task,
+        "root_message_id": 11,
+        "start_key": {"pk": "CONTEST_TTL_OUTBOX", "sk": "old"},
+        **chat_fields,
+    }
+    dependencies = [MagicMock() for _ in range(6)]
+    bot, captcha, memory, sqs, ingestion, quiz = dependencies
+    with patch("services.sqs_task_router.is_configured_group_chat") as configured:
+        if router == "main":
+            process_sqs_event(
+                {"Records": [_record(body)]},
+                bot,
+                captcha,
+                memory,
+                sqs_repo=sqs,
+                memory_ingestion=ingestion,
+                quiz_repo=quiz,
+            )
+        else:
+            process_vector_sqs_event({"Records": [_record(body)]}, memory)
+    configured.assert_not_called()
+    assert all(not dependency.mock_calls for dependency in dependencies)
+
+
+def test_retired_contest_task_does_not_skip_other_records_in_mixed_batch():
+    records = [
+        _record({"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}),
+        _record({"task_type": "SPAM_CHECK", "chat_id": -1001}),
+    ]
+    bot, captcha = MagicMock(), MagicMock()
+    with (
+        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
+        patch("services.sqs_task_router.process_spam_check_task", return_value="rejected") as spam,
+    ):
+        process_sqs_event({"Records": records}, bot, captcha)
+    spam.assert_called_once_with(
+        bot, {"task_type": "SPAM_CHECK", "chat_id": -1001}, captcha_repo=captcha, memory_repo=None
+    )
+
+
 def test_check_timeout_routes_and_injects_captcha_repo() -> None:
     body = {
         "task_type": "CHECK_TIMEOUT",
@@ -139,135 +186,6 @@ def test_process_daily_group_summaries_routes() -> None:
     with patch("services.group_memory_processor.process_daily_group_summaries_task") as mock_pd:
         process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
     mock_pd.assert_not_called()
-
-
-def test_daily_summary_task_does_not_share_contest_recovery_failure_domain() -> None:
-    body = {
-        "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
-        "chat_ids": [-1001],
-    }
-    contest_repo = MagicMock()
-    sqs_repo = MagicMock()
-    memory_repo = MagicMock()
-    with patch("services.group_memory_processor.process_daily_group_summaries_task") as summary:
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            memory_repo,
-            contest_repo=contest_repo,
-            sqs_repo=sqs_repo,
-        )
-
-    sqs_repo.send_contest_ttl_recovery_task.assert_not_called()
-    summary.assert_not_called()
-
-
-def test_process_contest_ttl_recovery_routes_with_existing_dependencies() -> None:
-    body = {
-        "task_type": "PROCESS_CONTEST_TTL_RECOVERY",
-        "start_key": {
-            "pk": "CONTEST_TTL_OUTBOX",
-            "sk": "CHAT#-1001#ROOT#0000000000011",
-        },
-    }
-    contest_repo = MagicMock()
-    sqs_repo = MagicMock()
-    with patch("services.sqs_task_router.process_contest_ttl_recovery_task") as recovery:
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            contest_repo=contest_repo,
-            sqs_repo=sqs_repo,
-        )
-
-    recovery.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
-
-
-def test_contest_ttl_recovery_failure_bubbles_for_independent_queue_retry() -> None:
-    body = {"task_type": "PROCESS_CONTEST_TTL_RECOVERY"}
-    with (
-        patch(
-            "services.sqs_task_router.process_contest_ttl_recovery_task",
-            side_effect=RuntimeError("recovery boom"),
-        ),
-        pytest.raises(RuntimeError, match="recovery boom"),
-    ):
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            contest_repo=MagicMock(),
-            sqs_repo=MagicMock(),
-        )
-
-
-def test_process_contest_ttl_sweep_routes_with_existing_dependencies() -> None:
-    body = {
-        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
-        "chat_id": -1001,
-        "root_message_id": 11,
-    }
-    contest_repo = MagicMock()
-    sqs_repo = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_contest_ttl_sweep_task") as sweep,
-    ):
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            contest_repo=contest_repo,
-            sqs_repo=sqs_repo,
-        )
-    sweep.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
-
-
-def test_contest_ttl_sweep_failure_bubbles_for_queue_retry() -> None:
-    body = {
-        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
-        "chat_id": -1001,
-        "root_message_id": 11,
-    }
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch(
-            "services.sqs_task_router.process_contest_ttl_sweep_task",
-            side_effect=RuntimeError("sweep boom"),
-        ),
-        pytest.raises(RuntimeError, match="sweep boom"),
-    ):
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            contest_repo=MagicMock(),
-            sqs_repo=MagicMock(),
-        )
-
-
-def test_contest_ttl_cleanup_survives_chat_configuration_removal() -> None:
-    body = {
-        "task_type": "PROCESS_CONTEST_TTL_SWEEP",
-        "chat_id": -1001,
-        "root_message_id": 11,
-    }
-    contest_repo = MagicMock()
-    sqs_repo = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=False),
-        patch("services.sqs_task_router.process_contest_ttl_sweep_task") as sweep,
-    ):
-        process_sqs_event(
-            {"Records": [_record(body)]},
-            MagicMock(),
-            MagicMock(),
-            contest_repo=contest_repo,
-            sqs_repo=sqs_repo,
-        )
-    sweep.assert_called_once_with(body, repo=contest_repo, sqs_repo=sqs_repo)
 
 
 def test_process_vector_memory_routes() -> None:

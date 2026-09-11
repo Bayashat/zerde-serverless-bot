@@ -6,7 +6,7 @@
 
 `DEV_RUNTIME_ENABLED=false` 是 dev 默认值。最终集成包含六个 Lambda：Bot、vector-indexer、News、Quiz、operations notifier 和 Memory V2 worker；dev 的 reserved concurrency 均为 0，主队列、向量队列和 Memory V2 队列共三条 SQS event source mapping 关闭，恢复调度停用，dev 不创建付费 CloudWatch alarms。明确设为 `true` 后恢复相应并发设置和告警；prod 始终启用。consumer 的 maximum concurrency 为 Bot 10、vector 3、Memory V2 worker 2；worker 的 reserved concurrency 为 2。业务 Lambda 在 prod 的 reserved concurrency 保持原状。所有入口和 worker 共用 stack 的 `runtime_active`，不存在单独默认常开的 dev Memory V2 消费路径。
 
-关闭 dev 前先停止新任务来源，确认所有时间敏感业务任务完成或有明确恢复处置，并读取所有当前已部署 Lambda 的 timeout，按其中最大值等待并确认在途 invocation 排空；审计发现旧部署曾有 900 秒 worker，源码的 300 秒不能代替 live readback。然后部署相应开关。开关不会清空队列或重置数据库；暂停期间 Telegram webhook 可能因 Lambda 节流而不断重试并积压。重新启用前检查 Telegram pending update、SQS visible/inflight/delayed 三类计数和最旧任务年龄，审查过期的 join/captcha/vote/contest/AI 任务。不要无条件重放旧更新，也不要通过 PurgeQueue 隐藏积压。启用必须有当前测试身份、群映射和 token 的明确隔离；这一开关不能证明 dev 与 prod 的 Telegram 身份已分离。
+关闭 dev 前先停止新任务来源，确认所有时间敏感业务任务完成或有明确恢复处置，并读取所有当前已部署 Lambda 的 timeout，按其中最大值等待并确认在途 invocation 排空；审计发现旧部署曾有 900 秒 worker，源码的 300 秒不能代替 live readback。然后部署相应开关。开关不会清空队列或重置数据库；暂停期间 Telegram webhook 可能因 Lambda 节流而不断重试并积压。重新启用前检查 Telegram pending update、SQS visible/inflight/delayed 三类计数和最旧任务年龄，审查过期的 join/captcha/vote/AI 任务。不要无条件重放旧更新，也不要通过 PurgeQueue 隐藏积压。启用必须有当前测试身份、群映射和 token 的明确隔离；这一开关不能证明 dev 与 prod 的 Telegram 身份已分离。
 
 所有支持标签的 stack 资源继承 `Project=ZerdeBot` 和 `Environment=dev|prod`，业务 construct 再标注 `Component=bot|vector-indexer|news|quiz|messaging|operations`；Memory V2 worker/queue construct 使用 `Component=memory-v2`。CDK layer、共享账户服务、未支持/未继承标签的计费项仍可能无法分摊，不把它们算作零。
 

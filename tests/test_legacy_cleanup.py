@@ -14,9 +14,9 @@ from botocore.exceptions import ClientError
 from moto import mock_aws
 
 from dev.tools.legacy_cleanup import archive, cli
-from dev.tools.legacy_cleanup.aws_adapter import ATTESTATIONS, AWSAdapter
-from dev.tools.legacy_cleanup.engine import apply_cleanup, make_backup, make_manifest, summary
-from dev.tools.legacy_cleanup.policy import CleanupError, Scope, canonical, classify, digest, untagged
+from dev.tools.legacy_cleanup.aws_adapter import ATTESTATIONS, CONTEST_ATTESTATIONS, AWSAdapter
+from dev.tools.legacy_cleanup.engine import apply_cleanup, make_backup, make_manifest, summary, validate_backup
+from dev.tools.legacy_cleanup.policy import CleanupError, RetiredContest, Scope, canonical, classify, digest, untagged
 
 ACCOUNT = "123456789012"
 REGION = "eu-central-1"
@@ -153,6 +153,11 @@ def evidence(manifest):
         "stopped_at": NOW - 1000,
         "old_max_timeout_seconds": 900,
         **{key: True for key in ATTESTATIONS},
+        **(
+            {**{key: True for key in CONTEST_ATTESTATIONS}, "retired_contest_recovery_rules": []}
+            if manifest["scope"].get("retired_contests")
+            else {}
+        ),
         "lambda_targets": [
             {
                 "role": role,
@@ -636,3 +641,233 @@ def test_apply_different_head_refuses_before_aws_read(adapter, tmp_path, monkeyp
     args = SimpleNamespace(command="apply", archive_dir=str(directory), key_file=str(key_path))
     with pytest.raises(CleanupError, match="source_commit_changed_since_manifest"):
         cli.run(args, adapter_factory=lambda _: pytest.fail("must not access AWS"), clock=lambda: NOW)
+
+
+def contest_rows(chat="-100", root=10):
+    """Historical writer wire shape, independent of the removed runtime package."""
+    common = {"chat_id": chat, "root_message_id": root}
+    pk, prefix = f"CHAT#{chat}", f"CONTEST#{root:013d}#"
+    return [
+        {
+            **common,
+            "pk": pk,
+            "sk": prefix + "META",
+            "kind": "contest",
+            "status": "DRAWN",
+            "created_at": NOW - 100,
+            "winner_user_ids": ["77"],
+            "winners": [{"user_id": "77", "text": "synthetic entry", "score": Decimal("1.25")}],
+        },
+        {
+            **common,
+            "pk": pk,
+            "sk": prefix + f"PARTICIPANT#{77:020d}",
+            "kind": "contest_participant",
+            "user_id": "77",
+            "entry_message_id": 100,
+            "accepted_at": NOW - 90,
+            "text": "synthetic entry",
+        },
+        {
+            **common,
+            "pk": pk,
+            "sk": f"CONTEST_RULE#{root + 100:013d}",
+            "kind": "contest_rule_anchor",
+            "rules_message_id": root + 100,
+            "created_at": NOW - 100,
+        },
+        {
+            **common,
+            "pk": "CONTEST_TTL_OUTBOX",
+            "sk": f"CHAT#{chat}#ROOT#{root:013d}",
+            "kind": "contest_ttl_outbox",
+            "expires_at": NOW + 30 * 86400,
+            "created_at": NOW - 10,
+        },
+    ]
+
+
+def with_retired_contest(adapter):
+    adapter.scope = scope(chat_ids=("-100",), retired_contests=(RetiredContest("-100", "10"),))
+    for row in contest_rows():
+        adapter.table.put_item(Item=row)
+    return prepared(adapter)
+
+
+def test_retirement_is_explicit_canonical_scope_and_old_scope_defaults_protect():
+    original = scope().as_dict()
+    original.pop("retired_contests")
+    assert not Scope.from_dict(original).retired_contests
+    assert all(classify(Scope.from_dict(original), row) == "protected" for row in contest_rows())
+    explicit = {**original, "retired_contests": [{"chat_id": "-100", "root_message_id": "10"}]}
+    selected = Scope.from_dict(explicit)
+    assert Scope.from_dict(selected.as_dict()) == selected
+    assert len({classify(selected, row) for row in contest_rows()}) == 4
+    for bad in (
+        True,
+        ["CONTEST#"],
+        [{"chat_id": "-100", "root_message_id": "010"}],
+        [{"chat_id": "-100", "root_message_id": 10}],
+        explicit["retired_contests"] * 2,
+    ):
+        with pytest.raises(CleanupError):
+            Scope.from_dict({**original, "retired_contests": bad})
+    with pytest.raises(CleanupError, match="out_of_scope"):
+        Scope.from_dict({**explicit, "chat_ids": ["-200"]})
+
+
+def test_moto_retirement_exact_roots_lossless_backup_and_outbox_last(adapter, tmp_path):
+    manifest, backup = with_retired_contest(adapter)
+    # A second root in the same chat, the same root in another chat, and unrelated
+    # lifecycle/control/moderation/quiz data all remain protected.
+    for row in [
+        *contest_rows(root=11),
+        *contest_rows(chat="-200"),
+        {"pk": "CHAT#-100", "sk": "CONTEST#0000000000010#FUTURE", "kind": "unknown"},
+        {"pk": "CHAT#-100", "sk": "CONTROL_COMMAND#one"},
+        {"pk": "spam_case#-100", "sk": "10"},
+        {"pk": "QUIZ#-100", "sk": "10"},
+    ]:
+        adapter.table.put_item(Item=row)
+    manifest, backup = prepared(adapter)
+    protected = {digest(row) for row in adapter.scan_rows() if classify(adapter.scope, row) == "protected"}
+    assert sum(entry["kind"].startswith("retired_contest_") for entry in manifest["table_entries"]) == 4
+    directory = archive.secure_directory(tmp_path / "retirement", repository_root=Path.cwd())
+    archive.seal(directory, "backup.zenc", backup, b"r" * 32, now=NOW)
+    restored, _ = archive.open_archive(directory / "backup.zenc", b"r" * 32, now=NOW)
+    validate_backup(manifest, restored)
+    assert {digest(row) for row in restored["rows"] if row.get("kind", "").startswith("contest")} == {
+        digest(adapter.get_item({"pk": row["pk"], "sk": row["sk"]})) for row in contest_rows()
+    }
+    deleted, original_delete = [], adapter.delete_item
+
+    def observe(row):
+        deleted.append(classify(adapter.scope, row))
+        if row.get("kind") == "contest_ttl_outbox":
+            assert all(adapter.get_item({"pk": old["pk"], "sk": old["sk"]}) is None for old in contest_rows()[:-1])
+        original_delete(row)
+
+    adapter.delete_item = observe
+    assert execute(adapter, manifest, restored)["online_clean"]
+    assert deleted[-1] == "retired_contest_outbox"
+    assert {digest(row) for row in adapter.scan_rows()} == protected
+
+
+@pytest.mark.parametrize(
+    "row_index,change",
+    [
+        (0, {"kind": "settings"}),
+        (0, {"status": "UNREVIEWED"}),
+        (0, {"chat_id": "-200"}),
+        (0, {"root_message_id": 11}),
+        (0, {"root_message_id": True}),
+        (1, {"user_id": "78"}),
+        (1, {"entry_message_id": Decimal("1.5")}),
+        (2, {"rules_message_id": 111}),
+        (2, {"kind": "other_business"}),
+        (3, {"root_message_id": 11}),
+        (3, {"chat_id": "-200"}),
+        (3, {"ttl": NOW}),
+    ],
+)
+def test_selected_contest_bad_shape_aborts_plan_before_mutation(adapter, row_index, change):
+    with_retired_contest(adapter)
+    row = {**contest_rows()[row_index], **change}
+    adapter.table.put_item(Item=row)
+    with pytest.raises(CleanupError, match="invalid_selected_retired_contest_record"):
+        prepared(adapter)
+    assert not adapter.vectors.deleted
+
+
+def test_contest_orphans_are_scoped_without_requiring_expired_meta(adapter):
+    with_retired_contest(adapter)
+    meta = contest_rows()[0]
+    adapter.table.delete_item(Key={"pk": meta["pk"], "sk": meta["sk"]})
+    manifest, backup = prepared(adapter)
+    assert sum(entry["kind"].startswith("retired_contest_") for entry in manifest["table_entries"]) == 3
+    assert execute(adapter, manifest, backup)["online_clean"]
+
+
+@pytest.mark.parametrize("attestation", CONTEST_ATTESTATIONS)
+def test_contest_retirement_requires_specific_writer_and_replay_evidence(adapter, attestation):
+    manifest, backup = with_retired_contest(adapter)
+    proof = evidence(manifest)
+    proof.pop(attestation)
+    with pytest.raises(CleanupError, match="incomplete_contest_retirement_evidence"):
+        execute(adapter, manifest, backup, proof=proof)
+    assert all(adapter.get_item({"pk": row["pk"], "sk": row["sk"]}) for row in contest_rows())
+    assert not adapter.vectors.deleted
+
+
+def retirement_rule():
+    return {
+        "name": "old-contest-recovery",
+        "arn": f"arn:aws:events:{REGION}:{ACCOUNT}:rule/old-contest-recovery",
+        "expected_state": "ABSENT",
+    }
+
+
+@pytest.mark.parametrize("error", ["ResourceNotFoundException", "AccessDeniedException", "InternalException"])
+def test_retired_rule_absence_requires_real_not_found_not_permission_or_transient_failure(adapter, error):
+    manifest, _ = with_retired_contest(adapter)
+    proof = evidence(manifest)
+    proof["retired_contest_recovery_rules"] = [retirement_rule()]
+    adapter.events.describe_rule.side_effect = ClientError({"Error": {"Code": error}}, "DescribeRule")
+    if error == "ResourceNotFoundException":
+        adapter.verify_gate(adapter.scope, manifest, proof)
+    else:
+        with pytest.raises(ClientError):
+            adapter.verify_gate(adapter.scope, manifest, proof)
+    assert not adapter.vectors.deleted
+
+
+def test_contest_recovery_inventory_cannot_omit_or_misidentify_or_accept_live_rule(adapter):
+    manifest, _ = with_retired_contest(adapter)
+    proof = evidence(manifest)
+    proof.pop("retired_contest_recovery_rules")
+    with pytest.raises(CleanupError, match="contest_recovery_inventory_required"):
+        adapter.verify_gate(adapter.scope, manifest, proof)
+    proof["retired_contest_recovery_rules"] = [{**retirement_rule(), "arn": retirement_rule()["arn"] + "-wrong"}]
+    with pytest.raises(CleanupError, match="rule_identity"):
+        adapter.verify_gate(adapter.scope, manifest, proof)
+    rule = retirement_rule()
+    proof["retired_contest_recovery_rules"] = [rule]
+    adapter.events.describe_rule.return_value = {"Arn": rule["arn"], "State": "DISABLED"}
+    with pytest.raises(CleanupError, match="contest_recovery_not_retired"):
+        adapter.verify_gate(adapter.scope, manifest, proof)
+    rule["expected_state"] = "DISABLED"
+    adapter.verify_gate(adapter.scope, manifest, proof)
+    adapter.events.describe_rule.return_value["State"] = "ENABLED"
+    with pytest.raises(CleanupError, match="contest_recovery_not_retired"):
+        adapter.verify_gate(adapter.scope, manifest, proof)
+
+
+def test_retirement_crash_after_meta_delete_resumes_same_backup_and_rejects_changed_outbox(adapter):
+    manifest, backup = with_retired_contest(adapter)
+    original = adapter.delete_item
+
+    def fail_after_delete(row):
+        original(row)
+        if row.get("kind") == "contest":
+            raise OSError("synthetic post-delete failure")
+
+    adapter.delete_item = fail_after_delete
+    with pytest.raises(OSError):
+        execute(adapter, manifest, backup)
+    outbox = contest_rows()[-1]
+    assert adapter.get_item({"pk": outbox["pk"], "sk": outbox["sk"]})
+    adapter.delete_item = original
+    adapter.table.put_item(Item={**outbox, "created_at": NOW})
+    with pytest.raises(CleanupError, match="manifest_content_changed"):
+        execute(adapter, manifest, backup)
+    adapter.table.put_item(Item=outbox)
+    assert execute(adapter, manifest, backup)["online_clean"]
+
+
+def test_expanding_retirement_scope_invalidates_backup_and_manifest_digest(adapter):
+    manifest, backup = with_retired_contest(adapter)
+    modified = copy.deepcopy(manifest)
+    modified["scope"]["retired_contests"] += ({"chat_id": "-100", "root_message_id": "11"},)
+    with pytest.raises(CleanupError, match="backup_manifest_mismatch"):
+        validate_backup(modified, backup)
+    assert digest(modified) != digest(manifest)

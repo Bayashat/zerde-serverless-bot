@@ -204,7 +204,7 @@ def test_missing_source_or_business_or_action_trace_is_unverified_not_zero(corpu
     assert report["coverage"]["status"] == "UNVERIFIED"
 
 
-@pytest.mark.parametrize("protected", ["CONTEST#23", "SETTINGS", "CONTEST_TTL_OUTBOX"])
+@pytest.mark.parametrize("protected", ["SETTINGS", "CHAT_STATS", "CAPTCHA_PENDING"])
 def test_business_damage_compares_exact_protected_snapshots(corpus, protected):
     small = selected(corpus)
     observations = oracle(small)

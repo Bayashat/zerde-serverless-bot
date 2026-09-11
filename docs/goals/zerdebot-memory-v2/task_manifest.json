@@ -144,7 +144,8 @@
     "depends_on": [
       "Z01",
       "Z03",
-      "Z09"
+      "Z09",
+      "Z19"
     ],
     "body_file": "issues/Z10.md",
     "status": "pr_open",
@@ -276,15 +277,14 @@
   },
   {
     "id": "Z19",
-    "title": "FIX: 抽奖事务的 DynamoDB 序列化边界",
+    "title": "CHORE: 移除实验性抽奖功能",
     "depends_on": [],
     "body_file": "issues/Z19.md",
-    "status": "pr_open",
+    "status": "implementing",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
-    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
-    "integration_prs": [
-      204
-    ]
+    "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/204",
+    "integration_prs": [],
+    "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181"
   }
 ]

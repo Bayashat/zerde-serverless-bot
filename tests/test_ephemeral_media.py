@@ -338,6 +338,7 @@ def test_overlay_album_writes_only_v2_and_keeps_legacy_business_rows(env, overla
     activate(env)
     source = event(env, text="")
     env.repo.observe(source)
+    # Album handling cannot delete retired non-memory data as a side effect.
     business = {"pk": f"CHAT#{CHAT}", "sk": "CONTEST#1#META", "kind": "contest", "business": "unchanged"}
     overlay.table.put_item(Item=business)
     overlay.store_media_group_item(

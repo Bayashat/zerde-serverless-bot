@@ -9,7 +9,6 @@ from services.handlers import register_handlers
 from services.memory_v2.runtime import get_memory_ingestion  # noqa: F401 -- public bot composition export
 from services.repositories import (
     CaptchaRepository,
-    ContestRepository,
     GroupMemoryRepository,
     LambdaInvoker,
     QuizRepository,
@@ -25,7 +24,6 @@ _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
 _memory_repo: GroupMemoryRepository | None = None
 _memory_v2_repo = None
-_contest_repo: ContestRepository | None = None
 _sqs_repo: SQSClient | None = None
 _quiz_repo: QuizRepository | None = None
 _dispatcher: Dispatcher | None = None
@@ -71,16 +69,6 @@ def get_memory_v2_repo():
     return _memory_v2_repo
 
 
-def get_contest_repo() -> ContestRepository | None:
-    """Return the contest truth owner when the shared memory table is configured."""
-    global _contest_repo
-    if not MEMORY_TABLE_NAME:
-        return None
-    if _contest_repo is None:
-        _contest_repo = ContestRepository()
-    return _contest_repo
-
-
 def get_sqs_repo() -> SQSClient:
     """Return the shared main-queue client used by webhook and SQS continuations."""
     global _sqs_repo
@@ -111,7 +99,6 @@ def get_dispatcher() -> Dispatcher:
             LambdaInvoker() if QUIZ_LAMBDA_NAME else None,
             captcha_repo=get_captcha_repo(),
             memory_repo=get_memory_repo(),
-            contest_repo=get_contest_repo(),
         )
         register_handlers(dispatcher)
         _dispatcher = dispatcher

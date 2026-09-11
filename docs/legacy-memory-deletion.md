@@ -68,3 +68,7 @@ mixed-partition key/count/content preservation, pagination, reference-only
 recovery after provider/acknowledgement failure, generation fences, alias
 reassignment and source fail-closed retrieval. It is local DynamoDB simulation,
 not live AWS or Telegram acceptance. Moto is a development-only test dependency.
+
+## Retired contest residue
+
+Experimental contests were removed at the owner's request on 2026-09-11. The exclusions above describe the public memory-forget permission boundary, not a requirement to preserve contest data forever. The offline cleanup tool may explicitly select retired contest roots, participants, aliases and their global outbox under the retirement contract in [legacy-memory-cleanup.md](legacy-memory-cleanup.md). This never authorizes broad partition deletion or deletion of current settings and unrelated business data.

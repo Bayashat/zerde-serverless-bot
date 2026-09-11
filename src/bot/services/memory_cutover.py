@@ -1,7 +1,7 @@
-"""Fail-closed boundary for the retired memory and automatic social features.
+"""Fail-closed boundary for retired features and their queued work.
 
 This is a code protocol, not a flag that old deployment settings can re-enable.
-V2 will introduce its own versioned source-reference protocol and control owner.
+Current explicit tasks use a versioned source-reference protocol and V2 control owner.
 """
 
 import time
@@ -16,6 +16,8 @@ RETIRED_TASK_TYPES = frozenset(
         "PROCESS_DAILY_GROUP_SUMMARIES",
         "PROCESS_VECTOR_MEMORY",
         "PROCESS_VECTOR_MEMORY_BACKFILL",
+        "PROCESS_CONTEST_TTL_SWEEP",
+        "PROCESS_CONTEST_TTL_RECOVERY",
     }
 )
 

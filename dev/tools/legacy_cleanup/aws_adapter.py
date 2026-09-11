@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 
 from .policy import CleanupError, digest, item_key
 
@@ -24,6 +25,11 @@ ATTESTATIONS = (
     "complete_legacy_index_inventory",
     "selected_indexes_contain_only_retired_memory",
     "change_freeze_active",
+)
+CONTEST_ATTESTATIONS = (
+    "all_retired_contest_writers_stopped",
+    "retired_contest_task_replay_verified",
+    "complete_retired_contest_recovery_inventory",
 )
 
 
@@ -167,6 +173,42 @@ class AWSAdapter:
             seen.add(marker)
             kwargs["Marker"] = marker
 
+    def _verify_contest_retirement(self, scope, evidence):
+        if not scope.retired_contests:
+            return
+        if any(evidence.get(name) is not True for name in CONTEST_ATTESTATIONS):
+            raise CleanupError("incomplete_contest_retirement_evidence")
+        rules = evidence.get("retired_contest_recovery_rules")
+        if not isinstance(rules, list):
+            raise CleanupError("contest_recovery_inventory_required")
+        seen = set()
+        for rule in rules:
+            if not isinstance(rule, dict):
+                raise CleanupError("invalid_contest_recovery_rule")
+            name, bus = rule.get("name"), rule.get("event_bus", "default")
+            state = rule.get("expected_state")
+            if (
+                not isinstance(name, str)
+                or not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", name)
+                or not isinstance(bus, str)
+                or not re.fullmatch(r"[A-Za-z0-9_.-]{1,256}", bus)
+                or state not in ("DISABLED", "ABSENT")
+            ):
+                raise CleanupError("invalid_contest_recovery_rule")
+            suffix = name if bus == "default" else f"{bus}/{name}"
+            arn = f"arn:aws:events:{scope.region}:{scope.account_id}:rule/{suffix}"
+            if rule.get("arn") != arn or arn in seen:
+                raise CleanupError("invalid_contest_recovery_rule_identity")
+            seen.add(arn)
+            try:
+                live = self.events.describe_rule(Name=name, EventBusName=bus)
+            except ClientError as exc:
+                if state == "ABSENT" and exc.response.get("Error", {}).get("Code") == "ResourceNotFoundException":
+                    continue
+                raise
+            if state != "DISABLED" or live.get("Arn") != arn or live.get("State") != "DISABLED":
+                raise CleanupError("contest_recovery_not_retired")
+
     def verify_gate(self, scope, manifest, evidence):
         """Live readback plus explicitly reviewed stop evidence, never a guard flag alone.
 
@@ -202,6 +244,7 @@ class AWSAdapter:
             raise CleanupError("old_invocations_not_drained")
         if self.identity(scope) != manifest["identity"]:
             raise CleanupError("gate_resource_identity_changed")
+        self._verify_contest_retirement(scope, evidence)
         arns = set()
         for target in targets:
             arn = target.get("function_arn", "")

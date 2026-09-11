@@ -182,7 +182,16 @@ def apply_cleanup(adapter, manifest, backup, *, expected_digest, evidence, journ
     # Markers are removed only after all explicitly selected old indexes are empty.
     if any(adapter.list_vectors(arn) for arn in scope.index_arns):
         raise CleanupError("legacy_vectors_remain_or_were_recreated")
-    rows = sorted(backup["rows"], key=lambda row: (classify(scope, row) == "vector_marker", row["pk"], row["sk"]))
+    # Retired contest recovery markers go last, after every selected contest row.
+    # Complete writer/replay retirement remains mandatory throughout deletion.
+    rows = sorted(
+        backup["rows"],
+        key=lambda row: (
+            {"vector_marker": 1, "retired_contest_outbox": 2}.get(classify(scope, row), 0),
+            row["pk"],
+            row["sk"],
+        ),
+    )
     for offset in range(0, len(rows), 25):
         gate()
         for original in rows[offset : offset + 25]:

@@ -70,14 +70,41 @@ def project_scenario(scenario):
 
 
 def business_rows(chat_id, seed):
-    """Initial legacy business fixtures, also independently reconstructed by scorer."""
+    """Real settings/stats/captcha row shapes with synthetic, fixed input values.
+
+    Settings use the legacy table's pk/sk; counters and captcha use the stats
+    table's sole stat_key. The scorer independently reconstructs these full rows.
+    """
     return {
-        key: {
-            "pk": "CONTEST_TTL_OUTBOX" if key == "CONTEST_TTL_OUTBOX" else "CHAT#" + str(chat_id),
-            "sk": "CHAT#" + str(chat_id) if key == "CONTEST_TTL_OUTBOX" else key,
-            "fixture_payload": value,
-        }
-        for key, value in seed.items()
+        "SETTINGS": {
+            "pk": "CHAT#" + str(chat_id),
+            "sk": "SETTINGS",
+            "style_profile": {"tone": seed["SETTINGS"]},
+            "updated_at": 2_000_000_000,
+        },
+        "CHAT_STATS": {
+            "stat_key": str(chat_id),
+            "total_joins": 23,
+            "verified_users": 19,
+            "total_bans": 4,
+            "spam_bans": 2,
+            "started_at": seed["CHAT_STATS"],
+        },
+        "CAPTCHA_PENDING": {
+            "stat_key": f"captcha_pending#{chat_id}#{seed['CAPTCHA_PENDING']}",
+            "generation": "0123456789abcdef0123456789abcdef",
+            "revision": 3,
+            "status": "pending",
+            "join_msg_id": 23,
+            "verify_msg_id": 24,
+            "attempts": 1,
+            "handled_message_ids": [25],
+            "wrong_msg_ids": [25],
+            "created_at": 2_000_000_000,
+            "expires_at": 2_000_000_300,
+            "ttl": 2_001_296_300,
+            "action_done": False,
+        },
     }
 
 

@@ -3,18 +3,20 @@
 
 本 Epic 执行 2026-09-10 用户批准的完整方案。目标是明确自述、证据事实、跨群隔离、可更正和遗忘的群机器人记忆，关闭所有自动社交参与，同时修复审阅发现的可靠性问题。
 
-- [完整实施契约](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/PLAN.md)
-- [审阅与 AWS 账单快照](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/AUDIT.md)
-- [下一会话执行入口](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/GOAL.md)
-- [证据记录](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/EVIDENCE.md)
+- [完整实施契约](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/PLAN.md)
+- [审阅与 AWS 账单快照](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/AUDIT.md)
+- [下一会话执行入口](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/GOAL.md)
+- [证据记录](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/EVIDENCE.md)
 - [最终代码集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)
-- [代码交付后继续执行](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/HANDOFF.md)
+- [代码交付后继续执行](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/HANDOFF.md)
 
-当前 Z01–Z19 均已有独立代码/工具/手册 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/memory-v2-execution-plan/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
+当前 Z01–Z19 均已有独立代码/工具/手册 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
+
+2026-09-11用户修订：直接在#204移除实验性抽奖，待用户审阅批准合并；此次没有部署或删除线上数据。
 
 ## 不可漂移的边界
 
-保留 Python/Lambda/SQS/DynamoDB；独立 V2 表、唯一 fact writer；profile 只读当前有效事实。各群隔离，只本人明确自述；原文30天，长期最小证据随事实维护；全部自动插话/reaction/频道评论关闭，显式问答独立可用。旧 reader/writer/task/import/backfill 先停，再按精确清单清零，保留 contest/settings/outbox 和其他业务数据。不能整表删除或 purge 混用业务队列。V1 无向量检索，失败只能回无长期记忆问答。
+保留 Python/Lambda/SQS/DynamoDB；独立 V2 表、唯一 fact writer；profile 只读当前有效事实。各群隔离，只本人明确自述；原文30天，长期最小证据随事实维护；全部自动插话/reaction/频道评论关闭，显式问答独立可用。旧 reader/writer/task/import/backfill 先停，再按精确清单清零，保留settings、统计、验证码和其他业务数据；用户已取消抽奖，其残留仅通过显式退役root清单清理。不能整表删除或 purge 混用业务队列。V1 无向量检索，失败只能回无长期记忆问答。
 
 新增记忆目标$10/月（$7模型预留计数+$3AWS用量预留），不是AWS账号硬止付。费用必须区分账号与项目，历史credits抵扣不是FreeTier全免。Z18仅清理清单/手册，不授权删除旧云资源。
 
@@ -51,4 +53,4 @@
 
 ## 执行中新发现的必要修复
 
-- [ ] [Z19 抽奖事务序列化边界](https://github.com/Bayashat/zerde-serverless-bot/issues/178)：SDK + Moto 证实原事务双序列化；作为 Z11 保留业务验收前置。
+- [ ] [Z19 移除实验性抽奖](https://github.com/Bayashat/zerde-serverless-bot/issues/178)：用户取消该实验；命令、观察、存储和定时恢复从#204移除，旧任务无副作用消费，残留数据可按精确scope清理。取代原#181事务修复。

@@ -4,9 +4,9 @@
 
 ## 最终运行时协议
 
-- 普通群聊和频道镜像帖不触发主动回答、主动评论或 reaction。旧消息学习、摘要、向量与 backfill 入口已退休；验证码、垃圾审核、抽奖等业务继续由各自入口处理。
+- 普通群聊和频道镜像帖不触发主动回答、主动评论或 reaction。旧消息学习、摘要、向量与 backfill 入口已退休；验证码、垃圾审核等保留业务继续由各自入口处理；实验性抽奖已从本次PR移除。
 - 当前显式问答任务使用 `context_version=explicit-v2-sources-2026-09`。旧 Z01 过渡版本 `explicit-only-2026-09`、无版本和未知版本任务，均在正文处理和媒体下载前丢弃。版本匹配也不等于允许发送：当前问题还须通过原始时间、来源版本、群 epoch、请求者 generation 和发送收据校验。
-- `app.get_memory_repo()` 使用 `ExplicitContextRepository`。它保留旧表中的业务 SETTINGS / contest 能力，但 `record_agent_reply()` 不写旧 `AGENT_REPLY`，`get_agent_reply_explanation()` 不读旧回复正文。当前回答去重和发送状态由 V2 独立表中的 `ANSWER_REQUEST` / `ANSWER_LEASE` 管理。
+- `app.get_memory_repo()` 使用 `ExplicitContextRepository`。它保留旧表中的业务 SETTINGS 能力，但 `record_agent_reply()` 不写旧 `AGENT_REPLY`，`get_agent_reply_explanation()` 不读旧回复正文。当前回答去重和发送状态由 V2 独立表中的 `ANSWER_REQUEST` / `ANSWER_LEASE` 管理。
 - 相册关联迁入 V2 的 `MEDIA_ALBUM` 元数据，按消息原始时间最多保留一天。排队媒体请求发送前重新读取当前来源，最多四项；旧 `MEDIA_GROUP` 不再用于读写。文件内容、caption、文件名和模型媒体分析不会因此成为长期个人事实。
 - Z01 阶段曾允许七天 `AGENT_REPLY` 和旧表 `MEDIA_GROUP`，那只是临时过渡。最终集成已经在源码中停止这些路径；**只部署早期 Z01 仍不满足清零条件**。必须核对实际部署的工件包含上述替换，而不能根据开关或本文件推断。
 - 显式 `/ask`、@mention 和明确回复 bot 独立于旧学习及社交开关。记忆问答只使用本群当前有效事实和最小证据；无可靠来源表达未知。普通显式问答不恢复旧 profile、摘要、向量或旧 bot 回复正文。
@@ -17,6 +17,8 @@
 完整公共协议见 [运行时契约](MEMORY_V2_RUNTIME.md)，临时媒体与删除边界见该文件引用的 owner 文档。
 
 ## 三个时间点与切换顺序
+
+用户于2026-09-11取消抽奖实验。本次源码移除抽奖命令/观察/存储和TTL恢复规则，旧两类抽奖任务无副作用消费；旧生产工件尚未因代码提交而改变。若清理退役抽奖数据，应在scope明确列出每个chat/root，并读回旧writer、规则及任务已经停止。删除白名单只覆盖这些root的规范META/参与者/规则alias/对应全局outbox，包含缺META但身份可验证的孤儿；未知shape阻止清理。当前设置、统计、验证码、预算等仍需保护。
 
 计费起点、旧写入停止时间和学习 epoch 是不同概念，不能用同一个“启动时间”替代。
 
@@ -32,7 +34,7 @@
 
 [清零工具契约](https://github.com/Bayashat/zerde-serverless-bot/blob/016e2c8/docs/legacy-memory-cleanup.md) 中的 `explicit_threads_stopped_or_migrated`、`media_groups_stopped_or_migrated` 等证据字段，须由**实际部署工件**和当前路由的审阅支持。最新源码提供了所需的退休路径，不会自动将这些字段变成 true。完整 alias、consumer、旧 schedule、外部客户端和旧索引清单仍是操作前提。
 
-Z10 只允许旧记录族及经确认的旧向量 marker，保护 SETTINGS、CONTEST、未知记录族和其他表。新版 `CONTROL_COMMAND`、CONTROL、SUBJECT、FACT、OBSERVATION、RAW、HEAD、ANSWER、MEDIA_ALBUM、PURGE 和费用前缀均不应进入删除清单。不能把“V2 使用相同 pk/sk 键结构”误读为它也是旧表。索引 scope 删除包括 orphan vectors，按 chat 缩小表 scope 不会缩小整个指定索引的删除范围。
+Z10 只允许旧记录族及经确认的旧向量 marker，保护 SETTINGS、未知记录族和其他表。用户取消抽奖后，明确选定的退役抽奖root、参与者、规则alias及对应全局outbox可纳入独立退役scope；不会通过普通memory forget扩大删除范围。新版 `CONTROL_COMMAND`、CONTROL、SUBJECT、FACT、OBSERVATION、RAW、HEAD、ANSWER、MEDIA_ALBUM、PURGE 和费用前缀均不应进入删除清单。不能把“V2 使用相同 pk/sk 键结构”误读为它也是旧表。索引 scope 删除包括 orphan vectors，按 chat 缩小表 scope 不会缩小整个指定索引的删除范围。
 
 工具的 plan / backup / apply 必须在同一已审阅、干净且依赖锁定的提交上执行。合并或 cherry-pick 工具后，应在最终操作提交重新生成 manifest；不能使用旧 PR 提交的 manifest 在新的集成 HEAD 上继续 apply。生产执行需要每批重新核对仍新鲜的停写、工件、资源身份和期限证据。
 

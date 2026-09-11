@@ -6,7 +6,6 @@ from typing import Any
 from app import (
     get_bot,
     get_captcha_repo,
-    get_contest_repo,
     get_dispatcher,
     get_memory_ingestion,
     get_memory_repo,
@@ -42,7 +41,6 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any] | None
                 get_bot(),
                 get_captcha_repo(),
                 get_memory_repo(),
-                contest_repo=get_contest_repo(),
                 sqs_repo=get_sqs_repo(),
                 memory_ingestion=get_memory_ingestion(),
                 quiz_repo=get_quiz_repo(),

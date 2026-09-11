@@ -57,6 +57,8 @@ def digest(rows):
 
 
 def seed_mixed_partition(env):
+    # Retired contest remnants remain outside public memory-forget ownership;
+    # the separately scoped operator cleanup handles their eventual removal.
     business = [
         put(env, "SETTINGS", user_id=str(USER), style_profile={"tone": "friendly"}),
         put(env, "CONTEST#8#META", message_id=8, user_id=str(USER)),

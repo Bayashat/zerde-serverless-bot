@@ -6,7 +6,7 @@ This is the source contract for the local implementation. It does not establish 
 
 ## State ownership
 
-`services/repositories/spam.py` owns `spam_case#decision#...` and `spam_case#action#...` in the existing stats table. No memory, contest, captcha or ordinary statistics keys are repurposed. Classification receipts contain identity, an input hash, decision metadata and an optional source reference; they do not contain message text, quoted text, contact data or media references.
+`services/repositories/spam.py` owns `spam_case#decision#...` and `spam_case#action#...` in the existing stats table. No memory, captcha or ordinary statistics keys are repurposed. Classification receipts contain identity, an input hash, decision metadata and an optional source reference; they do not contain message text, quoted text, contact data or media references.
 
 Decision identity includes chat, actor, message, source revision and moderation input hash. A conditional creation and invocation lease serialize conflicting work. Successful classification is persisted before enforcement or alert delivery so a retry does not need another model call. Provider failure and unknown captcha/membership state never become `clean`.
 

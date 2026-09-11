@@ -4,7 +4,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from services.contest import ContestRetryRequiredError
 from webhook import (
     _handle_api_gateway,
     create_response,
@@ -62,7 +61,6 @@ def test_webhook_logs_only_authorized_metadata(chat_type, configured, valid_secr
         patch("webhook.logger") as logger,
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=configured),
-        patch("webhook.observe_contest_update"),
         patch("webhook.observe_media_group"),
         patch("webhook.handle_group_agent_update", return_value=False),
     ):
@@ -173,7 +171,6 @@ def test_pending_captcha_message_skips_spam_screening():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
         patch("services.group_memory.observe_update") as observe_memory,
         patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
@@ -183,7 +180,6 @@ def test_pending_captcha_message_skips_spam_screening():
         _handle_api_gateway(event, dispatcher, MagicMock())
 
     screener.run.assert_not_called()
-    observe_contest.assert_not_called()
     observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
@@ -215,7 +211,6 @@ def test_enforced_spam_short_circuits_normal_group_flows():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
         patch("services.group_memory.observe_update") as observe_memory,
         patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
@@ -225,7 +220,6 @@ def test_enforced_spam_short_circuits_normal_group_flows():
 
     assert json.loads(resp["body"])["message"] == "ok"
     screener.run.assert_called_once_with(body)
-    observe_contest.assert_not_called()
     observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
@@ -255,7 +249,6 @@ def test_queued_spam_short_circuits_normal_group_flows():
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update") as observe_contest,
         patch("webhook.observe_media_group") as observe_album,
         patch("services.group_memory.observe_update") as observe_memory,
         patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient_reaction,
@@ -265,7 +258,6 @@ def test_queued_spam_short_circuits_normal_group_flows():
 
     assert json.loads(resp["body"])["message"] == "ok"
     screener.run.assert_called_once_with(body)
-    observe_contest.assert_not_called()
     observe_album.assert_not_called()
     observe_memory.assert_not_called()
     ambient_reaction.assert_not_called()
@@ -273,7 +265,7 @@ def test_queued_spam_short_circuits_normal_group_flows():
     dispatcher.process_update.assert_not_called()
 
 
-def test_contest_observation_runs_before_existing_memory_ambient_and_agent_flows():
+def test_media_observation_runs_before_existing_agent_flow():
     body = {
         "message": {
             "message_id": 12,
@@ -297,7 +289,6 @@ def test_contest_observation_runs_before_existing_memory_ambient_and_agent_flows
     with (
         patch("webhook._spam_screening", return_value=screener),
         patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update", side_effect=lambda *args, **kwargs: order.append("contest")),
         patch("webhook.observe_media_group", side_effect=lambda *args, **kwargs: order.append("album")),
         patch("services.group_memory.observe_update", side_effect=lambda *args, **kwargs: order.append("memory")),
         patch(
@@ -308,74 +299,5 @@ def test_contest_observation_runs_before_existing_memory_ambient_and_agent_flows
     ):
         _handle_api_gateway(event, dispatcher, MagicMock())
 
-    assert order == ["contest", "album", "agent"]
-    dispatcher.process_update.assert_called_once_with(body)
-
-
-def test_contest_persistence_failure_returns_500_before_acknowledging_update():
-    body = {
-        "message": {
-            "message_id": 12,
-            "message_thread_id": 11,
-            "reply_to_message": {"message_id": 11},
-            "text": "Мен қатысамын",
-            "chat": {"id": -100123, "type": "supergroup"},
-            "from": {"id": 42, "is_bot": False},
-        }
-    }
-    event = {
-        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret"},
-        "body": json.dumps(body),
-    }
-    dispatcher = MagicMock()
-    dispatcher.captcha_repo.get_pending.return_value = None
-    screener = MagicMock()
-    screener.should_screen.return_value = False
-
-    with (
-        patch("webhook._spam_screening", return_value=screener),
-        patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update", side_effect=RuntimeError("ddb unavailable")),
-        patch("services.group_memory.observe_update") as observe_memory,
-        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction") as ambient,
-    ):
-        response = _handle_api_gateway(event, dispatcher, MagicMock())
-
-    assert response["statusCode"] == 500
-    observe_memory.assert_not_called()
-    ambient.assert_not_called()
-    dispatcher.process_update.assert_not_called()
-
-
-def test_contest_command_retry_error_returns_500_for_telegram_redelivery():
-    body = {
-        "message": {
-            "message_id": 30,
-            "text": "/contest draw",
-            "chat": {"id": -100123, "type": "supergroup"},
-            "from": {"id": 42, "is_bot": False},
-            "reply_to_message": {"message_id": 11},
-        }
-    }
-    event = {
-        "headers": {"x-telegram-bot-api-secret-token": "test-webhook-secret"},
-        "body": json.dumps(body),
-    }
-    dispatcher = MagicMock()
-    dispatcher.captcha_repo.get_pending.return_value = None
-    dispatcher.process_update.side_effect = ContestRetryRequiredError("SQS unavailable")
-    screener = MagicMock()
-    screener.should_screen.return_value = False
-
-    with (
-        patch("webhook._spam_screening", return_value=screener),
-        patch("webhook.is_configured_group_chat", return_value=True),
-        patch("webhook.observe_contest_update"),
-        patch("services.group_memory.observe_update"),
-        patch("services.ambient_reactions.maybe_enqueue_ambient_reaction"),
-        patch("webhook.handle_group_agent_update", return_value=False),
-    ):
-        response = _handle_api_gateway(event, dispatcher, MagicMock())
-
-    assert response["statusCode"] == 500
+    assert order == ["album", "agent"]
     dispatcher.process_update.assert_called_once_with(body)

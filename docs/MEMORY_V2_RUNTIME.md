@@ -134,7 +134,7 @@ one-day acceptance window, with an original identity and generation fence. The
 same command cannot erase newly rebuilt data after a retry. Control tombstones
 are retained for anti-replay and are not erased facts or transcripts.
 
-`ExplicitContextRepository` preserves inherited business settings/contest storage
+`ExplicitContextRepository` preserves inherited business settings storage
 but never writes or reads old `AGENT_REPLY` bodies. Album membership goes only to
 V2 metadata with a one-day original-time lifetime; no captions, filenames, aliases
 or media analysis become long-term facts. At most four items are reloaded from

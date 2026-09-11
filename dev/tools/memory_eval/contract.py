@@ -24,7 +24,7 @@ PERSONAL_FIELDS = {
     "interests",
     "communication_preferences",
 }
-PROTECTED_KEYS = {"CONTEST#23", "SETTINGS", "CONTEST_TTL_OUTBOX"}
+PROTECTED_KEYS = {"SETTINGS", "CHAT_STATS", "CAPTCHA_PENDING"}
 
 
 class EvaluationInputError(ValueError):

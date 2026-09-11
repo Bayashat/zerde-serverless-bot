@@ -9,7 +9,7 @@
 - 旧 memory 与自动社交不得成为 fallback；无记忆 ask 是安全回退。
 - 不把 code/PR/部署成功当真实产品验收，不足时标记 IMPLEMENTED_UNPROVEN。
 - 每任务独立 PR，记录本地、构建、部署读回、canary、真实样本的证据。
-- 保护 contest/settings/outbox 与其他业务数据；清零必须精确 manifest、备份、旧任务隔离和回读核验，禁止整表删除/混合队列 purge。
+- 保护 settings、验证码、统计及其他保留业务数据；已退役抽奖记录仅按明确root scope清理；清零必须精确 manifest、备份、旧任务隔离和回读核验，禁止整表删除/混合队列 purge。
 - Z18 只交付旧云资源清单和手册，旧云资源删除需要另有具体授权。
 - 不在 GitHub、日志或报告里提交聊天正文、个人标识、token、secret 或原始模型上下文。
 - 不重新执行已经记录完成的 audit 全表扫描/跨区枚举，只有状态可能变化且当前任务需要时才刷新。

@@ -1,5 +1,8 @@
 """Tests for dispatcher routing logic."""
 
+from unittest.mock import MagicMock
+
+import pytest
 from core.dispatcher import Dispatcher
 from services.handlers import register_handlers
 
@@ -41,12 +44,26 @@ def test_registered_public_command_surface(mock_bot, mock_stats_repo, mock_sqs_r
     assert "/memory" in dp.command_handlers
     assert "/agent" in dp.command_handlers
     assert "/ask" in dp.command_handlers
-    assert "/contest" in dp.command_handlers
+    assert "/contest" not in dp.command_handlers
     assert "/wtf" not in dp.command_handlers
     assert "/explain" not in dp.command_handlers
     assert "/memory_on" not in dp.command_handlers
     assert "/agent_on" not in dp.command_handlers
     assert "/why_reply" not in dp.command_handlers
+
+
+@pytest.mark.parametrize(
+    "command", ["/contest draw", "/contest redraw", "/contest status", "/contest cancel", "/contest@zerde_bot draw"]
+)
+def test_retired_contest_command_is_ignored_without_business_or_telegram_calls(command):
+    dependencies = [MagicMock() for _ in range(8)]
+    dp = Dispatcher(*dependencies)
+    register_handlers(dp)
+    for content in ({"text": command}, {"caption": command, "document": {"file_id": "test"}}):
+        dp.process_update(
+            {"message": {"message_id": 1, "chat": {"id": -100123, "type": "supergroup"}, "from": {"id": 42}, **content}}
+        )
+    assert all(not dependency.mock_calls for dependency in dependencies)
 
 
 def test_callback_query_routing(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo):

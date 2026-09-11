@@ -252,7 +252,7 @@ class GroupMemoryRepository:
 
     @staticmethod
     def is_deletable_memory_sk(sk: str) -> bool:
-        """Closed allowlist: shared settings, contests and unknown types are never memory."""
+        """Closed allowlist: settings, retired business data and unknown types are never memory."""
         return sk == "VECTOR_BACKFILL" or sk.startswith(_MEMORY_DELETE_PREFIXES)
 
     @staticmethod

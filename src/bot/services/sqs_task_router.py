@@ -8,14 +8,9 @@ from typing import Any
 
 from core.config import is_configured_group_chat
 from core.logger import LoggerAdapter, get_logger
-from services.contest import (
-    process_contest_ttl_recovery_task,
-    process_contest_ttl_sweep_task,
-)
 from services.handlers import process_group_ask_task, process_timeout_task
 from services.memory_cutover import RETIRED_TASK_TYPES, is_current_explicit_task
 from services.repositories.captcha import CaptchaRepository
-from services.repositories.contest import ContestRepository
 from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.sqs import SQSClient
 from services.spam.processor import process_spam_check_task
@@ -68,7 +63,6 @@ def process_sqs_event(
     captcha_repo: CaptchaRepository,
     memory_repo: GroupMemoryRepository | None = None,
     *,
-    contest_repo: ContestRepository | None = None,
     sqs_repo: SQSClient | None = None,
     memory_ingestion=None,
     quiz_repo=None,
@@ -88,10 +82,7 @@ def process_sqs_event(
             ):
                 logger.info("Discarded retired task", extra={"task_type": task_type})
                 continue
-            if task_type not in {
-                "PROCESS_CONTEST_TTL_SWEEP",
-                "PROCESS_CONTEST_TTL_RECOVERY",
-            } and _should_skip_unconfigured_chat(body):
+            if _should_skip_unconfigured_chat(body):
                 continue
 
             t0 = time.monotonic()
@@ -121,22 +112,6 @@ def process_sqs_event(
                 if memory_repo is None:
                     raise RuntimeError("PROCESS_GROUP_ASK requires memory_repo")
                 process_group_ask_task(repo=memory_repo, bot=bot, body=body)
-            elif task_type == "PROCESS_CONTEST_TTL_RECOVERY":
-                if contest_repo is None:
-                    raise RuntimeError("PROCESS_CONTEST_TTL_RECOVERY requires contest_repo")
-                process_contest_ttl_recovery_task(
-                    body,
-                    repo=contest_repo,
-                    sqs_repo=sqs_repo or SQSClient(),
-                )
-            elif task_type == "PROCESS_CONTEST_TTL_SWEEP":
-                if contest_repo is None:
-                    raise RuntimeError("PROCESS_CONTEST_TTL_SWEEP requires contest_repo")
-                process_contest_ttl_sweep_task(
-                    body,
-                    repo=contest_repo,
-                    sqs_repo=sqs_repo or SQSClient(),
-                )
             else:
                 logger.warning(
                     "Unexpected SQS record: unsupported task_type, ignoring",
@@ -164,14 +139,13 @@ def process_vector_sqs_event(
     for record in event["Records"]:
         try:
             body = _load_task_body(record)
-            if _should_skip_unconfigured_chat(body):
-                continue
-
             task_type = body.get("task_type")
             if task_type in RETIRED_TASK_TYPES or (
                 task_type == "PROCESS_GROUP_ASK" and not is_current_explicit_task(body)
             ):
                 logger.info("Discarded retired task", extra={"task_type": task_type})
+                continue
+            if _should_skip_unconfigured_chat(body):
                 continue
             t0 = time.monotonic()
             logger.warning("Unsupported vector task ignored", extra={"task_type": task_type})
