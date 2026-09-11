@@ -34,9 +34,29 @@ _NAME_DIRECTIVE = re.compile(
 )
 _DIRECTIVE = re.compile(
     r"(?:ignore|override|disregard|system\s+prompt|always\s+(?:answer|say|respond)|"
-    r"игнорир\w*|всегда\s+отвеч\w*|нұсқау\w*|нускау\w*|忽略|系统提示|总是回答)",
+    r"игнорир\w*|всегда\s+отвеч\w*|忽略|系统提示|总是回答)",
     re.IGNORECASE,
 )
+_KAZAKH_INSTRUCTION = re.compile(r"(?:нұсқау|нускау)\w*", re.IGNORECASE)
+_KAZAKH_MANUAL = re.compile(r"(?:нұсқаулық|нұсқаулығ|нускаулык|нускаулыг)\w*", re.IGNORECASE)
+_MANUAL_CONTROL = re.compile(
+    r"\b(?:елеме\w*|ескерме\w*|орында\w*|ұмыт\w*|умыт\w*|бағын\w*|багын\w*|ұстан\w*|устан\w*|"
+    r"әрқашан|аркашан|айт|айтыңыз|айтшы|жаз|жазыңыз|жазшы|"
+    r"follow|obey|execute|remember|memorize|respond|answers?|replies|say|must|always|"
+    r"выполн\w*|следу\w*|запомн\w*|отвеч\w*|ответь|скажи|говори|пиши)\b|"
+    r"жауап\s+бер\w*|бұдан\s+былай|будан\s+былай|遵循|执行|记住|回答|输出",
+    re.IGNORECASE,
+)
+
+
+def _kazakh_directive(text: str) -> bool:
+    words = _KAZAKH_INSTRUCTION.findall(text)
+    # A handbook is a public noun, not permission to execute its contents. Keep
+    # rejecting instruction words; the narrow noun lane still rejects control
+    # language anywhere in the complete message, including another sentence.
+    return bool(words) and (
+        any(not _KAZAKH_MANUAL.fullmatch(word) for word in words) or bool(_MANUAL_CONTROL.search(text))
+    )
 
 
 def require_public_content(text: str, *, max_length: int) -> None:
@@ -50,6 +70,7 @@ def require_public_content(text: str, *, max_length: int) -> None:
         or _SECRET_OR_PRIVATE.search(folded)
         or _CONTACT.search(folded)
         or _DIRECTIVE.search(folded)
+        or _kazakh_directive(folded)
         or _TOKEN.search(folded)
     ):
         raise MemoryInputError("Content is not eligible for public memory")

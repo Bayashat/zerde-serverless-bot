@@ -7,6 +7,10 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 ## Approved cutover overrides
 
+The post-baseline handbook/education fixes use the existing V2 safety and answer
+owners; their bounded scope and unverified model-quality status are recorded in
+[Memory quality follow-up](../../../docs/MEMORY_QUALITY_FOLLOWUP.md).
+
 The owner removed the experimental contest feature on 2026-09-11. No contest command, observation, repository, recovery schedule or runtime writer remains in this PR; deployed old code is unchanged until release. Old contest task envelopes are acknowledged without action. Retired rows are not a source of memory and may be explicitly scoped for offline cleanup; deployment and production deletion remain separate operations. This supersedes prior contest preservation/fairness guidance.
 
 The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Retain old helpers only until the separately gated V2 acceptance and removal task. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
