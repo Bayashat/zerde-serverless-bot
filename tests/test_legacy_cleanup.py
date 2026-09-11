@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +17,16 @@ from moto import mock_aws
 from dev.tools.legacy_cleanup import archive, cli
 from dev.tools.legacy_cleanup.aws_adapter import ATTESTATIONS, CONTEST_ATTESTATIONS, AWSAdapter
 from dev.tools.legacy_cleanup.engine import apply_cleanup, make_backup, make_manifest, summary, validate_backup
-from dev.tools.legacy_cleanup.policy import CleanupError, RetiredContest, Scope, canonical, classify, digest, untagged
+from dev.tools.legacy_cleanup.policy import (
+    CleanupError,
+    RetiredContest,
+    Scope,
+    canonical,
+    classify,
+    digest,
+    item_key,
+    untagged,
+)
 
 ACCOUNT = "123456789012"
 REGION = "eu-central-1"
@@ -871,3 +881,197 @@ def test_expanding_retirement_scope_invalidates_backup_and_manifest_digest(adapt
     with pytest.raises(CleanupError, match="backup_manifest_mismatch"):
         validate_backup(modified, backup)
     assert digest(modified) != digest(manifest)
+
+
+class ResumeScaleAdapter:
+    """In-memory cloud with deterministic latency; not a real AWS speed estimate."""
+
+    def __init__(self, kind):
+        self.scope = scope()
+        self.now = NOW
+        self.kind = kind
+        self.rows = {("CHAT#-100", "SETTINGS"): {"pk": "CHAT#-100", "sk": "SETTINGS", "enabled": False}}
+        self.vectors = {}
+        for index in range(2500):
+            key = f"{index:06d}"
+            if kind == "table":
+                self.rows[("CHAT#-100", f"MSG#{key}")] = {"pk": "CHAT#-100", "sk": f"MSG#{key}", "text": key}
+            else:
+                self.vectors[key] = {"key": key, "data": {"float32": [0.25, 1.0]}, "metadata": {}}
+        self.deleted = 0
+        self.calls = Counter()
+        self.snapshot_seconds = 0
+        self.gate_seconds = 0
+        self.call_seconds = 0
+        self.expire_after_deletes = None
+
+    def clock(self):
+        return self.now
+
+    def snapshot(self, selected):
+        assert selected == self.scope
+        self.calls["snapshot"] += 1
+        self.now += self.snapshot_seconds
+        return {
+            "identity": {"account_id": ACCOUNT, "region": REGION},
+            "rows": copy.deepcopy(list(self.rows.values())),
+            "vectors": {INDEX: copy.deepcopy(list(self.vectors.values()))},
+        }
+
+    def verify_gate(self, selected, manifest, proof):
+        assert selected == self.scope and proof["manifest_sha256"] == digest(manifest)
+        self.calls["gate"] += 1
+        self.now += self.gate_seconds
+        if self.now >= proof["valid_until"]:
+            raise CleanupError("cutover_evidence_expired_during_readback")
+
+    def validate_delete_condition(self, row):
+        from dev.tools.legacy_cleanup.aws_adapter import condition_for
+
+        condition_for(row)
+
+    def _call(self, name):
+        self.calls[name] += 1
+        self.now += self.call_seconds
+
+    def _deleted(self, count):
+        self.deleted += count
+        if self.deleted == self.expire_after_deletes:
+            self.now = NOW + 875  # Existing 30-second send margin must stop the next delete.
+
+    def get_item(self, key):
+        self._call("get_item")
+        return copy.deepcopy(self.rows.get((key["pk"], key["sk"])))
+
+    def delete_item(self, original):
+        self._call("delete_item")
+        identity = (original["pk"], original["sk"])
+        assert self.rows[identity] == original
+        del self.rows[identity]
+        self._deleted(1)
+
+    def get_vectors(self, arn, keys):
+        assert arn == INDEX
+        self._call("get_vectors")
+        return {key: copy.deepcopy(self.vectors[key]) for key in keys if key in self.vectors}
+
+    def delete_vectors(self, arn, keys):
+        assert arn == INDEX and 1 <= len(keys) <= 25
+        self._call("delete_vectors")
+        for key in keys:
+            del self.vectors[key]
+        self._deleted(len(keys))
+
+    def list_vectors(self, arn):
+        assert arn == INDEX
+        self._call("list_vectors")
+        return copy.deepcopy(list(self.vectors.values()))
+
+
+@pytest.mark.parametrize("kind", ["table", "vector"])
+def test_large_expired_run_resumes_remaining_keys_without_spending_window_on_deleted_prefix(kind):
+    cloud = ResumeScaleAdapter(kind)
+    manifest, backup = prepared(cloud)
+    cloud.snapshot_seconds = 120
+    cloud.expire_after_deletes = 2475
+    with pytest.raises(CleanupError, match="cutover_evidence_expired"):
+        execute(cloud, manifest, backup)
+    assert cloud.deleted == 2475
+
+    # A slow follow-up with a fresh 15-minute proof cannot afford 2,475 missing GetItems
+    # or 99 complete vector gates. Only the fresh snapshot may skip that prefix.
+    cloud.calls.clear()
+    cloud.expire_after_deletes = None
+    cloud.call_seconds = 0.4
+    cloud.gate_seconds = 10 if kind == "vector" else 1
+    start = int(cloud.now) + 1
+    cloud.now = start
+    proof = {**evidence(manifest), "observed_at": start, "valid_until": start + 900}
+    assert execute(cloud, manifest, backup, proof=proof)["online_clean"]
+    assert cloud.deleted == 2500 and cloud.now < proof["valid_until"] - 30
+    assert cloud.calls["snapshot"] == 2 and cloud.calls["gate"] == 4
+    if kind == "table":
+        assert cloud.calls["get_item"] == 50 and cloud.calls["delete_item"] == 25
+    else:
+        assert cloud.calls["get_vectors"] == 2 and cloud.calls["delete_vectors"] == 1
+    assert list(cloud.rows.values()) == [{"pk": "CHAT#-100", "sk": "SETTINGS", "enabled": False}]
+
+
+def test_forged_journal_counters_never_skip_present_records(adapter):
+    manifest, backup = prepared(adapter)
+    journal = {
+        "manifest_sha256": digest(manifest),
+        "state": "online_clean_copies_pending",
+        "table_batches_confirmed": 10**9,
+        "vector_batches_confirmed": 10**9,
+    }
+    result = apply_cleanup(
+        adapter,
+        manifest,
+        backup,
+        expected_digest=digest(manifest),
+        evidence=evidence(manifest),
+        journal=journal,
+        save_journal=lambda value: None,
+    )
+    assert result["online_clean"] and adapter.vectors.deleted == ["orphan"]
+    assert len(adapter.scan_rows()) == 5
+
+
+@pytest.mark.parametrize("kind", ["table", "vector"])
+def test_snapshot_missing_key_reappearing_is_not_deleted_or_reported_clean(adapter, kind):
+    manifest, backup = prepared(adapter)
+    if kind == "table":
+        original = adapter.get_item({"pk": "CHAT#-100", "sk": "MSG#1"})
+        adapter.delete_item(original)
+    else:
+        original = copy.deepcopy(adapter.vectors.rows.pop("orphan"))
+    snapshot = adapter.snapshot
+
+    def reappear(selected):
+        result = snapshot(selected)
+        if kind == "table":
+            adapter.table.put_item(Item=original)
+        else:
+            adapter.vectors.rows[original["key"]] = original
+        return result
+
+    adapter.snapshot = reappear
+    with pytest.raises(CleanupError, match="legacy_online_data_remains|legacy_vectors_remain"):
+        execute(adapter, manifest, backup)
+    if kind == "table":
+        assert adapter.get_item(item_key(original)) == original
+    else:
+        assert adapter.vectors.rows["orphan"] == original and not adapter.vectors.deleted
+
+
+@pytest.mark.parametrize("kind", ["table", "vector"])
+@pytest.mark.parametrize("mutation", ["unknown", "changed"])
+def test_resume_snapshot_rejects_unknown_or_changed_records_before_any_delete(adapter, kind, mutation):
+    manifest, backup = prepared(adapter)
+    if kind == "table":
+        row = {"pk": "CHAT#-100", "sk": "MSG#unknown" if mutation == "unknown" else "MSG#1", "text": "changed"}
+        adapter.table.put_item(Item=row)
+    else:
+        key = "unknown" if mutation == "unknown" else "orphan"
+        adapter.vectors.rows[key] = {"key": key, "data": {"float32": [1.0, 0.0]}, "metadata": {}}
+    with pytest.raises(CleanupError, match="manifest_content_changed"):
+        execute(adapter, manifest, backup)
+    assert not adapter.vectors.deleted
+    assert adapter.get_item({"pk": "CHAT#-100", "sk": "AGENT_REPLY#1"}) is not None
+
+
+def test_full_scan_exhausting_fresh_evidence_window_still_prevents_all_deletes(adapter):
+    manifest, backup = prepared(adapter)
+    snapshot = adapter.snapshot
+
+    def slow(selected):
+        result = snapshot(selected)
+        adapter.now += 880
+        return result
+
+    adapter.snapshot = slow
+    with pytest.raises(CleanupError, match="cutover_evidence_expired"):
+        execute(adapter, manifest, backup)
+    assert not adapter.vectors.deleted
+    assert adapter.get_item({"pk": "CHAT#-100", "sk": "MSG#1"}) is not None
