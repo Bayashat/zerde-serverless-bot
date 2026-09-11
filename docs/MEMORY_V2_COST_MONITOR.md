@@ -76,6 +76,24 @@ PITR 整月计价。当前日志存量和新增日志另计存储；共享 Bot �
 table/LSI/stream、额外 GSI、KMS 收费或 FIFO 队列；实际配置出现这些情况会 UNVERIFIED。
 额外服务、数据传输和未知调用不能凭本目录宣称“全部 AWS 费用均已计入”。
 
+### 标准队列元数据兼容修复（2026-09-11）
+
+实际只读对照发现：对同一 V2 标准队列请求 `FifoQueue` 属性返回
+`InvalidAttributeName`；仅移除它，保持 QueueArn、CreatedTimestamp、MaximumMessageSize、
+KmsMasterKeyId 四个属性不变即成功，返回前三项，KmsMasterKeyId 缺失。
+[SQS 官方接口](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html)
+将 FifoQueue 限定为 FIFO 队列，并说明可通过队列名的 `.fifo` 后缀识别类型。
+
+读取器不再请求 FIFO 专属属性。标准类型仍由闭合 inventory 的规范名称、精确 URL 和返回 ARN
+共同确认；不接受 `.fifo` 名称或矛盾的 FIFO 标志。创建时间、消息大小及 KMS 边界保持：
+只有可选 KmsMasterKeyId 缺失沿用无 KMS 额外计费分支，不能据此称队列未加密；本次没有读取
+SqsManagedSseEnabled。缺少其他必需字段、ARN 不匹配、异常大小、未覆盖的旧创建时间、KMS
+或 SDK 错误仍记为 UNVERIFIED，禁止发出可选模型工作许可。
+
+本地回归使用真实 botocore 请求序列化/响应解析、合成 HTTP 回包及 Moto 预算事务；这些测试
+不调用 AWS，也不证明整套生产成本仪表已恢复。修复发布后须实际重新测量，并核验历史覆盖和
+其余资源/REPORT 门槛，不能直接改账本状态或推进计费起点。
+
 ## 无正文仪表契约
 
 Bot 和 memory-worker 在每次 invocation 的首次 V2 touch 发一次 Start；每个 V2 span

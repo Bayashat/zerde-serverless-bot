@@ -137,12 +137,16 @@ class SDKCostTelemetry:
                 created.append(groups[spec["log_group"]]["created"])
         for spec in self.inventory.queues:
             self.api_units += 1
+            # FifoQueue is FIFO-only: requesting it for a standard queue can
+            # raise InvalidAttributeName. The closed inventory and exact ARN
+            # below bind the response to a name without the required .fifo suffix.
             response = self.sqs.get_queue_attributes(
                 QueueUrl=spec["url"],
-                AttributeNames=["QueueArn", "CreatedTimestamp", "MaximumMessageSize", "FifoQueue", "KmsMasterKeyId"],
+                AttributeNames=["QueueArn", "CreatedTimestamp", "MaximumMessageSize", "KmsMasterKeyId"],
             )["Attributes"]
             if (
                 response.get("QueueArn") != f"arn:aws:sqs:{REGION}:{self.inventory.account_id}:{spec['name']}"
+                or spec["name"].endswith(".fifo")
                 or response.get("FifoQueue", "false") != "false"
                 or response.get("KmsMasterKeyId")
                 or not 0 < int(response["MaximumMessageSize"]) <= 1024 * 1024
