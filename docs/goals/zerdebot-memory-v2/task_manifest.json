@@ -280,7 +280,7 @@
     "title": "CHORE: 移除实验性抽奖功能",
     "depends_on": [],
     "body_file": "issues/Z19.md",
-    "status": "implementing",
+    "status": "pr_open",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/204",

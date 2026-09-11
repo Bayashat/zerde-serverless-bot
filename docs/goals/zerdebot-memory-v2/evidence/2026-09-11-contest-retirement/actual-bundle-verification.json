@@ -1,0 +1,257 @@
+{
+  "source_sha": "da6d77d4334c1eb70287ffe86c3270e416a6e303",
+  "input_sentinels_filtered": true,
+  "functions": [
+    {
+      "name": "zerde-serverless-bot-dev",
+      "handler": "main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.6bf6de3535c346fb4190cc0184e9ac23a20ef972242124edadc6ae329fd637e5"
+    },
+    {
+      "name": "zerde-serverless-vector-indexer-dev",
+      "handler": "vector_indexer_main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.6bf6de3535c346fb4190cc0184e9ac23a20ef972242124edadc6ae329fd637e5"
+    },
+    {
+      "name": "zerde-serverless-news-dev",
+      "handler": "main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.79040f2ce5a0b058c8817acdfeb7811bb9fed19448ccee9f7719edf8d10e5049"
+    },
+    {
+      "name": "zerde-serverless-quiz-dev",
+      "handler": "main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.611312432073ccc7365bd7cbe846c3c7db2435504dcc9ff1f0e545f9f63d0500"
+    },
+    {
+      "name": "zerde-serverless-operations-dev",
+      "handler": "main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.c6b78f0a51258a22b5d649b5b4df3023bc88860fdd519594b8153a287ef34df0"
+    },
+    {
+      "name": "zerde-serverless-memory-v2-worker-dev",
+      "handler": "memory_worker_main.lambda_handler",
+      "first_party_cache": false,
+      "contest_files": [],
+      "asset_id": "asset.6bf6de3535c346fb4190cc0184e9ac23a20ef972242124edadc6ae329fd637e5"
+    }
+  ],
+  "template_contest_references": 0,
+  "dynamodb_tables": {
+    "ZerdeServerlessBotZerdeServerlessStatsTable13809BF9": "zerde-serverless-bot-stats-dev",
+    "ZerdeServerlessBotZerdeServerlessMemoryTable7DFD80C3": "zerde-serverless-bot-memory-dev",
+    "ZerdeServerlessMemoryV2ZerdeServerlessMemoryV2Table01BB900E": "zerde-serverless-memory-v2-dev",
+    "ZerdeServerlessQuizZerdeServerlessQuizTable75DD2E31": "zerde-serverless-quiz-dev"
+  },
+  "sqs_queues": {
+    "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksDlqB73D72D0": "zerde-serverless-timeout-tasks-dlq-dev",
+    "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksQueueF4025D17": "zerde-serverless-timeout-tasks-queue-dev",
+    "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksDlqD05953EF": "zerde-serverless-vector-memory-tasks-dlq-dev",
+    "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksQueue466ACAD4": "zerde-serverless-vector-memory-tasks-queue-dev",
+    "ZerdeServerlessOperationsSubscriptionDlqB359BE62": "zerde-serverless-operations-delivery-dlq-dev",
+    "ZerdeServerlessOperationsExecutionDlq4A81A3AF": "zerde-serverless-operations-execution-dlq-dev",
+    "ZerdeServerlessMemoryWorkerDlq5FCF0513": "zerde-serverless-memory-v2-dlq-dev",
+    "ZerdeServerlessMemoryWorkerQueue0A73F1D5": "zerde-serverless-memory-v2-queue-dev"
+  },
+  "eventbridge_rules": {
+    "QuizPublicationRecoveryD49CE317": "zerde-serverless-quiz-publication-recovery-dev",
+    "QuizAnswerRecovery4BDAC5C3": "zerde-serverless-quiz-answer-recovery-dev",
+    "ZerdeServerlessMemoryWorkerRecovery01FE98ED": "zerde-serverless-memory-v2-recovery-dev"
+  },
+  "counts": {
+    "lambda_handlers": 6,
+    "unique_function_assets": 4,
+    "dynamodb_tables": 4,
+    "sqs_queues": 8,
+    "eventbridge_rules": 3,
+    "contest_rules": 0,
+    "input_cache_sentinels_verified": 21
+  },
+  "probe_results": [
+    {
+      "package": "bot",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "bot",
+      "handler": "vector_indexer_main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "news",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "quiz",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "operations",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "bot",
+      "handler": "memory_worker_main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    }
+  ],
+  "build_toolchain": {
+    "uv": "0.11.3",
+    "host_python": "3.13.6",
+    "cdk_cli": "2.1119.0"
+  },
+  "template_sha256": "3245cd434f0015ed909ab8d6863317854f1d7b63d344d37e66f608888788d540",
+  "log_paths": {
+    "synth": "/tmp/zerde-contest-final-synth.log",
+    "bundles": "/tmp/zerde-contest-final-bundles.log"
+  },
+  "input_sentinels_present_at_verification": 21,
+  "synthetic_inputs_removed_after_verification": true,
+  "scope": "local_synth_and_offline_runtime_only",
+  "host_python": "3.13.6",
+  "cdk_cli": "2.1119.0",
+  "synth_exit_code": 0,
+  "runtime_probe_exit_code": 0,
+  "input_sentinels": [
+    "src/bot/main.pyc",
+    "src/bot/main.pyo",
+    "src/bot/__pycache__/main.cpython-313.pyc",
+    "src/news/main.pyc",
+    "src/news/main.pyo",
+    "src/news/__pycache__/main.cpython-313.pyc",
+    "src/quiz/main.pyc",
+    "src/quiz/main.pyo",
+    "src/quiz/__pycache__/main.cpython-313.pyc",
+    "src/operations/main.pyc",
+    "src/operations/main.pyo",
+    "src/operations/__pycache__/main.cpython-313.pyc",
+    "src/bot/services/__pycache__/contest.cpython-313.pyc",
+    "src/bot/services/handlers/__pycache__/contest.cpython-313.pyc",
+    "src/bot/services/repositories/__pycache__/contest.cpython-313.pyc",
+    "src/shared/obsolete.pyc",
+    "src/shared/obsolete.pyo",
+    "src/shared/__pycache__/obsolete.cpython-313.pyc",
+    "src/shared/python/zerde_common/obsolete.pyc",
+    "src/shared/python/zerde_common/obsolete.pyo",
+    "src/shared/python/zerde_common/__pycache__/obsolete.cpython-313.pyc"
+  ],
+  "runtime_probes": [
+    {
+      "package": "bot",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "bot",
+      "handler": "vector_indexer_main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "news",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "quiz",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "operations",
+      "handler": "main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    },
+    {
+      "package": "bot",
+      "handler": "memory_worker_main.lambda_handler",
+      "architecture": "aarch64",
+      "python": "3.13.15",
+      "boto3": "1.42.38",
+      "urllib3": "2.7.0",
+      "imports": "passed",
+      "network": "disabled",
+      "first_party_assets": "clean"
+    }
+  ],
+  "runtime_image": "public.ecr.aws/lambda/python@sha256:d52afe970081b30397342d019525dade26073d9e557fd94a3615de9b62ff9e27",
+  "cloud_mutations": false
+}

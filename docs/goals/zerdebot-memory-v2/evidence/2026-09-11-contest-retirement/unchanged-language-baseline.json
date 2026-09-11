@@ -1,0 +1,6 @@
+{
+  "scenarios": 240,
+  "non_business_corpus_sha256": "5d28b28dd91e52e8381df0de902ad3aea22a2b686ceb9ba02b40640010897d45",
+  "provider_sha256": "3e6e67179837e85afe08b48ba562df050c750e2c4f01d274ffdf7bfbd581f0d0",
+  "catalog_sha256": "bfa69d25eac0ef1f7f8610341302277b8106e1612f48bf70a98a7008a12c3dcd"
+}

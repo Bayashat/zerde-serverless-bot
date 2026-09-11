@@ -90,10 +90,10 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 
 这些证据仅证明本地实现和真实打包边界。Logs Insights实际执行、共享用量归因、真实管理员通知、模型质量、Telegram来源链接、dev canary及单群七天仍待验证。旧实现暂留隔离状态，按Z11验收后才退役，不提前恢复任何旧记忆读取。
 
-## 最终组合与交接（2026-09-11；PR_OPEN）
+## 首次完整组合与交接（2026-09-11；退役抽奖前的历史快照）
 
 - 完整代码 [PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，源码提交 **c2bed1b**。该提交已组合全部独立修复、公共入口、清零工具和最终评估工具。后续计划/证据归档为文档变更。
-- **1,620 tests passed / 150.64秒**，Python3.13.6；all-files pre-commit和diffcheck通过。集成前1,539/127.03秒也通过，但最终证据以1,620为准，不累加各分支测试。
+- **1,620 tests passed / 150.64秒**，Python3.13.6；all-files pre-commit和diffcheck通过。集成前1,539/127.03秒也通过，该阶段证据以1,620为准，不累加各分支测试。
 - fresh dev CDK synth与6真实Lambda资产ARM64/Python3.13.15禁网导入通过。此后只加入dev评估工具/语料/文档，不改变Lambda源码、资产或锁文件。共享入口独审191项ALIGNED，保留Memory与News/Quiz的所有路由、依赖注入、HTTP500、IAM和恢复调度。
 - 最终评估 [PR #203](https://github.com/Bayashat/zerde-serverless-bot/pull/203) / 7be7370（作者分支1,488 full）。独审81项、3个原生Moto故障注入和18场景/36检查点/16种事件的独立CLI回放通过工程检查。修复管理员确认类型、同一检查点前写入又删除的敏感RAW漏报、全部known问题拒答仍假PASS三项P2。
 - 集成分支再次独立CLI执行 **240场景/404检查点/16类事件**，无缺fixture、无网络调用；813个WORK为797DONE、4PENDING、4PAUSED、8EXPIRED。没有把暂停或过期算完成。执行源码指纹 `ee65efe71a61600ed0a87b5caf63a40ee2110789728bd8a7670816c1c703b662`，覆盖129个指定源码/锁文件；不是已安装依赖或生产镜像认证。
@@ -102,3 +102,19 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 - 最终dev只读diff：CDK CLI2.1119.0，`cdk diff -c env=dev --no-change-set --method=template` exit0，1个stack有差异；直接模板比较/lookup role，不创建change set。33新增、29修改、14删除，删除全是旧dev告警；新增operations/worker、V2表、4队列、SNS、恢复规则/映射/IAM，既有4Lambda更新。默认dev预览6Lambda并发0、3mapping false、3rules DISABLED、0alarms、4表PITR关闭；共享Layer替换仅模板推断。管理员未配置、计量epoch0，**这是本地默认配置与已部署dev的差异，不是生产release manifest，不能原样部署**。私有原始日志 `/tmp/zerde-final-readonly-dev-diff.log` 权限0600；没有云写或生产diff。
 
 继续执行以 [HANDOFF](HANDOFF.md) 为入口。未执行合并、部署、真实模型调用、Telegram发信、成本标签激活、生产manifest/备份/清零、旧AWS资源删除、dev canary或七天群试运行。当前已批准的Z18交付仍仅清理手册。生产物理副本清除和验收后旧实现退役仍是明确未完成项。
+
+## 用户修订：抽奖退役（2026-09-11；PR #204）
+
+用户要求直接在现有PR移除实验性抽奖，之后由用户审阅、批准和合并。退役源码提交 **158cfe729d0670461b739471b5c976709c2aeca2**，随后打包缓存修复提交 **da6d77d4334c1eb70287ffe86c3270e416a6e303**；后续为计划/证据归档。此节取代上节的最终源码与测试数量；上节仅是退役前历史快照。
+
+- 删除三个contest模块、命令注册、webhook观察、依赖注入、队列生产方法及prod专用恢复规则。运行源码只剩两种退休任务名，统一在`memory_cutover.RETIRED_TASK_TYPES`声明；main/vector路由均在chat解析和任何业务依赖前丢弃旧任务。16个双路由/双类型/异常chat案例与混合批次证明不读库、不发信、不再投递，正常业务任务仍处理。
+- 清零工具新增显式`retired_contests`群/root清单；原默认范围不扩大。四种历史记录分别校验规范key/kind/身份，独立处理缺META的孤儿alias/outbox，加密备份及manifest包含所选数据，outbox最后删除。每批确认旧writer/任务/recovery已停，已删除规则仅接受明确NotFound读回；共享表和队列保持。
+- 独立cleanup审阅 **ALIGNED**：原69项加临时3项原生SDK/Moto故障实验，共72 passed。实际旧repository生成两root后仅删除选中root；35参与者跨批期间规则重新ENABLED立即停止；备份后新增属性中止且零删除。完整库存、停写和change freeze仍须真实执行时提供，模拟不替代生产证据。
+- Memory评估改用实际SETTINGS、CHAT_STATS、CAPTCHA_PENDING行及其真实表键；九种删行/改值/加字段故障须报业务损坏。语言gold、问题和provider响应字节未改，基线hash见[不变项证明](evidence/2026-09-11-contest-retirement/unchanged-language-baseline.json)。移除抽奖公平性和真实抽奖验收要求，未降低记忆质量与其他业务保护门槛。领域/评分器独立复核 **ALIGNED**；root重点90 passed，运行入口重点86 passed。
+- 退役源码先通过 **1,609 tests / 172.15秒**；增加打包缓存检查后，最终`da6d77d`再次全量通过 **1,621 tests / 182.88秒**，Python3.13.6。all-files pre-commit及diffcheck通过。数量变化包含删除旧功能专属测试和新增退役/数据边界测试，不能与各分支数字相加。当前无可执行抽奖源码和陈旧文档路径引用；旧缺陷仅作为历史审阅证据保留。
+- 本地CDK模板与90d19b5比较：[差异记录](evidence/2026-09-11-contest-retirement/local-template-retirement-diff.json)。dev资源定义不变；prod仅少一个抽奖EventBridge规则及共享队列policy中相应投递授权。此比较使用测试construct占位资产，说明基础设施定义范围，不能替代真实产物或已部署AWS读回。
+- 实际打包发现旧源码删除后，本地ignored `__pycache__`仍会被PythonFunction复制。`da6d77d`通过唯一共用BundlingOptions给六Lambda排除本地缓存，shared Layer使用明确glob；资产probe拒绝自有缓存或退役contest模块，允许pip依赖编译输出。39项专项测试通过，包括真实CDK Layer AssetStaging哨兵过滤、六入口接线与probe拒绝回归；root独立复核 **ALIGNED**。没有依靠手工清空工作树来掩盖打包残留。
+- `da6d77d`在无.env隔离树重新实际dev synth **exit0**；故意保留21个源缓存哨兵时，六Lambda及Layer均未复制这些输入，contest文件为0。六真实入口在固定digest ARM64 Lambda镜像、Python3.13.15、禁网条件下全部import通过，模板保留四表和八队列。host为Python3.13.6，与容器运行时区分；[实际产物证据](evidence/2026-09-11-contest-retirement/actual-bundle-verification.json)含源码SHA、资产ID及探针结果。没有部署或云写。
+- 在当前领域代码执行240场景/404检查点/16类事件固定provider回放，无缺fixture、无网络；813个WORK=797DONE/4PENDING/4PAUSED/8EXPIRED。执行范围126个源码/锁文件，指纹`d2c1756b706dbc6e0077fe1eb44a349e9ae58c9731eadf7fab38d971fb5979b4`。新[报告](evidence/2026-09-11-contest-retirement/report.md)、provenance及[重现记录](evidence/2026-09-11-contest-retirement/run.json)已归档；旧报告保留为历史。数值仍如实 **FAIL**：recall21.07%、来源250/260、known完整回答21/224；真实模型仍 **NOT_VERIFIED**。退役改动未通过改gold或换假provider提高分数。
+
+没有合并、部署、AWS/Telegram写入或实际清理。线上现有抽奖记录不因此消失，不迁入Memory V2；后续须按明确清单、备份、停写证据执行。仍保留Z10生产清零、Z11真实模型/dev/七天单群和Z18云资源清理等未完成状态。用户审阅入口仍是同一个PR #204。

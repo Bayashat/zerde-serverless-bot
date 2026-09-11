@@ -1,0 +1,18 @@
+{
+  "provider_kind": "fake_provider",
+  "purpose": "REAL_DOMAIN_SYNTHETIC_TRANSPORT_REPLAY",
+  "network_calls": 0,
+  "fixture_sha256": "43a60d4075e59a7910f772f5a2a1f9a4dde2c2a75b460cbdcea835399007e1e3",
+  "execution_source_sha256": "d2c1756b706dbc6e0077fe1eb44a349e9ae58c9731eadf7fab38d971fb5979b4",
+  "execution_source_scope": [
+    "src/bot/**/*.py",
+    "src/shared/python/**/*.py",
+    "dev/tools/memory_eval/**/*.py",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "execution_source_files": 126,
+  "python_version": "3.13.6",
+  "dependency_evidence": "locked_manifest_only_not_installed_package_attestation",
+  "unsupported_scenarios": 0
+}

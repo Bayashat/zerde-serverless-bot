@@ -10,7 +10,7 @@
 - [最终代码集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)
 - [代码交付后继续执行](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/HANDOFF.md)
 
-当前 Z01–Z19 均已有独立代码/工具/手册 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
+当前 Z01–Z19 均已有代码/工具/手册交付 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
 
 2026-09-11用户修订：直接在#204移除实验性抽奖，待用户审阅批准合并；此次没有部署或删除线上数据。
 
@@ -24,7 +24,7 @@
 
 至少200多轮场景、300标注事实、100无依据问题，kk/ru/en/混语分切片；precision>=95%、recall>=90%、个人断言来源支持100%、未知正确表达>=95%；错误身份/跨群/敏感泄露/删除复活/业务误删均0。dev验证后单群至少7天并取得50事实问答及20未知问答；样本不足不算真实验收。普通学习p95<=5min，投递恢复<=10min单列。
 
-每任务独立PR，代码、合并、部署读回、合成与真实证据分开记录；不能因为测试通过就关闭产品验收。先Z01-Z04，之后Z05-Z11按依赖推进；独立业务Z12-Z16可并行，共享入口及infra统一集成。
+初版按任务独立PR；Z19退役修订按用户要求直接进入#204。代码、合并、部署读回、合成与真实证据分开记录；不能因为测试通过就关闭产品验收。先Z01-Z04，之后Z05-Z11按依赖推进；独立业务Z12-Z16可并行，共享入口及infra统一集成。
 
 ## 子工单
 

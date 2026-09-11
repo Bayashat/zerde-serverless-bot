@@ -1,0 +1,2497 @@
+{
+  "schema_version": 1,
+  "scope": "offline",
+  "product_gate": "IMPLEMENTED_UNPROVEN",
+  "model_quality_claim": "NOT_VERIFIED",
+  "provenance": {
+    "provider_kind": "fake_provider",
+    "purpose": "REAL_DOMAIN_SYNTHETIC_TRANSPORT_REPLAY",
+    "network_calls": 0,
+    "fixture_sha256": "43a60d4075e59a7910f772f5a2a1f9a4dde2c2a75b460cbdcea835399007e1e3",
+    "execution_source_sha256": "d2c1756b706dbc6e0077fe1eb44a349e9ae58c9731eadf7fab38d971fb5979b4",
+    "execution_source_scope": [
+      "src/bot/**/*.py",
+      "src/shared/python/**/*.py",
+      "dev/tools/memory_eval/**/*.py",
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    "execution_source_files": 126,
+    "python_version": "3.13.6",
+    "dependency_evidence": "locked_manifest_only_not_installed_package_attestation",
+    "unsupported_scenarios": 0
+  },
+  "corpus": {
+    "totals": {
+      "scenarios": 240,
+      "gold_facts": 516,
+      "unknown_questions": 256
+    },
+    "languages": {
+      "kk": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "ru": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "en": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "mixed": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      }
+    },
+    "unique_conversations": 240,
+    "size_gate": true,
+    "sha256": "f622ef63d452823ddef322221a0b55eb8b38f238be896e28798e1db566778291",
+    "independent_review": "PENDING"
+  },
+  "prediction_sha256": "22e49ea96ab776d62273962249ac680b82ff0ac056ea81e69651ff317ad2976f",
+  "complete": false,
+  "runtime_replay": {
+    "unsupported_checkpoints": [],
+    "executed_checkpoints": 404
+  },
+  "numeric_thresholds_pass": false,
+  "overall": {
+    "tp": 161,
+    "fp": 7,
+    "fn": 603,
+    "gold_observations": 764,
+    "assertions": 260,
+    "supported_assertions": 250,
+    "unknown_questions": 256,
+    "unknown_abstained": 244,
+    "missing_checkpoints": 0,
+    "missing_answers": 16,
+    "supported_questions": 224,
+    "supported_answers_complete": 21,
+    "precision": 0.9583333333333334,
+    "recall": 0.2107329842931937,
+    "source_support": 0.9615384615384616,
+    "unknown_abstention": 0.953125,
+    "supported_answer_recall": 0.09375,
+    "thresholds_pass": false
+  },
+  "languages": {
+    "kk": {
+      "tp": 41,
+      "fp": 1,
+      "fn": 150,
+      "gold_observations": 191,
+      "assertions": 65,
+      "supported_assertions": 64,
+      "unknown_questions": 64,
+      "unknown_abstained": 61,
+      "missing_checkpoints": 0,
+      "missing_answers": 4,
+      "supported_questions": 56,
+      "supported_answers_complete": 6,
+      "precision": 0.9761904761904762,
+      "recall": 0.21465968586387435,
+      "source_support": 0.9846153846153847,
+      "unknown_abstention": 0.953125,
+      "supported_answer_recall": 0.10714285714285714,
+      "thresholds_pass": false
+    },
+    "ru": {
+      "tp": 41,
+      "fp": 2,
+      "fn": 150,
+      "gold_observations": 191,
+      "assertions": 67,
+      "supported_assertions": 64,
+      "unknown_questions": 64,
+      "unknown_abstained": 61,
+      "missing_checkpoints": 0,
+      "missing_answers": 4,
+      "supported_questions": 56,
+      "supported_answers_complete": 6,
+      "precision": 0.9534883720930233,
+      "recall": 0.21465968586387435,
+      "source_support": 0.9552238805970149,
+      "unknown_abstention": 0.953125,
+      "supported_answer_recall": 0.10714285714285714,
+      "thresholds_pass": false
+    },
+    "en": {
+      "tp": 39,
+      "fp": 2,
+      "fn": 152,
+      "gold_observations": 191,
+      "assertions": 63,
+      "supported_assertions": 60,
+      "unknown_questions": 64,
+      "unknown_abstained": 61,
+      "missing_checkpoints": 0,
+      "missing_answers": 4,
+      "supported_questions": 56,
+      "supported_answers_complete": 4,
+      "precision": 0.9512195121951219,
+      "recall": 0.20418848167539266,
+      "source_support": 0.9523809523809523,
+      "unknown_abstention": 0.953125,
+      "supported_answer_recall": 0.07142857142857142,
+      "thresholds_pass": false
+    },
+    "mixed": {
+      "tp": 40,
+      "fp": 2,
+      "fn": 151,
+      "gold_observations": 191,
+      "assertions": 65,
+      "supported_assertions": 62,
+      "unknown_questions": 64,
+      "unknown_abstained": 61,
+      "missing_checkpoints": 0,
+      "missing_answers": 4,
+      "supported_questions": 56,
+      "supported_answers_complete": 5,
+      "precision": 0.9523809523809523,
+      "recall": 0.2094240837696335,
+      "source_support": 0.9538461538461539,
+      "unknown_abstention": 0.953125,
+      "supported_answer_recall": 0.08928571428571429,
+      "thresholds_pass": false
+    }
+  },
+  "zero_tolerance": {
+    "wrong_identity": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "cross_chat": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "sensitive_leak": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "delete_resurrection": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "business_damage": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "automatic_social": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    }
+  },
+  "coverage": {
+    "states": {
+      "done": 797,
+      "pending": 4,
+      "paused": 4,
+      "expired": 8
+    },
+    "distinct_work": 813,
+    "observed_checkpoints": 404,
+    "expected_checkpoints": 404,
+    "status": "SUPPLIED_TRACE_UNVERIFIED",
+    "pending_max_age_seconds": 1
+  },
+  "latency": {
+    "normal": {
+      "samples": 793,
+      "p95_seconds": 2,
+      "limit_seconds": 300,
+      "status": "PASS"
+    },
+    "recovery": {
+      "samples": 4,
+      "p95_seconds": 63,
+      "limit_seconds": 600,
+      "status": "PASS"
+    },
+    "ask_text": {
+      "samples": 0,
+      "p95_seconds": null,
+      "limit_seconds": 15,
+      "status": "UNVERIFIED"
+    }
+  },
+  "cost": {
+    "provided_trace_usd": 0.0,
+    "trace_records": 0,
+    "status": "NOT_PROVIDED"
+  },
+  "diagnostics": [
+    {
+      "scenario_id": "kk-001",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-001-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-002",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-002-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-003",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-003-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-004",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-004-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-006",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-006-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-007",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-007-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-008",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-009",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-009-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-010",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-010-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-011",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-011-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-012",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-012-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-013",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-013-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-014",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-014-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-015",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-015-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-016",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-016-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-018",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-018-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-019",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-019-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-020",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-020-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-021",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-021-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-022",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-022-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-023",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-024",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-024-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-026",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-026-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-027",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-027-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-031",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-031-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-032",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-032-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-033",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-033-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-033",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-033-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-034",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-034-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-035",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-035-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-038-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-039",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-039-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-040",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-040-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-041",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-041-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-042",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-042-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-043",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-043-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-044",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-044-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-045",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-045-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-046",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-046-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-047",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-047-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-048",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-049",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#GROUP#rule#f4f367cc14e05a716917988b5262f567cbfd83b76abc2647f016cc8e3235e36c"
+    },
+    {
+      "scenario_id": "kk-049",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-049-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-050",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-050-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-051",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-051-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2",
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-052",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-052-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-053",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-054",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-054-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-054",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-054-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-055",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-055-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-056",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-056-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-057",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-057-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-058",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-058-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-060",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-060-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-001",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-001-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-002",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-002-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-003",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-003-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-004",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-004-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-006",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-006-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-007",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-007-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-008",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-009",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-009-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-010",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-010-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-011",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-011-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-012",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-012-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-013",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-013-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-014",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-014-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-015",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-015-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-016",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-016-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-018",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-018-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-019",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-019-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-020",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-020-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-021",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-021-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-022",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-022-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-023",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-024",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-024-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-026",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-026-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-027",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-027-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-031",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-031-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-032",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-032-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-033",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-033-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "ru-033",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-033-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "ru-034",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-034-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-035",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-035-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-038",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-038-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-039",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-039-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-040",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-040-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-041",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-041-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-042",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-042-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-043",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-043-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-044",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-044-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-045",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001044#tech_stack#11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1"
+    },
+    {
+      "scenario_id": "ru-045",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-045-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-046",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-046-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-047",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-047-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-048",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-049",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#GROUP#rule#c0080078a01cd1886ec0f94810dae3dadd0dd70f21676d784420b359b6244a27"
+    },
+    {
+      "scenario_id": "ru-049",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-049-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-050",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-050-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-051",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-051-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2",
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-052",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-052-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-053",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-054",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-054-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "ru-054",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-054-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "ru-055",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-055-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-056",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-056-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-057",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-057-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-058",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-058-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-060",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-060-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-001",
+      "checkpoint_id": "baseline",
+      "question_id": "en-001-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-002",
+      "checkpoint_id": "baseline",
+      "question_id": "en-002-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-003",
+      "checkpoint_id": "baseline",
+      "question_id": "en-003-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-004",
+      "checkpoint_id": "baseline",
+      "question_id": "en-004-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-006",
+      "checkpoint_id": "baseline",
+      "question_id": "en-006-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-007",
+      "checkpoint_id": "baseline",
+      "question_id": "en-007-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-008",
+      "checkpoint_id": "baseline",
+      "question_id": "en-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-009",
+      "checkpoint_id": "baseline",
+      "question_id": "en-009-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-010",
+      "checkpoint_id": "baseline",
+      "question_id": "en-010-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-011",
+      "checkpoint_id": "baseline",
+      "question_id": "en-011-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-012",
+      "checkpoint_id": "baseline",
+      "question_id": "en-012-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-013",
+      "checkpoint_id": "baseline",
+      "question_id": "en-013-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-014",
+      "checkpoint_id": "baseline",
+      "question_id": "en-014-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-015",
+      "checkpoint_id": "baseline",
+      "question_id": "en-015-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-016",
+      "checkpoint_id": "baseline",
+      "question_id": "en-016-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-018",
+      "checkpoint_id": "baseline",
+      "question_id": "en-018-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-019",
+      "checkpoint_id": "baseline",
+      "question_id": "en-019-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-020",
+      "checkpoint_id": "baseline",
+      "question_id": "en-020-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-021",
+      "checkpoint_id": "after_change",
+      "question_id": "en-021-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-022",
+      "checkpoint_id": "after_change",
+      "question_id": "en-022-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-023",
+      "checkpoint_id": "after_change",
+      "question_id": "en-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-024",
+      "checkpoint_id": "after_change",
+      "question_id": "en-024-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-026",
+      "checkpoint_id": "after_change",
+      "question_id": "en-026-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-027",
+      "checkpoint_id": "after_change",
+      "question_id": "en-027-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-030",
+      "checkpoint_id": "after_change",
+      "question_id": "en-030-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-031",
+      "checkpoint_id": "after_change",
+      "question_id": "en-031-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-032",
+      "checkpoint_id": "after_change",
+      "question_id": "en-032-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-033",
+      "checkpoint_id": "after_change",
+      "question_id": "en-033-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "en-033",
+      "checkpoint_id": "after_change",
+      "question_id": "en-033-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "en-034",
+      "checkpoint_id": "after_change",
+      "question_id": "en-034-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-035",
+      "checkpoint_id": "after_change",
+      "question_id": "en-035-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-038",
+      "checkpoint_id": "after_change",
+      "question_id": "en-038-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-039",
+      "checkpoint_id": "after_change",
+      "question_id": "en-039-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-040",
+      "checkpoint_id": "after_change",
+      "question_id": "en-040-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-041",
+      "checkpoint_id": "after_change",
+      "question_id": "en-041-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-042",
+      "checkpoint_id": "after_change",
+      "question_id": "en-042-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-043",
+      "checkpoint_id": "after_change",
+      "question_id": "en-043-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-044",
+      "checkpoint_id": "after_change",
+      "question_id": "en-044-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-045",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800002044#tech_stack#11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1"
+    },
+    {
+      "scenario_id": "en-045",
+      "checkpoint_id": "after_change",
+      "question_id": "en-045-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-046",
+      "checkpoint_id": "after_change",
+      "question_id": "en-046-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-047",
+      "checkpoint_id": "after_change",
+      "question_id": "en-047-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-048",
+      "checkpoint_id": "after_change",
+      "question_id": "en-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-049",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#GROUP#rule#23032f799cba05a13392823827b552c2dfaad50313e17db64de303ffb523e20c"
+    },
+    {
+      "scenario_id": "en-049",
+      "checkpoint_id": "after_change",
+      "question_id": "en-049-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-050",
+      "checkpoint_id": "after_change",
+      "question_id": "en-050-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-051",
+      "checkpoint_id": "after_change",
+      "question_id": "en-051-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2",
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-052",
+      "checkpoint_id": "after_change",
+      "question_id": "en-052-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-053",
+      "checkpoint_id": "after_change",
+      "question_id": "en-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-054",
+      "checkpoint_id": "after_change",
+      "question_id": "en-054-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "en-054",
+      "checkpoint_id": "after_change",
+      "question_id": "en-054-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "en-055",
+      "checkpoint_id": "after_change",
+      "question_id": "en-055-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-056",
+      "checkpoint_id": "after_change",
+      "question_id": "en-056-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-057",
+      "checkpoint_id": "after_change",
+      "question_id": "en-057-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-058",
+      "checkpoint_id": "after_change",
+      "question_id": "en-058-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-059",
+      "checkpoint_id": "after_change",
+      "question_id": "en-059-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "en-060",
+      "checkpoint_id": "after_change",
+      "question_id": "en-060-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-001",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-001-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-002",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-002-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-003",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-003-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-004",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-004-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-006",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-006-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-007",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-007-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-008",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-009",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-009-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-010",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-010-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-011",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-011-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-012",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-012-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-013",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-013-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-014",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-014-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-015",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-015-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-016",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-016-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-018",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-018-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-019",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-019-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-020",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-020-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-021",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-021-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-022",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-022-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-023",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-024",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-024-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-026",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-026-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-027",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-027-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-030",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-030-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-031",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-031-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-032",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-032-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-033",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-033-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "mixed-033",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-033-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "mixed-034",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-034-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-035",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-035-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-038",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-038-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-039",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-039-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-040",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-040-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-041",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-041-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-042",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-042-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-043",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-043-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-044",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-044-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-045",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003044#tech_stack#11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1"
+    },
+    {
+      "scenario_id": "mixed-045",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-045-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-046",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-046-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-047",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-047-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-048",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-049",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#GROUP#rule#f4f367cc14e05a716917988b5262f567cbfd83b76abc2647f016cc8e3235e36c"
+    },
+    {
+      "scenario_id": "mixed-049",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-049-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-050",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-050-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-051",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-051-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2",
+        "f3"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-052",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-052-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-053",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-054",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-054-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "mixed-054",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-054-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "mixed-055",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-055-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-056",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-056-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-057",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-057-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-058",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-058-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-060",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-060-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    }
+  ],
+  "dev_canary": "NOT_RUN",
+  "production_pilot": {
+    "status": "NOT_RUN",
+    "days": 0,
+    "supported_questions": 0,
+    "unknown_questions": 0
+  }
+}
