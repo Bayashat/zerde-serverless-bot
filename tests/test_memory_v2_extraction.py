@@ -13,6 +13,7 @@ from services.memory_v2.extraction_prompt import (
     PROMPT_VERSION,
     build_request,
     input_upper_bytes,
+    validate_request,
 )
 from services.memory_v2.extractor import MemoryExtractor, parse_extraction_response
 from services.memory_v2.models import ExtractionSource, MemoryInputError, MemoryUnavailable, SourceRef
@@ -95,23 +96,20 @@ def test_non_self_attribution_is_an_explicit_empty_result(attribution):
     assert result.status == "complete" and result.changes == ()
 
 
-def test_compatibility_request_changes_only_facet_and_two_length_schema_leaves():
-    """Isolate this wire compatibility probe from unrelated prompt/schema changes."""
+def test_compatibility_request_removes_only_two_array_caps_and_two_length_fields():
+    """Keep the final wire fix isolated from unrelated prompt/schema changes."""
     request = build_request([source()])
-    properties = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]["items"]["properties"]
+    sources_schema = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]
+    properties = sources_schema["items"]["properties"]
     fact_properties = properties["facts"]["items"]["properties"]
-    assert PROMPT_VERSION == "self-claims-v2.3"
+    assert PROMPT_VERSION == "self-claims-v2.4"
+    assert "maxItems" not in sources_schema and "maxItems" not in properties["facts"]
     assert fact_properties["value"] == fact_properties["evidence"] == {"type": "string"}
-    assert fact_properties["facet"] == {
-        "type": "string",
-        "description": (
-            'Use "" for every field except communication_preferences. '
-            "For communication_preferences use exactly language, name, length or tone."
-        ),
-    }
-    # Restoring these three leaves must reproduce the pre-probe complete request,
-    # including all cardinality limits, instructions and generation config.
-    fact_properties["facet"] = {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
+    assert fact_properties["facet"] == {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
+    # Restore exactly the four removed limits to reproduce the original complete
+    # request; facet enum, instructions and generation config are unchanged.
+    sources_schema["maxItems"] = 20
+    properties["facts"]["maxItems"] = 16
     fact_properties["value"] = {"type": "string", "maxLength": 160}
     fact_properties["evidence"] = {"type": "string", "maxLength": 240}
     encoded = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
@@ -132,7 +130,7 @@ def test_compatibility_request_changes_only_facet_and_two_length_schema_leaves()
         ("communication_preferences", "always agree", "tone"),
     ],
 )
-def test_relaxed_wire_facet_never_relaxes_local_fact_validation(field, value, facet):
+def test_local_fact_validation_rejects_invalid_facets_and_preference_values(field, value, facet):
     with pytest.raises(MemoryInputError):
         parse_extraction_response(response([fact(field=field, value=value, facet=facet)]), [source()])
 
@@ -230,6 +228,59 @@ def test_quotes_ambiguous_spans_non_whitelist_and_extra_identity_cannot_become_f
 def test_missing_duplicate_or_foreign_source_index_rejects_result(document):
     with pytest.raises(MemoryInputError):
         parse_extraction_response(response(document=document), [source()])
+
+
+@pytest.mark.parametrize("indices", [[0], [0, 1, 2], [0, 1, 1]])
+def test_removed_wire_array_caps_cannot_hide_missing_extra_or_duplicate_batch_sources(indices):
+    sources = [source(), source("I use Rust.", message_id="9")]
+    document = {"sources": [{"source_index": index, "facts": []} for index in indices]}
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response(document=document), sources)
+
+
+@pytest.mark.parametrize("count", [16, 17])
+def test_local_fact_count_boundary_survives_removed_wire_maxitems(count):
+    values = [
+        "Python",
+        "Rust",
+        "Go",
+        "Java",
+        "Kotlin",
+        "Swift",
+        "Ruby",
+        "Scala",
+        "Clojure",
+        "Elixir",
+        "Erlang",
+        "Haskell",
+        "OCaml",
+        "Dart",
+        "Lua",
+        "Julia",
+        "TypeScript",
+    ][:count]
+    text = "I use " + ", ".join(values) + "."
+    payload = response([fact(text, value=value) for value in values])
+    if count == 17:
+        with pytest.raises(MemoryInputError, match="number of extraction facts"):
+            parse_extraction_response(payload, [source(text)])
+    else:
+        changes = parse_extraction_response(payload, [source(text)])[0].changes
+        assert len(changes) == 16 and {change.value for change in changes} == set(values)
+
+
+def test_twenty_one_input_sources_cannot_reach_provider_after_wire_maxitems_removal():
+    sources = [source(message_id=str(index + 1)) for index in range(21)]
+    validate_request(build_request(sources[:20]))
+    with pytest.raises(MemoryInputError, match="source count"):
+        validate_request(build_request(sources))
+    instance, provider, budget, _, quota = extractor()
+    results = asyncio.run(instance.extract_batch(sources))
+    assert len(results) == 21
+    assert all(result.status == "defer" and result.reason == "batch_input_limit" for result in results)
+    provider.generate.assert_not_awaited()
+    budget.reserve.assert_not_called()
+    quota.increment_and_check.assert_not_called()
 
 
 def test_batch_result_cannot_borrow_evidence_from_another_author():

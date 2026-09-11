@@ -78,33 +78,33 @@ A model can still misread a self-statement. The multilingual Z11 gold evaluation
 and real-group acceptance remain required before enabling learning; these local
 tests do not establish the plan's precision/recall thresholds.
 
-### Schema compatibility probes (2026-09-11)
+### Structured-output compatibility (2026-09-11)
 
-The initial real synthetic-data smoke received HTTP 400 for extraction while the
-same model accepted the answer schema. An exact-request diagnostic returned only
-`INVALID_ARGUMENT`, without a field path. The `self-claims-v2.2` request changed
-one schema leaf: `facet` is a string with an explicit description of its
-allowed values, instead of an enum containing an empty string. All other schema
-fields, including `maxLength`, the source/fact limits and prompt text, stayed fixed.
-That facet-only real probe also returned HTTP 400; it did not establish a cause.
+The current `self-claims-v2.4` request keeps the original closed `facet` enum,
+including the ordinary-fact empty string. Relative to the original request, only
+four provider-schema limits are removed: the two array `maxItems` caps and the
+`value`/`evidence` `maxLength` fields. The prompt, model, source-index range and
+generation settings are unchanged. Local validation remains the authority for
+20 input sources, exactly one result per source, at most 16 facts per source,
+normalized values of at most 160 characters and exact evidence of at most 240.
+Invalid/missing/duplicate source indices, invalid facets and preference values
+still reject the result. Safe-name validation remains separate.
 
-The next candidate, `self-claims-v2.3`, additionally removes only `maxLength` from
-the `value` and `evidence` schema leaves. The existing facet description, prompt,
-source/fact cardinality, model and generation settings remain unchanged. This is
-an unverified compatibility candidate for the provider's structured-output subset,
-not evidence that those keywords caused the error or that Gemini accepts the new
-request. A separate actual request and semantic evaluation remain required.
+The bounded real diagnostics first returned HTTP 400 with the original schema,
+with a facet-only relaxation, and after additionally removing unsupported string
+length fields. From that last request, removing only the two array caps returned
+HTTP 200 (538 input/229 output tokens, 478 micro USD); restoring the original
+facet enum also returned HTTP 200 (538 input/150 output tokens, 360 micro USD).
+The private `schema-array-bounds` and `schema-facet-restore` ledgers retain each
+exact request hash, response and usage. These comparisons support the final
+minimal wire fix; they do not establish multilingual extraction quality or prove
+that every listed schema constraint is independently unsupported by the provider.
 
-This changes only provider-side schema guidance. The existing parser and
-`FactChange.slot()` reject non-string facets, nonempty facets for ordinary facts,
-and communication preferences outside `language`, `name`, `length`, `tone`.
-Preference values remain closed enums where applicable, with separate safe-name
-validation. The ordinary-fact empty facet remains valid. The prompt still requires
-values of at most 160 characters and evidence of at most 240 characters; the
-existing local parser independently enforces both bounds, including preferences.
-Local tests restore exactly these three leaves to verify the original full-request
-fingerprint, and exercise accepted boundaries plus over-limit/invalid-facet outputs.
-They do not establish real Gemini compatibility or change the gold labels.
+Tests restore exactly the four removed limits and verify the original complete
+request fingerprint. They exercise 16/17 facts, 20/21 input sources, source-index
+completeness, value/evidence boundaries and closed preference validation. Gold,
+fixtures and quality thresholds remain unchanged; full real semantic evaluation
+and deployment acceptance remain separate requirements.
 
 ## Group trends
 

@@ -7,7 +7,7 @@ from .models import ExtractionSource, MemoryInputError, SourceEvent
 from .safety import require_public_content
 
 MODEL = "gemini-3.1-flash-lite"
-PROMPT_VERSION = "self-claims-v2.3"
+PROMPT_VERSION = "self-claims-v2.4"
 MAX_BATCH_SOURCES = 20
 MAX_INPUT_UPPER_BYTES = 8000
 MAX_OUTPUT_TOKENS = 8192
@@ -58,13 +58,7 @@ _FACT_SCHEMA = {
         "value": {"type": "string"},
         "evidence": {"type": "string"},
         "action": {"type": "string", "enum": ["assert", "remove"]},
-        "facet": {
-            "type": "string",
-            "description": (
-                'Use "" for every field except communication_preferences. '
-                "For communication_preferences use exactly language, name, length or tone."
-            ),
-        },
+        "facet": {"type": "string", "enum": ["", "language", "name", "length", "tone"]},
         "attribution": {
             "type": "string",
             "enum": ["self_explicit", "ambiguous", "third_party", "quoted", "instruction", "sensitive"],
@@ -78,13 +72,12 @@ RESPONSE_SCHEMA = {
     "properties": {
         "sources": {
             "type": "array",
-            "maxItems": MAX_BATCH_SOURCES,
             "items": {
                 "type": "object",
                 "additionalProperties": False,
                 "properties": {
                     "source_index": {"type": "integer", "minimum": 0, "maximum": MAX_BATCH_SOURCES - 1},
-                    "facts": {"type": "array", "maxItems": 16, "items": _FACT_SCHEMA},
+                    "facts": {"type": "array", "items": _FACT_SCHEMA},
                 },
                 "required": ["source_index", "facts"],
             },
