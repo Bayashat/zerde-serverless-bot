@@ -5,6 +5,8 @@ The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore
 
 ## Current cutover boundary (Z01)
 
+CDK no longer defines the retired daily group summary rule or its SQS send grant, even when legacy memory flags or configured chats are present. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is not permanent retirement. V2 recovery, news and quiz schedules retain their own owners.
+
 Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
 
 
@@ -163,7 +165,7 @@ Captcha `CHECK_TIMEOUT` tasks also recover incomplete creation and pending termi
 - `PROCESS_PROACTIVE_CANDIDATE` — delayed ordinary proactive AI decision with a Groq model pool and answer-generation fallback; linked-channel post candidates use the same worker task with zero delay, a dedicated comment prompt, Gemini retries, and DeepSeek/Groq text-only fallback.
 - `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
-- `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
+- `PROCESS_DAILY_GROUP_SUMMARIES` — retired; acknowledged without work, with no CDK schedule.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
 - `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.
 

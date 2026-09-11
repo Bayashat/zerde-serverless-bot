@@ -376,6 +376,35 @@ def test_retired_contest_has_no_schedule_or_iam_queue_grant(monkeypatch, env_nam
     _find_resource_by_property(template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-bot-memory-{env_name}")
 
 
+@pytest.mark.parametrize("env_name", ["dev", "prod"])
+@pytest.mark.parametrize("legacy_memory_enabled", ["true", "false"])
+def test_retired_daily_summary_cannot_be_recreated_by_legacy_settings(monkeypatch, env_name, legacy_memory_enabled):
+    # A non-empty chat map used to recreate this retired schedule even with
+    # GROUP_MEMORY_ENABLED=false. Preserve the active business/recovery owners.
+    monkeypatch.setenv("CHATS_KK", "-100123")
+    monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
+    monkeypatch.setenv("GROUP_MEMORY_ENABLED", legacy_memory_enabled)
+    template = _template(monkeypatch, env_name=env_name)
+    rendered = json.dumps(template.to_json())
+    assert "PROCESS_DAILY_GROUP_SUMMARIES" not in rendered
+    assert "DailyGroupSummaryRule" not in rendered  # Includes its former SQS policy grant.
+    assert "group-memory-daily-summary" not in rendered
+    for table in ("bot-stats", "bot-memory", "memory-v2", "quiz"):
+        _, resource = _find_resource_by_property(
+            template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-{table}-{env_name}"
+        )
+        if env_name == "prod":
+            assert resource["DeletionPolicy"] == "Retain"
+            assert resource["Properties"]["DeletionProtectionEnabled"] is True
+    for queue in ("timeout-tasks-queue", "vector-memory-tasks-queue", "memory-v2-queue"):
+        _find_resource_by_property(template, "AWS::SQS::Queue", "QueueName", f"zerde-serverless-{queue}-{env_name}")
+    for rule in ("memory-v2-recovery", "quiz-answer-recovery", "quiz-publication-recovery"):
+        _find_resource_by_property(template, "AWS::Events::Rule", "Name", f"zerde-serverless-{rule}-{env_name}")
+    if env_name == "prod":
+        for rule in ("news-kk-0400", "quiz-kk-0800", "quiz-bank-builder-0730"):
+            _find_resource_by_property(template, "AWS::Events::Rule", "Name", f"zerde-serverless-{rule}-prod")
+
+
 def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -> None:
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
     for key in (

@@ -6,8 +6,6 @@ from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
 from aws_cdk import aws_dynamodb as dynamodb
-from aws_cdk import aws_events as events
-from aws_cdk import aws_events_targets as events_targets
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
@@ -372,26 +370,6 @@ class BotConstruct(Construct):
                 max_concurrency=10 if runtime_active else None,
             )
         )
-
-        if is_prod and chat_lang_map:
-            summary_rule = events.Rule(
-                self,
-                f"{CONSTRUCT_PREFIX}DailyGroupSummaryRule",
-                rule_name=f"{RESOURCE_PREFIX}-group-memory-daily-summary-{env_name}",
-                description="Queue daily group memory summaries for configured chats",
-                schedule=events.Schedule.cron(minute="55", hour="20", day="*", month="*", year="*"),
-            )
-            summary_rule.add_target(
-                events_targets.SqsQueue(
-                    queue,
-                    message=events.RuleTargetInput.from_object(
-                        {
-                            "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
-                            "chat_ids": sorted(chat_lang_map.keys()),
-                        }
-                    ),
-                )
-            )
 
         self.api = apigwv2.HttpApi(
             self,

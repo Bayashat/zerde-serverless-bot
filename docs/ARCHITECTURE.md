@@ -2,6 +2,8 @@
 
 ## Current memory cutover boundary
 
+CDK no longer defines the retired daily group summary rule or its SQS send grant. Legacy memory flags and configured chat lists cannot recreate this schedule. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is temporary. V2 recovery, news and quiz schedules keep their existing owners.
+
 Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership uses one-day V2 source-fenced metadata; remaining business data retain their existing ownership; experimental contests are removed. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
 
 
@@ -105,7 +107,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed ordinary proactive AI decision. The webhook queues eligible ordinary group text without local open-question/score gating; the worker re-reads recent context, adds query-filtered long-term context, asks the configured Groq model pool for strict JSON using capped decision-only context, and stays silent on invalid/low-confidence/no decisions. DeepSeek decision fallback is disabled by default and is opt-in only. If the decision is yes, it reserves the daily proactive counter, generates the answer with Gemini retries plus DeepSeek/Groq text-only fallback, and records the reply as `trigger_kind=proactive`. Linked-channel post candidates use the same task with zero delay, bypass ordinary proactive gates, may download supported media ephemerally for Gemini, and generate a direct comment with a dedicated prompt. If every provider fails for linked-channel comments, the SQS task retries/DLQs. |
 | `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for ambient reactions; ordinary messages are sampled and rate-limited, while linked-channel posts force a reaction attempt and bypass sampling/cooldowns/rate caps. Stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
-| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
+| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Retired: acknowledge without work; CDK creates no schedule. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
