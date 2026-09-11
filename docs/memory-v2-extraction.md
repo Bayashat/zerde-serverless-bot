@@ -78,24 +78,33 @@ A model can still misread a self-statement. The multilingual Z11 gold evaluation
 and real-group acceptance remain required before enabling learning; these local
 tests do not establish the plan's precision/recall thresholds.
 
-### Facet schema compatibility probe (2026-09-11)
+### Schema compatibility probes (2026-09-11)
 
 The initial real synthetic-data smoke received HTTP 400 for extraction while the
 same model accepted the answer schema. An exact-request diagnostic returned only
-`INVALID_ARGUMENT`, without a field path. The `self-claims-v2.2` request therefore
-changes one schema leaf: `facet` is a string with an explicit description of its
+`INVALID_ARGUMENT`, without a field path. The `self-claims-v2.2` request changed
+one schema leaf: `facet` is a string with an explicit description of its
 allowed values, instead of an enum containing an empty string. All other schema
-fields, including `maxLength`, the source/fact limits and prompt text, stay fixed.
-The empty enum value is a compatibility candidate, not a confirmed cause; an
-actual successful request and semantic evaluation are still required.
+fields, including `maxLength`, the source/fact limits and prompt text, stayed fixed.
+That facet-only real probe also returned HTTP 400; it did not establish a cause.
+
+The next candidate, `self-claims-v2.3`, additionally removes only `maxLength` from
+the `value` and `evidence` schema leaves. The existing facet description, prompt,
+source/fact cardinality, model and generation settings remain unchanged. This is
+an unverified compatibility candidate for the provider's structured-output subset,
+not evidence that those keywords caused the error or that Gemini accepts the new
+request. A separate actual request and semantic evaluation remain required.
 
 This changes only provider-side schema guidance. The existing parser and
 `FactChange.slot()` reject non-string facets, nonempty facets for ordinary facts,
 and communication preferences outside `language`, `name`, `length`, `tone`.
 Preference values remain closed enums where applicable, with separate safe-name
-validation. The ordinary-fact empty facet remains valid. Local tests freeze the
-whole previous request except this one leaf and exercise both rejected and valid
-outputs; they do not establish real Gemini compatibility.
+validation. The ordinary-fact empty facet remains valid. The prompt still requires
+values of at most 160 characters and evidence of at most 240 characters; the
+existing local parser independently enforces both bounds, including preferences.
+Local tests restore exactly these three leaves to verify the original full-request
+fingerprint, and exercise accepted boundaries plus over-limit/invalid-facet outputs.
+They do not establish real Gemini compatibility or change the gold labels.
 
 ## Group trends
 

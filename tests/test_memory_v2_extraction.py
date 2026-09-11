@@ -7,7 +7,13 @@ from dataclasses import replace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from services.memory_v2.extraction_prompt import MAX_INPUT_UPPER_BYTES, MODEL, build_request, input_upper_bytes
+from services.memory_v2.extraction_prompt import (
+    MAX_INPUT_UPPER_BYTES,
+    MODEL,
+    PROMPT_VERSION,
+    build_request,
+    input_upper_bytes,
+)
 from services.memory_v2.extractor import MemoryExtractor, parse_extraction_response
 from services.memory_v2.models import ExtractionSource, MemoryInputError, MemoryUnavailable, SourceRef
 
@@ -89,11 +95,13 @@ def test_non_self_attribution_is_an_explicit_empty_result(attribution):
     assert result.status == "complete" and result.changes == ()
 
 
-def test_facet_compatibility_request_changes_only_the_frozen_schema_leaf():
+def test_compatibility_request_changes_only_facet_and_two_length_schema_leaves():
     """Isolate this wire compatibility probe from unrelated prompt/schema changes."""
     request = build_request([source()])
     properties = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]["items"]["properties"]
     fact_properties = properties["facts"]["items"]["properties"]
+    assert PROMPT_VERSION == "self-claims-v2.3"
+    assert fact_properties["value"] == fact_properties["evidence"] == {"type": "string"}
     assert fact_properties["facet"] == {
         "type": "string",
         "description": (
@@ -101,9 +109,11 @@ def test_facet_compatibility_request_changes_only_the_frozen_schema_leaf():
             "For communication_preferences use exactly language, name, length or tone."
         ),
     }
-    # Restoring the previous leaf must reproduce the pre-probe complete request,
-    # including maxLength, cardinality limits, instructions and generation config.
+    # Restoring these three leaves must reproduce the pre-probe complete request,
+    # including all cardinality limits, instructions and generation config.
     fact_properties["facet"] = {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
+    fact_properties["value"] = {"type": "string", "maxLength": 160}
+    fact_properties["evidence"] = {"type": "string", "maxLength": 240}
     encoded = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
     assert hashlib.sha256(encoded).hexdigest() == "f19f205b10a7c97204ed9c41a8296969a857d8de1e61d67dcb0ea5fd14a4e834"
 
@@ -141,6 +151,53 @@ def test_valid_empty_and_closed_preference_facets_still_parse(text, field, value
     result = parse_extraction_response(response([fact(text, field=field, value=value, facet=facet)]), [source(text)])[0]
     assert result.status == "complete" and len(result.changes) == 1
     assert result.changes[0].facet == facet and result.changes[0].value == value
+
+
+@pytest.mark.parametrize(
+    "field,facet",
+    [("occupation", ""), *[("communication_preferences", facet) for facet in ("length", "tone", "language", "name")]],
+)
+def test_missing_wire_maxlength_cannot_admit_oversized_local_fact_values(field, facet):
+    value = "very " * 31 + "small!"
+    assert len(value) == 161
+    text = "I describe my public work as " + value
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response([fact(text, value=value, field=field, facet=facet)]), [source(text)])
+
+
+@pytest.mark.parametrize(
+    "field,value,facet",
+    [
+        ("tech_stack", "Python", ""),
+        ("communication_preferences", "short", "length"),
+        ("communication_preferences", "friendly", "tone"),
+        ("communication_preferences", "en", "language"),
+        ("communication_preferences", "Alice", "name"),
+    ],
+)
+@pytest.mark.parametrize("length", [240, 241])
+def test_missing_wire_maxlength_keeps_exact_local_evidence_boundary(field, value, facet, length):
+    text = (
+        "I use Python and prefer short friendly English replies; please call me Alice. " + "Public discussion. " * 20
+    )[:length]
+    assert len(text) == length
+    payload = response([fact(text, value=value, field=field, facet=facet)])
+    if length == 241:
+        with pytest.raises(MemoryInputError, match="evidence"):
+            parse_extraction_response(payload, [source(text)])
+    else:
+        change = parse_extraction_response(payload, [source(text)])[0].changes[0]
+        assert change.evidence.end - change.evidence.start == 240
+
+
+def test_local_value_boundary_still_accepts_exactly_160_characters():
+    value = "very " * 31 + "small"
+    assert len(value) == 160
+    text = "I describe my public work as " + value
+    change = parse_extraction_response(response([fact(text, value=value, field="occupation")]), [source(text)])[
+        0
+    ].changes[0]
+    assert change.value == value
 
 
 @pytest.mark.parametrize(
