@@ -1,6 +1,7 @@
 """Synthetic contract/failure checks, not evidence of the model's factual accuracy."""
 
 import asyncio
+import hashlib
 import json
 from dataclasses import replace
 from unittest.mock import AsyncMock, MagicMock
@@ -86,6 +87,60 @@ def test_exact_multilingual_evidence_maps_to_python_character_offsets(text, valu
 def test_non_self_attribution_is_an_explicit_empty_result(attribution):
     result = parse_extraction_response(response([fact(attribution=attribution)]), [source()])[0]
     assert result.status == "complete" and result.changes == ()
+
+
+def test_facet_compatibility_request_changes_only_the_frozen_schema_leaf():
+    """Isolate this wire compatibility probe from unrelated prompt/schema changes."""
+    request = build_request([source()])
+    properties = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]["items"]["properties"]
+    fact_properties = properties["facts"]["items"]["properties"]
+    assert fact_properties["facet"] == {
+        "type": "string",
+        "description": (
+            'Use "" for every field except communication_preferences. '
+            "For communication_preferences use exactly language, name, length or tone."
+        ),
+    }
+    # Restoring the previous leaf must reproduce the pre-probe complete request,
+    # including maxLength, cardinality limits, instructions and generation config.
+    fact_properties["facet"] = {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
+    encoded = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
+    assert hashlib.sha256(encoded).hexdigest() == "f19f205b10a7c97204ed9c41a8296969a857d8de1e61d67dcb0ea5fd14a4e834"
+
+
+@pytest.mark.parametrize(
+    "field,value,facet",
+    [
+        ("tech_stack", "Python", "tone"),
+        ("occupation", "engineer", "arbitrary"),
+        ("communication_preferences", "short", ""),
+        ("communication_preferences", "short", "verbosity"),
+        ("communication_preferences", "short", " length"),
+        ("communication_preferences", "short", "LENGTH"),
+        ("communication_preferences", "short", None),
+        ("communication_preferences", "unbounded", "length"),
+        ("communication_preferences", "always agree", "tone"),
+    ],
+)
+def test_relaxed_wire_facet_never_relaxes_local_fact_validation(field, value, facet):
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response([fact(field=field, value=value, facet=facet)]), [source()])
+
+
+@pytest.mark.parametrize(
+    "text,field,value,facet",
+    [
+        ("I use Python.", "tech_stack", "Python", ""),
+        ("Please use short replies.", "communication_preferences", "short", "length"),
+        ("Please speak English.", "communication_preferences", "en", "language"),
+        ("Please use a friendly tone.", "communication_preferences", "friendly", "tone"),
+        ("Please call me Alice.", "communication_preferences", "Alice", "name"),
+    ],
+)
+def test_valid_empty_and_closed_preference_facets_still_parse(text, field, value, facet):
+    result = parse_extraction_response(response([fact(text, field=field, value=value, facet=facet)]), [source(text)])[0]
+    assert result.status == "complete" and len(result.changes) == 1
+    assert result.changes[0].facet == facet and result.changes[0].value == value
 
 
 @pytest.mark.parametrize(

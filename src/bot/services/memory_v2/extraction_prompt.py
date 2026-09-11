@@ -7,7 +7,7 @@ from .models import ExtractionSource, MemoryInputError, SourceEvent
 from .safety import require_public_content
 
 MODEL = "gemini-3.1-flash-lite"
-PROMPT_VERSION = "self-claims-v2.1"
+PROMPT_VERSION = "self-claims-v2.2"
 MAX_BATCH_SOURCES = 20
 MAX_INPUT_UPPER_BYTES = 8000
 MAX_OUTPUT_TOKENS = 8192
@@ -58,7 +58,13 @@ _FACT_SCHEMA = {
         "value": {"type": "string", "maxLength": 160},
         "evidence": {"type": "string", "maxLength": 240},
         "action": {"type": "string", "enum": ["assert", "remove"]},
-        "facet": {"type": "string", "enum": ["", "language", "name", "length", "tone"]},
+        "facet": {
+            "type": "string",
+            "description": (
+                'Use "" for every field except communication_preferences. '
+                "For communication_preferences use exactly language, name, length or tone."
+            ),
+        },
         "attribution": {
             "type": "string",
             "enum": ["self_explicit", "ambiguous", "third_party", "quoted", "instruction", "sensitive"],

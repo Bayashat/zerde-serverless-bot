@@ -78,6 +78,25 @@ A model can still misread a self-statement. The multilingual Z11 gold evaluation
 and real-group acceptance remain required before enabling learning; these local
 tests do not establish the plan's precision/recall thresholds.
 
+### Facet schema compatibility probe (2026-09-11)
+
+The initial real synthetic-data smoke received HTTP 400 for extraction while the
+same model accepted the answer schema. An exact-request diagnostic returned only
+`INVALID_ARGUMENT`, without a field path. The `self-claims-v2.2` request therefore
+changes one schema leaf: `facet` is a string with an explicit description of its
+allowed values, instead of an enum containing an empty string. All other schema
+fields, including `maxLength`, the source/fact limits and prompt text, stay fixed.
+The empty enum value is a compatibility candidate, not a confirmed cause; an
+actual successful request and semantic evaluation are still required.
+
+This changes only provider-side schema guidance. The existing parser and
+`FactChange.slot()` reject non-string facets, nonempty facets for ordinary facts,
+and communication preferences outside `language`, `name`, `length`, `tone`.
+Preference values remain closed enums where applicable, with separate safe-name
+validation. The ordinary-fact empty facet remains valid. Local tests freeze the
+whole previous request except this one leaf and exercise both rejected and valid
+outputs; they do not establish real Gemini compatibility.
+
 ## Group trends
 
 `aggregate_trends(sources, chat_id, epoch, as_of)` is a pure seven-day aggregation
