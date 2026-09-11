@@ -152,12 +152,31 @@ def parse_selection(payload, count):
     if not isinstance(payload, dict):
         raise MemoryInputError("Answer selection must be an object")
     candidates = payload.get("candidates")
-    if not isinstance(candidates, list) or len(candidates) != 1 or candidates[0].get("finishReason") != "STOP":
+    if (
+        not isinstance(candidates, list)
+        or len(candidates) != 1
+        or not isinstance(candidates[0], dict)
+        or candidates[0].get("finishReason") != "STOP"
+    ):
         raise MemoryInputError("Incomplete memory answer selection")
     parts = candidates[0].get("content", {}).get("parts")
-    if not isinstance(parts, list) or len(parts) != 1 or set(parts[0]) != {"text"}:
+    if (
+        not isinstance(parts, list)
+        or len(parts) != 1
+        or not isinstance(parts[0], dict)
+        or not isinstance(parts[0].get("text"), str)
+        or set(parts[0]) - {"text", "thoughtSignature", "thought"}
+    ):
         raise MemoryInputError("Unsupported answer output parts")
-    selection = json.loads(parts[0]["text"], object_pairs_hook=_unique)
+    part = parts[0]
+    # Gemini may attach opaque signature metadata to ordinary text. The HTTP
+    # owner bounds the complete response at 100 KB; do not decode or reuse this
+    # signature as answer/context, or mistake a thinking part for final output.
+    if ("thoughtSignature" in part and not isinstance(part["thoughtSignature"], str)) or (
+        "thought" in part and (type(part["thought"]) is not bool or part["thought"])
+    ):
+        raise MemoryInputError("Unsupported answer output metadata")
+    selection = json.loads(part["text"], object_pairs_hook=_unique)
     if not isinstance(selection, dict) or set(selection) != {"mode", "indices"}:
         raise MemoryInputError("Invalid memory answer selection")
     mode, indices = selection["mode"], selection["indices"]

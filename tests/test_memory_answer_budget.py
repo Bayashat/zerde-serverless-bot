@@ -73,6 +73,44 @@ def test_answer_retry_preserves_unknown_charge_and_settles_full_second_call(budg
     assert {row["purpose"] for row in attempts if "purpose" in row} == {"answer"}
 
 
+def test_signed_text_response_settles_once_without_an_unnecessary_provider_retry(budget):
+    repo, _ = budget
+    response = payload()
+    response["candidates"][0]["content"]["parts"][0]["thoughtSignature"] = "synthetic opaque signature"
+    response["usageMetadata"] = {
+        "promptTokenCount": 525,
+        "candidatesTokenCount": 22,
+        "totalTokenCount": 547,
+        "promptTokensDetails": [{"modality": "TEXT", "tokenCount": 525}],
+        "serviceTier": "standard",
+    }
+    provider = Provider([response])
+    select, quota = selector(repo, provider)
+    assert run(select) == ("facts", (0,))
+    assert provider.calls == quota.increment_and_check.call_count == 1
+    assert repo.snapshot()["charged_micro_usd"] == 165
+    assert len([row for row in repo.table.scan()["Items"] if row.get("purpose") == "answer"]) == 1
+
+
+def test_opaque_signature_stays_within_the_existing_complete_http_response_bound():
+    response = payload()
+    response["candidates"][0]["content"]["parts"][0]["thoughtSignature"] = "s" * 100001
+    seen = []
+
+    def transport(request):
+        seen.append(request)
+        return httpx.Response(200, json=response)
+
+    async def call():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as client:
+            provider = GeminiAnswerProvider("synthetic-key", client=client)
+            await provider.generate(build_answer_request("What do I use?", FACTS, ["42"]))
+
+    with pytest.raises(AnswerSelectionUnavailable):
+        asyncio.run(call())
+    assert len(seen) == 1
+
+
 def test_paused_budget_cannot_consume_quota_or_make_provider_call(budget):
     repo, _ = budget
     repo.table.put_item(Item={"pk": "MEMORY_BUDGET#CONTROL", "sk": "MODEL", "paused": True})

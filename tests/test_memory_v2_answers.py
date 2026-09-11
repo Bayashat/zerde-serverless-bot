@@ -3,6 +3,7 @@
 import asyncio
 import json
 from dataclasses import replace
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from services.memory_v2.answer_prompt import build_answer_request, parse_selection, validate_answer_request
@@ -82,6 +83,44 @@ def test_answer_uses_native_ddb_values_and_only_reference_receipts(env, ready):
     with pytest.raises(MemoryConflict):
         ask(answer)
     assert len(sends) == 1
+
+
+def test_signed_provider_selection_reaches_real_answer_receipt_once(env, ready):
+    from services.memory_v2.answer_selector import MemoryAnswerSelector
+
+    signature = "synthetic opaque metadata must not become context"
+    payload = {
+        "candidates": [
+            {
+                "finishReason": "STOP",
+                "content": {
+                    "parts": [
+                        {
+                            "text": '{"mode":"facts","indices":[0]}',
+                            "thoughtSignature": signature,
+                        }
+                    ]
+                },
+            }
+        ],
+        "usageMetadata": {"promptTokenCount": 525, "candidatesTokenCount": 22, "totalTokenCount": 547},
+    }
+    provider = Mock(generate=AsyncMock(return_value=payload))
+    budget = Mock()
+    quota = Mock()
+    quota.increment_and_check.return_value = (1, True)
+    answer, sends = service(env)
+    answer.selector_factory = lambda validate: MemoryAnswerSelector(
+        provider, budget, validate_snapshot=validate, rate_limit=quota
+    )
+    assert ask(answer).state == "SENT"
+    assert len(sends) == 1 and "Python" in sends[0][1]
+    assert provider.generate.await_count == budget.reserve.call_count == budget.settle.call_count == 1
+    receipt = env.repo._read(CHAT, "ANSWER_REPLY#71")
+    assert receipt["fact_refs"]
+    assert signature not in json.dumps(sends)
+    assert signature not in json.dumps(receipt, default=str)
+    assert signature not in json.dumps(provider.generate.call_args.args)
 
 
 def test_edit_while_model_selects_blocks_send(env, ready):
@@ -199,8 +238,81 @@ def test_provider_boundary_rejects_unpriced_or_unsupported_fact_metadata(env, re
         {"mode": "facts", "indices": [], "answer": "invented"},
     ],
 )
-def test_model_cannot_emit_personal_prose_or_unavailable_references(selection):
+@pytest.mark.parametrize("signed", [False, True])
+def test_model_cannot_emit_personal_prose_or_unavailable_references(selection, signed):
     response = {"candidates": [{"finishReason": "STOP", "content": {"parts": [{"text": json.dumps(selection)}]}}]}
+    if signed:
+        response["candidates"][0]["content"]["parts"][0]["thoughtSignature"] = "synthetic opaque metadata"
+    with pytest.raises(MemoryInputError):
+        parse_selection(response, 1)
+
+
+@pytest.mark.parametrize(
+    "selection",
+    [{"mode": "facts", "indices": [0, 1]}, {"mode": "unknown", "indices": []}, {"mode": "general", "indices": []}],
+)
+@pytest.mark.parametrize(
+    "metadata", [{"thoughtSignature": "U1lOVEhFVElDX1NJR05BVFVSRQ=="}, {"thoughtSignature": "", "thought": False}]
+)
+def test_observed_gemini_text_part_metadata_does_not_change_selection(selection, metadata):
+    # Same Part shape as the real kk-001 responses; signature is synthetic and
+    # opaque, never copied into the returned fact IDs or a subsequent prompt.
+    response = {
+        "candidates": [
+            {
+                "content": {"parts": [{"text": json.dumps(selection), **metadata}], "role": "model"},
+                "finishReason": "STOP",
+                "index": 0,
+            }
+        ]
+    }
+    assert parse_selection(response, 2) == (selection["mode"], tuple(selection["indices"]))
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {"thoughtSignature": None},
+        {"thoughtSignature": True},
+        {"thoughtSignature": 3},
+        {"thoughtSignature": {}},
+        {"thoughtSignature": []},
+        {"thought": True},
+        {"thought": "false"},
+        {"thought": 0},
+        {"thought": None},
+        {"functionCall": {"name": "unexpected"}},
+        {"functionResponse": {}},
+        {"inlineData": {}},
+        {"fileData": {}},
+        {"executableCode": {}},
+        {"codeExecutionResult": {}},
+        {"unexpected": "metadata"},
+    ],
+)
+def test_metadata_compatibility_never_admits_thoughts_tools_media_or_unknown_part_keys(metadata):
+    response = {
+        "candidates": [
+            {"finishReason": "STOP", "content": {"parts": [{"text": '{"mode":"facts","indices":[0]}', **metadata}]}}
+        ]
+    }
+    with pytest.raises(MemoryInputError):
+        parse_selection(response, 1)
+
+
+@pytest.mark.parametrize(
+    "parts",
+    [
+        [],
+        [None],
+        ["text"],
+        [{"thoughtSignature": "opaque"}],
+        [{"text": 7}],
+        [{"text": '{"mode":"unknown","indices":[]}'}, {"text": "extra output"}],
+    ],
+)
+def test_metadata_compatibility_still_requires_one_final_text_part(parts):
+    response = {"candidates": [{"finishReason": "STOP", "content": {"parts": parts}}]}
     with pytest.raises(MemoryInputError):
         parse_selection(response, 1)
 
