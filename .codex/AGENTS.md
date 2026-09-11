@@ -5,6 +5,8 @@ The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore
 
 ## Current cutover boundary (Z01)
 
+CDK no longer defines the retired daily group summary rule or its SQS send grant, even when legacy memory flags or configured chats are present. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is not permanent retirement. V2 recovery, news and quiz schedules retain their own owners.
+
 Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
 
 
@@ -163,7 +165,7 @@ Captcha `CHECK_TIMEOUT` tasks also recover incomplete creation and pending termi
 - `PROCESS_PROACTIVE_CANDIDATE` — delayed ordinary proactive AI decision with a Groq model pool and answer-generation fallback; linked-channel post candidates use the same worker task with zero delay, a dedicated comment prompt, Gemini retries, and DeepSeek/Groq text-only fallback.
 - `PROCESS_AMBIENT_REACTION` — async sampled ambient reaction classifier; uses only bounded recent/reply text context and never writes long-term memory or vectors.
 - `PROCESS_GROUP_MEMORY` — extract/store long-term memory from one message using structured Gemini extraction with rule fallback.
-- `PROCESS_DAILY_GROUP_SUMMARIES` — daily summaries for configured groups.
+- `PROCESS_DAILY_GROUP_SUMMARIES` — retired; acknowledged without work, with no CDK schedule.
 - `PROCESS_VECTOR_MEMORY` — embed/index one memory item; consumed by the vector-indexer Lambda.
 - `PROCESS_VECTOR_MEMORY_BACKFILL` — page through vectorizable memory and enqueue indexing; consumed by the vector-indexer Lambda.
 
@@ -248,6 +250,8 @@ Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
 
+Idle dev must disable all three SQS mappings and omit their maximum concurrency when Lambda reserved concurrency is zero. Active dev and prod retain limits 10/3/2. Verify actual updates/readback, including the transition from existing active mappings; disabled mappings still undergo Lambda configuration validation.
+
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
 
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
@@ -257,3 +261,5 @@ News deadlines, frozen manifests, per-chat delivery receipts, and operator recov
 News/Quiz recovery: preserve original scheduled_at and News slot in EventBridge input; never derive a retry publication identity from current time. Five-minute Quiz publication/answer recovery and both Lambda async failure destinations are required public wiring. The destination DLQ contains inspection envelopes, not blindly replayable task bodies. `/quizreconcile` requires live group-admin and own-bot poll checks. See docs/QUIZ_RECOVERY.md.
 
 Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.
+
+Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.

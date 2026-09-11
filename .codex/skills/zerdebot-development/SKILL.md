@@ -7,6 +7,8 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 ## Approved cutover overrides
 
+The legacy daily group summary EventBridge rule and its SQS send grant are removed from CDK. Do not restore them behind old memory flags or configured chat lists. Existing deployments still require the reviewed infrastructure update; V2 recovery, news and quiz schedules retain their existing owners.
+
 The owner removed the experimental contest feature on 2026-09-11. No contest command, observation, repository, recovery schedule or runtime writer remains in this PR; deployed old code is unchanged until release. Old contest task envelopes are acknowledged without action. Retired rows are not a source of memory and may be explicitly scoped for offline cleanup; deployment and production deletion remain separate operations. This supersedes prior contest preservation/fairness guidance.
 
 The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Retain old helpers only until the separately gated V2 acceptance and removal task. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
@@ -233,6 +235,8 @@ Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../../../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
 
+Idle dev must disable all three SQS mappings and omit their maximum concurrency when Lambda reserved concurrency is zero. Active dev and prod retain limits 10/3/2. Verify actual updates/readback, including the transition from existing active mappings; disabled mappings still undergo Lambda configuration validation.
+
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
 
 Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
@@ -242,3 +246,5 @@ News deadlines, frozen manifests, per-chat delivery receipts, and operator recov
 News/Quiz public integration: keep original scheduled_at in daily inputs and stable News slot. Quiz answer persistence failure must produce HTTP 500; enqueue failure after durable acceptance relies on five-minute recovery. Keep recovery schedules without chat lists, gate dev with runtime activation, and send bounded async failures to the unconsumed DLQ for inspection. Never replay Lambda destination envelopes as task bodies. `/quizreconcile` requires live administrator and own-bot poll evidence; see docs/QUIZ_RECOVERY.md.
 
 Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.
+
+Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.

@@ -2,6 +2,8 @@
 
 ## Current memory cutover boundary
 
+CDK no longer defines the retired daily group summary rule or its SQS send grant. Legacy memory flags and configured chat lists cannot recreate this schedule. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is temporary. V2 recovery, news and quiz schedules keep their existing owners.
+
 Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership uses one-day V2 source-fenced metadata; remaining business data retain their existing ownership; experimental contests are removed. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
 
 
@@ -105,7 +107,7 @@ The bot Lambda consumes real-time and group-memory tasks. The vector-indexer Lam
 | `PROCESS_PROACTIVE_CANDIDATE` | timeout/tasks queue | Bot Lambda delayed ordinary proactive AI decision. The webhook queues eligible ordinary group text without local open-question/score gating; the worker re-reads recent context, adds query-filtered long-term context, asks the configured Groq model pool for strict JSON using capped decision-only context, and stays silent on invalid/low-confidence/no decisions. DeepSeek decision fallback is disabled by default and is opt-in only. If the decision is yes, it reserves the daily proactive counter, generates the answer with Gemini retries plus DeepSeek/Groq text-only fallback, and records the reply as `trigger_kind=proactive`. Linked-channel post candidates use the same task with zero delay, bypass ordinary proactive gates, may download supported media ephemerally for Gemini, and generate a direct comment with a dedicated prompt. If every provider fails for linked-channel comments, the SQS task retries/DLQs. |
 | `PROCESS_AMBIENT_REACTION` | timeout/tasks queue | Bot Lambda async classifier for ambient reactions; ordinary messages are sampled and rate-limited, while linked-channel posts force a reaction attempt and bypass sampling/cooldowns/rate caps. Stores only short-lived `AMBIENT_REACTION#...` metadata. |
 | `PROCESS_GROUP_MEMORY` | timeout/tasks queue | Bot Lambda structured extraction of one long-term memory item from a stored group message, with rule fallback. |
-| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Bot Lambda daily summaries for configured groups. |
+| `PROCESS_DAILY_GROUP_SUMMARIES` | timeout/tasks queue | Retired: acknowledge without work; CDK creates no schedule. |
 | `PROCESS_VECTOR_MEMORY` | vector memory queue | Vector-indexer Lambda embeds and indexes one memory item in S3 Vectors. |
 | `PROCESS_VECTOR_MEMORY_BACKFILL` | vector memory queue | Vector-indexer Lambda pages through historical vectorizable memory items and enqueues indexing. |
 
@@ -294,6 +296,8 @@ Deployment configuration and reproducible dependency exports are documented in [
 Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions infrastructure but never seeds ACTIVE controls; absent CONTROL rows leave learning stopped.
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
+
+空闲 dev 的六个 Lambda reserved concurrency 为 0，三个 SQS mapping 关闭且不配置 maximum concurrency；启用后才恢复 Bot 10、vector 3、Memory V2 worker 2 的上限。部署验收须读回实际 mapping，不能把 disabled 当作并发参数不受校验。
 Legacy resource candidates and dependency/backup gates are documented in [LEGACY_AWS_CLEANUP.md](LEGACY_AWS_CLEANUP.md). The runbook does not authorize cloud deletion or include current Memory V2 data.
 
 Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
@@ -310,3 +314,5 @@ Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, 
 ## Removed experimental contests
 
 PR #204 removes contest commands, observation, persistence and scheduled TTL recovery. The two old `PROCESS_CONTEST_TTL_*` envelopes are acknowledged without reading data, sending messages or enqueueing more work. The remaining main queue still carries captcha, moderation, explicit questions and Quiz recovery; never purge it for retirement. Production residue is handled by the explicit root-scoped cleanup contract in [legacy-memory-cleanup.md](legacy-memory-cleanup.md), after actual old writers and schedules have stopped.
+
+Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.
