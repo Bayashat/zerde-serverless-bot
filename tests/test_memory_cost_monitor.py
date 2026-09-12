@@ -239,7 +239,7 @@ def aggregate(group, **changes):
         "wru": 3,
         "sqs_count": 1,
         "sqs": 1,
-        "elapsed_ms": 100,
+        "measured_elapsed_ms": 100,
         **changes,
     }
     return [
@@ -485,11 +485,115 @@ def test_complete_empty_logs_cannot_replace_expired_historical_reports(budget):
 def test_history_catchup_requires_every_block_before_admission(budget):
     service, _, now = monitor(budget)
     now[0] += 13 * 3600
+    repo = service.state.budget
+    unknown_scan = service.state.reserve_scan(repo.month(), "prior-unknown-query", 394)
+    result = service.run()
+    assert result["measurement_state"] == "UNVERIFIED"
+    assert result["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"
+    assert result["covered_until"] == service._blocks(int(now[0]))[0][1]
+    assert service.state.read(repo.month(), "AWS")["valid_until"] == int(now[0])
+    assert service.state.read(repo.month(), "MONITOR")["scan_micro_usd"] == 394
+    assert repo.table.get_item(Key=unknown_scan, ConsistentRead=True)["Item"]["state"] == "RESERVED"
+    for operation in (
+        repo.check_aws_available,
+        repo.check_available,
+        lambda: repo.reserve("partial-history", purpose="answer"),
+    ):
+        with pytest.raises(MemoryBudgetPaused):
+            operation()
+    assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
+    repo.reserve("complete-history", purpose="answer")
+
+
+def test_exception_named_like_history_progress_is_still_a_failed_observation(budget):
+    service, _, _ = monitor(budget)
+    failure = type("HISTORICAL_COVERAGE_INCOMPLETE", (RuntimeError,), {})
+    with patch.object(service.telemetry, "resources", side_effect=failure("synthetic")):
+        with pytest.raises(UnverifiedCost):
+            service.run()
+    repo = service.state.budget
+    assert service.state.read(repo.month(), "AWS")["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"
+    with pytest.raises(MemoryBudgetPaused):
+        repo.reserve("failed-observation", purpose="extract")
+
+
+def test_late_cost_validation_failure_revokes_complete_coverage(budget):
+    service, _, now = monitor(budget)
+    now[0] += 13 * 3600
+    repo = service.state.budget
+    start, end = service._blocks(int(now[0]))[0]
+    row = service.state.save_day(
+        repo.month(),
+        str(start),
+        {
+            "inventory_version": service.inventory.version,
+            "covered_from": start,
+            "covered_until": end,
+            "observed_at": int(now[0]),
+            "variable_micro_usd": 0,
+            "write_units": 0,
+        },
+    )
+    # Coverage is complete after the next block, but its persisted cost input
+    # must still be validated before a fresh permit can be published.
+    repo.table.put_item(Item={**row, "write_units": "not-a-priced-number"})
     with pytest.raises(UnverifiedCost):
         service.run()
+    assert service.state.read(repo.month(), "AWS")["measurement_state"] == "UNVERIFIED"
     with pytest.raises(MemoryBudgetPaused):
-        service.state.budget.reserve("partial-history", purpose="answer")
-    assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
+        repo.reserve("invalid-cost-input", purpose="answer")
+
+
+@pytest.mark.parametrize("boundary", ["save_day", "record_measurement", "observe_model"])
+def test_history_progress_does_not_swallow_persistence_failures(budget, boundary):
+    service, _, now = monitor(budget)
+    now[0] += 13 * 3600
+    expected = UnverifiedCost if boundary == "save_day" else TimeoutError
+    with patch.object(service.state, boundary, side_effect=TimeoutError("synthetic persistence failure")):
+        with pytest.raises(expected):
+            service.run()
+    with pytest.raises(MemoryBudgetPaused):
+        service.state.budget.reserve("failed-persistence", purpose="extract")
+
+
+def test_history_progress_waits_for_notice_ack_and_preserves_sticky_pause(budget):
+    service, _, now = monitor(budget)
+    now[0] += 13 * 3600
+    repo = service.state.budget
+    write_measurement(repo, now, amount=2_700_000)
+    service.sns.publish.side_effect = TimeoutError("synthetic unknown SNS")
+    with pytest.raises(TimeoutError):
+        service.run()
+    notice = service.state.read(repo.month(), "NOTICE#AWS")
+    assert notice["state"] == "PENDING"
+    first_event = notice["event"]
+    service.sns.publish.side_effect = None
+    service.sns.publish.return_value = {"MessageId": "confirmed"}
+    # Keep another historical block outstanding while retrying the same notice.
+    now[0] += 12 * 3600
+    result = service.run()
+    assert result["measurement_state"] == "UNVERIFIED"
+    assert result["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"
+    assert result["paused"] is True
+    notice = service.state.read(repo.month(), "NOTICE#AWS")
+    assert notice["state"] == "SENT" and notice["event"] == first_event
+    with pytest.raises(MemoryBudgetPaused):
+        repo.reserve("still-paused", purpose="answer")
+
+
+def test_history_progress_does_not_mask_a_sticky_scan_overrun(budget):
+    service, _, now = monitor(budget)
+    now[0] += 13 * 3600
+    repo = service.state.budget
+    key = service.state.reserve_scan(repo.month(), "overrun-query", 394)
+    service.state.settle_scan(repo.month(), key, 1000)
+    with pytest.raises(UnverifiedCost):
+        service.run()
+    row = service.state.read(repo.month(), "AWS")
+    assert row["measurement_state"] == "UNVERIFIED" and row["reason"] == "SCAN_BOUND_EXCEEDED"
+    assert service.state.read(repo.month(), "MONITOR")["scan_micro_usd"] == 1000
+    with pytest.raises(MemoryBudgetPaused):
+        repo.reserve("scan-overrun", purpose="extract")
 
 
 def test_metrics_reject_out_of_window_and_conflicting_pagination():

@@ -79,6 +79,16 @@ aws budgets describe-budget --region us-east-1 --account-id "$ZERDE_ACCOUNT_ID" 
 
 `ZERDE_ACCOUNT_ID` 从本次 STS 身份核对后设置；不能用未审查的默认账号。readback 核对过滤器、gross 口径、currency 与金额；无历史预测数据不代表预测费用为零。不要声称创建 Budget 等于已限制 AWS 消费。
 
+## Memory V2 恢复诊断
+
+Memory V2 定时恢复若失败，worker 会先为失败阶段写固定消息
+`Memory recovery stage remains pending`：`stage` 仅为 `purges`、`ingestion`、`trends`，
+`error_type` 使用固定允许名单，未知类型为 `UnexpectedError`；AWS ClientError 仅附带允许名单
+中的 `aws_error_code`，未知值为 `OtherAwsError`。不记录异常正文、traceback、请求、来源引用或
+令牌。三个阶段仍按原顺序全部尝试，最后沿用 `Durable memory recovery remains pending`
+失败和重试语义；成功时不新增日志。该诊断改进不能还原历史 dev 失败的根因，也不代表已修复
+或部署任何导致失败的业务逻辑；应在之后的实际失败日志中核实具体阶段。
+
 ## Quiz PITR 与恢复
 
 prod Quiz 表启用 7 天 PITR，保留原 Retain 与 deletion protection；dev 不启用。7 天是恢复副本的保留窗口，**缩短到 7 天不会降低 PITR 的按表大小收费**。[AWS PITR 说明](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Point-in-time-recovery.html)

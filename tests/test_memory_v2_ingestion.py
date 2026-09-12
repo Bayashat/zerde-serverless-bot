@@ -410,11 +410,17 @@ def test_recovery_filtered_empty_page_keeps_cursor_and_reaches_later_items(env, 
     assert env.repo.get_work(CHAT, ref)["state"] == "PENDING"
 
 
-def test_sqs_wire_payload_contains_only_versioned_reference():
+def test_sqs_wire_payload_contains_only_versioned_reference(monkeypatch):
+    from services.memory_v2 import cost_meter
     from services.memory_v2.models import SourceRef
 
+    # This payload-only fake has no SDK metadata. Real hook installation and
+    # sticky registration failure are covered in test_memory_v2_cost_meter.
+    register = Mock(return_value=True)
+    monkeypatch.setattr(cost_meter, "register_client", register)
     client = SimpleNamespace(send_message=Mock())
     MemoryQueue("https://example.invalid/memory-v2", client=client).send(CHAT, SourceRef("8", 1, "epoch"))
+    register.assert_called_once_with(client)
     payload = json.loads(client.send_message.call_args.kwargs["MessageBody"])
     assert payload == {
         "schema": 2,
