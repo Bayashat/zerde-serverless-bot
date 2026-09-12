@@ -92,6 +92,8 @@ def render_catalog(corpus):
                     f" / {fact['field']} / {fact['facet'] or '-'} = **{fact['value']}**；"
                     f"证据 `{evidence['source_event']}[{evidence['start']}:{evidence['end']}]`。"
                 )
+                if fact.get("accepted_values"):
+                    lines.append(f"  - 预先批准的等价值：{json.dumps(fact['accepted_values'], ensure_ascii=False)}。")
             if not checkpoint["facts"]:
                 lines.append("- 有效事实应为空。")
             for question in checkpoint.get("questions", []):

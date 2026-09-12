@@ -5,6 +5,10 @@ The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore
 
 ## Current cutover boundary (Z01)
 
+The bounded post-baseline handbook/education corrections are documented in
+[Memory quality follow-up](../docs/MEMORY_QUALITY_FOLLOWUP.md). Keep the sole public-content
+and answer owners; do not change the frozen real-evaluation gold to improve scores.
+
 Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
 
 

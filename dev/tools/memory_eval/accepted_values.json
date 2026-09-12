@@ -1,0 +1,657 @@
+{
+  "schema_version": 1,
+  "approved_proposal_sha256": "a9cb0eb5412ae99560294fbf64a654475bd1037c1006d1b49cae44d7a30a3319",
+  "review_reference": "docs/MEMORY_V2_GOLD_REVIEW_2026-09-11.md",
+  "policy": "Finite, source-language-and-text-scoped aliases approved before real provider observations. No runtime normalization changes.",
+  "entries": [
+    {
+      "language": "en",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "computer science degree",
+      "source_texts": [
+        "I graduated with a computer science degree."
+      ],
+      "accepted_values": [
+        "a computer science degree",
+        "degree in computer science",
+        "a degree in computer science"
+      ],
+      "alias_reasons": {
+        "a computer science degree": "源句冠词；仍明确 degree。",
+        "degree in computer science": "学科前置与 in 短语是同一学历表达。",
+        "a degree in computer science": "上述同义词序及冠词。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "electrical engineering diploma",
+      "source_texts": [
+        "I have a diploma in electrical engineering."
+      ],
+      "accepted_values": [
+        "diploma in electrical engineering",
+        "a diploma in electrical engineering",
+        "an electrical engineering diploma"
+      ],
+      "alias_reasons": {
+        "diploma in electrical engineering": "源句原文名词短语；保留 diploma，不等同于 degree。",
+        "a diploma in electrical engineering": "源句原文及冠词。",
+        "an electrical engineering diploma": "相同 diploma 与学科，仅加语法冠词。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "mathematics degree",
+      "source_texts": [
+        "I earned a mathematics degree."
+      ],
+      "accepted_values": [
+        "a mathematics degree",
+        "degree in mathematics",
+        "a degree in mathematics"
+      ],
+      "alias_reasons": {
+        "a mathematics degree": "源句冠词；仍明确 degree。",
+        "degree in mathematics": "同一 degree 和学科的词序变化。",
+        "a degree in mathematics": "上述同义词序及冠词。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "statistics degree",
+      "source_texts": [
+        "I completed a statistics degree."
+      ],
+      "accepted_values": [
+        "a statistics degree",
+        "degree in statistics",
+        "a degree in statistics"
+      ],
+      "alias_reasons": {
+        "a statistics degree": "源句冠词；仍明确 degree。",
+        "degree in statistics": "同一 degree 和学科的词序变化。",
+        "a degree in statistics": "上述同义词序及冠词。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "baking bread",
+      "source_texts": [
+        "I enjoy baking bread."
+      ],
+      "accepted_values": [
+        "bread baking"
+      ],
+      "alias_reasons": {
+        "bread baking": "同一活动的动名词词序变化，不扩大为一般 baking。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "QA engineer",
+      "source_texts": [
+        "I'm a QA engineer."
+      ],
+      "accepted_values": [
+        "a QA engineer",
+        "quality assurance engineer",
+        "a quality assurance engineer"
+      ],
+      "alias_reasons": {
+        "a QA engineer": "源句冠词，不改变职业。",
+        "quality assurance engineer": "此 QA engineer 职业短语中 QA 的明确缩写展开；不扩展为其他测试职位。",
+        "a quality assurance engineer": "上述缩写展开及冠词。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "backend engineer",
+      "source_texts": [
+        "I work as a backend engineer."
+      ],
+      "accepted_values": [
+        "a backend engineer",
+        "back-end engineer",
+        "back end engineer"
+      ],
+      "alias_reasons": {
+        "a backend engineer": "源句的冠词名词短语，不改变职业。",
+        "back-end engineer": "backend 的常见连字符拼写，职业词 engineer 不变。",
+        "back end engineer": "backend 的分词拼写，职业词 engineer 不变。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "data analyst",
+      "source_texts": [
+        "I'm a data analyst."
+      ],
+      "accepted_values": [
+        "a data analyst"
+      ],
+      "alias_reasons": {
+        "a data analyst": "源句冠词，不改变职业。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "product designer",
+      "source_texts": [
+        "I work as a product designer."
+      ],
+      "accepted_values": [
+        "a product designer"
+      ],
+      "alias_reasons": {
+        "a product designer": "源句冠词，不改变职业。"
+      }
+    },
+    {
+      "language": "en",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "technical writer",
+      "source_texts": [
+        "I am a technical writer."
+      ],
+      "accepted_values": [
+        "a technical writer"
+      ],
+      "alias_reasons": {
+        "a technical writer": "源句冠词，不改变职业。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "информатика",
+      "source_texts": [
+        "Мен информатика мамандығын бітірдім."
+      ],
+      "accepted_values": [
+        "информатика мамандығы",
+        "информатика мамандығын"
+      ],
+      "alias_reasons": {
+        "информатика мамандығы": "仅把学科明确写为该专业，不增加学历级别。",
+        "информатика мамандығын": "源句专业短语宾格，不增加学历级别。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "статистика",
+      "source_texts": [
+        "Мен статистика мамандығын бітірдім."
+      ],
+      "accepted_values": [
+        "статистика мамандығы",
+        "статистика мамандығын"
+      ],
+      "alias_reasons": {
+        "статистика мамандығы": "相同专业名，不新增学历级别。",
+        "статистика мамандығын": "源句专业短语宾格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "электротехника",
+      "source_texts": [
+        "Мен электротехника мамандығын бітірдім."
+      ],
+      "accepted_values": [
+        "электротехника мамандығы",
+        "электротехника мамандығын"
+      ],
+      "alias_reasons": {
+        "электротехника мамандығы": "相同专业名，不扩展为其他工程学科。",
+        "электротехника мамандығын": "源句专业短语宾格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "астрономия",
+      "source_texts": [
+        "Мен астрономияға қызығамын."
+      ],
+      "accepted_values": [
+        "астрономияға"
+      ],
+      "alias_reasons": {
+        "астрономияға": "源句兴趣对象向格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "велосипед тебу",
+      "source_texts": [
+        "Мен велосипед тепкенді ұнатамын."
+      ],
+      "accepted_values": [
+        "велосипед тепкенді"
+      ],
+      "alias_reasons": {
+        "велосипед тепкенді": "源句同一骑自行车活动的语法形式。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "жаяу саяхат",
+      "source_texts": [
+        "Бос уақытымда жаяу саяхаттағанды ұнатамын."
+      ],
+      "accepted_values": [
+        "жаяу саяхаттау",
+        "жаяу саяхаттағанды"
+      ],
+      "alias_reasons": {
+        "жаяу саяхаттау": "同一徒步活动的动名词形式。",
+        "жаяу саяхаттағанды": "源句明确喜欢的同一活动形式。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "нан пісіру",
+      "source_texts": [
+        "Мен нан пісіргенді ұнатамын."
+      ],
+      "accepted_values": [
+        "нан пісіргенді"
+      ],
+      "alias_reasons": {
+        "нан пісіргенді": "源句同一烤面包活动的语法形式。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "шахмат",
+      "source_texts": [
+        "Мен шахмат ойнағанды ұнатамын."
+      ],
+      "accepted_values": [
+        "шахмат ойнау",
+        "шахмат ойнағанды"
+      ],
+      "alias_reasons": {
+        "шахмат ойнау": "源句明确是下棋，保留同一活动。",
+        "шахмат ойнағанды": "源句明确喜欢的同一活动形式。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Астана",
+      "source_texts": [
+        "Қазір мен Астанада тұрамын."
+      ],
+      "accepted_values": [
+        "Астанада"
+      ],
+      "alias_reasons": {
+        "Астанада": "源句城市处所格；不扩展到街道或行政区。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Тараз",
+      "source_texts": [
+        "Қазір мен Таразда тұрамын."
+      ],
+      "accepted_values": [
+        "Таразда"
+      ],
+      "alias_reasons": {
+        "Таразда": "城市替换源句的处所格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Шымкент",
+      "source_texts": [
+        "Қазір мен Шымкентте тұрамын."
+      ],
+      "accepted_values": [
+        "Шымкентте"
+      ],
+      "alias_reasons": {
+        "Шымкентте": "源句城市处所格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Қарағанды",
+      "source_texts": [
+        "Қазір мен Қарағандыда тұрамын."
+      ],
+      "accepted_values": [
+        "Қарағандыда"
+      ],
+      "alias_reasons": {
+        "Қарағандыда": "源句城市处所格。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "техникалық жазушы",
+      "source_texts": [
+        "Мен техникалық жазушымын."
+      ],
+      "accepted_values": [
+        "техникалық жазушымын"
+      ],
+      "alias_reasons": {
+        "техникалық жазушымын": "源句职业第一人称谓语形，不扩展为其他写作职业。"
+      }
+    },
+    {
+      "language": "kk",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "өнім дизайнері",
+      "source_texts": [
+        "Мен өнім дизайнерімін."
+      ],
+      "accepted_values": [
+        "өнім дизайнерімін"
+      ],
+      "alias_reasons": {
+        "өнім дизайнерімін": "源句职业第一人称谓语形，身份仍取来源作者。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "математика",
+      "source_texts": [
+        "У меня диплом по математике."
+      ],
+      "accepted_values": [
+        "математике"
+      ],
+      "alias_reasons": {
+        "математике": "源句学科与格；不新增学历级别。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "статистика",
+      "source_texts": [
+        "Я получил образование по статистике."
+      ],
+      "accepted_values": [
+        "статистике"
+      ],
+      "alias_reasons": {
+        "статистике": "源句学科前置格；不新增学历级别。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "education",
+      "facet": "",
+      "canonical_value": "электротехника",
+      "source_texts": [
+        "У меня диплом по электротехнике."
+      ],
+      "accepted_values": [
+        "электротехнике"
+      ],
+      "alias_reasons": {
+        "электротехнике": "源句学科与格；不改成另一工程学科。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "астрономия",
+      "source_texts": [
+        "Я увлекаюсь астрономией."
+      ],
+      "accepted_values": [
+        "астрономией"
+      ],
+      "alias_reasons": {
+        "астрономией": "源句兴趣名词工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "велоспорт",
+      "source_texts": [
+        "Я увлекаюсь велоспортом."
+      ],
+      "accepted_values": [
+        "велоспортом"
+      ],
+      "alias_reasons": {
+        "велоспортом": "源句兴趣名词工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "выпечка хлеба",
+      "source_texts": [
+        "Я люблю печь хлеб."
+      ],
+      "accepted_values": [
+        "печь хлеб"
+      ],
+      "alias_reasons": {
+        "печь хлеб": "源句明确喜欢的同一活动；名词短语与不定式互换。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "походы",
+      "source_texts": [
+        "В свободное время я увлекаюсь походами."
+      ],
+      "accepted_values": [
+        "походами"
+      ],
+      "alias_reasons": {
+        "походами": "源句兴趣名词工具格复数。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "interests",
+      "facet": "",
+      "canonical_value": "шахматы",
+      "source_texts": [
+        "Я увлекаюсь шахматами."
+      ],
+      "accepted_values": [
+        "шахматами"
+      ],
+      "alias_reasons": {
+        "шахматами": "源句兴趣名词工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Астана",
+      "source_texts": [
+        "Сейчас я живу в Астане."
+      ],
+      "accepted_values": [
+        "Астане"
+      ],
+      "alias_reasons": {
+        "Астане": "源句城市前置格；不加入行政层级或地址。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Караганда",
+      "source_texts": [
+        "Сейчас я живу в Караганде."
+      ],
+      "accepted_values": [
+        "Караганде"
+      ],
+      "alias_reasons": {
+        "Караганде": "源句城市前置格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Тараз",
+      "source_texts": [
+        "Теперь я живу в Таразе."
+      ],
+      "accepted_values": [
+        "Таразе"
+      ],
+      "alias_reasons": {
+        "Таразе": "城市替换源句的前置格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "location",
+      "facet": "",
+      "canonical_value": "Шымкент",
+      "source_texts": [
+        "Теперь я живу в Шымкенте."
+      ],
+      "accepted_values": [
+        "Шымкенте"
+      ],
+      "alias_reasons": {
+        "Шымкенте": "源句城市前置格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "аналитик данных",
+      "source_texts": [
+        "Я работаю аналитиком данных."
+      ],
+      "accepted_values": [
+        "аналитиком данных"
+      ],
+      "alias_reasons": {
+        "аналитиком данных": "源句职业短语工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "бэкенд-разработчик",
+      "source_texts": [
+        "Я работаю бэкенд-разработчиком."
+      ],
+      "accepted_values": [
+        "бэкенд-разработчиком"
+      ],
+      "alias_reasons": {
+        "бэкенд-разработчиком": "源句职业名词工具格；不更换职业。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "инженер по тестированию",
+      "source_texts": [
+        "Я работаю инженером по тестированию."
+      ],
+      "accepted_values": [
+        "инженером по тестированию"
+      ],
+      "alias_reasons": {
+        "инженером по тестированию": "源句职业短语工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "продуктовый дизайнер",
+      "source_texts": [
+        "Я работаю продуктовым дизайнером."
+      ],
+      "accepted_values": [
+        "продуктовым дизайнером"
+      ],
+      "alias_reasons": {
+        "продуктовым дизайнером": "源句形容词和职业名词工具格。"
+      }
+    },
+    {
+      "language": "ru",
+      "field": "occupation",
+      "facet": "",
+      "canonical_value": "технический писатель",
+      "source_texts": [
+        "Я работаю техническим писателем."
+      ],
+      "accepted_values": [
+        "техническим писателем"
+      ],
+      "alias_reasons": {
+        "техническим писателем": "源句形容词和职业名词工具格。"
+      }
+    }
+  ]
+}

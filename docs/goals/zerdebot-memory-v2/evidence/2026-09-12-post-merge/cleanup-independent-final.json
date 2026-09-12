@@ -1,0 +1,125 @@
+{
+  "status": "INDEPENDENT_ONLINE_CLEAN_STOPPED_COPIES_PENDING",
+  "verified_at": 1789230047.8355892,
+  "verified_utc": "2026-09-12T16:20:47.835589Z",
+  "private_final_report_bytes_sha256": "f526229405653d7a42a72c6f4b526ba69b6ec9105cc89506bb3d95345d93fa2c",
+  "manifest_sha256": "67c71ec9bd6e62b43fd519a8b427f286dd81661a415f356912703db27f26e8f4",
+  "cleanup_source_commit": "bb3de23559a827bbfb0fdb394f12d572bd32b7dc",
+  "deployed_runtime_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+  "diagnostic_operator_source_pins": {
+    "run_cleanup_phase_diagnostic_v1.py": "56f0a20a5e221a4167f4fbcdff254d16a33fe7cbdd67b874f1e19ab96aec8109",
+    "continue_frozen_cleanup_diagnostic_v1.py": "df6f8105b8a4b042fe5946f5baab638bffe5139e82c266cd2538532c99431be5"
+  },
+  "diagnostic_root_approval_sha256": "a69fcba49fcd2fc530191aa82513c4f5373b3fa7bb5c3fe73cef7574f870da91",
+  "verifier_script_sha256": "13ffd930f35c9cef4be84ba314027c950b18fcc44cbb1294f9ed7c8f056ea96c",
+  "conditional_readonly_approval_sha256": "68d686c12ece7a851d0ccc9849e032a7afd7505d9a06528eadcfcad10e8b8209",
+  "continuation": {
+    "status": "ONLINE_CLEAN_COPIES_PENDING",
+    "cycles_completed": 6,
+    "started_at": 1789223372.8765051,
+    "completed_at": 1789228111.343093,
+    "completed_utc": "2026-09-12T15:48:31.343093Z",
+    "original_window_started_at": 1789217312.0517728,
+    "absolute_deletion_deadline": 1789260512.0517728,
+    "state_bytes_sha256": "4341abb5e576f17db5f3b6e6d11649d6beeb90802a6acca102b674b65d7d51bb",
+    "final_apply_report_bytes_sha256": "7c1b6fd9e499f40cddbab3e97e2ffb0da169efb66a58959480b0fc8bd068def6",
+    "final_apply_exit_code": 0,
+    "operator_processes_and_lock_absent_before_final_check": true
+  },
+  "online_verification": {
+    "actual_full_table_rows": 3,
+    "remaining_memory_targets": 0,
+    "remaining_vectors": 0,
+    "protected_type": "SETTINGS",
+    "protected_count": 3,
+    "protected_sha256": "b2dd117fc729e2cb347f8bceb836ce9448c4b96397c65c6c81d354589f4f3102",
+    "configured_groups": 4,
+    "exact_control_keys_missing_after_strong_reads": 4,
+    "default_epoch_unchanged": true,
+    "all_learning_stopped": true,
+    "runtime_and_environment_and_write_fences_unchanged": true,
+    "fresh_evidence_observed_at": 1789230037,
+    "fresh_evidence_valid_until": 1789230937,
+    "final_checker_cloud_mutations": 0
+  },
+  "retained_copies": {
+    "physical_erasure_complete": false,
+    "archives_expire_at": 1789750192,
+    "archives_expire_utc": "2026-09-18T16:49:52Z",
+    "archive_expiry_extended": false,
+    "archive_destruction_complete": false,
+    "legacy_table_pitr_window_days_observed": 35,
+    "last_delete_conservative_upper_bound": 1789230038,
+    "pitr_recheck_not_before": 1792254038,
+    "pitr_recheck_utc": "2026-10-17T16:20:38Z",
+    "pitr_recheck_is_physical_erasure_guarantee": false,
+    "logs_queues_pitr_other_copies_remain_separately_owned": true,
+    "metadata_recorded_at": 1789230345.828107,
+    "metadata_receipt_bytes_sha256": "afa6b54bfd6065c0fc5afa0f6d0ad8db5865e2b73fe4e8c3e80e738c0e6e4ea7",
+    "archive_inventory": [
+      {
+        "name": "manifest.zenc",
+        "bytes": 17856090,
+        "bytes_sha256": "f742d5a3437784cffa53214de0141c449749cd43727225c51b69593a241c4b38"
+      },
+      {
+        "name": "backup.zenc",
+        "bytes": 496329374,
+        "bytes_sha256": "da7cdac0adc16c455c03aa7bb8d5d70b2aff2753b3b8037191fa21132a890330"
+      },
+      {
+        "name": "journal.zenc",
+        "bytes": 668,
+        "bytes_sha256": "486effc89e09623308b420d5ad425463522a0821ddc49ea6ac9b6ddcd09ecf81"
+      }
+    ],
+    "archive_count_still_present": 3,
+    "original_manifest_and_backup_bytes_unchanged": true,
+    "key_deleted": false
+  },
+  "automation": {
+    "status": "ACTIVE",
+    "frequency": "DAILY",
+    "restored_at": 1789230196.612459,
+    "restored_utc": "2026-09-12T16:23:16.612459Z",
+    "original_daily_fields_match": true,
+    "restoration_receipt_bytes_sha256": "c8bfdee6dc58061a895ef118608def883b420a9b5e6ef9672e77f602df5afcff",
+    "responsibility": "Original fixed-expiry archive/key cleanup only; no restart of completed online cleanup",
+    "may_restart_cleanup": false
+  },
+  "resources": {
+    "legacy_table_with_three_settings_retained": true,
+    "empty_retired_vector_index_resource_retained": true,
+    "z18_cloud_resource_deletion_performed": false
+  },
+  "task_states": {
+    "Z10": "online_clean_copies_pending",
+    "Z19": "runtime_retired_online_residue_cleared",
+    "issue_closure_included": false,
+    "overall_acceptance_complete": false
+  },
+  "prior_unknown_failures": {
+    "cause": "UNKNOWN",
+    "original_reports_and_stop_states_preserved": true,
+    "later_success_does_not_establish_root_cause": true
+  },
+  "remaining_acceptance": {
+    "real_model_quality": "FAIL_NOT_ACCEPTED",
+    "post_baseline_quality_fix_rerun": false,
+    "learning_enabled": false,
+    "seven_day_group_trial_started": false,
+    "cost_verified_window_utc": [
+      "2026-09-11T17:00:00Z",
+      "2026-09-11T17:15:00Z"
+    ],
+    "monthly_cost_free_tier_or_invoice_verified": false,
+    "shared_nonzero_write_and_sqs_paths_verified": false,
+    "prior_unknown_cost_holds_preserved": true,
+    "retired_task_replay_before_cleanup_passed": 18,
+    "retired_task_replay_after_cleanup_executed": false,
+    "post_cleanup_replay_required_before_new_epoch": true,
+    "final_readonly_verifier_invoked_runtime_functions": false,
+    "expiry_automation_authorizes_runtime_invoke": false
+  },
+  "publication_scope": "Aggregate counts, statuses, times and provenance hashes only; no raw records, personal identifiers, resource ARNs, private archive/key paths or credentials."
+}

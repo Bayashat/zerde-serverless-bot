@@ -28,6 +28,20 @@ def usage(inputs=100, candidates=50, thoughts=20):
     }
 
 
+def observed_standard_usage():
+    """HTTP 200 metadata shape observed in the bounded 2026-09-11 smoke.
+
+    Token counters only; no prompt, response text, credentials or real ledger.
+    """
+    return {
+        "promptTokenCount": 403,
+        "candidatesTokenCount": 11,
+        "totalTokenCount": 414,
+        "promptTokensDetails": [{"modality": "TEXT", "tokenCount": 403}],
+        "serviceTier": "standard",
+    }
+
+
 @pytest.fixture
 def budget(monkeypatch):
     with mock_aws():
@@ -68,6 +82,124 @@ def test_real_transaction_reserves_and_refunds_once(budget):
     assert repo.snapshot()["charged_micro_usd"] == cost_micro_usd(100, 70)
     with pytest.raises(DuplicateMemoryAttempt):
         repo.reserve("network-attempt-1", purpose="extract")
+
+
+@pytest.mark.parametrize("tier", ["standard", "unspecified", "omitted"])
+def test_documented_standard_wire_usage_settles_actual_shape_once(budget, tier):
+    repo, _ = budget
+    reservation = repo.reserve("standard-http-200", purpose="answer")
+    data = observed_standard_usage()
+    if tier == "omitted":
+        del data["serviceTier"]
+    else:
+        data["serviceTier"] = tier
+    assert repo.settle(reservation, data) is True
+    assert repo.settle(reservation, data) is True
+    assert repo.snapshot()["charged_micro_usd"] == repo.snapshot()["settled_micro_usd"] == 118
+    with pytest.raises(DuplicateMemoryAttempt):
+        repo.reserve("standard-http-200", purpose="answer")
+
+
+@pytest.mark.parametrize("committed", [False, True])
+def test_actual_usage_settlement_database_fault_retries_only_accounting(budget, committed):
+    repo, _ = budget
+    reservation = repo.reserve("standard-settlement-fault", purpose="extract")
+    actual_transaction = repo.table.meta.client.transact_write_items
+
+    def fault(**kwargs):
+        if committed:
+            actual_transaction(**kwargs)
+        raise TimeoutError("Synthetic unavailable settlement response")
+
+    with patch.object(repo.table.meta.client, "transact_write_items", side_effect=fault):
+        with pytest.raises(TimeoutError):
+            repo.settle(reservation, observed_standard_usage())
+    assert repo.snapshot()["charged_micro_usd"] == (118 if committed else RESERVATION_MICRO_USD)
+    assert repo.settle(reservation, observed_standard_usage())
+    assert repo.settle(reservation, observed_standard_usage())
+    assert repo.snapshot()["charged_micro_usd"] == repo.snapshot()["settled_micro_usd"] == 118
+    with pytest.raises(DuplicateMemoryAttempt):
+        repo.reserve("standard-settlement-fault", purpose="extract")
+
+
+@pytest.mark.parametrize(
+    "tier",
+    [
+        "flex",
+        "priority",
+        "STANDARD",
+        "SERVICE_TIER_UNSPECIFIED",
+        "UNSPECIFIED",
+        "Standard",
+        " standard",
+        "",
+        None,
+        0,
+        False,
+        [],
+        {},
+    ],
+)
+def test_undocumented_or_unpriced_service_tier_keeps_full_hold(budget, tier):
+    repo, _ = budget
+    reservation = repo.reserve("unknown-tier", purpose="extract")
+    assert repo.settle(reservation, {**observed_standard_usage(), "serviceTier": tier}) is False
+    assert repo.snapshot()["charged_micro_usd"] == RESERVATION_MICRO_USD
+    assert (
+        repo.table.get_item(Key=repo._attempt_key(reservation.month, reservation.attempt_id))["Item"]["status"]
+        == "RESERVED"
+    )
+
+
+@pytest.mark.parametrize(
+    "patch_data",
+    [
+        {"cachedContentTokenCount": 1},
+        {"cachedContentTokenCount": False},
+        {"cachedContentTokenCount": None},
+        {"toolUsePromptTokenCount": 1},
+        {"toolUsePromptTokenCount": "0"},
+        {"toolUsePromptTokenCount": 0.0},
+        {"toolUsePromptTokenCount": -1},
+        {"cacheTokensDetails": [{"modality": "TEXT", "tokenCount": 0}]},
+        {"toolUsePromptTokensDetails": [{"modality": "TEXT", "tokenCount": 0}]},
+        {"cacheTokensDetails": None},
+        {"toolUsePromptTokensDetails": {}},
+        {"promptTokensDetails": [{"modality": "TEXT"}]},
+        {"promptTokensDetails": [{"modality": "TEXT", "tokenCount": 402}]},
+        {"promptTokensDetails": [{"modality": "TEXT", "tokenCount": True}]},
+        {"promptTokensDetails": [{"modality": "TEXT", "tokenCount": -1}]},
+        {"candidatesTokensDetails": [{"modality": "AUDIO", "tokenCount": 11}]},
+        {"candidatesTokensDetails": [{"modality": "IMAGE", "tokenCount": 11}]},
+        {"candidatesTokensDetails": [{"modality": "TEXT", "tokenCount": "11"}]},
+        {"candidatesTokensDetails": [{"modality": "TEXT", "tokenCount": 12}]},
+        {"candidatesTokensDetails": None},
+        {"totalTokenCount": 413},
+        {"thoughtsTokenCount": 1},
+    ],
+)
+def test_real_shape_invalid_counts_or_modalities_cannot_release_hold(budget, patch_data):
+    repo, _ = budget
+    reservation = repo.reserve("invalid-usage-detail", purpose="extract")
+    assert repo.settle(reservation, {**observed_standard_usage(), **patch_data}) is False
+    assert repo.snapshot()["charged_micro_usd"] == RESERVATION_MICRO_USD
+
+
+def test_standard_text_details_and_explicit_integer_zeros_preserve_thinking_cost(budget):
+    repo, _ = budget
+    reservation = repo.reserve("complete-text-detail", purpose="answer")
+    data = {
+        **observed_standard_usage(),
+        "totalTokenCount": 419,
+        "thoughtsTokenCount": 5,
+        "cachedContentTokenCount": 0,
+        "toolUsePromptTokenCount": 0,
+        "cacheTokensDetails": [],
+        "toolUsePromptTokensDetails": [],
+        "candidatesTokensDetails": [{"modality": "TEXT", "tokenCount": 11}],
+    }
+    assert repo.settle(reservation, data)
+    assert repo.snapshot()["charged_micro_usd"] == cost_micro_usd(403, 16)
 
 
 def test_last_reservation_cannot_cross_monthly_limit(budget):

@@ -1,5 +1,8 @@
 # ZerdeBot Architecture
 
+The V2 public-content and answer owners include the bounded handbook/education
+corrections described in [Memory quality follow-up](MEMORY_QUALITY_FOLLOWUP.md).
+
 ## Current memory cutover boundary
 
 Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership uses one-day V2 source-fenced metadata; remaining business data retain their existing ownership; experimental contests are removed. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).

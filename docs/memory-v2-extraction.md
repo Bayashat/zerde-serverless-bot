@@ -78,6 +78,34 @@ A model can still misread a self-statement. The multilingual Z11 gold evaluation
 and real-group acceptance remain required before enabling learning; these local
 tests do not establish the plan's precision/recall thresholds.
 
+### Structured-output compatibility (2026-09-11)
+
+The current `self-claims-v2.4` request keeps the original closed `facet` enum,
+including the ordinary-fact empty string. Relative to the original request, only
+four provider-schema limits are removed: the two array `maxItems` caps and the
+`value`/`evidence` `maxLength` fields. The prompt, model, source-index range and
+generation settings are unchanged. Local validation remains the authority for
+20 input sources, exactly one result per source, at most 16 facts per source,
+normalized values of at most 160 characters and exact evidence of at most 240.
+Invalid/missing/duplicate source indices, invalid facets and preference values
+still reject the result. Safe-name validation remains separate.
+
+The bounded real diagnostics first returned HTTP 400 with the original schema,
+with a facet-only relaxation, and after additionally removing unsupported string
+length fields. From that last request, removing only the two array caps returned
+HTTP 200 (538 input/229 output tokens, 478 micro USD); restoring the original
+facet enum also returned HTTP 200 (538 input/150 output tokens, 360 micro USD).
+The private `schema-array-bounds` and `schema-facet-restore` ledgers retain each
+exact request hash, response and usage. These comparisons support the final
+minimal wire fix; they do not establish multilingual extraction quality or prove
+that every listed schema constraint is independently unsupported by the provider.
+
+Tests restore exactly the four removed limits and verify the original complete
+request fingerprint. They exercise 16/17 facts, 20/21 input sources, source-index
+completeness, value/evidence boundaries and closed preference validation. Gold,
+fixtures and quality thresholds remain unchanged; full real semantic evaluation
+and deployment acceptance remain separate requirements.
+
 ## Group trends
 
 `aggregate_trends(sources, chat_id, epoch, as_of)` is a pure seven-day aggregation

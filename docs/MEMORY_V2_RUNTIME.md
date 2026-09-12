@@ -103,6 +103,18 @@ as last mentioned. Current aliases are verified with `getChatMember`; a display
 name or a similar fact cannot merge people. Basic groups without a supported
 `t.me/c` link explicitly show unavailable links rather than inventing one.
 
+The answer parser accepts one final text part with optional opaque string
+`thoughtSignature` and an absent or exactly false boolean `thought`. These are
+documented Gemini Part metadata; the signature is neither decoded nor returned
+as answer/context. The existing provider limit bounds the complete HTTP response
+at 100 KB. Thinking content, tool/function/media/code parts, unknown extra keys,
+additional parts and invalid selection JSON still fail closed.
+[Gemini Part reference](https://ai.google.dev/api/generate-content?hl=en#Part)
+The 2026-09-11 real smoke exposed the prior exact-text-key check rejecting valid
+signed selections and causing an unnecessary paid retry. That run and its costs
+remain historical failure evidence; offline parsing of its stored responses is
+diagnostic only, not evidence of sent answers or a corrected quality benchmark.
+
 The only public send identity is `tg:<chat_id>:<message_id>` for both memory and
 plain/media answers. A released/expired lease can be reclaimed only when no
 `ANSWER_REQUEST` exists, proved in the same transaction. A prepared, partial,
