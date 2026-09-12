@@ -1,0 +1,4763 @@
+{
+  "kind": "READONLY_EXECUTED_56_DIAGNOSTIC_SLICE_NOT_NEW_BENCHMARK",
+  "product_status": "IMPLEMENTED_UNPROVEN",
+  "model_quality_claim": "NOT_VERIFIED",
+  "original_full_report_reproduced_without_metric_or_label_changes": true,
+  "baseline": {
+    "execution_source_sha256": "f6d93330b5a00bd8eed97a0ac8f7d2cbbf71d42b3c722284549362ebebf97251",
+    "source_commit": "1a0f0fa83faa62a870f3bd0ef03be780bac98554",
+    "model": "gemini-3.1-flash-lite",
+    "corpus_sha256": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+    "input_sha256": "b280854790f192a38d70d01aed445142f7d17c35ffae795ca8493083ed96f411",
+    "scorer_sha256": "1d1c3ab49bc6712d5ba0685d577f017940a20a197091862e32a30044e1383696",
+    "confirmed_equal_to_baseline_commit": true,
+    "later_pr_207_quality_fixes_rerun": false,
+    "later_quality_fix_commit": "ae9eece",
+    "later_fix_limits": "Handbook noun false positive and narrow simple education-question field postcondition; no general language-understanding or new real-model quality claim"
+  },
+  "immutable_input_sha256": {
+    "attempts.sqlite3": "6ae30440a7b0318a38f44d5ab6edf5a249b8929158f9259b0a75bd89a5e9ebce",
+    "session.json": "036fa2065d75250f59afcb99be19515a384d1b69ae03fbf3f1a0e8f65a2738d6",
+    "progress.json": "633b5e17617d611a51a322b73358e94d0953ec0606d2dc8ed3f48dbb63d33577",
+    "provenance.json": "e18fb62089b2d9363d184346a4ab428d250aa1a840eacc0e08ebe45328f5b957",
+    "observations.jsonl": "fe651a2ab1f51bf6c08ee7123e44e52ec62dc0adeb9739434877192c3c67c3ff",
+    "report.json": "7eb0d03fc53562de76f86e9de7bea5f05a2db0bf650a02057d56df1d7985d506",
+    "report.md": "20ad1f4a251c757b83ee9e0ebfec700170050272c83f458d2b8d3ccb36d66ee2"
+  },
+  "coverage": {
+    "completed_scenarios": 56,
+    "planned_scenarios": 240,
+    "completed_fraction": 0.23333333333333334,
+    "unsupported_scenarios": 184,
+    "fully_executed_checkpoint_count_within_56": 92,
+    "all_run_executed_checkpoints": 93,
+    "all_run_unsupported_checkpoints": 311,
+    "all_run_planned_checkpoints": 404,
+    "partial_additional_scenario": {
+      "scenario_id": "kk-057",
+      "status": "UNSUPPORTED",
+      "executed_checkpoints": 1,
+      "unsupported_checkpoints": 1,
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 2,
+        "unknown_billing_attempts": 1,
+        "verified_token_micro_usd": 487,
+        "unknown_hold_micro_usd": 458752,
+        "http_status_counts": {
+          "200": 2,
+          "503": 1
+        }
+      }
+    },
+    "entire_scenarios_without_real_provider_attempts": 183,
+    "all_run_observations_present": 404,
+    "answers_within_56": {
+      "observed": 108,
+      "expected": 112,
+      "missing": 4
+    },
+    "warning": "EXECUTED is replay completion, not model correctness or successful answer delivery. Four missing answers within 56 remain in their denominators."
+  },
+  "executed_slice_overall": {
+    "tp": 170,
+    "fp": 0,
+    "fn": 3,
+    "gold_observations": 173,
+    "assertions": 267,
+    "supported_assertions": 259,
+    "unknown_questions": 60,
+    "unknown_abstained": 53,
+    "missing_checkpoints": 0,
+    "missing_answers": 4,
+    "supported_questions": 52,
+    "supported_answers_complete": 48,
+    "precision": 1.0,
+    "recall": 0.9826589595375722,
+    "source_support": 0.9700374531835206,
+    "unknown_abstention": 0.8833333333333333,
+    "supported_answer_recall": 0.9230769230769231,
+    "thresholds_pass": false
+  },
+  "per_language": {
+    "kk": {
+      "completed_scenarios": 56,
+      "planned_scenarios": 60,
+      "checkpoint_count": 92,
+      "measurement_status": "OBSERVED_PARTIAL_FAILURE",
+      "metrics": {
+        "tp": 170,
+        "fp": 0,
+        "fn": 3,
+        "gold_observations": 173,
+        "assertions": 267,
+        "supported_assertions": 259,
+        "unknown_questions": 60,
+        "unknown_abstained": 53,
+        "missing_checkpoints": 0,
+        "missing_answers": 4,
+        "supported_questions": 52,
+        "supported_answers_complete": 48,
+        "precision": 1.0,
+        "recall": 0.9826589595375722,
+        "source_support": 0.9700374531835206,
+        "unknown_abstention": 0.8833333333333333,
+        "supported_answer_recall": 0.9230769230769231,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 92,
+          "status": "PASS"
+        }
+      }
+    },
+    "ru": {
+      "completed_scenarios": 0,
+      "planned_scenarios": 60,
+      "checkpoint_count": 0,
+      "measurement_status": "NOT_TESTED_NO_REAL_PROVIDER_CALLS",
+      "metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 0,
+        "assertions": 0,
+        "supported_assertions": 0,
+        "unknown_questions": 0,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": null,
+        "recall": null,
+        "source_support": null,
+        "unknown_abstention": null,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        }
+      }
+    },
+    "en": {
+      "completed_scenarios": 0,
+      "planned_scenarios": 60,
+      "checkpoint_count": 0,
+      "measurement_status": "NOT_TESTED_NO_REAL_PROVIDER_CALLS",
+      "metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 0,
+        "assertions": 0,
+        "supported_assertions": 0,
+        "unknown_questions": 0,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": null,
+        "recall": null,
+        "source_support": null,
+        "unknown_abstention": null,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        }
+      }
+    },
+    "mixed": {
+      "completed_scenarios": 0,
+      "planned_scenarios": 60,
+      "checkpoint_count": 0,
+      "measurement_status": "NOT_TESTED_NO_REAL_PROVIDER_CALLS",
+      "metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 0,
+        "assertions": 0,
+        "supported_assertions": 0,
+        "unknown_questions": 0,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": null,
+        "recall": null,
+        "source_support": null,
+        "unknown_abstention": null,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 0,
+          "status": "UNVERIFIED"
+        }
+      }
+    }
+  },
+  "zero_tolerance_executed_slice": {
+    "wrong_identity": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    },
+    "cross_chat": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    },
+    "sensitive_leak": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    },
+    "delete_resurrection": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    },
+    "business_damage": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    },
+    "automatic_social": {
+      "count": 0,
+      "verified_checkpoints": 92,
+      "status": "PASS"
+    }
+  },
+  "zero_tolerance_limits": "Zero observed errors over 92 synthetic checkpoints only; these counts do not prove unexecuted languages, public Telegram routing, or real-group behavior. Original 404 checkpoint PASS includes no-model traces.",
+  "original_full_report": {
+    "overall": {
+      "tp": 177,
+      "fp": 0,
+      "fn": 587,
+      "gold_observations": 764,
+      "assertions": 274,
+      "supported_assertions": 266,
+      "unknown_questions": 256,
+      "unknown_abstained": 53,
+      "missing_checkpoints": 0,
+      "missing_answers": 372,
+      "supported_questions": 224,
+      "supported_answers_complete": 48,
+      "precision": 1.0,
+      "recall": 0.23167539267015708,
+      "source_support": 0.9708029197080292,
+      "unknown_abstention": 0.20703125,
+      "supported_answer_recall": 0.21428571428571427,
+      "thresholds_pass": false
+    },
+    "languages": {
+      "kk": {
+        "tp": 174,
+        "fp": 0,
+        "fn": 17,
+        "gold_observations": 191,
+        "assertions": 271,
+        "supported_assertions": 263,
+        "unknown_questions": 64,
+        "unknown_abstained": 53,
+        "missing_checkpoints": 0,
+        "missing_answers": 12,
+        "supported_questions": 56,
+        "supported_answers_complete": 48,
+        "precision": 1.0,
+        "recall": 0.9109947643979057,
+        "source_support": 0.9704797047970479,
+        "unknown_abstention": 0.828125,
+        "supported_answer_recall": 0.8571428571428571,
+        "thresholds_pass": false
+      },
+      "ru": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 190,
+        "gold_observations": 191,
+        "assertions": 1,
+        "supported_assertions": 1,
+        "unknown_questions": 64,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 120,
+        "supported_questions": 56,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 0.005235602094240838,
+        "source_support": 1.0,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "en": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 190,
+        "gold_observations": 191,
+        "assertions": 1,
+        "supported_assertions": 1,
+        "unknown_questions": 64,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 120,
+        "supported_questions": 56,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 0.005235602094240838,
+        "source_support": 1.0,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "mixed": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 190,
+        "gold_observations": 191,
+        "assertions": 1,
+        "supported_assertions": 1,
+        "unknown_questions": 64,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 120,
+        "supported_questions": 56,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 0.005235602094240838,
+        "source_support": 1.0,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      }
+    },
+    "zero_tolerance": {
+      "wrong_identity": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      },
+      "cross_chat": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      },
+      "sensitive_leak": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      },
+      "delete_resurrection": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      },
+      "business_damage": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      },
+      "automatic_social": {
+        "count": 0,
+        "verified_checkpoints": 404,
+        "status": "PASS"
+      }
+    },
+    "complete": false,
+    "numeric_thresholds_pass": false
+  },
+  "failure_taxonomy": {
+    "content_question_alignment": {
+      "scenario_ids": [
+        "kk-014",
+        "kk-018",
+        "kk-034",
+        "kk-038"
+      ],
+      "wrong_unknown_answers": 4,
+      "description": "Education-unknown question selected an occupation fact; valid person/source does not make that fact answer the question."
+    },
+    "production_safety_false_positive": {
+      "scenario_ids": [
+        "kk-018",
+        "kk-038"
+      ],
+      "fact_observation_false_negatives": 3,
+      "known_answers_incomplete": 2,
+      "description": "Handbook noun matched the old Kazakh directive stem; project source was filtered before extraction. Missing gold observations include baseline and after-change repetitions."
+    },
+    "frozen_evidence_span_measurement_limit": {
+      "scenario_ids": [
+        "kk-023",
+        "kk-024",
+        "kk-025"
+      ],
+      "unsupported_fact_assertions": 3,
+      "unsupported_answer_assertions": 1,
+      "known_answers_incomplete": 1,
+      "description": "Complete explicit self-statement subclauses did not enclose longer frozen gold spans. Same source, actor, chat and edit version; retained original failures, no relabeling or adjusted passing score."
+    },
+    "domain_harness_send_coverage": {
+      "missing_answers": 4,
+      "cases": [
+        {
+          "scenario_id": "kk-033",
+          "operation": "budget_pause",
+          "missing_supported": 1,
+          "missing_unknown": 1
+        },
+        {
+          "scenario_id": "kk-054",
+          "operation": "forget_group",
+          "missing_supported": 0,
+          "missing_unknown": 2
+        }
+      ],
+      "description": "No sent action/answer observed after these operations; core service non-SENT result has no public plain fallback integration in this replay. These are absent delivery evidence, not model-generated wrong responses. Correction to older summary: kk-054 is forget_group, not cost/budget pause."
+    },
+    "provider_interface_failures": {
+      "http_400": 0,
+      "http_503_unknown": 4,
+      "retried_and_recovered_within_56": [
+        "kk-040:extraction",
+        "kk-048:answer",
+        "kk-050:answer"
+      ],
+      "terminal_partial": "kk-057:answer",
+      "signature_rejection_retry_observed": false,
+      "description": "Only three duplicate request-hash groups exist, each UNKNOWN503 followed by RESPONSE200. No signature compatibility retry is evidenced in this run; earlier discarded-run HTTP400 history is separate."
+    },
+    "budget_coverage_failure": {
+      "unsupported_scenarios": 184,
+      "partially_called": [
+        "kk-057"
+      ],
+      "no_http_scenarios": 183,
+      "description": "Fourth UNKNOWN hold at kk-057 prevented further reservations. Do not score ru/en/mixed as tested languages; deterministic admin confirmation can still write one rule fact without any model call."
+    }
+  },
+  "missing_fact_observations": [
+    {
+      "scenario_id": "kk-018",
+      "checkpoint_id": "baseline",
+      "gold_fact_id": "f2",
+      "field": "current_project",
+      "facet": ""
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "baseline",
+      "gold_fact_id": "f2",
+      "field": "current_project",
+      "facet": ""
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "after_change",
+      "gold_fact_id": "f2",
+      "field": "current_project",
+      "facet": ""
+    }
+  ],
+  "source_support_failures": [
+    {
+      "scenario_id": "kk-014",
+      "checkpoint_id": "baseline",
+      "kind": "answer",
+      "field": "occupation",
+      "facet": "",
+      "source_event": "m1",
+      "observed_span": [
+        0,
+        22
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "answer_not_supported_for_question",
+      "question_id": "kk-014-unknown"
+    },
+    {
+      "scenario_id": "kk-018",
+      "checkpoint_id": "baseline",
+      "kind": "answer",
+      "field": "occupation",
+      "facet": "",
+      "source_event": "m1",
+      "observed_span": [
+        0,
+        25
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "answer_not_supported_for_question",
+      "question_id": "kk-018-unknown"
+    },
+    {
+      "scenario_id": "kk-023",
+      "checkpoint_id": "after_change",
+      "kind": "fact",
+      "field": "tech_stack",
+      "facet": "",
+      "source_event": "m4",
+      "observed_span": [
+        32,
+        52
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "frozen_span_containment_rule",
+      "gold_span": [
+        0,
+        51
+      ]
+    },
+    {
+      "scenario_id": "kk-024",
+      "checkpoint_id": "after_change",
+      "kind": "fact",
+      "field": "tech_stack",
+      "facet": "",
+      "source_event": "m4",
+      "observed_span": [
+        11,
+        37
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "frozen_span_containment_rule",
+      "gold_span": [
+        0,
+        36
+      ]
+    },
+    {
+      "scenario_id": "kk-025",
+      "checkpoint_id": "after_change",
+      "kind": "fact",
+      "field": "tech_stack",
+      "facet": "",
+      "source_event": "edit1",
+      "observed_span": [
+        11,
+        36
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "frozen_span_containment_rule",
+      "gold_span": [
+        0,
+        35
+      ]
+    },
+    {
+      "scenario_id": "kk-025",
+      "checkpoint_id": "after_change",
+      "kind": "answer",
+      "field": "tech_stack",
+      "facet": "",
+      "source_event": "edit1",
+      "observed_span": [
+        11,
+        36
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "frozen_span_containment_rule",
+      "question_id": "kk-025-known",
+      "gold_span": [
+        0,
+        35
+      ]
+    },
+    {
+      "scenario_id": "kk-034",
+      "checkpoint_id": "after_change",
+      "kind": "answer",
+      "field": "occupation",
+      "facet": "",
+      "source_event": "m1",
+      "observed_span": [
+        0,
+        22
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "answer_not_supported_for_question",
+      "question_id": "kk-034-unknown"
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "after_change",
+      "kind": "answer",
+      "field": "occupation",
+      "facet": "",
+      "source_event": "m1",
+      "observed_span": [
+        0,
+        25
+      ],
+      "zero_tolerance_violations": {
+        "cross_chat": 0,
+        "wrong_identity": 0,
+        "delete_resurrection": 0,
+        "sensitive_leak": 0
+      },
+      "measurement_class": "answer_not_supported_for_question",
+      "question_id": "kk-038-unknown"
+    }
+  ],
+  "original_diagnostics_within_56": [
+    {
+      "scenario_id": "kk-014",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-014-unknown",
+      "reason": "failed_abstention"
+    },
+    {
+      "scenario_id": "kk-018",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-018-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-018",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-018-unknown",
+      "reason": "failed_abstention"
+    },
+    {
+      "scenario_id": "kk-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800500022#tech_stack#38a0963a6364b09ad867aa9a66c6d009673c21e182015461da236ec361877f77"
+    },
+    {
+      "scenario_id": "kk-024",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000023#tech_stack#969545dde1584d88227517c6a0c969eb716015671cd6be053b3aaf14d85aa8c8"
+    },
+    {
+      "scenario_id": "kk-025",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000024#tech_stack#d277670919a94ba361be1887d39852c3f31d7eed817343cbb70fcd8910841f86"
+    },
+    {
+      "scenario_id": "kk-025",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-025-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f3"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-033",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-033-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-033",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-033-unknown",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-034",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-034-unknown",
+      "reason": "failed_abstention"
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-038-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f2"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-038",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-038-unknown",
+      "reason": "failed_abstention"
+    },
+    {
+      "scenario_id": "kk-054",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-054-known",
+      "reason": "missing_answer"
+    },
+    {
+      "scenario_id": "kk-054",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-054-unknown",
+      "reason": "missing_answer"
+    }
+  ],
+  "provider_all_run": {
+    "http_attempts": 185,
+    "http_200_usage_verified": 181,
+    "unknown_billing_attempts": 4,
+    "verified_token_micro_usd": 40569,
+    "unknown_hold_micro_usd": 1835008,
+    "http_status_counts": {
+      "200": 181,
+      "503": 4
+    }
+  },
+  "provider_within_56": {
+    "http_attempts": 182,
+    "http_200_usage_verified": 179,
+    "unknown_billing_attempts": 3,
+    "verified_token_micro_usd": 40082,
+    "unknown_hold_micro_usd": 1376256,
+    "http_status_counts": {
+      "200": 179,
+      "503": 3
+    }
+  },
+  "provider_by_language_all_run": {
+    "kk": {
+      "http_attempts": 185,
+      "http_200_usage_verified": 181,
+      "unknown_billing_attempts": 4,
+      "verified_token_micro_usd": 40569,
+      "unknown_hold_micro_usd": 1835008,
+      "http_status_counts": {
+        "200": 181,
+        "503": 4
+      }
+    },
+    "ru": {
+      "http_attempts": 0,
+      "http_200_usage_verified": 0,
+      "unknown_billing_attempts": 0,
+      "verified_token_micro_usd": 0,
+      "unknown_hold_micro_usd": 0,
+      "http_status_counts": {}
+    },
+    "en": {
+      "http_attempts": 0,
+      "http_200_usage_verified": 0,
+      "unknown_billing_attempts": 0,
+      "verified_token_micro_usd": 0,
+      "unknown_hold_micro_usd": 0,
+      "http_status_counts": {}
+    },
+    "mixed": {
+      "http_attempts": 0,
+      "http_200_usage_verified": 0,
+      "unknown_billing_attempts": 0,
+      "verified_token_micro_usd": 0,
+      "unknown_hold_micro_usd": 0,
+      "http_status_counts": {}
+    }
+  },
+  "budget_liability_not_changed": {
+    "all_8_sessions_micro_usd": 4648676,
+    "total_test_limit_micro_usd": 5000000,
+    "remaining_micro_usd": 351324,
+    "prior_readonly_reconciliation_sha256": "9bae7bb05bc033934f2a1ad24a752fbdedf4c04835311f6666cb91fb85868c1a"
+  },
+  "per_scenario": [
+    {
+      "scenario_id": "kk-001",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 672,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-002",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 655,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-003",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 793,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-004",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 662,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-005",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 644,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-006",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 644,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-007",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 659,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-008",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 645,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-009",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 657,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-010",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 772,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-011",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 637,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-012",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 784,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-013",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 658,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-014",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 5,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 0.8,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "failed_abstention": 1
+      },
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 659,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-015",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 788,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-016",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 774,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-017",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 645,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-018",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "gold_observations": 2,
+        "assertions": 3,
+        "supported_assertions": 2,
+        "unknown_questions": 1,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 0.5,
+        "source_support": 0.6666666666666666,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "incomplete_supported_answer": 1,
+        "failed_abstention": 1
+      },
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 517,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-019",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 649,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-020",
+      "language": "kk",
+      "checkpoint_count": 1,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 1,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 637,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-021",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 816,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-022",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 655,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-023",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 5,
+        "assertions": 7,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 0.8571428571428571,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "unsupported_fact": 1
+      },
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 1002,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-024",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 5,
+        "assertions": 7,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 0.8571428571428571,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "unsupported_fact": 1
+      },
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 868,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-025",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 0.6666666666666666,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "unsupported_fact": 1,
+        "incomplete_supported_answer": 1
+      },
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 845,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-026",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 609,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-027",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 635,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-028",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 2,
+        "supported_assertions": 2,
+        "unknown_questions": 2,
+        "unknown_abstained": 2,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 573,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-029",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 2,
+        "supported_assertions": 2,
+        "unknown_questions": 2,
+        "unknown_abstained": 2,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 568,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-030",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 1013,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-031",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 604,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-032",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 784,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-033",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 2,
+        "supported_questions": 1,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "missing_answer": 2
+      },
+      "provider": {
+        "http_attempts": 1,
+        "http_200_usage_verified": 1,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 347,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 1
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-034",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 7,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 0.8571428571428571,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "failed_abstention": 1
+      },
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 659,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-035",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 788,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-036",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 2,
+        "assertions": 2,
+        "supported_assertions": 2,
+        "unknown_questions": 2,
+        "unknown_abstained": 2,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 687,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-037",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 788,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-038",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2,
+        "gold_observations": 4,
+        "assertions": 4,
+        "supported_assertions": 3,
+        "unknown_questions": 1,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 0.5,
+        "source_support": 0.75,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": 0.0,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "incomplete_supported_answer": 1,
+        "failed_abstention": 1
+      },
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 517,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-039",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 793,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-040",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 5,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 1,
+        "verified_token_micro_usd": 781,
+        "unknown_hold_micro_usd": 458752,
+        "http_status_counts": {
+          "200": 4,
+          "503": 1
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-041",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 814,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-042",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 798,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-043",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 793,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-044",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 662,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-045",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 837,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-046",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 609,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-047",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 659,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-048",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 5,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 1,
+        "verified_token_micro_usd": 789,
+        "unknown_hold_micro_usd": 458752,
+        "http_status_counts": {
+          "200": 4,
+          "503": 1
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-049",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 5,
+        "assertions": 7,
+        "supported_assertions": 7,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 657,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-050",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 4,
+        "supported_assertions": 4,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 1,
+        "verified_token_micro_usd": 757,
+        "unknown_hold_micro_usd": 458752,
+        "http_status_counts": {
+          "200": 3,
+          "503": 1
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-051",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 1044,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-052",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 4,
+        "http_200_usage_verified": 4,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 984,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 4
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-053",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 658,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-054",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 3,
+        "assertions": 3,
+        "supported_assertions": 3,
+        "unknown_questions": 2,
+        "unknown_abstained": 0,
+        "missing_checkpoints": 0,
+        "missing_answers": 2,
+        "supported_questions": 0,
+        "supported_answers_complete": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 0.0,
+        "supported_answer_recall": null,
+        "thresholds_pass": false
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {
+        "missing_answer": 2
+      },
+      "provider": {
+        "http_attempts": 2,
+        "http_200_usage_verified": 2,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 589,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 2
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-055",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 775,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    },
+    {
+      "scenario_id": "kk-056",
+      "language": "kk",
+      "checkpoint_count": 2,
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "gold_observations": 4,
+        "assertions": 6,
+        "supported_assertions": 6,
+        "unknown_questions": 1,
+        "unknown_abstained": 1,
+        "missing_checkpoints": 0,
+        "missing_answers": 0,
+        "supported_questions": 1,
+        "supported_answers_complete": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "source_support": 1.0,
+        "unknown_abstention": 1.0,
+        "supported_answer_recall": 1.0,
+        "thresholds_pass": true
+      },
+      "zero_tolerance": {
+        "wrong_identity": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "cross_chat": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "sensitive_leak": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "delete_resurrection": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "business_damage": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        },
+        "automatic_social": {
+          "count": 0,
+          "verified_checkpoints": 2,
+          "status": "PASS"
+        }
+      },
+      "diagnostic_reasons": {},
+      "provider": {
+        "http_attempts": 3,
+        "http_200_usage_verified": 3,
+        "unknown_billing_attempts": 0,
+        "verified_token_micro_usd": 774,
+        "unknown_hold_micro_usd": 0,
+        "http_status_counts": {
+          "200": 3
+        }
+      }
+    }
+  ],
+  "measurement_notes": [
+    "Precision/recall measure stored fact observations, including repeat checkpoints; answers are excluded from their TP/FP counts.",
+    "Source support includes both stored facts and answer assertions, plus question-specific supporting IDs and exact gold-span containment.",
+    "Known and unknown denominators use expected labels, not question-id naming: kk-054-known expects abstention after group forget.",
+    "No denominator-free value is called 0% or 100%; unexecuted languages have null metrics.",
+    "No timing or cost claim comes from synthetic-clock p95=2 or scorer NOT_PROVIDED cost; provider billing evidence is the immutable ledger.",
+    "This derived slice cannot replace the original full 240 denominator, meet corpus minimums, or establish PR207 improvement."
+  ],
+  "no_network_calls": true,
+  "no_real_data_archive_or_key_reads": true,
+  "old_files_unchanged": true
+}

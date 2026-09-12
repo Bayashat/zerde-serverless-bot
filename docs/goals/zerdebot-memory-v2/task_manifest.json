@@ -4,7 +4,7 @@
     "title": "FIX: 停用自动互动并隔离旧记忆路径",
     "depends_on": [],
     "body_file": "issues/Z01.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 158,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/180",
@@ -12,45 +12,56 @@
       199,
       202,
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z02",
     "title": "FIX: 日志脱敏和 Telegram 内容最小化",
     "depends_on": [],
     "body_file": "issues/Z02.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 159,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/177",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z03",
     "title": "FIX: 旧记忆删除与业务数据边界",
     "depends_on": [],
     "body_file": "issues/Z03.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 160,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/182",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z04",
     "title": "FIX: 统一部署配置和可复现打包",
     "depends_on": [],
     "body_file": "issues/Z04.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 161,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/183",
     "integration_prs": [
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      205
     ]
   },
   {
@@ -61,13 +72,15 @@
       "Z04"
     ],
     "body_file": "issues/Z05.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 162,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/186",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z06",
@@ -77,7 +90,7 @@
       "Z13"
     ],
     "body_file": "issues/Z06.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 163,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/190",
@@ -85,7 +98,9 @@
       192,
       202,
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z07",
@@ -94,7 +109,7 @@
       "Z06"
     ],
     "body_file": "issues/Z07.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 164,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/188",
@@ -102,6 +117,11 @@
       198,
       202,
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      207
     ]
   },
   {
@@ -111,7 +131,7 @@
       "Z07"
     ],
     "body_file": "issues/Z08.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 165,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/202",
@@ -119,6 +139,11 @@
       200,
       201,
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      207
     ]
   },
   {
@@ -129,14 +154,16 @@
       "Z08"
     ],
     "body_file": "issues/Z09.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 166,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/191",
     "integration_prs": [
       202,
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z10",
@@ -148,13 +175,18 @@
       "Z19"
     ],
     "body_file": "issues/Z10.md",
-    "status": "pr_open",
+    "status": "cutover_in_progress",
     "number": 167,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/195",
     "integration_prs": [
       202,
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      206
     ]
   },
   {
@@ -170,13 +202,18 @@
       "Z19"
     ],
     "body_file": "issues/Z11.md",
-    "status": "pr_open",
+    "status": "real_model_partial_quality_not_accepted",
     "number": 168,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196",
     "integration_prs": [
       203,
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      207
     ]
   },
   {
@@ -184,74 +221,84 @@
     "title": "FIX: 验证码状态竞争与失败恢复",
     "depends_on": [],
     "body_file": "issues/Z12.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 169,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/179",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z13",
     "title": "FIX: 反垃圾执行结果和重试语义",
     "depends_on": [],
     "body_file": "issues/Z13.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 170,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/185",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z14",
     "title": "FIX: Voteban 会话身份和逻辑过期",
     "depends_on": [],
     "body_file": "issues/Z14.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 171,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/189",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z15",
     "title": "FIX: 新闻抓取时限与分群交付恢复",
     "depends_on": [],
     "body_file": "issues/Z15.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 172,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/193",
     "integration_prs": [
       197,
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z16",
     "title": "FIX: Quiz 发布、计分与答案恢复",
     "depends_on": [],
     "body_file": "issues/Z16.md",
-    "status": "pr_open",
+    "status": "deployed_acceptance_pending",
     "number": 173,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/194",
     "integration_prs": [
       197,
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z17",
     "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
     "depends_on": [],
     "body_file": "issues/Z17.md",
-    "status": "pr_open",
+    "status": "deployed_cost_reader_fix_pending",
     "number": 174,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187",
@@ -260,6 +307,12 @@
       201,
       202,
       204
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "followup_prs_pending_review": [
+      205,
+      208
     ]
   },
   {
@@ -267,24 +320,28 @@
     "title": "CHORE: 旧 AWS 资源清理清单与执行手册",
     "depends_on": [],
     "body_file": "issues/Z18.md",
-    "status": "pr_open",
+    "status": "runbook_merged_resource_deletion_not_executed",
     "number": 175,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/184",
     "integration_prs": [
       204
-    ]
+    ],
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   },
   {
     "id": "Z19",
     "title": "CHORE: 移除实验性抽奖功能",
     "depends_on": [],
     "body_file": "issues/Z19.md",
-    "status": "pr_open",
+    "status": "runtime_retired_residue_check_pending",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/204",
     "integration_prs": [],
-    "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181"
+    "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
+    "merged_via_pr": 204,
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
   }
 ]
