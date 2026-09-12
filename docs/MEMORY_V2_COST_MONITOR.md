@@ -139,6 +139,20 @@ Start、Final、REPORT 及平台 START、schema、完整性和非负单位，最
 394 microUSD 未知扫描预留，不能因语法错误追溯清账。本地 SQL 数值回归和 Moto
 费用事务只验证表达式关联及失败处理；真实执行和完整历史覆盖需分别验收。
 
+第三次窄窗口查询已在 AWS 编译并执行完成，扫描 19,275 bytes；读回两个 worker 组
+的 16 个数值字段，但缺少 `invalid_records`，严格解析器正确拒绝。实际错误尚不能
+确定为哪种 NULL 求值行为。为使逐调用验证结果明确，完整判据移到两次聚合之间的
+`fields coalesce(if(valid, 0, 1), 1) as req_invalid`，第二次只对其求和；无法求值的每次
+调用记为违规，禁止对最终缺字段补零或过滤掉坏行。原完整判据、17字段校验及各项
+计费总数保持。本地 NULL 注入证明失败时拒绝，不作为 AWS 相同求值规则的证明。
+
+最终真实验证（2026-09-12 13:49:37 UTC）通过：固定 9月11日17:00–17:15 UTC 窗口，
+两个查询均 `Complete`，worker 与 shared Bot 分别扫描 19,275/39,000 bytes；两环境
+worker 各3次调用与指标吻合，prod共享Bot的2次V2调用完整，dev共享Bot未返回V2行。
+所有返回行的 `invalid_records=0`、17键契约及START/Final/REPORT配对均通过。
+这是本地待审源码读取实际AWS数字的验证，未部署或改生产许可；只有该窄窗口已验证，
+整月历史、非零共享写入/SQS用量及上线恢复效果仍单独验收。
+
 不以 Lambda Duration 代替完整计费时间：[AWS 已将 INIT 纳入计费](https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/)。
 查询以 `@billedDuration × (@memorySize / 1000000 / 1024) / 1000` 得到 GB-second；
 [官方查询示例](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-examples.html)

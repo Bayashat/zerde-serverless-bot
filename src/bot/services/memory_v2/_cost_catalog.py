@@ -184,6 +184,7 @@ def parse_inventory(raw):
 # Keep intermediate aliases distinct: Logs Insights rejects redefining an
 # ephemeral field in a later stats command, even for a further aggregation.
 # Final aliases must also stay distinct from raw JSON fields to avoid a cycle.
+# Materialize validation per request; an indeterminate predicate is invalid.
 _REQUEST_STATS = """fields coalesce(request_id, @requestId) as rid
 | filter @type in ["START", "REPORT"] or cost_event in ["MemoryV2CostStart", "MemoryV2Cost"]
 | stats min(toMillis(@timestamp)) as req_started_ms,
@@ -199,14 +200,15 @@ _REQUEST_STATS = """fields coalesce(request_id, @requestId) as rid
     sum(elapsed_ms) as req_elapsed_ms
     by @log, rid
 """
-_TOTAL_STATS = """| stats sum(if(
+_TOTAL_STATS = """| fields coalesce(if(
     ispresent(rid) and rid != "" and req_platform_starts = 1 and req_reports = 1
     and ispresent(req_gb_seconds) and req_gb_seconds >= 0
     and req_starts = 1 and req_finals = 1 and req_completed = 1
     and req_schema_count = 2 and req_schema_min = 1 and req_schema_max = 1
     and req_rru_count = 1 and req_rru >= 0 and req_wru_count = 1 and req_wru >= 0
     and req_sqs_count = 1 and req_sqs >= 0 and ispresent(req_elapsed_ms) and req_elapsed_ms >= 0,
-    0, 1)) as invalid_records,
+    0, 1), 1) as req_invalid
+| stats sum(req_invalid) as invalid_records,
     sum(req_platform_starts) as platform_starts, sum(req_reports) as reports, count(req_gb_seconds) as billed_records,
     sum(req_gb_seconds) as gb_seconds, sum(req_starts) as starts,
     sum(req_finals) as finals, sum(req_completed) as completed,

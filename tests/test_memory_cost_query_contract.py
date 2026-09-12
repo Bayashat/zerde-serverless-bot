@@ -95,12 +95,18 @@ def sql_expression(expression):
     return expression.replace("[", "(").replace("]", ")")
 
 
-def evaluate(query, rows):
+def evaluate(query, rows, *, indeterminate_validation=False):
     """Execute actual query expressions; resolve aliases through SQL CTEs."""
     with sqlite3.connect(":memory:") as database:
         database.row_factory = sqlite3.Row
         database.create_function("ispresent", 1, lambda value: value is not None)
         database.create_function("toMillis", 1, lambda value: value)
+        if indeterminate_validation:
+            # Simulate an external engine returning NULL for the compound
+            # validation expression, while simple platform counters still work.
+            database.create_function(
+                "iif", 3, lambda condition, yes, no: None if (yes, no) == (0, 1) else (yes if condition else no)
+            )
         string_fields = {"@log", "@type", "@requestId", "request_id", "cost_event"}
         columns = ", ".join('"' + field + '" ' + ("TEXT" if field in string_fields else "REAL") for field in RAW_FIELDS)
         database.execute(f"CREATE TABLE events ({columns})")
@@ -141,7 +147,11 @@ def test_aliases_are_single_assignment_and_internal_schema_stays_exact(shared):
     query = report_query(START, END, shared=shared)
     # Only aliases change; the original predicates, weights and grouping keys
     # remain byte-for-byte. The parser restores the internal elapsed_ms name.
-    original = re.sub(r"\breq_", "", query).replace("measured_elapsed_ms", "elapsed_ms")
+    original = query.replace("| fields coalesce(if(", "| stats sum(if(").replace(
+        "    0, 1), 1) as req_invalid\n| stats sum(req_invalid) as invalid_records,",
+        "    0, 1)) as invalid_records,",
+    )
+    original = re.sub(r"\breq_", "", original).replace("measured_elapsed_ms", "elapsed_ms")
     assert hashlib.sha256(original.encode()).hexdigest() == (
         "d32aaa4dcee39e3addb69b3430f2ab29db688c34e88a1f675ec9547ff38ab7a4"
         if shared
@@ -303,4 +313,12 @@ def test_elapsed_query_field_must_use_the_exact_current_wire_schema(fault):
     if fault == "old_name":
         rows[0].pop("measured_elapsed_ms")
     with pytest.raises(UnverifiedCost, match="Unexpected or missing aggregate fields"):
+        parsed(rows)
+
+
+@pytest.mark.parametrize("shared", [False, True])
+def test_indeterminate_invocation_validation_is_counted_as_invalid(shared):
+    rows = evaluate(report_query(START, END, shared=shared), invocation(), indeterminate_validation=True)
+    assert rows[0]["invalid_records"] == 1
+    with pytest.raises(UnverifiedCost, match="coverage is incomplete"):
         parsed(rows)
