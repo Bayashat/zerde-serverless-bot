@@ -1,6 +1,6 @@
 # 任务看板
 
-[GitHub Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157)。状态来源：task_manifest.json。最终代码见[集成PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，继续执行见[HANDOFF](HANDOFF.md)。用户于2026-09-11取消实验性抽奖；Z19改为移除功能，取代原PR #181事务修复。Z10精确清理范围可包含明确选定的退役抽奖数据。代码已通过#204合并并部署，实际现场进度见[LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md)。真实模型仅部分执行、质量未验收；生产清零进行中，七天试运行未开始。
+[GitHub Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157)。状态来源：task_manifest.json。最终代码见[集成PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，继续执行见[HANDOFF](HANDOFF.md)。用户于2026-09-11取消实验性抽奖；Z19改为移除功能，取代原PR #181事务修复。Z10精确清理范围可包含明确选定的退役抽奖数据。代码已通过#204合并并部署，实际现场进度见[LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md)。真实模型仅部分执行、质量未验收；生产在线清零已独立通过，保留副本尚待处理，七天试运行未开始。
 
 | ID | GitHub | 依赖 | 状态 / PR |
 |---|---|---|---|
@@ -13,7 +13,7 @@
 | Z07 | [#164 FEATURE: 明确自述抽取与个人和群档案](https://github.com/Bayashat/zerde-serverless-bot/issues/164) | Z06 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/188)；[集成#198](https://github.com/Bayashat/zerde-serverless-bot/pull/198)；[集成#202](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z08 | [#165 FEATURE: 有来源的记忆问答与预算控制](https://github.com/Bayashat/zerde-serverless-bot/issues/165) | Z07 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#200](https://github.com/Bayashat/zerde-serverless-bot/pull/200)；[集成#201](https://github.com/Bayashat/zerde-serverless-bot/pull/201)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z09 | [#166 FEATURE: 更正、遗忘、退出与来源编辑闭环](https://github.com/Bayashat/zerde-serverless-bot/issues/166) | Z05, Z08 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/191)；[集成#202](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
-| Z10 | [#167 FIX: 旧记忆清零工具和切换演练](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | Z01, Z03, Z09, Z19 | cutover_in_progress / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/195)；[集成#202](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
+| Z10 | [#167 FIX: 旧记忆清零工具和切换演练](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | Z01, Z03, Z09, Z19 | online_clean_copies_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/195)；[集成#202](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z11 | [#168 FEATURE: 多语言评估、单群试运行与推广](https://github.com/Bayashat/zerde-serverless-bot/issues/168) | Z02, Z04, Z08, Z09, Z10, Z17, Z19 | real_model_partial_quality_not_accepted / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/196)；[集成#203](https://github.com/Bayashat/zerde-serverless-bot/pull/203)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z12 | [#169 FIX: 验证码状态竞争与失败恢复](https://github.com/Bayashat/zerde-serverless-bot/issues/169) | 无 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/179)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z13 | [#170 FIX: 反垃圾执行结果和重试语义](https://github.com/Bayashat/zerde-serverless-bot/issues/170) | 无 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/185)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
@@ -22,7 +22,10 @@
 | Z16 | [#173 FIX: Quiz 发布、计分与答案恢复](https://github.com/Bayashat/zerde-serverless-bot/issues/173) | 无 | deployed_acceptance_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/194)；[集成#197](https://github.com/Bayashat/zerde-serverless-bot/pull/197)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z17 | [#174 FEATURE: 成本归因、dev 按需运行与有效告警](https://github.com/Bayashat/zerde-serverless-bot/issues/174) | 无 | deployed_cost_reader_fix_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/187)；[集成#200](https://github.com/Bayashat/zerde-serverless-bot/pull/200)；[集成#201](https://github.com/Bayashat/zerde-serverless-bot/pull/201)；[集成#202](https://github.com/Bayashat/zerde-serverless-bot/pull/202)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 | Z18 | [#175 CHORE: 旧 AWS 资源清理清单与执行手册](https://github.com/Bayashat/zerde-serverless-bot/issues/175) | 无 | runbook_merged_resource_deletion_not_executed / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/184)；[集成#204](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
-| Z19 | [#178 CHORE: 移除实验性抽奖功能](https://github.com/Bayashat/zerde-serverless-bot/issues/178) | 无 | runtime_retired_residue_check_pending / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
+| Z19 | [#178 CHORE: 移除实验性抽奖功能](https://github.com/Bayashat/zerde-serverless-bot/issues/178) | 无 | runtime_retired_online_residue_cleared / [PR](https://github.com/Bayashat/zerde-serverless-bot/pull/204) |
 
 
 后续待审修复：[#205 部署配置](https://github.com/Bayashat/zerde-serverless-bot/pull/205)、[#206 固定清单续跑](https://github.com/Bayashat/zerde-serverless-bot/pull/206)、[#207 真实模型接口与质量修复](https://github.com/Bayashat/zerde-serverless-bot/pull/207)、[#208 标准队列费用采集](https://github.com/Bayashat/zerde-serverless-bot/pull/208)。这些后续源码尚未合并，不包含在上表的已部署f305中。
+
+
+Z10在线部分和Z19在线残留已由[16:20独立终检](evidence/2026-09-12-post-merge/cleanup-independent-final.json)验证：旧表仅3条原SETTINGS、0记忆目标、0向量。原表和空索引资源保留；本地归档、PITR、日志/队列及其他副本仍单列，不关闭工单或整体产品验收。归档9月18日到期不变，旧表35天PITR复查点10月17日不是物理删除承诺。费用仅15分钟窗口PASS、模型质量FAIL、学习STOPPED、七天试运行未开始、Z18资源未删均保持。

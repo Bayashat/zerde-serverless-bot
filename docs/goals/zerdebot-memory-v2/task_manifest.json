@@ -175,7 +175,7 @@
       "Z19"
     ],
     "body_file": "issues/Z10.md",
-    "status": "cutover_in_progress",
+    "status": "online_clean_copies_pending",
     "number": 167,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/195",
@@ -187,7 +187,10 @@
     "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
     "followup_prs_pending_review": [
       206
-    ]
+    ],
+    "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
+    "retained_copies_pending": true,
+    "overall_acceptance_complete": false
   },
   {
     "id": "Z11",
@@ -335,13 +338,16 @@
     "title": "CHORE: 移除实验性抽奖功能",
     "depends_on": [],
     "body_file": "issues/Z19.md",
-    "status": "runtime_retired_residue_check_pending",
+    "status": "runtime_retired_online_residue_cleared",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/204",
     "integration_prs": [],
     "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
+    "retained_copies_pending": true,
+    "overall_acceptance_complete": false
   }
 ]
