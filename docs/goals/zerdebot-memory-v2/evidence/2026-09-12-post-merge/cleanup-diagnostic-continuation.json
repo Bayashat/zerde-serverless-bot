@@ -1,0 +1,140 @@
+{
+  "status": "DIAGNOSTIC_CONTINUATION_STARTED_NOT_ONLINE_CLEAN",
+  "observed_at": 1789223579.87686,
+  "observed_utc": "2026-09-12T14:32:59.876860Z",
+  "manifest_sha256": "67c71ec9bd6e62b43fd519a8b427f286dd81661a415f356912703db27f26e8f4",
+  "scope_file_sha256": "01853625e17e5f2b9615f506bc49c5a3fa046c30f9a48b62e1b3e29dc3963c24",
+  "scope": {
+    "legacy_memory_table_only": true,
+    "whole_selected_retired_vector_index": true,
+    "v2_stats_quiz_excluded": true,
+    "protected_business_type": "SETTINGS",
+    "scope_changed": false
+  },
+  "cleanup_source_commit": "bb3de23559a827bbfb0fdb394f12d572bd32b7dc",
+  "private_operator_sources_sha256": {
+    "fresh_legacy_evidence.py": "cddb9c3dd8516050b6fa83492af014cab9b7eda9694ef603cfab6370dd900233",
+    "run_cleanup_phase_diagnostic_v1.py": "56f0a20a5e221a4167f4fbcdff254d16a33fe7cbdd67b874f1e19ab96aec8109",
+    "continue_frozen_cleanup_diagnostic_v1.py": "df6f8105b8a4b042fe5946f5baab638bffe5139e82c266cd2538532c99431be5"
+  },
+  "root_approval_bytes_sha256": "a69fcba49fcd2fc530191aa82513c4f5373b3fa7bb5c3fe73cef7574f870da91",
+  "approved_at": 1789223343.60411,
+  "prior_stopped_history": {
+    "latest_status": "STOPPED_NON_EXPIRY_FAILURE",
+    "latest_failure_utc": "2026-09-12T13:46:36Z",
+    "safe_error": "operation_failed",
+    "root_cause": "UNKNOWN",
+    "previous_state_bytes_sha256": "1e84a30e92b286516f1e5f17c60d2cd7ed462c1ef0275d1a2f163f37e9a97c45",
+    "previous_failure_report_bytes_sha256": "6721f71c112cc7892e0ca58b6d9bc77cbeaa1f0377e1dad6aef35375864f1425",
+    "historical_state_bytes_sha256": "d826ef762cd09f72f97089d83c150df8d879f7b0f134e5502bcd221f568c769d",
+    "original_files_and_history_preserved": true
+  },
+  "readonly_canary": {
+    "status": "READONLY_CANARY_PASS",
+    "completed_at": 1789222950.625611,
+    "summary_bytes_sha256": "6cac16bc1aaab8e28445c79139af6a3980f79b7870d1b6b18df8b5761f9474f1",
+    "stages": {
+      "fresh": {
+        "exit_code": 0,
+        "status": "FRESH_READONLY_EVIDENCE_READY"
+      },
+      "status": {
+        "exit_code": 0,
+        "status": "PHASE_COMPLETED"
+      },
+      "preflight": {
+        "exit_code": 0,
+        "status": "PHASE_COMPLETED"
+      }
+    },
+    "fresh_evidence_bytes_sha256": "e5d88717ccf535ab630fd91c7fb2cc9979cb21ddeb5966c4b9bb5d63a573c7e9",
+    "status_report_bytes_sha256": "b6c861f7b0e9471f615f8575c2cdbca5cf4393dfacd3770a19f9d1e6212d0856",
+    "preflight_report_bytes_sha256": "a7c0e5ff96e820747310cec0a33d5141a287916e8e42a19df70af5298fefdbbf",
+    "table_rows": 10959,
+    "remaining_memory_targets": 10956,
+    "protected_settings_count": 3,
+    "protected_settings_sha256": "b2dd117fc729e2cb347f8bceb836ce9448c4b96397c65c6c81d354589f4f3102",
+    "remaining_vectors": 0,
+    "aws_mutations": 0,
+    "actual_new_wrapper_sdk_callbacks_verified": true,
+    "remaining_count_method": "Full current table/vector snapshot checked against the original authenticated manifest; not inferred from DeleteItem attempts"
+  },
+  "continuation_snapshot": {
+    "status": "APPLYING_EXACT_MANIFEST",
+    "started_at": 1789223372.8765051,
+    "original_started_at": 1789217312.0517728,
+    "absolute_deadline": 1789260512.0517728,
+    "window_seconds": 37139.17526769638,
+    "archives_expire_at": 1789750192,
+    "current_cycle": 1
+  },
+  "snapshot_state_bytes_sha256": "6375e33ba70ba8cc3ccf73f365cbbae810e6323d226616c0b5bca9fbdfc7b993",
+  "state_hash_is_time_bound_snapshot_not_completed_run": true,
+  "safety": {
+    "same_manifest_and_original_archives": true,
+    "new_12_hour_window": false,
+    "each_cycle_requires_new_actual_evidence_and_original_gates": true,
+    "initial_canary_is_approval_history_not_send_permit": true,
+    "automatic_retry_error_codes": [
+      "cutover_evidence_expired_or_insufficient_send_window",
+      "cutover_evidence_expired_during_readback"
+    ],
+    "unknown_outcome_stops": true,
+    "max_cycles": 80,
+    "three_consecutive_expiries_without_delete_calls_stop": true,
+    "child_timeout_or_cancellation_reaps_process_group_and_stops": true,
+    "scope_or_gate_relaxed": false
+  },
+  "offline_validation": {
+    "author": {
+      "passed": 166,
+      "seconds": 1.99
+    },
+    "independent_final_patch": {
+      "status": "ALIGNED",
+      "passed": 63,
+      "seconds": 0.52
+    },
+    "counts_are_separate_not_added": true,
+    "private_review_bytes_sha256": "feddb720947050a2040cf67140856172b7bfd28773d08a5d721d8072c4b833e8",
+    "private_author_evidence_bytes_sha256": "b1782ef92f624100f2c007fb4c59ea376ead9b7cb304c78271dd2c799692ebe8",
+    "offline_tests_are_not_online_cleanup_acceptance": true
+  },
+  "retention": {
+    "archives_expire_at": 1789750192,
+    "expires_utc": "2026-09-18T16:49:52Z",
+    "expiry_extended": false,
+    "physical_copy_erasure_verified": false
+  },
+  "automation": {
+    "observed_at": 1789223608.153763,
+    "observed_utc": "2026-09-12T14:33:28.153763Z",
+    "status": "ACTIVE",
+    "followup_interval_minutes": 30,
+    "readback_receipt_bytes_sha256": "8559de53a10ae4527dd4ceceda35f26c2ce5f798017a422c18eac6fe6006b7ef",
+    "after_completion_or_failure": "RESTORE_ORIGINAL_DAILY_EXPIRY_DUTY_ACTIVE",
+    "unknown_stop_may_not_automatically_restart_deletion": true,
+    "final_checker_execution": "NOT_EXECUTED_PENDING_ACTUAL_SUCCESS_AND_PROCESS_LOCK_EXIT"
+  },
+  "online_clean_verified": false,
+  "final_protected_data_verification_complete": false,
+  "learning_enabled": false,
+  "cost_evidence_boundary": {
+    "reference": "cost-fixed-window-verification.json",
+    "verified_scope": "2026-09-11 17:00-17:15 UTC only",
+    "monthly_coverage_verified": false,
+    "invoice_or_free_tier_attribution_verified": false,
+    "nonzero_shared_write_and_sqs_paths_verified": false,
+    "prior_unknown_holds_preserved": true
+  },
+  "redaction": "Only aggregate counts, bounded statuses, timestamps and SHA256 provenance. No archive/key paths, message content, credentials, chat/user IDs or resource ARNs published.",
+  "final_readonly_verifier": {
+    "script_sha256": "13ffd930f35c9cef4be84ba314027c950b18fcc44cbb1294f9ed7c8f056ea96c",
+    "conditional_root_approval_bytes_sha256": "68d686c12ece7a851d0ccc9849e032a7afd7505d9a06528eadcfcad10e8b8209",
+    "approval_status": "APPROVED_CONDITIONAL_ON_DIAGNOSTIC_CONTROLLER_SUCCESS",
+    "executed": false,
+    "requires_same_new_controller_success_and_all_operator_processes_and_lock_absent": true,
+    "execute_at_most_once": true,
+    "online_clean_acceptance_status": "INDEPENDENT_ONLINE_CLEAN_STOPPED_COPIES_PENDING"
+  }
+}
