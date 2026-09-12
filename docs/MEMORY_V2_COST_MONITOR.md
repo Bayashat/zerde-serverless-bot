@@ -210,6 +210,13 @@ ESTIMATE_VERIFIED、完整覆盖时间、新鲜观测（3 小时以内）及低�
 模型 accounting anomaly 的全局 sticky CONTROL 不会被新月/新 AWS 观测解除。
 监控故障持久化 UNVERIFIED 后显式抛错，由现有 Errors 告警处理。
 
+每小时成功补齐一个历史块，但其余历史块尚未完整时，只有资源、指标、REPORT、
+DAY/measurement 保存和通知处理全部成功，监控才正常返回
+`UNVERIFIED / HISTORICAL_COVERAGE_INCOMPLETE` 进度，避免把正常追赶误报为 Lambda 故障。
+这不延长有效期或授予预算许可；历史覆盖完整前，可选工作仍被拒绝，也不改变学习开关。
+SDK、查询、schema、费用校验、持久化或通知故障仍抛错；`SCAN_BOUND_EXCEEDED` 也不能
+经此路径正常返回。旧未知扫描预留和当月 sticky 暂停保持不变。
+
 AWS 行与最高阈值通知同一事务提交；MODEL 通知强读原账本并在事务里检查 charged 和
 月/global paused，没有第二个 MODEL 写入者。通知 outbox 有独立全局索引，不依赖
 事实 GSI 或 TTL。pending 无 TTL；SNS 确认 MessageId 后才 CAS ack。发送结果不明保留
