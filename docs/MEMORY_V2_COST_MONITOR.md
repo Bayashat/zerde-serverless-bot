@@ -126,6 +126,14 @@ Start、Final、REPORT 及平台 START、schema、完整性和非负单位，最
 无原始消息和 request_id 返回给监控。worker REPORT 总数还必须与 Lambda Invocations
 指标相符；共享 Bot 只筛触及 V2 的调用。
 
+两次聚合使用不同的别名：第一次的 invocation 统计统一使用 `req_` 前缀，第二次才
+生成最终 17 个字段，时间及共享调用筛选也引用中间字段。2026-09-12 的真实窄窗口
+查询被 AWS 拒绝；匹配原请求 hash 的 CloudTrail 记录确认 `platform_starts` 重复定义
+导致 `MalformedQueryException`。此次修改仅隔离中间别名，保留全部配对、schema、
+非负值和拒绝条件。该次 operator 查询的 394 microUSD 未知预留继续保留，不能因语法
+错误追溯清账。本地 SQL 数值回归和 Moto 费用事务只验证表达式关联及失败处理；新查询
+仍须经另行批准的真实执行验证，不能将本地通过表述为 AWS 编译或整月覆盖已通过。
+
 不以 Lambda Duration 代替完整计费时间：[AWS 已将 INIT 纳入计费](https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/)。
 查询以 `@billedDuration × (@memorySize / 1000000 / 1024) / 1000` 得到 GB-second；
 [官方查询示例](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax-examples.html)

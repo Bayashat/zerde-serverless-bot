@@ -181,36 +181,38 @@ def parse_inventory(raw):
 # Lambda Logs Insights discovers @memorySize in decimal bytes (official example
 # divides it by 1,000,000 for configured MB). Lambda bills GB = configured MB/1024.
 # Two stats stages return only per-log-group numerical aggregates, never request IDs.
+# Keep intermediate aliases distinct: Logs Insights rejects redefining an
+# ephemeral field in a later stats command, even for a further aggregation.
 _REQUEST_STATS = """fields coalesce(request_id, @requestId) as rid
 | filter @type in ["START", "REPORT"] or cost_event in ["MemoryV2CostStart", "MemoryV2Cost"]
-| stats min(toMillis(@timestamp)) as started_ms,
-    sum(if(@type = "START", 1, 0)) as platform_starts,
-    count(@billedDuration) as reports,
-    max(@billedDuration * @memorySize / 1000000 / 1024 / 1000) as gb_seconds,
-    sum(memory_request) as starts, count(complete) as finals, sum(complete) as completed,
-    count(cost_schema) as schema_count, sum(cost_schema) as schema_sum,
-    min(cost_schema) as schema_min, max(cost_schema) as schema_max,
-    count(shared_stats_rru) as rru_count, sum(shared_stats_rru) as rru,
-    count(shared_stats_wru) as wru_count, sum(shared_stats_wru) as wru,
-    count(shared_sqs_units) as sqs_count, sum(shared_sqs_units) as sqs,
-    sum(elapsed_ms) as elapsed_ms
+| stats min(toMillis(@timestamp)) as req_started_ms,
+    sum(if(@type = "START", 1, 0)) as req_platform_starts,
+    count(@billedDuration) as req_reports,
+    max(@billedDuration * @memorySize / 1000000 / 1024 / 1000) as req_gb_seconds,
+    sum(memory_request) as req_starts, count(complete) as req_finals, sum(complete) as req_completed,
+    count(cost_schema) as req_schema_count, sum(cost_schema) as req_schema_sum,
+    min(cost_schema) as req_schema_min, max(cost_schema) as req_schema_max,
+    count(shared_stats_rru) as req_rru_count, sum(shared_stats_rru) as req_rru,
+    count(shared_stats_wru) as req_wru_count, sum(shared_stats_wru) as req_wru,
+    count(shared_sqs_units) as req_sqs_count, sum(shared_sqs_units) as req_sqs,
+    sum(elapsed_ms) as req_elapsed_ms
     by @log, rid
 """
 _TOTAL_STATS = """| stats sum(if(
-    ispresent(rid) and rid != "" and platform_starts = 1 and reports = 1
-    and ispresent(gb_seconds) and gb_seconds >= 0
-    and starts = 1 and finals = 1 and completed = 1
-    and schema_count = 2 and schema_min = 1 and schema_max = 1
-    and rru_count = 1 and rru >= 0 and wru_count = 1 and wru >= 0
-    and sqs_count = 1 and sqs >= 0 and ispresent(elapsed_ms) and elapsed_ms >= 0,
+    ispresent(rid) and rid != "" and req_platform_starts = 1 and req_reports = 1
+    and ispresent(req_gb_seconds) and req_gb_seconds >= 0
+    and req_starts = 1 and req_finals = 1 and req_completed = 1
+    and req_schema_count = 2 and req_schema_min = 1 and req_schema_max = 1
+    and req_rru_count = 1 and req_rru >= 0 and req_wru_count = 1 and req_wru >= 0
+    and req_sqs_count = 1 and req_sqs >= 0 and ispresent(req_elapsed_ms) and req_elapsed_ms >= 0,
     0, 1)) as invalid_records,
-    sum(platform_starts) as platform_starts, sum(reports) as reports, count(gb_seconds) as billed_records,
-    sum(gb_seconds) as gb_seconds, sum(starts) as starts,
-    sum(finals) as finals, sum(completed) as completed,
-    sum(schema_count) as schema_count, sum(schema_sum) as schema_sum,
-    sum(rru_count) as rru_count, sum(rru) as rru,
-    sum(wru_count) as wru_count, sum(wru) as wru,
-    sum(sqs_count) as sqs_count, sum(sqs) as sqs, sum(elapsed_ms) as elapsed_ms by @log"""
+    sum(req_platform_starts) as platform_starts, sum(req_reports) as reports, count(req_gb_seconds) as billed_records,
+    sum(req_gb_seconds) as gb_seconds, sum(req_starts) as starts,
+    sum(req_finals) as finals, sum(req_completed) as completed,
+    sum(req_schema_count) as schema_count, sum(req_schema_sum) as schema_sum,
+    sum(req_rru_count) as rru_count, sum(req_rru) as rru,
+    sum(req_wru_count) as wru_count, sum(req_wru) as wru,
+    sum(req_sqs_count) as sqs_count, sum(req_sqs) as sqs, sum(req_elapsed_ms) as elapsed_ms by @log"""
 
 
 def report_query(start, end, *, shared):
@@ -218,8 +220,8 @@ def report_query(start, end, *, shared):
         raise UnverifiedCost("Unbounded REPORT window")
     return (
         _REQUEST_STATS
-        + f"| filter started_ms >= {start * 1000} and started_ms < {end * 1000}\n"
-        + ("| filter starts > 0 or finals > 0\n" if shared else "")
+        + f"| filter req_started_ms >= {start * 1000} and req_started_ms < {end * 1000}\n"
+        + ("| filter req_starts > 0 or req_finals > 0\n" if shared else "")
         + _TOTAL_STATS
     )
 
