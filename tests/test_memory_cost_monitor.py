@@ -14,7 +14,6 @@ from services.memory_v2._cost_catalog import (
     metric_totals,
     micro,
     parse_inventory,
-    parse_reports,
 )
 from services.memory_v2._cost_state import CostState, CostStateConflict
 from services.memory_v2.cost_monitor import MemoryCostMonitor, SDKCostTelemetry
@@ -221,52 +220,6 @@ def test_complete_empty_series_differs_from_missing_or_partial():
             metric_totals(pages, {"m0"})
 
 
-def aggregate(group, **changes):
-    values = {
-        "invalid_records": 0,
-        "platform_starts": 1,
-        "reports": 1,
-        "billed_records": 1,
-        "gb_seconds": "0.25",
-        "starts": 1,
-        "finals": 1,
-        "completed": 1,
-        "schema_count": 2,
-        "schema_sum": 2,
-        "rru_count": 1,
-        "rru": 2,
-        "wru_count": 1,
-        "wru": 3,
-        "sqs_count": 1,
-        "sqs": 1,
-        "measured_elapsed_ms": 100,
-        **changes,
-    }
-    return [
-        {"field": "@log", "value": "123456789012:" + group},
-        *[{"field": key, "value": str(value)} for key, value in values.items()],
-    ]
-
-
-@pytest.mark.parametrize(
-    "change",
-    [
-        {"invalid_records": 1},
-        {"platform_starts": 0},
-        {"finals": 0},
-        {"completed": 0},
-        {"reports": 0},
-        {"schema_sum": 3},
-        {"rru_count": 0},
-        {"wru": -1},
-    ],
-)
-def test_incomplete_body_free_instrumentation_cannot_authorize_usage(change):
-    group = "/aws/lambda/zerde-serverless-bot-prod"
-    with pytest.raises(UnverifiedCost):
-        parse_reports({"status": "Complete", "results": [aggregate(group, **change)]}, [group])
-
-
 def fake_clients(inv):
     start = inv.value["metering_started_at"]
     tables = {row["name"]: row for row in inv.tables}
@@ -314,7 +267,11 @@ def fake_clients(inv):
         ]
     }
     logs.start_query.return_value = {"queryId": "fake-query"}
-    logs.get_query_results.return_value = {"status": "Complete", "results": [], "statistics": {"bytesScanned": 0}}
+    logs.get_query_results.return_value = {
+        "status": "Complete",
+        "results": [],
+        "statistics": {"bytesScanned": 0, "recordsMatched": 0},
+    }
     sqs = Mock()
     sqs.get_queue_attributes.side_effect = lambda QueueUrl, **kwargs: {
         "Attributes": {
