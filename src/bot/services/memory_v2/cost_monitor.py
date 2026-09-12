@@ -23,9 +23,8 @@ from services.memory_v2._cost_catalog import (
     micro,
     number,
     parse_inventory,
-    parse_reports,
-    report_query,
 )
+from services.memory_v2._cost_reports import REPORT_EVENT_LIMIT, parse_reports, report_query
 from services.memory_v2._cost_state import CostState, month_at
 
 _LOG_QUERY_SECONDS = 45
@@ -244,7 +243,7 @@ class SDKCostTelemetry:
                     startTime=start - HALO_SECONDS,
                     endTime=end + HALO_SECONDS,
                     queryString=report_query(start, end, shared=kind == "shared_bot"),
-                    limit=100,
+                    limit=REPORT_EVENT_LIMIT,
                 )
                 query_id = response.get("queryId")
                 if not query_id:
@@ -257,7 +256,7 @@ class SDKCostTelemetry:
                         state.settle_scan(month, key, micro(scanned / GIB, "log_scan_gib"))
                         if scanned > _SCAN_CEILING_BYTES:
                             raise UnverifiedCost("Actual REPORT scan exceeded its allowance")
-                        parsed = parse_reports(result, groups)
+                        parsed = parse_reports(result, groups, start=start, end=end, shared=kind == "shared_bot")
                         for function in self.inventory.functions:
                             if function["log_group"] not in groups:
                                 continue

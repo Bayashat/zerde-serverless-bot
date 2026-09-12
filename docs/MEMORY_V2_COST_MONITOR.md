@@ -120,38 +120,37 @@ shared stats/main queue 由 runtime 显式 allowlist 识别；专用 V2 表/队�
 maxReceiveCount/最大消息尺寸接线；不能界定就保持不完整。仪表具体 SDK 捕获由 runtime
 集成 slice 负责，本模块不会自行伪造 complete=1。
 
-Logs Insights 固定查询先按日志组/request_id 关联，再逐 invocation 校验恰好一条
-Start、Final、REPORT 及平台 START、schema、完整性和非负单位，最后只返回日志组级数字。
-`invalid_records` 必须为 0；不能靠“A 多一个 Final，B 缺一个 Final”抵消总数。
-无原始消息和 request_id 返回给监控。worker REPORT 总数还必须与 Lambda Invocations
-指标相符；共享 Bot 只筛触及 V2 的调用。
+REPORT 查询和解析统一由 `_cost_reports.py` 负责。AWS 异步重试会复用 RequestId，
+包括同一执行环境的日志流，因此 RequestId 不能充当一次执行的唯一身份。
+[官方日志说明](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs-view.html)
+明确说明重试复用 ID、START/END 界定执行；本实现按日志组和日志流维护唯一活动执行，
+逐次配对 `START → MemoryV2CostStart → MemoryV2Cost → REPORT`，每条 REPORT 分别累加费用。
+不能合并重试后取最大耗时，也不能放宽为全局计数相等，让一次缺 Final 与另一次多 Final 抵消。
 
-两次聚合使用不同的别名：第一次的 invocation 统计统一使用 `req_` 前缀，时间及
-共享调用筛选也引用中间字段。查询最终输出 17 个数值字段；其中累计耗时使用
-`measured_elapsed_ms`，解析器严格校验完整字段集合后才恢复内部的 `elapsed_ms` 名称，
-拒绝旧字段或两者并存。别名不得重用原始计量 JSON 的字段名。
+固定查询最终只 display 日志组、日志流、时间、请求身份、事件种类及费用数字，
+不选择原始消息、异常正文、聊天或提示词。服务自动附带的 `@ptr` 立即丢弃，
+不持久化、不返回、不调用 GetLogRecord。请求 ID 仅在当前解析内存中关联执行，
+对外仍只返回日志组级数值。两个查询各最多 10,000 行；达到上限、出现 nextToken、
+recordsMatched 与行数不符、未知字段或不完整结果都拒绝，不把截断当零。
 
-2026-09-12 首次真实窄窗口查询被拒绝；精确请求 hash 匹配的 CloudTrail 记录确认
-`platform_starts` 重复定义。隔离中间别名后第二次查询仍被拒绝，AWS 报依赖图有环。
-本地检查发现唯一原始/最终重名字段 `elapsed_ms` 的双向依赖，因而隔离最终名称；
-该字段是有代码依据的定位，AWS 错误本身未指明字段。全部配对、schema、非负值和
-拒绝条件保留，内部消费者仍接收原来的 17 键契约。两次失败的 operator 查询各保留
-394 microUSD 未知扫描预留，不能因语法错误追溯清账。本地 SQL 数值回归和 Moto
-费用事务只验证表达式关联及失败处理；真实执行和完整历史覆盖需分别验收。
+每次执行单独校验 schema、complete、非负单位和四件记录恰好各一。
+同流不同 ID 不得重叠；同毫秒可由当前活动 ID 唯一确定的 REPORT/下一 START 边界正常处理，
+不能确定顺序则拒绝。普通 shared Bot 调用仍需遵守物理执行边界，但不计入 V2；
+任何 V2 marker 出现后都不能作为普通调用跳过。worker 次数仍与 Lambda Invocations 对账。
 
-第三次窄窗口查询已在 AWS 编译并执行完成，扫描 19,275 bytes；读回两个 worker 组
-的 16 个数值字段，但缺少 `invalid_records`，严格解析器正确拒绝。实际错误尚不能
-确定为哪种 NULL 求值行为。为使逐调用验证结果明确，完整判据移到两次聚合之间的
-`fields coalesce(if(valid, 0, 1), 1) as req_invalid`，第二次只对其求和；无法求值的每次
-调用记为违规，禁止对最终缺字段补零或过滤掉坏行。原完整判据、17字段校验及各项
-计费总数保持。本地 NULL 注入证明失败时拒绝，不作为 AWS 相同求值规则的证明。
+按各次平台 START 分配 core 窗口；明确属于其他窗口的完整失败调用不会污染当前窗口。
+缺 START 的片段不可借用旧重试的 START：完整元组也检查平台跨度不超过 300 秒运行上限
+加 1 秒，且不超过实际 billed duration 加 1 秒。额外 1 秒是本实现的保守日志开销容忍，
+不是 AWS 时延保证；超限只拒绝许可，不补造记录、不增加估算时长。
 
-最终真实验证（2026-09-12 13:49:37 UTC）通过：固定 9月11日17:00–17:15 UTC 窗口，
-两个查询均 `Complete`，worker 与 shared Bot 分别扫描 19,275/39,000 bytes；两环境
-worker 各3次调用与指标吻合，prod共享Bot的2次V2调用完整，dev共享Bot未返回V2行。
-所有返回行的 `invalid_records=0`、17键契约及START/Final/REPORT配对均通过。
-这是本地待审源码读取实际AWS数字的验证，未部署或改生产许可；只有该窄窗口已验证，
-整月历史、非零共享写入/SQS用量及上线恢复效果仍单独验收。
+2026-09-12 的旧 SQL 聚合实验证明过 9月11日17:00–17:15 UTC 窄窗口，但生产上线后
+在首段历史发现 4 个 ID 各有 3 次合法重试：原解析把 117 次执行合并为 109 组而拒绝。
+旧两级 SQL 聚合及其模拟实现现已移除；当时的失败/未知扫描预留保持不变。
+新真实同段验证（9月11日13:40–24:00 UTC）读回 32 项指标：dev worker 117 次、
+prod worker 94 次分别逐次配对，dev billed GB-s 从旧 max 聚合的 22.2915 修正为 23.3975。
+共享 dev/prod 分别 5/18 次，包含非零写入和 SQS 单位；所有返回组均完整。
+两个查询扫描 232,806/991,730 bytes，实际费用通过原 CostState 预留/结算，
+未写 DAY、未赋予费用许可；这段运行证据不代表整月覆盖或实际 AWS 账单。
 
 不以 Lambda Duration 代替完整计费时间：[AWS 已将 INIT 纳入计费](https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/)。
 查询以 `@billedDuration × (@memorySize / 1000000 / 1024) / 1000` 得到 GB-second；
@@ -167,7 +166,7 @@ worker 各3次调用与指标吻合，prod共享Bot的2次V2调用完整，dev�
 代码切换和旧 writer 排空验收。更改月中 inventory 要审阅重建，不能重置账本假装零。
 
 UTC 当月按最长 12 小时块持久化覆盖，每次最多补一个块，优先补缺失历史。查询窗口
-两侧各留 15 分钟关联跨边界调用，按平台 START/最早记录分配且 core 不重叠。
+两侧各留 15 分钟关联跨边界调用，按各次平台 START 分配且 core 不重叠。
 [Lambda 指标时间是 invocation 开始时间](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics-view.html)，
 因此不能按 REPORT 结束时间分桶：11:59 开始、12:00 完成的调用仍归入前一个块。
 缺平台 START 会使逐 invocation 校验失败；不会丢弃该有 marker 的记录来制造完整结果。
