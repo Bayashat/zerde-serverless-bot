@@ -137,7 +137,7 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 
 ## 费用采集真实窄窗口通过（2026-09-12 13:49 UTC）
 
-#208当前源码`1040546`修复标准SQS属性及两阶段统计兼容：中间别名隔离、耗时wire字段严格映射，以及逐调用materialize完整性判据（无法求值按违规计数）。最终1,684项完整本地测试通过；源码及真实结果均经独立审阅。
+#208当时的窄窗口源码`1040546`修复标准SQS属性及两阶段统计兼容：中间别名隔离、耗时wire字段严格映射，以及逐调用materialize完整性判据（无法求值按违规计数）。最终1,684项完整本地测试通过；源码及真实结果均经独立审阅。
 
 [真实数值证据](evidence/2026-09-12-post-merge/cost-fixed-window-verification.json)：两查询均Complete，32项指标完整，两个worker各3次与指标吻合，prod共享Bot两次V2调用完整；所有返回行invalid_records=0。原失败报告和未知预留全部保留。这个15分钟窗口通过不等于整月覆盖、实付账单、共享非零写入/SQS路径或生产上线效果；没有改生产许可或开启学习。
 
@@ -165,3 +165,16 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 费用15分钟PASS、真实模型质量FAIL、后续修复未经真实模型重跑、学习STOPPED、七天单群未开始等边界不变。
 
 清理前18条退休任务回放已通过，但清理后未再次Invoke；本次终检只读，不作为删后不复活回放证据。新epoch前仍须补齐清理后回放，现有到期自动职责不包含该调用。
+
+
+## 费用修复生产读回与可统计的历史用量完整（2026-09-12 22:25 UTC）
+
+[新发布证据](evidence/2026-09-12-post-merge/cost-monitor-release.json)补充并取代前文“#208待审/未部署”和“仅15分钟费用样本”的当前状态；原f305首次发布、旧窄窗口及清理终检凭据仍完整保留。
+
+- #208合入`7ba14bcb6b73f31ec71077a26d79ce9a99c7593b`，#209于22:20:30 UTC合入main `e0780520dad8f19039b4a640bbf10489fd292210`。发布源码提交为`3bd0567426e050b0ca35db8c7a3bec0dc990a9a5`。本轮1,765项全量测试、all-files hooks、六个ARM包导入探针、两个CI检查与独立审阅通过；不与历史测试数量相加。
+- 生产Bot/旧vector入口/Memory worker仅代码更新，第二次真实ZIP读回三包均为`386ba112a2bde866621a30d734caca09ba2cf382d248748e588f4931f1b7bb92`，106份第一方文件及15项依赖匹配。News/Quiz/Operations的f305代码、Layer17、环境、CONTROL缺行与旧写入Deny均保持；没有将#205–#207一并发布。
+- 10小时20分钟历史样本通过逐执行配对：worker dev/prod 117/94次、共享Bot dev/prod 5/18次，包含非零共享WRU/SQS。同RequestId重试不再合并成一次费用，窗口外失败不污染明确的当前执行；缺失、重复、歧义及真实错误仍拒绝许可。
+- 22:23:29–22:24:34 UTC三次真实canary均HTTP200、无Lambda错误、返回完整费用状态，并强读确认状态匹配、观测时间不早于返回值。前两次健康追赶仍UNVERIFIED，第三次`ESTIMATE_VERIFIED / OBSERVED_GROSS_ESTIMATE`，可统计的历史用量覆盖至1789250700（9月12日22:05 UTC），保守目录价估算1,768,707 microUSD。它覆盖新增Memory AWS的dev/prod预算范围，不是发票、实际支付、Free Tier或未来整月完整费用；未知预留不退，Z17项目账单与费用验收仍开放。
+- 22:25:32 UTC读回四个CONTROL缺行、相关告警OK且ActionsEnabled，ALARM/OK动作各1项。未做一小时持续观测，未调用模型、开启学习或更改清理状态。本次短暂暂停的deploy workflow已恢复active、分支保护规则不变；直接代码更新留下CloudFormation旧Code指针，完整CDK部署前须先合入#205并同步当前环境与代码差异。
+
+`ONLINE_CLEAN_COPIES_PENDING`及原归档/PITR到期职责、Z18资源保留、真实模型质量FAIL、#207质量修复未重新实测、学习STOPPED和七天单群尚未开始均保持。不能由费用历史覆盖完整推定产品验收完成。

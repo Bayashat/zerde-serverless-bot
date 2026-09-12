@@ -1,0 +1,183 @@
+{
+  "recorded_at": "2026-09-12T22:26:50.595362+00:00",
+  "status": "PRODUCTION_CODE_AND_THREE_ACTUAL_COST_CHECKS_VERIFIED",
+  "scope": "PR208 standard SQS / query repair followed by PR209 actual Lambda retry attempt accounting; production code only",
+  "pull_requests": [
+    208,
+    209
+  ],
+  "source_commit": "3bd0567426e050b0ca35db8c7a3bec0dc990a9a5",
+  "merged_main_commit": "e0780520dad8f19039b4a640bbf10489fd292210",
+  "merged_at": "2026-09-12T22:20:30Z",
+  "ci": {
+    "run_id": 34722067170,
+    "Code Quality Checks": "success",
+    "Infrastructure Changes Preview": "success"
+  },
+  "tests": {
+    "focused": 162,
+    "full_suite": 1765,
+    "pre_commit": "PASS",
+    "actual_arm64_handlers": 6,
+    "offline_release_guard_tests": 46,
+    "independent_review": "ALIGNED",
+    "independent_actual_release_checks": 31
+  },
+  "artifact": {
+    "zip_sha256": "386ba112a2bde866621a30d734caca09ba2cf382d248748e588f4931f1b7bb92",
+    "zip_bytes": 25960215,
+    "file_count": 3243,
+    "zip_asset_bytes_equal": true,
+    "source_commit": "3bd0567426e050b0ca35db8c7a3bec0dc990a9a5",
+    "arm_probe_log_sha256": "64f3deb27c3cb9ece7c647f97fad639c772b55405a2a5f23ea9718fde38df08c"
+  },
+  "production": {
+    "status": "PASS_THREE_ACTUAL_CODE_ARTIFACTS_CONFIGURATION_UNCHANGED",
+    "six_function_stable_snapshot_sha256": "ca21bb2c99ac2750145a6261ed07cac316c36c82a5c079d4dbffea6d88d1fcc4",
+    "layer_version_unchanged": 17,
+    "controls_absent_strong_reads": 4,
+    "legacy_denies_unchanged": true,
+    "learning_enabled": false,
+    "cloudformation_template_updated": false
+  },
+  "actual_functions": [
+    {
+      "function": "zerde-serverless-bot-prod",
+      "bytes_sha256": "386ba112a2bde866621a30d734caca09ba2cf382d248748e588f4931f1b7bb92",
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I="
+    },
+    {
+      "function": "zerde-serverless-vector-indexer-prod",
+      "bytes_sha256": "386ba112a2bde866621a30d734caca09ba2cf382d248748e588f4931f1b7bb92",
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I="
+    },
+    {
+      "function": "zerde-serverless-memory-v2-worker-prod",
+      "bytes_sha256": "386ba112a2bde866621a30d734caca09ba2cf382d248748e588f4931f1b7bb92",
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I="
+    }
+  ],
+  "other_functions": "News, Quiz, Operations remain the independently verified f305aae baseline; shared Layer 17 unchanged",
+  "deployment_controls": {
+    "merged_parent_and_tree_verified": true,
+    "workflow_restored": "active",
+    "protection_rules_unchanged": true,
+    "write_attempts": 3,
+    "mutation": "UpdateFunctionCode only; Publish=false and fresh RevisionId"
+  },
+  "actual_cost_checks": [
+    {
+      "started_at": 1789251809.106612,
+      "finished_at": 1789251814.750411,
+      "http_status": 200,
+      "function_error": null,
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I=",
+      "progress": {
+        "measurement_state": "UNVERIFIED",
+        "estimate_micro_usd": 1687382,
+        "observed_at": 1789251814,
+        "covered_until": 1789171200,
+        "paused": false,
+        "reason": "HISTORICAL_COVERAGE_INCOMPLETE"
+      },
+      "status": "PASS_ACTUAL_MONITOR_WITHOUT_LAMBDA_ERROR",
+      "receipt_sha256": "921f72b2c7e70219278e3f591a4bd52a731ccbc37eb6f2ff8b48738090264fc2",
+      "persisted_measurement_state_and_observation_time_checked": true
+    },
+    {
+      "started_at": 1789251856.188176,
+      "finished_at": 1789251860.212846,
+      "http_status": 200,
+      "function_error": null,
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I=",
+      "progress": {
+        "measurement_state": "UNVERIFIED",
+        "estimate_micro_usd": 1725501,
+        "observed_at": 1789251860,
+        "covered_until": 1789214400,
+        "paused": false,
+        "reason": "HISTORICAL_COVERAGE_INCOMPLETE"
+      },
+      "status": "PASS_ACTUAL_MONITOR_WITHOUT_LAMBDA_ERROR",
+      "receipt_sha256": "ed2b7f79bb54ad43ad39702f51d2aea02cbd43ad2c9b3b3112effba98df144d4",
+      "persisted_measurement_state_and_observation_time_checked": true
+    },
+    {
+      "started_at": 1789251870.35341,
+      "finished_at": 1789251874.632237,
+      "http_status": 200,
+      "function_error": null,
+      "code_sha256": "OGuhEqK96GZiGjDXNMrKCbos84LSSHSOWI9JMfG3u5I=",
+      "progress": {
+        "measurement_state": "ESTIMATE_VERIFIED",
+        "estimate_micro_usd": 1768707,
+        "observed_at": 1789251874,
+        "covered_until": 1789250700,
+        "paused": false,
+        "reason": "OBSERVED_GROSS_ESTIMATE"
+      },
+      "status": "PASS_ACTUAL_MONITOR_WITHOUT_LAMBDA_ERROR",
+      "receipt_sha256": "c4454f1b82e0e7a35d9713ec1f4277cf048f32c5067ac7b3165cdd7921ff1383",
+      "persisted_measurement_state_and_observation_time_checked": true
+    }
+  ],
+  "post_canary_state": {
+    "observed_at": 1789251932.175037,
+    "controls_absent_strong_reads": 4,
+    "learning_enabled": false,
+    "alarm": {
+      "AlarmName": "zerde-serverless-bot-prod-errors",
+      "ActionsEnabled": true,
+      "StateValue": "OK",
+      "StateUpdatedTimestamp": "2026-09-13 03:14:17.704000+05:00",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "TreatMissingData": "notBreaching",
+      "Threshold": 1.0
+    },
+    "alarm_actions_count": 1,
+    "ok_actions_count": 1,
+    "cloud_write_attempts": 0
+  },
+  "first_attempt": {
+    "pr": 208,
+    "deployed_main": "7ba14bcb6b73f31ec71077a26d79ce9a99c7593b",
+    "actual_canary_status": "ACTUAL_MONITOR_FAILED_REQUIRES_DIAGNOSIS",
+    "actual_canary_receipt_sha256": "342ba3eda7b109b29fc79e8804f471953a157e7770cb46b253eb149f2e3eb87d",
+    "identified_cause": "Repeated Lambda attempts share a RequestId even within one stream; requestId grouping merged 117 executions into 109 records and caused invalid_records=4; PR209 replaces grouping with execution pairing."
+  },
+  "real_history_verification": {
+    "start_utc": "2026-09-11T13:40:00Z",
+    "end_utc": "2026-09-12T00:00:00Z",
+    "dev_worker_attempts": 117,
+    "prod_worker_attempts": 94,
+    "dev_shared_v2_attempts": 5,
+    "prod_shared_v2_attempts": 18,
+    "dev_worker_billed_gb_seconds": "23.3975",
+    "old_incorrect_max_grouped_gb_seconds": "22.2915",
+    "nonzero_shared_write_and_sqs_evidence": true,
+    "scan_bytes": [
+      232806,
+      991730
+    ],
+    "source_receipt_sha256": "b94541355179761012f9afea44402c18eb9e68a32b809d19229c305a7afac9a6"
+  },
+  "receipt_sha256": {
+    "merge": "06b6eff5d531d3ac5bfbc98cdbe906292b169a57f8f5881d99358227feee3fc6",
+    "prepare": "128c892a789e0582f480ee71e20a560b7b4d64944221b8784f801e9c7243e08f",
+    "apply": "443eadcfd23d7f6769edbf095bd1c64f59b893a017667ee6529c6490052e4836",
+    "actual_readback": "89eca710fabdd6ff3a602e0f163cfde0598e3f794e2c28d75b3e48e3fa765743",
+    "arm_evidence": "204a0d6d9682399ee2cb3b71593fb2f065e5e4f7e8be6e77639d793da3a310c9",
+    "post_canary_state": "f670c4a4458baa1040ce0bf9a9e3e410280bf25afef4dcd201ee0c76ae55a43b",
+    "independent_actual_release_review": "ea7aaba598daeb16bb67fe777b176cabbd1d38f8be11665273c8de0f2a97870f"
+  },
+  "limits": [
+    "USD 1.768707 is the V2 monitor conservative catalog-price AWS gross estimate and reserves for both dev and prod, not an AWS invoice, actual payment, or Free Tier calculation.",
+    "Settled history is verified only through 2026-09-12 22:05 UTC. Future usage and the eventual full calendar month are not covered.",
+    "Three actual checks passed; no full subsequent scheduled hour observation is claimed. Alarm and recovery delivery remain enabled.",
+    "Source and actual production code were updated without a CloudFormation deploy. Its old Code asset pointer remains; reconcile approved configuration and PR205 before a subsequent CDK deploy.",
+    "Four production controls remain absent/default STOPPED. No learning epoch, model evaluation, cleanup, DLQ replay, or retention changes were performed.",
+    "Z17 billing attribution and broader Memory V2 product acceptance remain open.",
+    "Canary strong DynamoDB readback compares measurement_state and requires observed_at not older than the response; it does not independently compare all six persisted fields."
+  ]
+}

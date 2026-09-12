@@ -1,8 +1,8 @@
 # 下一次执行入口
 
-当前阶段是 **DEPLOYED / ONLINE_CLEAN_COPIES_PENDING / LEARNING_STOPPED / ACCEPTANCE_INCOMPLETE**。用户已于2026-09-11合并[最终集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)，main 为 `f305aae911fffd652b225e6aecd9eded495e2d1a`，并明确授权继续和必要测试。实际开发环境已验证启停及专用测试群；生产六个运行包与共享层已逐字节核验批准源码，正常业务已恢复，四个群均维持学习 STOPPED。抽奖和旧自动社交入口退役。
+当前阶段是 **DEPLOYED / ONLINE_CLEAN_COPIES_PENDING / LEARNING_STOPPED / ACCEPTANCE_INCOMPLETE**。首次[集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)的发布基线为 `f305aae911fffd652b225e6aecd9eded495e2d1a`。用户随后明确授权合并部署费用修复；#208、#209已合入，当前main为 `e0780520dad8f19039b4a640bbf10489fd292210`。生产Bot、旧vector入口和Memory worker三个同源代码包已更新并实际读回；News、Quiz、Operations仍为已核验的f305代码，共享Layer17不变。正常业务保持，四群学习STOPPED，抽奖和旧自动社交入口仍退役。
 
-先读 [LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md) 的最新现场记录，再读 [PLAN](PLAN.md)、[TASKS](TASKS.md)、[EVIDENCE](EVIDENCE.md)。旧独立 PR 的代码已通过 #204 集成；不要重复合入早期依赖分支。后续修复 [#205](https://github.com/Bayashat/zerde-serverless-bot/pull/205)（dev 并发、环境容量与旧摘要规则）、[#206](https://github.com/Bayashat/zerde-serverless-bot/pull/206)（固定清单续跑）、[#207](https://github.com/Bayashat/zerde-serverless-bot/pull/207)（真实模型接口、评估与两项质量修复）及 [#208](https://github.com/Bayashat/zerde-serverless-bot/pull/208)（标准队列费用采集）待用户审阅；当前生产使用已审 main 运行包和精确环境配置补充，旧摘要仍显式 DISABLED。
+先读 [LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md) 的最新现场记录，再读 [PLAN](PLAN.md)、[TASKS](TASKS.md)、[EVIDENCE](EVIDENCE.md)。旧独立 PR 的代码已通过 #204 集成；不要重复合入早期依赖分支。后续修复 [#205](https://github.com/Bayashat/zerde-serverless-bot/pull/205)（dev 并发、环境容量与旧摘要规则）、[#206](https://github.com/Bayashat/zerde-serverless-bot/pull/206)（固定清单续跑）、[#207](https://github.com/Bayashat/zerde-serverless-bot/pull/207)（真实模型接口、评估与两项质量修复）仍待审阅。[#208](https://github.com/Bayashat/zerde-serverless-bot/pull/208)（标准队列费用读取、恢复错误日志与正常历史追赶）和[#209](https://github.com/Bayashat/zerde-serverless-bot/pull/209)（逐执行配对与重试计费）已合并部署，详见[本次发布证据](evidence/2026-09-12-post-merge/cost-monitor-release.json)。旧摘要仍显式DISABLED。
 
 真实 Gemini 基线56/240场景执行，其余184因预算暂停保留UNSUPPORTED，尚未获得其他三语言的实际模型样本。已发现真实字段选择和安全误拦问题，修复及真实调用工具在PR #207，全量1,906项本地测试通过；尚未重新取得修复后的模型质量证据，也不等同已部署版本。不得因合成测试或有限真模型样本通过而启用生产学习。
 
@@ -16,25 +16,25 @@
 - Z10：同一manifest/备份下完成30,794条旧记忆与8,259条旧向量的在线清零，原3条SETTINGS完整。诊断controller六轮于15:48:31 UTC完成，16:20:47 UTC独立终检通过，状态为`online_clean_copies_pending`。先前未知停止的历史及原因UNKNOWN仍保留，不用后来成功倒推根因。
 - Z11：四语言合成语料、独立评分器和真实领域代码离线回放。固定假 provider 只测试工程链路；不能当作 Gemini 质量证据。
 - Z12–Z16：验证码、反垃圾、Voteban、News、Quiz 修复，已在共享入口组合验证。
-- Z17–Z18：告警/恢复通知、dev 按需开关、模型预留、AWS 计量/监控和旧资源清理手册。资源标签已随模板部署；Project/Environment成本分配标签已激活并读回，真实通知已有应用确认；持续旧告警已由root补发并取得应用发送确认；完整费用采集/历史覆盖和账单归属仍待完成，Z18云资源销毁未执行。
+- Z17–Z18：告警/恢复通知、dev 按需开关、模型预留、AWS 计量/监控和旧资源清理手册。资源标签已随模板部署；Project/Environment成本分配标签已激活并读回，真实通知已有应用确认；持续旧告警已由root补发并取得应用发送确认；费用修复三次实际验证后，可统计的历史用量覆盖补齐至9月12日22:05 UTC，状态ESTIMATE_VERIFIED，新增Memory AWS的dev/prod合计目录价保守估算为USD1.768707。非零共享WRU/SQS已有历史样本；项目实付账单、Free Tier与完整费用验收仍开放，Z18云资源销毁未执行。
 
 ## 审阅与合入
 
-历史独立 PR 在 TASKS 中，对应源码已通过最终集成#204合并。不要再依次合入旧分支。接下来的审阅对象是#205–#208；合并后仍须分别核验实际产物、配置和真实效果。
+历史独立 PR 在 TASKS 中，对应源码已通过最终集成#204合并。不要再依次合入旧分支。接下来的审阅对象是#205–#207；#208、#209已合并并完成本轮三个生产代码包读回与三次实际验证，不能将这次发布等同其余PR已上线。
 
 以下依赖 anchor 仅解释历史审阅 diff：`feat/zerde-reviewed-foundation` → `feat/zerde-memory-v2-foundation` → `feat/zerde-memory-v2-answer-foundation`。它们包含多个当时的模块快照，现在不再作为待合入发布分支。后续发布仍须重新记录 SHA 和真实产物 hash。
 
 用户后续授权已覆盖本轮具体发布、必要测试与原计划的旧记忆清零；不能继续套用合并前的只读限制。保持精确清单、停写、备份及条件删除边界。Z18非记忆旧云资源销毁仍单独列范围，不借本轮测试扩大删除。
 
-现有`.github/workflows/deploy.yml`合并main自动部署dev，prod手动。两环境首次V2计费起点已固定为1789134091；后续部署不得重置。自动部署不会执行本地清零工具。当前prod旧表/index已建立额外写入Deny围栏，任何新部署均须先检查现场清理是否仍在冻结窗口中。
+现有`.github/workflows/deploy.yml`合并main自动部署dev，prod手动。本次为三个prod包的代码更新，未执行完整CDK部署；deploy workflow短暂暂停后已恢复active，分支保护规则不变。CloudFormation仍保留旧Code指针；#205配置修复合并并与当前现场环境同步前，不得直接运行完整CDK部署，以免覆盖实际代码和环境。两环境首次V2计费起点仍为1789134091，不得重置；旧表/index写入Deny围栏不变。
 
-诊断续跑沿用原manifest和原绝对截止，六轮完成后已退出；独立终检确认无操作进程/锁、原运行版本/环境/写入围栏不变、四个精确CONTROL键强读缺行，学习保持默认STOPPED。不要重新启动已完成的controller或重复终检。原启动与中断记录保留在[诊断阶段证据](evidence/2026-09-12-post-merge/cleanup-diagnostic-continuation.json)和现场时间线中。
+诊断续跑沿用原manifest和原绝对截止，六轮完成后已退出；9月12日16:20 UTC独立终检当时确认无操作进程/锁、原运行版本/环境/写入围栏不变、四个精确CONTROL键强读缺行，学习保持默认STOPPED。不要重新启动已完成的controller或重复终检。原启动与中断记录保留在[诊断阶段证据](evidence/2026-09-12-post-merge/cleanup-diagnostic-continuation.json)和现场时间线中。
 
 终检后，root已于 **16:23:16 UTC**将原本地任务`zerde`恢复为原每日备份到期职责，完整字段实际读回匹配且ACTIVE。三份加密归档仍存在，原manifest/backup字节未变，独立密钥未删；到期清理尚未执行。原归档在 **9月18日16:49:52 UTC**到期，不延长；旧表实际PITR窗口为35天，保守复查点为 **10月17日16:20:38 UTC**，这只是后续复查时间，不是物理删除承诺。日志、队列和其他副本分别跟踪；到期清理依赖本机及Codex运行。Z18非记忆旧云资源未销毁，不能把保留的旧表和空索引当作资源已删除。
 
 ## 下一阶段仍需完成的真实证据
 
-1. **通过 GitHub 审阅及当前 CI。** 将最终集成修订与发布锁文件固定。打包必须使用实际 CDK 资产和 ARM64 Lambda 导入，不能仅凭 mocked construct 测试。
+1. **完成其余PR审阅和配置同步。** #208/#209本轮已取得1,765项全量测试、all-files hooks、六个ARM包导入探针、两个CI检查及独立审阅通过；实际三包读回通过。#205–#207仍开放，完整CDK发布前须先处理前述配置与Code指针差异。后续源码另行固定测试和产物指纹，不复用本轮结果冒充验证。
 2. **冻结配置并先保持学习 STOPPED。** 两环境成本计费起点相同，覆盖首次 V2 专属资源部署；不能用之后启用学习的日期掩盖早期费用。原始内容保留30天；dev 默认不消费；队列、超时、IAM、日志、告警接收人和共享预算表要读回。缺控制/计费许可时默认不学习。
 3. **完成真实模型与评估证据。** 先独立复核合成 gold 的语言及事实标签，再使用实际 Gemini 输入/usage/输出形成独立 observations。固定 fixture 的分数不是模型效果。不得复制 gold、以全拒答满足来源100%，或因超时/预算暂停跳过样本后宣称完整覆盖。known 问题完整回答召回每语言至少90%，是防止原召回目标被空答绕过的测量补齐。
 4. **dev canary。** 验证 Telegram 成员/管理员权限、每条来源链接、真实预算通知、Logs Insights 查询和用量归因，以及验证码、反垃圾、投票、News、Quiz 和显式媒体。恢复路径在真实依赖故障下的结果与合成测试分开记录。
@@ -50,7 +50,7 @@
 - `ADMIN_USER_ID`：当前单一私聊接收人，正整数，需先私聊bot。核对SSM权限；News/Quiz专用群配置为空时会回退共享 `CHATS_*`，不能误发到生产群。
 - Memory worker120秒、并发2、队列可见740秒；日志七天；prod Quiz与V2表PITR七天，dev关闭。恢复演练用新表验证，不能覆盖现表。实际Lambda环境变量必须低于4KiB。
 - 活跃环境各22个告警，dev停用为0；两个环境都启用则44。成本inventory的10仅是两环境新增Memory告警预留，不是总告警数。需实测告警、恢复及通知失败路径到管理员。
-- 真实成本门槛包括实际Logs Insights语法、START/Final/REPORT关联、零与非零样本、完整时间范围及暂停恢复。Project/Environment成本分配标签已激活；实际账单归属需要后续数据，账号费用仍不能直接当Zerde独立实付金额。
+- 真实成本门槛包括逐执行START/Final/REPORT关联及同RequestId重试、完整时间覆盖和暂停恢复。本轮10小时20分钟历史窗口取得worker dev/prod 117/94次、共享Bot dev/prod 5/18次及非零WRU/SQS证据；三次生产验证补齐可统计的历史用量，但未做一小时持续观察。Project/Environment成本分配标签已激活；目录价估算不是项目实付金额，Z17账单归属与整体费用验收仍开放。
 
 ## 失败时恢复
 
