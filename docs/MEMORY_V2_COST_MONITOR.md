@@ -126,13 +126,18 @@ Start、Final、REPORT 及平台 START、schema、完整性和非负单位，最
 无原始消息和 request_id 返回给监控。worker REPORT 总数还必须与 Lambda Invocations
 指标相符；共享 Bot 只筛触及 V2 的调用。
 
-两次聚合使用不同的别名：第一次的 invocation 统计统一使用 `req_` 前缀，第二次才
-生成最终 17 个字段，时间及共享调用筛选也引用中间字段。2026-09-12 的真实窄窗口
-查询被 AWS 拒绝；匹配原请求 hash 的 CloudTrail 记录确认 `platform_starts` 重复定义
-导致 `MalformedQueryException`。此次修改仅隔离中间别名，保留全部配对、schema、
-非负值和拒绝条件。该次 operator 查询的 394 microUSD 未知预留继续保留，不能因语法
-错误追溯清账。本地 SQL 数值回归和 Moto 费用事务只验证表达式关联及失败处理；新查询
-仍须经另行批准的真实执行验证，不能将本地通过表述为 AWS 编译或整月覆盖已通过。
+两次聚合使用不同的别名：第一次的 invocation 统计统一使用 `req_` 前缀，时间及
+共享调用筛选也引用中间字段。查询最终输出 17 个数值字段；其中累计耗时使用
+`measured_elapsed_ms`，解析器严格校验完整字段集合后才恢复内部的 `elapsed_ms` 名称，
+拒绝旧字段或两者并存。别名不得重用原始计量 JSON 的字段名。
+
+2026-09-12 首次真实窄窗口查询被拒绝；精确请求 hash 匹配的 CloudTrail 记录确认
+`platform_starts` 重复定义。隔离中间别名后第二次查询仍被拒绝，AWS 报依赖图有环。
+本地检查发现唯一原始/最终重名字段 `elapsed_ms` 的双向依赖，因而隔离最终名称；
+该字段是有代码依据的定位，AWS 错误本身未指明字段。全部配对、schema、非负值和
+拒绝条件保留，内部消费者仍接收原来的 17 键契约。两次失败的 operator 查询各保留
+394 microUSD 未知扫描预留，不能因语法错误追溯清账。本地 SQL 数值回归和 Moto
+费用事务只验证表达式关联及失败处理；真实执行和完整历史覆盖需分别验收。
 
 不以 Lambda Duration 代替完整计费时间：[AWS 已将 INIT 纳入计费](https://aws.amazon.com/blogs/compute/aws-lambda-standardizes-billing-for-init-phase/)。
 查询以 `@billedDuration × (@memorySize / 1000000 / 1024) / 1000` 得到 GB-second；

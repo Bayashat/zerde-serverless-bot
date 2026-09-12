@@ -239,7 +239,7 @@ def aggregate(group, **changes):
         "wru": 3,
         "sqs_count": 1,
         "sqs": 1,
-        "elapsed_ms": 100,
+        "measured_elapsed_ms": 100,
         **changes,
     }
     return [

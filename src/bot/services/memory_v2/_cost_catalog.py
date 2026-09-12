@@ -183,6 +183,7 @@ def parse_inventory(raw):
 # Two stats stages return only per-log-group numerical aggregates, never request IDs.
 # Keep intermediate aliases distinct: Logs Insights rejects redefining an
 # ephemeral field in a later stats command, even for a further aggregation.
+# Final aliases must also stay distinct from raw JSON fields to avoid a cycle.
 _REQUEST_STATS = """fields coalesce(request_id, @requestId) as rid
 | filter @type in ["START", "REPORT"] or cost_event in ["MemoryV2CostStart", "MemoryV2Cost"]
 | stats min(toMillis(@timestamp)) as req_started_ms,
@@ -212,7 +213,7 @@ _TOTAL_STATS = """| stats sum(if(
     sum(req_schema_count) as schema_count, sum(req_schema_sum) as schema_sum,
     sum(req_rru_count) as rru_count, sum(req_rru) as rru,
     sum(req_wru_count) as wru_count, sum(req_wru) as wru,
-    sum(req_sqs_count) as sqs_count, sum(req_sqs) as sqs, sum(req_elapsed_ms) as elapsed_ms by @log"""
+    sum(req_sqs_count) as sqs_count, sum(req_sqs) as sqs, sum(req_elapsed_ms) as measured_elapsed_ms by @log"""
 
 
 def report_query(start, end, *, shared):
@@ -247,7 +248,7 @@ def parse_reports(result, groups):
         "wru",
         "sqs_count",
         "sqs",
-        "elapsed_ms",
+        "measured_elapsed_ms",
     }
     for items in result.get("results", []):
         row = {entry["field"]: entry["value"] for entry in items}
@@ -257,6 +258,9 @@ def parse_reports(result, groups):
         if group not in groups or group in parsed:
             raise UnverifiedCost("REPORT group differs from inventory")
         values = {key: number(value) for key, value in row.items()}
+        # Query aliases must not shadow the discovered input elapsed_ms field.
+        # Keep the internal consumer contract independent of its query spelling.
+        values["elapsed_ms"] = values.pop("measured_elapsed_ms")
         count = values["starts"]
         if (
             values["invalid_records"]

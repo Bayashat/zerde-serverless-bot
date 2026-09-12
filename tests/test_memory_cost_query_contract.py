@@ -39,7 +39,7 @@ FIELDS = {
     "wru",
     "sqs_count",
     "sqs",
-    "elapsed_ms",
+    "measured_elapsed_ms",
 }
 RAW_FIELDS = [
     "@log",
@@ -137,11 +137,11 @@ def parsed(rows):
 
 
 @pytest.mark.parametrize("shared", [False, True])
-def test_aliases_are_single_assignment_and_final_public_schema_stays_exact(shared):
+def test_aliases_are_single_assignment_and_internal_schema_stays_exact(shared):
     query = report_query(START, END, shared=shared)
-    # The fixed live query is changed only by intermediate names, preserving all
-    # predicates, weights, grouping keys and public field names byte-for-byte.
-    original = re.sub(r"\breq_", "", query)
+    # Only aliases change; the original predicates, weights and grouping keys
+    # remain byte-for-byte. The parser restores the internal elapsed_ms name.
+    original = re.sub(r"\breq_", "", query).replace("measured_elapsed_ms", "elapsed_ms")
     assert hashlib.sha256(original.encode()).hexdigest() == (
         "d32aaa4dcee39e3addb69b3430f2ab29db688c34e88a1f675ec9547ff38ab7a4"
         if shared
@@ -149,6 +149,9 @@ def test_aliases_are_single_assignment_and_final_public_schema_stays_exact(share
     )
     aliases = re.findall(r"\bas (\w+)", query)
     assert len(set(aliases)) == len(aliases)
+    # A final alias that reuses a discovered input name can create a cycle in
+    # the AWS compiler even when SQL CTE evaluation succeeds.
+    assert not set(aliases).intersection(RAW_FIELDS)
     stats = [part.strip() for part in query.split("|") if part.strip().startswith("stats ")]
     assert len(stats) == 2
     assert set(re.findall(r"\bas (\w+)", stats[-1])) == FIELDS
@@ -291,3 +294,13 @@ def test_actual_botocore_compile_error_retains_real_moto_scan_hold_and_disables_
     assert state.read(month, "AWS")["measurement_state"] == "UNVERIFIED"
     with pytest.raises(MemoryBudgetPaused):
         state.budget.reserve("compile-failure-has-no-permit", purpose="extract")
+
+
+@pytest.mark.parametrize("fault", ["old_name", "both_names"])
+def test_elapsed_query_field_must_use_the_exact_current_wire_schema(fault):
+    rows = evaluate(report_query(START, END, shared=False), invocation())
+    rows[0]["elapsed_ms"] = rows[0]["measured_elapsed_ms"]
+    if fault == "old_name":
+        rows[0].pop("measured_elapsed_ms")
+    with pytest.raises(UnverifiedCost, match="Unexpected or missing aggregate fields"):
+        parsed(rows)
