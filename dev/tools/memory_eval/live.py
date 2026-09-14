@@ -26,6 +26,10 @@ from .live_session import SessionError, atomic_json, exclusive_lock, initialise_
 from .replay_input import project_scenario
 from .reporting import write_report
 
+# Explicit operator allowance for a fresh evaluation session. Production memory
+# budgets have their own owner; raising this cap never changes those limits.
+MAX_SESSION_BUDGET_MICRO_USD = 100_000_000
+
 
 class BrokerClient:
     def __init__(self, directory, *, api_key, rpm):
@@ -206,13 +210,13 @@ def build_manifest(corpus, confirmation_rows, *, budget_micro_usd, max_calls, rp
     validate_corpus(corpus)
     if (
         type(budget_micro_usd) is not int
-        or not 0 < budget_micro_usd <= 10_000_000
+        or not 0 < budget_micro_usd <= MAX_SESSION_BUDGET_MICRO_USD
         or type(max_calls) is not int
         or not 1 <= max_calls <= 10000
         or type(rpm) is not int
         or not 1 <= rpm <= 60
     ):
-        raise SessionError("Require explicit budget >0 and <=$10, max_calls 1..10000, rpm 1..60")
+        raise SessionError("Require explicit budget >0 and <=$100, max_calls 1..10000, rpm 1..60")
     projected = [project_scenario(scenario) for scenario in corpus]
     return {
         "schema": 1,

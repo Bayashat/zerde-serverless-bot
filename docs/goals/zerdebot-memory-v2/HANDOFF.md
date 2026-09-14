@@ -1,5 +1,19 @@
 # 下一次执行入口
 
+## 2026-09-15 当前进度
+
+先读 [CONTINUATION](CONTINUATION.md) 的最新授权、预算与三个执行阶段。#205、#206、#207 已分别在最新 main 上通过代码检查和基础设施预览后合并；合并提交为 `e1a4c3c`、`56f1541`、`cf93b74`。部署 workflow 已恢复 ACTIVE，分支保护未改。本次下述 Groq 恢复修复和评估预算扩展正在单独交付；此刻尚未执行本轮完整 CDK 部署，不能把合并视为上线。
+
+组合源码的 2,091 项测试通过；实际 dev/prod 打包及各六个 ARM 导入探针通过，云端变更尚待最终 main 产物与 change set 核验。预计生产仅更新三个同源 Bot 包、删除已退役摘要规则及其发送授权；开发仅更新三个包并移除退役环境默认值。现有中文新闻停用状态、旧存储写入围栏、业务资源和计费起点须保持。
+
+真实 Groq 合成契约证据见 [37 次实际调用及全部失败记录](evidence/2026-09-15-continuation/spam-provider-contract.json)。分类响应损坏时仅允许一次严格结构化恢复，总时限 16 秒；其他错误仍保留原重试语义。小样本不代表完整反垃圾质量验收。
+
+新版冻结的四语言 240 场景 Gemini 评估正在运行，旧 56/240 基线与全部费用责任记录原样保留。首个 kk 切片仍有来源跨度和无记忆公开回答路径的验收缺口，不能宣布整体通过；不修改 gold 或用删除样本提高成绩。两环境各精确群控制键当前均缺行，学习默认 STOPPED。真实测试群来源/生命周期、清零后旧任务回放及七天试点仍须完成，试点尚未开始。原备份到期任务独立保留。
+
+以下为 9 月 12 日发布后的历史交接快照，其“仍待审阅”等时态已由本节更新；具体删除结果和保留期限继续有效。
+
+## 2026-09-12 历史发布快照
+
 当前阶段是 **DEPLOYED / ONLINE_CLEAN_COPIES_PENDING / LEARNING_STOPPED / ACCEPTANCE_INCOMPLETE**。首次[集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)的发布基线为 `f305aae911fffd652b225e6aecd9eded495e2d1a`。用户随后明确授权合并部署费用修复；#208、#209已合入，当前main为 `e0780520dad8f19039b4a640bbf10489fd292210`。生产Bot、旧vector入口和Memory worker三个同源代码包已更新并实际读回；News、Quiz、Operations仍为已核验的f305代码，共享Layer17不变。正常业务保持，四群学习STOPPED，抽奖和旧自动社交入口仍退役。
 
 先读 [LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md) 的最新现场记录，再读 [PLAN](PLAN.md)、[TASKS](TASKS.md)、[EVIDENCE](EVIDENCE.md)。旧独立 PR 的代码已通过 #204 集成；不要重复合入早期依赖分支。后续修复 [#205](https://github.com/Bayashat/zerde-serverless-bot/pull/205)（dev 并发、环境容量与旧摘要规则）、[#206](https://github.com/Bayashat/zerde-serverless-bot/pull/206)（固定清单续跑）、[#207](https://github.com/Bayashat/zerde-serverless-bot/pull/207)（真实模型接口、评估与两项质量修复）仍待审阅。[#208](https://github.com/Bayashat/zerde-serverless-bot/pull/208)（标准队列费用读取、恢复错误日志与正常历史追赶）和[#209](https://github.com/Bayashat/zerde-serverless-bot/pull/209)（逐执行配对与重试计费）已合并部署，详见[本次发布证据](evidence/2026-09-12-post-merge/cost-monitor-release.json)。旧摘要仍显式DISABLED。

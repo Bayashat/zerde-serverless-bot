@@ -1,0 +1,481 @@
+{
+  "status": "SYNTHETIC_CASE_LABEL_COVERAGE_VERIFIED",
+  "scope": "real Groq requests, synthetic inputs; no Telegram or DynamoDB side effects",
+  "limits": "12 cases per mode is a small contract sample, not population error-rate proof. All initial failures retained. Transport and budget are separate from Memory V2 Gemini evaluation.",
+  "http_attempts": 37,
+  "errors_retained": [
+    {
+      "run": "groq-canary.json",
+      "case": "salary-talk",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "quote-ad",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "injection",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "en-scam",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "kk-offer",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "service-sale",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary.json",
+      "case": "guest-current",
+      "mode": "strict_recovery",
+      "error_type": "ProviderRateLimitError"
+    },
+    {
+      "run": "groq-canary-strict-paced.json",
+      "case": "kk-offer",
+      "mode": "strict_recovery",
+      "error_type": "TimeoutException"
+    }
+  ],
+  "successful_case_coverage": {
+    "primary": [
+      "en-link",
+      "en-scam",
+      "guest-current",
+      "injection",
+      "kk-offer",
+      "kk-tech",
+      "mixed-job",
+      "quote-ad",
+      "ru-tech",
+      "ru-vpn",
+      "salary-talk",
+      "service-sale"
+    ],
+    "strict_recovery": [
+      "en-link",
+      "en-scam",
+      "guest-current",
+      "injection",
+      "kk-offer",
+      "kk-tech",
+      "mixed-job",
+      "quote-ad",
+      "ru-tech",
+      "ru-vpn",
+      "salary-talk",
+      "service-sale"
+    ]
+  },
+  "runs": [
+    {
+      "receipt_sha256": "745b6a43fff869f8724843ee41411f274b95079a800dd87b7c5e931185273e28",
+      "name": "groq-canary.json",
+      "purpose": "SYNTHETIC_PROVIDER_CONTRACT_NOT_TELEGRAM_ACCEPTANCE",
+      "source_sha256": "39f5a1018aeb6e47bb2d86d1709eeaa8229e60fc93472ecca3cd21b514816a87",
+      "cases_sha256": "5ccdcf9620869e82f9718db377e8be7710c73fc4c587dd08266b0f0b697a0bf1",
+      "max_calls": 24,
+      "started_at": 1789419447.658038,
+      "results": [
+        {
+          "case": "ru-tech",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.557
+        },
+        {
+          "case": "kk-tech",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.357
+        },
+        {
+          "case": "en-link",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.677
+        },
+        {
+          "case": "mixed-job",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.36
+        },
+        {
+          "case": "salary-talk",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.36
+        },
+        {
+          "case": "quote-ad",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.406
+        },
+        {
+          "case": "injection",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.587
+        },
+        {
+          "case": "ru-vpn",
+          "mode": "primary",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.99,
+          "reason": "vpn_ad",
+          "pass_label": true,
+          "elapsed_seconds": 0.637
+        },
+        {
+          "case": "en-scam",
+          "mode": "primary",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.96,
+          "reason": "crypto_investment",
+          "pass_label": true,
+          "elapsed_seconds": 1.096
+        },
+        {
+          "case": "kk-offer",
+          "mode": "primary",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.96,
+          "reason": "dm_redirect_scam",
+          "pass_label": true,
+          "elapsed_seconds": 0.956
+        },
+        {
+          "case": "service-sale",
+          "mode": "primary",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.99,
+          "reason": "selling_services",
+          "pass_label": true,
+          "elapsed_seconds": 0.887
+        },
+        {
+          "case": "guest-current",
+          "mode": "primary",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 1.066
+        },
+        {
+          "case": "ru-tech",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.62
+        },
+        {
+          "case": "kk-tech",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.635
+        },
+        {
+          "case": "en-link",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.719
+        },
+        {
+          "case": "mixed-job",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.558
+        },
+        {
+          "case": "salary-talk",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.236
+        },
+        {
+          "case": "quote-ad",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.201
+        },
+        {
+          "case": "injection",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.205
+        },
+        {
+          "case": "ru-vpn",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.99,
+          "reason": "vpn_ad",
+          "pass_label": true,
+          "elapsed_seconds": 0.388
+        },
+        {
+          "case": "en-scam",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.192
+        },
+        {
+          "case": "kk-offer",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.196
+        },
+        {
+          "case": "service-sale",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.197
+        },
+        {
+          "case": "guest-current",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "error_type": "ProviderRateLimitError",
+          "pass_label": false,
+          "elapsed_seconds": 0.183
+        }
+      ],
+      "finished_at": 1789419508.8275359,
+      "all_labels_pass": false
+    },
+    {
+      "receipt_sha256": "a3d793f0a8d5acb0aebcb1576c1b289c634c2ac871d5669e5504c41fa2af08a6",
+      "name": "groq-canary-strict-paced.json",
+      "purpose": "SYNTHETIC_PROVIDER_CONTRACT_NOT_TELEGRAM_ACCEPTANCE",
+      "source_sha256": "39c02ab860004e13eaac3f2f34132638d8d72ba65f39ffe8540db523911653f6",
+      "cases_sha256": "5ccdcf9620869e82f9718db377e8be7710c73fc4c587dd08266b0f0b697a0bf1",
+      "max_calls": 12,
+      "started_at": 1789419561.582227,
+      "results": [
+        {
+          "case": "ru-tech",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.381
+        },
+        {
+          "case": "kk-tech",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.56
+        },
+        {
+          "case": "en-link",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.558
+        },
+        {
+          "case": "mixed-job",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.738
+        },
+        {
+          "case": "salary-talk",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.55
+        },
+        {
+          "case": "quote-ad",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.467
+        },
+        {
+          "case": "injection",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 0.594
+        },
+        {
+          "case": "ru-vpn",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.99,
+          "reason": "vpn_ad",
+          "pass_label": true,
+          "elapsed_seconds": 0.692
+        },
+        {
+          "case": "en-scam",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.97,
+          "reason": "crypto_investment",
+          "pass_label": true,
+          "elapsed_seconds": 0.605
+        },
+        {
+          "case": "kk-offer",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "error_type": "TimeoutException",
+          "pass_label": false,
+          "elapsed_seconds": 3.005
+        },
+        {
+          "case": "service-sale",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.99,
+          "reason": "selling_services",
+          "pass_label": true,
+          "elapsed_seconds": 0.819
+        },
+        {
+          "case": "guest-current",
+          "mode": "strict_recovery",
+          "expected": "NOT_SPAM",
+          "label": "NOT_SPAM",
+          "confidence": 0.99,
+          "reason": "not_spam",
+          "pass_label": true,
+          "elapsed_seconds": 1.18
+        }
+      ],
+      "finished_at": 1789419932.572592,
+      "all_labels_pass": false
+    },
+    {
+      "receipt_sha256": "b16eca06bbfcc3b2fe752e0f88144ec01caa7c92e237d2f23c551d20a7ffc7af",
+      "name": "groq-canary-kk-offer-retest.json",
+      "purpose": "SYNTHETIC_PROVIDER_CONTRACT_NOT_TELEGRAM_ACCEPTANCE",
+      "source_sha256": "39c02ab860004e13eaac3f2f34132638d8d72ba65f39ffe8540db523911653f6",
+      "cases_sha256": "67058ea18b4f8d1170528c9c78ddc9170151d69b9b7d7538910a05521f068a20",
+      "max_calls": 1,
+      "started_at": 1789419999.2544792,
+      "results": [
+        {
+          "case": "kk-offer",
+          "mode": "strict_recovery",
+          "expected": "SPAM",
+          "label": "SPAM",
+          "confidence": 0.97,
+          "reason": "job_offer",
+          "pass_label": true,
+          "elapsed_seconds": 1.284
+        }
+      ],
+      "finished_at": 1789420001.468895,
+      "all_labels_pass": true
+    }
+  ]
+}
