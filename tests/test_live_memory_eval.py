@@ -434,10 +434,19 @@ def test_session_and_ledger_files_are_private_and_no_credentials_written(tmp_pat
     assert "GEMINI_API_KEY" not in (tmp_path / "session.json").read_text()
 
 
-@pytest.mark.parametrize("options", [{"budget": 0}, {"budget": 10000001}, {"max_calls": 0}, {"max_calls": 10001}])
+@pytest.mark.parametrize("options", [{"budget": 0}, {"budget": 100000001}, {"max_calls": 0}, {"max_calls": 10001}])
 def test_invalid_explicit_budget_or_call_limit_is_rejected(options):
     with pytest.raises(SessionError):
         manifest(**options)
+
+
+def test_expanded_operator_allowance_is_frozen_on_resume(tmp_path):
+    config = manifest(budget=100_000_000)
+    initialise_session(tmp_path, config, resume=False)
+    initialise_session(tmp_path, config, resume=True)
+    with pytest.raises(SessionError):
+        initialise_session(tmp_path, manifest(budget=95_351_324), resume=True)
+    assert json.loads((tmp_path / "session.json").read_text())["budget_micro_usd"] == 100_000_000
 
 
 def test_runtime_environment_has_no_real_cloud_or_telegram_credentials():
