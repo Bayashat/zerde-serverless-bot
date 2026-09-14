@@ -118,3 +118,16 @@ aws dynamodb describe-table --region eu-central-1 --table-name "$ZERDE_RESTORE_T
 下段保留 2026-09-10 Z17 初次交付时的结果：五个 Lambda、两条 mapping 和 17 个告警属于该提交时点，不代表当前最终集成，也不是 live 配置读回。当前源码的六个 Lambda、三条 mapping、每个活跃环境 22 个告警以上文为准；最终集成测试和打包证据单独记录在执行 EVIDENCE 中。
 
 2026-09-10：624 项完整测试通过（1 个既有 google/genai DeprecationWarning），含 22 项通知/真实 SDK + Moto 故障恢复测试及 dev idle/active、prod、权限、17 告警 action、PITR 模板断言。tracked 与新增文件 pre-commit 通过；根锁导出 --check 通过。真实 CDK Docker 打包成功，5 个严格注册 handler 在固定 AWS ARM64 Python 3.13.15 runtime 镜像中、network=none 下全部导入通过，SDK 来自资产目录。只读 dev `cdk diff --no-change-set` 成功，显示 14 个旧 dev alarms 删除、4 个业务 Lambda reserved concurrency 归零、两个 mapping 停用及独立 notifier/SNS/双 DLQ/标签变化；其中还包含 Z04 依赖和未设置本地生产变量引起的配置差异，因此不是获准部署清单。以上均不代表真实通知送达、AWS 标签生效、dev 用量减少或 PITR 已开启。
+# Groq 反垃圾格式错误恢复
+
+反垃圾主模型继续使用 `GROQ_SPAM_MODEL`。HTTP 400 且错误码为
+`json_validate_failed`，或成功响应的分类 JSON 不符合约定时，使用相同提示词和
+原始输入向 `openai/gpt-oss-20b` 请求一次严格 JSON schema 恢复。主调用与恢复
+共享 16 秒总期限；401/403、429、5xx 和网络错误直接交回原有队列重试。
+恢复失败也不生成“正常消息”或处罚决定。SQS 重投是另一轮处理，不能将
+“每轮最多两次请求”理解为整个任务最多请求两次。
+
+两条路径统一检查标签、数值置信度、封闭原因码和重复 JSON 字段。日志仅保留
+固定错误类别，不保存 provider 错误正文或任意模型解释。严格格式仅保证接口
+约定，分类效果仍需真实合成样本和实际运营验证。模型能力依据：
+[Groq Structured Outputs](https://console.groq.com/docs/structured-outputs)。
