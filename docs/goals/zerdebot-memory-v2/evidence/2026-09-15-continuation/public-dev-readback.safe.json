@@ -1,0 +1,288 @@
+{
+  "status": "ALIGNED_PUBLIC_DEV_DEPLOYMENT_METADATA_AND_LOCAL_ARTIFACTS",
+  "merged_main": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+  "shared_layer_fresh_metadata_and_prior_download_sha_match": true,
+  "shared_layer_version": 14,
+  "merge_gate_sha256": "ee65174e9d1fdb8440a31b1302d56a733a272c4debd629e830022e9225beb65a",
+  "source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+  "started_at": 1789425744.7835279,
+  "completed_at": 1789425748.72634,
+  "root_actual_readback_sha256": "ec21df03d9d49d7cd0f9459727836e46695ea657d98a9db4e19cfe5baa2162d3",
+  "aws_mutations": 0,
+  "api_counts": {
+    "sts.GetCallerIdentity": 1,
+    "lambda.GetFunctionConfiguration": 6,
+    "lambda.GetFunctionConcurrency": 6,
+    "lambda.ListEventSourceMappings": 3,
+    "cloudformation.DescribeStacks": 1,
+    "cloudformation.GetTemplate": 1,
+    "cloudformation.ListStackResources": 1,
+    "dynamodb.GetItem": 1,
+    "events.DescribeRule": 3,
+    "lambda.GetLayerVersionByArn": 1
+  },
+  "functions": {
+    "bot": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "6a8fb131b88d8cafefc0632cee78b5bfe6d78c6ac786bdcbdef36fd5b6861bf1",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 3211,
+        "variables_default_json_utf8": 3350,
+        "environment_document_json_utf8": 3365,
+        "environment_document_json_ascii": 3365
+      }
+    },
+    "vector-indexer": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "f9aac62b4b117d857a9c0c2e9f195c17e2fc7e2b0905dca9d5cb3cd3bd32a09b",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 2577,
+        "variables_default_json_utf8": 2698,
+        "environment_document_json_utf8": 2713,
+        "environment_document_json_ascii": 2713
+      }
+    },
+    "memory-v2-worker": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 120,
+      "reserved_concurrency": 2,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "2a28170c87c45dd18e8625919b29a5910ca9669c65a1f05a34e5820a5dea0a00",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 1038,
+        "variables_default_json_utf8": 1077,
+        "environment_document_json_utf8": 1092,
+        "environment_document_json_ascii": 1092
+      }
+    },
+    "news": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "ro7E5G2HtOLefjO6XDBad/vdaKOpsd/Cf7vGaDMZnq4=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "bf6688a47d4b8a31f0c0820d32696541063bd47458e6d78cefb5531f9d8e7549",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 230,
+        "variables_default_json_utf8": 241,
+        "environment_document_json_utf8": 256,
+        "environment_document_json_ascii": 256
+      }
+    },
+    "quiz": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "kXim1TmsN65DsuHCE2hoQDpS87AcZ3OmHocGPaSyGkA=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "27d7f0088d75f4d47a718bf2787d8018b8fff13b614c9b9cefd9472333f56903",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 374,
+        "variables_default_json_utf8": 393,
+        "environment_document_json_utf8": 408,
+        "environment_document_json_ascii": 408
+      }
+    },
+    "operations": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "qbVHGYxhAuWy2+okBEGW8KiKQIVnR1IAgOmQ1SRowlY=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 60,
+      "reserved_concurrency": 2,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "8444e15ab9ea081849dc1987ce5cef7869e95bc280c479df0f55f574f71bf03d",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 1339,
+        "variables_default_json_utf8": 1352,
+        "environment_document_json_utf8": 1367,
+        "environment_document_json_ascii": 1367
+      }
+    }
+  },
+  "mappings": [
+    {
+      "function_kind": "bot",
+      "state": "Enabled",
+      "maximum_concurrency": 10,
+      "identity_matches_before": true
+    },
+    {
+      "function_kind": "vector-indexer",
+      "state": "Enabled",
+      "maximum_concurrency": 3,
+      "identity_matches_before": true
+    },
+    {
+      "function_kind": "memory-v2-worker",
+      "state": "Enabled",
+      "maximum_concurrency": 2,
+      "identity_matches_before": true
+    }
+  ],
+  "stack_status": "UPDATE_COMPLETE",
+  "complete_stack_template_matches": true,
+  "protected_storage_identity_count": 21,
+  "protected_storage_identities": [
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessBotLogGroup171D3CD8",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryTable7DFD80C3",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryVectorBucket778B21DD",
+      "resource_type": "AWS::S3Vectors::VectorBucket",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryVectorIndexEC8AC99E",
+      "resource_type": "AWS::S3Vectors::Index",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessStatsTable13809BF9",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryV2ZerdeServerlessMemoryV2Table01BB900E",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerDlq5FCF0513",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerLogGroupDFD89583",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerQueue0A73F1D5",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksDlqB73D72D0",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksQueueF4025D17",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksDlqD05953EF",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksQueue466ACAD4",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessNewsZerdeServerlessNewsLogGroupE6FFDF8B",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsExecutionDlq4A81A3AF",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsLogGroup3ACAB1A7",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsSubscriptionDlqB359BE62",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsTopicDDBF9B0B",
+      "resource_type": "AWS::SNS::Topic",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessQuizZerdeServerlessQuizLogGroupCB088F37",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessQuizZerdeServerlessQuizTable75DD2E31",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessVectorIndexerZerdeServerlessVectorIndexerLogGroupE373F5F3",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    }
+  ],
+  "control_full_key_strong_reads_absent": 1,
+  "learning_state": "DEFAULT_STOPPED",
+  "existing_dev_rule_states_preserved": 3,
+  "local_actual_artifacts": [
+    {
+      "source_kind": "bot",
+      "zip_sha256": "b82ca642fb91cac9d2d931add53be12ade3fbc80f5579e7f83f7f5ad73b18faa",
+      "function_count_bound": 3,
+      "first_party_compared": 107,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "news",
+      "zip_sha256": "ae8ec4e46d87b4e2de7e33ba5c305a77fbdd68a3a9b1dfc27fbbc66833199eae",
+      "function_count_bound": 1,
+      "first_party_compared": 13,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "quiz",
+      "zip_sha256": "9178a6d539ac37ae43b2e1c2136868403a52f3b01c6773a61e87063da4b21a40",
+      "function_count_bound": 1,
+      "first_party_compared": 13,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "operations",
+      "zip_sha256": "a9b547198c6102e5b2dbea24044196f0a88a40856747520080e990d52468c256",
+      "function_count_bound": 1,
+      "first_party_compared": 3,
+      "locked_dependencies_match": true
+    }
+  ],
+  "business_settings_boundary": "Storage identity and complete environment/configuration preserved. No pre-deploy dev SETTINGS content hash exists in this baseline; do not claim byte-for-byte dev business-row preservation. No business or memory source rows were scanned/read.",
+  "serialized_capacity_note": "Measured actual environment as JSON UTF-8, including both compact/default map serialization and Variables document wrapper. Does not substitute key+value sum.",
+  "prod_status": "NOT_VERIFIED_BY_THIS_DEV_REVIEW"
+}

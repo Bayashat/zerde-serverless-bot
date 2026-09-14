@@ -1,0 +1,13 @@
+{
+  "id": "zerde",
+  "status": "ACTIVE",
+  "name": "Zerde \u9a8c\u6536\u63a8\u8fdb\u4e0e\u5907\u4efd\u5230\u671f\u6e05\u7406",
+  "local_times": [
+    "12:49:52",
+    "21:49:52"
+  ],
+  "timezone": "Asia/Almaty",
+  "original_backup_expiry_preserved": true,
+  "scope": "Combined existing heartbeat because app allows one per thread; no separate cron created",
+  "prompt_sha256": "d4cb386d624b8d1a6009d4897b7044e619fcfd6fa93442531c2ed8de21f1e532"
+}

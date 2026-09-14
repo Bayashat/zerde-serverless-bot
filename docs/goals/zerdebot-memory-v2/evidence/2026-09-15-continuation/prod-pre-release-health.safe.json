@@ -1,0 +1,213 @@
+{
+  "account_verified": true,
+  "alarm": {
+    "ActionsEnabled": true,
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "DatapointsToAlarm": 1,
+    "EvaluationPeriods": 1,
+    "MetricName": "Errors",
+    "Namespace": "AWS/Lambda",
+    "Period": 300,
+    "StateTransitionedTimestamp": "2026-09-14T01:40:17.706000+05:00",
+    "StateUpdatedTimestamp": "2026-09-14T01:40:17.706000+05:00",
+    "StateValue": "OK",
+    "Statistic": "Sum",
+    "Threshold": 1.0,
+    "TreatMissingData": "notBreaching",
+    "alarm_action_count": 1,
+    "ok_action_count": 1
+  },
+  "alarm_name": "zerde-serverless-bot-prod-errors",
+  "api_call_counts_including_initial_scope_refusal_and_dimension_read": {
+    "describe_alarm_history": 1,
+    "describe_alarms": 3,
+    "get_caller_identity": 1,
+    "get_metric_statistics": 1
+  },
+  "bot_errors": {
+    "datapoints": [
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:33:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:38:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:43:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:48:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:53:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T00:58:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:03:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:08:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:13:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:18:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:23:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:28:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:33:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:38:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:43:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:48:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:53:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T01:58:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:03:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:08:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:13:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:18:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:23:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:28:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:33:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:38:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:43:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:48:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:51:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:53:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T02:58:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:03:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:06:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:08:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:13:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:18:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:23:00+05:00"
+      },
+      {
+        "errors": 0.0,
+        "timestamp_utc": "2026-09-15T03:28:00+05:00"
+      }
+    ],
+    "missing_minutes": 142,
+    "nonzero_datapoints": [],
+    "period_seconds": 60,
+    "reported_datapoints": 38,
+    "statistic": "Sum",
+    "sum": 0.0
+  },
+  "cloud_mutations": 0,
+  "completed_at_utc": "2026-09-14T22:30:52.944340+00:00",
+  "function_name": "zerde-serverless-bot-prod",
+  "initial_scope_refusal_reason": "Local prefix expectation was too restrictive; exact alarm dimension was independently read as zerde-serverless-bot-prod.",
+  "initial_scope_refusal_sha256": "3b532897199042a8238ace9a2188e03f82aa364a3b272af352b0f8afb7787d57",
+  "limitations": [
+    "CloudWatch metric publication can lag; missing datapoints are not synthesized as zero.",
+    "Current alarm state and recent error metrics do not prove end-to-end Telegram delivery or model quality.",
+    "Only the exact alarm and its observed Lambda Errors dimension were read; no full-account inventory or log-body query."
+  ],
+  "log_body_reads": 0,
+  "notifications_sent": 0,
+  "observed_at_utc": "2026-09-14T22:30:52.051151+00:00",
+  "region": "eu-central-1",
+  "schema": "prod-error-health-readonly-v1",
+  "state_history": {
+    "complete": true,
+    "count": 0,
+    "end_utc": "2026-09-14T22:30:52.051151+00:00",
+    "items": []
+  },
+  "status": "READ_ONLY_COMPLETE",
+  "window_end_utc": "2026-09-14T22:30:00+00:00",
+  "window_start_utc": "2026-09-14T19:30:00+00:00"
+}

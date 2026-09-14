@@ -1,0 +1,134 @@
+{
+  "schema": "memory-public-v25-release-evidence-v1",
+  "recorded_at_utc": "2026-09-14T22:46:20.745435+00:00",
+  "pull_request": 211,
+  "merged_main": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+  "build_and_evaluation_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+  "reviewed_pr_head": "667e6c96a979c4a3faaceabb8d39cc63a0eeb331",
+  "merge": {
+    "status": "MERGED_EXACT_HEAD_CI_PASS",
+    "strategy": "squash",
+    "parents_verified": [
+      "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    ],
+    "complete_tree_equals_reviewed_head": true,
+    "first_attempt_status": "REJECTED_BEFORE_MERGE",
+    "first_attempt_reason": "Repository permits squash only; initial merge-commit request did not merge.",
+    "repository_merge_settings_not_changed": true,
+    "deployment_workflow_restored": true,
+    "finished_at": 1789425528.105637,
+    "receipt_sha256": "ee65174e9d1fdb8440a31b1302d56a733a272c4debd629e830022e9225beb65a",
+    "first_attempt_receipt_sha256": "78324a74ce23d8fba0dcbe954ab7bd7f57bbc68898db3b60f7113e35fbb197ab"
+  },
+  "ci": {
+    "run_id": "34904175265",
+    "jobs": [
+      {
+        "name": "Code Quality Checks",
+        "conclusion": "success",
+        "completedAt": "2026-09-14T22:34:50Z"
+      },
+      {
+        "name": "Infrastructure Changes Preview",
+        "conclusion": "success",
+        "completedAt": "2026-09-14T22:37:03Z"
+      }
+    ],
+    "full_tests_passed": 2179,
+    "full_tests_seconds": 397.97,
+    "test_count_not_added_to_focused_counts": true
+  },
+  "source_equivalence": {
+    "non_runtime_differences_from_build": [
+      "docs/MEMORY_PUBLIC_EVALUATION.md",
+      "docs/goals/zerdebot-memory-v2/HANDOFF.md",
+      "docs/goals/zerdebot-memory-v2/evidence/2026-09-15-continuation/ten-ledger-reconciliation.json",
+      "tests/test_news_delivery.py"
+    ],
+    "production_source_and_infrastructure_unchanged_between_build_and_merge": true
+  },
+  "deployment": {
+    "dev": {
+      "status": "DEPLOYED_READBACK_PASS",
+      "root_readback_sha256": "ec21df03d9d49d7cd0f9459727836e46695ea657d98a9db4e19cfe5baa2162d3",
+      "independent_evidence": "public-dev-readback.safe.json",
+      "independent_evidence_sha256": "3da083c45cec372fbb3c941fabdd9e2467b543b336149a629f322f1f036313e1",
+      "control_full_key_strong_reads_absent": 1,
+      "learning": "DEFAULT_STOPPED"
+    },
+    "prod": {
+      "status": "DEPLOYED_READBACK_PASS",
+      "root_readback_sha256": "b5b32c690f926188b48cba353d29385972e5d80de6dfd5a6dccf9ef253a9e7f7",
+      "independent_evidence": "public-prod-readback.safe.json",
+      "independent_evidence_sha256": "55626614e7d1c558311f168ed8f340c6d2642541b8164c7bb6544f7f907ba6b6",
+      "control_full_key_strong_reads_absent": 4,
+      "learning": "DEFAULT_STOPPED"
+    },
+    "overall_release_readback_complete": true,
+    "main_source_equivalent_to_verified_artifacts": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+  },
+  "next_real_evaluation": {
+    "status": "NOT_STARTED",
+    "route": "public-v1",
+    "extraction_prompt_version": "self-claims-v2.5",
+    "planned_scenarios": 240,
+    "execution_source_sha256": "6910b4aba3e2e8158231c1a4360ae0a22398a478511ea3bf86437c35654bf1e3",
+    "manifest_sha256": "d4d6989ec3a181ba0e66f938995b8d916a3d3f275a45602336de22b6ca71d6cd",
+    "frozen_gold_unchanged": true,
+    "rpm": 10,
+    "retired_ledger_count": 10,
+    "retired_attempts": 816,
+    "prior_liability_micro_usd": 18977963,
+    "prior_verified_standard_price_micro_usd": 169131,
+    "prior_unknown_hold_micro_usd": 18808832,
+    "new_session_cap_micro_usd": 81022037,
+    "combined_liability_cap_micro_usd": 100000000,
+    "prior_quality_committed_scenarios": 155,
+    "prior_quality_uncommitted_scenarios": 85,
+    "rate_limit_pause": "Observed dev model free-tier daily quota 500 was exhausted; resume only after reset, and pause immediately on a new HTTP429.",
+    "billing_not_invoice_or_paid_amount": true
+  },
+  "private_resume_guard": {
+    "launcher_sha256": "01a164771c408d858459807c97d0c932a7abcfcfc25614ed2887de15b93baa54",
+    "test_sha256": "f7075cdaae5253fe56c80ae453681f79958bfa6c5b572a87563783c603d87ded",
+    "evidence_sha256": "336913e2e7dc4a9d5bc102ee6c08b17d53b9266709ef3e69808b8bccb289f11a",
+    "author_offline_tests": 28,
+    "independent_offline_tests": 28,
+    "independent_review": "ALIGNED",
+    "counts_are_the_same_suite_not_additive": true,
+    "sdk_calls_for_check": 0,
+    "model_calls_for_check": 0,
+    "old_ledger_hashes_unchanged": true,
+    "frozen_source_unchanged": true,
+    "missing_empty_symlink_wrong_config_or_schema_refused_before_credentials": true,
+    "valid_inflight_reservation_preserved": true,
+    "does_not_defend_against_malicious_concurrent_replacement_after_final_gate": true
+  },
+  "continuation": {
+    "evidence": "continuation-automation.safe.json",
+    "evidence_sha256": "07aa3f331198796fa3212578548dce2f6abce558b32d66298a8a3bbb8bb58637",
+    "single_existing_task": "zerde",
+    "backup_scope_unchanged": true,
+    "backup_expiry_utc": "2026-09-18T16:49:52Z",
+    "backup_expiry_almaty": "2026-09-18T21:49:52+05:00",
+    "complete_one_responsibility_does_not_cancel_the_other": true
+  },
+  "pre_release_prod_health": {
+    "evidence": "prod-pre-release-health.safe.json",
+    "evidence_sha256": "40021e9923d3df3ab1529646f2ca72cc0468eb769bc93e9474a0ca346969fe2a",
+    "window_start_utc": "2026-09-14T19:30:00Z",
+    "window_end_utc": "2026-09-14T22:30:00Z",
+    "alarm_state": "OK",
+    "reported_error_datapoints": 38,
+    "sum_errors": 0,
+    "missing_minutes": 142,
+    "missing_is_not_synthesized_zero": true,
+    "not_evidence_of_this_release_health_or_model_quality": true
+  },
+  "unchanged_boundaries": [
+    "Online legacy cleanup and its 18-task post-cleanup replay are already complete; do not rerun cleanup/import or purge queues.",
+    "Encrypted backup/key expiry and PITR review remain separate obligations; retained copies are not declared deleted.",
+    "No new learning epoch or pilot was started. Full real-model quality and Telegram memory lifecycle acceptance remain incomplete.",
+    "No source, gold, private launcher or original ledger is modified by this documentation change."
+  ]
+}
