@@ -14,8 +14,11 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15",
+    "followup_prs_merged": [
+      205
+    ]
   },
   {
     "id": "Z02",
@@ -30,7 +33,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z03",
@@ -45,7 +48,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z04",
@@ -60,8 +63,8 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
       205
     ]
   },
@@ -81,7 +84,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z06",
@@ -101,7 +104,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z07",
@@ -120,10 +123,19 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
-      207
-    ]
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
+      207,
+      211
+    ],
+    "latest_followup_release": {
+      "pr": 211,
+      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+      "dev": "deployed_readback_pass",
+      "prod": "deployed_readback_pass",
+      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+    }
   },
   {
     "id": "Z08",
@@ -142,10 +154,19 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
-      207
-    ]
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
+      207,
+      211
+    ],
+    "latest_followup_release": {
+      "pr": 211,
+      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+      "dev": "deployed_readback_pass",
+      "prod": "deployed_readback_pass",
+      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+    }
   },
   {
     "id": "Z09",
@@ -164,7 +185,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z10",
@@ -185,14 +206,14 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
-      206
-    ],
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
     "overall_acceptance_complete": false,
-    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15",
+    "followup_prs_merged": [
+      206
+    ]
   },
   {
     "id": "Z11",
@@ -216,10 +237,28 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
-      207
-    ]
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
+      207,
+      210,
+      211
+    ],
+    "latest_followup_release": {
+      "pr": 211,
+      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+      "dev": "deployed_readback_pass",
+      "prod": "deployed_readback_pass",
+      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+    },
+    "next_real_evaluation": {
+      "route": "public-v1",
+      "prompt_version": "self-claims-v2.5",
+      "status": "not_started",
+      "planned_scenarios": 240,
+      "quality_accepted": false,
+      "pilot_started": false
+    }
   },
   {
     "id": "Z12",
@@ -234,7 +273,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z13",
@@ -249,7 +288,10 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
+      210
+    ]
   },
   {
     "id": "Z14",
@@ -264,7 +306,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z15",
@@ -280,7 +322,10 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
+      211
+    ]
   },
   {
     "id": "Z16",
@@ -296,7 +341,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z17",
@@ -314,10 +359,11 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
-    "followup_prs_pending_review": [
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+    "followup_prs_merged": [
       205,
-      208
+      208,
+      209
     ]
   },
   {
@@ -333,7 +379,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
   },
   {
     "id": "Z19",
@@ -347,7 +393,7 @@
     "integration_prs": [],
     "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
     "merged_via_pr": 204,
-    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
+    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
     "overall_acceptance_complete": false,

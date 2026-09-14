@@ -1,0 +1,295 @@
+{
+  "status": "ALIGNED_PUBLIC_PROD_DEPLOYMENT_METADATA_AND_LOCAL_ARTIFACTS",
+  "merged_main": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+  "shared_layer_fresh_metadata_and_prior_download_sha_match": true,
+  "shared_layer_version": 17,
+  "merge_gate_sha256": "ee65174e9d1fdb8440a31b1302d56a733a272c4debd629e830022e9225beb65a",
+  "source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+  "started_at": 1789425883.5293598,
+  "completed_at": 1789425891.0995991,
+  "root_actual_readback_sha256": "b5b32c690f926188b48cba353d29385972e5d80de6dfd5a6dccf9ef253a9e7f7",
+  "aws_mutations": 0,
+  "api_counts": {
+    "sts.GetCallerIdentity": 1,
+    "lambda.GetFunctionConfiguration": 6,
+    "lambda.GetFunctionConcurrency": 6,
+    "lambda.ListEventSourceMappings": 3,
+    "cloudformation.DescribeStacks": 1,
+    "cloudformation.GetTemplate": 1,
+    "events.DescribeRule": 14,
+    "cloudformation.ListStackResources": 2,
+    "dynamodb.GetItem": 4,
+    "dynamodb.GetResourcePolicy": 1,
+    "s3vectors.GetVectorBucketPolicy": 1,
+    "lambda.GetLayerVersionByArn": 1
+  },
+  "functions": {
+    "bot": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "ec9602d23229b340b87d5e920a0aa994c648247c8a11e66cc5750eafbd0c5b44",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 3297,
+        "variables_default_json_utf8": 3436,
+        "environment_document_json_utf8": 3451,
+        "environment_document_json_ascii": 3451
+      }
+    },
+    "vector-indexer": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "5885c6664e5a6a92e8ff140e31720e9a47fe4ad14bf207ec6d34bf93524f9612",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 2657,
+        "variables_default_json_utf8": 2778,
+        "environment_document_json_utf8": 2793,
+        "environment_document_json_ascii": 2793
+      }
+    },
+    "memory-v2-worker": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "uCymQvuRysnS2TGt1TvhKt4/vID1V55/g/f1rXOxj6o=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 120,
+      "reserved_concurrency": 2,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "059ebaefe3fde5723bdda4e7dedeed0d257a3198487c864ac2909737f3039342",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 1128,
+        "variables_default_json_utf8": 1167,
+        "environment_document_json_utf8": 1182,
+        "environment_document_json_ascii": 1182
+      }
+    },
+    "news": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "ro7E5G2HtOLefjO6XDBad/vdaKOpsd/Cf7vGaDMZnq4=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "a827e7d9cf926776a7b44a427d5032afb2d6413d5cd39e0b7e48b6ad4f981a58",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 231,
+        "variables_default_json_utf8": 242,
+        "environment_document_json_utf8": 257,
+        "environment_document_json_ascii": 257
+      }
+    },
+    "quiz": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "kXim1TmsN65DsuHCE2hoQDpS87AcZ3OmHocGPaSyGkA=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 300,
+      "reserved_concurrency": null,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "1f43af9ce1353155f08203d03b874abc21bc494e221c134936432553adccf1b3",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 375,
+        "variables_default_json_utf8": 394,
+        "environment_document_json_utf8": 409,
+        "environment_document_json_ascii": 409
+      }
+    },
+    "operations": {
+      "state": "Active",
+      "last_update_status": "Successful",
+      "code_sha256": "qbVHGYxhAuWy2+okBEGW8KiKQIVnR1IAgOmQ1SRowlY=",
+      "root_actual_artifact_and_revision_match": true,
+      "timeout": 60,
+      "reserved_concurrency": 2,
+      "role_layers_memory_architecture_unchanged": true,
+      "environment_sha256": "1e4037398a0355bebeddd3d6ace417e8b303fbdd37bf506dbdbcac5f4d115e4b",
+      "serialized_environment_bytes": {
+        "variables_compact_json_utf8": 1365,
+        "variables_default_json_utf8": 1378,
+        "environment_document_json_utf8": 1393,
+        "environment_document_json_ascii": 1393
+      }
+    }
+  },
+  "mappings": [
+    {
+      "function_kind": "bot",
+      "state": "Enabled",
+      "maximum_concurrency": 10,
+      "identity_matches_before": true
+    },
+    {
+      "function_kind": "vector-indexer",
+      "state": "Enabled",
+      "maximum_concurrency": 3,
+      "identity_matches_before": true
+    },
+    {
+      "function_kind": "memory-v2-worker",
+      "state": "Enabled",
+      "maximum_concurrency": 2,
+      "identity_matches_before": true
+    }
+  ],
+  "stack_status": "UPDATE_COMPLETE",
+  "complete_stack_template_matches": true,
+  "protected_storage_identity_count": 21,
+  "protected_storage_identities": [
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessBotLogGroup171D3CD8",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryTable7DFD80C3",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryVectorBucket778B21DD",
+      "resource_type": "AWS::S3Vectors::VectorBucket",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessMemoryVectorIndexEC8AC99E",
+      "resource_type": "AWS::S3Vectors::Index",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessBotZerdeServerlessStatsTable13809BF9",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryV2ZerdeServerlessMemoryV2Table01BB900E",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerDlq5FCF0513",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerLogGroupDFD89583",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMemoryWorkerQueue0A73F1D5",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksDlqB73D72D0",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessTimeoutTasksQueueF4025D17",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksDlqD05953EF",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessMessagingZerdeServerlessVectorMemoryTasksQueue466ACAD4",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessNewsZerdeServerlessNewsLogGroupE6FFDF8B",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsExecutionDlq4A81A3AF",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsLogGroup3ACAB1A7",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsSubscriptionDlqB359BE62",
+      "resource_type": "AWS::SQS::Queue",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessOperationsTopicDDBF9B0B",
+      "resource_type": "AWS::SNS::Topic",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessQuizZerdeServerlessQuizLogGroupCB088F37",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessQuizZerdeServerlessQuizTable75DD2E31",
+      "resource_type": "AWS::DynamoDB::Table",
+      "physical_identity_unchanged": true
+    },
+    {
+      "logical_id": "ZerdeServerlessVectorIndexerZerdeServerlessVectorIndexerLogGroupE373F5F3",
+      "resource_type": "AWS::Logs::LogGroup",
+      "physical_identity_unchanged": true
+    }
+  ],
+  "control_full_key_strong_reads_absent": 4,
+  "learning_state": "DEFAULT_STOPPED",
+  "existing_rule_states_preserved": 11,
+  "retired_summary_rule_absent": true,
+  "chinese_news_rule_live_state": "DISABLED",
+  "chinese_news_template_live_drift": "Existing ENABLED template / DISABLED live drift explicitly preserved; rule and all refs absent reviewed change set.",
+  "legacy_write_fences_unchanged": true,
+  "exact_quiz_description_normalization_count": 2,
+  "local_actual_artifacts": [
+    {
+      "source_kind": "bot",
+      "zip_sha256": "b82ca642fb91cac9d2d931add53be12ade3fbc80f5579e7f83f7f5ad73b18faa",
+      "function_count_bound": 3,
+      "first_party_compared": 107,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "news",
+      "zip_sha256": "ae8ec4e46d87b4e2de7e33ba5c305a77fbdd68a3a9b1dfc27fbbc66833199eae",
+      "function_count_bound": 1,
+      "first_party_compared": 13,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "quiz",
+      "zip_sha256": "9178a6d539ac37ae43b2e1c2136868403a52f3b01c6773a61e87063da4b21a40",
+      "function_count_bound": 1,
+      "first_party_compared": 13,
+      "locked_dependencies_match": true
+    },
+    {
+      "source_kind": "operations",
+      "zip_sha256": "a9b547198c6102e5b2dbea24044196f0a88a40856747520080e990d52468c256",
+      "function_count_bound": 1,
+      "first_party_compared": 3,
+      "locked_dependencies_match": true
+    }
+  ],
+  "business_settings_boundary": "Storage identities/configuration and exact legacy write fences preserved. No old history, SETTINGS, or vectors scanned/read again in this public-release metadata verification; preceding exact cleanup acceptance remains separate time-bounded evidence.",
+  "serialized_capacity_note": "Measured actual environment as JSON UTF-8, including both compact/default map serialization and Variables document wrapper. Does not substitute key+value sum.",
+  "physical_erasure_complete": false
+}
