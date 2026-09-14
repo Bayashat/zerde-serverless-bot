@@ -6,6 +6,8 @@
 
 清零后的18条旧任务已在生产两入口同步回放，全部丢弃；独立前后核验旧记忆0、向量0、3条原业务SETTINGS完整哈希不变。旧表和空索引资源仍保留；9月18日备份到期、PITR复查和Z18未授权资源删除边界不变。见 [发布证据](evidence/2026-09-15-continuation/deployment-5669a71.json) 与 [独立回放证据](evidence/2026-09-15-continuation/independent-release-and-replay.safe.json)。
 
+新版修复在 [PR #211](https://github.com/Bayashat/zerde-serverless-bot/pull/211)，当前完整本地2179通过；公共恢复与安全分别独立复核74/69通过，仍待该PR上线及真实模型复验。十账本最新对账见 [增量回执](evidence/2026-09-15-continuation/ten-ledger-reconciliation.json)，后续新会话可用责任额度USD81.022037。
+
 第二阶段未完成：冻结真实基线155个场景提交（152 EXECUTED、3 UNSUPPORTED），其余85保留未提交分母；供应商实际dev密钥已确认每天500请求的免费层用尽。原run/账本/gold不改。新版公共问答回放、限流暂停/恢复及已发现的记忆质量修复见 [当前契约](../../MEMORY_PUBLIC_EVALUATION.md)，需要新固定源码会话完整复验。不要把旧report/provenance的首场景smoke当作全量报告；使用[冻结独立摘要](evidence/2026-09-15-continuation/real-model-paused-summary.json)。
 
 第三阶段仍未开始：学习STOPPED；待完整模型门槛、真实Telegram来源/编辑/更正/遗忘/退出闭环通过后，再开启单群至少七天及真实样本验收。显式问答继续可用，旧记忆、抽奖和自动社交不恢复。

@@ -1,0 +1,152 @@
+{
+  "aggregate_billing": {
+    "attempts": 816,
+    "carried_liability_micro_usd": 18977963,
+    "inflight": 0,
+    "operator_cap_micro_usd": 100000000,
+    "remaining_micro_usd": 81022037,
+    "unknown_hold_micro_usd": 18808832,
+    "unknown_usage_attempts": 41,
+    "verified_token_micro_usd": 169131,
+    "verified_usage_attempts": 775
+  },
+  "baseline_denominators_unchanged": {
+    "committed_scenarios": 155,
+    "diagnostic_added_to_quality_denominators": false,
+    "executed_scenarios": 152,
+    "planned_scenarios": 240,
+    "uncommitted_scenarios": 85,
+    "unsupported_scenarios": 3
+  },
+  "boundaries": [
+    "Read-only verification of the tenth SQLite ledger and its safe receipt; no provider or cloud calls.",
+    "Prior nine-ledger frozen summary byte hash preserved; prior baseline was not rescanned.",
+    "HTTP429 explicitly identifies per-project per-model Free Tier requests-per-day 500 for the dev credential used by this diagnostic; no inference about other credentials or quota dimensions.",
+    "No usage was verified; the full 458752 microUSD unknown hold remains. No old hold is released.",
+    "Aggregate liability is verified standard-price usage plus conservative unknown holds, not an invoice or paid amount.",
+    "This quota diagnostic is not a model-quality sample and does not change any frozen gold, scoring, source attribution or sample denominator."
+  ],
+  "created_at_utc": "2026-09-14T22:13:18.745594+00:00",
+  "ledgers": [
+    {
+      "attempts": 4,
+      "carried_liability_micro_usd": 917740,
+      "name": "gemini",
+      "sha256": "37f2140aa5aa219c66db35d86d449f08c53eed2d543cf5bebc40ce102d14c183",
+      "unknown_hold_micro_usd": 917504,
+      "verified_token_micro_usd": 236
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "schema-diagnostic",
+      "sha256": "2b4b11e853bd97a693f22592752bf2b59afb4db4f37d49bfff1d11a00a7a72bf",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "gemini-fixed",
+      "sha256": "bbf465da02e5a2187c0df57f5856fae90d90dcf0a343c2a0e99546dab5cda72f",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "schema-v23",
+      "sha256": "f33e5cbfac1be67e5257885631a959929f253c790882f3e75cebf6a646449341",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 478,
+      "name": "schema-array-bounds",
+      "sha256": "3d78cf45a3843d9ebb4a4ac4c6d974f0a686d69627605d101ae4c03bc9f37017",
+      "unknown_hold_micro_usd": 0,
+      "verified_token_micro_usd": 478
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 360,
+      "name": "schema-facet-restore",
+      "sha256": "0a89e3e78b9d3f2f624406f5a1a800c997fade477e4f03062e6afc4f17559328",
+      "unknown_hold_micro_usd": 0,
+      "verified_token_micro_usd": 360
+    },
+    {
+      "attempts": 100,
+      "carried_liability_micro_usd": 478265,
+      "name": "gemini-final-v24",
+      "sha256": "d2a72e0676d3b138cb162a5f45abed0789e0291720be14f35301909ec21a7512",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 19513
+    },
+    {
+      "attempts": 185,
+      "carried_liability_micro_usd": 1875577,
+      "name": "gemini-final-signed-v24",
+      "sha256": "6ae30440a7b0318a38f44d5ab6edf5a249b8929158f9259b0a75bd89a5e9ebce",
+      "unknown_hold_micro_usd": 1835008,
+      "verified_token_micro_usd": 40569
+    },
+    {
+      "attempts": 521,
+      "carried_liability_micro_usd": 13870535,
+      "name": "gemini-full-20260915",
+      "sha256": "3b73bcd44a180e8796920542c772c6c2361376eee7ae9cb6ee6f5fda68ea52de",
+      "unknown_hold_micro_usd": 13762560,
+      "verified_token_micro_usd": 107975
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "dev-quota-diagnostic-20260915",
+      "sha256": "254b8f9a66fa8c3b9a7c5275c590194a606e931b3f9e354149380cf17b8ac0af",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    }
+  ],
+  "new_diagnostic": {
+    "attempts": 1,
+    "carried_liability_micro_usd": 458752,
+    "execution_source_sha256": "ba668209c10c28ebbb13d988b16581a087726d338d92b14c2f4c7aba2f728f48",
+    "finished_at": 1789423585.4749382,
+    "http_status": 429,
+    "inflight": 0,
+    "logical_id": "24eab904148a6304dd6770ad92ac4914cf88e26f5d3680bb310f9abb0ed012c3",
+    "name": "dev-quota-diagnostic-20260915",
+    "quality_claim": "NOT_AN_EVALUATION",
+    "quota_observations": [
+      {
+        "dimensions": {
+          "location": "global",
+          "model": "gemini-3.1-flash-lite"
+        },
+        "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+        "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+        "quotaValue": "500"
+      }
+    ],
+    "receipt_sha256": "20c929f37337119f763f1de9b9f6a2733114024712b5d66f3a148ffabada39ba",
+    "request_sha256": "9623da0b695607d6410cd96c8905c1d2d9996fcc186f1c9b91af40a5c8831d46",
+    "requests": 1,
+    "response_sha256": "23ed9ca6c70f52f163efbaee90a0f637e9cf9748b86a7124e33517b7b0dbef72",
+    "session_sha256": "7d975be8ea40a611066279a45dd4d6e7d7a99b9c27dc05f4bac9bc02945091b5",
+    "sha256": "254b8f9a66fa8c3b9a7c5275c590194a606e931b3f9e354149380cf17b8ac0af",
+    "started_at": 1789423584.067447,
+    "state": "UNKNOWN",
+    "unknown_hold_micro_usd": 458752,
+    "verified_token_micro_usd": 0
+  },
+  "prior_snapshot": {
+    "carried_liability_micro_usd": 18519211,
+    "immutable": true,
+    "ledger_count": 9,
+    "name": "summary.json",
+    "sha256": "73e02b587b12079f306d69baa42a81d25b2fd40bbb8785d690f386feff9219b9"
+  },
+  "schema": "independent-ledger-increment-v1"
+}
