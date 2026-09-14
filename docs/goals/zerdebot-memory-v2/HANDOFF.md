@@ -1,5 +1,18 @@
 # 下一次执行入口
 
+## 2026-09-15 最新进度（优先于下方历史记录）
+
+第一阶段已完成：#205、#206、#207、#210 已合并，main `5669a71` 已部署 dev/prod。两环境六个实际 Lambda ZIP、共享层、依赖锁和配置读回通过；测试群真实 `/ping` 和 `/ask` 成功。生产旧摘要定时器已从基础设施移除，中文新闻的原停用状态保持。
+
+清零后的18条旧任务已在生产两入口同步回放，全部丢弃；独立前后核验旧记忆0、向量0、3条原业务SETTINGS完整哈希不变。旧表和空索引资源仍保留；9月18日备份到期、PITR复查和Z18未授权资源删除边界不变。见 [发布证据](evidence/2026-09-15-continuation/deployment-5669a71.json) 与 [独立回放证据](evidence/2026-09-15-continuation/independent-release-and-replay.safe.json)。
+
+新版修复在 [PR #211](https://github.com/Bayashat/zerde-serverless-bot/pull/211)，当前完整本地2179通过；公共恢复与安全分别独立复核74/69通过，仍待该PR上线及真实模型复验。十账本最新对账见 [增量回执](evidence/2026-09-15-continuation/ten-ledger-reconciliation.json)，后续新会话可用责任额度USD81.022037。
+
+第二阶段未完成：冻结真实基线155个场景提交（152 EXECUTED、3 UNSUPPORTED），其余85保留未提交分母；供应商实际dev密钥已确认每天500请求的免费层用尽。原run/账本/gold不改。新版公共问答回放、限流暂停/恢复及已发现的记忆质量修复见 [当前契约](../../MEMORY_PUBLIC_EVALUATION.md)，需要新固定源码会话完整复验。不要把旧report/provenance的首场景smoke当作全量报告；使用[冻结独立摘要](evidence/2026-09-15-continuation/real-model-paused-summary.json)。
+
+第三阶段仍未开始：学习STOPPED；待完整模型门槛、真实Telegram来源/编辑/更正/遗忘/退出闭环通过后，再开启单群至少七天及真实样本验收。显式问答继续可用，旧记忆、抽奖和自动社交不恢复。
+
+
 ## 2026-09-15 当前进度
 
 先读 [CONTINUATION](CONTINUATION.md) 的最新授权、预算与三个执行阶段。#205、#206、#207 已分别在最新 main 上通过代码检查和基础设施预览后合并；合并提交为 `e1a4c3c`、`56f1541`、`cf93b74`。部署 workflow 已恢复 ACTIVE，分支保护未改。本次下述 Groq 恢复修复和评估预算扩展正在单独交付；此刻尚未执行本轮完整 CDK 部署，不能把合并视为上线。

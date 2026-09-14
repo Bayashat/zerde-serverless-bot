@@ -7,6 +7,8 @@ The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore
 
 CDK no longer defines the retired daily group summary rule or its SQS send grant, even when legacy memory flags or configured chats are present. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is not permanent retirement. V2 recovery, news and quiz schedules retain their own owners.
 
+The next public evaluation route and self-claims-v2.5 follow [the current quality/evidence contract](../docs/MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
+
 The bounded post-baseline handbook/education corrections are documented in
 [Memory quality follow-up](../docs/MEMORY_QUALITY_FOLLOWUP.md). Keep the sole public-content
 and answer owners; do not change the frozen real-evaluation gold to improve scores.

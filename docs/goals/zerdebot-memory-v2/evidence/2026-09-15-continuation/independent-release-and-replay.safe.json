@@ -1,0 +1,64 @@
+{
+  "status": "ALIGNED_PROD_RELEASE_AND_18_RETIRED_REPLAYS_NO_LEGACY_RESURRECTION",
+  "source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
+  "evidence": {
+    "before": {
+      "path": "/tmp/zerde-validation-rollout-release/final-prod/legacy-exact-before-retired-replay.safe.json",
+      "sha256": "87f19a7fb3c74d9429c97ffc633a5871780160a8004ad1a3ea9c53f6e4d81c5d"
+    },
+    "after": {
+      "path": "/tmp/zerde-validation-rollout-release/final-prod/legacy-exact-after-retired-replay.safe.json",
+      "sha256": "ea51cd6a02ab0f4d9716782a327ed09a58652c668c0b1c482708afd3ff68c9bf"
+    },
+    "replay": {
+      "path": "/tmp/zerde-validation-rollout-release/post-cleanup-replay/prod-retired-lambda-canary-results.json",
+      "sha256": "b26cd1a0d8cb2b5b6dc16412455f827cb8a6ac6e26b72e75960e18c2725add22"
+    },
+    "runtime": {
+      "path": "/tmp/zerde-validation-rollout-release/final-prod/independent-runtime-readback.safe.json",
+      "sha256": "898a74be1cc3191a4e18d416ae965f91f2d3d79f405811a8d1f8ea6e56295138"
+    },
+    "historical": {
+      "path": "/tmp/zerde-live-acceptance/cleanup-final-diagnostic-v1-independent-20260912.json",
+      "sha256": "f526229405653d7a42a72c6f4b526ba69b6ec9105cc89506bb3d95345d93fa2c"
+    }
+  },
+  "replay_scope": {
+    "synchronous_invocations_by_root": 2,
+    "retired_tasks_acknowledged": 18,
+    "synthetic_chat_outside_telegram_id_range": true,
+    "both_lambda_responses_success_null": true,
+    "both_log_tail_retired_discard_count": 9,
+    "no_memory_meter_start_in_returned_tail": true
+  },
+  "post_replay_observed_at": 1789423621.828887,
+  "post_replay_utc": "2026-09-14T22:07:01.828887+00:00",
+  "post_replay_almaty": "2026-09-15T03:07:01.828887+05:00",
+  "remaining_legacy_targets": 0,
+  "remaining_vectors": 0,
+  "original_settings_count": 3,
+  "original_protected_sha256": "b2dd117fc729e2cb347f8bceb836ce9448c4b96397c65c6c81d354589f4f3102",
+  "same_exact_scope_before_after": true,
+  "readonly_api_calls_for_independent_prod_checks": {
+    "sts.GetCallerIdentity": 1,
+    "lambda.GetFunctionConfiguration": 6,
+    "lambda.GetFunctionConcurrency": 6,
+    "lambda.ListEventSourceMappings": 3,
+    "cloudformation.DescribeStacks": 1,
+    "cloudformation.GetTemplate": 1,
+    "events.DescribeRule": 14,
+    "cloudformation.ListStackResources": 2,
+    "dynamodb.GetItem": 4,
+    "dynamodb.GetResourcePolicy": 1,
+    "s3vectors.GetVectorBucketPolicy": 1
+  },
+  "legacy_before_and_after_readonly_calls": 12,
+  "independent_cloud_mutations": 0,
+  "limits": [
+    "Point-in-time exact approved old table/index verification; no general business data acceptance.",
+    "Root invocation/log-tail evidence is bounded; absence of meter start alone does not prove all possible external calls. Retired no-op source and successful handler evidence are separate.",
+    "No backup/PITR/log/queue erasure implied; physical erasure remains incomplete.",
+    "Learning stays DEFAULT_STOPPED per independent four-control absent read; no learning enabled by this work.",
+    "Existing Chinese news ENABLED-template/DISABLED-live drift was explicitly preserved."
+  ]
+}

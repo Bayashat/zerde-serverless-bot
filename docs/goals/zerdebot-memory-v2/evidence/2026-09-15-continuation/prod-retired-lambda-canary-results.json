@@ -1,0 +1,58 @@
+{
+  "no_external_calls_evidence": "Verified source guard returns before business handlers; successful retired-discard log for every injected record. This is not provider-side network tracing.",
+  "phase": "POST_CLEANUP_REPLAY",
+  "results": [
+    {
+      "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+      "function": "zerde-serverless-bot-prod",
+      "function_error": null,
+      "log_tail_sha256": "127a08e7200cc29fe9750f88d16eebddcca67f1d0646640dc404c77eb8b802c3",
+      "no_memory_meter_start": true,
+      "observed_at_epoch": 1789423586.188318,
+      "payload_is_null": true,
+      "payload_sha256": "6365f5ffd83d49e511f1b683724df260e9b97540c3e141780b9b3c98d574c165",
+      "request_id": "96e64e6d-87c0-4a86-be1c-7cc9a74d4314",
+      "response_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "retired_discard_count": 9,
+      "status_code": 200,
+      "task_types": [
+        "PROCESS_PROACTIVE_CANDIDATE",
+        "PROCESS_AMBIENT_REACTION",
+        "PROCESS_GROUP_MEMORY",
+        "PROCESS_DAILY_GROUP_SUMMARIES",
+        "PROCESS_VECTOR_MEMORY",
+        "PROCESS_VECTOR_MEMORY_BACKFILL",
+        "PROCESS_CONTEST_TTL_SWEEP",
+        "PROCESS_CONTEST_TTL_RECOVERY",
+        "PROCESS_GROUP_ASK"
+      ]
+    },
+    {
+      "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+      "function": "zerde-serverless-vector-indexer-prod",
+      "function_error": null,
+      "log_tail_sha256": "531a5e8e102e573d8ebd023d8a436f7087e8eccc1301100aa80659aa4fbaed1c",
+      "no_memory_meter_start": true,
+      "observed_at_epoch": 1789423588.6342762,
+      "payload_is_null": true,
+      "payload_sha256": "6365f5ffd83d49e511f1b683724df260e9b97540c3e141780b9b3c98d574c165",
+      "request_id": "570fb3ff-126c-44e6-9c41-b1d127236da7",
+      "response_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "retired_discard_count": 9,
+      "status_code": 200,
+      "task_types": [
+        "PROCESS_PROACTIVE_CANDIDATE",
+        "PROCESS_AMBIENT_REACTION",
+        "PROCESS_GROUP_MEMORY",
+        "PROCESS_DAILY_GROUP_SUMMARIES",
+        "PROCESS_VECTOR_MEMORY",
+        "PROCESS_VECTOR_MEMORY_BACKFILL",
+        "PROCESS_CONTEST_TTL_SWEEP",
+        "PROCESS_CONTEST_TTL_RECOVERY",
+        "PROCESS_GROUP_ASK"
+      ]
+    }
+  ],
+  "scope": "Two synchronous prod Lambda invokes; 18 retired records; no queue, real Telegram IDs or current task envelopes",
+  "source_commit": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
+}

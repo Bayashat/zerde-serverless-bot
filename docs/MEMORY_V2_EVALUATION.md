@@ -2,7 +2,7 @@
 
 关联 [Z11 #168](https://github.com/Bayashat/zerde-serverless-bot/issues/168)、[Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157) 和 [批准计划](goals/zerdebot-memory-v2/PLAN.md)。
 
-本 slice 提供开发工具、合成 gold 语料和评分器，不改变 Lambda、记忆读写 owner、旧路径退役状态或部署配置。产品状态仍为 **IMPLEMENTED_UNPROVEN**；真实模型、dev canary、生产群试运行都未执行。不能据此关闭 Z11 的真实验收部分。
+本文保存离线评估契约与历史验证。2026-09-15 真实模型基线已部分执行，但质量未通过、七天试运行未开始；不能据此关闭 Z11。新增公共问答观测、限流暂停和 self-claims-v2.5 的当前边界见 [真实公共问答评估与质量修复](MEMORY_PUBLIC_EVALUATION.md)。下文有明确日期的记录保留当时状态。
 
 ## 语料与标签
 

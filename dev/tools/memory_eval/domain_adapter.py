@@ -99,9 +99,12 @@ class DomainReplayAdapter:
     provider_kind = "fake_provider"
     requires_projected_input = True
 
-    def __init__(self, catalog, *, provider_factory=None):
+    def __init__(self, catalog, *, provider_factory=None, answer_route="domain"):
+        if answer_route not in {"domain", "public-v1"} or (answer_route == "public-v1" and provider_factory is None):
+            raise EvaluationInputError("Public replay requires explicit observed providers")
         self.catalog = catalog
         self.provider_factory = provider_factory
+        self.answer_route = answer_route
         self.runs = []
 
     def observe_scenario(self, scenario):
@@ -162,6 +165,7 @@ class DomainReplayAdapter:
             return observations
 
     def _setup(self, db, scenario):
+        self.db = db
         self.clock = SimpleNamespace(now=scenario["learning_started_at"])
         table = _table(db, "local-memory-replay", index=True)
         self.business = _table(db, "local-legacy-business")
@@ -212,6 +216,11 @@ class DomainReplayAdapter:
 
         self.extract_provider = provider("extraction")
         self.answer_provider = provider("answer")
+        self.public_answers = None
+        if self.answer_route == "public-v1":
+            from .public_replay import PublicAnswerReplay
+
+            self.public_answers = PublicAnswerReplay(self, provider("plain_answer"), provider("plain_answer_audit"))
         self.quota = SimpleNamespace(increment_and_check=lambda: (1, True))
         self.worker = MemoryWorker(
             self.repo,
@@ -508,6 +517,7 @@ class DomainReplayAdapter:
                 "events": copy.deepcopy(self.event_trace),
                 "missing_fixtures": copy.deepcopy(self.missing),
                 "network_calls": 0,
+                "answer_route": self.answer_route,
             },
             "traces": {
                 "business_trace_schema": 2,
@@ -521,6 +531,7 @@ class DomainReplayAdapter:
                     "answers": [row["text"] for row in self.sent],
                 },
                 "work": copy.deepcopy(list(self.work_archive.values())),
+                "public_route": copy.deepcopy(self.public_answers.trace) if self.public_answers else [],
                 "budget_ledger": {
                     "evidence_kind": "actual_moto_transactions_synthetic_usage_and_aws_measurement",
                     "model": _jsonable(self.budget.snapshot()),
@@ -530,6 +541,8 @@ class DomainReplayAdapter:
         }
 
     async def _answer(self, question, language):
+        if self.public_answers is not None:
+            return await self.public_answers.answer(question, language)
         # These imports intentionally fail when the reviewed Z08 answer owner is
         # absent; there is no hand-written stand-in for the production path.
         from services.memory_v2.answer_rendering import unknown_text

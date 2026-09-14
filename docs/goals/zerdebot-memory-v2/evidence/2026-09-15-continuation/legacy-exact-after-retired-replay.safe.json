@@ -1,0 +1,25 @@
+{
+  "status": "PASS_EXACT_ORIGINAL_LEGACY_SCOPE_EMPTY_AND_SETTINGS_UNCHANGED",
+  "phase": "after-retired-replay",
+  "started_at": 1789423620.076959,
+  "completed_at": 1789423621.828887,
+  "scope_file_sha256": "01853625e17e5f2b9615f506bc49c5a3fa046c30f9a48b62e1b3e29dc3963c24",
+  "original_cleanup_receipt_sha256": "f526229405653d7a42a72c6f4b526ba69b6ec9105cc89506bb3d95345d93fa2c",
+  "table_key_count": 3,
+  "remaining_legacy_targets": 0,
+  "protected_settings_count": 3,
+  "protected_sha256": "b2dd117fc729e2cb347f8bceb836ce9448c4b96397c65c6c81d354589f4f3102",
+  "vectors": 0,
+  "vector_indexes": 1,
+  "full_key_projection_scan_complete": true,
+  "settings_only_strong_reads": 3,
+  "aws_api_counts": {
+    "sts.GetCallerIdentity": 1,
+    "dynamodb.Scan": 1,
+    "dynamodb.GetItem": 3,
+    "s3vectors.ListVectors": 1
+  },
+  "cloud_mutations": 0,
+  "physical_erasure_complete": false,
+  "boundary": "Exact approved old table/index only; key projection first, only three original protected SETTINGS read in RAM for original lossless hash. Does not delete or inspect retained backups/PITR/logs/queues."
+}

@@ -102,7 +102,7 @@ def test_compatibility_request_removes_only_two_array_caps_and_two_length_fields
     sources_schema = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]
     properties = sources_schema["items"]["properties"]
     fact_properties = properties["facts"]["items"]["properties"]
-    assert PROMPT_VERSION == "self-claims-v2.4"
+    assert PROMPT_VERSION == "self-claims-v2.5"
     assert "maxItems" not in sources_schema and "maxItems" not in properties["facts"]
     assert fact_properties["value"] == fact_properties["evidence"] == {"type": "string"}
     assert fact_properties["facet"] == {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
@@ -112,6 +112,30 @@ def test_compatibility_request_removes_only_two_array_caps_and_two_length_fields
     properties["facts"]["maxItems"] = 16
     fact_properties["value"] = {"type": "string", "maxLength": 160}
     fact_properties["evidence"] = {"type": "string", "maxLength": 240}
+    # The v2.5 sentence guidance is an independently versioned prompt change;
+    # preserve the original v2.4 schema compatibility regression comparison.
+    sentence_guidance = """Prefer the complete safe self-statement sentence, including same-sentence identity,
+group, time, negation and correction qualifiers. If it fits within 240 characters,
+copy that whole sentence, not just its subject-verb-object fragment. Never expand
+across quoted spans or sensitive text, join separate spans, or drop a qualifier to
+fit the limit. If no complete safe supporting span fits, omit the fact.
+"""
+    prompt = request["systemInstruction"]["parts"][0]["text"]
+    assert prompt.count(sentence_guidance) == 1
+    education_guidance = """For education, preserve the explicitly stated credential type and level (degree,
+diploma, certificate, bachelor, master, doctorate) together with its subject. Do not
+reduce a qualification to a subject alone, or infer any unstated qualification.
+"""
+    name_guidance = """"". The name facet requires an explicit preference about how the author wishes
+to be addressed; a stated or shared name alone is not a communication preference.
+Never record instructions"""
+    assert prompt.count(education_guidance) == prompt.count(name_guidance) == 1
+    request["systemInstruction"]["parts"][0]["text"] = (
+        prompt.replace(sentence_guidance, "")
+        .replace(education_guidance, "")
+        .replace(name_guidance, '"". Never record instructions')
+        .replace("contacts, authentication credentials or identifiers.", "contacts, credentials or identifiers.")
+    )
     encoded = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
     assert hashlib.sha256(encoded).hexdigest() == "f19f205b10a7c97204ed9c41a8296969a857d8de1e61d67dcb0ea5fd14a4e834"
 
