@@ -153,7 +153,12 @@ def apply_cleanup(adapter, manifest, backup, *, expected_digest, evidence, journ
         remaining_window()
 
     gate()
-    check_snapshot(manifest, adapter.snapshot(scope), resume=True)
+    snapshot = adapter.snapshot(scope)
+    check_snapshot(manifest, snapshot, resume=True)
+    # Resume from this run's complete verified inventory, never journal counters.
+    # Missing keys need no mutation; all retained keys still get fresh pre-delete reads.
+    remaining_rows = {(row["pk"], row["sk"]) for row in snapshot["rows"]}
+    remaining_vectors = {(arn, row["key"]) for arn, rows in snapshot["vectors"].items() for row in rows}
     # Validate all conditions before any deletion: very wide items require manual review.
     for row in backup["rows"]:
         adapter.validate_delete_condition(row)
@@ -163,8 +168,10 @@ def apply_cleanup(adapter, manifest, backup, *, expected_digest, evidence, journ
     for arn in scope.index_arns:
         expected = [entry for entry in manifest["vector_entries"] if entry["index_arn"] == arn]
         for offset in range(0, len(expected), 25):
+            chunk = [entry for entry in expected[offset : offset + 25] if (arn, entry["key"]) in remaining_vectors]
+            if not chunk:
+                continue
             gate()
-            chunk = expected[offset : offset + 25]
             present = adapter.get_vectors(arn, [entry["key"] for entry in chunk])
             selected = []
             for key, row in present.items():
@@ -193,8 +200,11 @@ def apply_cleanup(adapter, manifest, backup, *, expected_digest, evidence, journ
         ),
     )
     for offset in range(0, len(rows), 25):
+        chunk = [row for row in rows[offset : offset + 25] if (row["pk"], row["sk"]) in remaining_rows]
+        if not chunk:
+            continue
         gate()
-        for original in rows[offset : offset + 25]:
+        for original in chunk:
             current = adapter.get_item(item_key(original))
             if current is None:
                 continue
