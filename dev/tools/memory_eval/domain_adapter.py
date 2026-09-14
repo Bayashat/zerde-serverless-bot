@@ -99,8 +99,9 @@ class DomainReplayAdapter:
     provider_kind = "fake_provider"
     requires_projected_input = True
 
-    def __init__(self, catalog):
+    def __init__(self, catalog, *, provider_factory=None):
         self.catalog = catalog
+        self.provider_factory = provider_factory
         self.runs = []
 
     def observe_scenario(self, scenario):
@@ -203,8 +204,14 @@ class DomainReplayAdapter:
             table, _ = self._business_storage(row)
             table.put_item(Item=row)
         self.before = self._business_snapshot()
-        self.extract_provider = FixtureProvider(self.catalog, kind="extraction", trace=self.requests)
-        self.answer_provider = FixtureProvider(self.catalog, kind="answer", trace=self.requests)
+
+        def provider(kind):
+            if self.provider_factory is not None:
+                return self.provider_factory(kind=kind, trace=self.requests, scenario_id=scenario["scenario_id"])
+            return FixtureProvider(self.catalog, kind=kind, trace=self.requests)
+
+        self.extract_provider = provider("extraction")
+        self.answer_provider = provider("answer")
         self.quota = SimpleNamespace(increment_and_check=lambda: (1, True))
         self.worker = MemoryWorker(
             self.repo,

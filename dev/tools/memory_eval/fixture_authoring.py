@@ -68,7 +68,7 @@ def author_fixture_rows(inputs):
             add("extraction", text, {"facts": _changes(text)})
             if event["type"] == "admin_confirmation":
                 # Separate explicit command fixture; no model receives group facts.
-                phrase = text.split(":", 1)[-1].strip().rstrip(".")
+                phrase = text.split(":", 1)[-1].strip()
                 add(
                     "confirmation",
                     text,

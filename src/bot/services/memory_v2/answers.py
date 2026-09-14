@@ -5,6 +5,7 @@ import inspect
 from dataclasses import dataclass
 
 from .answer_rendering import pagination_text, render_facts, render_trends, unknown_text
+from .answer_scope import constrain_education_selection
 from .leases import AnswerLeaseService, fact_references
 from .models import MemoryConflict, MemoryInputError, MemoryUnavailable, chat_key, positive_id
 
@@ -98,6 +99,7 @@ class MemoryAnswerService:
                     requester_user_id=actor,
                     subject_usernames=self.subject_usernames(chat_id, subject_ids),
                 )
+                mode, indices = constrain_education_selection(question, facts, mode, indices)
                 selected = [facts[i] for i in indices]
             if mode == "general":
                 return AnswerOutcome("GENERAL")

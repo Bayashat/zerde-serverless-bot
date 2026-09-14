@@ -1,0 +1,121 @@
+{
+  "status": "FIXED_WINDOW_VALIDATED_NOT_MONTHLY_COST_VERIFIED",
+  "source_commit": "104054684380fa1598aff4bc9ff624b0d39dafdd",
+  "catalog_sha256": "8fe7f9629bf4e78222a1d867d7462cc8640170875d462c7c92c4a5efe12b5098",
+  "window_utc": [
+    "2026-09-11T17:00:00Z",
+    "2026-09-11T17:15:00Z"
+  ],
+  "completed_utc": "2026-09-12T13:49:37Z",
+  "stages": {
+    "metrics": "PASS",
+    "reports": "PASS",
+    "resources": "PASS"
+  },
+  "log_groups_queried": 4,
+  "metric_series_complete": 32,
+  "completed_queries": 2,
+  "scanned_bytes": [
+    19275,
+    39000
+  ],
+  "numeric_aggregate_values": [
+    {
+      "function_role_and_environment": "memory-v2-worker-prod",
+      "values": {
+        "billed_records": "3",
+        "completed": "3",
+        "elapsed_ms": "979",
+        "finals": "3",
+        "gb_seconds": "0.501",
+        "invalid_records": "0",
+        "platform_starts": "3",
+        "reports": "3",
+        "rru": "768",
+        "rru_count": "3",
+        "schema_count": "6",
+        "schema_sum": "6",
+        "sqs": "0",
+        "sqs_count": "3",
+        "starts": "3",
+        "wru": "0",
+        "wru_count": "3"
+      }
+    },
+    {
+      "function_role_and_environment": "memory-v2-worker-dev",
+      "values": {
+        "billed_records": "3",
+        "completed": "3",
+        "elapsed_ms": "1017",
+        "finals": "3",
+        "gb_seconds": "0.5245",
+        "invalid_records": "0",
+        "platform_starts": "3",
+        "reports": "3",
+        "rru": "768",
+        "rru_count": "3",
+        "schema_count": "6",
+        "schema_sum": "6",
+        "sqs": "0",
+        "sqs_count": "3",
+        "starts": "3",
+        "wru": "0",
+        "wru_count": "3"
+      }
+    },
+    {
+      "function_role_and_environment": "bot-prod",
+      "values": {
+        "billed_records": "2",
+        "completed": "2",
+        "elapsed_ms": "1079",
+        "finals": "2",
+        "gb_seconds": "1.096",
+        "invalid_records": "0",
+        "platform_starts": "2",
+        "reports": "2",
+        "rru": "200",
+        "rru_count": "2",
+        "schema_count": "4",
+        "schema_sum": "4",
+        "sqs": "0",
+        "sqs_count": "2",
+        "starts": "2",
+        "wru": "0",
+        "wru_count": "2"
+      }
+    }
+  ],
+  "dev_shared_bot_scope": "No matching V2 aggregate row; this does not mean no Bot usage",
+  "actual_guarded_sdk_calls": 29,
+  "record_reads": 0,
+  "messages_sent": 0,
+  "production_ledger_writes": 0,
+  "production_deployed": false,
+  "monthly_verified": false,
+  "learning_enabled": false,
+  "complete_source_suite": {
+    "passed": 1684,
+    "seconds": 166.95,
+    "log_sha256": "3ae6600173432e778f2445aaa5e75f537505f72a89761bd9834f02140d48853e"
+  },
+  "review": "Source correctness and maintainability ALIGNED; independent actual report/immutable ledger review ALIGNED",
+  "private_report_sha256": "9f2beee1bdf4d267f5b7cf7b9312d91ac1acbb4c063ee854bf465a37d6f49a26",
+  "private_ledger_sha256": "3b06b770b11f108d437db2bfdb10de2556d0a7f9043437f78629257c5f77e86a",
+  "all_five_runs_cost_evidence": {
+    "unknown_scan_hold_micro_usd": 788,
+    "known_scan_price_micro_usd": 3,
+    "metric_query_price_estimate_micro_usd": 1280,
+    "combined_liability_and_estimate_micro_usd": 2071,
+    "invoice": false,
+    "includes_unpriced_metadata_or_extra_diagnostic_reads": false,
+    "unknown_holds_refunded": false
+  },
+  "unverified": [
+    "Full historical/monthly coverage",
+    "Nonzero shared DynamoDB write and SQS units",
+    "Production deployment and budget-permit recovery",
+    "Free Tier/credits and final invoice attribution"
+  ]
+}

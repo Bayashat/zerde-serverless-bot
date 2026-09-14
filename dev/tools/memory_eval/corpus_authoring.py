@@ -8,7 +8,14 @@ import copy
 import json
 from pathlib import Path
 
+from .authoring_aliases import accepted_values_for
+from .contract import fingerprint
 from .reporting import render_catalog
+
+# PRE label review, independent root approval, and local POST checks are recorded
+# at this public reference. Any future content change drops back to PENDING.
+REVIEWED_CONTENT_SHA256 = "5c74cc07a0200b540eed4db32e514e66b160504279293c34c7e6f0ba916a1672"
+REVIEW_REFERENCE = "docs/MEMORY_V2_GOLD_REVIEW_2026-09-11.md"
 
 # Each pair describes a different public profile context. Values stay in the
 # source language; only policy preference enums and technical names are shared.
@@ -742,7 +749,7 @@ UNKNOWN_QUESTIONS = {
     ),
     "education": (
         "What has this member explicitly said they studied?",
-        "Какую специальность этот участник сам сообщил?",
+        "Что этот участник рассказывал о своём образовании?",
         "Бұл қатысушы өзі қандай мамандық оқығанын айтты?",
     ),
     "interests": (
@@ -770,8 +777,10 @@ def build_corpus():
             if index >= 20 and CHALLENGES[index - 20][1] == "remove":
                 profile_index = 0
             seed = PROFILES[seed_language][profile_index]
+            second_language = seed_language
             if language == "mixed":
                 next_language = ("en", "kk", "ru")[index % 3]
+                second_language = next_language
                 seed = (*seed[:3], *PROFILES[next_language][profile_index][3:])
             chat, user = str(-990000000000 - language_index * 1000 - index), str(
                 800000000 + language_index * 1000 + index
@@ -810,23 +819,30 @@ def build_corpus():
                 events.append(event)
                 return event
 
-            def fact(source, field, value, fid):
+            def fact(source, field, value, fid, *, source_language=seed_language):
                 name, _, facet = field.partition(":")
-                return {
+                # Labels require the full supporting claim, including negation
+                # and qualifiers, but not semantically empty sentence punctuation.
+                evidence_end = len(source["text"].rstrip(".!?。！？"))
+                entry = {
                     "fact_id": fid,
                     "chat_id": source["chat_id"],
                     "subject_id": source["user_id"],
                     "field": name,
                     "facet": facet,
                     "value": value,
-                    "evidence": {"source_event": source["event_id"], "start": 0, "end": len(source["text"])},
+                    "evidence": {"source_event": source["event_id"], "start": 0, "end": evidence_end},
                 }
+                aliases = accepted_values_for(source_language, source["text"], name, facet, value)
+                if aliases:
+                    entry["accepted_values"] = aliases
+                return entry
 
             first = message(seed[0], "m1")
             facts.append(fact(first, seed[1], seed[2], "f1"))
             message(FILLER[seed_language][index % 4], "m2", author=str(int(user) + 500000))
             second = message(seed[3], "m3")
-            facts.append(fact(second, seed[4], seed[5], "f2"))
+            facts.append(fact(second, seed[4], seed[5], "f2", source_language=second_language))
             checkpoints = [
                 {"checkpoint_id": "baseline", "after_event": "m3", "facts": copy.deepcopy(facts), "questions": []}
             ]
@@ -860,6 +876,7 @@ def build_corpus():
                     source = message(
                         text,
                         "m4",
+                        kind="edit" if operation == "history_edit" else "message",
                         author=str(int(user) + 500000) if operation == "other" else user,
                         scope=str(int(chat) - 100000) if operation == "other_chat" else chat,
                         is_bot=operation == "bot",
@@ -941,7 +958,7 @@ def build_corpus():
                         facts.append(fact(source, "location", "Taraz" if seed_language == "en" else "Тараз", "f3"))
                 elif operation == "forget_group":
                     source = message("I use TypeScript.", "elsewhere", scope=str(int(chat) - 100000))
-                    facts.append(fact(source, "tech_stack", "TypeScript", "f3"))
+                    facts.append(fact(source, "tech_stack", "TypeScript", "f3", source_language="en"))
                     events.append({"event_id": "forget", "type": "forget_group", "chat_id": chat, "detail": text})
                     facts = [entry for entry in facts if entry["chat_id"] != chat]
                 elif operation == "stale_city":
@@ -1103,6 +1120,10 @@ def build_corpus():
                     },
                 }
             )
+    if fingerprint(result) == REVIEWED_CONTENT_SHA256:
+        for scenario in result:
+            scenario["independent_review"] = "REVIEWED"
+            scenario["review_reference"] = REVIEW_REFERENCE
     return result
 
 

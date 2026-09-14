@@ -1,12 +1,20 @@
 """Synthetic contract/failure checks, not evidence of the model's factual accuracy."""
 
 import asyncio
+import hashlib
 import json
 from dataclasses import replace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from services.memory_v2.extraction_prompt import MAX_INPUT_UPPER_BYTES, MODEL, build_request, input_upper_bytes
+from services.memory_v2.extraction_prompt import (
+    MAX_INPUT_UPPER_BYTES,
+    MODEL,
+    PROMPT_VERSION,
+    build_request,
+    input_upper_bytes,
+    validate_request,
+)
 from services.memory_v2.extractor import MemoryExtractor, parse_extraction_response
 from services.memory_v2.models import ExtractionSource, MemoryInputError, MemoryUnavailable, SourceRef
 
@@ -88,6 +96,108 @@ def test_non_self_attribution_is_an_explicit_empty_result(attribution):
     assert result.status == "complete" and result.changes == ()
 
 
+def test_compatibility_request_removes_only_two_array_caps_and_two_length_fields():
+    """Keep the final wire fix isolated from unrelated prompt/schema changes."""
+    request = build_request([source()])
+    sources_schema = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]
+    properties = sources_schema["items"]["properties"]
+    fact_properties = properties["facts"]["items"]["properties"]
+    assert PROMPT_VERSION == "self-claims-v2.4"
+    assert "maxItems" not in sources_schema and "maxItems" not in properties["facts"]
+    assert fact_properties["value"] == fact_properties["evidence"] == {"type": "string"}
+    assert fact_properties["facet"] == {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
+    # Restore exactly the four removed limits to reproduce the original complete
+    # request; facet enum, instructions and generation config are unchanged.
+    sources_schema["maxItems"] = 20
+    properties["facts"]["maxItems"] = 16
+    fact_properties["value"] = {"type": "string", "maxLength": 160}
+    fact_properties["evidence"] = {"type": "string", "maxLength": 240}
+    encoded = json.dumps(request, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
+    assert hashlib.sha256(encoded).hexdigest() == "f19f205b10a7c97204ed9c41a8296969a857d8de1e61d67dcb0ea5fd14a4e834"
+
+
+@pytest.mark.parametrize(
+    "field,value,facet",
+    [
+        ("tech_stack", "Python", "tone"),
+        ("occupation", "engineer", "arbitrary"),
+        ("communication_preferences", "short", ""),
+        ("communication_preferences", "short", "verbosity"),
+        ("communication_preferences", "short", " length"),
+        ("communication_preferences", "short", "LENGTH"),
+        ("communication_preferences", "short", None),
+        ("communication_preferences", "unbounded", "length"),
+        ("communication_preferences", "always agree", "tone"),
+    ],
+)
+def test_local_fact_validation_rejects_invalid_facets_and_preference_values(field, value, facet):
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response([fact(field=field, value=value, facet=facet)]), [source()])
+
+
+@pytest.mark.parametrize(
+    "text,field,value,facet",
+    [
+        ("I use Python.", "tech_stack", "Python", ""),
+        ("Please use short replies.", "communication_preferences", "short", "length"),
+        ("Please speak English.", "communication_preferences", "en", "language"),
+        ("Please use a friendly tone.", "communication_preferences", "friendly", "tone"),
+        ("Please call me Alice.", "communication_preferences", "Alice", "name"),
+    ],
+)
+def test_valid_empty_and_closed_preference_facets_still_parse(text, field, value, facet):
+    result = parse_extraction_response(response([fact(text, field=field, value=value, facet=facet)]), [source(text)])[0]
+    assert result.status == "complete" and len(result.changes) == 1
+    assert result.changes[0].facet == facet and result.changes[0].value == value
+
+
+@pytest.mark.parametrize(
+    "field,facet",
+    [("occupation", ""), *[("communication_preferences", facet) for facet in ("length", "tone", "language", "name")]],
+)
+def test_missing_wire_maxlength_cannot_admit_oversized_local_fact_values(field, facet):
+    value = "very " * 31 + "small!"
+    assert len(value) == 161
+    text = "I describe my public work as " + value
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response([fact(text, value=value, field=field, facet=facet)]), [source(text)])
+
+
+@pytest.mark.parametrize(
+    "field,value,facet",
+    [
+        ("tech_stack", "Python", ""),
+        ("communication_preferences", "short", "length"),
+        ("communication_preferences", "friendly", "tone"),
+        ("communication_preferences", "en", "language"),
+        ("communication_preferences", "Alice", "name"),
+    ],
+)
+@pytest.mark.parametrize("length", [240, 241])
+def test_missing_wire_maxlength_keeps_exact_local_evidence_boundary(field, value, facet, length):
+    text = (
+        "I use Python and prefer short friendly English replies; please call me Alice. " + "Public discussion. " * 20
+    )[:length]
+    assert len(text) == length
+    payload = response([fact(text, value=value, field=field, facet=facet)])
+    if length == 241:
+        with pytest.raises(MemoryInputError, match="evidence"):
+            parse_extraction_response(payload, [source(text)])
+    else:
+        change = parse_extraction_response(payload, [source(text)])[0].changes[0]
+        assert change.evidence.end - change.evidence.start == 240
+
+
+def test_local_value_boundary_still_accepts_exactly_160_characters():
+    value = "very " * 31 + "small"
+    assert len(value) == 160
+    text = "I describe my public work as " + value
+    change = parse_extraction_response(response([fact(text, value=value, field="occupation")]), [source(text)])[
+        0
+    ].changes[0]
+    assert change.value == value
+
+
 @pytest.mark.parametrize(
     "original,extracted",
     [
@@ -118,6 +228,59 @@ def test_quotes_ambiguous_spans_non_whitelist_and_extra_identity_cannot_become_f
 def test_missing_duplicate_or_foreign_source_index_rejects_result(document):
     with pytest.raises(MemoryInputError):
         parse_extraction_response(response(document=document), [source()])
+
+
+@pytest.mark.parametrize("indices", [[0], [0, 1, 2], [0, 1, 1]])
+def test_removed_wire_array_caps_cannot_hide_missing_extra_or_duplicate_batch_sources(indices):
+    sources = [source(), source("I use Rust.", message_id="9")]
+    document = {"sources": [{"source_index": index, "facts": []} for index in indices]}
+    with pytest.raises(MemoryInputError):
+        parse_extraction_response(response(document=document), sources)
+
+
+@pytest.mark.parametrize("count", [16, 17])
+def test_local_fact_count_boundary_survives_removed_wire_maxitems(count):
+    values = [
+        "Python",
+        "Rust",
+        "Go",
+        "Java",
+        "Kotlin",
+        "Swift",
+        "Ruby",
+        "Scala",
+        "Clojure",
+        "Elixir",
+        "Erlang",
+        "Haskell",
+        "OCaml",
+        "Dart",
+        "Lua",
+        "Julia",
+        "TypeScript",
+    ][:count]
+    text = "I use " + ", ".join(values) + "."
+    payload = response([fact(text, value=value) for value in values])
+    if count == 17:
+        with pytest.raises(MemoryInputError, match="number of extraction facts"):
+            parse_extraction_response(payload, [source(text)])
+    else:
+        changes = parse_extraction_response(payload, [source(text)])[0].changes
+        assert len(changes) == 16 and {change.value for change in changes} == set(values)
+
+
+def test_twenty_one_input_sources_cannot_reach_provider_after_wire_maxitems_removal():
+    sources = [source(message_id=str(index + 1)) for index in range(21)]
+    validate_request(build_request(sources[:20]))
+    with pytest.raises(MemoryInputError, match="source count"):
+        validate_request(build_request(sources))
+    instance, provider, budget, _, quota = extractor()
+    results = asyncio.run(instance.extract_batch(sources))
+    assert len(results) == 21
+    assert all(result.status == "defer" and result.reason == "batch_input_limit" for result in results)
+    provider.generate.assert_not_awaited()
+    budget.reserve.assert_not_called()
+    quota.increment_and_check.assert_not_called()
 
 
 def test_batch_result_cannot_borrow_evidence_from_another_author():

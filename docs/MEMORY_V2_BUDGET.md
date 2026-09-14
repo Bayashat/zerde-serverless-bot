@@ -40,6 +40,33 @@ A subsequent attempt needs a new ID and reservation. Costs on provider free tier
 are conservatively counted at standard paid rates; this ledger is not proof of a
 provider invoice or payment.
 
+On 2026-09-11, a bounded real smoke returned HTTP 200 with
+`serviceTier: "standard"`. The documented GenerateContent wire enum uses lowercase
+`standard` and `unspecified`; the latter means the standard default. This ledger
+accepts exactly those two strings or an omitted field. It does not case-fold,
+trim or infer a tier from SDK enum member names; uppercase `STANDARD` and
+`SERVICE_TIER_UNSPECIFIED` have no verified wire contract for this endpoint and
+retain the hold, as do flex, priority, unknown strings and non-string values.
+[ServiceTier reference](https://ai.google.dev/api/generate-content?hl=en#ServiceTier)
+
+Token counts must be nonnegative integers, excluding booleans. Optional cache and
+tool counts must be absent or integer zero; their modality lists must be absent
+or empty. Optional prompt/candidate modality lists must contain only `TEXT` with
+integer counts. Nonempty lists must sum to their corresponding prompt/candidate
+total, with thinking accounted separately by `thoughtsTokenCount` or the total
+difference. Malformed lists, non-text data, cache/tool usage or inconsistent
+totals never release a reservation. This metadata check complements the provider
+owner's fixed one-candidate, text-only request contract.
+[Usage metadata reference](https://ai.google.dev/api/generate-content?hl=en#UsageMetadata)
+
+The observed shape (403 prompt, 11 candidate, 414 total tokens, omitted thoughts,
+403 `TEXT` prompt-detail tokens, lowercase standard tier) costs **118 micro USD**
+after upward rounding. Local native-SDK/Moto regressions verify settlement and
+database-failure recovery without double refunds. This compatibility repair does
+not alter prices, ceilings, reservation transactions or old ledgers. Historical
+HTTP errors with unknown usage keep the entire USD 0.458752 hold; independently
+verified successful calls can be reconciled separately without resending them.
+
 The monthly counter's `charged_micro_usd` is **settled usage plus unresolved
 reservations**. `settled_micro_usd` reports only confirmed token-based usage;
 the difference is held/unknown liability. Show both, never label the entire

@@ -287,16 +287,29 @@ class MemoryBudgetRepository:
         thoughts = _nonnegative_int(usage.get("thoughtsTokenCount", total - inputs - candidates))
         if inputs + candidates + thoughts != total:
             raise ValueError("Inconsistent provider token totals")
-        if usage.get("cachedContentTokenCount", 0) or usage.get("toolUsePromptTokenCount", 0):
-            raise ValueError("Memory calls do not use cache or tools")
-        if usage.get("serviceTier", "STANDARD") not in {"STANDARD", "SERVICE_TIER_UNSPECIFIED"}:
+        for field in ("cachedContentTokenCount", "toolUsePromptTokenCount"):
+            if _nonnegative_int(usage.get(field, 0)) != 0:
+                raise ValueError("Memory calls do not use cache or tools")
+        # GenerateContent's documented wire values are lowercase; unspecified
+        # and an omitted tier mean standard. SDK enum names are not wire values.
+        tier = usage.get("serviceTier", "standard")
+        if not isinstance(tier, str) or tier not in {"standard", "unspecified"}:
             raise ValueError("Unpriced service tier")
-        details = usage.get("promptTokensDetails", [])
-        if not isinstance(details, list):
-            raise ValueError("Invalid modality metadata")
-        for detail in details:
-            if not isinstance(detail, dict) or detail.get("modality") != "TEXT":
-                raise ValueError("Non-text model billing is unsupported")
+        for field in ("cacheTokensDetails", "toolUsePromptTokensDetails"):
+            details = usage.get(field, [])
+            if not isinstance(details, list) or details:
+                raise ValueError("Memory calls do not use cache or tools")
+        for field, expected in (("promptTokensDetails", inputs), ("candidatesTokensDetails", candidates)):
+            details = usage.get(field, [])
+            if not isinstance(details, list):
+                raise ValueError("Invalid modality metadata")
+            counted = 0
+            for detail in details:
+                if not isinstance(detail, dict) or detail.get("modality") != "TEXT":
+                    raise ValueError("Non-text model billing is unsupported")
+                counted += _nonnegative_int(detail["tokenCount"])
+            if details and counted != expected:
+                raise ValueError("Inconsistent modality token totals")
         return cost_micro_usd(inputs, candidates + thoughts)
 
     def settle(self, reservation: Reservation, usage: dict | None) -> bool:

@@ -1,0 +1,53 @@
+{
+  "base": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+  "integrated_head": "8992cfe58ccacdea9547ee4f95f8595ab1e87e42",
+  "pr_heads": {
+    "205": "89eb2fc11a62515e1ec70c3546fa8f27b6292b41",
+    "206": "bb3de23559a827bbfb0fdb394f12d572bd32b7dc",
+    "207": "ae9eecede6dfacf37c0ae376f2bfe82c63e03b3f",
+    "208": "78320922886d22c3d334afc13ab760bf1826671d"
+  },
+  "pr208_final_head": "2279e338788ff421764e1dbde4037a57f91cf8bc",
+  "python": "3.13.6",
+  "worktree_fingerprint": "29915d13ba6a77cc0bc2f48e684270dbced6e0bb02cff0efe854beaac7897206",
+  "runtime_infra_lock_fingerprint": "eeea6b389a5c3bfe4c53a3104b4ea59f72c4be5dd31f21475e122bbc823b4942",
+  "fingerprint_scope": "Tracked working-tree regular files plus new logging test, sha256 mapping canonical sorted JSON; not installed dependency attestation",
+  "operations_exact_composition": "PR205 OPS plus exact 7832092..2279e33 OPS patch equals current bytes; both dev scaling and recovery diagnostics retained",
+  "fingerprints_unchanged_after_full": true,
+  "full_tests": {
+    "passed": 1951,
+    "seconds": 185.92,
+    "log_sha256": "46191b08009d7d789a289bf0738214570060235718d450411efe5cb6440557de",
+    "rerun_after_resume": false
+  },
+  "requirements_check": {
+    "mode": "UV_OFFLINE=1 scripts/export_requirements.py --check",
+    "verified_packages": 5,
+    "scope": "exports from locked repository dependencies, not deployed packages"
+  },
+  "cdk_code_checks": {
+    "included_in_full": [
+      "tests/test_infra_configuration.py",
+      "tests/test_memory_worker_infra.py",
+      "tests/test_memory_cost_infra.py",
+      "tests/test_memory_v2_infra.py",
+      "tests/test_packaging_contract.py"
+    ],
+    "scope": "Actual CDK construct/template assertions with synthetic config and substituted Lambda code assets; dev idle/active/prod mapping and RC gates, retired summary/contest, env capacity, inventory/IAM and storage protection. Not actual Lambda bundle build or live template readback."
+  },
+  "limitations": [
+    "Local integration only; not pushed, deployed or GitHub-merged",
+    "No real model/Telegram/AWS calls",
+    "No asset rebuild requested/performed",
+    "Production learning remains STOPPED; cleanup lifecycle is root-owned and outside this report"
+  ],
+  "pr208_final_content_verified": true,
+  "hooks_passed": true,
+  "tested_object": "integrated_head plus four uncommitted working-tree overlay files equivalent to final PR208 2279e33; use worktree_fingerprint to identify the complete tested object, not integrated_head alone",
+  "overlay_files": [
+    "src/bot/memory_worker_main.py",
+    "tests/test_memory_worker_recovery_logging.py",
+    "tests/test_memory_v2_ingestion.py",
+    "docs/OPERATIONS.md"
+  ]
+}

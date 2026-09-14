@@ -1,5 +1,8 @@
 # ZerdeBot Architecture
 
+The V2 public-content and answer owners include the bounded handbook/education
+corrections described in [Memory quality follow-up](MEMORY_QUALITY_FOLLOWUP.md).
+
 ## Current memory cutover boundary
 
 CDK no longer defines the retired daily group summary rule or its SQS send grant. Legacy memory flags and configured chat lists cannot recreate this schedule. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is temporary. V2 recovery, news and quiz schedules keep their existing owners.
