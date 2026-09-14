@@ -1,6 +1,7 @@
 import asyncio
 import importlib.util
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -610,27 +611,54 @@ def test_telegram_missing_or_wrong_confirmation_is_unknown(monkeypatch, status, 
 
 def test_45_slow_articles_are_cancelled_as_a_batch_with_no_thread_or_task_left_running(actual_repo):
     digest = _load_news_module("news_slow_enrichment_test", "services/digest.py")
-    active = [0]
-    peak = [0]
-
-    class SlowFetcher:
-        async def fetch_deep_article_data(self, link, deadline):
-            active[0] += 1
-            peak[0] = max(peak[0], active[0])
-            try:
-                await asyncio.sleep(60)
-            finally:
-                active[0] -= 1
-
     candidates = [_candidate(i, f"source{i}.example", score=4) for i in range(45)]
-    started = time.monotonic()
-    output = asyncio.run(
-        digest.DigestService(SlowFetcher(), None, None, actual_repo)._enrich_news_candidates(
-            candidates, _deadline(0.03)
-        )
-    )
-    assert len(output) == 45 and peak[0] == 5 and active[0] == 0
-    assert time.monotonic() - started < 0.7
+
+    async def exercise_cancellation():
+        baseline_tasks = asyncio.all_tasks()
+        baseline_threads = set(threading.enumerate())
+        batch_timeout = asyncio.timeout(None)
+        batch_tasks = set()
+        active = 0
+        peak = 0
+        cancelled = []
+
+        class BatchDeadline:
+            def timeout(self, cap):
+                assert cap == 45  # The production stage limit remains unchanged.
+                return batch_timeout
+
+        class SlowFetcher:
+            async def fetch_deep_article_data(self, link, deadline):
+                nonlocal active, peak
+                active += 1
+                peak = max(peak, active)
+                if active == 5:
+                    batch_tasks.update(asyncio.all_tasks() - baseline_tasks)
+                    # Expire only after the concurrent batch starts. Event-loop
+                    # creation, imports and CI scheduling cannot consume this gate.
+                    batch_timeout.reschedule(asyncio.get_running_loop().time())
+                try:
+                    await asyncio.Future()
+                except asyncio.CancelledError:
+                    cancelled.append(link)
+                    raise
+                finally:
+                    active -= 1
+
+        # Harness watchdog, not a replacement for the production deadline.
+        async with asyncio.timeout(5):
+            output = await digest.DigestService(SlowFetcher(), None, None, actual_repo)._enrich_news_candidates(
+                candidates, BatchDeadline()
+            )
+        assert batch_timeout.expired()
+        assert len(output) == 45 and {item["link"] for item in output} == {item["link"] for item in candidates}
+        assert peak == 5 and active == 0 and len(set(cancelled)) == 5
+        assert len(batch_tasks) == 45 and all(task.done() and task.cancelled() for task in batch_tasks)
+        # Check before asyncio.run performs its own automatic task cleanup.
+        assert asyncio.all_tasks() == baseline_tasks
+        assert set(threading.enumerate()) == baseline_threads
+
+    asyncio.run(exercise_cancellation())
 
 
 def test_http_deadline_cancels_slow_stream_and_closes_it():
