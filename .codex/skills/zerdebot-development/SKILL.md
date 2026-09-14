@@ -9,6 +9,8 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 The legacy daily group summary EventBridge rule and its SQS send grant are removed from CDK. Do not restore them behind old memory flags or configured chat lists. Existing deployments still require the reviewed infrastructure update; V2 recovery, news and quiz schedules retain their existing owners.
 
+The next public evaluation route and self-claims-v2.5 follow [the current quality/evidence contract](../../../docs/MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
+
 The post-baseline handbook/education fixes use the existing V2 safety and answer
 owners; their bounded scope and unverified model-quality status are recorded in
 [Memory quality follow-up](../../../docs/MEMORY_QUALITY_FOLLOWUP.md).

@@ -91,6 +91,18 @@ class BrokerClient:
             raise SessionError("Provider broker has no trustworthy receipt") from None
 
 
+class EvaluationPaused(BaseException):
+    """Stop the offline session across production retry handlers, like cancellation."""
+
+
+class RemoteProviderFailure(RuntimeError):
+    """Safe broker reason, distinct from a source fence or caller contract error."""
+
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__("Real provider attempt has no usable response")
+
+
 class RemoteProvider:
     """Projected-domain provider seam; recorded failures never become fake facts."""
 
@@ -101,21 +113,33 @@ class RemoteProvider:
 
     async def generate(self, request):
         self.trace.append(copy.deepcopy(request))
-        ordinal, self.ordinal = self.ordinal, self.ordinal + 1
         if self.failed:
+            self.ordinal += 1
             raise TimeoutError("Explicit synthetic provider fault")
         digest = fingerprint(request)
-        try:
-            result = self.broker.call(
-                {"scenario_id": self.scenario_id, "kind": self.kind, "ordinal": ordinal, "request": request}
-            )
-        except SessionError:
-            result = {"ok": False, "reason": "broker_unavailable"}
+        while True:
+            ordinal, self.ordinal = self.ordinal, self.ordinal + 1
+            try:
+                result = self.broker.call(
+                    {"scenario_id": self.scenario_id, "kind": self.kind, "ordinal": ordinal, "request": request}
+                )
+            except SessionError:
+                result = {"ok": False, "reason": "broker_unavailable"}
+            # Only an explicit resume can construct a new broker after a 429.
+            # Advance past its cached rejected wire ordinal, including the
+            # single-shot audit lane. Never skip ambiguous or accounting errors.
+            if not (result.get("cache_hit") is True and result.get("reason") == "recorded_rate_limited"):
+                break
+        if result.get("reason") == "provider_rate_limited":
+            # A real 429 is a session-level external limit, not a synthetic
+            # provider fault or a completed unsupported scenario. The broker
+            # already durably retained this attempt and its unknown charge.
+            raise EvaluationPaused()
         if result.get("ok") is not True or not isinstance(result.get("payload"), dict):
             self.missing.append(
                 {"kind": self.kind, "request_sha256": digest, "reason": result.get("reason", "invalid_receipt")}
             )
-            raise RuntimeError("Real provider attempt has no usable response")
+            raise RemoteProviderFailure(result.get("reason", "invalid_receipt"))
         # A distinct, successfully budgeted retry can resolve this exact request.
         self.missing = [row for row in self.missing if row["request_sha256"] != digest]
         return result["payload"]
@@ -131,13 +155,14 @@ def provider_summary(directory):
     return summarize_attempts(rows)
 
 
-def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None):
+def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None, answer_route="domain"):
     """Caller holds session.lock. Completed scenarios resume without domain/HTTP replay."""
     from .domain_adapter import DomainReplayAdapter
 
     result_directory = directory / "scenarios"
     result_directory.mkdir(mode=0o700, exist_ok=True)
     observations, executions = [], []
+    atomic_json(directory / "execution-status.json", {"state": "RUNNING"})
     for scenario in corpus:
         sid = scenario["scenario_id"]
         projected = project_scenario(scenario)
@@ -147,7 +172,9 @@ def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None):
             if result["input_sha256"] != fingerprint(projected):
                 raise SessionError("Persisted scenario input changed")
         else:
-            adapter = DomainReplayAdapter(catalog, provider_factory=lambda **kwargs: RemoteProvider(broker, **kwargs))
+            adapter = DomainReplayAdapter(
+                catalog, provider_factory=lambda **kwargs: RemoteProvider(broker, **kwargs), answer_route=answer_route
+            )
             adapter.provider_kind = "recorded_provider"
             try:
                 records = adapter.observe_scenario(projected)
@@ -180,6 +207,21 @@ def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None):
                     ),
                     "observations": records,
                 }
+            except EvaluationPaused:
+                atomic_json(
+                    directory / "execution-status.json",
+                    {
+                        "state": "PAUSED",
+                        "reason": "provider_rate_limited",
+                        "scenario_id": sid,
+                        "completed_scenarios": len(executions),
+                        "planned_scenarios": len(corpus),
+                        "provider_budget": provider_summary(directory),
+                    },
+                )
+                # No partial scenario is committed. A later explicit resume
+                # replays cached ordinals and cannot resend the rejected attempt.
+                return observations, executions
             except Exception as exc:
                 # Preserve the missing checkpoints, rather than fabricate empty
                 # gold-shaped observations or silently drop a planned scenario.
@@ -201,10 +243,18 @@ def run_scenarios(corpus, catalog, directory, broker, *, stop_after=None):
         print(json.dumps({"scenario_id": sid, "status": result["status"], "completed": len(executions)}), flush=True)
         if stop_after is not None and len(executions) >= stop_after:
             break
+    atomic_json(
+        directory / "execution-status.json",
+        {
+            "state": "FINISHED" if len(executions) == len(corpus) else "STOPPED_AFTER_LIMIT",
+            "completed_scenarios": len(executions),
+            "planned_scenarios": len(corpus),
+        },
+    )
     return observations, executions
 
 
-def build_manifest(corpus, confirmation_rows, *, budget_micro_usd, max_calls, rpm):
+def build_manifest(corpus, confirmation_rows, *, budget_micro_usd, max_calls, rpm, answer_route="domain"):
     from services.memory_budget import MODEL, PRICE_VERSION
 
     validate_corpus(corpus)
@@ -215,11 +265,13 @@ def build_manifest(corpus, confirmation_rows, *, budget_micro_usd, max_calls, rp
         or not 1 <= max_calls <= 10000
         or type(rpm) is not int
         or not 1 <= rpm <= 60
+        or answer_route not in {"domain", "public-v1"}
     ):
         raise SessionError("Require explicit budget >0 and <=$100, max_calls 1..10000, rpm 1..60")
     projected = [project_scenario(scenario) for scenario in corpus]
     return {
         "schema": 1,
+        "answer_route": answer_route,
         "model": MODEL,
         "price_version": PRICE_VERSION,
         "budget_micro_usd": budget_micro_usd,
@@ -242,6 +294,7 @@ def main():
     parser.add_argument("--scenario", action="append", default=[])
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--stop-after-scenarios", type=int)
+    parser.add_argument("--answer-route", choices=("domain", "public-v1"), default="public-v1")
     args = parser.parse_args()
     if args.stop_after_scenarios is not None and args.stop_after_scenarios < 1:
         raise SessionError("Stop-after must be positive")
@@ -269,7 +322,12 @@ def main():
     sys.path[:0] = [str(ROOT / "src/bot"), str(ROOT / "src/shared/python")]
     with exclusive_lock(directory / "session.lock"), patch.dict(os.environ, runtime_environment(), clear=True):
         manifest = build_manifest(
-            corpus, confirmations, budget_micro_usd=int(amount), max_calls=args.max_calls, rpm=args.rpm
+            corpus,
+            confirmations,
+            budget_micro_usd=int(amount),
+            max_calls=args.max_calls,
+            rpm=args.rpm,
+            answer_route=args.answer_route,
         )
         initialise_session(directory, manifest, resume=args.resume)
         plan = {
@@ -296,7 +354,7 @@ def main():
         broker = BrokerClient(directory, api_key=api_key, rpm=args.rpm)
         try:
             observations, executions = run_scenarios(
-                corpus, catalog, directory, broker, stop_after=args.stop_after_scenarios
+                corpus, catalog, directory, broker, stop_after=args.stop_after_scenarios, answer_route=args.answer_route
             )
         finally:
             broker.close()
@@ -304,8 +362,10 @@ def main():
         if any(manifest.get(key) != value for key, value in current_source.items()):
             raise SessionError("Executable source changed during the evaluation")
         provenance = {
+            "execution_status": json.loads((directory / "execution-status.json").read_text()),
             "provider_kind": "recorded_provider",
             "purpose": "REAL_GEMINI_SYNTHETIC_DOMAIN_EVALUATION",
+            "answer_route": manifest["answer_route"],
             "model": manifest["model"],
             "corpus_sha256": manifest["corpus_sha256"],
             "domain_network_calls": 0,

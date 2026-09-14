@@ -1,0 +1,37 @@
+{
+  "purpose": "ONE_SYNTHETIC_QUOTA_DIAGNOSTIC_NOT_QUALITY_EVALUATION",
+  "observed_at": 1789423585.476498,
+  "evidence": {
+    "http_status": 429,
+    "error_type": null,
+    "response_sha256": "23ed9ca6c70f52f163efbaee90a0f637e9cf9748b86a7124e33517b7b0dbef72",
+    "quota_observations": [
+      {
+        "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+        "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+        "quotaValue": "500",
+        "dimensions": {
+          "model": "gemini-3.1-flash-lite",
+          "location": "global"
+        }
+      }
+    ]
+  },
+  "budget": {
+    "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
+    "attempts_reserved": 1,
+    "charged_upper_micro_usd": 458752,
+    "cache_hits": 0,
+    "responses": 0,
+    "unknown_attempts": 1,
+    "usage_verified_attempts": 0,
+    "unknown_billing_attempts": 1,
+    "unverified_usage_responses": 0,
+    "verified_token_micro_usd": 0,
+    "unknown_hold_micro_usd": 458752
+  },
+  "source_sha256": "ba668209c10c28ebbb13d988b16581a087726d338d92b14c2f4c7aba2f728f48",
+  "quality_claim": "NOT_AN_EVALUATION",
+  "parameter_scope": "dev Gemini key",
+  "requests": 1
+}

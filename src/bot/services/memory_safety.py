@@ -72,6 +72,32 @@ _PERSON_OR_GROUP_RE = re.compile(
 
 _QUESTION_CUE_RE = re.compile(r"\?|？|\bwho\b|\bкто\b|\bкім\b|谁", flags=re.IGNORECASE)
 
+# Positive subject grammar, not a list of disallowed people's names/roles.
+# Unknown subjects, modifiers and trailing clauses keep the original best guard.
+_PERSONAL_FIT_BEST_RE = re.compile(
+    r"(?P<before>\s*(?:(?:a|an|the|these|those)\s+)?"
+    r"(?:(?:short|brief|concise|detailed|clear|simple|concrete|worked|visual|"
+    r"written|spoken|friendly|formal|neutral|gentle|direct|relaxed|slower)\s+){0,3}"
+    r"(?:tones?|paragraphs?|sentences?|explanations?|examples?|diagrams?|"
+    r"illustrations?|visuals?|formats?|layouts?|summar(?:y|ies)|answers?|"
+    r"repl(?:y|ies)|pace|feedback|instructions?|steps?)\s+works?\s+)"
+    r"best(?P<after>\s+for\s+me\s*[.!;。；]?\s*)",
+    flags=re.IGNORECASE,
+)
+_PERSONAL_METHOD_BEST_RE = re.compile(
+    r"(?P<before>\bI\s+(?:learn|understand|remember|focus|concentrate)\s+)" r"best(?=\s+(?:through|with|by|when)\b)",
+    flags=re.IGNORECASE,
+)
+_PREFERENCE_COMPARISON_RE = re.compile(
+    r"\b(?:than|among|against|versus|vs|anyone|everyone|others?|all|"
+    r"compar(?:ed|ing|ison)|outperform\w*|"
+    r"team|member|colleague|boss|manager|"
+    r"всех|остальн\w*|чем|среди|команд\w*|коллег\w*|"
+    r"бәрінен|баринен|барлығ\w*|барлыг\w*)\b|比|其他|其它|所有",
+    flags=re.IGNORECASE,
+)
+_RANKING_CLAUSE_RE = re.compile(r"[^.!?;。！？；]+[.!?;。！？；]?")
+
 _FUTURE_ANSWER_DIRECTIVE_RE = re.compile(
     "|".join(
         (
@@ -149,7 +175,25 @@ def _clean(text: str) -> str:
 
 
 def _ranking_text(text: str) -> str:
-    return _SAFE_PHRASES_RE.sub("", _clean(text))
+    cleaned = _SAFE_PHRASES_RE.sub("", _clean(text))
+
+    def personal_preference(match: re.Match[str]) -> str:
+        clause = match.group()
+        # Keep ambiguous person/group comparisons and questions conservative.
+        # Other sentences still undergo the complete ranking/directive checks.
+        if (
+            _PERSON_OR_GROUP_RE.search(clause)
+            or _QUESTION_CUE_RE.search(clause)
+            or _PREFERENCE_COMPARISON_RE.search(clause)
+        ):
+            return clause
+        fit = _PERSONAL_FIT_BEST_RE.fullmatch(clause)
+        if fit:
+            return fit.group("before") + fit.group("after")
+        # Only this adverbial occurrence is masked; other rankings still count.
+        return _PERSONAL_METHOD_BEST_RE.sub(lambda item: item.group("before"), clause)
+
+    return _RANKING_CLAUSE_RE.sub(personal_preference, cleaned)
 
 
 def looks_like_future_answer_directive(text: str) -> bool:

@@ -14,7 +14,8 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
   },
   {
     "id": "Z02",
@@ -29,7 +30,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z03",
@@ -44,7 +45,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z04",
@@ -59,7 +60,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       205
     ]
@@ -80,7 +81,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z06",
@@ -100,7 +101,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z07",
@@ -119,7 +120,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       207
     ]
@@ -141,7 +142,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       207
     ]
@@ -163,7 +164,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z10",
@@ -184,13 +185,14 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       206
     ],
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
-    "overall_acceptance_complete": false
+    "overall_acceptance_complete": false,
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
   },
   {
     "id": "Z11",
@@ -205,7 +207,7 @@
       "Z19"
     ],
     "body_file": "issues/Z11.md",
-    "status": "real_model_partial_quality_not_accepted",
+    "status": "real_model_partial_rate_limited_quality_not_accepted",
     "number": 168,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196",
@@ -214,7 +216,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       207
     ]
@@ -232,7 +234,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z13",
@@ -247,7 +249,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z14",
@@ -262,7 +264,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z15",
@@ -278,7 +280,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z16",
@@ -294,14 +296,14 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z17",
     "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
     "depends_on": [],
     "body_file": "issues/Z17.md",
-    "status": "deployed_cost_reader_fix_pending",
+    "status": "deployed_cost_retry_readback_pass_acceptance_pending",
     "number": 174,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187",
@@ -312,7 +314,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "followup_prs_pending_review": [
       205,
       208
@@ -331,7 +333,7 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a"
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f"
   },
   {
     "id": "Z19",
@@ -345,9 +347,10 @@
     "integration_prs": [],
     "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
     "merged_via_pr": 204,
-    "deployed_source": "f305aae911fffd652b225e6aecd9eded495e2d1a",
+    "deployed_source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
-    "overall_acceptance_complete": false
+    "overall_acceptance_complete": false,
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
   }
 ]

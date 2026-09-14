@@ -1,0 +1,152 @@
+{
+  "source_commit": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
+  "pull_requests": [
+    205,
+    206,
+    207,
+    210
+  ],
+  "targets": [
+    {
+      "stage": "dev",
+      "readback_sha256": "78bbb10eaef03635529594160c15bfc87945bae61f4598094a807f02d166677e",
+      "status": "PASS_FINAL_ARTIFACT_CONFIG_AND_STOPPED_READBACK",
+      "started_at": 1789422546.1220832,
+      "finished_at": 1789422694.138106,
+      "functions": [
+        {
+          "name": "zerde-serverless-bot-dev",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-vector-indexer-dev",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-news-dev",
+          "code_sha256": "ro7E5G2HtOLefjO6XDBad/vdaKOpsd/Cf7vGaDMZnq4=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 13,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-quiz-dev",
+          "code_sha256": "kXim1TmsN65DsuHCE2hoQDpS87AcZ3OmHocGPaSyGkA=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 13,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-operations-dev",
+          "code_sha256": "qbVHGYxhAuWy2+okBEGW8KiKQIVnR1IAgOmQ1SRowlY=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 3,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-memory-v2-worker-dev",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        }
+      ],
+      "shared_layer_code_sha256": "9jpgdPKM5aVc1daMwGR0RlTvg5PfbBg3LbPEX2e2pY8=",
+      "controls_checked_stopped": 1,
+      "retired_rules_removed": []
+    },
+    {
+      "stage": "prod",
+      "readback_sha256": "f8e6f0bd540b0cb16e332163e90344aa16a7a7a08fa6d32b3250fe02e3f59cc9",
+      "status": "PASS_FINAL_ARTIFACT_CONFIG_AND_STOPPED_READBACK",
+      "started_at": 1789423165.580218,
+      "finished_at": 1789423285.7191172,
+      "functions": [
+        {
+          "name": "zerde-serverless-bot-prod",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-vector-indexer-prod",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-news-prod",
+          "code_sha256": "ro7E5G2HtOLefjO6XDBad/vdaKOpsd/Cf7vGaDMZnq4=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 13,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-quiz-prod",
+          "code_sha256": "kXim1TmsN65DsuHCE2hoQDpS87AcZ3OmHocGPaSyGkA=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 13,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-operations-prod",
+          "code_sha256": "qbVHGYxhAuWy2+okBEGW8KiKQIVnR1IAgOmQ1SRowlY=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 3,
+          "configuration_matches_final_template": true
+        },
+        {
+          "name": "zerde-serverless-memory-v2-worker-prod",
+          "code_sha256": "rVwAQnVr2p4PqjkdfoUjeR4ejjTiiFvNXNwb1y5dp7U=",
+          "physical_zip_sha_verified": true,
+          "first_party_compared": 107,
+          "configuration_matches_final_template": true
+        }
+      ],
+      "shared_layer_code_sha256": "9jpgdPKM5aVc1daMwGR0RlTvg5PfbBg3LbPEX2e2pY8=",
+      "controls_checked_stopped": 4,
+      "retired_rules_removed": [
+        "zerde-serverless-group-memory-daily-summary-prod"
+      ]
+    }
+  ],
+  "product_acceptance": "NOT_COMPLETE",
+  "memory_learning": "STOPPED",
+  "real_telegram_profile_lifecycle": "NOT_COMPLETE",
+  "seven_day_pilot": "NOT_STARTED",
+  "readback_limitations": [
+    "Existing prod Chinese-news rule remains DISABLED while template says ENABLED; this release intentionally left it unchanged.",
+    "CloudFormation GetTemplate loses the Unicode dash in two Quiz descriptions; exact resource/description readback proves the two-leaf normalization."
+  ],
+  "dev_telegram_canary": {
+    "source": "5669a71f07e409386496fbc0cdf0c5bfae8b157f",
+    "target": "dev",
+    "surface": "Telegram Desktop native UI",
+    "group": "owner-authorized Test bots",
+    "observed_at": 1789423289.337236,
+    "checks": [
+      {
+        "command": "/ping@zerde_dev_bot",
+        "actual": "Pong! Serverless is fast.",
+        "status": "PASS"
+      },
+      {
+        "command": "/ask@zerde_dev_bot Reply with only DEPLOY_OK_5669A71.",
+        "actual": "DEPLOY_OK_5669A71",
+        "status": "PASS"
+      }
+    ],
+    "excluded_attempt": {
+      "reason": "UI typeText omitted Chinese input; bot correctly requested a real question; not used as passing quality evidence"
+    },
+    "scope": "real explicit message delivery only; not profile learning, source-link or lifecycle acceptance"
+  }
+}

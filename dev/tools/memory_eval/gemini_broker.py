@@ -107,7 +107,12 @@ async def gemini_attempt(kind, request, key):
                 if kind == "extraction"
                 else GeminiAnswerProvider(key, client=observed)
             )
-            payload = await provider.generate(request)
+            if kind in {"plain_answer", "plain_answer_audit"}:
+                # Tool validators run before reservation. Reuse the same bounded
+                # priced-model transport, not the production urllib3 network.
+                payload = await provider._send(observed, request["payload"] if kind == "plain_answer" else request)
+            else:
+                payload = await provider.generate(request)
             if key in json.dumps(payload, ensure_ascii=False):
                 payload = None
                 evidence["error_type"] = "CredentialEchoRejected"
@@ -120,13 +125,29 @@ async def gemini_attempt(kind, request, key):
 class BrokerEngine:
     def __init__(self, ledger, attempt, *, sleep=asyncio.sleep):
         self.ledger, self.attempt, self.sleep = ledger, attempt, sleep
+        self.rate_limited = False
 
     async def generate(self, call):
         from services.memory_v2.answer_prompt import validate_answer_request
         from services.memory_v2.extraction_prompt import validate_request
 
         AttemptLedger.identity(call)
-        (validate_request if call["kind"] == "extraction" else validate_answer_request)(call["request"])
+        if (
+            call["kind"] in {"plain_answer", "plain_answer_audit"}
+            and self.ledger.manifest.get("answer_route") != "public-v1"
+        ):
+            raise SessionError("Plain calls require an explicitly frozen public route")
+        from .plain_requests import validate_audit_request, validate_plain_request
+
+        validators = {
+            "extraction": validate_request,
+            "answer": validate_answer_request,
+            "plain_answer": validate_plain_request,
+            "plain_answer_audit": validate_audit_request,
+        }
+        validators[call["kind"]](call["request"])
+        if self.rate_limited:
+            return {"ok": False, "reason": "provider_rate_limited", "cache_hit": False}
         cached = self.ledger.cached(call)
         if cached is not None:
             return cached
@@ -152,6 +173,9 @@ class BrokerEngine:
         payload, evidence = await self.attempt(call["kind"], call["request"])
         if not self.ledger.finish(identifier, payload, evidence):
             return {"ok": False, "reason": "accounting_anomaly", "cache_hit": False}
+        if evidence.get("http_status") == 429:
+            self.rate_limited = True
+            return {"ok": False, "reason": "provider_rate_limited", "cache_hit": False}
         if payload is None:
             return {"ok": False, "reason": "provider_unknown", "cache_hit": False}
         return {"ok": True, "payload": payload, "cache_hit": False}

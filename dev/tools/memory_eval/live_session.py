@@ -134,7 +134,7 @@ class AttemptLedger:
             not isinstance(call, dict)
             or set(call) != {"scenario_id", "kind", "ordinal", "request"}
             or not isinstance(call["scenario_id"], str)
-            or call["kind"] not in {"extraction", "answer"}
+            or call["kind"] not in {"extraction", "answer", "plain_answer", "plain_answer_audit"}
             or type(call["ordinal"]) is not int
             or call["ordinal"] < 0
             or not isinstance(call["request"], dict)
@@ -160,7 +160,10 @@ class AttemptLedger:
             if fingerprint(payload) != json.loads(row["evidence_json"])["payload_sha256"]:
                 raise SessionError("Recorded response failed its checksum")
             return {"ok": True, "payload": payload, "cache_hit": True}
-        return {"ok": False, "reason": "recorded_unknown", "cache_hit": True}
+        if row["state"] == "UNKNOWN" and json.loads(row["evidence_json"]).get("http_status") == 429:
+            return {"ok": False, "reason": "recorded_rate_limited", "cache_hit": True}
+        reason = "recorded_provider_unknown" if row["state"] in {"UNKNOWN", "INFLIGHT"} else "recorded_accounting_error"
+        return {"ok": False, "reason": reason, "cache_hit": True}
 
     def pacing_delay(self):
         row = self.db.execute("SELECT MAX(started_at) FROM attempts").fetchone()

@@ -178,3 +178,11 @@ Z09统一answer lease接口已冻结：获取、读取当前事实、绑定fact_
 - 22:25:32 UTC读回四个CONTROL缺行、相关告警OK且ActionsEnabled，ALARM/OK动作各1项。未做一小时持续观测，未调用模型、开启学习或更改清理状态。本次短暂暂停的deploy workflow已恢复active、分支保护规则不变；直接代码更新留下CloudFormation旧Code指针，完整CDK部署前须先合入#205并同步当前环境与代码差异。
 
 `ONLINE_CLEAN_COPIES_PENDING`及原归档/PITR到期职责、Z18资源保留、真实模型质量FAIL、#207质量修复未重新实测、学习STOPPED和七天单群尚未开始均保持。不能由费用历史覆盖完整推定产品验收完成。
+
+## 2026-09-15 发布、清零后重放与模型质量发现
+
+#205–#207、#210 已合并，`5669a71` dev/prod 完整部署并读回六实际代码包、共享层、锁定依赖和配置。独立核验队列并发10/3/2、存储身份和CONTROL默认STOPPED；生产旧摘要规则已移除，中文新闻既有手动停用漂移保留。测试群真实显式问答返回验收口令。
+
+清零后两次同步生产调用覆盖18条退休任务，均成功丢弃且没有记忆计量开始；独立前后旧表3SETTINGS原完整哈希一致，记忆0、向量0。备份/PITR等副本的保留期仍单列。完整[发布证据](evidence/2026-09-15-continuation/deployment-5669a71.json)及[独立联合证据](evidence/2026-09-15-continuation/independent-release-and-replay.safe.json)均不代表记忆产品验收完成。
+
+真实模型冻结基线提交155/240场景（152EXECUTED、3UNSUPPORTED），252/404检查点有观测，原gold不变。来源跨度、学历类型、正常偏好误拦及公共fallback观测缺口都保留原失败。独立摘要另存，原report仍是smoke不复用。一次额外限流诊断确认实际dev密钥免费层RPD500已耗尽；该调用单独记账，不纳入质量样本。下一版需新固定源码、新会话完整四语言复验，再做真实Telegram生命周期和七天试运行。

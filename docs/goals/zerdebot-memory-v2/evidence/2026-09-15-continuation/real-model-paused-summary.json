@@ -1,0 +1,465 @@
+{
+  "aggregate_billing": {
+    "attempts": 815,
+    "carried_liability_micro_usd": 18519211,
+    "inflight": 0,
+    "operator_cap_micro_usd": 100000000,
+    "remaining_micro_usd": 81480789,
+    "unknown_hold_micro_usd": 18350080,
+    "unknown_usage_attempts": 40,
+    "verified_token_micro_usd": 169131,
+    "verified_usage_attempts": 775
+  },
+  "boundaries": [
+    "No source, gold, ledger, or original run artifact modified.",
+    "No model, AWS, or Telegram calls by this independent review.",
+    "Money is verified standard-price usage plus conservative unknown holds, not an invoice or paid amount.",
+    "Original gemini two responses retain the previously approved external usage reconciliation; no original ledger rewritten.",
+    "Synthetic domain observations do not prove production identity, Telegram routing, dev canary, or seven-day pilot.",
+    "English and mixed metrics keep all unexecuted planned cases in their original denominators.",
+    "Summary was materialized from the already completed frozen review; full baseline was not rescanned for this write."
+  ],
+  "completion": {
+    "committed_scenarios": 155,
+    "executed_checkpoints": 247,
+    "executed_scenarios": 152,
+    "missing_answers": 16,
+    "missing_checkpoints": 152,
+    "not_started_id_ranges": [
+      "en-037..en-060",
+      "mixed-001..mixed-060"
+    ],
+    "not_started_scenarios": 84,
+    "observed_checkpoints": 252,
+    "started_but_uncommitted_ids": [
+      "en-036"
+    ],
+    "uncommitted_scenarios": 85,
+    "unsupported_checkpoints": 5,
+    "unsupported_ids": [
+      "en-032",
+      "en-034",
+      "en-035"
+    ],
+    "unsupported_scenarios": 3
+  },
+  "confirmation_fixture_sha256": "7f2ce57788cd646b395f5259497d69575951dc641bb556892000d4d1b6113457",
+  "corpus_sha256": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+  "created_at_utc": "2026-09-14T21:57:50.094533+00:00",
+  "execution_source_files": 132,
+  "execution_source_sha256": "ba668209c10c28ebbb13d988b16581a087726d338d92b14c2f4c7aba2f728f48",
+  "failure_taxonomy": [
+    {
+      "evidence": "22 actual HTTP 429; quota dimension not established; original unknown holds preserved",
+      "kind": "PROVIDER_QUOTA_OR_LIMIT",
+      "scenario_ids": [
+        "en-032",
+        "en-034",
+        "en-035",
+        "en-036"
+      ]
+    },
+    {
+      "evidence": "6 actual HTTP503 and 2 timeouts; recovered owner retries do not release prior unknown holds",
+      "kind": "PROVIDER_TRANSIENT_OR_TIMEOUT"
+    },
+    {
+      "evidence": "Actual model value dropped explicit degree or diploma; nine recorded fact observations mismatch frozen gold",
+      "kind": "EDUCATION_QUALIFICATION_LOSS",
+      "scenario_ids": [
+        "en-003",
+        "en-008",
+        "en-013",
+        "en-019",
+        "en-023",
+        "en-028",
+        "en-033"
+      ]
+    },
+    {
+      "confirmed_scenario_ids": [
+        "en-015"
+      ],
+      "evidence": "Existing bare best ranking rule rejects eligible personal tone preference before model input; independently reproduced with non-gold preferences",
+      "kind": "SAFETY_FALSE_POSITIVE"
+    },
+    {
+      "evidence": "Model converted shared-name statement into addressing preference without expressed preference intent",
+      "kind": "NAME_PREFERENCE_OVEREXTRACTION",
+      "scenario_ids": [
+        "en-023"
+      ]
+    },
+    {
+      "evidence": "Safe self-statement subclause did not include the frozen gold leading context; original strict failures retained",
+      "kind": "EVIDENCE_SPAN_COVERAGE",
+      "scenario_families": [
+        "kk/ru/en-023",
+        "kk/ru/en-024",
+        "kk/ru/en-025"
+      ]
+    },
+    {
+      "evidence": "Core-only adapter does not execute public plain-answer fallback after budget pause or group forget; no fabricated send or abstention",
+      "kind": "PUBLIC_FALLBACK_NOT_OBSERVED",
+      "missing_answers": 10,
+      "scenario_ids": [
+        "kk-033",
+        "ru-033",
+        "en-033",
+        "kk-054",
+        "ru-054"
+      ]
+    }
+  ],
+  "input_sha256": "b280854790f192a38d70d01aed445142f7d17c35ffae795ca8493083ed96f411",
+  "ledgers": [
+    {
+      "attempts": 4,
+      "carried_liability_micro_usd": 917740,
+      "name": "gemini",
+      "sha256": "37f2140aa5aa219c66db35d86d449f08c53eed2d543cf5bebc40ce102d14c183",
+      "unknown_hold_micro_usd": 917504,
+      "verified_token_micro_usd": 236
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "schema-diagnostic",
+      "sha256": "2b4b11e853bd97a693f22592752bf2b59afb4db4f37d49bfff1d11a00a7a72bf",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "gemini-fixed",
+      "sha256": "bbf465da02e5a2187c0df57f5856fae90d90dcf0a343c2a0e99546dab5cda72f",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 458752,
+      "name": "schema-v23",
+      "sha256": "f33e5cbfac1be67e5257885631a959929f253c790882f3e75cebf6a646449341",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 0
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 478,
+      "name": "schema-array-bounds",
+      "sha256": "3d78cf45a3843d9ebb4a4ac4c6d974f0a686d69627605d101ae4c03bc9f37017",
+      "unknown_hold_micro_usd": 0,
+      "verified_token_micro_usd": 478
+    },
+    {
+      "attempts": 1,
+      "carried_liability_micro_usd": 360,
+      "name": "schema-facet-restore",
+      "sha256": "0a89e3e78b9d3f2f624406f5a1a800c997fade477e4f03062e6afc4f17559328",
+      "unknown_hold_micro_usd": 0,
+      "verified_token_micro_usd": 360
+    },
+    {
+      "attempts": 100,
+      "carried_liability_micro_usd": 478265,
+      "name": "gemini-final-v24",
+      "sha256": "d2a72e0676d3b138cb162a5f45abed0789e0291720be14f35301909ec21a7512",
+      "unknown_hold_micro_usd": 458752,
+      "verified_token_micro_usd": 19513
+    },
+    {
+      "attempts": 185,
+      "carried_liability_micro_usd": 1875577,
+      "name": "gemini-final-signed-v24",
+      "sha256": "6ae30440a7b0318a38f44d5ab6edf5a249b8929158f9259b0a75bd89a5e9ebce",
+      "unknown_hold_micro_usd": 1835008,
+      "verified_token_micro_usd": 40569
+    },
+    {
+      "attempts": 521,
+      "carried_liability_micro_usd": 13870535,
+      "name": "gemini-full-20260915",
+      "sha256": "3b73bcd44a180e8796920542c772c6c2361376eee7ae9cb6ee6f5fda68ea52de",
+      "unknown_hold_micro_usd": 13762560,
+      "verified_token_micro_usd": 107975
+    }
+  ],
+  "manifest_canonical_sha256": "5e91f0886ae0a77fbbb7d95e4e1216781df9db557e9c3c36c873eede747cdc5f",
+  "new_run_billing": {
+    "all_new_request_hashes_verified": 521,
+    "attempts": 521,
+    "carried_liability_micro_usd": 13870535,
+    "http_200": 491,
+    "http_429": 22,
+    "http_503": 6,
+    "inflight": 0,
+    "new_response_payload_and_usage_verified": 491,
+    "responses": 491,
+    "timeout_without_http_status": 2,
+    "uncommitted_en036_attempts": 6,
+    "unknown": 30,
+    "unknown_hold_micro_usd": 13762560,
+    "unknown_retains_per_attempt_micro_usd": 458752,
+    "verified_token_micro_usd": 107975
+  },
+  "old_carryforward_report_sha256": "9bae7bb05bc033934f2a1ad24a752fbdedf4c04835311f6666cb91fb85868c1a",
+  "original_artifact_limitations": {
+    "final_ledger_attempts": 521,
+    "original_provenance_completed_scenarios": 1,
+    "original_provenance_file_sha256": "11d75b16be2db192ad0bf1d781282e4e77d66a9906028ebd678dd97a2afbcb34",
+    "original_report_executed_checkpoints": 1,
+    "original_report_file_sha256": "e161c5a66a4228287d224582a1672c9e624336606f050802daf9841d517833f2",
+    "progress_attempts_reserved": 515,
+    "progress_file_sha256": "e88a559e0165e4ffc5f927ec72f3efabd0398efea79ca769074ec42cc1f25967",
+    "report_and_provenance_still_smoke_only": true
+  },
+  "plan": {
+    "checkpoints": 404,
+    "gold_fact_observations": 764,
+    "scenarios": 240,
+    "supported_questions": 224,
+    "unique_gold_facts": 516,
+    "unknown_questions": 256
+  },
+  "plan_file_sha256": "74dca59c238729b9b5150ce0c6fd66a2d2ebb59aaba16e0c6a0f8bb63c6437c8",
+  "purpose": "INDEPENDENT_READ_ONLY_FROZEN_EVALUATION_SUMMARY",
+  "python_version": "3.13.6",
+  "quality": {
+    "complete": false,
+    "languages": {
+      "en": {
+        "assertions": 139,
+        "executed_scenarios": 32,
+        "fn": 115,
+        "fp": 10,
+        "gold_fact_observations": 191,
+        "known_complete": {
+          "denominator": 56,
+          "numerator": 22
+        },
+        "missing_answers": 8,
+        "missing_checkpoints": 51,
+        "planned_checkpoints": 101,
+        "planned_scenarios": 60,
+        "precision": {
+          "denominator": 86,
+          "numerator": 76
+        },
+        "recall": {
+          "denominator": 191,
+          "numerator": 76
+        },
+        "source_support": {
+          "denominator": 139,
+          "numerator": 120
+        },
+        "supported_answers_complete": 22,
+        "supported_assertions": 120,
+        "supported_questions": 56,
+        "thresholds_pass": false,
+        "tp": 76,
+        "uncommitted_scenarios": 25,
+        "unknown_abstained": 33,
+        "unknown_abstention": {
+          "denominator": 64,
+          "numerator": 33
+        },
+        "unknown_questions": 64,
+        "unsupported_scenarios": 3
+      },
+      "kk": {
+        "assertions": 294,
+        "executed_scenarios": 60,
+        "fn": 0,
+        "fp": 0,
+        "gold_fact_observations": 191,
+        "known_complete": {
+          "denominator": 56,
+          "numerator": 54
+        },
+        "missing_answers": 4,
+        "missing_checkpoints": 0,
+        "planned_checkpoints": 101,
+        "planned_scenarios": 60,
+        "precision": {
+          "denominator": 191,
+          "numerator": 191
+        },
+        "recall": {
+          "denominator": 191,
+          "numerator": 191
+        },
+        "source_support": {
+          "denominator": 294,
+          "numerator": 290
+        },
+        "supported_answers_complete": 54,
+        "supported_assertions": 290,
+        "supported_questions": 56,
+        "thresholds_pass": false,
+        "tp": 191,
+        "uncommitted_scenarios": 0,
+        "unknown_abstained": 61,
+        "unknown_abstention": {
+          "denominator": 64,
+          "numerator": 61
+        },
+        "unknown_questions": 64,
+        "unsupported_scenarios": 0
+      },
+      "mixed": {
+        "assertions": 0,
+        "executed_scenarios": 0,
+        "fn": 191,
+        "fp": 0,
+        "gold_fact_observations": 191,
+        "known_complete": {
+          "denominator": 56,
+          "numerator": 0
+        },
+        "missing_answers": 0,
+        "missing_checkpoints": 101,
+        "planned_checkpoints": 101,
+        "planned_scenarios": 60,
+        "precision": {
+          "denominator": 0,
+          "numerator": 0
+        },
+        "recall": {
+          "denominator": 191,
+          "numerator": 0
+        },
+        "source_support": {
+          "denominator": 0,
+          "numerator": 0
+        },
+        "supported_answers_complete": 0,
+        "supported_assertions": 0,
+        "supported_questions": 56,
+        "thresholds_pass": false,
+        "tp": 0,
+        "uncommitted_scenarios": 60,
+        "unknown_abstained": 0,
+        "unknown_abstention": {
+          "denominator": 64,
+          "numerator": 0
+        },
+        "unknown_questions": 64,
+        "unsupported_scenarios": 0
+      },
+      "ru": {
+        "assertions": 294,
+        "executed_scenarios": 60,
+        "fn": 0,
+        "fp": 0,
+        "gold_fact_observations": 191,
+        "known_complete": {
+          "denominator": 56,
+          "numerator": 54
+        },
+        "missing_answers": 4,
+        "missing_checkpoints": 0,
+        "planned_checkpoints": 101,
+        "planned_scenarios": 60,
+        "precision": {
+          "denominator": 191,
+          "numerator": 191
+        },
+        "recall": {
+          "denominator": 191,
+          "numerator": 191
+        },
+        "source_support": {
+          "denominator": 294,
+          "numerator": 290
+        },
+        "supported_answers_complete": 54,
+        "supported_assertions": 290,
+        "supported_questions": 56,
+        "thresholds_pass": false,
+        "tp": 191,
+        "uncommitted_scenarios": 0,
+        "unknown_abstained": 61,
+        "unknown_abstention": {
+          "denominator": 64,
+          "numerator": 61
+        },
+        "unknown_questions": 64,
+        "unsupported_scenarios": 0
+      }
+    },
+    "model_quality_claim": "NOT_VERIFIED",
+    "numeric_thresholds_pass": false,
+    "overall": {
+      "assertions": 727,
+      "fn": 306,
+      "fp": 10,
+      "gold_fact_observations": 764,
+      "missing_answers": 16,
+      "missing_checkpoints": 152,
+      "supported_answers_complete": 130,
+      "supported_assertions": 700,
+      "supported_questions": 224,
+      "tp": 458,
+      "unknown_abstained": 155,
+      "unknown_questions": 256
+    },
+    "product_gate": "IMPLEMENTED_UNPROVEN",
+    "scorer": "unchanged v1 evaluator; all 240 planned scenarios retained",
+    "zero_tolerance": {
+      "automatic_social": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      },
+      "business_damage": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      },
+      "cross_chat": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      },
+      "delete_resurrection": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      },
+      "sensitive_leak": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      },
+      "wrong_identity": {
+        "count": 0,
+        "planned_checkpoints": 404,
+        "status": "UNVERIFIED",
+        "verified_checkpoints": 252
+      }
+    }
+  },
+  "schema": 1,
+  "session_file_sha256": "e38dc198ebba4199ab19decc590bc5a68cbee2e44f28cdf143cda8aadf76e029",
+  "source_and_gold_unchanged_at_verification": true,
+  "source_commit": "b7cbe319c83042884032912fdc1648c528da30b7",
+  "source_run": "gemini-full-20260915",
+  "verification_snapshot_utc": "2026-09-14T21:54:32.733061+00:00",
+  "work_coverage": {
+    "distinct_work": 520,
+    "done": 504,
+    "expired": 10,
+    "paused": 3,
+    "pending": 3,
+    "status": "UNVERIFIED"
+  }
+}
