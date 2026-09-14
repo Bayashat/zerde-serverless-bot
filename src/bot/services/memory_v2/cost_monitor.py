@@ -23,9 +23,8 @@ from services.memory_v2._cost_catalog import (
     micro,
     number,
     parse_inventory,
-    parse_reports,
-    report_query,
 )
+from services.memory_v2._cost_reports import REPORT_EVENT_LIMIT, parse_reports, report_query
 from services.memory_v2._cost_state import CostState, month_at
 
 _LOG_QUERY_SECONDS = 45
@@ -137,12 +136,16 @@ class SDKCostTelemetry:
                 created.append(groups[spec["log_group"]]["created"])
         for spec in self.inventory.queues:
             self.api_units += 1
+            # FifoQueue is FIFO-only: requesting it for a standard queue can
+            # raise InvalidAttributeName. The closed inventory and exact ARN
+            # below bind the response to a name without the required .fifo suffix.
             response = self.sqs.get_queue_attributes(
                 QueueUrl=spec["url"],
-                AttributeNames=["QueueArn", "CreatedTimestamp", "MaximumMessageSize", "FifoQueue", "KmsMasterKeyId"],
+                AttributeNames=["QueueArn", "CreatedTimestamp", "MaximumMessageSize", "KmsMasterKeyId"],
             )["Attributes"]
             if (
                 response.get("QueueArn") != f"arn:aws:sqs:{REGION}:{self.inventory.account_id}:{spec['name']}"
+                or spec["name"].endswith(".fifo")
                 or response.get("FifoQueue", "false") != "false"
                 or response.get("KmsMasterKeyId")
                 or not 0 < int(response["MaximumMessageSize"]) <= 1024 * 1024
@@ -240,7 +243,7 @@ class SDKCostTelemetry:
                     startTime=start - HALO_SECONDS,
                     endTime=end + HALO_SECONDS,
                     queryString=report_query(start, end, shared=kind == "shared_bot"),
-                    limit=100,
+                    limit=REPORT_EVENT_LIMIT,
                 )
                 query_id = response.get("queryId")
                 if not query_id:
@@ -253,7 +256,7 @@ class SDKCostTelemetry:
                         state.settle_scan(month, key, micro(scanned / GIB, "log_scan_gib"))
                         if scanned > _SCAN_CEILING_BYTES:
                             raise UnverifiedCost("Actual REPORT scan exceeded its allowance")
-                        parsed = parse_reports(result, groups)
+                        parsed = parse_reports(result, groups, start=start, end=end, shared=kind == "shared_bot")
                         for function in self.inventory.functions:
                             if function["log_group"] not in groups:
                                 continue
@@ -339,6 +342,7 @@ class MemoryCostMonitor:
         now, reason, verified = int(self.clock()), "INCOMPLETE", False
         month = month_at(now)
         estimate, covered_until = 0, 0
+        observation_complete = False
         self.telemetry.api_units = 0
         try:
             metadata = self.telemetry.resources()
@@ -382,7 +386,9 @@ class MemoryCostMonitor:
                 "log_storage_gib_month",
             )
             reason = "OBSERVED_GROSS_ESTIMATE" if verified else "HISTORICAL_COVERAGE_INCOMPLETE"
+            observation_complete = True
         except Exception as exc:
+            verified = False
             reason = type(exc).__name__
         # Always include alarms, telemetry calls/unknown scans and a lag/operations
         # allowance. Never subtract account Free Tier, credits, tax or refunds.
@@ -403,7 +409,15 @@ class MemoryCostMonitor:
         )
         self.state.observe_model(month)
         self.state.dispatch_notices(sns=self.sns, topic_arn=self.topic_arn)
-        if measurement["measurement_state"] != "ESTIMATE_VERIFIED":
+        # A completed block can be healthy progress without granting admission.
+        # The success flag distinguishes that path from an exception with the
+        # same reason, and the persisted reason preserves scan-overrun failures.
+        historical_progress = (
+            observation_complete
+            and measurement["measurement_state"] == "UNVERIFIED"
+            and measurement["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"
+        )
+        if measurement["measurement_state"] != "ESTIMATE_VERIFIED" and not historical_progress:
             raise UnverifiedCost("Memory AWS measurement is incomplete; optional work remains paused")
         return {
             key: measurement[key]
