@@ -116,7 +116,10 @@ def test_config_defaults_agree_between_example_runtime_and_lambda_template(monke
     for key, expected in _CONFIG_DEFAULTS.items():
         assert example[key] == expected, key
         if key not in _QUEUE_CONFIG_KEYS:
-            assert deployed[key] == expected, key
+            if key in bot_component.RETIRED_DEFAULT_ENVIRONMENT:
+                assert key not in deployed, key
+            else:
+                assert deployed[key] == expected, key
             assert _runtime_value_as_text(runtime[key]) == expected, key
 
 
@@ -376,6 +379,35 @@ def test_retired_contest_has_no_schedule_or_iam_queue_grant(monkeypatch, env_nam
     _find_resource_by_property(template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-bot-memory-{env_name}")
 
 
+@pytest.mark.parametrize("env_name", ["dev", "prod"])
+@pytest.mark.parametrize("legacy_memory_enabled", ["true", "false"])
+def test_retired_daily_summary_cannot_be_recreated_by_legacy_settings(monkeypatch, env_name, legacy_memory_enabled):
+    # A non-empty chat map used to recreate this retired schedule even with
+    # GROUP_MEMORY_ENABLED=false. Preserve the active business/recovery owners.
+    monkeypatch.setenv("CHATS_KK", "-100123")
+    monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
+    monkeypatch.setenv("GROUP_MEMORY_ENABLED", legacy_memory_enabled)
+    template = _template(monkeypatch, env_name=env_name)
+    rendered = json.dumps(template.to_json())
+    assert "PROCESS_DAILY_GROUP_SUMMARIES" not in rendered
+    assert "DailyGroupSummaryRule" not in rendered  # Includes its former SQS policy grant.
+    assert "group-memory-daily-summary" not in rendered
+    for table in ("bot-stats", "bot-memory", "memory-v2", "quiz"):
+        _, resource = _find_resource_by_property(
+            template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-{table}-{env_name}"
+        )
+        if env_name == "prod":
+            assert resource["DeletionPolicy"] == "Retain"
+            assert resource["Properties"]["DeletionProtectionEnabled"] is True
+    for queue in ("timeout-tasks-queue", "vector-memory-tasks-queue", "memory-v2-queue"):
+        _find_resource_by_property(template, "AWS::SQS::Queue", "QueueName", f"zerde-serverless-{queue}-{env_name}")
+    for rule in ("memory-v2-recovery", "quiz-answer-recovery", "quiz-publication-recovery"):
+        _find_resource_by_property(template, "AWS::Events::Rule", "Name", f"zerde-serverless-{rule}-{env_name}")
+    if env_name == "prod":
+        for rule in ("news-kk-0400", "quiz-kk-0800", "quiz-bank-builder-0730"):
+            _find_resource_by_property(template, "AWS::Events::Rule", "Name", f"zerde-serverless-{rule}-prod")
+
+
 def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -> None:
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
     for key in (
@@ -539,27 +571,23 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "3650"
     assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "3650"
     assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
-    assert env_vars["GROUP_MEMORY_EXTRACTOR_PROVIDER"] == "gemini"
-    assert env_vars["GROUP_MEMORY_EXTRACTOR_MODE"] == "gemini_candidate_only"
-    assert env_vars["GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE"] == "0.65"
-    assert env_vars["GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT"] == "50"
-    assert env_vars["GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT"] == "20"
-    assert env_vars["AGENT_PROACTIVE_DELAY_SECONDS"] == "45"
+    assert "GROUP_MEMORY_EXTRACTOR_PROVIDER" not in env_vars
+    assert "GROUP_MEMORY_EXTRACTOR_MODE" not in env_vars
+    assert "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE" not in env_vars
+    assert "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT" not in env_vars
+    assert "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT" not in env_vars
+    assert "AGENT_PROACTIVE_DELAY_SECONDS" not in env_vars
     assert env_vars["AMBIENT_REACTIONS_ENABLED"] == "true"
-    assert env_vars["AMBIENT_REACTIONS_SAMPLE_RATE"] == "0.80"
-    assert env_vars["AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD"] == "0.80"
-    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS"] == "60"
-    assert env_vars["AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS"] == "300"
-    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR"] == "12"
-    assert env_vars["AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY"] == "100"
+    assert "AMBIENT_REACTIONS_SAMPLE_RATE" not in env_vars
+    assert "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD" not in env_vars
+    assert "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS" not in env_vars
+    assert "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS" not in env_vars
+    assert "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR" not in env_vars
+    assert "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY" not in env_vars
     assert env_vars["GROQ_MODEL"] == "openai/gpt-oss-120b"
     assert env_vars["GROQ_SPAM_MODEL"] == "openai/gpt-oss-safeguard-20b"
-    assert env_vars["AGENT_PROACTIVE_DECISION_GROQ_MODELS"] == (
-        "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b"
-    )
-    assert env_vars["AMBIENT_REACTIONS_DECISION_GROQ_MODELS"] == (
-        "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b"
-    )
+    assert "AGENT_PROACTIVE_DECISION_GROQ_MODELS" not in env_vars
+    assert "AMBIENT_REACTIONS_DECISION_GROQ_MODELS" not in env_vars
     assert env_vars["DEEPSEEK_API_BASE"] == "https://api.deepseek.com"
     assert env_vars["DEEPSEEK_MODEL"] == "deepseek-chat"
     assert env_vars["MULTIMODAL_ENABLED"] == "true"
@@ -669,12 +697,21 @@ def test_idle_dev_stops_ingress_and_consumers_without_alarm_spend(monkeypatch):
     mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
     assert len(mappings) == 3
     assert all(mapping["Properties"]["Enabled"] is False for mapping in mappings.values())
+    # Lambda validates SQS limits even when the mapping is disabled.
+    assert all("ScalingConfig" not in mapping["Properties"] for mapping in mappings.values())
     assert not template.find_resources("AWS::CloudWatch::Alarm")
 
 
 def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch):
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
     template = _dev_template(monkeypatch)
+    mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
+    assert all(mapping["Properties"]["Enabled"] is True for mapping in mappings.values())
+    assert sorted(mapping["Properties"]["ScalingConfig"]["MaximumConcurrency"] for mapping in mappings.values()) == [
+        2,
+        3,
+        10,
+    ]
     alarms = template.find_resources("AWS::CloudWatch::Alarm")
     assert len(alarms) == 22
     for alarm in alarms.values():
@@ -733,3 +770,96 @@ def test_prod_ignores_dev_idle_flag_preserves_vector_limit_and_enables_quiz_pitr
     assert len(template.find_resources("AWS::CloudWatch::Alarm")) == 22
     tags = {tag["Key"]: tag["Value"] for tag in quiz["Properties"]["Tags"]}
     assert tags == {"Project": "ZerdeBot", "Environment": "prod", "Component": "quiz"}
+
+
+def _resolved_lambda_environment(template: Template, name: str) -> dict[str, str]:
+    """Resolve the actual supported Ref/Join shapes, not short token placeholders."""
+    account, region = "111122223333", "eu-central-1"
+    resources = _resources(template)
+    references = {"AWS::AccountId": account, "AWS::Region": region, "AWS::Partition": "aws"}
+    for logical, resource in resources.items():
+        props = resource.get("Properties", {})
+        kind = resource["Type"]
+        if kind == "AWS::DynamoDB::Table":
+            references[logical] = props["TableName"]
+        elif kind == "AWS::SQS::Queue":
+            references[logical] = f"https://sqs.{region}.amazonaws.com/{account}/{props['QueueName']}"
+        elif kind == "AWS::SNS::Topic":
+            references[logical] = f"arn:aws:sns:{region}:{account}:{props['TopicName']}"
+        elif kind == "AWS::Lambda::Function":
+            references[logical] = props["FunctionName"]
+
+    def resolve(value):
+        if isinstance(value, str):
+            return value
+        assert isinstance(value, dict), "Environment values must resolve to strings"
+        if set(value) == {"Ref"}:
+            return references[value["Ref"]]
+        assert set(value) == {"Fn::Join"}, "Unreviewed intrinsic requires real size accounting"
+        separator, pieces = value["Fn::Join"]
+        return separator.join(resolve(piece) for piece in pieces)
+
+    _, function = _find_resource_by_property(template, "AWS::Lambda::Function", "FunctionName", name)
+    return {key: resolve(value) for key, value in function["Properties"]["Environment"]["Variables"].items()}
+
+
+def test_retired_environment_defaults_match_runtime_and_keep_overrides(monkeypatch: Any) -> None:
+    defaults = bot_component.RETIRED_DEFAULT_ENVIRONMENT
+    for key in defaults:
+        monkeypatch.delenv(key, raising=False)
+    runtime = runpy.run_path("src/bot/core/config.py")
+    for key, expected in defaults.items():
+        actual = runtime[key]
+        if isinstance(actual, tuple):
+            assert ",".join(actual) == expected, key
+        elif isinstance(actual, float):
+            assert actual == float(expected), key
+        else:
+            assert _runtime_value_as_text(actual) == expected, key
+    env = {**defaults, "AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}
+    compact = bot_component.omit_retired_default_environment(env)
+    assert compact == {"AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}
+    assert env.keys() == defaults.keys() | compact.keys()
+    for key in defaults:
+        assert bot_component.omit_retired_default_environment({key: "explicit-custom-value"}) == {
+            key: "explicit-custom-value"
+        }
+
+
+@pytest.mark.parametrize("env_name", ["prod", "dev"])
+def test_resolved_bot_environment_keeps_serialized_capacity_headroom(monkeypatch: Any, env_name: str) -> None:
+    for key in bot_component.RETIRED_DEFAULT_ENVIRONMENT:
+        monkeypatch.delenv(key, raising=False)
+    # Reproduce the four production non-default retired settings; retain them.
+    overrides = {
+        "AGENT_DAILY_PROACTIVE_LIMIT": "10",
+        "AMBIENT_REACTIONS_SAMPLE_RATE": "0.5",
+        "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS": "60",
+        "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR": "25",
+    }
+    for key, value in overrides.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setenv("CHATS_KK", "-1000000000001,-1000000000002")
+    monkeypatch.setenv("CHATS_ZH", "-1000000000003,-1000000000004")
+    monkeypatch.setenv("CHATS_RU", "")
+    monkeypatch.setenv("AGENT_BOT_USERNAME", "b" * 32)
+    monkeypatch.setenv("AGENT_BOT_ID", "1234567890123456")
+    monkeypatch.setenv("ADMIN_USER_ID", "1234567890123456")
+    monkeypatch.setenv("MEMORY_COST_METERING_STARTED_AT", "1789134091")
+    template = _template(monkeypatch, env_name=env_name)
+    resolved = _resolved_lambda_environment(template, f"zerde-serverless-bot-{env_name}")
+    for key, value in overrides.items():
+        assert resolved[key] == value
+    assert len(json.loads(resolved["CHAT_LANG_MAP"])) == 4
+    assert resolved["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
+    assert resolved["QUEUE_URL"].startswith("https://sqs.eu-central-1.amazonaws.com/111122223333/")
+    assert resolved["MEMORY_V2_QUEUE_URL"].endswith(f"memory-v2-queue-{env_name}")
+    inventory = json.loads(resolved["MEMORY_COST_INVENTORY"])
+    assert inventory["account_id"] == "111122223333"
+    # Count the serialized wrapper, quoting, escaped nested JSON and whitespace.
+    # The earlier sum(len(key)+len(value)) missed this overhead and passed a
+    # production environment that AWS measured as 4114 bytes (>4096).
+    serialized_bytes = len(json.dumps({"Variables": resolved}, ensure_ascii=True).encode("utf-8"))
+    assert serialized_bytes <= 3500, serialized_bytes
+    original = {**bot_component.RETIRED_DEFAULT_ENVIRONMENT, **resolved}
+    assert len(json.dumps({"Variables": original}, ensure_ascii=True).encode("utf-8")) > 4096
