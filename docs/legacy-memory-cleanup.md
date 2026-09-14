@@ -251,13 +251,41 @@ fail before deletion and require separate review rather than an unconditional fa
 
 An encrypted atomic journal records progress. After a network/disk failure, the same
 unexpired manifest and backup can resume: missing exact keys count as already deleted,
-while changed/recreated keys stop the run. New evidence must preserve the same complete
+while changed/recreated keys stop the run. At the start of each attempt, a complete
+fresh snapshot must match the manifest's remaining keys, contents, identities and
+protected records. Only exact keys missing from that verified snapshot are skipped;
+empty original 25-item blocks require no per-block calls. Journal counters never
+justify a skip. Every remaining block retains its live gate, fresh content reads,
+conditional deletes and absence checks. If a skipped key reappears, the final full
+inventory prevents a clean result. This relies on the existing complete writer stop
+and change freeze throughout the run; it does not make DynamoDB Scan a transactional
+snapshot. [S3 ListVectors is strongly consistent](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-list.html).
+New evidence must preserve the same complete
 stop and manifest scope; it cannot widen the deletion list. A final strong scan must
 show zero selected table records/markers, empty specified indexes, and unchanged
 protected key/count/content digests. A concurrent unselected contest/settings change makes that
 verification fail, even if intended memory deletion already succeeded; do not report
 business data as unchanged or discard the evidence. Do not blindly regenerate a
 manifest around unexplained changes.
+
+Before applying a large manifest, measure the complete snapshot wall time during
+plan/backup and the read-only apply check. Keep only duration, page/count/byte totals
+in an operator timing report, not row contents. The CLI currently takes one complete
+preflight snapshot and the engine takes another after its own gate; both consume the
+same evidence window. A successful run also needs the final full snapshot plus its
+closing gate, with the existing 30-second send margin. If these reads consume the
+15-minute window, stop and investigate; do not extend evidence freshness or remove
+readback gates to force completion. There is no measured production snapshot timing
+in the source tests, and no claim that an arbitrary manifest fits in one attempt.
+
+For scale intuition only, 30,000 remaining table items need approximately 90,000
+Get/Delete/Get calls plus 1,200 complete batch gates and full scans. After 29,000 are
+confirmed absent in the new snapshot, only about 3,000 item calls and 40 nonempty
+batch gates remain. Each nonempty vector block still needs Get/Delete/Get; an empty
+block needs none after the complete snapshot. These are request counts, not a wall
+time or cost guarantee. Offline tests simulate a 2,500-key attempt expiring after
+2,475 deletions, then verify that a slow resume finishes the 25 remaining keys within
+a fresh window without trusting the journal or rereading the absent prefix.
 
 Success is `online_clean_copies_pending`. Logs, PITR/on-demand backups, queue/DLQ
 bodies, local archives and filesystem backups have separate retention/physical-readback

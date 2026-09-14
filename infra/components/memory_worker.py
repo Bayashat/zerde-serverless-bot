@@ -146,7 +146,7 @@ class MemoryWorkerConstruct(Construct):
                 self.queue,
                 batch_size=20,
                 max_batching_window=Duration.seconds(20),
-                max_concurrency=2,
+                max_concurrency=2 if runtime_active else None,
                 report_batch_item_failures=True,
                 enabled=runtime_active,
             )
