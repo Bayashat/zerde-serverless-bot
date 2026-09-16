@@ -68,6 +68,12 @@
     {
       "file": "checkpoint-review.json",
       "sha256": "b0f41fbff5a9772cfa9aecd8ee33e56e6dfcf18bd5d060b2a47339814fc2bc03"
+    },
+    {
+      "file": "final-accounting-independent.safe.json",
+      "sha256": "e3b8b374a01e8d0f561fe70e36cc3f7006a8ce48fbb7aa62e748c388ba1af9b2",
+      "original_private_sha256": "e3b8b374a01e8d0f561fe70e36cc3f7006a8ce48fbb7aa62e748c388ba1af9b2",
+      "local_paths_replaced": true
     }
   ]
 }
