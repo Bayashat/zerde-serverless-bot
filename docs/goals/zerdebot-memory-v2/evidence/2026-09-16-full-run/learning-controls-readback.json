@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-09-16T13:02:15.959438+00:00",
+  "consistent_reads": true,
+  "complete_pagination": true,
+  "environments": {
+    "dev": {
+      "control_count": 0,
+      "controls": [],
+      "pages": 1,
+      "active_controls": 0
+    },
+    "prod": {
+      "control_count": 0,
+      "controls": [],
+      "pages": 1,
+      "active_controls": 0
+    }
+  },
+  "mutations": 0
+}

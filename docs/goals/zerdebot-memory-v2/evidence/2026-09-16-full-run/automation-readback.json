@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-09-16T13:00:01.527Z",
+  "id": "zerde",
+  "status": "ACTIVE",
+  "matches": {
+    "id": true,
+    "kind": true,
+    "name": true,
+    "prompt": true,
+    "status": true,
+    "rrule": true,
+    "target_thread_id": true
+  },
+  "backup_deadline_unchanged": true,
+  "evaluation_status": "FINISHED_QUALITY_GATES_FAILED",
+  "duplicate_automation_created": false
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "public-v25-final-readback-v1",
+  "observed_at": "2026-09-16T12:57:58.016534+00:00",
+  "status": "FINISHED_QUALITY_GATES_FAILED",
+  "completed_scenarios": 240,
+  "planned_scenarios": 240,
+  "executed_checkpoints": 404,
+  "provider_budget": {
+    "attempts_reserved": 816,
+    "cache_hits": 1,
+    "charged_upper_micro_usd": 661980,
+    "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
+    "responses": 815,
+    "unknown_attempts": 1,
+    "unknown_billing_attempts": 1,
+    "unknown_hold_micro_usd": 458752,
+    "unverified_usage_responses": 0,
+    "usage_verified_attempts": 815,
+    "verified_token_micro_usd": 203228
+  },
+  "prior_liability_micro_usd": 18977963,
+  "combined_liability_micro_usd": 19639943,
+  "local_check_status": "LOCAL_GATES_PASS",
+  "credentials_fetched_by_final_check": false,
+  "new_provider_calls_by_final_check": 0,
+  "processes_exited": true,
+  "numeric_thresholds_pass": false,
+  "learning": "STOPPED",
+  "backup_expiry_unchanged": "2026-09-18T16:49:52Z",
+  "backup_not_due": true,
+  "physical_deletion_performed": false,
+  "hashes": {
+    "report.json": "f9350a2bcf90cddb22c9189cc1310341ee94b42b8bfd99e8de34f4430827364d",
+    "observations.jsonl": "839935df1b5e42386b220179efb23470f737e343ed14cf085669c99878875d35",
+    "provenance.json": "acd98e822e3ce72bf6209914d4a39e3efe4c8c152c65d170fd62d318e13a1c98",
+    "attempts.sqlite3": "427917acda3f67f2ac97562a23a601cbd2f7c14c03a5b23a7ed07d82202c6a3b",
+    "public-v25-ledger-checkpoint.json": "d219877787717c8e31891235b10866f485b73c99b0fcf59ab6234399b045d92d"
+  }
+}

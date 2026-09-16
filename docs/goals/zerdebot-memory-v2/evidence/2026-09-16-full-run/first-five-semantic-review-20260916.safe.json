@@ -1,0 +1,77 @@
+{
+  "observed_at": "2026-09-16T11:21:29.576455+00:00",
+  "reviewer": "memory_audit",
+  "status": "NO_BLOCKING_ISSUE_IN_FIRST_FIVE_ONLY",
+  "reviewed_scenarios": 5,
+  "total_scenarios": 240,
+  "language": "kk",
+  "supported_facts": {
+    "pass": 10,
+    "total": 10
+  },
+  "known_answers": {
+    "pass": 5,
+    "total": 5
+  },
+  "unknown_answers": {
+    "pass": 5,
+    "total": 5
+  },
+  "actual_synthetic_sent_actions_match": {
+    "pass": 10,
+    "total": 10
+  },
+  "non_blocking": [
+    "kk-004 displays internal language/length labels and kk/short enum values"
+  ],
+  "not_covered": [
+    "ru",
+    "en",
+    "mixed",
+    "negation",
+    "correction",
+    "deletion",
+    "plain fallback",
+    "real Telegram"
+  ],
+  "overall_quality_acceptance": false,
+  "summary_of_original_artifact": "first-five-semantic-review-20260916.safe.json",
+  "original_artifact_sha256": "1552901015f2e786cf015666cdae63d20bfa2fc191fb48c06e98c5b8affeb74f",
+  "cases": [
+    {
+      "scenario_id": "kk-001",
+      "scenario_receipt": {
+        "file": "81ed4d443e49d7e5c6d2654115a11b4001f84145fb17908222c5ce605e3d7395.json",
+        "sha256": "32956abfcca017a7fedf5dc7c9253bcaf29b2d0da0553fccc95ed648363b8671"
+      }
+    },
+    {
+      "scenario_id": "kk-002",
+      "scenario_receipt": {
+        "file": "1751d7524d0a1d7b199f87eb8c1b12fb4d01364e911d756e1fbc321a5f63927e.json",
+        "sha256": "cfb40b4cac7fbf64e230ba6ed58b850d7b33817f400adb0e7b53833c65e820b9"
+      }
+    },
+    {
+      "scenario_id": "kk-003",
+      "scenario_receipt": {
+        "file": "9c08e91d06fa4ae49242d5cc4bde3d2a8824b68f5bc3c398be8f37f58efebf13.json",
+        "sha256": "297c8f9d0ce4e17665672926dd9528b01efe736e039008821389380f065edca8"
+      }
+    },
+    {
+      "scenario_id": "kk-004",
+      "scenario_receipt": {
+        "file": "a6d833bf510092596b0ceefdc3a13bf662a5d2e049fc96f9ee3992ffa35f7199.json",
+        "sha256": "dd20f63266086c9008580bd762350ce83854f92cfcec1e91aa1127349921fb74"
+      }
+    },
+    {
+      "scenario_id": "kk-005",
+      "scenario_receipt": {
+        "file": "3cb4c6b9ceb5c32a79ed7dc7c53a40bf3f5591d83024ca1485507a2c8a94c955.json",
+        "sha256": "9bdc2bc77cd03de37e31e047b21eca491ac6369335175cc195acefee7ba03bd4"
+      }
+    }
+  ]
+}

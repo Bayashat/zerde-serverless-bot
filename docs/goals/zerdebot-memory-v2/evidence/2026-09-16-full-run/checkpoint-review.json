@@ -1,0 +1,18 @@
+{
+  "schema": "evidence-checkpoint-review-v1",
+  "status": "ALIGNED_FOR_FAILURE_EVIDENCE_CHECKPOINT_ONLY",
+  "post_correctness": {
+    "reviewer": "code_audit",
+    "finding": "Narrow billing wording; successful model calls do not prove every dashboard warning cleared",
+    "resolution": "Wording narrowed to top-up and primary-method change followed by successful API run"
+  },
+  "maintainability": {
+    "reviewer": "memory_audit",
+    "finding": "CONTINUATION still offered start/resume of now-finished run",
+    "resolution": "Retired old entry, linked current F1/F2 contract review, independent recheck ALIGNED"
+  },
+  "implementation_design_approved": false,
+  "new_quality_gate_approved": false,
+  "code_changed": false,
+  "gold_changed": false
+}

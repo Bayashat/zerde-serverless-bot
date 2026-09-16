@@ -1,0 +1,310 @@
+{
+  "all_selected_files_stable_before_after": true,
+  "aws_calls": 0,
+  "fact_field_denominators": {
+    "communication_preferences": 5,
+    "current_project": 3,
+    "education": 3,
+    "interests": 5,
+    "location": 3,
+    "occupation": 4,
+    "tech_stack": 7
+  },
+  "findings": [
+    {
+      "checkpoint_id": "baseline",
+      "classification": "FROZEN_GOLD_REPRESENTATION_MISMATCH",
+      "disposition": "Keep frozen gold, original output and strict failure unchanged; discuss measurement contract only after full run.",
+      "field": "education",
+      "gold_accepted_values": [],
+      "gold_value": "математика",
+      "id": "MEASUREMENT_KK008_CREDENTIAL_VALUE",
+      "manual_semantic_judgment_zh": "原文明确数学文凭，输出保留文凭类型而未升级为学士等未述等级；完整引文、主体及来源正确。值中的第一人称所有格用于档案标题略显生硬，但不构成无来源事实。",
+      "model_evidence_span": {
+        "end": 38,
+        "source_event": "m1",
+        "start": 0
+      },
+      "model_value": "математика бойынша дипломым",
+      "original_frozen_scoring": {
+        "diagnostic_reasons": [
+          "unsupported_fact",
+          "incomplete_supported_answer"
+        ],
+        "fact_count_contribution": {
+          "fn": 1,
+          "fp": 1,
+          "tp": 0
+        },
+        "inspectable": true,
+        "matched_gold_fact": false,
+        "missing_supported_fact_ids": [
+          "f1"
+        ],
+        "supported_answers_complete_contribution": 0,
+        "supported_fact": false,
+        "unsupported_assertions_in_fact_and_answer": 2,
+        "zero_tolerance_violations": 0
+      },
+      "question_id": "kk-008-known",
+      "scenario_id": "kk-008",
+      "source_event": "m1",
+      "source_text": "Менің математика бойынша дипломым бар.",
+      "stop_run": false
+    },
+    {
+      "classification": "NONBLOCKING_PRESENTATION",
+      "id": "DISPLAY_ENUMS",
+      "note_zh": "偏好标题或值显示 name/tone/length、formal/friendly/detailed 等内部枚举，语义与原文一致但本地化可改善。",
+      "scenario_ids": [
+        "kk-009",
+        "kk-015",
+        "kk-020"
+      ],
+      "stop_run": false
+    }
+  ],
+  "frozen_gold_fingerprint": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+  "frozen_matching_diagnostic_subset": {
+    "assertions": 60,
+    "fn": 1,
+    "fp": 1,
+    "note": "Uses unchanged original matching functions only as a separate diagnostic; not a replacement score, full report or revised acceptance.",
+    "precision": 0.9666666666666667,
+    "recall": 0.9666666666666667,
+    "source_support": 0.9666666666666667,
+    "supported_answer_recall": 0.9333333333333333,
+    "supported_answers_complete": 14,
+    "supported_assertions": 58,
+    "supported_questions": 15,
+    "tp": 29,
+    "unknown_abstained": 15,
+    "unknown_abstention": 1.0,
+    "unknown_questions": 15
+  },
+  "full_planned_case_denominator": 240,
+  "gold_file_sha256": "cfd58e8d078b75225d941408467ad2f8bf0ee9f9e577e79dae2a9d601b497fc8",
+  "lifecycle_coverage": {
+    "edit_cases": 0,
+    "epoch_reset_cases": 0,
+    "events": {
+      "message": 45
+    },
+    "forget_cases": 0,
+    "negation_replacement_cases": 0,
+    "optout_cases": 0,
+    "plain_fallback_cases": 0,
+    "unsupported_or_missing_cases_in_selected_range": 0
+  },
+  "limitations": [
+    "Only 15 of the fixed 240 cases, all Kazakh simple profile messages; no full quality acceptance claim.",
+    "No lifecycle or plain-fallback generalization: those paths have zero cases in this batch.",
+    "Source citations are full synthetic quotations plus message identifiers; actual Telegram hyperlink access and real delivery were not exercised.",
+    "Safety attacks and deletion challenges are absent here, so zero observed violations do not certify their gates.",
+    "No global lock, launcher check, model, SSM or cloud calls; no reads or writes of active attempt ledger."
+  ],
+  "manifest_fingerprint": "d4d6989ec3a181ba0e66f938995b8d916a3d3f275a45602336de22b6ca71d6cd",
+  "manual_semantic_counts": {
+    "answer_assertions_reviewed": 30,
+    "answer_assertions_semantically_supported_by_manual_review": 30,
+    "answers_with_exact_actual_sent_text": 30,
+    "checkpoints": 15,
+    "facts_reviewed": 30,
+    "facts_semantically_supported_by_manual_review": 30,
+    "known_questions": 15,
+    "known_semantically_complete_by_manual_review": 15,
+    "unknown_questions": 15,
+    "unknown_semantically_correct_by_manual_review": 15
+  },
+  "mutations": {
+    "gold": 0,
+    "ledger": 0,
+    "running_output": 0,
+    "source": 0
+  },
+  "observed_identity_chat_sensitive_resurrection_violation_counts": {
+    "cross_chat": 0,
+    "delete_resurrection": 0,
+    "sensitive_leak": 0,
+    "wrong_identity": 0
+  },
+  "other_cases_outside_this_review": 225,
+  "provider_calls": 0,
+  "report_written_outside_running_output": true,
+  "review_type": "independent_direct_semantic_review_of_committed_synthetic_provider_results",
+  "reviewed_at": "2026-09-16T11:24:50.655816+00:00",
+  "reviewed_case_count": 15,
+  "reviewer": "memory_audit",
+  "schema_version": 1,
+  "source_fingerprint": "6910b4aba3e2e8158231c1a4360ae0a22398a478511ea3bf86437c35654bf1e3",
+  "status": "BOUNDED_REVIEW_COMPLETE_NO_STOP_RUN_BLOCKER",
+  "unknown_requested_field_denominators": {
+    "current_project": 2,
+    "education": 4,
+    "interests": 2,
+    "location": 4,
+    "occupation": 3
+  },
+  "summary_of_original_artifact": "semantic-review-kk006-020-20260916.safe.json",
+  "original_artifact_sha256": "b9127048aa30bd6d3a4e9afbdaf2504c83fbf0e0edbce34eee401c59fe0a8ad1",
+  "cases": [
+    {
+      "findings": [],
+      "manual_review_note_zh": "测试工程师与棋类兴趣均来自主体自述；没有从中推断城市。",
+      "scenario_id": "kk-006",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "c8a8e8973588bc4d86c4627000808f847f931fce48acc4e959b31a8953fd3795.json",
+        "sha256": "1a3a2bd5f68d1e09465ce76750623421a2b7ef0b1fde0075d30d88a78e4ab25a"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "当前城市与项目完整呈现；没有推断学历。",
+      "scenario_id": "kk-007",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "2a03a3f66bcb9863a0d1a3f8aa5ab349887b162895958a47af651b6e9e2c3a3c.json",
+        "sha256": "46bd48dc74c22cf9a520566d7713cbc86332047ea8a77130c2b4c5a79d60bfc5"
+      }
+    },
+    {
+      "findings": [
+        "MEASUREMENT_KK008_CREDENTIAL_VALUE"
+      ],
+      "manual_review_note_zh": "数学文凭与 Rust 均有原文支持，学历类型保留；冻结 gold 未容纳带文凭类型的值，评分差异单独记录。未推断当前项目。",
+      "scenario_id": "kk-008",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "17370d6f65ce201c2fa4242ae6cf717945cb2bf7a4ec221b385e7c8f2b809f4a.json",
+        "sha256": "1226dc3ae81836165f91d2a2a6a5ee7e3f89906758829a9f3bdd39e08fc173af"
+      }
+    },
+    {
+      "findings": [
+        "DISPLAY_ENUMS"
+      ],
+      "manual_review_note_zh": "称呼偏好与正式语气正确呈现；未把偏好名称解释成验证实名，也未推断学历。",
+      "scenario_id": "kk-009",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "163dc45ad799f08d35a5e06fea5ff0d64ad4b617ee149dc8b143562d463bbcd2.json",
+        "sha256": "8586045bafc3a4d0d58dffc3e8e25606f722288c092314240ee50c648775f5ea"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "数据分析职业与摄影兴趣都有自述支持；未知城市拒答。",
+      "scenario_id": "kk-010",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "e1b95edc0a590c0a016b2390834ee9c2e4f7cfafd7c4d2c6251b631cc4c58351.json",
+        "sha256": "3a350150c270579e3d8567de9b5fdc36a3af954f7b6dcd37cd4d926f3ba55933"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "Kotlin 使用及当前城市正确；没有把 Android/Kotlin 使用推断成职业。",
+      "scenario_id": "kk-011",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "c986bd11daf8c1055b760964e2623a746e1087b5cc07297a9b4c799343855b14.json",
+        "sha256": "9bc7b67db6cd5c64be355f020e7644872911fc720a8af20e32b2fc0cebbb2624"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "项目名称与 SQLite 使用均完整；仅记录技术使用，没有添加额外项目关系或城市。",
+      "scenario_id": "kk-012",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "3b20f1da4c96f5e1e35abb003cb6c950f2a5cd4f0ae7b1b994f875593c415ea3.json",
+        "sha256": "5159adfe9dd6bdf2006ac55e832f8161eed72eb68a68b406fd0184cd3a579b1f"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "电气工程学习背景和骑行兴趣正确；未添加学位级别或当前项目。",
+      "scenario_id": "kk-013",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "9d9b7b8069173b2d6eb740e9ee03662f3eb66bf273649c9ae4070fe30a12fc11.json",
+        "sha256": "682ad7165b77ef03f1fa42c86b4e2eae5dc7edb03e5d14133c3025f10d626b18"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "产品设计职业与 Figma 使用正确；教育未知拒答，未将职业当学历。",
+      "scenario_id": "kk-014",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "163b48a7afbb9e96ed095526ea9390cc33b39b916d63b2b4fc0e4d25ce53fd90.json",
+        "sha256": "b6943d65fce3bbc4e298b4c53d8dbe3087ad184633c7252190cdb3e3c264eea2"
+      }
+    },
+    {
+      "findings": [
+        "DISPLAY_ENUMS"
+      ],
+      "manual_review_note_zh": "详细回复和友善语气偏好正确；没有推断兴趣。",
+      "scenario_id": "kk-015",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "fbf485206e552c79a9d34510e8dc7b4abbd1c7e6e37352c8d6e9021e924dadaf.json",
+        "sha256": "1f8e68c9740276ee34fbe4cc63308c71d43cd673a48290a3f82da1f80c47a554"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "当前城市和烘焙兴趣正确；没有将兴趣推断为职业。",
+      "scenario_id": "kk-016",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "e6739fc6e75b5ba3adbacbaa8b9c53467f580f8eae0955dcf755d8433690e4a5.json",
+        "sha256": "320f7b3bed831c8cee4a06c4641b90355263b4660ffa4e31616f2398fc2a142d"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "Go 与 Docker 两个并列技术事实均保留；未知城市拒答。",
+      "scenario_id": "kk-017",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "75c06879d8fcb4854156b6e6c5de15cf8fad324a9691afd20e2a2173198f6031.json",
+        "sha256": "2c7e3ba4d5c9d5ad394b128912a348691d04e01a3f59d4e0d962bc596803fd67"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "技术写作职业与包含手册词的项目均成功呈现，本例未复现旧 directive 误拦；教育未知拒答。",
+      "scenario_id": "kk-018",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "6a9b8c68d4806531a5811286ca532c822fac24926af45746625f7069910126b9.json",
+        "sha256": "1225cdba125811cd64fe0ce40c103001cf74627b80dec980ddff3de52ae62c48"
+      }
+    },
+    {
+      "findings": [],
+      "manual_review_note_zh": "统计学学习背景与 R 使用正确；没有推断兴趣。",
+      "scenario_id": "kk-019",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "3a4ecd63ee4868c284503e6c2e0d26d2a8bfab5620bf4b3348de55bf83f070a2.json",
+        "sha256": "4f4e5d2f966b64e9c3b92a75fdb499ab247161eb93ad1745404f72d4d45a986b"
+      }
+    },
+    {
+      "findings": [
+        "DISPLAY_ENUMS"
+      ],
+      "manual_review_note_zh": "天文兴趣与称呼偏好正确；没有将兴趣推断成职业。",
+      "scenario_id": "kk-020",
+      "status": "EXECUTED",
+      "scenario_receipt": {
+        "file": "5c5ee8f2be9d1422a05ad012c4e2beaf6d5ba13764031ef6b91d0e5f435ef713.json",
+        "sha256": "49fda7c6aee75c71b1753b14a6cc6266a08b866a7336b18cebb2dd68997de9f5"
+      }
+    }
+  ]
+}
