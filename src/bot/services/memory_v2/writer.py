@@ -19,7 +19,7 @@ from .models import (
     positive_id,
 )
 from .repository import MemoryRepository
-from .safety import require_preference_name, require_public_content
+from .safety import require_public_content, require_verbatim_name
 
 
 class FactWriter:
@@ -171,12 +171,12 @@ class FactWriter:
             if change.assertion_kind != expected_kind:
                 raise MemoryInputError("Unsupported assertion attribution")
             require_public_content(value, max_length=160)
-            if change.field == "communication_preferences" and change.facet == "name":
-                require_preference_name(value)
             if change.field == "location" and any(char.isdigit() for char in value):
                 raise MemoryInputError("Only city-level location is supported")
             excerpt = change.evidence.excerpt(raw)
             require_public_content(excerpt, max_length=240)
+            if change.field == "communication_preferences" and change.facet == "name":
+                require_verbatim_name(value, excerpt)
             observed = int(head["edited_at"] or head["original_sent_at"])
             valid_from = observed if change.valid_from is None else change.valid_from
             if (

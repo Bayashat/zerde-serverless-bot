@@ -3,11 +3,12 @@
 import copy
 import json
 
+from .evidence import complete_evidence_span
 from .models import ExtractionSource, MemoryInputError, SourceEvent
 from .safety import require_public_content
 
 MODEL = "gemini-3.1-flash-lite"
-PROMPT_VERSION = "self-claims-v2.5"
+PROMPT_VERSION = "self-claims-v2.6"
 MAX_BATCH_SOURCES = 20
 MAX_INPUT_UPPER_BYTES = 8000
 MAX_OUTPUT_TOKENS = 8192
@@ -42,6 +43,11 @@ group, time, negation and correction qualifiers. If it fits within 240 character
 copy that whole sentence, not just its subject-verb-object fragment. Never expand
 across quoted spans or sensitive text, join separate spans, or drop a qualifier to
 fit the limit. If no complete safe supporting span fits, omit the fact.
+Only complete, unquoted sources fitting the evidence limit reach this extractor.
+For evidence copy the entire source except outer whitespace, preserving all
+qualifiers and sentences. For the name facet, copy the preferred name verbatim
+from its evidence: preserve script, spelling, case and spaces. Never transliterate,
+translate or normalize a preferred name. Other value rules remain unchanged.
 Return every source_index exactly once, with facts=[] when nothing qualifies.
 Use the source's language for values except preference enums. Max 16 facts/source.
 Examples: Bob says "I live in Astana" -> []; Why use Python? -> [];
@@ -196,5 +202,7 @@ def validate_request(request: dict) -> None:
                 or not 0 <= span[0] < span[1] <= len(source["text"])
             ):
                 raise MemoryInputError("Invalid extraction quote offsets")
+        if complete_evidence_span(source["text"], spans) is None:
+            raise MemoryInputError("Complete source evidence is unsupported")
     if len(json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode()) > MAX_INPUT_UPPER_BYTES:
         raise MemoryInputError("Extraction request exceeds its input limit")

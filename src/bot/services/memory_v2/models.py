@@ -172,7 +172,20 @@ class FactChange:
         allowed = GROUP_FIELDS if group else PERSONAL_FIELDS
         if self.field not in allowed or self.action not in {"assert", "remove"}:
             raise MemoryInputError("Unsupported fact field or action")
-        value = normalise_value(self.value)
+        if self.field == "communication_preferences" and self.facet == "name":
+            # A preferred name is the author's spelling, including its script.
+            # Preserve it at the shared slot boundary used by the sole writer.
+            value = self.value
+            if (
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+                or len(value) > 160
+                or not is_memory_learning_safe(value)
+            ):
+                raise MemoryInputError("Unsupported preferred name")
+        else:
+            value = normalise_value(self.value)
         if self.field == "communication_preferences":
             if self.facet not in PREFERENCE_FACETS:
                 raise MemoryInputError("Unsupported communication preference")

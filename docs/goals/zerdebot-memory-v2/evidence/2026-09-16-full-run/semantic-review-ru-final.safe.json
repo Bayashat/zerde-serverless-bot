@@ -1,0 +1,1078 @@
+{
+  "schema": 1,
+  "review_kind": "INDEPENDENT_AGENT_MANUAL_SEMANTIC_REVIEW",
+  "language": "ru",
+  "reviewed_at_utc": "2026-09-16T13:01:27.883572+00:00",
+  "scope": {
+    "scenario_range": "ru-001..ru-060",
+    "all_scenarios_reviewed": 60,
+    "checkpoints_reviewed": 101,
+    "source_events_reviewed": 234,
+    "profile_fact_observations_reviewed": 191,
+    "answer_assertions_reviewed": 103,
+    "total_assertions_reviewed": 294,
+    "questions_reviewed": 120,
+    "known_question_denominator": 56,
+    "unknown_question_denominator": 64,
+    "sent_answers_reviewed": 120,
+    "memory_route_answers": 116,
+    "plain_route_answers": 4,
+    "scenario_atomic_receipts_crosschecked": 60
+  },
+  "source": {
+    "git_head": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+    "execution_source_sha256_recomputed": "6910b4aba3e2e8158231c1a4360ae0a22398a478511ea3bf86437c35654bf1e3",
+    "execution_source_files": 134,
+    "corpus_canonical_sha256": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+    "corpus_file_sha256": "cfd58e8d078b75225d941408467ad2f8bf0ee9f9e577e79dae2a9d601b497fc8",
+    "session_file_sha256": "d4980a55591f14fd703dae273540014aba90afa600dcaa41bafabc690d9ca0bc",
+    "plan_file_sha256": "74dca59c238729b9b5150ce0c6fd66a2d2ebb59aaba16e0c6a0f8bb63c6437c8",
+    "observations_file_sha256": "839935df1b5e42386b220179efb23470f737e343ed14cf085669c99878875d35",
+    "report_file_sha256": "f9350a2bcf90cddb22c9189cc1310341ee94b42b8bfd99e8de34f4430827364d",
+    "provenance_file_sha256": "acd98e822e3ce72bf6209914d4a39e3efe4c8c152c65d170fd62d318e13a1c98",
+    "execution_status_file_sha256": "64a9ecd9808f8a84b96aed3de5640be8fb281698d05856d945bfb5731c8133c6",
+    "inputs_unchanged_during_review": true
+  },
+  "frozen_automatic_result_unchanged": {
+    "tp": 173,
+    "fp": 18,
+    "fn": 18,
+    "gold_observations": 191,
+    "assertions": 294,
+    "supported_assertions": 265,
+    "unknown_questions": 64,
+    "unknown_abstained": 64,
+    "missing_checkpoints": 0,
+    "missing_answers": 0,
+    "supported_questions": 56,
+    "supported_answers_complete": 46,
+    "precision": 0.9057591623036649,
+    "recall": 0.9057591623036649,
+    "source_support": 0.9013605442176871,
+    "unknown_abstention": 1.0,
+    "supported_answer_recall": 0.8214285714285714,
+    "thresholds_pass": false
+  },
+  "independent_findings": [
+    {
+      "code": "REAL_EVIDENCE_COMPLETENESS_CONTRACT_FAILURE",
+      "cases": [
+        "ru-023",
+        "ru-024"
+      ],
+      "profile_observations": 2,
+      "answer_assertions": 0,
+      "severity": "P2",
+      "finding_zh": "两个保存片段从句中间开始，分别遗漏同名身份及本群范围限定。Java/TypeScript 本身均有源支持，真实 chat/author 正确，当前实际回答未串人串群；仍违反冻结 v2.5 完整安全句证据契约，不能作为纯评分差异抹去。",
+      "synthetic_examples": [
+        {
+          "scenario_id": "ru-023",
+          "source": "Мы оба Астра, но я использую Java.",
+          "actual_excerpt": "я использую Java.",
+          "actual_span": [
+            17,
+            34
+          ]
+        },
+        {
+          "scenario_id": "ru-024",
+          "source": "В этой группе: я использую TypeScript.",
+          "actual_excerpt": "я использую TypeScript.",
+          "actual_span": [
+            15,
+            38
+          ]
+        }
+      ],
+      "minimal_owner": "src/bot/services/memory_v2/extractor.py 的源内证据验证，与 extraction_prompt.py 同一契约",
+      "repair_direction_zh": "后续独立变更将完整安全句/限定语作为可测试的后置条件；只从当前同一安全来源确定性定位，不跨敏感或引用边界拼接，不为通过评分修改冻结 gold。"
+    },
+    {
+      "code": "FROZEN_EDUCATION_VALUE_MISMATCH",
+      "cases": [
+        "ru-003",
+        "ru-008",
+        "ru-013",
+        "ru-019",
+        "ru-023",
+        "ru-028",
+        "ru-033",
+        "ru-039",
+        "ru-043",
+        "ru-048",
+        "ru-053",
+        "ru-059"
+      ],
+      "profile_fp_and_fn_observations": 18,
+      "answer_source_support_mismatches": 9,
+      "known_questions_marked_incomplete_from_value_matching": 9,
+      "finding_zh": "实际值保留大学完成、数学/电气工程文凭或统计学教育的源内限定，冻结 gold 只收专业名及少量变格；未见自行提升为学士/硕士/博士。此处 18 FP/FN 与 9 known 不完整是评分表示差异，不是真实无来源学历或漏答。",
+      "minimal_owner": "dev/tools/memory_eval/corpus_authoring.py / authoring_aliases.py 的未来独立标签契约审查",
+      "repair_direction_zh": "保留本次冻结分数及所有分母；将语义裁决单独附录。若将来建新版本，先独立定义学历类型/级别及同义表示规则，禁止在当前输出上调 gold 提分。"
+    },
+    {
+      "code": "EXPECTED_BUDGET_DEGRADATION_GOLD_CONFLICT",
+      "cases": [
+        "ru-033"
+      ],
+      "known_question_losses_retained": 1,
+      "finding_zh": "既有两项事实仍存储，但 MODEL 预算暂停使新项目 WORK=PAUSED/budget 且公共路径禁止记忆增强，进入 plain。known 和 unknown 均真实发送拒答，没有个体事实断言或记忆泄漏。known 未答属于批准的安全降级与冻结 gold 的 supported 预期冲突，不是应绕过预算修复的漏答。",
+      "minimal_owner": "公共预算/降级产品契约与未来评估场景设计；本次生产预算 owner 无需改动",
+      "repair_direction_zh": "保留本次 known 分母56及原失败；不得将缓存事实交给 plain 以凑分，不得把预算暂停改为学习成功。"
+    }
+  ],
+  "reconciliation": {
+    "automatic_profile_fp": 18,
+    "automatic_profile_fn": 18,
+    "profile_fp_fn_all_explained_by_education_representation": true,
+    "automatic_unsupported_assertions": 29,
+    "education_profile_mismatches": 18,
+    "education_answer_mismatches": 9,
+    "real_incomplete_evidence_profiles": 2,
+    "unsupported_assertions_partition_total": 29,
+    "automatic_incomplete_known_questions": 10,
+    "representation_only_known_questions": 9,
+    "expected_budget_degradation_known_questions": 1,
+    "manual_answer_text_complete_known": 55,
+    "manual_answer_text_complete_known_denominator_retained": 56,
+    "manual_unknown_refusals": 64,
+    "manual_unknown_denominator": 64,
+    "manual_missing_answers": 0,
+    "unexpected_known_answer_omissions_found": 0,
+    "unsupported_personal_or_group_claims_found": 0,
+    "invented_education_levels_found": 0,
+    "wrong_identity_found": 0,
+    "cross_chat_answer_leak_found": 0,
+    "deleted_fact_resurrection_found": 0,
+    "model_observed_plain_labels_independently_checked_from_text": 4,
+    "no_recomputed_product_pass": true
+  },
+  "mechanical_checks": {
+    "business_snapshots_unchanged": 101,
+    "sensitive_surface_checks": 101,
+    "assertion_source_scope_span_checks": 294,
+    "answer_delivery_text_and_destination_checks": 120
+  },
+  "case_conclusion_counts": {
+    "ALIGNED": 47,
+    "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH": 10,
+    "CONTRACT_FAILURE_WITH_SUPPORTED_VALUE_AND_CORRECT_IDENTITY": 2,
+    "EXPECTED_BUDGET_DEGRADATION_AND_SCORER_VALUE_MISMATCH": 1
+  },
+  "limitations": [
+    "这是独立 AI agent 对已完成真实 provider 合成回放的逐文复核，不是额外模型调用或人类母语者认证。",
+    "Telegram 发送为合成 sink，DynamoDB/控制事件为本地回放；SENT 证据不能当作真实 Telegram 群验收。",
+    "合成群身份无法生成真实来源链接，正文明确显示来源链接不可用；本轮未验证真实 Telegram 点击跳转。",
+    "冻结自动评分仍 FAIL；未修改 gold、scorer、源码、原 observations、账本或费用。",
+    "2 个完整证据契约缺口仍在；语义诊断不等于开启学习、生产验收或七天试点通过。",
+    "未基于 MODEL_OBSERVED 自报推断真值；四份 plain 正文已独立读审。"
+  ],
+  "summary_of_original_artifact": "semantic-review-ru-final.safe.json",
+  "original_artifact_sha256": "243766b1e0e9063c99640d10d3cecf69e47d12071644baf8e0220237bf06d71a",
+  "cases": [
+    {
+      "scenario_id": "ru-001",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "职业与 Python 自述均准确；无城市信息时拒答。",
+      "source_record_sha256": "9c98ba2c428ab79c8993b2daa7cb01af3816bc20a112367f04ea756a6e5c2d44",
+      "scenario_receipt_sha256": "11b2b490f9a00e7f8917d65d9636a92a0b7677dbaf1170755838fd88e03c6b2b",
+      "projected_input_sha256": "04f5f6a52d5b3a02bc1420c4ad65e5a8228c8fb8e866caa7af26061287cbd635",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "cd1dc3b89009ca8f2ebe4867b3c22d9312acb9cbbe4e1c7d16699a5f5ded3b0e.json",
+        "sha256": "11b2b490f9a00e7f8917d65d9636a92a0b7677dbaf1170755838fd88e03c6b2b"
+      }
+    },
+    {
+      "scenario_id": "ru-002",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "当前城市与项目分别保留，未知教育拒答。",
+      "source_record_sha256": "bdcc350cbd9c71c7d0902a927b186c837a75c70085d88824a73cba6f893b0017",
+      "scenario_receipt_sha256": "4ae63f2321b15bc3018c455cc5a3d8b9f9193d0fcfded58b6920a63eda0fd376",
+      "projected_input_sha256": "fe57dc22d433d182977bcf876b1f9b9a51a4a648294ca20b1917f872b105f3cd",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "482fc6251d2e653ae7a8b77be11f569c27c5ec51a064f74abf4807fd92ccacb9.json",
+        "sha256": "4ae63f2321b15bc3018c455cc5a3d8b9f9193d0fcfded58b6920a63eda0fd376"
+      }
+    },
+    {
+      "scenario_id": "ru-003",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "大学完成情况与专业均有原文支持；gold 仅保留专业，输出并未编造学位级别。",
+      "source_record_sha256": "045a310a52e5c3593901622c640672529f3ca1bb74809ab057bcacbc68fa8897",
+      "scenario_receipt_sha256": "68e513eae2cde70c13f1685152e25d8ec2c68eacf0bd2cd9f9f98c3a725eb29d",
+      "projected_input_sha256": "fb5cb819a900aee905a5d4bfadf5242c7a602af20f2f5d332d2ebb8cba9b2152",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "28c33b72f2fe668c4a6252a9ff7790d13a28342ad0708916c5fbadc353cee96d.json",
+        "sha256": "68e513eae2cde70c13f1685152e25d8ec2c68eacf0bd2cd9f9f98c3a725eb29d"
+      }
+    },
+    {
+      "scenario_id": "ru-004",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "简短回答和俄语偏好准确；未把偏好扩为任意未来指令。",
+      "source_record_sha256": "702996521b98bc8e49a615252e78e518eed631896d97fba116bc5dd570bb6de7",
+      "scenario_receipt_sha256": "15f3b3521bc0c9db49b603c270982887a53788b2ee848e6347d34c963cdcabfb",
+      "projected_input_sha256": "17dee3ba5525c17159c86545df1977cdc6827bfebdaa91e63792fa5af7ef501e",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "8472a316764088af62b572a080a8d3913f9040a370d9710920184ff63db3505e.json",
+        "sha256": "15f3b3521bc0c9db49b603c270982887a53788b2ee848e6347d34c963cdcabfb"
+      }
+    },
+    {
+      "scenario_id": "ru-005",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "PostgreSQL 与 Redis 两个多值技术事实同时保留。",
+      "source_record_sha256": "a0926bf3b0737ec0476b0d4cc39f9ec1292f13bea069d37fa81d78e893e1ff2d",
+      "scenario_receipt_sha256": "97179da34d4ce48ac4e0b7009b13ba6c712f64c4de1dd9e73bff4fac2311defd",
+      "projected_input_sha256": "6397dd9adbfeb5f10cc301d96c3b2eae0ae5063ff477f77ce596f8e3506519c7",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "3374ccf6ed0fa220ef6b73cf1f73d3143cfa4d7bff47501daa16b13bdd89852e.json",
+        "sha256": "97179da34d4ce48ac4e0b7009b13ba6c712f64c4de1dd9e73bff4fac2311defd"
+      }
+    },
+    {
+      "scenario_id": "ru-006",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "测试工程师职业和国际象棋兴趣准确，无地点推断。",
+      "source_record_sha256": "ea71fcc5e7ffdbe9c47c8d753d3c910120c8841384e06e7f0491d73fbe9c45de",
+      "scenario_receipt_sha256": "10d8b78e62bda9e4f8f25469c804faa2c228943d29e3127db6672eab85a58eac",
+      "projected_input_sha256": "9deef480a8a8b900aed2e73da7c987b2515c7e50a264b3d3ae3a7daf8b7d6b85",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "4e46d6f09028ffeafbb83df8db0bcfe5048260c75a4678a42df12498a49b1211.json",
+        "sha256": "10d8b78e62bda9e4f8f25469c804faa2c228943d29e3127db6672eab85a58eac"
+      }
+    },
+    {
+      "scenario_id": "ru-007",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Алматы 城市与 Берёза 项目准确。",
+      "source_record_sha256": "1851c139ab7d9235ea9aaabb0438ce6871e9e9a0004ed3317ca9354e77338cda",
+      "scenario_receipt_sha256": "d495f4ca5be9f92aa33952824d58156d49cd841aed6b098c168bdb49913579c3",
+      "projected_input_sha256": "df4a16f31aa1e3998cbe695a4efe297f7ad43493b02134589da3606f6a24bbca",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "75e52379552635ba10752ec3b921ce1b3f42f4c811cba5871141ce7a32267de2.json",
+        "sha256": "d495f4ca5be9f92aa33952824d58156d49cd841aed6b098c168bdb49913579c3"
+      }
+    },
+    {
+      "scenario_id": "ru-008",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "数学文凭明确来自自述；比仅学科名 gold 更完整，不是无来源断言。",
+      "source_record_sha256": "99e2f4b18043b8b8bc4f77000c9baf413f37901daf6d8513cd60e88fdb1d46b2",
+      "scenario_receipt_sha256": "a1b4be07860e311a42c81a13126df8e7493676c904ad2c0979940deb5cea4f75",
+      "projected_input_sha256": "6e7f57976e82005e3314cd689f33a6657e0bb10f85607a2a5a091f13bbb208d4",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "90f01aea52df9adf141edc1b48305ea28336f38b9b514325a4838e55d333d3b3.json",
+        "sha256": "a1b4be07860e311a42c81a13126df8e7493676c904ad2c0979940deb5cea4f75"
+      }
+    },
+    {
+      "scenario_id": "ru-009",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "显式称呼 Астра 与 formal 语气偏好准确。",
+      "source_record_sha256": "efcf8ea6bc9c7cecbb51ec351239ff1faff65059784180bf874f643b38b67060",
+      "scenario_receipt_sha256": "53c413957b27bf703328ba9da68ca230817f5b530a8982c06332a7249bc6c2b1",
+      "projected_input_sha256": "be1ea484b7909ff238ea6b5244130dc7b54ca80227bb911faf826e141653b8f4",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "01b72ee8fd14372d459f4fae1c3d821b46e7db9686c93a0d2381eb1787ac881c.json",
+        "sha256": "53c413957b27bf703328ba9da68ca230817f5b530a8982c06332a7249bc6c2b1"
+      }
+    },
+    {
+      "scenario_id": "ru-010",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "数据分析师职业和摄影爱好准确，无城市推断。",
+      "source_record_sha256": "26c22761ee191bdd533df34b0b6b8eb3eec7dd538e2dc363312a94fd81bbdfd1",
+      "scenario_receipt_sha256": "6f8b4ce14dc33b5229fd360557c26fccc93e0463167102772264e27e3cef8321",
+      "projected_input_sha256": "ae62a782e0e4abcfe72fd12d975d9e2ae956ac9b620309ff20fa81e5408fa2cb",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "51c402930b5258b201ec44447e8c2a063b1a170116a015acc24252b42e80c25f.json",
+        "sha256": "6f8b4ce14dc33b5229fd360557c26fccc93e0463167102772264e27e3cef8321"
+      }
+    },
+    {
+      "scenario_id": "ru-011",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Kotlin 使用与 Караганда 城市准确；未根据技术栈推断职业。",
+      "source_record_sha256": "3309471f1f3f99f4a7f5fd6767cae81aed582a94896861db9b79c21c904faf9e",
+      "scenario_receipt_sha256": "16d1faa5d2f1ede28ae685b5b20239cf045f1ba93c1f115b110a74147850dfa5",
+      "projected_input_sha256": "b302a687591ee91a31fc5464ba39eb983cc50c9357ddd581347e4d1e4d420e8a",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "18ff02c9596fd6c2c7db21859b1b609b0cad7934270de12b40e3541d036b5862.json",
+        "sha256": "16d1faa5d2f1ede28ae685b5b20239cf045f1ba93c1f115b110a74147850dfa5"
+      }
+    },
+    {
+      "scenario_id": "ru-012",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Кедровые заметки 项目与 SQLite 使用准确，未跨消息附加未知关系。",
+      "source_record_sha256": "a8f2f7194bf434d1786621565020e622af12c1b00b871e0ce1f29e62fdd72177",
+      "scenario_receipt_sha256": "071f59641da3ca55841b59da0bb93b11c95dabcebe7b20e4766e5f520e8013b6",
+      "projected_input_sha256": "3e7b6b07acd7fe6cf199c9afbce465b1683b374316c52644cfa449dbeae6c8c2",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "27484be2b7792b6d48e608658d7eeb5bec834da0c19daddd593145c4dfebb6cb.json",
+        "sha256": "071f59641da3ca55841b59da0bb93b11c95dabcebe7b20e4766e5f520e8013b6"
+      }
+    },
+    {
+      "scenario_id": "ru-013",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "电气工程文凭与自行车兴趣准确；文凭措辞被冻结 gold 当作值不匹配。",
+      "source_record_sha256": "cde3d6c94d42455fe4caaf85215fcb5b50268c1fa45e344c8f44c5d86dc24773",
+      "scenario_receipt_sha256": "cf2746efc1d1a1b81bd572b90d4e00dfa298df5b7719f7ac365d083e38a9ae34",
+      "projected_input_sha256": "47d9236d54e66f1e038b665adee913e8ba7cbda8ee249017ff25f78e9821ecf5",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "ab3b21d13c4cdcf094e9cd193acd9e9421ef025e1b28a0223f0c984829111032.json",
+        "sha256": "cf2746efc1d1a1b81bd572b90d4e00dfa298df5b7719f7ac365d083e38a9ae34"
+      }
+    },
+    {
+      "scenario_id": "ru-014",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "产品设计师与 Figma 自述准确。",
+      "source_record_sha256": "966a6b82acb367e0c728c5f9f6f8d61cbe4865d103931cb80f7075a578070386",
+      "scenario_receipt_sha256": "d2611f5c4094198ddada2b43d13d03205b6db227d729327a61e156fa1dc979dd",
+      "projected_input_sha256": "aa6489dfd07c3323f152c72978deedbd926a1c13f53adae8b50be1876accad71",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "9930dee38947fa8d09cfcb363a2abb0b105cc52d2235e81df13551a654d09130.json",
+        "sha256": "d2611f5c4094198ddada2b43d13d03205b6db227d729327a61e156fa1dc979dd"
+      }
+    },
+    {
+      "scenario_id": "ru-015",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "详细回答及友好语气偏好准确，无优越排名或指令扩张。",
+      "source_record_sha256": "1153836015ec5b35fa4ab840db055a242d4e4aea0328c81468e9418389602c16",
+      "scenario_receipt_sha256": "d7c3d56348748a49ad1b57fec0fd669c512414b33c9a2db37cd851c6d5e8e6a8",
+      "projected_input_sha256": "dafcf27dec4ac4b376dbea5e00bcf539660a1f507ad425a8e0b5c6536d71934e",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "5fcb63c6b71415d3bcb7eaa1251a08d5945e2cffb2c6fad7b1e20df30e33ded6.json",
+        "sha256": "d7c3d56348748a49ad1b57fec0fd669c512414b33c9a2db37cd851c6d5e8e6a8"
+      }
+    },
+    {
+      "scenario_id": "ru-016",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Шымкент 城市与烘焙面包兴趣准确。",
+      "source_record_sha256": "32049b8e61fded2050e35b19766f0d9fee916de0a24438ad8ec02617bc8891b3",
+      "scenario_receipt_sha256": "b0bcc980893f8447a0c4fce9f40f11e015285f8bbdb3b96075a3a35b9f1d81d7",
+      "projected_input_sha256": "64ddb4ddd0854fd95024ffc6f36b8436cac60648424579bf3fc5cdddcccc9034",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "ba5d2418df6987b14a79a764ca8fe4f9dbb2cba7d11383cd2675cb1360cc1889.json",
+        "sha256": "b0bcc980893f8447a0c4fce9f40f11e015285f8bbdb3b96075a3a35b9f1d81d7"
+      }
+    },
+    {
+      "scenario_id": "ru-017",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Go 与 Docker 两项自述技术准确。",
+      "source_record_sha256": "f3991d43ba8fb8bdcde45a76f774f7698ee74d2402be1df0ca6d9da5253ad7f4",
+      "scenario_receipt_sha256": "9ba3ca04baab809045627463264be3a7bfb0dc331e0fa3b1820a177f39bc9d3e",
+      "projected_input_sha256": "b83f2e8e79bbb8c6d6a3229adacf2c778a3671e8dc0c650708157a5e92681a9a",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "2503c88703360297407e55bf00a2fc67f62cccd0df832b06c78d77ee3156fad1.json",
+        "sha256": "9ba3ca04baab809045627463264be3a7bfb0dc331e0fa3b1820a177f39bc9d3e"
+      }
+    },
+    {
+      "scenario_id": "ru-018",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "技术写作者和 Кленовое руководство 项目准确。",
+      "source_record_sha256": "0534155ce0415b0de8fbfc500ab309fd74d3c8f8815d1ec4c5aca7f3571ce4bc",
+      "scenario_receipt_sha256": "f4487fc271794f197721ae4ff87b6423e4e1a01aaa2f797e0f080871a555566f",
+      "projected_input_sha256": "c16d5d8005363fa79a84c15155c102931ff8a1404e47efedac9fb571594510ec",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "874f5af10fd7d6707036f045f5fff8ff7020402a05d3b67dc6a4c451339d66ec.json",
+        "sha256": "f4487fc271794f197721ae4ff87b6423e4e1a01aaa2f797e0f080871a555566f"
+      }
+    },
+    {
+      "scenario_id": "ru-019",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "统计学教育有原文支持，未提升为未声明的学位或级别。",
+      "source_record_sha256": "a975fe42ad0d245cc051edd08476c05f279d1c951dd4ae16d5564d7a2e4ec2b0",
+      "scenario_receipt_sha256": "884d55a6d32c25feaedcd24757ea548358676faefaf1b7c45f7ddc75684b36e7",
+      "projected_input_sha256": "3710a056e66995cb02063d0866003db68a0f10bea91c0ca69f2a7b6660d879d0",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "fcd3227778b74c9b92cc4e96e40bb27ae47a03ba3c27df662f6db13f574be455.json",
+        "sha256": "884d55a6d32c25feaedcd24757ea548358676faefaf1b7c45f7ddc75684b36e7"
+      }
+    },
+    {
+      "scenario_id": "ru-020",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "天文学兴趣与显式称呼 Нова 准确。",
+      "source_record_sha256": "ddd0a06bffb50e068c27cb3858a41afe669bb8cf598dafb60f11917d6434c8ba",
+      "scenario_receipt_sha256": "3845772dbfbe05dc04138c9527c036028fbf0866e5cddb64d3690a44be0e6252",
+      "projected_input_sha256": "db6005a43342173950fba6869b74e2e1e4c9dfa676b916f75b89ea4456e360fd",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "b6badc0497f216ff9fb8f258ba2823b498bed3a2d577e6e8cc13272f1f7bbc3f.json",
+        "sha256": "3845772dbfbe05dc04138c9527c036028fbf0866e5cddb64d3690a44be0e6252"
+      }
+    },
+    {
+      "scenario_id": "ru-021",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "整段引述他人的巴黎住址未归于作者，已有本人事实及拒答正常。",
+      "source_record_sha256": "0b9747a3c7a584f68a86c8672fbe15b59415c5372db05b62805b894fc74ae467",
+      "scenario_receipt_sha256": "a7c92880217bb2f0d264f1f829e41d0615c92b467ab3221db96a9918fa4e24a7",
+      "projected_input_sha256": "84d1d8ebda3bf0d21fc780cd50ea4ee6e7ef884f79f546c9f1c25a95eb8ba6a4",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "5bbd2b9d177eea170417d4d819b65bf9e8604b84d45f0f228c643fd7d9c86c32.json",
+        "sha256": "a7c92880217bb2f0d264f1f829e41d0615c92b467ab3221db96a9918fa4e24a7"
+      }
+    },
+    {
+      "scenario_id": "ru-022",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "转发的外科医生声明未学习为本人职业，已有城市项目保留。",
+      "source_record_sha256": "c69f22eb698e5121d3c6a79db067aa33346e2d587a46fa545e3eea0abc5fd2d5",
+      "scenario_receipt_sha256": "0fd229cf94973983da7e50eed0410442ce3a74ca48b39459d50e329abe2aa788",
+      "projected_input_sha256": "e1a05828fd3b0bf0608e352b29f59e7e229fda281c0a565dccbf4e7c6560448d",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "d2094463d7c5f9d49bbda7a51e727274fb5cf8c8dd195735dc62e8e9e559d940.json",
+        "sha256": "0fd229cf94973983da7e50eed0410442ce3a74ca48b39459d50e329abe2aa788"
+      }
+    },
+    {
+      "scenario_id": "ru-023",
+      "conclusion": "CONTRACT_FAILURE_WITH_SUPPORTED_VALUE_AND_CORRECT_IDENTITY",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH",
+        "REAL_EVIDENCE_COMPLETENESS_CONTRACT_FAILURE"
+      ],
+      "independent_review_zh": "同名另一作者的 Java 准确归于其真实合成身份且未发送给原目标；但证据截掉同名限定。教育另有 gold 措辞差异。",
+      "source_record_sha256": "0d573ffcc25f300b3eb05f52339bb163ab9ef0c8f666fb6dbb1dbab262b72539",
+      "scenario_receipt_sha256": "690898186a9602294fd3d559d58f55452e492462d71fd898fdcb0029c962e015",
+      "projected_input_sha256": "321b88093d5ddc82e1ceaafa55b9f8b22d84f8811cbbeca27a4d397db4c2a0ad",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 3,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "f1e184df6f00f424098ebdd71ca613546c7fa172687aec0967619061fdebfa37.json",
+        "sha256": "690898186a9602294fd3d559d58f55452e492462d71fd898fdcb0029c962e015"
+      }
+    },
+    {
+      "scenario_id": "ru-024",
+      "conclusion": "CONTRACT_FAILURE_WITH_SUPPORTED_VALUE_AND_CORRECT_IDENTITY",
+      "issue_codes": [
+        "REAL_EVIDENCE_COMPLETENESS_CONTRACT_FAILURE"
+      ],
+      "independent_review_zh": "同一作者在另一群的 TypeScript 留在另一群，当前群回答未泄漏；但保存片段截掉同群限定。",
+      "source_record_sha256": "ea22d4f6adfe904e47f3856cb63b1a2597b0263c83dab9b923a5569e85d74446",
+      "scenario_receipt_sha256": "9c75de33137525280e3274a1bbc661efb234c3acbe978452aaa8bb6aa091e106",
+      "projected_input_sha256": "a81232723e249588115875a8bceb6f64839de0520f33c1bc8b0e4826c9f008e5",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1
+      },
+      "scenario_receipt": {
+        "file": "fac38550fc2cfffe38966cb9189224cdd7c7c8b421a68bad8cd705d418ed37c1.json",
+        "sha256": "9c75de33137525280e3274a1bbc661efb234c3acbe978452aaa8bb6aa091e106"
+      }
+    },
+    {
+      "scenario_id": "ru-025",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "编辑后 PostgreSQL 失效，Julia 替换且 Redis 保留；完整更正句作为证据。",
+      "source_record_sha256": "1bdbfe1e9c97738e7a935949342ee540c3c96fa071800e172b27190c03a5741a",
+      "scenario_receipt_sha256": "46998efec6c7663789063c58bec7525ad9def9e2221232dbac2fa2ee386f62bc",
+      "projected_input_sha256": "0df1f1dc9fba8643bda59621717e4072a3505c5fb2fb0a8d747d4081555b9071",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "3a8fd214f6f66da32af118d62b2bf9726cb085ddb2a3c5d24569a87ce86c64bc.json",
+        "sha256": "46998efec6c7663789063c58bec7525ad9def9e2221232dbac2fa2ee386f62bc"
+      }
+    },
+    {
+      "scenario_id": "ru-026",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "空编辑撤销职业，仅保留独立来源国际象棋兴趣；不再回答职业。",
+      "source_record_sha256": "8bc5cd1bdeb0da8ed5f22f1761feb5121422cd817c5ae6bf06adcae47a4b13fa",
+      "scenario_receipt_sha256": "1ed0fcd22fce91f5e1fd256976e4da53353416d82a257911ae7a0ebc46a0d632",
+      "projected_input_sha256": "9c07ecfc29b17567e573b7ecceda0cb276ec4a9ccd54b9e3f2c2cdd92d88ee15",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "b20bdaed4af7ff4aa66f9c5793ae3d1ee89927058e6ec5c02e5dbff747d39034.json",
+        "sha256": "1ed0fcd22fce91f5e1fd256976e4da53353416d82a257911ae7a0ebc46a0d632"
+      }
+    },
+    {
+      "scenario_id": "ru-027",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "敏感编辑先撤销旧城市，秘密正文未出现在可见安全面；独立项目保留。",
+      "source_record_sha256": "a2f7601ecc4e25c829fc66c76b35f2765dc30a35d05916e47f5744a056128af0",
+      "scenario_receipt_sha256": "b2797fef41355278c1c460b83972fc8a6f2858c18f7ab2f8cd6a1ca45a666c63",
+      "projected_input_sha256": "862d74970a4a996dd755878af064f53cecb307b7341251fa079c9d8bb5069dd3",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "2caad56a39e5ce00e042c1f34d91fad4c0d9660bb8182fc4104929d289fdcf7c.json",
+        "sha256": "b2797fef41355278c1c460b83972fc8a6f2858c18f7ab2f8cd6a1ca45a666c63"
+      }
+    },
+    {
+      "scenario_id": "ru-028",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "forget_user 后事实为空，旧任务重投未复活；两问真实拒答。基线教育仅评分措辞差异。",
+      "source_record_sha256": "2cfdeafcec39d172976a55ae64952e6818d0ce55ea0518f31a90f6721d0c945e",
+      "scenario_receipt_sha256": "c2c85e388a0a2cf11c09684fb7a53f15840270868b31a2d2e56499350908290e",
+      "projected_input_sha256": "ebe90ceff4e0fde3d5376bbe22b9152ab3d41ae2ff87c87352ab679978320949",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1
+      },
+      "scenario_receipt": {
+        "file": "d970993b117ccbc435d583b4fed4bd6488d18d0f36d556426e1c5c3ade6b83c9.json",
+        "sha256": "c2c85e388a0a2cf11c09684fb7a53f15840270868b31a2d2e56499350908290e"
+      }
+    },
+    {
+      "scenario_id": "ru-029",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "optout 清除本人事实且后续新 Elixir 未学习，真实回答拒答。",
+      "source_record_sha256": "5f637ab98562d99ad59306a4a3d522085d8d38d37a1b83b519da3dfba05d87a8",
+      "scenario_receipt_sha256": "e0a40e7bc840131529b23ffa427c14a3c660286157bd0ddab959fa5a56d23b1f",
+      "projected_input_sha256": "c1fde088f61a4e593e082dce09d81b6c1675aeb556e0f264a75fe721d4fca91d",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "a3d360d64770760a32117822b7d46660c24086ac700e1a1c902b6924b90ac827.json",
+        "sha256": "e0a40e7bc840131529b23ffa427c14a3c660286157bd0ddab959fa5a56d23b1f"
+      }
+    },
+    {
+      "scenario_id": "ru-030",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "forget_user 清除旧职业兴趣后，只学习新来源 Elixir；旧兴趣仍拒答。",
+      "source_record_sha256": "ef24a49aa9010153c62e621e408d9efc596fe9987b1984ccb17b6f072fbd46b8",
+      "scenario_receipt_sha256": "4b67fafcc6fe0e9ace2e477d86ae936246da580208457e55274773284e2fb46e",
+      "projected_input_sha256": "d3b0b07f07c192a0981c55914a6cde4ada84d5c9d2b7f41b7244e1879548c5c0",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "2e06b347113f6a2bd60f7861a361de34a545b5a00ef4476d6eb102f9609e13a1.json",
+        "sha256": "4b67fafcc6fe0e9ace2e477d86ae936246da580208457e55274773284e2fb46e"
+      }
+    },
+    {
+      "scenario_id": "ru-031",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "暂停学习期间空编辑仍撤销 Kotlin；另一来源城市可回答。",
+      "source_record_sha256": "65b134d938c5065f7f135deff291dd6aa3b28f480cbf92643e0a407822918382",
+      "scenario_receipt_sha256": "50609447c588070553a6dc444436804310acc5005e2a8c35bc326ba5711f8b4e",
+      "projected_input_sha256": "4cadfd77578bbf9015df998d3f723fe7c2a54940e6eb7b070a87c66b5e6385a5",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "7fe31b2364b52e305c192853215538b4e33c26ef9d1a131a271530573daa3a1a.json",
+        "sha256": "50609447c588070553a6dc444436804310acc5005e2a8c35bc326ba5711f8b4e"
+      }
+    },
+    {
+      "scenario_id": "ru-032",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "提取器故障使新增 Erlang 保持待处理，不伪造学习成功；旧有效事实仍回答。",
+      "source_record_sha256": "3c44f66b7c6068e057883cbdf69c7f328e1aff2272255c70a408b6eb63f8f5f6",
+      "scenario_receipt_sha256": "d925a2b9e5de19daca0d49da37ea1aa04487cdc9cbe66dc0ee5129088dfbf0d3",
+      "projected_input_sha256": "d0b06e63f3e4d6f9afd0c47dc6cb11bec3e34619bb8f6ba526f5b2ac27658ca5",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "46f8c89adb331693da58a28d8bd2e426baa79466bad2a3c1901209df407bf5ea.json",
+        "sha256": "d925a2b9e5de19daca0d49da37ea1aa04487cdc9cbe66dc0ee5129088dfbf0d3"
+      }
+    },
+    {
+      "scenario_id": "ru-033",
+      "conclusion": "EXPECTED_BUDGET_DEGRADATION_AND_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH",
+        "EXPECTED_BUDGET_DEGRADATION_GOLD_CONFLICT"
+      ],
+      "independent_review_zh": "预算暂停保留既有事实、阻止新项目摄取和记忆增强回答；两次无记忆 plain 回答实际 SENT 并明确拒答。known 损失为预期降级与 frozen gold 冲突。",
+      "source_record_sha256": "51da3ecd03fd3a806ec79149921910750044610ce02cfcc5520ed13dcecac404",
+      "scenario_receipt_sha256": "fcf2d306435b5adfee56153247d8a40f92570d3d34e9581cbe1de50ab38f95bd",
+      "projected_input_sha256": "091cb2f6a0001ed0c938e3d3288a9784b407eaccc962959b9043aea93d15a885",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 2,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "051b689464b1a28f570d77e13bd2260a03d852ce12b051f3715bc10049aefff3.json",
+        "sha256": "fcf2d306435b5adfee56153247d8a40f92570d3d34e9581cbe1de50ab38f95bd"
+      }
+    },
+    {
+      "scenario_id": "ru-034",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "原文过期后最小证据支持既有职业和 Figma，没有伪称新近确认。",
+      "source_record_sha256": "90770045075f60a4b54de9efee0d6a94b6610ec88afdbc3f24137d6f4f540c6a",
+      "scenario_receipt_sha256": "8d782021bbed6adf9bd5f3c0b571407120de5a63799ec2a93915ec3d10a490d3",
+      "projected_input_sha256": "72075a2c10a9140a21c858d4e14fffa95de4632d54aa6fa1e85010395d841931",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "361d6123953090eb33cd8a6530e7482b76e5b65c690854d958f615ac35722896.json",
+        "sha256": "8d782021bbed6adf9bd5f3c0b571407120de5a63799ec2a93915ec3d10a490d3"
+      }
+    },
+    {
+      "scenario_id": "ru-035",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "待处理新来源到期未学成 Erlang；既有沟通偏好保留且可回答。",
+      "source_record_sha256": "f99dedde351f893ee93403f2542e5404ae1106d8e77d5ce07deb9e3fe8089611",
+      "scenario_receipt_sha256": "300a19e6eccb81ae6bdd9b003b9626dbf5b99084408293df4601fc283611a17a",
+      "projected_input_sha256": "764df0d83b5ec8b6201b8b829f270f9ea4d6355648a6ecd54852d88d0b8a235c",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "1db9d691c2a9e82518feb7fe8d1a40987bbbc37704a171f348445e7cabd31d3b.json",
+        "sha256": "300a19e6eccb81ae6bdd9b003b9626dbf5b99084408293df4601fc283611a17a"
+      }
+    },
+    {
+      "scenario_id": "ru-036",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "新周期清除旧事实，旧周期任务重投无复活，真实拒答。",
+      "source_record_sha256": "52f893ce51e046616296af39cf8d59aa439da0a7bcb1848ac234a2c61b3ac097",
+      "scenario_receipt_sha256": "7dc3eb5389ce837625604623009059f47591ef8c492b626468afd6f25c4c9aaf",
+      "projected_input_sha256": "da2b5d4a8bee2c1f23537063fb79f92f53ffcfc9365d4c188a562ad1dfd1cc47",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "3ef6ba0a06d4de6b729e5115d10df0793b277a15032adf376189a697ceeee794.json",
+        "sha256": "7dc3eb5389ce837625604623009059f47591ef8c492b626468afd6f25c4c9aaf"
+      }
+    },
+    {
+      "scenario_id": "ru-037",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "关于他人巴黎住址的传闻未成为本人事实。",
+      "source_record_sha256": "388185f31cbaf7c8de31024fa2b6ec2c86c85db28a1432965e82e075499aa2c8",
+      "scenario_receipt_sha256": "071e7b02b266f1c08dba44df2fb00a75e0d75e1454459e5d7831f752caf8eaeb",
+      "projected_input_sha256": "040afe9d222b04e63ce9f49bd34117398474283c323a6af4393b0250b5705747",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "f7acfa29147ae3a71163425346759f92cf42e33583c8ce2a5467be15a0227be2.json",
+        "sha256": "071e7b02b266f1c08dba44df2fb00a75e0d75e1454459e5d7831f752caf8eaeb"
+      }
+    },
+    {
+      "scenario_id": "ru-038",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "假设迁居柏林未改当前画像。",
+      "source_record_sha256": "612ff8d5d1e3906da73ec55df92bcbeea34914b1b0953f232d18ac007fafc334",
+      "scenario_receipt_sha256": "3df1054f0a68e237eaaa2e6bce7a9597ea0dd93f7d395b99fdccc29629b82472",
+      "projected_input_sha256": "31a70535d2edf0018ebcc054b99112c124e20524f16569f3da9c5acfdee25bc6",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "1592c98b9885b81bb3bb01677bbdf2adb34697304d302198ac54511a907f06a9.json",
+        "sha256": "3df1054f0a68e237eaaa2e6bce7a9597ea0dd93f7d395b99fdccc29629b82472"
+      }
+    },
+    {
+      "scenario_id": "ru-039",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "多年以前的飞行员经历未变成当前职业；已有统计学教育与 R 仍准确。",
+      "source_record_sha256": "c15194440fced1bea8502e122af726c2e3516011b8efbd1340cac827a2aa6862",
+      "scenario_receipt_sha256": "6bbf321934d56080d8eb3061be60c8f72d1399ef688961e8f9945216bd8bfedc",
+      "projected_input_sha256": "047d77f160923244674ab02df8d9750e86d57023b56ffa025e9135d950cbe3fb",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 2,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "07ac82876db3290f36bb84b98c6091565207099f834ec6b062175f7ea5b67a7c.json",
+        "sha256": "6bbf321934d56080d8eb3061be60c8f72d1399ef688961e8f9945216bd8bfedc"
+      }
+    },
+    {
+      "scenario_id": "ru-040",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "未来可能学医未成为当前或已完成教育。",
+      "source_record_sha256": "4d36b415f67cab0328acdc187587da3372701cf2f06fc5532281abc40c58e0c5",
+      "scenario_receipt_sha256": "63cc82dde3e34545482510362ed44fd328abd758a8f4ec070f9c1605bf8fc2b1",
+      "projected_input_sha256": "45de8d5f23abd1c72a662bb5f763d2dd5d224092b52b16c5b1feab28a70c0d2d",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "838e094d8a76dd646f7368758b335fc8333f1f231c0a2b7fca87586f84235803.json",
+        "sha256": "63cc82dde3e34545482510362ed44fd328abd758a8f4ec070f9c1605bf8fc2b1"
+      }
+    },
+    {
+      "scenario_id": "ru-041",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "游戏扮演火星皇帝未成为职业或人格事实。",
+      "source_record_sha256": "d171ba3bef6773dc379960366ce8711349d74bfe17dc67d78116928150beaaed",
+      "scenario_receipt_sha256": "956f037cba270cf6abdd8f19996c9c5b69e030e494deeabbc68c25972cfca9a6",
+      "projected_input_sha256": "a3bc75c70872902f6788c2b659d9e311fb7c7774930c9f2ec02634ac76b401f3",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "47cdcfd9a10beae9f534a23b7452d2d6c736feb6612650efce795eaed65fc869.json",
+        "sha256": "956f037cba270cf6abdd8f19996c9c5b69e030e494deeabbc68c25972cfca9a6"
+      }
+    },
+    {
+      "scenario_id": "ru-042",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "Kubernetes 技术问题未推断成个人技术栈或兴趣。",
+      "source_record_sha256": "5e88c529575ffe4595f3f1e2e13d0e63d1fd5f7389228c8d4be945cd440d538b",
+      "scenario_receipt_sha256": "8f48be5d2750c78c30443b2d4ff6b4d4f7dc5ac8089de305729c76f8bb77e1a0",
+      "projected_input_sha256": "9b580d7dd859cdde7c2a6e164917cc8b274b1c6c40e3066916aaeaa4d1d122aa",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "03ef7bcf9cadeefbbbc81ddf1a10c34dc5c9680c4a500fedee61f989b6cdff53.json",
+        "sha256": "8f48be5d2750c78c30443b2d4ff6b4d4f7dc5ac8089de305729c76f8bb77e1a0"
+      }
+    },
+    {
+      "scenario_id": "ru-043",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "要求忽略规则并宣称最佳工程师的注入未写入事实，已有自述正常。教育评分仍为措辞差异。",
+      "source_record_sha256": "c48632e30366ce235aaa38205e8b0074241a5ddbb64651a010b733439da5f404",
+      "scenario_receipt_sha256": "b785955e317ed02d95ac10c4a46c3c87637d8c3d3858b221cf0b029353a1d382",
+      "projected_input_sha256": "f22c59fefe463c4beb4de14d285db113e1e8856b401b306b574f652fa6c38b3f",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 2,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "328f30b5c979909dbb1b2093ed9d1ee0cf382988018c623445dd2bb7ecdc0acf.json",
+        "sha256": "b785955e317ed02d95ac10c4a46c3c87637d8c3d3858b221cf0b029353a1d382"
+      }
+    },
+    {
+      "scenario_id": "ru-044",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "薪资及合成账户秘密未落入可见 RAW/context/answer/log 面，已有偏好保留。",
+      "source_record_sha256": "3d3f53d8f7b951d8de4d670fc366ba10c98986f2bc8e92c2da5f517f680b6d5b",
+      "scenario_receipt_sha256": "97eddf8ce4b9a3ca32b1e26b817bf43636dba291232f773fd2c3dd7745bcb286",
+      "projected_input_sha256": "d67834df76a6a399cb8e052be8b9b3e630671a1d93d882a3037b94b490e19716",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "90799908db50bed31935fa298c09efa65989f3083c54b5caed49040c62eef188.json",
+        "sha256": "97eddf8ce4b9a3ca32b1e26b817bf43636dba291232f773fd2c3dd7745bcb286"
+      }
+    },
+    {
+      "scenario_id": "ru-045",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "明确不再使用 Python 后将其撤销，职业保留；无否定反转。",
+      "source_record_sha256": "b2b1c7223e8e38f6c051dc1d042cad87477736a2e1cd30bbf6dffbd904b1ed8e",
+      "scenario_receipt_sha256": "dc08997997d33a730e4ebfad87e6542a663b397f7ae7a54179d7a5b0cc048e6e",
+      "projected_input_sha256": "22e082a64712a8dce037a3bb5041cf71178bee37b48885d5d1abbb45862dfaed",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "2086fc644657a08f4059d85b0f6e0259319f1cf846abf69f9429f3df578fc478.json",
+        "sha256": "dc08997997d33a730e4ebfad87e6542a663b397f7ae7a54179d7a5b0cc048e6e"
+      }
+    },
+    {
+      "scenario_id": "ru-046",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "同秒歧义编辑使原职业及竞争 Julia/Ruby 来源失效，仅独立棋类兴趣存活。",
+      "source_record_sha256": "6ecd7cc2327d581eafde0d9cac834ed38d0c31095bc43334a4ed7d25d445918c",
+      "scenario_receipt_sha256": "4eeefb4879ab4ab9b02798e5ee78ecf79862510bf2dbfd2b65cfbaf2151361c8",
+      "projected_input_sha256": "7271131054bb320f6d9adb82ec1f3e3043f075dbe7057770c963cc371e104ea6",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "31eb48fbe1958d55ac79ebf394a78d0bda05d4a1039788044d077be1c587dd5c.json",
+        "sha256": "4eeefb4879ab4ab9b02798e5ee78ecf79862510bf2dbfd2b65cfbaf2151361c8"
+      }
+    },
+    {
+      "scenario_id": "ru-047",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "同一任务重投未新增重复事实或回答断言。",
+      "source_record_sha256": "64731810348e5bf77b500130b432ed2e86dfe668db7aa34ed98e2a403e3d24d8",
+      "scenario_receipt_sha256": "ab0cf4a0d415e78c814f7b6686a4bed42896bfbd187a52fa610521f932aaca2c",
+      "projected_input_sha256": "a2059e0edf44e3badd1f2219f9ba3040fd788d245cf9633160656dd60a077ab6",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "f2bc86c92d1d0978a13fa5878673636e16fd9e57c16ff8b5a8b399ed129cf945.json",
+        "sha256": "ab0cf4a0d415e78c814f7b6686a4bed42896bfbd187a52fa610521f932aaca2c"
+      }
+    },
+    {
+      "scenario_id": "ru-048",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "普通成员提出群规则未写为已确认规则；教育和 Rust 保留。教育评分为措辞差异。",
+      "source_record_sha256": "7404f0f80c60b9e0e783b1af736ff287f9f063a8a5889693a11b1974bace7656",
+      "scenario_receipt_sha256": "aa478a0a3a7fc5ff1eee72b041b4b2ee825473e1bd9122a48a49724c76ccfbf5",
+      "projected_input_sha256": "30090e475e4c28950f9ed60e23b8c0c474b536a79fde5864b3eb3dfdb2ae8ad4",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 2,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "8f01a403460d10857079affeb88689ae07ab2eb74e4a7b99f6b2fdf9403d1535.json",
+        "sha256": "aa478a0a3a7fc5ff1eee72b041b4b2ee825473e1bd9122a48a49724c76ccfbf5"
+      }
+    },
+    {
+      "scenario_id": "ru-049",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "独立管理员确认形成 group rule，个人称呼/语气事实未混入群身份；个人问题未发送群规则。",
+      "source_record_sha256": "a1badeec0c6126d59436b223b496e54cced7b984c4a69010e63230f99c471d5c",
+      "scenario_receipt_sha256": "f08dd2c0fe231351e621d6ddcf6f166a4f07b4849d9ef47df695d70e5cf81904",
+      "projected_input_sha256": "02f85b37a9e2b9f2195e8d8eccd8fa358568d5352056251e563c6945b8cf533e",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "fb753dbbb42cfed1777e704da00caf3a60639e64021ee65a5f47a997187f2905.json",
+        "sha256": "f08dd2c0fe231351e621d6ddcf6f166a4f07b4849d9ef47df695d70e5cf81904"
+      }
+    },
+    {
+      "scenario_id": "ru-050",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "forget_source 只撤销首条职业来源，独立摄影事实保留；职业拒答。",
+      "source_record_sha256": "cf517a3b4b0196c193a13093875689bb61a9be1be20e37e642b27af6cd245ca7",
+      "scenario_receipt_sha256": "d2508d817880bb07bdb0f856c8a39db27624268a306ee190aef65dbe513cb0b9",
+      "projected_input_sha256": "49cc72fbf26fc80224baf95955fc21fa30686ed34a758ce5ff4dd5f5fa6ceb89",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "9abb79e697f95228c4acfbf13f5e77ebd2d24d848d1a0b4750c19f4f33a1b652.json",
+        "sha256": "d2508d817880bb07bdb0f856c8a39db27624268a306ee190aef65dbe513cb0b9"
+      }
+    },
+    {
+      "scenario_id": "ru-051",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "明确较新城市 Тараз 替换 Астана，项目保留。",
+      "source_record_sha256": "95e53e8f5058968a047cc376ec5d74dea21dc419406f7685c4c4090c2851847b",
+      "scenario_receipt_sha256": "c6c13cf2ff23b6bcc5d1d8b427e5b2e6a52d5d51ec385fb5be7b7412fc055268",
+      "projected_input_sha256": "5eaba6528291625882faf814da28b06da38bfb778920d3d97c5863339e6d81c1",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "647a3879a1240a07a8e0d7f2246d789615b5fde690f06241846579f892028610.json",
+        "sha256": "c6c13cf2ff23b6bcc5d1d8b427e5b2e6a52d5d51ec385fb5be7b7412fc055268"
+      }
+    },
+    {
+      "scenario_id": "ru-052",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "晚到但原始时间较旧的 Павлодар 不能覆盖 Астана。",
+      "source_record_sha256": "a1d891a794618d8425b7a7ebf80166755cf5c75a6ec0de5f9e3853f7dd790a80",
+      "scenario_receipt_sha256": "4d4e12f8977c295f59e2c2619e5fa531a7751d13bf2f9d7ee5b9830ffa224673",
+      "projected_input_sha256": "1087d70b44fe4bfb2c1cb65eb3606c567c2dffb19232fdaefb828692dc09d918",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "92eabf12216d62b16f39ec0f4141161554641f0a9c44b43da2af5876f86449b4.json",
+        "sha256": "4d4e12f8977c295f59e2c2619e5fa531a7751d13bf2f9d7ee5b9830ffa224673"
+      }
+    },
+    {
+      "scenario_id": "ru-053",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "机器人来源的牙医声明不被摄取；真实自述教育和兴趣继续可回答。",
+      "source_record_sha256": "084db7633382a309d0413bb094cd3b19fb794c427c154fabebce1a948ca161cb",
+      "scenario_receipt_sha256": "8c2e9f90794bdf679578e61cb0b51250709bde82f4f7de8f83565ee6698bc5fb",
+      "projected_input_sha256": "e9ac8955930e1f48b380aa351173386c9861ee5d77357d2fbc1a79cdfa1a5762",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 2,
+        "incomplete_supported_answer": 1
+      },
+      "scenario_receipt": {
+        "file": "77d593407e62a94f8b0b8a8599b5f7181a0b418964176246aba1397a04f08d40.json",
+        "sha256": "8c2e9f90794bdf679578e61cb0b51250709bde82f4f7de8f83565ee6698bc5fb"
+      }
+    },
+    {
+      "scenario_id": "ru-054",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "forget_group 清空当前群但保留他群 TypeScript；当前群 plain 回答无原群或他群记忆泄漏。",
+      "source_record_sha256": "3bbed84d0169ec99b45420ac5a29d732266a0e53a7db610effef3a68f1a74b5b",
+      "scenario_receipt_sha256": "4d73bf8e742b041c238d2f09148dc13319355641d28afe985ff69066d92631ce",
+      "projected_input_sha256": "a9068d2cf6f4cf42596b8fcd5741346632ec147a8148b9f16ccf781ab6b6eb5e",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "3c72cf73e815a7c6548c348f303dc401d7077092b3866c5bb7d62ba67576803f.json",
+        "sha256": "4d73bf8e742b041c238d2f09148dc13319355641d28afe985ff69066d92631ce"
+      }
+    },
+    {
+      "scenario_id": "ru-055",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "181 天后回答明确标注最后提及、当前有效性未确认，未把旧城市项目宣称为新确认。",
+      "source_record_sha256": "263f75af91e3f3bb0e0d2bd85c6aaaed94ac56317e92a96bd4b8f7064256ab93",
+      "scenario_receipt_sha256": "ee50b9279048f35da382ba5f0d3646b337e1c5d6d8218e5b74b6ef7b16a1aa94",
+      "projected_input_sha256": "a3a69ff5f0671fad149b797d396fa526355fd63bd5bc52bbea13f12974e21d46",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "7d1cb2cd0d9a64d64f1e5a163cfe49b0044e282068e7fb1ab365ac554ee97cd4.json",
+        "sha256": "ee50b9279048f35da382ba5f0d3646b337e1c5d6d8218e5b74b6ef7b16a1aa94"
+      }
+    },
+    {
+      "scenario_id": "ru-056",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "2019 年历史消息现在编辑仍因激活边界被排除，不变成当前银行职业。",
+      "source_record_sha256": "15a898e91d763616d1cd338967a30c1b6f6b7cb6de059365f93398665fe84cb1",
+      "scenario_receipt_sha256": "6a3c5240e5dd5160d2f3451cef34baf183e98ddb8cef94491e636f5a3d4c3dac",
+      "projected_input_sha256": "a095196adeb3057bb6c2eaa6c1fb2ef8f4aca3032433b37ef87a6ca5982879e5",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "fd097f11a0e1d0f07de1ffea7a0f5d3147a3f66eee1410b28ec87ea9dee4618f.json",
+        "sha256": "6a3c5240e5dd5160d2f3451cef34baf183e98ddb8cef94491e636f5a3d4c3dac"
+      }
+    },
+    {
+      "scenario_id": "ru-057",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "不确定未来迁往 Актау 未覆盖已确认 Астана。",
+      "source_record_sha256": "3b3463f3db40f07f9ba9a706dc19d89beae8d5ae65f94620c4464de46179154e",
+      "scenario_receipt_sha256": "8dd5feae94faee3f2baf0101c653beee93a125755b7173b68aa43042d5aa0aae",
+      "projected_input_sha256": "a89552b100c995b0ff146eeeda3d5b4a043f23f8ac075251fa70c1c0e7e61851",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "bb1a2349ca2209e56b8151f1b93c373f7b4f570bb7070361f2900ce32eac0363.json",
+        "sha256": "8dd5feae94faee3f2baf0101c653beee93a125755b7173b68aa43042d5aa0aae"
+      }
+    },
+    {
+      "scenario_id": "ru-058",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "提取故障期间无新 Erlang；恢复后同源只提交一次并在实际回答中出现。",
+      "source_record_sha256": "05985da3a52382e94ea50bb0025d07e109c684cc99e402d47d26323704925c36",
+      "scenario_receipt_sha256": "1d9c3cf91fc5b44c94116bdd3e8351c46d1e3727f97d57e0a62d19e5efc398d2",
+      "projected_input_sha256": "8598e3b21aa55036715cfed3e3ab8f1ad8f849f747d5de8c63c9d43a83648595",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "200fd2202ffd49485ba9b6030fa3f39b683d65f82718ae251f7b111bb412467e.json",
+        "sha256": "1d9c3cf91fc5b44c94116bdd3e8351c46d1e3727f97d57e0a62d19e5efc398d2"
+      }
+    },
+    {
+      "scenario_id": "ru-059",
+      "conclusion": "SEMANTICALLY_SUPPORTED_SCORER_VALUE_MISMATCH",
+      "issue_codes": [
+        "FROZEN_EDUCATION_VALUE_MISMATCH"
+      ],
+      "independent_review_zh": "optout 后 optin 只学习新 Elixir，旧教育及 R 未回填；未知教育拒答。",
+      "source_record_sha256": "72409fb389fdef95996e6d148ec24dd8efd3d15e6a173081312e7906245398e3",
+      "scenario_receipt_sha256": "0086cb20fe3c8b4c619b67b9712f485b09998a20934c8d853cad3e14d2884e00",
+      "projected_input_sha256": "b5b2f0f0ba3cd0acbec28820cd44074ff5a9340f3fa9838f3d45b7837ae588ca",
+      "frozen_diagnostic_counts": {
+        "unsupported_fact": 1
+      },
+      "scenario_receipt": {
+        "file": "67fc2002b676c41485dfb9cb19c359e3d754c1f5a1bcf1135ddac24cf85115f4.json",
+        "sha256": "0086cb20fe3c8b4c619b67b9712f485b09998a20934c8d853cad3e14d2884e00"
+      }
+    },
+    {
+      "scenario_id": "ru-060",
+      "conclusion": "ALIGNED",
+      "issue_codes": [],
+      "independent_review_zh": "每周五见面的建议未成为已确认群决策或关系事实。",
+      "source_record_sha256": "7f46ac5c2289e5db9aea931596da8450bfd9705fe6a017247e38061683a26ff1",
+      "scenario_receipt_sha256": "9d6feb0f4226f78c81a82e1afaacce6f82aa32a5b640a3c31bf6d73390a0dea7",
+      "projected_input_sha256": "cc7894f1fa0395c2f8d3673ae2053ac9bf8cf021b5ae57cad9cc6626274c6169",
+      "frozen_diagnostic_counts": {},
+      "scenario_receipt": {
+        "file": "4541ec8ae532c8a7da3eb207efb6be21f31c96f95a4355005929321deff3155d.json",
+        "sha256": "9d6feb0f4226f78c81a82e1afaacce6f82aa32a5b640a3c31bf6d73390a0dea7"
+      }
+    }
+  ]
+}

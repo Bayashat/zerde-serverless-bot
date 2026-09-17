@@ -77,6 +77,8 @@ def require_public_content(text: str, *, max_length: int) -> None:
 
 
 def require_preference_name(value: str) -> None:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise MemoryInputError("Preferred name must be nonempty exact text")
     if _NAME_DIRECTIVE.search(value):
         raise MemoryInputError("Preferred name cannot contain response instructions")
     if len(value) > 40 or any(not (char.isalpha() or char in " -'") for char in value):
@@ -89,3 +91,28 @@ def require_preference_name(value: str) -> None:
         raise MemoryInputError("Preferred name cannot contain response instructions")
     if len(value.split()) > 4:
         raise MemoryInputError("Preferred name is too long")
+
+
+def require_verbatim_name(value: str, excerpt: str) -> None:
+    """Require the same spelling at name boundaries, not a transliterated alias.
+
+    This cannot prove the speaker's preference; extraction/confirmation still owns
+    that decision. Unicode marks and name joiners prevent accepting Ann in Jo-Ann.
+    """
+    require_preference_name(value)
+
+    def name_character(char):
+        category = unicodedata.category(char)
+        return (
+            category[0] in {"L", "M", "N"} or category in {"Pc", "Pd"} or unicodedata.normalize("NFKC", char) in "'‘’‚‛"
+        )
+
+    start = excerpt.find(value)
+    while start >= 0:
+        end = start + len(value)
+        if (start == 0 or not name_character(excerpt[start - 1])) and (
+            end == len(excerpt) or not name_character(excerpt[end])
+        ):
+            return
+        start = excerpt.find(value, start + 1)
+    raise MemoryInputError("Preferred name must occur verbatim in its evidence")

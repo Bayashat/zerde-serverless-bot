@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from services.memory_budget import MemoryBudgetPaused
 from services.repositories.rate_limit import RateLimitRepository
 
+from .evidence import EVIDENCE_DEFER_REASON, EVIDENCE_RETRY_SECONDS, complete_evidence_span
 from .extraction_prompt import (
     MAX_BATCH_SOURCES,
     MAX_INPUT_UPPER_BYTES,
@@ -27,7 +28,7 @@ from .models import (
     FactChange,
     MemoryInputError,
 )
-from .safety import require_preference_name, require_public_content
+from .safety import require_public_content, require_verbatim_name
 
 MAX_ATTEMPTS = 2
 _FACT_KEYS = {"field", "value", "evidence", "action", "facet", "attribution"}
@@ -59,7 +60,11 @@ def _span_for_excerpt(source, excerpt):
     if len(eligible) != 1:
         raise MemoryInputError("Evidence is absent, quoted or ambiguous")
     require_public_content(excerpt, max_length=240)
-    return eligible[0]
+    complete = complete_evidence_span(source.text, source.quoted_spans)
+    if complete is None or complete.start > eligible[0].start or complete.end < eligible[0].end:
+        raise MemoryInputError("Complete source evidence is unsupported")
+    require_public_content(complete.excerpt({"text": source.text, "quoted_spans": source.quoted_spans}), max_length=240)
+    return complete
 
 
 def _parse_facts(source, facts):
@@ -84,7 +89,9 @@ def _parse_facts(source, facts):
         slot, value = change.slot()
         require_public_content(value, max_length=160)
         if change.field == "communication_preferences" and change.facet == "name":
-            require_preference_name(value)
+            # Check the model's original evidence too: expansion cannot rescue a
+            # borrowed name found elsewhere in the message.
+            require_verbatim_name(value, fact["evidence"])
         if change.field == "location" and any(character.isdigit() for character in value):
             raise MemoryInputError("Only city-level locations can be extracted")
         identity = (change.field, slot)
@@ -96,6 +103,8 @@ def _parse_facts(source, facts):
 
 
 def parse_extraction_response(payload: dict, sources: list[ExtractionSource]) -> list[ExtractionResult]:
+    if any(complete_evidence_span(source.text, source.quoted_spans) is None for source in sources):
+        raise MemoryInputError("Complete source evidence is unsupported")
     candidates = payload.get("candidates")
     if not isinstance(candidates, list) or len(candidates) != 1 or not isinstance(candidates[0], dict):
         raise MemoryInputError("Expected one extraction candidate")
@@ -177,6 +186,19 @@ class MemoryExtractor:
         scopes = {(str(source.chat_id), source.ref.epoch) for source in sources}
         if len(scopes) != 1 or len({source.ref for source in sources}) != len(sources):
             raise MemoryInputError("Extraction batch mixes scope or duplicate sources")
+        eligible, deferred = [], []
+        for source in sources:
+            if complete_evidence_span(source.text, source.quoted_spans) is None:
+                deferred.extend(
+                    self._defer([source], EVIDENCE_DEFER_REASON, retry_at=int(self.clock()) + EVIDENCE_RETRY_SECONDS)
+                )
+            else:
+                eligible.append(source)
+        results = await self._extract_eligible(eligible) if eligible else []
+        by_ref = {result.ref: result for result in [*deferred, *results]}
+        return [by_ref[source.ref] for source in sources]
+
+    async def _extract_eligible(self, sources):
         if input_upper_bytes(sources) > MAX_INPUT_UPPER_BYTES:
             return self._defer(sources, "batch_input_limit")
         request = build_request(sources)

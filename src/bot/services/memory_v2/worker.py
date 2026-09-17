@@ -7,6 +7,7 @@ import json
 import time
 from collections import defaultdict
 
+from .evidence import EVIDENCE_DEFER_REASON, EVIDENCE_RETRY_SECONDS, complete_evidence_span
 from .models import ExtractionResult, MemoryConflict, MemoryInputError, MemoryUnavailable, SourceRef, chat_key
 from .writer import FactWriter
 
@@ -164,6 +165,13 @@ class MemoryWorker:
             for sources in groups.values():
                 batches, batch = [], []
                 for source in sources:
+                    if complete_evidence_span(source.text, source.quoted_spans) is None:
+                        self._retry(
+                            source,
+                            reason=EVIDENCE_DEFER_REASON,
+                            retry_at=self.repo.now() + EVIDENCE_RETRY_SECONDS,
+                        )
+                        continue
                     if self.sizing_fn([source]) > 8000:
                         self.repo.finish_work(
                             source.chat_id,

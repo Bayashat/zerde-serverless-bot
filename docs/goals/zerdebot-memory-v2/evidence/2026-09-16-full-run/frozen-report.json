@@ -1,0 +1,1913 @@
+{
+  "schema_version": 1,
+  "scope": "offline",
+  "product_gate": "IMPLEMENTED_UNPROVEN",
+  "model_quality_claim": "NOT_VERIFIED",
+  "provenance": {
+    "execution_status": {
+      "completed_scenarios": 240,
+      "planned_scenarios": 240,
+      "state": "FINISHED"
+    },
+    "provider_kind": "recorded_provider",
+    "purpose": "REAL_GEMINI_SYNTHETIC_DOMAIN_EVALUATION",
+    "answer_route": "public-v1",
+    "model": "gemini-3.1-flash-lite",
+    "corpus_sha256": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+    "domain_network_calls": 0,
+    "provider_budget": {
+      "evidence_kind": "local_real_provider_budget_not_aws_or_moto",
+      "attempts_reserved": 816,
+      "charged_upper_micro_usd": 661980,
+      "cache_hits": 1,
+      "responses": 815,
+      "unknown_attempts": 1,
+      "usage_verified_attempts": 815,
+      "unknown_billing_attempts": 1,
+      "unverified_usage_responses": 0,
+      "verified_token_micro_usd": 203228,
+      "unknown_hold_micro_usd": 458752
+    },
+    "faults_and_membership": "synthetic",
+    "scenario_executions": [
+      {
+        "scenario_id": "kk-001",
+        "input_sha256": "e3a7eae1f5f5a4ca40b20c14307ebebabebc0eaec09f62c80be5f509e3854b55",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-002",
+        "input_sha256": "d0da8a4ccee0c8cb24f4e641a0729461160c1a612bdf8cde5e7503b3eed3db05",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-003",
+        "input_sha256": "797df1c9fbde1934390c9ea2826af4d4649bbbc2ee9e900c43bd882d7e6a6ec6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-004",
+        "input_sha256": "5e619eda497bfd091f32e64780fbc25150e09ef79a58745566a075a06996249c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-005",
+        "input_sha256": "6d2ed3e3e742c5fb137cdceb02f37dc9eeffd1b3aee006b097ff7b80951e4a7e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-006",
+        "input_sha256": "ad1667554e8e736dbc3136794db58b7224629343dd2b006c2a1e5c6d6eb91171",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-007",
+        "input_sha256": "dc53e7ac3adc714caf93f6f4bc9c93ccbeeaa79360dc8dd0d40fe2e89c9cae60",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-008",
+        "input_sha256": "04e4345185e8487cfc87a1a4af6cc5637cb0581414f7be35b637c215e977b6ee",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-009",
+        "input_sha256": "a4464e100e892f08377385a552dffbc0740a5ce13f07bc5c27e8ac5fd49524b6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-010",
+        "input_sha256": "8636aebe0a5fd1a91411df4fc58e4adce2d3f3fa51aee53f73dd18733af66fa5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-011",
+        "input_sha256": "31f6140be5a25373d2620e2c00ed172f8067382b9905e39f20dbb093b9e57d6b",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-012",
+        "input_sha256": "72948cbca4a426c18f514b5eb2b3b620f2ddba79849ef32fd6adee7eea841048",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-013",
+        "input_sha256": "a0b1971a757abcf8a292460a8112919c522946c61cf3dcad6e70cd58f090b730",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-014",
+        "input_sha256": "19dc9c2d57d3be62292008a5aa3399b48f9a9086cd8b4c1adebbd83e04a631e8",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-015",
+        "input_sha256": "ac340597ab762bf3d33dcc2a5aa54e434d1a8498fcc2dd794d4f2d52db4a3db2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-016",
+        "input_sha256": "e11e21931bcc90553f6c733013a5bc1717970b241670a314d4ab3f65344ffc28",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-017",
+        "input_sha256": "b17baaf5a82eb7a393a9fbb1b8edbe991cd1b85b8d84b2c20483101a3618a40e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-018",
+        "input_sha256": "b335eb3521181ba49e1a3ea12e15ddb95080808dfd0cbc04804160d80be074a5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-019",
+        "input_sha256": "10a869040a71f4d0cdfaf7a39a7a29be7fe3c5205cb62c1631917cb7d4382f24",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-020",
+        "input_sha256": "058377ef247e8c69bd5e8bee46179d50155fc3f6d79bf229fdb1ef7c250f18ee",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-021",
+        "input_sha256": "77619d85f685ad7f4d41482efc9008784b13dca0bfbceedf739a8236d81a6ef0",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-022",
+        "input_sha256": "f1a625adb952ccda947bbf5ddadefb5d354387028a65aeaacd7dde22566b1118",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-023",
+        "input_sha256": "261c9e22d59508908a5036efc6376d93beb03181c13250f576d708bbd86df473",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-024",
+        "input_sha256": "02cd13fe33756ecdf51fbcbb5f7d08f2b811ec8c33c32d63d7b9b31ca3eb22f2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-025",
+        "input_sha256": "f2cefb27bb71a0a57c22621d00a6945f43b455f1a3c850d965acf806cc0d565e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-026",
+        "input_sha256": "41f0b3b0c4e9b3451a1488eb27f61b2b43b3b5b6250ff5327d6abf091d26efdb",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-027",
+        "input_sha256": "46b672f79bfa8e416349664a3c8815453401e682c05aa101164778fb92fa7395",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-028",
+        "input_sha256": "33b20d1530425d9dfdac6c4bf68a9dab72d2dcac83db40fbd6c4bc13c604d588",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-029",
+        "input_sha256": "68c2bdff66b7a40506163eb4a93a3f62bf7ad0c20957f467bac56c78a6fe88f9",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-030",
+        "input_sha256": "2492a27a84241cc4a0bdead20e43ea1079b536f6f3aab7755fac920b7bbf5a85",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-031",
+        "input_sha256": "37deaeda820d258844e4ad446ec20a324834f80ed02f4d8d20b6b22249595e79",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-032",
+        "input_sha256": "c28868295e8de0e3949d38fe53ddea536c33151da997fb2865527ddce1675fa3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-033",
+        "input_sha256": "c45dc7a7cdf07c583344293723006c86e0af089ad6a59a10da8ac5a611ba83b9",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-034",
+        "input_sha256": "f5cbd0a963a0e542b9052ca673432d64a39323dc1a56c0349c6f8d7a206e1e74",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-035",
+        "input_sha256": "1c92505ebcc186c13f3eb2e925f898d3a330a173664234f57aa25560bcc874a6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-036",
+        "input_sha256": "1ac0a34e4613ab018b241bc526b58f8cb7c02a2731be5d721b4511330800201f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-037",
+        "input_sha256": "ae69fe9ff3db7a3144627e42ba97a2eaa7f1b89d6c45422a0d7360b3612aca1f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-038",
+        "input_sha256": "cfcc532c7d8d5861b85accfd4859d39527b5df3310d1d9b0659be33bf498302f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-039",
+        "input_sha256": "e039f1450a671a6e5f98e59e5cb460198c1b395bc1af5313973e60ed5e4cfad2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-040",
+        "input_sha256": "6f68ac16709bc0b321329336e5a93af5dcc0c64d33b185eed728012b9f6c706f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-041",
+        "input_sha256": "192b23097a8785355d522a91648a480af2cc71c2875f70159d1bd0b5b5d1a5e7",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-042",
+        "input_sha256": "737bc5ea573e3db6ff4aa4682fa8d6c84790e7db0f85c12ba03711c49f2a6a39",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-043",
+        "input_sha256": "ab25a53a26540e35e47dad5a09f8f5bca78adb0e551c19859272159c1290d046",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-044",
+        "input_sha256": "ec00d15d11036f6ca068d2fb075baa3a6b3b923a7ac8ec7e221b5f9721f85362",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-045",
+        "input_sha256": "7de325f5c8178152944842e7346d27d22e82be1337c7ba243c6624b907e93c20",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-046",
+        "input_sha256": "8e6d794d6447b1acd37372f207ca5120ce57eb896a4f646947fd7ef190e93227",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-047",
+        "input_sha256": "b97506422f4f884ed1006f789f0cb331a1c514c0aaebd463569142e1f0ba7721",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-048",
+        "input_sha256": "bf344b30cfc38dc805751b3e97596660ac5ab232a17295048dbc10d519a6aacd",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-049",
+        "input_sha256": "035ea60ea72608cb5740f7a7278da9f7956480a1472c9d63f8cdd5df6197fa97",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-050",
+        "input_sha256": "722e32fb6b9bb6d3f99891ddabebeef92f7470e6fc5cbb6210306cd393390311",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-051",
+        "input_sha256": "ff1030dc8dba72f9146f89766cc3b053bcc170637a23a1e04a2ffb8c052eaa88",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-052",
+        "input_sha256": "6e367c726a53cdf619a5cc7d0788a981528dcdc44a8bd11710654d3be9979682",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-053",
+        "input_sha256": "f9f3b9dfeaad272fa1b891e62ebb26737a1ea62638a0d9f19e8bfac2086fd9c3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-054",
+        "input_sha256": "e715c04344f1d1b9a6822db64d260af2af343b9e8307dfacc2b1991c0a97904e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-055",
+        "input_sha256": "dba0e13d4a6eb58f4c0f5c88294cbe091be89af579ae428c3e47978bc6f97c48",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-056",
+        "input_sha256": "e85f09ab8b7bbd667d86b50676ca581fb4b63647fdce07b5144985d00ea4ae5a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-057",
+        "input_sha256": "577d557b4e218fcb1bd5a1291988be824bdfe1f71513c6cfb357ef1b1be47651",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-058",
+        "input_sha256": "23c8584e77ecc3a771a6ea60a01676ce617e873a03f3eb94af0944b250e9f3f5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-059",
+        "input_sha256": "19c09f596e247f845a30383a9f70b23940f0a40210ed2f07a5a7454ef84e1ba4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "kk-060",
+        "input_sha256": "97106f30a83c71fd65c3152e57f4d14c94f71754f4084b732f1f2499fff942ff",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-001",
+        "input_sha256": "04f5f6a52d5b3a02bc1420c4ad65e5a8228c8fb8e866caa7af26061287cbd635",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-002",
+        "input_sha256": "fe57dc22d433d182977bcf876b1f9b9a51a4a648294ca20b1917f872b105f3cd",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-003",
+        "input_sha256": "fb5cb819a900aee905a5d4bfadf5242c7a602af20f2f5d332d2ebb8cba9b2152",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-004",
+        "input_sha256": "17dee3ba5525c17159c86545df1977cdc6827bfebdaa91e63792fa5af7ef501e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-005",
+        "input_sha256": "6397dd9adbfeb5f10cc301d96c3b2eae0ae5063ff477f77ce596f8e3506519c7",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-006",
+        "input_sha256": "9deef480a8a8b900aed2e73da7c987b2515c7e50a264b3d3ae3a7daf8b7d6b85",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-007",
+        "input_sha256": "df4a16f31aa1e3998cbe695a4efe297f7ad43493b02134589da3606f6a24bbca",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-008",
+        "input_sha256": "6e7f57976e82005e3314cd689f33a6657e0bb10f85607a2a5a091f13bbb208d4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-009",
+        "input_sha256": "be1ea484b7909ff238ea6b5244130dc7b54ca80227bb911faf826e141653b8f4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-010",
+        "input_sha256": "ae62a782e0e4abcfe72fd12d975d9e2ae956ac9b620309ff20fa81e5408fa2cb",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-011",
+        "input_sha256": "b302a687591ee91a31fc5464ba39eb983cc50c9357ddd581347e4d1e4d420e8a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-012",
+        "input_sha256": "3e7b6b07acd7fe6cf199c9afbce465b1683b374316c52644cfa449dbeae6c8c2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-013",
+        "input_sha256": "47d9236d54e66f1e038b665adee913e8ba7cbda8ee249017ff25f78e9821ecf5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-014",
+        "input_sha256": "aa6489dfd07c3323f152c72978deedbd926a1c13f53adae8b50be1876accad71",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-015",
+        "input_sha256": "dafcf27dec4ac4b376dbea5e00bcf539660a1f507ad425a8e0b5c6536d71934e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-016",
+        "input_sha256": "64ddb4ddd0854fd95024ffc6f36b8436cac60648424579bf3fc5cdddcccc9034",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-017",
+        "input_sha256": "b83f2e8e79bbb8c6d6a3229adacf2c778a3671e8dc0c650708157a5e92681a9a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-018",
+        "input_sha256": "c16d5d8005363fa79a84c15155c102931ff8a1404e47efedac9fb571594510ec",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-019",
+        "input_sha256": "3710a056e66995cb02063d0866003db68a0f10bea91c0ca69f2a7b6660d879d0",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-020",
+        "input_sha256": "db6005a43342173950fba6869b74e2e1e4c9dfa676b916f75b89ea4456e360fd",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-021",
+        "input_sha256": "84d1d8ebda3bf0d21fc780cd50ea4ee6e7ef884f79f546c9f1c25a95eb8ba6a4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-022",
+        "input_sha256": "e1a05828fd3b0bf0608e352b29f59e7e229fda281c0a565dccbf4e7c6560448d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-023",
+        "input_sha256": "321b88093d5ddc82e1ceaafa55b9f8b22d84f8811cbbeca27a4d397db4c2a0ad",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-024",
+        "input_sha256": "a81232723e249588115875a8bceb6f64839de0520f33c1bc8b0e4826c9f008e5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-025",
+        "input_sha256": "0df1f1dc9fba8643bda59621717e4072a3505c5fb2fb0a8d747d4081555b9071",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-026",
+        "input_sha256": "9c07ecfc29b17567e573b7ecceda0cb276ec4a9ccd54b9e3f2c2cdd92d88ee15",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-027",
+        "input_sha256": "862d74970a4a996dd755878af064f53cecb307b7341251fa079c9d8bb5069dd3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-028",
+        "input_sha256": "ebe90ceff4e0fde3d5376bbe22b9152ab3d41ae2ff87c87352ab679978320949",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-029",
+        "input_sha256": "c1fde088f61a4e593e082dce09d81b6c1675aeb556e0f264a75fe721d4fca91d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-030",
+        "input_sha256": "d3b0b07f07c192a0981c55914a6cde4ada84d5c9d2b7f41b7244e1879548c5c0",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-031",
+        "input_sha256": "4cadfd77578bbf9015df998d3f723fe7c2a54940e6eb7b070a87c66b5e6385a5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-032",
+        "input_sha256": "d0b06e63f3e4d6f9afd0c47dc6cb11bec3e34619bb8f6ba526f5b2ac27658ca5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-033",
+        "input_sha256": "091cb2f6a0001ed0c938e3d3288a9784b407eaccc962959b9043aea93d15a885",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-034",
+        "input_sha256": "72075a2c10a9140a21c858d4e14fffa95de4632d54aa6fa1e85010395d841931",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-035",
+        "input_sha256": "764df0d83b5ec8b6201b8b829f270f9ea4d6355648a6ecd54852d88d0b8a235c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-036",
+        "input_sha256": "da2b5d4a8bee2c1f23537063fb79f92f53ffcfc9365d4c188a562ad1dfd1cc47",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-037",
+        "input_sha256": "040afe9d222b04e63ce9f49bd34117398474283c323a6af4393b0250b5705747",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-038",
+        "input_sha256": "31a70535d2edf0018ebcc054b99112c124e20524f16569f3da9c5acfdee25bc6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-039",
+        "input_sha256": "047d77f160923244674ab02df8d9750e86d57023b56ffa025e9135d950cbe3fb",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-040",
+        "input_sha256": "45de8d5f23abd1c72a662bb5f763d2dd5d224092b52b16c5b1feab28a70c0d2d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-041",
+        "input_sha256": "a3bc75c70872902f6788c2b659d9e311fb7c7774930c9f2ec02634ac76b401f3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-042",
+        "input_sha256": "9b580d7dd859cdde7c2a6e164917cc8b274b1c6c40e3066916aaeaa4d1d122aa",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-043",
+        "input_sha256": "f22c59fefe463c4beb4de14d285db113e1e8856b401b306b574f652fa6c38b3f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-044",
+        "input_sha256": "d67834df76a6a399cb8e052be8b9b3e630671a1d93d882a3037b94b490e19716",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-045",
+        "input_sha256": "22e082a64712a8dce037a3bb5041cf71178bee37b48885d5d1abbb45862dfaed",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-046",
+        "input_sha256": "7271131054bb320f6d9adb82ec1f3e3043f075dbe7057770c963cc371e104ea6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-047",
+        "input_sha256": "a2059e0edf44e3badd1f2219f9ba3040fd788d245cf9633160656dd60a077ab6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-048",
+        "input_sha256": "30090e475e4c28950f9ed60e23b8c0c474b536a79fde5864b3eb3dfdb2ae8ad4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-049",
+        "input_sha256": "02f85b37a9e2b9f2195e8d8eccd8fa358568d5352056251e563c6945b8cf533e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-050",
+        "input_sha256": "49cc72fbf26fc80224baf95955fc21fa30686ed34a758ce5ff4dd5f5fa6ceb89",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-051",
+        "input_sha256": "5eaba6528291625882faf814da28b06da38bfb778920d3d97c5863339e6d81c1",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-052",
+        "input_sha256": "1087d70b44fe4bfb2c1cb65eb3606c567c2dffb19232fdaefb828692dc09d918",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-053",
+        "input_sha256": "e9ac8955930e1f48b380aa351173386c9861ee5d77357d2fbc1a79cdfa1a5762",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-054",
+        "input_sha256": "a9068d2cf6f4cf42596b8fcd5741346632ec147a8148b9f16ccf781ab6b6eb5e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-055",
+        "input_sha256": "a3a69ff5f0671fad149b797d396fa526355fd63bd5bc52bbea13f12974e21d46",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-056",
+        "input_sha256": "a095196adeb3057bb6c2eaa6c1fb2ef8f4aca3032433b37ef87a6ca5982879e5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-057",
+        "input_sha256": "a89552b100c995b0ff146eeeda3d5b4a043f23f8ac075251fa70c1c0e7e61851",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-058",
+        "input_sha256": "8598e3b21aa55036715cfed3e3ab8f1ad8f849f747d5de8c63c9d43a83648595",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-059",
+        "input_sha256": "b5b2f0f0ba3cd0acbec28820cd44074ff5a9340f3fa9838f3d45b7837ae588ca",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "ru-060",
+        "input_sha256": "cc7894f1fa0395c2f8d3673ae2053ac9bf8cf021b5ae57cad9cc6626274c6169",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-001",
+        "input_sha256": "45c6130271294237b9c8b836708e797a954d71eeda12a8a9a3cf6e0f551e1116",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-002",
+        "input_sha256": "ba0aa073b13cf0b287fb3a0edf63d48847ecfb1851a30bf863e1b900156e75fd",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-003",
+        "input_sha256": "35e5896377e39e295417781510e73b142439cab852714476925ee58ff0ea9822",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-004",
+        "input_sha256": "53e9e63eb57735f1fbc8c6d66c073b9fc74af1a8919f3018282dd174d6f45562",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-005",
+        "input_sha256": "bd26c1a2d450032b673ea1f5746085f56c2b968b364a7f51ca98de9c76d62eb1",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-006",
+        "input_sha256": "435ab6783d2ecba130c1739df749d2656e3ce9cb5346e5467b98f393cd4d5c95",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-007",
+        "input_sha256": "0a93aa95f4657f68729298930bb668828ca7e6ee8609d879576fd888fea191c7",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-008",
+        "input_sha256": "9ffcd6f254d7d3b60d796469ef48e74888542a59184d830dc115c3d7b14d5e70",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-009",
+        "input_sha256": "90e63929e5f978c8b540c136522abf565577d061503ed5399d7e75c88c9c9ff6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-010",
+        "input_sha256": "d074e79b107959f40d9f0a8872b13051d3a53c21f550cf2a295b080d8dff0b33",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-011",
+        "input_sha256": "7f91065fb0a8ef6b819af7dba1327cfb91e040d677beefd6aca01811ad75e40d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-012",
+        "input_sha256": "c31ada25c67ddeff549ba65e78568be5436b9b2a5e1731c7e10fc4d4890fea7d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-013",
+        "input_sha256": "e0be24de156c1eb0684b1037033767022200b2add215588ec37f64b8cbfafab6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-014",
+        "input_sha256": "8b17a39ab3333ba1d9a2b72488cc710bf144e96e7156210435dd079c1031e742",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-015",
+        "input_sha256": "d447c2521dcb3b39f1346fd6f544aeeba0ace4de96be0b21bdfe21016a86dd6a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-016",
+        "input_sha256": "37d5ea03c98fc70788b4817ab30503a43a8c76964664b66b6889ce66422988b2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-017",
+        "input_sha256": "825af8c957529222168885d0beb56750294f57136aad3e1a43012b72bc55ef4b",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-018",
+        "input_sha256": "6464651cdc5d91ee811393171cc4b197835d77a50bfdc8bf9a25a6e1e3ed4651",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-019",
+        "input_sha256": "63914756a7b6120c89deef982fb985fc9871a3954d030be4754dd4fabd9b3b90",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-020",
+        "input_sha256": "c38c393ee5605b779f6e9111c28267ab2b2142254b2a142523dd56cbad9a14ac",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-021",
+        "input_sha256": "fde17fd210c98272ea9f9000f4731e1aef7ba00cdee8fe7f433de66660cb9ae8",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-022",
+        "input_sha256": "f58b3cc7f4702948b82c8350060d2eed881b812ce32f3407f8e7c2f5dd0282ee",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-023",
+        "input_sha256": "e109c0f29828791822722a65d535f0eb080cd640eae6782e8dcfe5dd4bc71136",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-024",
+        "input_sha256": "cc40053a56d63b827d3de1e8e5137a13e58af54b3335c0fe9b7d0fe66211fd4e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-025",
+        "input_sha256": "54b3113638cf1e4fcfbb1d58be847e201c7800c86a2568b0c5333eda6466007f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-026",
+        "input_sha256": "4c7d666f6e29857d9b056a0001868fa952c45cba727320c5f03f85f0000da3f3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-027",
+        "input_sha256": "8851894e9f479729dd8de3dd1547cb1bb8e97f629ef1745ea7a99ece4546b32e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-028",
+        "input_sha256": "c7d9ca48f8c053d80b3896edeeaa4c967bcebfbcb3e66363257b9c0460cbea53",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-029",
+        "input_sha256": "b1376fc290edd76d054d6a09f5c8f5e572cd87dd5d8c1da042e2c29a3c18a40e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-030",
+        "input_sha256": "389da0390998cce53a65a7d7ff56687c63e1a22f0f6e402c741ddda54958916d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-031",
+        "input_sha256": "47197fada76ebe55e10cba9769b165d6052fdd8618f5c2b075e6b8d5ea7231c3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-032",
+        "input_sha256": "0867c0ad2fd5dea1dacd83a5aaec34f3af05d84628463780846eb329351f383e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-033",
+        "input_sha256": "698b07683822e150a792a7840cda161edb44b8411ca4ed18e671441b6a9b8cf8",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-034",
+        "input_sha256": "12e732c21b84f87aa6eed45752a596c391f40e3dd82d5aa9c0e436876f02a061",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-035",
+        "input_sha256": "4b6586e234a6284e2052a2c1f137f9494704b18e5de6902f01d9a6bd3f7ebb6e",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-036",
+        "input_sha256": "061377eb4208e5f3a98b6b3a1a900e58cf6d75ac304cc3bab46e337a47d85c82",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-037",
+        "input_sha256": "eb0e3eb28ff5697275e920b802d7069f58718521a95668dee9102304151349e3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-038",
+        "input_sha256": "3676e7d3436a49dd22f26372c4dc37b8b8059c3d3bd23227ffe07cf38c82336d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-039",
+        "input_sha256": "49e0c224f263d4930ac7b0d28695da215f9f017587ad90132aa3bf2b3a6071cc",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-040",
+        "input_sha256": "2502b3128be055130a6d3140418dc8a0e7b47fd64172e5c48b5a114b2f94de4c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-041",
+        "input_sha256": "b8d477016a242955251d562652fd016d6feb134f07bfff43d012ca5d9e6569a2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-042",
+        "input_sha256": "9732c2af6247e72421b33195d6c60ac02672984ec6230243aca657851a348d24",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-043",
+        "input_sha256": "d3797e6f10f4dcd2fb1b4f35ba906ac6fe83aff84c467905636c60b36b7a73a5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-044",
+        "input_sha256": "27fa52883db598e1858dcdcc5252a2aea271d9cf13b5615539df55f82fec80e6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-045",
+        "input_sha256": "b0d98031fb68b09598a149a3274c25faeaafa3785c66a1c5e8cdf2ea8a16a10a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-046",
+        "input_sha256": "37feee324a3d7a1d05c4e8b4f80ae074d61d3178c7cffcd3530a8b04d13ced42",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-047",
+        "input_sha256": "9a5c44d6f78e2dccf3ff50a04334d8dd8430e2a5fa4ac2e960b9621505abbcf5",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-048",
+        "input_sha256": "ce9f7acc2d92681881847cbf4d382eeeeedcabe34b32494526f53f17aa00fecf",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-049",
+        "input_sha256": "e6b38ec3dcec154bd7e2886efc62d96dbaa1a6fd9ccaa65c7c5e812aa67097a1",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-050",
+        "input_sha256": "a9875b3330b4d245fcf1fb92a2043058dbedf91abb69198ada933a9d3614e5ca",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-051",
+        "input_sha256": "4bde8e2f8482191b2ded15c8e8c9f09fd56bf785f26be0355fec3bd9010df7c0",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-052",
+        "input_sha256": "69428c17c15217798b7fbaf6a0ffc518490d5c129e7672cb5f46b229c8e1afba",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-053",
+        "input_sha256": "38f4e0ecc4956896f7083386c96e70b93b46a8479fa798954dddf71866fd3a3c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-054",
+        "input_sha256": "bff9bb431d60ab066fb4b158581a6ff24fd2801f68b1bb1c8a3bf965895ff2cc",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-055",
+        "input_sha256": "d20665306c60bd5c985091ca7cb5a1d555e965f844c201b4b6ffda9935b1e8a8",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-056",
+        "input_sha256": "aca093e3fe6f793e9f7311d5a40fcdd6e048d595fd58851a11ac27124dbcc93a",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-057",
+        "input_sha256": "d5345de738a5fc0eb997df82f1faec12fb0f01b537255bdd4d7c35b0bbc63525",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-058",
+        "input_sha256": "70f4190200bb0e9f50904e31ffe7d25fa7288ba593749bcdf9bc702033568c04",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-059",
+        "input_sha256": "db54fbeb4ec86441c0c7829408c9e001a8ec94037f5138fddda6224e561b2491",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "en-060",
+        "input_sha256": "368ba153d84feb4b114305132641d9a3cab89d8d9974d8dd1fbaddc3b585f178",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-001",
+        "input_sha256": "e7dcdb644fa6af00d755e4f073ea46b5f8c76d898bf7d9eb9a06a64046535a3f",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-002",
+        "input_sha256": "8f7bc9e6d395d269104545f8b7977367873c8081df1db808479049f271de61ad",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-003",
+        "input_sha256": "bb06f487703794f1b4b3dbdcc0cd3c28228844b63213fba00cb62a417b6e8a07",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-004",
+        "input_sha256": "eb28ea9db8ec4e8afa6a0b74413344badf34d484d0c82a94f39abe89bce3059d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-005",
+        "input_sha256": "383d9d71721f24a72b86bf7e8dc7af59ea59afdb79412d1facaceffff0a8e4e9",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-006",
+        "input_sha256": "19a8af7209772e6e5c3190adc3f589a41427ce0861fb09dcda62d6beef756295",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-007",
+        "input_sha256": "53d71ef1b3f7be9473d4d61275d61ae840dd82e333589d8bf14499539a150dca",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-008",
+        "input_sha256": "97a1b7dde439836b01c175199415772164a6809ade45ead7d0ac3ff644891072",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-009",
+        "input_sha256": "1e56dd7e939bf3d2a3d0e5354b5f59b6669dec376fdcd8ee162aac1a908ab1fb",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-010",
+        "input_sha256": "a804598f3210442d2a6421c55d999fe95c7ada3d49fbbdd700625aa9bba6abee",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-011",
+        "input_sha256": "c7fc011a85561c8a9e8cef447c81e294ce369bd5946a10126cb8295991432a39",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-012",
+        "input_sha256": "f2f089cf6fb97de1f34b13ec1fd1f64c531256882eaf9d276b09bb1b77c1ffd0",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-013",
+        "input_sha256": "01dcbab1b25f678bfd0a9c4f93c265d4aa89d7f13321d75428e60636d71b5b75",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-014",
+        "input_sha256": "b744f5f8c3e8c1dbc0d1655edf806c09b336105f351cd003addd9f55143933d2",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-015",
+        "input_sha256": "768553328bcdcba3ce29ab71cc0c9499bed8c54e8b3f1359f9ef33bec6226249",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-016",
+        "input_sha256": "719c5252459598b2918a4c796c51efe381a4da601ea55fa1d91af46cce721069",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-017",
+        "input_sha256": "7a6464fbf8e738fae02b3d2d6cd86cd086ef0055d5090b5b9b1983f547209275",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-018",
+        "input_sha256": "55070bb609c9057ad8413366777568715b354d47a93edd8d345980330f418641",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-019",
+        "input_sha256": "b46c4cde4ea80227abfba78bfaebe5a51e30409bfd93f80fca09f8010f388b15",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-020",
+        "input_sha256": "a17266cf51fbb52430cebd18e49f8f900e30fa21d1176d48b6fc14112ad6e442",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-021",
+        "input_sha256": "5beec7a72afe19d64222e6e664fe82c2bee463fcc47013c617198152d785c62c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-022",
+        "input_sha256": "9ddf75e30d7d494b8e7ecdd43d526c6081f82bf838aaed7f78265836129488c3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-023",
+        "input_sha256": "6b2a0f00d8bee189d32c135e5d8a6a4983a57178473474d66be863aaa9686406",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-024",
+        "input_sha256": "a9b78f53678ad4a59f50d8145a4811bded8f1c45aa3920d01a8b5e513ab4c5c6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-025",
+        "input_sha256": "4462e1959f65c634071df25ab00dbc24c6e51425fe483ec8f3cdb96d98b2e05d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-026",
+        "input_sha256": "58cef47298c2fe6f8778bd29ba9d64ba28a63dba78024afeb7f7808c1d98c944",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-027",
+        "input_sha256": "75eddd0489ddbfd0b27424a2c9ee843675f3a388001c20e00534c983b789e775",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-028",
+        "input_sha256": "c2f9e1634cb7fe0ee5cd69127760fd143dc1a964f6432fe60ab287b67f348517",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-029",
+        "input_sha256": "4790857ef58f37ba8156c7aa48ae70e0dca81a6a515e7de8d9355017389955fc",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-030",
+        "input_sha256": "4d9b2c7b1bebacfa4b31301da021829874e2df052aeafca35399924df31572d6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-031",
+        "input_sha256": "f17e594bfd37f573582137429ab5b82b1666f9dcbd2f885feacd6235da5a39c3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-032",
+        "input_sha256": "7e67df142555247a4047f095a42f52cd6568a368be100f8a9322450dd8d927d6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-033",
+        "input_sha256": "90507d3eeb000210590ed49de2c5a1ae374d044e875e05d595a44130535bf8b3",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-034",
+        "input_sha256": "890adb561ca9dc5d5012bc98b3dd8019496498a087d0761fbcc5f9527ccecffa",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-035",
+        "input_sha256": "37f58f0f8b7750326eeecf40a785a04bb9afa64c895be2d7dd2f6fa46bac96db",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-036",
+        "input_sha256": "3d10e405538f40210134183000d11253b960d960e347a3f97a46e7b472c6db7c",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-037",
+        "input_sha256": "08690b99e368560f4968b776005db1f51ba3283984f69f90c9aebc14c8da8e16",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-038",
+        "input_sha256": "37321031f17ca13357c789e919d8a9bc59490093c6fefb1eeff7fb60cd379162",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-039",
+        "input_sha256": "7ddde885fddc96893cf5ac4e78ea281b6916bdfe50601d1e0ff5d2423b5371be",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-040",
+        "input_sha256": "3715b38adaaa2987e982fda223de33e0fc77a8e3858467d6c369cbe7229e1da1",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-041",
+        "input_sha256": "b6524224b4323876eb2a3ca65c56a304e6de80875fbc669a487a089ffed8f895",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-042",
+        "input_sha256": "ec99ba692785ee298514d4b5520330b58c915ae2cc40a3217ccd6419bb996aaf",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-043",
+        "input_sha256": "91db30be40dc169eccdef2348aeb10e01b84323e7a16d4855953cbf9647674d9",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-044",
+        "input_sha256": "9fc9530c915a12c97e23c8196569f27b791f8699d9e0bf462627669ee576476d",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-045",
+        "input_sha256": "c18bd15f0d58553b853db1efdc078846155b6b07a6967584fb81b25da0b51141",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-046",
+        "input_sha256": "1136be4393a7f2aa833609619132ceb50950b9dd3d8f7fe1612cb537008d88dc",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-047",
+        "input_sha256": "3bd4dacc532194d8fa8d253c49b1d6372700ba916934db5c0c80674bee77b5d1",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-048",
+        "input_sha256": "88d1fea0465b5b6216c5543003f57424b07a260059c3a67a94e767ad2bab5a62",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-049",
+        "input_sha256": "45afe06fe3094f0a5b9e69b08f649b82921c8cd7e22d8ca794c7c1bd9522aed4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-050",
+        "input_sha256": "5a336af3897601811af48f2702a1a0c40a926db1ea0efc9de06b16e027b92864",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-051",
+        "input_sha256": "da708aa5c64fb4087b1702696ee7273587e5ddaa92e213bab80cdfb47c43d616",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-052",
+        "input_sha256": "39999c9f28fa354627a91374c28636a1baf74e188d879b5a28818ea1a863a0d6",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-053",
+        "input_sha256": "124098a84bced6f7dd2b62036bd6f0e47f78b839e7e51d131e651fc739503f22",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-054",
+        "input_sha256": "d0a3bb035ed294a7b71e18dad130d130c8d3cbed9838a50fa694a1adb3aca8dc",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-055",
+        "input_sha256": "88478a34bffcd1964629e48fd61314a905a052482e5fde6d9b0d7964e04622e4",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-056",
+        "input_sha256": "bc29ead25e5bb7d5dae5936cc06ba01541c08886672bf9bd854785cdf7d2ca47",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-057",
+        "input_sha256": "0c71ee70605d73497db0cb548f0cf1496beb4062e5a5f4b144c595f28f0d5e3b",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-058",
+        "input_sha256": "b7c34df1b4fc47d014e3bbd206836ef0bfb8d668f6ef1fc03e7a91645fd1a522",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-059",
+        "input_sha256": "a4d06bd395322eacad95ca9e6f479e5fcfbb707f79446182cf03ec325d733579",
+        "status": "EXECUTED"
+      },
+      {
+        "scenario_id": "mixed-060",
+        "input_sha256": "bb17e248557231ea3c8b1833c15d8a48daa73384083790616ccc7b33bd4d9d2c",
+        "status": "EXECUTED"
+      }
+    ],
+    "planned_scenarios": 240,
+    "completed_scenarios": 240,
+    "execution_source_sha256": "6910b4aba3e2e8158231c1a4360ae0a22398a478511ea3bf86437c35654bf1e3",
+    "execution_source_scope": [
+      "src/bot/**/*.py",
+      "src/shared/python/**/*.py",
+      "dev/tools/memory_eval/**/*.py",
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    "execution_source_files": 134,
+    "python_version": "3.13.6",
+    "dependency_evidence": "locked_manifest_only_not_installed_package_attestation"
+  },
+  "corpus": {
+    "totals": {
+      "scenarios": 240,
+      "gold_facts": 516,
+      "unknown_questions": 256
+    },
+    "languages": {
+      "kk": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "ru": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "en": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      },
+      "mixed": {
+        "scenarios": 60,
+        "gold_facts": 129,
+        "unknown_questions": 64
+      }
+    },
+    "unique_conversations": 240,
+    "size_gate": true,
+    "sha256": "3baf95e4a17e22c8a54d7c8b02f2fe3ba14621f7ffaee9a836ae3ded8d3057b7",
+    "independent_review": "REVIEWED"
+  },
+  "prediction_sha256": "4597bc35aa0128d686ec8a698df0113b446eade943b2f4432f2ee33ceb7f6c75",
+  "complete": true,
+  "runtime_replay": {
+    "unsupported_checkpoints": [],
+    "executed_checkpoints": 404
+  },
+  "numeric_thresholds_pass": false,
+  "overall": {
+    "tp": 733,
+    "fp": 31,
+    "fn": 31,
+    "gold_observations": 764,
+    "assertions": 1176,
+    "supported_assertions": 1120,
+    "unknown_questions": 256,
+    "unknown_abstained": 256,
+    "missing_checkpoints": 0,
+    "missing_answers": 0,
+    "supported_questions": 224,
+    "supported_answers_complete": 204,
+    "precision": 0.9594240837696335,
+    "recall": 0.9594240837696335,
+    "source_support": 0.9523809523809523,
+    "unknown_abstention": 1.0,
+    "supported_answer_recall": 0.9107142857142857,
+    "thresholds_pass": false
+  },
+  "languages": {
+    "kk": {
+      "tp": 187,
+      "fp": 4,
+      "fn": 4,
+      "gold_observations": 191,
+      "assertions": 294,
+      "supported_assertions": 286,
+      "unknown_questions": 64,
+      "unknown_abstained": 64,
+      "missing_checkpoints": 0,
+      "missing_answers": 0,
+      "supported_questions": 56,
+      "supported_answers_complete": 53,
+      "precision": 0.9790575916230366,
+      "recall": 0.9790575916230366,
+      "source_support": 0.9727891156462585,
+      "unknown_abstention": 1.0,
+      "supported_answer_recall": 0.9464285714285714,
+      "thresholds_pass": false
+    },
+    "ru": {
+      "tp": 173,
+      "fp": 18,
+      "fn": 18,
+      "gold_observations": 191,
+      "assertions": 294,
+      "supported_assertions": 265,
+      "unknown_questions": 64,
+      "unknown_abstained": 64,
+      "missing_checkpoints": 0,
+      "missing_answers": 0,
+      "supported_questions": 56,
+      "supported_answers_complete": 46,
+      "precision": 0.9057591623036649,
+      "recall": 0.9057591623036649,
+      "source_support": 0.9013605442176871,
+      "unknown_abstention": 1.0,
+      "supported_answer_recall": 0.8214285714285714,
+      "thresholds_pass": false
+    },
+    "en": {
+      "tp": 191,
+      "fp": 0,
+      "fn": 0,
+      "gold_observations": 191,
+      "assertions": 294,
+      "supported_assertions": 290,
+      "unknown_questions": 64,
+      "unknown_abstained": 64,
+      "missing_checkpoints": 0,
+      "missing_answers": 0,
+      "supported_questions": 56,
+      "supported_answers_complete": 54,
+      "precision": 1.0,
+      "recall": 1.0,
+      "source_support": 0.9863945578231292,
+      "unknown_abstention": 1.0,
+      "supported_answer_recall": 0.9642857142857143,
+      "thresholds_pass": false
+    },
+    "mixed": {
+      "tp": 182,
+      "fp": 9,
+      "fn": 9,
+      "gold_observations": 191,
+      "assertions": 294,
+      "supported_assertions": 279,
+      "unknown_questions": 64,
+      "unknown_abstained": 64,
+      "missing_checkpoints": 0,
+      "missing_answers": 0,
+      "supported_questions": 56,
+      "supported_answers_complete": 51,
+      "precision": 0.9528795811518325,
+      "recall": 0.9528795811518325,
+      "source_support": 0.9489795918367347,
+      "unknown_abstention": 1.0,
+      "supported_answer_recall": 0.9107142857142857,
+      "thresholds_pass": false
+    }
+  },
+  "zero_tolerance": {
+    "wrong_identity": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "cross_chat": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "sensitive_leak": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "delete_resurrection": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "business_damage": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    },
+    "automatic_social": {
+      "count": 0,
+      "verified_checkpoints": 404,
+      "status": "PASS"
+    }
+  },
+  "coverage": {
+    "states": {
+      "done": 803,
+      "pending": 4,
+      "paused": 4,
+      "expired": 8
+    },
+    "distinct_work": 819,
+    "observed_checkpoints": 404,
+    "expected_checkpoints": 404,
+    "status": "SUPPLIED_TRACE_UNVERIFIED",
+    "pending_max_age_seconds": 1
+  },
+  "latency": {
+    "normal": {
+      "samples": 799,
+      "p95_seconds": 2,
+      "limit_seconds": 300,
+      "status": "PASS"
+    },
+    "recovery": {
+      "samples": 4,
+      "p95_seconds": 63,
+      "limit_seconds": 600,
+      "status": "PASS"
+    },
+    "ask_text": {
+      "samples": 0,
+      "p95_seconds": null,
+      "limit_seconds": 15,
+      "status": "UNVERIFIED"
+    }
+  },
+  "cost": {
+    "provided_trace_usd": 0.0,
+    "trace_records": 0,
+    "status": "NOT_PROVIDED"
+  },
+  "diagnostics": [
+    {
+      "scenario_id": "kk-008",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000007#education#98548bce32209c6ef0cb6e8d5b0d174ce6b23775c1d44f13c212892d84b36960"
+    },
+    {
+      "scenario_id": "kk-008",
+      "checkpoint_id": "baseline",
+      "question_id": "kk-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "kk-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800500022#tech_stack#38a0963a6364b09ad867aa9a66c6d009673c21e182015461da236ec361877f77"
+    },
+    {
+      "scenario_id": "kk-024",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000023#tech_stack#969545dde1584d88227517c6a0c969eb716015671cd6be053b3aaf14d85aa8c8"
+    },
+    {
+      "scenario_id": "kk-028",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000027#education#98548bce32209c6ef0cb6e8d5b0d174ce6b23775c1d44f13c212892d84b36960"
+    },
+    {
+      "scenario_id": "kk-033",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-033-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "kk-048",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000047#education#98548bce32209c6ef0cb6e8d5b0d174ce6b23775c1d44f13c212892d84b36960"
+    },
+    {
+      "scenario_id": "kk-048",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800000047#education#98548bce32209c6ef0cb6e8d5b0d174ce6b23775c1d44f13c212892d84b36960"
+    },
+    {
+      "scenario_id": "kk-048",
+      "checkpoint_id": "after_change",
+      "question_id": "kk-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-003",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001002#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "ru-003",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-003-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-008",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001007#education#2c77a0b924c6f34a46d6ff0284f600d657dee01180fb0ec034c01c430b05a22b"
+    },
+    {
+      "scenario_id": "ru-008",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-013",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001012#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "ru-013",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-013-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-019",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001018#education#d59af7b9df7d1dc4b2a70c881f51575b2459487b5dde7c7d5d9463a34ce88993"
+    },
+    {
+      "scenario_id": "ru-019",
+      "checkpoint_id": "baseline",
+      "question_id": "ru-019-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-023",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001022#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "ru-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001022#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "ru-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800501022#tech_stack#38a0963a6364b09ad867aa9a66c6d009673c21e182015461da236ec361877f77"
+    },
+    {
+      "scenario_id": "ru-023",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-024",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001023#tech_stack#969545dde1584d88227517c6a0c969eb716015671cd6be053b3aaf14d85aa8c8"
+    },
+    {
+      "scenario_id": "ru-028",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001027#education#2c77a0b924c6f34a46d6ff0284f600d657dee01180fb0ec034c01c430b05a22b"
+    },
+    {
+      "scenario_id": "ru-033",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001032#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "ru-033",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001032#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "ru-033",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-033-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "ru-039",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001038#education#d59af7b9df7d1dc4b2a70c881f51575b2459487b5dde7c7d5d9463a34ce88993"
+    },
+    {
+      "scenario_id": "ru-039",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001038#education#d59af7b9df7d1dc4b2a70c881f51575b2459487b5dde7c7d5d9463a34ce88993"
+    },
+    {
+      "scenario_id": "ru-039",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-039-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-043",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001042#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "ru-043",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001042#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "ru-043",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-043-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-048",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001047#education#2c77a0b924c6f34a46d6ff0284f600d657dee01180fb0ec034c01c430b05a22b"
+    },
+    {
+      "scenario_id": "ru-048",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001047#education#2c77a0b924c6f34a46d6ff0284f600d657dee01180fb0ec034c01c430b05a22b"
+    },
+    {
+      "scenario_id": "ru-048",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-048-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-053",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001052#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "ru-053",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001052#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "ru-053",
+      "checkpoint_id": "after_change",
+      "question_id": "ru-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "ru-059",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800001058#education#d59af7b9df7d1dc4b2a70c881f51575b2459487b5dde7c7d5d9463a34ce88993"
+    },
+    {
+      "scenario_id": "en-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800502022#tech_stack#38a0963a6364b09ad867aa9a66c6d009673c21e182015461da236ec361877f77"
+    },
+    {
+      "scenario_id": "en-024",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800002023#tech_stack#969545dde1584d88227517c6a0c969eb716015671cd6be053b3aaf14d85aa8c8"
+    },
+    {
+      "scenario_id": "en-025",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800002024#tech_stack#d277670919a94ba361be1887d39852c3f31d7eed817343cbb70fcd8910841f86"
+    },
+    {
+      "scenario_id": "en-025",
+      "checkpoint_id": "after_change",
+      "question_id": "en-025-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f3"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "en-033",
+      "checkpoint_id": "after_change",
+      "question_id": "en-033-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-008",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003007#education#2c77a0b924c6f34a46d6ff0284f600d657dee01180fb0ec034c01c430b05a22b"
+    },
+    {
+      "scenario_id": "mixed-008",
+      "checkpoint_id": "baseline",
+      "question_id": "mixed-008-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-023",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003022#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "mixed-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003022#education#d96950b9564cb2e2a443813e61394f75be79ee388a7034a089c20fb240f787e7"
+    },
+    {
+      "scenario_id": "mixed-023",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800503022#tech_stack#38a0963a6364b09ad867aa9a66c6d009673c21e182015461da236ec361877f77"
+    },
+    {
+      "scenario_id": "mixed-023",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-023-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-024",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003023#tech_stack#969545dde1584d88227517c6a0c969eb716015671cd6be053b3aaf14d85aa8c8"
+    },
+    {
+      "scenario_id": "mixed-028",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003027#education#98548bce32209c6ef0cb6e8d5b0d174ce6b23775c1d44f13c212892d84b36960"
+    },
+    {
+      "scenario_id": "mixed-033",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-033-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1",
+        "f2"
+      ],
+      "abstained": true
+    },
+    {
+      "scenario_id": "mixed-049",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003048#communication_preferences#name"
+    },
+    {
+      "scenario_id": "mixed-049",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003048#communication_preferences#name"
+    },
+    {
+      "scenario_id": "mixed-049",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-049-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-053",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003052#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "mixed-053",
+      "checkpoint_id": "after_change",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003052#education#1993a0381333603840103688c83b4dd23b65ea5d9e7bed368f9df5af328aca2d"
+    },
+    {
+      "scenario_id": "mixed-053",
+      "checkpoint_id": "after_change",
+      "question_id": "mixed-053-known",
+      "reason": "incomplete_supported_answer",
+      "missing_supported_fact_ids": [
+        "f1"
+      ],
+      "abstained": false
+    },
+    {
+      "scenario_id": "mixed-059",
+      "checkpoint_id": "baseline",
+      "reason": "unsupported_fact",
+      "fact_id": "FACT#USER#800003058#education#d59af7b9df7d1dc4b2a70c881f51575b2459487b5dde7c7d5d9463a34ce88993"
+    }
+  ],
+  "dev_canary": "NOT_RUN",
+  "production_pilot": {
+    "status": "NOT_RUN",
+    "days": 0,
+    "supported_questions": 0,
+    "unknown_questions": 0
+  }
+}

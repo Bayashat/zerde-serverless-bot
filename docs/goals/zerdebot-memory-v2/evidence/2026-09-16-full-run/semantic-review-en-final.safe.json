@@ -1,0 +1,677 @@
+{
+  "schema": "independent-semantic-review-v1",
+  "reviewed_at": "2026-09-16T12:54:50.709210+00:00",
+  "reviewer": "root",
+  "language": "en",
+  "scenario_count": 60,
+  "checkpoints": 101,
+  "observed_fact_occurrences": 191,
+  "questions": {
+    "supported": 56,
+    "abstain": 64
+  },
+  "delivery_matches": {
+    "passed": 120,
+    "total": 120
+  },
+  "answer_routes": {
+    "memory": 116,
+    "plain": 4
+  },
+  "frozen_metrics": {
+    "tp": 191,
+    "fp": 0,
+    "fn": 0,
+    "gold_observations": 191,
+    "assertions": 294,
+    "supported_assertions": 290,
+    "unknown_questions": 64,
+    "unknown_abstained": 64,
+    "missing_checkpoints": 0,
+    "missing_answers": 0,
+    "supported_questions": 56,
+    "supported_answers_complete": 54,
+    "precision": 1.0,
+    "recall": 1.0,
+    "source_support": 0.9863945578231292,
+    "unknown_abstention": 1.0,
+    "supported_answer_recall": 0.9642857142857143,
+    "thresholds_pass": false
+  },
+  "semantic_findings": {
+    "fact_values_supported": {
+      "passed": 191,
+      "total": 191
+    },
+    "known_answer_content_complete": {
+      "passed": 55,
+      "total": 56
+    },
+    "unknown_correct": {
+      "passed": 64,
+      "total": 64
+    },
+    "evidence_context_contract_defects": [
+      "en-023",
+      "en-024",
+      "en-025"
+    ],
+    "budget_contract_scoring_conflict": [
+      "en-033"
+    ],
+    "zero_tolerance_semantic_failures_observed": 0
+  },
+  "status": "BLOCKED_EVIDENCE_COMPLETENESS_AND_MEASUREMENT_CONFLICT",
+  "not_proven": [
+    "real Telegram delivery or links",
+    "real AWS lifecycle",
+    "real latency",
+    "seven-day pilot"
+  ],
+  "gold_changed": false,
+  "scorer_changed": false,
+  "summary_of_original_artifact": "semantic-review-en-final.safe.json",
+  "original_artifact_sha256": "edcc12952e72f3595eb03b10ea116baff7b5fe77340888983e9b1a9abe00f6bc",
+  "cases": [
+    {
+      "scenario_id": "en-001",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "99722652de0b3f14064ae857ff5bf627411028e40ac551b52e7e5f72aca30b82.json",
+        "sha256": "f6d854586f7108b901b246ea90cab7d521258e5387740f1e15249309680a99af"
+      }
+    },
+    {
+      "scenario_id": "en-002",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "100e543cc981ec0a53910ac063b76c399ff5d0a1919e191e51595e07e29a7c07.json",
+        "sha256": "c2653f99b910919bec60fc906403baba1e86d763403cfef58b2d7e11f9fc6acb"
+      }
+    },
+    {
+      "scenario_id": "en-003",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "7f7f8ddd6df842aecc777ef0ac557cca8c08dbc89bd6e4af0c0c69f6c9b4413e.json",
+        "sha256": "4bfdab155e36cd1773c4ee23736b3c24031ec027b0c4655d9e302eef565cd786"
+      }
+    },
+    {
+      "scenario_id": "en-004",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "c309d1b33ae0f09fb564b9ff4dd6086c8ae1140fe5f640aabb74010726038803.json",
+        "sha256": "ab53433582ad2cb604f001d22bb6ce654901fc9e3bce5b180ab457d8ee225945"
+      }
+    },
+    {
+      "scenario_id": "en-005",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "1ddcb2f4f62f255af157ec1431cd6b4064f62deaf7201e8e9422a0603cbf0bd7.json",
+        "sha256": "3ec5b0770cc341085fb3875d463a1e19a8cbb6071a07cd1b3df06477b2f7db1e"
+      }
+    },
+    {
+      "scenario_id": "en-006",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "50fca926ca6cbb8fa2f5700fc0cd866748ecbcf5c5fb52c5ec517d33ef39377c.json",
+        "sha256": "0c12a0331cdf1e2bcd22eed3dd68ba228e8b07d89813420ecb8c306892ac81ca"
+      }
+    },
+    {
+      "scenario_id": "en-007",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "c3dfe4ff648a551d2ddcd59378a6f0922feb7b52b3657c8aec52d9cc0b249003.json",
+        "sha256": "ea226c8e3342e534afa55246ded751c83e649519602b510f359206b1804ca55e"
+      }
+    },
+    {
+      "scenario_id": "en-008",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "cac96441ed1729eeebf1c8bb3c32f609c93c0cccc4ffd05d89fe8751bb39eb6b.json",
+        "sha256": "a514fee4c9464ff47b40630ed6043c2ade07afb8744730357cdd8daa7f5644b0"
+      }
+    },
+    {
+      "scenario_id": "en-009",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "2c62f0f865c33766a19af3b543ac8f21bfcf3ec844959d5d36b40e1376ffea5a.json",
+        "sha256": "4e6bc603ec94575fd2be19208c4cfa9f6f4a508d652b6aefc52094323667fc6e"
+      }
+    },
+    {
+      "scenario_id": "en-010",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "7a81da97fcad813d2d3dcd709d926f7c8fad181e7ceb5d2b13027328b205cd05.json",
+        "sha256": "53c59e426b1fe3a757419d0d913260eea59c718665fe3082af70e105715400b8"
+      }
+    },
+    {
+      "scenario_id": "en-011",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "8a7573fae15048d4b010822674301acc7551db168f558013ea8878fc5f6f799d.json",
+        "sha256": "b291391e0490b5bab92dd6d38438f26a295ef2fb2e7dfe8f320429495a768ff4"
+      }
+    },
+    {
+      "scenario_id": "en-012",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "b1a23e155b687d75b9fb36b8cb4470a2bd4986be31c625b0ad684c14e6db86ea.json",
+        "sha256": "87c0397d250fc3d51df66b2ff6ebfbc643b01cad3606479c5134487df2a77de5"
+      }
+    },
+    {
+      "scenario_id": "en-013",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "2ee489bdfd5c74e7229c59c16844a840d4dbcce7a5d93d1060425b107dcb6e24.json",
+        "sha256": "f71749c10b549e3496b905fcf730ac5d75ec883365b83aae0ccc4570dec16cbf"
+      }
+    },
+    {
+      "scenario_id": "en-014",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "2b56c9db9f6640c70e0770a5c804f2470a3fad75c689540a660956064f25a5e3.json",
+        "sha256": "3316d7f9073ed96f4d53d013e7fcab2ae0d4cb6bd796e81e50c0e40ebdbbd991"
+      }
+    },
+    {
+      "scenario_id": "en-015",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "dc741b8a024047b71c64c04d5cf86a97ba562e648f6a6e4af810c61f4f67c81c.json",
+        "sha256": "71418cedcca7fd6158228cb70656f8393926961e803d9e2a3f4c3c2ab379b17a"
+      }
+    },
+    {
+      "scenario_id": "en-016",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "628baab140d20c6c5548eb281f0a7ceb9bd81d2ffe17b5d1d7a6c52967b49abb.json",
+        "sha256": "edb678c1d1e03463864fcd6f3fe1f6e49f5add347a2efb007b6d2275f4947924"
+      }
+    },
+    {
+      "scenario_id": "en-017",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "0ec741755dc0e5e5f7b08a7c322c9ad26b96b8e66831ff0ce5d7cd6bab147512.json",
+        "sha256": "b225c4d3e43c05799f4e04bd7b83929b586cabe1325b8d0def9e6125e4cee9dc"
+      }
+    },
+    {
+      "scenario_id": "en-018",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "75942b833dd8c950c2a78a78b1c41ddc895a315d1a5afe11ff66530b702ddc90.json",
+        "sha256": "735f7e164c38347c774bed07e5b1d3db10f9f97811c4cb7db5118d7f8a1abf7e"
+      }
+    },
+    {
+      "scenario_id": "en-019",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "4c249f23c7bd3b0ea1bf1492839dfc063918e329aa483488d4eb798c9d21c676.json",
+        "sha256": "38a34057ba88d87dc6f4057c7c84de6a2f6dff4cea115410367c44d451f8e63b"
+      }
+    },
+    {
+      "scenario_id": "en-020",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "6db31e8d42158bfa68da9c2d104352de7e219987d952619f504f5c0b2033b2da.json",
+        "sha256": "d147cdee803427cef1884bc5bbc1c9e4623c7563d1cedc84793643b0f9102361"
+      }
+    },
+    {
+      "scenario_id": "en-021",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "7ea4ac44ee94941d81ae296f0c82006f859c12fadf78ea551eefe62610dddbad.json",
+        "sha256": "3c62e39c0ba1433579609c845d1eec308545f4957b7b7856424174b11616f147"
+      }
+    },
+    {
+      "scenario_id": "en-022",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "5f0938586462378b447a9f9b1364f8ab0323849fcc4ca70c4adb7471ef98c01d.json",
+        "sha256": "e4eb9728ff215d55e4be48a8d610efa064394416eca9d018b65f3850c0632c9c"
+      }
+    },
+    {
+      "scenario_id": "en-023",
+      "notes": [
+        "Stored Java belongs to the second author correctly, but evidence starts at I use Java and drops same-name qualifier; full-evidence contract defect."
+      ],
+      "scenario_receipt": {
+        "file": "40774fa6ca7877001775911dcee6089ed930bd0d7948e015892a2a0ab51a9d73.json",
+        "sha256": "174cbee138b97ecd29a8ef65b4ae8802c078e5f62cc20d9e7bc519ea71e4b1c4"
+      }
+    },
+    {
+      "scenario_id": "en-024",
+      "notes": [
+        "TypeScript remains in the other chat correctly; stored evidence drops In this group qualifier; full-evidence contract defect."
+      ],
+      "scenario_receipt": {
+        "file": "17b2b4729f378937674139ac3a46af396fcfeaee7f9613ef5e3a205e69653050.json",
+        "sha256": "d82eb408072ce5b376c34f6904fc3e7d691c1f67d7a5974635c8fad8a2ab281b"
+      }
+    },
+    {
+      "scenario_id": "en-025",
+      "notes": [
+        "Edit invalidated PostgreSQL and learned Julia with Redis retained; stored and delivered quote drops Correction prefix; full-evidence contract defect, not invented Julia."
+      ],
+      "scenario_receipt": {
+        "file": "5b53cc36903852bc97a6c47117cd39534a57e7d82593e4b0a2078e00eb0c8f45.json",
+        "sha256": "17bdef31466e2aeec83a13505dd22d5de11f5f28bcd8cfaced18dcbf595737db"
+      }
+    },
+    {
+      "scenario_id": "en-026",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "284e7131b802841497506eddfeeb78d36abd27411b6e2266b145b4fe3a5b5862.json",
+        "sha256": "8bf6adb8979fd8bf6ffee6350b41ca06d5f1aec281121a2aafc9774d8f73859f"
+      }
+    },
+    {
+      "scenario_id": "en-027",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "5c952d631dc8a85c897486f293fdf85a979c60d4005d062f9526592a740d5b91.json",
+        "sha256": "b05d0d69a67a19afa6892ea2f0a96c95ab58accdbe117067cf669526d4f38e92"
+      }
+    },
+    {
+      "scenario_id": "en-028",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "01cf251cb8054d3e7d4490d87e3de9c3832b946ace780499ae30cc310288e81f.json",
+        "sha256": "f287a3151905a3d6974c2b8652fd071bf47e8a73ec178db5c6d657fbe43cde4b"
+      }
+    },
+    {
+      "scenario_id": "en-029",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "9d82859ff48ca1c4144105f61c4e65771268d3e748b667f374169e9b3e51a30e.json",
+        "sha256": "a78adb90780c1b162cc44e39e2e97cd7be9720b4f54622e9806761a439828119"
+      }
+    },
+    {
+      "scenario_id": "en-030",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "273fde65a29cbb3083b9b4413f5625bee852295d1cc7f195b366c46ba130e26b.json",
+        "sha256": "63463c99d7f34e3309ac2a57199b34f97595ee465236453b55a0465e696d4c9e"
+      }
+    },
+    {
+      "scenario_id": "en-031",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "c7cde7fef7898fe2edb573a82f854fbcb98da62ce48427808ec3ae09a3486cfb.json",
+        "sha256": "8c704c77be84b06acd8d54056c95ccc9a4b0a90c25e4a1cfb976cd7390b9f765"
+      }
+    },
+    {
+      "scenario_id": "en-032",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "d3b05d0d425795a5b68f2233af5b1e6b7df4729bb725d064b96c4acbf9c157fd.json",
+        "sha256": "a6f1d7f6dfd88d99a6e37e51e4c060f096920013f90b3027fb2f594a337424ad"
+      }
+    },
+    {
+      "scenario_id": "en-033",
+      "notes": [
+        "Budget-paused memory selector correctly falls back to plain Q&A without profile. Known question lacks its two old facts, while gold still expects them; product budget contract and frozen expected answer conflict. No budget bypass is acceptable."
+      ],
+      "scenario_receipt": {
+        "file": "6dfd35d35f60c758c5cb736d16452b25076483da445a1421ec819790ac694620.json",
+        "sha256": "0ae2e992a409898535d9968b080c56aaee851bea095ca857086dac6f203972e1"
+      }
+    },
+    {
+      "scenario_id": "en-034",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "50e3e4fbf6e941ec30d0e874b87471d210861621b4a74f2cf3d69ad135de9a04.json",
+        "sha256": "7a0c89f9fbeace5d5c3579c67308d09cd2f298eaca77154cfb89cd7351f5da80"
+      }
+    },
+    {
+      "scenario_id": "en-035",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "4981122c53af1f0a920a7fb7131b5b089857837667dbfb9c8866c9a615b33f40.json",
+        "sha256": "9c988cf5061d548f3dd728dadd5c4223e1f6219adf7a41a24a9b03996de3aa74"
+      }
+    },
+    {
+      "scenario_id": "en-036",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "30d9f64a1a5e8c1112f9151b25010f3ec129000b2828dd458c1f1263119d13e8.json",
+        "sha256": "10248fef8648cb2b3b2282eb604115fb5ac8baffdc340e647120ddf261f2c746"
+      }
+    },
+    {
+      "scenario_id": "en-037",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "fdb76d27479da54cce7a9395b10bcd1314aa9858ad80244cf61fc38e06636815.json",
+        "sha256": "6aaec18793246dd443d121ea31db7bd3777a62438090acbc8f1fc3af6a2c9e1a"
+      }
+    },
+    {
+      "scenario_id": "en-038",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "78947bff4a95ecb80eb86909eeeb11c4be4828b01e5df35eff053a9cde87bd87.json",
+        "sha256": "2b3412ca087fe94ce18621fdfcec111be6e498bbf3f6caf9dc842d3b39ba6bb9"
+      }
+    },
+    {
+      "scenario_id": "en-039",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "00352c1f72061d16fdb394423865c4cda021313e1e03aef1f11cad542d09dcf8.json",
+        "sha256": "59662003de8f6ec3380f9f556a76a4119966e950f810286acaf7fdaedc02fa1d"
+      }
+    },
+    {
+      "scenario_id": "en-040",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "76e49fa7b0a0e455a0439a74c570a5e8b5b7040baa4d785aa0467293d5e247fc.json",
+        "sha256": "213675aa7d89e7ca9285b4fc110e7bf3b524d4bb6180f5428f31ac12533cbf0b"
+      }
+    },
+    {
+      "scenario_id": "en-041",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "de53861a58106bb181fbe8218957c73058773823c13a560e634e180cc89bc260.json",
+        "sha256": "87689662703fbacb76798108cb0a18a46540966bd71dac64e85619d2b60b8622"
+      }
+    },
+    {
+      "scenario_id": "en-042",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "caa337def4093e3a667fed710f58790809d34efa401197355cd411fc1849eba4.json",
+        "sha256": "d03ab9cba7f52e786ad4ba92f89c24d022e96daa3a4ae23edc6f20edd7f06df1"
+      }
+    },
+    {
+      "scenario_id": "en-043",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "e3774e1a1f40f3fedc05b330cf4060769edb05f730516c63c71d375b2bfd9d73.json",
+        "sha256": "7f03b0640e2c3a02d2251015d5f7109307faa989fdd1eda6107d2e40932f70ab"
+      }
+    },
+    {
+      "scenario_id": "en-044",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "aa032e2d98a7a4f21d6003d1f7da0ba32f1e549b2c569dfccc9b896005984ebc.json",
+        "sha256": "3d872164c3d13b299a8d5a4a904803a245159a75254b3745b51633ae2ccceab7"
+      }
+    },
+    {
+      "scenario_id": "en-045",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "253828f83ed42d178f87f82898bc6d83c36c46fb715bddddf6bda6410dbb067d.json",
+        "sha256": "4fe82be7de707f855b58fe4a9819e2f4441bb0ab7897ef1daf4c7b9ec9727e98"
+      }
+    },
+    {
+      "scenario_id": "en-046",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "0ca0299a5e4032844cbbf5855e9c2f34284febbd078211eff08bca886995c406.json",
+        "sha256": "7eaecbd8f5aadd46b907fbd0a28bc98d53d8513264ca6cb579f477c1010f4361"
+      }
+    },
+    {
+      "scenario_id": "en-047",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "ea8398d772e4576f97abf6a6850973d82f8fc0f1ca1faa8d818de6ea63bda0e4.json",
+        "sha256": "ef3fc7550627101438245dd932628feb77a6b13b12cb59fcbbc4e48fab3d1312"
+      }
+    },
+    {
+      "scenario_id": "en-048",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "0b2e0d0ce0af1b893d9b79e1d0e43f1f79d837b1a2d5b0c268be871930a4ac96.json",
+        "sha256": "e46d6f0529c356c09fab5f158af3d2902bfffe4f59d97b3e7adcf2d54a4fe6aa"
+      }
+    },
+    {
+      "scenario_id": "en-049",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "f18e457e193e33d77b34748b76ad8afbb92fd7b5322d5d2b5bf973e5379496b6.json",
+        "sha256": "dd02dbe78082e86528ab38dca59806e736a3f06edf5984d4b93110b56f98bac6"
+      }
+    },
+    {
+      "scenario_id": "en-050",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "dbd01dd55ecb064020fdd3d658945d5a2f05f76eee2f8c883327984cb3e0f123.json",
+        "sha256": "f24f42463773406872539b1183e44fc33d8592dd0107b4a2c76645a899e341b0"
+      }
+    },
+    {
+      "scenario_id": "en-051",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "05f33701f3ad5decae97b76b480836df5b003a8b81cb050054b5daea89fa0d2a.json",
+        "sha256": "30d7c9370ed1565a7a3c58fe4eaa639e64306991e5afe9065e8389481a6ee073"
+      }
+    },
+    {
+      "scenario_id": "en-052",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "cc50ab89d32e0dce8ec90a22a54361391d3409adaaba59128ea2bb5ece9ac010.json",
+        "sha256": "a0f2bc3f6b22172af3051f6182d9ffa24fd71d356e367ba045467da7f8ffa7d0"
+      }
+    },
+    {
+      "scenario_id": "en-053",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "bd49bc611e23b8bc8fc3b1bf5d74b8dd3258aab6ca3a0094a1f05223b75f9646.json",
+        "sha256": "56fdf7f516748249f36e8f8be7b0d34a9c097aa8b011bc91d1933218f79bb5b4"
+      }
+    },
+    {
+      "scenario_id": "en-054",
+      "notes": [
+        "Group-forget leaves other-chat TypeScript isolated. Both plain responses express lack of information and disclose no retained fact."
+      ],
+      "scenario_receipt": {
+        "file": "65bbe440472020bdb8b39a24ff56ba91fe6eca3cafdca5ff863456aaef2320c7.json",
+        "sha256": "c60cf62435c153601d9790fc5aa20f5f9bf47e941fd3222a852639c8a4b0e0f7"
+      }
+    },
+    {
+      "scenario_id": "en-055",
+      "notes": [
+        "181-day project and city are explicitly rendered last mentioned / not confirmed current."
+      ],
+      "scenario_receipt": {
+        "file": "f604935f97900cb39c1c0b3c5ceeecb97d7293be1385c5336d953f0a68e431db.json",
+        "sha256": "caf8c47a8bf69c3bb5225c590efd6d7fe19acec4908660a4c9cb6c4c4679bcc2"
+      }
+    },
+    {
+      "scenario_id": "en-056",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "039f30adf2b2634a101456f72e297eadf467ca3d2e28e47096fd7089a8d254dc.json",
+        "sha256": "9c308beb336e21183e43b6b24e098d5ef2f50864b59e7454a3f4c48d8a18679f"
+      }
+    },
+    {
+      "scenario_id": "en-057",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "22b6ee4b5825a15ec42fd6416289640b199491a504ec14d40ac25a2e51a34c68.json",
+        "sha256": "6ec57f97f5027c3a6e9733c10ccb26065844e25816a52680ce9d47ffcb275f6a"
+      }
+    },
+    {
+      "scenario_id": "en-058",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "70c6a1a2afca9e87744dd37d46d1cc20904c34d91e1698277beb208de63e94da.json",
+        "sha256": "21516b387b37aacc2df4f9dad9caf5d92ff095bab1750c30c58b2c0c25311315"
+      }
+    },
+    {
+      "scenario_id": "en-059",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "3a7ddff6d9b0ae9cf3b7ff146d854ccb0401cf9569ffe3af38acefdbb1e9698e.json",
+        "sha256": "da57e8f74d0a7317466a8ed6778cb2fe0c4840ccc923c819e86f7bafb92efd35"
+      }
+    },
+    {
+      "scenario_id": "en-060",
+      "notes": [
+        "Read original event text, checkpoint facts and complete delivered answer; no semantic discrepancy found within this synthetic scenario."
+      ],
+      "scenario_receipt": {
+        "file": "8e421a6785112a2ba376d5691050883b03206ae50c18715d79bdab2b9761069f.json",
+        "sha256": "4ec9c78d39381dce3f14ce3173d5478f8a9fc2ae0d53edf9ab63f36e28c46663"
+      }
+    }
+  ]
+}

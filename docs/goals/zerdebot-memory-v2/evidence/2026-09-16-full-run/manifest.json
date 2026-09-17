@@ -1,0 +1,79 @@
+{
+  "recorded_at": "2026-09-16T13:05:25.637327+00:00",
+  "status": "FULL_RUN_AND_SEMANTIC_REVIEW_COMPLETE_QUALITY_FAILED",
+  "reviewed_scenarios": 240,
+  "planned_scenarios": 240,
+  "answers_reviewed": 480,
+  "checkpoints": 404,
+  "learning": "STOPPED_CONFIRMED_BY_COMPLETE_CONSISTENT_CONTROL_SCAN",
+  "runtime_or_gold_changed": false,
+  "new_model_run_started": false,
+  "artifacts": [
+    {
+      "file": "first-five-semantic-review-20260916.safe.json",
+      "sha256": "1e33df646a2a02a6c174107bbec0c06899a24b83330fecf7650f93ec964a0d65",
+      "original_private_sha256": "1552901015f2e786cf015666cdae63d20bfa2fc191fb48c06e98c5b8affeb74f",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "semantic-review-kk006-020-20260916.safe.json",
+      "sha256": "76ca133f1c2c3d3619b3df2c73e8dc934d81101ff0ae87fa7516bb8b4890f38b",
+      "original_private_sha256": "b9127048aa30bd6d3a4e9afbdaf2504c83fbf0e0edbce34eee401c59fe0a8ad1",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "semantic-review-kk021-060-final.safe.json",
+      "sha256": "ed8be323990761bd86955161bc8f50620d93c69dcdc2a411193be6b752f8bf19",
+      "original_private_sha256": "a08c76bc0e8bfda5e3ef1ba6bb836876878b93f506322158c8b7f040eeb7d3cf",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "semantic-review-ru-final.safe.json",
+      "sha256": "20e7a9f20a0dcae864fa31ffb9125244066e41450d9bc00731f20801d6fe3a39",
+      "original_private_sha256": "243766b1e0e9063c99640d10d3cecf69e47d12071644baf8e0220237bf06d71a",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "semantic-review-en-final.safe.json",
+      "sha256": "248d1625bf3ee3522309efbe1df36819cf8e62c60c89d706df8068c5e8751be8",
+      "original_private_sha256": "edcc12952e72f3595eb03b10ea116baff7b5fe77340888983e9b1a9abe00f6bc",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "semantic-review-mixed-final.safe.json",
+      "sha256": "fe73329e9b21cc6f751dbf2ad49009b18e244bfd35bd56372cf185c29e65836e",
+      "original_private_sha256": "b072589dc69ca30009319508cde90a515946e09d363366a4dc1216c3f62bc3da",
+      "summary_omits_repeated_full_text": true
+    },
+    {
+      "file": "frozen-report.json",
+      "sha256": "f9350a2bcf90cddb22c9189cc1310341ee94b42b8bfd99e8de34f4430827364d",
+      "byte_identical_copy": true
+    },
+    {
+      "file": "final-run-readback.json",
+      "sha256": "debf6658274956d2efa6f6f6dcfd04319626d7333b235d36832a3c567a5a27de",
+      "byte_identical_copy": true
+    },
+    {
+      "file": "learning-controls-readback.json",
+      "sha256": "3bccf05a98433cc96b087adf6d2a6b11676662a9e8ecaa749ebbf9735f6e09a0",
+      "byte_identical_copy": true
+    },
+    {
+      "file": "automation-readback.json",
+      "sha256": "8100e4e8166909bd1ea69033ace11564b371a4e898fbd8f06f44b898d7b8e025",
+      "byte_identical_copy": true
+    },
+    {
+      "file": "checkpoint-review.json",
+      "sha256": "b0f41fbff5a9772cfa9aecd8ee33e56e6dfcf18bd5d060b2a47339814fc2bc03"
+    },
+    {
+      "file": "final-accounting-independent.safe.json",
+      "sha256": "e3b8b374a01e8d0f561fe70e36cc3f7006a8ce48fbb7aa62e748c388ba1af9b2",
+      "original_private_sha256": "e3b8b374a01e8d0f561fe70e36cc3f7006a8ce48fbb7aa62e748c388ba1af9b2",
+      "local_paths_replaced": true
+    }
+  ]
+}

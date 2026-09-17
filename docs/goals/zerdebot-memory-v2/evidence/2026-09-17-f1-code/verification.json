@@ -1,0 +1,82 @@
+{
+  "status": "LOCAL_CONTRACT_VERIFIED_DEPLOYMENT_PENDING",
+  "observed_at": "2026-09-17T14:16:18.663554+00:00",
+  "prompt_version": "self-claims-v2.6",
+  "base_main": "34fae81c5742bb28991c86764e64d8b98a110ade",
+  "implementation_sha256": {
+    "src/bot/services/memory_v2/__init__.py": "34bebfd75bba4c44ac40eeabf67fb4f19ad2df8f783781992ce4bcf026621235",
+    "src/bot/services/memory_v2/_cost_catalog.py": "fa10173174d88bfae5e304f4b9ccaadfacc434f7f77c13c7674d4948a0eded63",
+    "src/bot/services/memory_v2/_cost_reports.py": "9e22f8413ff8698b71a547b8e24147327f786a831a9338089dd80a9d6d0db8bb",
+    "src/bot/services/memory_v2/_cost_state.py": "531df848c3ce79992935e86fbd516e4210b8e2df9609baec96fed75dc2f9bb75",
+    "src/bot/services/memory_v2/answer_prompt.py": "9f3f875fc1a468907c4d19243b0f4e14ffafba2e8ac32bfbf7c3e7a2d55792ec",
+    "src/bot/services/memory_v2/answer_rendering.py": "f91326843029319a2a18ac3015d9ea9a6c23d92395afd0225ad8608596048f8a",
+    "src/bot/services/memory_v2/answer_scope.py": "245e05af9c484e4f3a3dafe4fee42759423b04c382398fa88dd8565fc57c5eb2",
+    "src/bot/services/memory_v2/answer_selector.py": "2f0fff7742367d769977e9a88c6887821e99815d85db0bc8f8d3ee54fd4ac8ec",
+    "src/bot/services/memory_v2/answers.py": "c71b7a07814eb078434de1642d27811f0ea8d145f26c01abc230e43f8ee3ec64",
+    "src/bot/services/memory_v2/command_receipts.py": "a771ceb32d9ec6447743de90076e567b6e855413600171cd6da59cd85b0672d5",
+    "src/bot/services/memory_v2/commands.py": "9de4863958e73a04c623427358730f2ffc797ba54e3f78392cfc8fd0302c8fc4",
+    "src/bot/services/memory_v2/cost_meter.py": "4d34b49a01948ff7423629591093d3af611a8dcfd0be77efc1dc637bd7cdd0ca",
+    "src/bot/services/memory_v2/cost_monitor.py": "4aa70e55706c0c24c785bd278892ee0240b2921025dd653dbfbfec678509c193",
+    "src/bot/services/memory_v2/cost_runtime.py": "2156fc77a25feb453e65823feeb79f6bf58013b021e15e5e263e38c742fc61d9",
+    "src/bot/services/memory_v2/evidence.py": "00c03556462c550cf7534888d675c2182147c7ef3c22c698c97ba18ab8ffa94b",
+    "src/bot/services/memory_v2/explicit_delivery.py": "119fa0f970e68cb49d0ab44e10f0bad633df085a81ef0113c87ee06d59b27848",
+    "src/bot/services/memory_v2/explicit_request_gate.py": "7ec39dd28fd65f526c40fbaea8e84100f08c7d5e5123bcc570331800d304e3d2",
+    "src/bot/services/memory_v2/extraction_prompt.py": "7673a54b02f8d52500772b3b9fc9a182cdd0c74ed4991085451c08c619c93c2b",
+    "src/bot/services/memory_v2/extractor.py": "a37a1de1e80573fe5426334d80f9ec69fb4b0dd9129b5f8e92e3c63adcae7f3d",
+    "src/bot/services/memory_v2/gemini_extraction.py": "20903f7784498145e0739810a78d96b422033411cf1b05865fc58aa1701f28fa",
+    "src/bot/services/memory_v2/identity.py": "802f0849db199c8446c4a3edb42e491e12dcdf1b15427dc43e628e8cc777790e",
+    "src/bot/services/memory_v2/ingestion.py": "9d72434d7a3277314682399b3a12264c85a5cf93b8042a4c93fa9ddb826dcd9c",
+    "src/bot/services/memory_v2/leases.py": "abd6ad49f094be4ee4d53ac1b12c0397887ea0e6f19cab1de648420a2f87d0e9",
+    "src/bot/services/memory_v2/lifecycle.py": "e3490f91a651e366578731ed66ab00ac054415c805845c4da1613d0eb1cb4385",
+    "src/bot/services/memory_v2/media_ephemeral.py": "efeed11a6b6639eba179b848ff24b321475b6a665e210e777195bfaec6d37dc0",
+    "src/bot/services/memory_v2/models.py": "497226fc4e010ee4975acad2ce5081c0cac000ee5f193b74a601b5f23cfd085f",
+    "src/bot/services/memory_v2/public_answers.py": "0159c336134f017ad7f2171a493b23a461cf38adf488fb973fba953093e185f3",
+    "src/bot/services/memory_v2/public_commands.py": "d3fb70ae56f10382923dad56e5ce3b4b32156a5206d71c7401d9194031308036",
+    "src/bot/services/memory_v2/recovery.py": "1605faa083278701f666f09a44d63f5153562501d7a033f46efc12ed4b708c16",
+    "src/bot/services/memory_v2/repository.py": "2de9992b6ff11b4aba45a5ff11d3b9f5b982b143c033198e90ed2e07362f1819",
+    "src/bot/services/memory_v2/runtime.py": "6d915b0c7f6ad5498c0c0bc843ff220a378c72e9d641cf5924371899e9d2bf91",
+    "src/bot/services/memory_v2/safety.py": "da8ef92e26cbf002054563b1c939dff2c36cfcdbd68f6fed2da8ddce6c77a493",
+    "src/bot/services/memory_v2/telegram_api.py": "1d93e9cd6352c26c9c853b59fa0c4f24340236d953a46a100a0f59364f0ab958",
+    "src/bot/services/memory_v2/telegram_ingestion.py": "c5fe3e0501602641d4530180bb47fcc20535c93c4751c12cf07c1a8d71eeb3a9",
+    "src/bot/services/memory_v2/trend_runtime.py": "e1168559a4c88ea825578e6b492bfb20049512ec9baa6071ff159ff86156df68",
+    "src/bot/services/memory_v2/trend_service.py": "93c04e99aa12f8170b17b2774be2f290e261df534fdb9312823e9d0c38ca3cff",
+    "src/bot/services/memory_v2/trends.py": "8f638adb119328ddff036e1ed0e3a8524b9fe2197542bcd529aad79f58679ee5",
+    "src/bot/services/memory_v2/worker.py": "6fca2cccb50561d9885252774d8836cd7c3e50e329d18fe7d618e22a80632777",
+    "src/bot/services/memory_v2/writer.py": "fb7c20e6196bb5cf6d0ddab5922c9f2a88c0ff6b31a2aca37c3bce274fe02e45"
+  },
+  "validation": {
+    "full_suite_before_final_unicode_followup": {
+      "passed": 2214,
+      "seconds": 221.8
+    },
+    "final_focused_including_unicode_and_correction": {
+      "passed": 180,
+      "seconds": 13.59
+    },
+    "independent_correctness": {
+      "status": "ALIGNED",
+      "passed": 53,
+      "seconds": 4.33
+    },
+    "independent_maintainability": {
+      "status": "ALIGNED",
+      "passed": 218,
+      "seconds": 16.29
+    },
+    "pre_commit": "PASS",
+    "ci": "PENDING"
+  },
+  "limitations": [
+    "No new real model run or deployment yet",
+    "Complete unquoted source must fit 240 characters; unsupported sources remain pending until prior expiry",
+    "Independent test scopes overlap and are not additive",
+    "Semantic education review protocol remains unimplemented; old strict FAIL unchanged"
+  ],
+  "frozen_gold_bytes_sha256": "cfd58e8d078b75225d941408467ad2f8bf0ee9f9e577e79dae2a9d601b497fc8",
+  "frozen_gold_bytes_match_original_git_commit": true,
+  "historical_liability_micro_usd": 19639943,
+  "old_accounting_sha256": "e3b8b374a01e8d0f561fe70e36cc3f7006a8ce48fbb7aa62e748c388ba1af9b2",
+  "product_acceptance": "FAIL_PENDING_FRESH_EVALUATION",
+  "learning_activation_performed": false,
+  "backup_deletion_performed": false
+}

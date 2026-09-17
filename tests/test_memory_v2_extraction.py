@@ -86,8 +86,8 @@ def test_exact_multilingual_evidence_maps_to_python_character_offsets(text, valu
     change = result.changes[0]
     assert result.ref is original.ref
     assert change.value == value and change.action == action
-    assert original.text[change.evidence.start : change.evidence.end] == text
-    assert change.evidence.start == 2
+    assert original.text[change.evidence.start : change.evidence.end] == original.text
+    assert change.evidence.start == 0
 
 
 @pytest.mark.parametrize("attribution", ["third_party", "quoted", "ambiguous", "instruction", "sensitive"])
@@ -102,7 +102,7 @@ def test_compatibility_request_removes_only_two_array_caps_and_two_length_fields
     sources_schema = request["generationConfig"]["responseJsonSchema"]["properties"]["sources"]
     properties = sources_schema["items"]["properties"]
     fact_properties = properties["facts"]["items"]["properties"]
-    assert PROMPT_VERSION == "self-claims-v2.5"
+    assert PROMPT_VERSION == "self-claims-v2.6"
     assert "maxItems" not in sources_schema and "maxItems" not in properties["facts"]
     assert fact_properties["value"] == fact_properties["evidence"] == {"type": "string"}
     assert fact_properties["facet"] == {"type": "string", "enum": ["", "language", "name", "length", "tone"]}
@@ -121,6 +121,14 @@ across quoted spans or sensitive text, join separate spans, or drop a qualifier 
 fit the limit. If no complete safe supporting span fits, omit the fact.
 """
     prompt = request["systemInstruction"]["parts"][0]["text"]
+    complete_guidance = """Only complete, unquoted sources fitting the evidence limit reach this extractor.
+For evidence copy the entire source except outer whitespace, preserving all
+qualifiers and sentences. For the name facet, copy the preferred name verbatim
+from its evidence: preserve script, spelling, case and spaces. Never transliterate,
+translate or normalize a preferred name. Other value rules remain unchanged.
+"""
+    assert prompt.count(complete_guidance) == 1
+    prompt = prompt.replace(complete_guidance, "")
     assert prompt.count(sentence_guidance) == 1
     education_guidance = """For education, preserve the explicitly stated credential type and level (degree,
 diploma, certificate, bachelor, master, doctorate) together with its subject. Do not
@@ -470,7 +478,7 @@ def test_input_limit_counts_multibyte_text_prompt_and_schema_without_truncation(
     instance, provider, budget, _, _ = extractor()
     assert input_upper_bytes([original]) > MAX_INPUT_UPPER_BYTES
     result = asyncio.run(instance.extract_batch([original]))[0]
-    assert result.reason == "batch_input_limit" and result.status == "defer"
+    assert result.reason == "evidence_scope_unsupported" and result.status == "defer"
     provider.generate.assert_not_awaited()
     budget.reserve.assert_not_called()
     assert original.text in build_request([original])["contents"][0]["parts"][0]["text"]
