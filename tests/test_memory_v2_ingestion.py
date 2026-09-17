@@ -339,14 +339,15 @@ def test_second_provider_attempt_validation_detects_optout(env, ingestion):
     assert env.repo.get_work(CHAT, ref)["state"] == "EXPIRED"
 
 
-def test_oversize_single_source_is_failed_with_coverage_not_truncated(env, ingestion):
+def test_oversize_single_source_remains_pending_with_coverage_not_truncated(env, ingestion):
     ref = ingestion.accept_safe(event(env, text="a" * 7500))
     instance, calls = worker(env)
     asyncio.run(instance.handle_records(records(ref)))
     assert calls == []
     work = env.repo.get_work(CHAT, ref)
-    assert work["state"] == "FAILED" and work["last_reason"] == "input_limit"
-    assert coverage(env, "work_failed") == 1
+    assert work["state"] == "PENDING" and work["last_reason"] == "evidence_scope_unsupported"
+    assert env.repo.coverage_snapshot(CHAT)["pending"] == 1
+    assert coverage(env, "work_failed") == coverage(env, "work_done") == 0
 
 
 def test_worker_batches_same_chat_and_bounded_request_size(env, ingestion):

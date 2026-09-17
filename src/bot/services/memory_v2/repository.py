@@ -762,7 +762,17 @@ class MemoryRepository:
             return self.finish_work(chat_id, lease.source_ref, outcome="EXPIRED", reason="source_expired", lease=lease)
         due = min(int(work["expires_at"]), max(now + 1, int(retry_at)))
         # Do not persist provider strings: callers map errors to this bounded vocabulary.
-        if reason not in {"retry", "provider", "budget", "quota", "schema", "batch_input_limit", "conflict", "paused"}:
+        if reason not in {
+            "retry",
+            "provider",
+            "budget",
+            "quota",
+            "schema",
+            "batch_input_limit",
+            "conflict",
+            "paused",
+            "evidence_scope_unsupported",
+        }:
             reason = "retry"
         updated = {
             **work,

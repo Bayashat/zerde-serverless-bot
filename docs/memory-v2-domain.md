@@ -66,6 +66,15 @@ response instructions. Unsupported fields, malformed evidence and third-party
 attribution fail; ambiguous claims are skipped without inventing a current truth.
 Semantic identification of an explicit self-claim remains Z07's responsibility.
 
+Automatic extraction now requires the complete unquoted source (outer whitespace
+excluded) to fit 240 characters. Worker and extractor share this range check;
+unsupported sources remain PENDING with `evidence_scope_unsupported` and a 24-hour
+retry clamped to the original work expiry. Short neighbors still run; pending and
+expired work remain in coverage. This is a conservative coverage limitation, not a
+claim of full learning. Explicit corrections retain their exact command evidence.
+Names preserve the author's original spelling without NFKC or whitespace folding;
+extractor and the sole writer require the name verbatim at a complete name boundary.
+
 Each change cites an exact non-quoted source span of at most 240 characters. Values
 are at most 160 characters. The shared V2 `safety.require_public_content` rejection
 layer checks values and excerpts again, including secrets/token patterns, contacts,
