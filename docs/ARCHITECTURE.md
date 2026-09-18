@@ -1,5 +1,7 @@
 # ZerdeBot Architecture
 
+F4 replaces whole-batch fact retries inside the existing V2 extractor: validate the entire response envelope, isolate invalid facts by source, preserve complete results by immutable ref, and retry only unresolved sources once. The worker revalidates all completed sources before writing. No schema, queue, budget or infrastructure change is introduced. Plain explicit answers share one context-availability prompt across primary and fallback providers. See [execution contract](goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md); real quality remains unaccepted.
+
 The deployed self-claims-v2.6 source-boundary/name fix, public evaluation route and offline occurrence review follow [the current quality/evidence contract](MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
 
 The V2 public-content and answer owners include the bounded handbook/education

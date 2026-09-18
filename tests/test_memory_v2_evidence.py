@@ -13,7 +13,7 @@ from services.memory_v2.models import EvidenceSpan, FactChange, MemoryInputError
 
 from tests import test_memory_v2_contract as contract
 from tests.test_memory_v2_contract import CHAT, USER, activate, change, commit, event
-from tests.test_memory_v2_extraction import extractor, fact, response, source
+from tests.test_memory_v2_extraction import assert_invalid_source, extractor, fact, response, source
 from tests.test_memory_v2_ingestion import records, worker
 
 env = contract.env
@@ -117,10 +117,9 @@ def test_name_transliteration_and_partial_name_cannot_be_committed(env, nickname
     activate(env)
     text = "Please call me " + nickname + "."
     ref = env.repo.register_source(event(env, text=text))
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(
-            response([fact(text, value=value, field="communication_preferences", facet="name")]), [source(text)]
-        )
+    assert_invalid_source(
+        response([fact(text, value=value, field="communication_preferences", facet="name")]), source(text)
+    )
     with pytest.raises(MemoryInputError):
         commit(env, ref, [change(text, value=value, field="communication_preferences", facet="name")])
     assert list(env.repo._list(CHAT, "FACT#")) == []
@@ -128,11 +127,10 @@ def test_name_transliteration_and_partial_name_cannot_be_committed(env, nickname
 
 def test_name_elsewhere_in_source_cannot_rescue_original_model_excerpt():
     original = source("Please call me Astra. I like short replies.")
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(
-            response([fact("I like short replies.", value="Astra", field="communication_preferences", facet="name")]),
-            [original],
-        )
+    assert_invalid_source(
+        response([fact("I like short replies.", value="Astra", field="communication_preferences", facet="name")]),
+        original,
+    )
 
 
 def test_explicit_name_correction_preserves_original_script_and_spaces(env):
@@ -170,10 +168,9 @@ def test_name_slot_cannot_normalize_invalid_input_into_a_valid_name(value):
 def test_combining_spelling_keeps_existing_name_validation_without_silent_normalization():
     nickname = "E\u0301lodie"
     text = "Please call me " + nickname + "."
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(
-            response([fact(text, value=nickname, field="communication_preferences", facet="name")]), [source(text)]
-        )
+    assert_invalid_source(
+        response([fact(text, value=nickname, field="communication_preferences", facet="name")]), source(text)
+    )
 
 
 def test_worker_keeps_oversized_work_pending_and_processes_short_neighbor_then_expires(env):

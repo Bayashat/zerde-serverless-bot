@@ -1,0 +1,32 @@
+{
+  "status": "LOCAL_AND_INDEPENDENT_REVIEW_PASS_CI_PENDING",
+  "full_tests": {
+    "passed": 2331,
+    "seconds": 182,
+    "log_sha256": "9e9183cff7f6e80d10e9330c40f07a7fc77857636a844735e95b8d245d3d6e70"
+  },
+  "initial_full_run": {
+    "failed": 5,
+    "passed": 2322,
+    "cause": "duplicated plain-answer instructions in current evaluation serializer",
+    "resolution": "reuse production prompt owner while preserving strict payload validation"
+  },
+  "source_sha256": {
+    "src/bot/services/memory_v2/extractor.py": "6aa9fcac649b5ab24e5ac699443c866097c2700f18d44e2535cad1a7bf4db963",
+    "src/bot/services/group_agent.py": "d1977f2cb2c0b3b22adf2373fa3a7ee2df9feee9f2dc96f5f765dff3e4fca387",
+    "dev/tools/memory_eval/plain_requests.py": "eaef9b1f0e7bc59ad4be9331eccc403be7bdb8981cc35b1a6e0ad390cb16e01f",
+    "tests/test_memory_v2_source_retry.py": "f8000e3864c31a0bfc7ea8377c69420bc36cc79c3a653e7591459bd9e2d57136",
+    "tests/test_public_memory_eval.py": "a762dfb3b1d94ec4c25eaba245af46c4bc3bc837298d374733fdb9867d8dab36"
+  },
+  "independent_receipt_sha256": {
+    "source-retry-pre-code.safe.json": "2c915e7711bd4220c23bb911fdae6fdabe45016c8e39a716720714f848a6d622",
+    "f4-post-code.safe.json": "3e83927f5894d7edc8b0af347b154446a00463cb5dd3586b05521d10c000e465",
+    "f4-post-memory.safe.json": "2e56cd6d9ed072ad01af36a97696f981411a5fc2a04ba780c169eb889f4ec201",
+    "f4-plain-owner-pre-code.safe.json": "99f8c2012eba3eda93df4064b53fc7ce02828bff0b6de2bb1c4c086cd8c2b125",
+    "f4-plain-owner-post-code.safe.json": "f578f0d84bcfdcf132cb20bdbccd3a1c4256f4f9f53ad7b31b35540345270a32",
+    "f4-plain-owner-increment-post-memory.safe.json": "21f60532ab740dd11002fcd92b92c3a371994320764f8d879e94a82f89c9f9fb"
+  },
+  "real_model_quality_pass": false,
+  "deployed": false,
+  "learning_enabled": false
+}

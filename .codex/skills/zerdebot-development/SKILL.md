@@ -7,6 +7,8 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 ## Approved cutover overrides
 
+F4 source-scoped retry and plain-answer capability limits follow [the bounded contract](../../../docs/goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md). Keep one parser, a strict whole-response attribution envelope, atomic per-source facts and at most two model calls. Completed neighbors remain protected by the existing worker freshness check and unique writer; unknown implementation errors must not become partial success.
+
 The legacy daily group summary EventBridge rule and its SQS send grant are removed from CDK. Do not restore them behind old memory flags or configured chat lists. Existing deployments still require the reviewed infrastructure update; V2 recovery, news and quiz schedules retain their existing owners.
 
 The deployed self-claims-v2.6 source-boundary/name fix, public evaluation route and offline occurrence review follow [the current quality/evidence contract](../../../docs/MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.

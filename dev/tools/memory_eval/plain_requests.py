@@ -55,11 +55,7 @@ def build_plain_payload(question, language, style_profile=None):
                 semantic_memory_context="",
                 user_profile_context="",
                 requester_profile_context="",
-                reply_instructions=(
-                    policy.instructions + " Long-term memory is disabled. "
-                    "Do not claim to know personal or group facts absent from this explicit request. "
-                    "When the request lacks evidence, say you do not know and ask for current context."
-                ),
+                reply_instructions=group_agent._plain_reply_instructions(policy),
                 max_output_tokens=policy.max_output_tokens,
                 lang=language,
             )

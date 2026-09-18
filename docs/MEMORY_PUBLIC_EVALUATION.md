@@ -1,5 +1,7 @@
 # 真实公共问答评估与质量修复（2026-09-15）
 
+当前结果见 [F3 完整复核](goals/zerdebot-memory-v2/F3_RESULTS_2026_09_19.md)：240 场景已记录，独立全文审阅完成，整体仍 INCOMPLETE；修复由 [F4 契约](goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md)约束。旧运行不可恢复或改分。
+
 ## 2026-09-18 当前状态
 
 F1 #213 已合并并完成dev/prod实际产物读回；尚未进行新版真实模型复验。F2新增独立离线测量工具，完整学历 occurrence 与全部发送正文必须逐项审阅，旧strict/gold/report不改；规则须在新模型首调用前随源码冻结，缺预注册只能回顾诊断。执行接口、待审格式及原始输入保护见[语义测量契约](goals/zerdebot-memory-v2/SEMANTIC_REVIEW_CONTRACT.md)，最新交付状态见[HANDOFF](goals/zerdebot-memory-v2/HANDOFF.md)。工具通过不代表记忆质量通过，生产学习仍STOPPED。

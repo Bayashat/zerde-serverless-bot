@@ -1700,6 +1700,20 @@ def process_proactive_candidate_task(
     )
 
 
+def _plain_reply_instructions(policy: ReplyPolicy) -> str:
+    """One prompt owner for runtime answers and the strict evaluation serializer."""
+    return (
+        policy.instructions + " No long-term memory is provided for this request. "
+        "You have no tool to search message history or fetch profiles in this response. "
+        "Missing context does not tell you whether stored information exists or what someone said before. "
+        "Do not claim the database or chat history is empty, that a person never shared something, "
+        "or that their data was erased. Do not promise to search history or retrieve profiles yourself. "
+        "Do not claim to know personal or group facts absent from this explicit request. "
+        "When evidence is missing, say you cannot verify it from the context available for this request "
+        "and invite the user to provide the relevant message or quotation."
+    )
+
+
 def answer_group_question(
     *,
     repo: GroupMemoryRepository,
@@ -1762,11 +1776,7 @@ def answer_group_question(
             semantic_memory_context="",
             user_profile_context="",
             requester_profile_context="",
-            reply_instructions=(
-                reply_policy.instructions + " Long-term memory is disabled. "
-                "Do not claim to know personal or group facts absent from this explicit request. "
-                "When the request lacks evidence, say you do not know and ask for current context."
-            ),
+            reply_instructions=_plain_reply_instructions(reply_policy),
             max_output_tokens=reply_policy.max_output_tokens,
             lang=lang,
             media_parts=media_parts,

@@ -103,15 +103,21 @@ def _parse_facts(source, facts):
 
 
 def parse_extraction_response(payload: dict, sources: list[ExtractionSource]) -> list[ExtractionResult]:
+    """Validate the whole attribution envelope before isolating fact errors by source."""
     if any(complete_evidence_span(source.text, source.quoted_spans) is None for source in sources):
         raise MemoryInputError("Complete source evidence is unsupported")
+    if not isinstance(payload, dict):
+        raise MemoryInputError("Invalid extraction response")
     candidates = payload.get("candidates")
     if not isinstance(candidates, list) or len(candidates) != 1 or not isinstance(candidates[0], dict):
         raise MemoryInputError("Expected one extraction candidate")
     candidate = candidates[0]
     if candidate.get("finishReason") != "STOP":
         raise MemoryInputError("Extraction was blocked or incomplete")
-    parts = (candidate.get("content") or {}).get("parts")
+    content = candidate.get("content")
+    if not isinstance(content, dict):
+        raise MemoryInputError("Extraction had no content")
+    parts = content.get("parts")
     if not isinstance(parts, list):
         raise MemoryInputError("Extraction had no text")
     texts = [
@@ -119,7 +125,10 @@ def parse_extraction_response(payload: dict, sources: list[ExtractionSource]) ->
         for part in parts
         if isinstance(part, dict) and isinstance(part.get("text"), str) and not part.get("thought")
     ]
-    document = json.loads("".join(texts), object_pairs_hook=unique_object)
+    try:
+        document = json.loads("".join(texts), object_pairs_hook=unique_object)
+    except json.JSONDecodeError as exc:
+        raise MemoryInputError("Invalid extraction JSON") from exc
     if not isinstance(document, dict) or set(document) != {"sources"} or not isinstance(document["sources"], list):
         raise MemoryInputError("Invalid extraction result shape")
     indexed = {}
@@ -132,7 +141,16 @@ def parse_extraction_response(payload: dict, sources: list[ExtractionSource]) ->
         indexed[index] = item["facts"]
     if set(indexed) != set(range(len(sources))):
         raise MemoryInputError("Extraction omitted a source")
-    return [ExtractionResult(source.ref, _parse_facts(source, indexed[index])) for index, source in enumerate(sources)]
+    results = []
+    for index, source in enumerate(sources):
+        try:
+            changes = _parse_facts(source, indexed[index])
+        except MemoryInputError:
+            # Never commit a valid prefix from a source with any invalid fact.
+            results.append(ExtractionResult(source.ref, status="defer", reason="invalid_source_facts"))
+        else:
+            results.append(ExtractionResult(source.ref, changes))
+    return results
 
 
 class MemoryExtractor:
@@ -201,34 +219,42 @@ class MemoryExtractor:
     async def _extract_eligible(self, sources):
         if input_upper_bytes(sources) > MAX_INPUT_UPPER_BYTES:
             return self._defer(sources, "batch_input_limit")
-        request = build_request(sources)
+        pending, completed = sources, {}
+
+        def finish(unresolved):
+            by_ref = {**completed, **{result.ref: result for result in unresolved}}
+            return [by_ref[source.ref] for source in sources]
+
         for _ in range(MAX_ATTEMPTS):
-            await self.validate_sources(sources)
+            # Local indices belong only to this request; immutable refs restore
+            # the original order after retries and the earlier evidence filter.
+            request = build_request(pending)
+            await self.validate_sources(pending)
             try:
                 self.budget.check_available()
             except Exception as exc:
-                return self._budget_defer(sources, exc)
+                return finish(self._budget_defer(pending, exc))
             try:
                 count, within_limit = self.rate_limit.increment_and_check()
                 # The legacy quota adapter returns (0, True) on storage failure.
                 # Never interpret that sentinel as permission for a V2 model call.
                 if type(count) is not int or count < 1 or type(within_limit) is not bool:
-                    return self._defer(sources, "daily_quota_unavailable")
+                    return finish(self._defer(pending, "daily_quota_unavailable"))
                 if not within_limit:
-                    return self._defer(sources, "daily_quota_exhausted", retry_at=self._quota_reset())
+                    return finish(self._defer(pending, "daily_quota_exhausted", retry_at=self._quota_reset()))
             except Exception:
-                return self._defer(sources, "daily_quota_unavailable")
+                return finish(self._defer(pending, "daily_quota_unavailable"))
             try:
                 reservation = self.budget.reserve(self.attempt_id_factory(), purpose="extract", model=MODEL)
             except Exception as exc:
                 # DuplicateMemoryAttempt is also a hard no-call result. No retry
                 # can bypass a denied or uncertain financial reservation.
-                return self._budget_defer(sources, exc)
+                return finish(self._budget_defer(pending, exc))
             if reservation is None or reservation is False:
-                return self._defer(sources, "budget_unavailable")
+                return finish(self._defer(pending, "budget_unavailable"))
             # Storage calls above can outlive a source/lease. Validate again at
             # the actual model boundary; an unused reservation stays conservative.
-            await self.validate_sources(sources)
+            await self.validate_sources(pending)
             try:
                 payload = await self.provider.generate(request)
             except Exception:
@@ -238,9 +264,13 @@ class MemoryExtractor:
             try:
                 self.budget.settle(reservation, payload.get("usageMetadata"))
             except Exception:
-                return self._defer(sources, "budget_settlement_unavailable")
+                return finish(self._defer(pending, "budget_settlement_unavailable"))
             try:
-                return parse_extraction_response(payload, sources)
-            except (MemoryInputError, ValueError, TypeError, AttributeError):
+                results = parse_extraction_response(payload, pending)
+            except MemoryInputError:
                 continue
-        return self._defer(sources, "provider_or_schema_unavailable")
+            completed.update((result.ref, result) for result in results if result.status == "complete")
+            pending = [source for source in pending if source.ref not in completed]
+            if not pending:
+                return finish([])
+        return finish(self._defer(pending, "provider_or_schema_unavailable"))
