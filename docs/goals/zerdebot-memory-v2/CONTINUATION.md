@@ -1,6 +1,14 @@
 # 2026-09-15 授权后的执行入口
 
-## 2026-09-17 F1 本地代码修复完成，CI/部署待完成（当前）
+## 2026-09-18 当前入口：F1 已发布，F2 离线测量交付中
+
+F1 [PR #213](https://github.com/Bayashat/zerde-serverless-bot/pull/213) 已合并为 `f6c18b9`，冻结构建 `10e651a` 与合并树一致；CI 35232584331 两项成功、2220测试通过。dev/prod发布、实际包/配置/存储身份读回与独立核验均完成。各环境只更新三个核心函数，学习控制读回无ACTIVE；不重复部署。详见[已发布安全摘要](evidence/2026-09-18-f2/f1-release-summary.safe.json)，它是F1当时快照，不能当作F2或模型质量验收。
+
+F2 新增离线 `semantic_review`：完整枚举学历事实和所有实际回答，按出现位置独立审阅，绑定来源/实际发送/原报告及人工判定指纹；缺审、重复、失败状态或来源失效均不能算通过。已实现并通过81项故障测试，最终独审/CI见本次交付证据。[详细契约与CLI](SEMANTIC_REVIEW_CONTRACT.md)。这只改变开发验收工具，生产代码、基础设施、旧gold/scorer及已完成run均不变，无需重新部署Lambda。
+
+下一步完成F2交付门禁，再由新会话启动器在首个模型调用前冻结源码、policy和独立reviewer登记；新目录完整执行240场景及全文独审。旧public-v25继续FINISHED/质量FAIL，禁止resume。历史费用责任USD19.639943保留，新会话上限USD80.360057；不是实付账单。真实Telegram记忆闭环与七天试点仍未开始，学习保持STOPPED。本地备份2026-09-18 21:49:52 Almaty到期职责独立不变。
+
+## 2026-09-17 F1 本地代码修复完成（历史，已由上方发布记录取代）
 
 `self-claims-v2.6` 已在原worker/extractor/writer修复完整短源证据和称呼原文保真；长源及跨引用来源保持PENDING，24小时无模型复检，原期限不变。同批短源继续，不能把待处理项当学会。独立POST/correctness与maintainability均ALIGNED，完整回归2214通过后，最终Unicode边界/更正专项180通过；不同测试范围不累加。详见[代码证据](evidence/2026-09-17-f1-code/verification.json)和[执行契约](QUALITY_FIX_EXECUTION.md)。当前尚未新部署或运行模型，学习仍不启用；旧240场景FAIL和全部费用责任保持。下一步CI与实包发布；F2逐项语义测量仍待实现和冻结，再新会话真实复验。原9月18日21:49:52 Almaty备份期限不变。
 

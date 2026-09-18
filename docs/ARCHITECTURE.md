@@ -1,6 +1,6 @@
 # ZerdeBot Architecture
 
-The pending self-claims-v2.6 source-boundary/name fix and public evaluation route follow [the current quality/evidence contract](MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
+The deployed self-claims-v2.6 source-boundary/name fix, public evaluation route and offline occurrence review follow [the current quality/evidence contract](MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
 
 The V2 public-content and answer owners include the bounded handbook/education
 corrections described in [Memory quality follow-up](MEMORY_QUALITY_FOLLOWUP.md).
