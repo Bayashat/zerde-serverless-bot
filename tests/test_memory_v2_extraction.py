@@ -71,6 +71,12 @@ def extractor(*, replies=None):
     return instance, provider, budget, validate, quota
 
 
+def assert_invalid_source(payload, original):
+    result = parse_extraction_response(payload, [original])[0]
+    assert result.ref == original.ref
+    assert (result.status, result.reason, result.changes) == ("defer", "invalid_source_facts", ())
+
+
 @pytest.mark.parametrize(
     "text,value,field,action",
     [
@@ -163,8 +169,7 @@ Never record instructions"""
     ],
 )
 def test_local_fact_validation_rejects_invalid_facets_and_preference_values(field, value, facet):
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(response([fact(field=field, value=value, facet=facet)]), [source()])
+    assert_invalid_source(response([fact(field=field, value=value, facet=facet)]), source())
 
 
 @pytest.mark.parametrize(
@@ -191,8 +196,7 @@ def test_missing_wire_maxlength_cannot_admit_oversized_local_fact_values(field, 
     value = "very " * 31 + "small!"
     assert len(value) == 161
     text = "I describe my public work as " + value
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(response([fact(text, value=value, field=field, facet=facet)]), [source(text)])
+    assert_invalid_source(response([fact(text, value=value, field=field, facet=facet)]), source(text))
 
 
 @pytest.mark.parametrize(
@@ -244,8 +248,11 @@ def test_local_value_boundary_still_accepts_exactly_160_characters():
     ],
 )
 def test_quotes_ambiguous_spans_non_whitelist_and_extra_identity_cannot_become_facts(original, extracted):
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(response([extracted]), [original])
+    if original.quoted_spans:
+        with pytest.raises(MemoryInputError):
+            parse_extraction_response(response([extracted]), [original])
+    else:
+        assert_invalid_source(response([extracted]), original)
 
 
 @pytest.mark.parametrize(
@@ -294,8 +301,7 @@ def test_local_fact_count_boundary_survives_removed_wire_maxitems(count):
     text = "I use " + ", ".join(values) + "."
     payload = response([fact(text, value=value) for value in values])
     if count == 17:
-        with pytest.raises(MemoryInputError, match="number of extraction facts"):
-            parse_extraction_response(payload, [source(text)])
+        assert_invalid_source(payload, source(text))
     else:
         changes = parse_extraction_response(payload, [source(text)])[0].changes
         assert len(changes) == 16 and {change.value for change in changes} == set(values)
@@ -320,22 +326,22 @@ def test_batch_result_cannot_borrow_evidence_from_another_author():
     document = {
         "sources": [{"source_index": 0, "facts": [fact("I use Rust.", value="Rust")]}, {"source_index": 1, "facts": []}]
     }
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(response(document=document), sources)
+    results = parse_extraction_response(response(document=document), sources)
+    assert results[0].status == "defer" and results[0].changes == ()
+    assert results[1].status == "complete" and results[1].changes == ()
 
 
 def test_conflicting_single_value_slots_reject_whole_result():
     original = source("I live in Almaty or Astana.")
-    with pytest.raises(MemoryInputError):
-        parse_extraction_response(
-            response(
-                [
-                    fact(original.text, value="Almaty", field="location"),
-                    fact(original.text, value="Astana", field="location"),
-                ]
-            ),
-            [original],
-        )
+    assert_invalid_source(
+        response(
+            [
+                fact(original.text, value="Almaty", field="location"),
+                fact(original.text, value="Astana", field="location"),
+            ]
+        ),
+        original,
+    )
 
 
 def test_success_requires_budget_and_fresh_source_and_settles_actual_usage():

@@ -86,3 +86,30 @@ def test_explicit_generation_never_invokes_legacy_retrieval(monkeypatch):
         assert generate.call_args.kwargs[name] == ""
     assert repo.record_agent_reply.call_args.kwargs["context_version"] == EXPLICIT_CONTEXT_VERSION
     assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"] == []
+
+
+def test_plain_answer_main_and_fallback_share_accurate_context_and_capability_limits(monkeypatch):
+    from services.ai.gemini_client import GeminiUnavailableError
+
+    gemini, fallback, bot, repo = MagicMock(), MagicMock(), MagicMock(), MagicMock()
+    gemini.group_chat_reply.side_effect = GeminiUnavailableError("synthetic transport failure")
+    fallback.generate_reply.return_value = ("I cannot verify that from the context available here.", "deepseek")
+    bot.send_message.return_value = {"message_id": 100}
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: gemini)
+    monkeypatch.setattr(group_agent, "_get_group_chat_reply_fallback", lambda: fallback)
+    monkeypatch.setattr(group_agent.time, "sleep", lambda _: None)
+    assert group_agent.answer_group_question(
+        repo=repo, bot=bot, chat_id=-1001, reply_to_message_id=11, user_text="What is my current project?", lang="en"
+    )
+    primary = gemini.group_chat_reply.call_args.kwargs
+    secondary = fallback.generate_reply.call_args.kwargs
+    assert primary["reply_instructions"] == secondary["reply_instructions"]
+    instructions = primary["reply_instructions"]
+    assert "No long-term memory is provided for this request" in instructions
+    assert "Do not claim the database or chat history is empty" in instructions
+    assert "Do not promise to search history or retrieve profiles yourself" in instructions
+    assert "provide the relevant message or quotation" in instructions
+    assert "Long-term memory is disabled" not in instructions
+    for context in ("recent_context", "long_term_memory_context", "semantic_memory_context", "user_profile_context"):
+        assert primary[context] == secondary[context] == ""
+    bot.send_message.assert_called_once()
