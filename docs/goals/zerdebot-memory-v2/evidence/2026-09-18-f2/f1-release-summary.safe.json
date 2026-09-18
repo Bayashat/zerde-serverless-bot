@@ -1,0 +1,70 @@
+{
+  "status": "F1_RELEASE_COMPLETE_REAL_MODEL_QUALITY_UNVERIFIED",
+  "at": 1789657477.8829792,
+  "pr": 213,
+  "merged_main": "f6c18b986aa9ecd6b25f5d8f995a31c1073bef09",
+  "build_source": "10e651a4a2a0963ce2d296da468cfc662af03f82",
+  "ci_run_id": 35232584331,
+  "ci_tests_passed": 2220,
+  "dev_and_prod_deployed_and_independently_verified": true,
+  "source_tree_equal_to_merge": true,
+  "per_environment_changed_functions": 3,
+  "per_environment_actual_function_bundles_checked": 6,
+  "per_environment_preserved_storage_identities": 21,
+  "learning": "DEFAULT_STOPPED",
+  "final_full_control_scan_rows": {
+    "dev": 0,
+    "prod": 0
+  },
+  "f2_implemented": false,
+  "new_real_model_run_started": false,
+  "historical_run_remains": "FINISHED_QUALITY_FAILED",
+  "model_budget_historical_liability_micro_usd": 19639943,
+  "future_remaining_micro_usd": 80360057,
+  "budget_values_are_not_invoice_payments": true,
+  "backup_expiry_utc": "2026-09-18T16:49:52Z",
+  "backup_deleted_this_turn": false,
+  "evidence": {
+    "public-merge-gate.json": {
+      "status": "MERGED_EXACT_HEAD_CI_PASS",
+      "sha256": "2ef663585d0be497847e2e4918d8ac9fad0e7cfcc017f86125ea4b6d3ffbb550"
+    },
+    "merge-live-independent.safe.json": {
+      "status": "ALIGNED_LIVE_GITHUB_MERGE_CI_AND_WORKFLOW_READBACK",
+      "sha256": "41c4436741582af17c0ad1beb5c5f7d7077a87492fe4fca55249628ef8897c39"
+    },
+    "public-dev/readback-receipt.json": {
+      "status": "PASS_FINAL_ARTIFACT_CONFIG_AND_STOPPED_READBACK",
+      "sha256": "415944e787d54bbf2e48ff18c0cf9ee8194dbc58444e642e836cfdc9da84aeda"
+    },
+    "public-prod/readback-receipt.json": {
+      "status": "PASS_FINAL_ARTIFACT_CONFIG_AND_STOPPED_READBACK",
+      "sha256": "9d3869c13fa6818e45b780265fa4df87d77708f1aa5dd074d4e36fa9d45f642e"
+    },
+    "post-dev-artifact-independent.safe.json": {
+      "status": "ALIGNED_POST_DEV_ARTIFACT_AND_RECEIPT_REVIEW",
+      "sha256": "ad81aeb710c5da737d5605668145954fc23f65618bfd2a9b4a4b002f4e9f9b4d"
+    },
+    "post-prod-artifact-independent.safe.json": {
+      "status": "ALIGNED_POST_PROD_ARTIFACT_AND_RECEIPT_REVIEW",
+      "sha256": "601b4d09de41ee118fba61429f8cfbac927db9db0ab065b3fbe2014ef4ef86de"
+    },
+    "post-final-live.safe.json": {
+      "status": "ALIGNED_POST_FINAL_BOTH_ENVIRONMENTS_RELEASE_MATCH_ALL_CONTROLS_ABSENT",
+      "sha256": "fc034ba67674b8c039c178a30069136fdbdd0848c813a29f309910ccb8f9e767"
+    },
+    "post-prod-initial-observability.safe.json": {
+      "status": "OBSERVED_READ_ONLY_ALARM_AND_BOUNDED_METRICS",
+      "sha256": "15f5bc1529f2a68825dec56dabdeceb541f45f58f03347cec67f30badbfc7a35"
+    },
+    "automation-readback.safe.json": {
+      "status": "PASS_EXACT_PROMPT_AND_SCHEDULE_READBACK",
+      "sha256": "4821cc11706f35cd25e8978e16684fba9e911a1c705547f3c75acc430167a6cc"
+    }
+  },
+  "limitations": [
+    "Offline independent artifact review verified four downloaded unique function ZIPs covering six functions. Shared layer ZIP was not persisted; independent layer review used owner live-download/code/SHA evidence and unchanged prior ARN/CodeSHA.",
+    "Metrics are a bounded initial observation, with potential delay; deployment is not model-quality, Telegram lifecycle or pilot acceptance.",
+    "Unsupported complete evidence scope remains PENDING/expired in coverage, not successful learning."
+  ]
+}

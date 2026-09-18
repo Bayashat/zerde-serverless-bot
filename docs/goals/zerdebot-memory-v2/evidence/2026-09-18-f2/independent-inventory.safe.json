@@ -1,0 +1,115 @@
+{
+  "status": "ALIGNED_FINAL_FROZEN_RETROSPECTIVE_INVENTORY_ONLY",
+  "started_at": "2026-09-18T12:09:39.633767+00:00",
+  "module_sha256": "1845e8227fb594b994863d8fa1b7a52f180e961f33388bbdd6eaa820444efced",
+  "contract_sha256": "11bf0281dbacc8e654c19551ff63ac1e581a7b1c7daa2c56c0fd994ef250fa00",
+  "previous_verifier_sha256": "02a49c30e8e25a5d447712254c1c17e5f5f66664d0a325bbc234e0855a512010",
+  "old_inputs_equal_first_verification": true,
+  "cloud_calls": 0,
+  "model_calls": 0,
+  "new_model_sessions": 0,
+  "production_ready": false,
+  "semantic_quality_pass_claimed": false,
+  "inventory_sha256": "b1b93c090c87a235a28b96f4cb23455c648c1d16ad1e92380cf2ceeb9c34bb08",
+  "inventory_review_status": "AWAITING_INDEPENDENT_TEXT_REVIEW",
+  "registration": {
+    "mode": "RETROSPECTIVE_DIAGNOSTIC",
+    "reviewer_ids": [],
+    "implementation_author": null,
+    "reason": "No pre-call registration supplied"
+  },
+  "execution_source_sha256": "6910b4aba3e2e8158231c1a4360ae0a22398a478511ea3bf86437c35654bf1e3",
+  "corpus_file_sha256": "cfd58e8d078b75225d941408467ad2f8bf0ee9f9e577e79dae2a9d601b497fc8",
+  "policy_sha256": "ce37b7fbcc07770ae6a9e5da60841e922a61eda3b58473b08613ebe0944f0fe3",
+  "counts": {
+    "expected_education": 112,
+    "actual_education": 108,
+    "answer_text_review_items": 480
+  },
+  "denominators": {
+    "kk": {
+      "scenarios": 60,
+      "checkpoints": 101,
+      "gold_profile": 191,
+      "known": 56,
+      "unknown": 64,
+      "expected_education_profile": 18,
+      "actual_education_profile": 18,
+      "expected_education_answer": 10,
+      "actual_education_answer": 9
+    },
+    "ru": {
+      "scenarios": 60,
+      "checkpoints": 101,
+      "gold_profile": 191,
+      "known": 56,
+      "unknown": 64,
+      "expected_education_profile": 18,
+      "actual_education_profile": 18,
+      "expected_education_answer": 10,
+      "actual_education_answer": 9
+    },
+    "en": {
+      "scenarios": 60,
+      "checkpoints": 101,
+      "gold_profile": 191,
+      "known": 56,
+      "unknown": 64,
+      "expected_education_profile": 18,
+      "actual_education_profile": 18,
+      "expected_education_answer": 10,
+      "actual_education_answer": 9
+    },
+    "mixed": {
+      "scenarios": 60,
+      "checkpoints": 101,
+      "gold_profile": 191,
+      "known": 56,
+      "unknown": 64,
+      "expected_education_profile": 18,
+      "actual_education_profile": 18,
+      "expected_education_answer": 10,
+      "actual_education_answer": 9
+    }
+  },
+  "strict": {
+    "complete": true,
+    "numeric_thresholds_pass": false,
+    "product_gate": "IMPLEMENTED_UNPROVEN",
+    "model_quality_claim": "NOT_VERIFIED",
+    "language_thresholds_pass": {
+      "kk": false,
+      "ru": false,
+      "en": false,
+      "mixed": false
+    },
+    "report_sha256": "f9350a2bcf90cddb22c9189cc1310341ee94b42b8bfd99e8de34f4430827364d"
+  },
+  "original_ledger_sha256": "427917acda3f67f2ac97562a23a601cbd2f7c14c03a5b23a7ed07d82202c6a3b",
+  "old_frozen_source_contains_new_measurement_module": false,
+  "preregistered": false,
+  "review_decisions_created": 0,
+  "limitations": [
+    "Load/inventory verification only, no manual semantic judgments or quality PASS.",
+    "Old run lacks pre-call registration and frozen measurement module; RETROSPECTIVE_DIAGNOSTIC only.",
+    "Original strict metrics and completed run remain unchanged; actual runtime revision/epoch remains NOT_RECORDED.",
+    "No AWS, model, Telegram or cleanup operation was performed."
+  ],
+  "input_hash_attachments": {
+    "input-hashes.before.json": "a4911453cc12acd028d499532c7d3d59ee5ae2f836cc0fbe447d547999af1213",
+    "input-hashes.after.json": "a4911453cc12acd028d499532c7d3d59ee5ae2f836cc0fbe447d547999af1213"
+  },
+  "input_integrity": {
+    "run_file_count": 251,
+    "scenario_file_count": 240,
+    "all_run_file_bytes_unchanged": true,
+    "source_file_count": 135,
+    "all_source_and_corpus_bytes_unchanged": true,
+    "module_sha256_unchanged": true,
+    "contract_sha256_unchanged": true,
+    "before_run_tree_sha256": "f71dad2170d59de7568609adbacac09902bea5170181b06eae43f8296b61fa69",
+    "after_run_tree_sha256": "f71dad2170d59de7568609adbacac09902bea5170181b06eae43f8296b61fa69"
+  },
+  "blocked_external_attempts": [],
+  "finished_at": "2026-09-18T12:09:40.418413+00:00"
+}

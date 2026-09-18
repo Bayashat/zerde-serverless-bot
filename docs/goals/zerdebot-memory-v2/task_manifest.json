@@ -228,7 +228,7 @@
       "Z19"
     ],
     "body_file": "issues/Z11.md",
-    "status": "real_model_partial_rate_limited_quality_not_accepted",
+    "status": "real_model_complete_failed_f1_deployed_f2_measurement_pending",
     "number": 168,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196",

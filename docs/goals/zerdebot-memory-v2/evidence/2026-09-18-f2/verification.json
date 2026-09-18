@@ -1,0 +1,62 @@
+{
+  "status": "IMPLEMENTED_OFFLINE_VERIFIED_CI_PENDING",
+  "scope": "offline education occurrence and complete-answer semantic measurement only",
+  "base_main": "f6c18b986aa9ecd6b25f5d8f995a31c1073bef09",
+  "files": {
+    "dev/tools/memory_eval/semantic_review.py": "1845e8227fb594b994863d8fa1b7a52f180e961f33388bbdd6eaa820444efced",
+    "tests/test_memory_semantic_review.py": "79aeb1e824181afe273f49f783b5bc4806813a42ed56558fc3873b7bc18feef2",
+    "docs/goals/zerdebot-memory-v2/SEMANTIC_REVIEW_CONTRACT.md": "11bf0281dbacc8e654c19551ff63ac1e581a7b1c7daa2c56c0fd994ef250fa00"
+  },
+  "pre_review": {
+    "correctness": "ALIGNED",
+    "maintainability": "ALIGNED",
+    "contract_sha256": "44acf3a37f7151f7321d8d07ee7bdb0ed3c57511597018f42aeddf2142304d2e"
+  },
+  "post_review": {
+    "correctness": "ALIGNED",
+    "maintainability": "ALIGNED",
+    "reviewers": [
+      "code_audit",
+      "memory_audit"
+    ],
+    "independent_focused_tests": 81,
+    "count_runs_are_not_added": true
+  },
+  "tests": {
+    "full_passed": 2301,
+    "full_seconds": 206.4,
+    "full_module_sha256": "228df57802b8a2b5711b9615693f5a170c625e977056687ef7d1c45cc9531758",
+    "final_focused_passed": 81,
+    "final_focused_seconds": 2.17,
+    "post_full_change": "Equivalent lint cleanup: redundant exception removal and explicitly bound synchronous closure context; final full CI still required"
+  },
+  "first_review_findings_fixed": [
+    "Cross-checkpoint send identity reuse",
+    "Checkpoint/scenario/provenance execution-state disagreement",
+    "Valid NOT_SENT route could not retain missing answer",
+    "Missing decisions content and file hashes"
+  ],
+  "unchanged": [
+    "Frozen gold and strict evaluator",
+    "Completed public-v25 observations and ledgers",
+    "Production bot and infrastructure code"
+  ],
+  "limits": [
+    "Human semantic judgment is an independent attestation, not machine-proved",
+    "Runtime source revision/epoch NOT_RECORDED",
+    "Budget-pause no-forwarding NOT_VERIFIED_BY_THIS_TOOL",
+    "F1 complete-source >240 character or quote deferral remains pending/expired coverage"
+  ],
+  "new_model_calls": 0,
+  "new_model_run_started": false,
+  "learning_enabled": false,
+  "production_ready": false,
+  "historical_liability_micro_usd": 19639943,
+  "future_model_limit_micro_usd": 80360057,
+  "amounts_are_invoice_payments": false,
+  "backup_expiry_utc": "2026-09-18T16:49:52Z",
+  "backup_deleted_by_this_change": false,
+  "next": "Finish CI/merge; establish a new frozen source and pre-call policy registration/launcher before new complete real-model evaluation. Telegram lifecycle and seven-day pilot remain pending.",
+  "all_precommit_hooks": "PASS",
+  "independent_inventory_receipt_sha256": "b3ab1464d14500efd03c8ca02b672b92870e476f8d5f1daad08948a3611c6c1d"
+}

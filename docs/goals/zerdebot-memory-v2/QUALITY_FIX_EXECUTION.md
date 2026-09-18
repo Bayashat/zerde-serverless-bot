@@ -1,6 +1,6 @@
 # F1/F2 执行契约（2026-09-17）
 
-状态：F1 首审发现长源换行和空结果绕过两处缺口，下面修订版已由code_audit复审ALIGNED；F1实现已通过独立POST/correctness及maintainability；F2独立测量契约已研究，尚未实现。不得把本文件当质量 PASS。沿用 FULL_EVALUATION_2026_09_16 的目标、历史分母与失败基线。
+状态：F1 首审发现长源换行和空结果绕过两处缺口，下面修订版已由code_audit复审ALIGNED；F1实现已通过独立POST/correctness及maintainability；F1现已合并并通过dev/prod部署独立读回；F2离线测量已实现，详见[当前执行入口](HANDOFF.md)和[精确契约](SEMANTIC_REVIEW_CONTRACT.md)。不得把本文件当质量 PASS。沿用 FULL_EVALUATION_2026_09_16 的目标、历史分母与失败基线。
 
 Goal / Intent：修复模型证据裁掉限定语和擅自转写称呼，保留明确自述、真实来源、预算暂停的原边界。
 Truth owner：extractor 对模型输出做后置校验，FactChange.slot / 唯一 writer 保存值；不增加事实抽取规则或并行 profile。
@@ -18,7 +18,7 @@ Kill / Forbidden：不放宽敏感/引用/长度，不把无法处理记成成�
 6. FactChange.slot 对 name 保留原字符（不做NFKC/大小写/空格折叠），但继续原安全、长度、姓名格式检查；禁止首尾空白。其它事实值的已有正规化不改，writer 仍是唯一持久入口。
 7. 提示写明证据使用上述完整安全短来源，称呼必须逐字拷贝不转写/翻译。外部 provider 的原请求验证也执行相同范围门禁。不能用名称匹配结果自动生成个人事实。
 
-## F2 测量边界（待实现）
+## F2 测量边界（实现见独立契约）
 
 旧 strict gold、scorer、原始输出及FAIL报告逐字节不改；新增独立逐项语义复核报告，下一轮首个调用前冻结policy指纹。只允许有完整证据的 education 资格/学科表达作受限逐项审阅，不加alias、不改预测、不豁免身份/证据/编辑/安全失败。所有education（包括strict正确项）都必须审，1:1匹配gold，重复、缺失、哈希漂移、冲突或UNRESOLVED均不能默认通过。
 
