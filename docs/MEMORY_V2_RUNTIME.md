@@ -205,3 +205,11 @@ integration and successful packaging do not mark Z11 or the production wipe done
 显式 plain/media 的来源验证回调贯穿 Gemini 每次重试与每家 fallback 的真实 HTTP 入口；第一次失败后编辑或遗忘不会让旧内容进入下一次供应商调用。校验的数据库错误传播为可重试状态，不会误解释成供应商失败再继续换模型。最终 Telegram 发送仍独立复验。
 
 更正命令里的合法 `fact@version` 是控制引用，不是个人事实正文；同一 source_event 将精确匹配的第三个 token 用等长空白投影后用于 OBS hash 和 confirmation RAW，保留新值与引用证据位置。无效引用或新值中的敏感内容继续被拒绝，未放宽敏感过滤。
+
+## Pending deletion discovery
+
+The same five-minute recovery invokes MemoryLifecycle. New PURGE records enter the existing KEYS_ONLY work-due index atomically with their write fences, in the separate MEMORY_PURGE namespace. Completion removes the index keys in the existing terminal transaction. Indexed hints never override the strongly read job, epoch, revision or original answer/worker leases.
+
+Within the existing 20-second purge budget, legacy discovery uses at most two 25-row scan pages and five seconds (one quarter of smaller budgets) to backfill unindexed pending jobs. Indexed recovery then queries at most two ten-hint pages by default. Its independent purge_due checkpoint records each attempted hint, including partial, waiting and failed work; EOF rotates back. Each job advances at most twenty original 40-row pages, with deadline checks between pages and during lease inventory. In-flight SDK calls cannot be cancelled by this budget. A poison job remains pending and makes the invocation fail after independent work has progressed.
+
+The original purges checkpoint remains only the compatibility scan cursor; it is never used as an index cursor. Old pending records can still take a table traversal to be discovered once. GSI propagation and real AWS latency remain part of deployment acceptance; local tests do not establish a production latency SLO. No new queue, function, index, schedule or IAM permission is required.

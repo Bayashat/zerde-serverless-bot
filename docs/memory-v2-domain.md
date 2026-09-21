@@ -143,3 +143,5 @@ evidence, privacy rejection and trusted command separation. Work leases in these
 unit tests are fixtures implementing the frozen row protocol; no production
 unleased fact path is added. Tests and local CDK synthesis do not establish live
 AWS, Telegram, model correctness or the Z11 product acceptance thresholds.
+
+Pending PURGE jobs own work_queue=MEMORY_PURGE and due_at=created_at in the existing sparse work-due index. This is a discovery projection of the same canonical job, not a second deletion state machine. MemoryLifecycle adds it with the initial fence and removes it with DONE. Recovery strong-reads the base job, preserves all existing scope/epoch/revision/lease checks and checkpoints each attempted hint independently of physical deletion progress. A bounded legacy scan only adds missing index fields by fenced CAS; see [recovery runtime](MEMORY_V2_RUNTIME.md#pending-deletion-discovery).
