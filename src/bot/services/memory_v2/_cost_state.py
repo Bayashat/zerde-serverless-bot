@@ -10,12 +10,16 @@ import hashlib
 import json
 import time
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-AWS_LIMIT = 3_000_000
-AWS_STOP = 2_700_000
+AWS_LIMIT = 30_000_000
+AWS_STOP = AWS_LIMIT * 90 // 100
+BUDGET_POLICY = "memory-v2-usd100-2026-09-21"
+_LEGACY_AWS_LIMIT = 3_000_000
+_LEGACY_AWS_STOP = _LEGACY_AWS_LIMIT * 90 // 100
 FRESH_SECONDS = 3 * 3600
 RETENTION_SECONDS = 400 * 86400
 PRICE_VERSION = "aws-eu-central-1-gross-2026-09-11"
@@ -163,6 +167,55 @@ class CostState:
         self._transaction([self._put(row, previous)])
         return row
 
+    def _archive_policy(self, month, scope, previous):
+        """Keep the original observation/event in the same conditional transaction."""
+        return {
+            "Put": {
+                "TableName": self.table.name,
+                "Item": {
+                    **self.key(month, f"POLICY_HISTORY#{scope}#{previous['revision']}"),
+                    "previous": previous,
+                    "superseded_at": int(self.clock()),
+                    "replacement_policy": BUDGET_POLICY,
+                },
+                "ConditionExpression": "attribute_not_exists(pk)",
+            }
+        }
+
+    @staticmethod
+    def _integer(value):
+        if isinstance(value, bool) or not isinstance(value, (int, Decimal)) or int(value) != value or value < 0:
+            raise CostStateConflict("Malformed budget policy observation")
+        return int(value)
+
+    def _measurement_policy(self, month, previous, *, inventory, complete, gross):
+        fields = {"budget_policy": BUDGET_POLICY, "budget_micro_usd": AWS_LIMIT, "stop_micro_usd": AWS_STOP}
+        if not previous:
+            return fields, gross >= AWS_STOP, []
+        if type(previous.get("paused")) is not bool or self._integer(previous.get("revision")) < 1:
+            raise CostStateConflict("Malformed previous budget policy")
+        old_estimate = self._integer(previous.get("estimate_micro_usd"))
+        if self._integer(previous.get("base_estimate_micro_usd")) > old_estimate:
+            raise CostStateConflict("Malformed previous estimate")
+        if previous.get("budget_policy") == BUDGET_POLICY:
+            if previous.get("budget_micro_usd") != AWS_LIMIT or previous.get("stop_micro_usd") != AWS_STOP:
+                raise CostStateConflict("Current budget policy amounts changed")
+            return fields, previous["paused"] or gross >= AWS_STOP, []
+        if (
+            "budget_policy" in previous
+            or previous.get("budget_micro_usd") != _LEGACY_AWS_LIMIT
+            or previous.get("price_version") != PRICE_VERSION
+            or previous.get("inventory_version") != inventory
+        ):
+            raise CostStateConflict("Unknown previous budget policy")
+        # Check the ORIGINAL pause before any incomplete observation can increase
+        # its estimate and accidentally manufacture evidence of a threshold pause.
+        if previous["paused"] != (old_estimate >= _LEGACY_AWS_STOP):
+            raise CostStateConflict("Legacy pause cannot be attributed to its threshold")
+        if not complete:
+            return {"budget_micro_usd": _LEGACY_AWS_LIMIT}, previous["paused"] or gross >= _LEGACY_AWS_STOP, []
+        return fields, gross >= AWS_STOP, [self._archive_policy(month, "AWS", previous)]
+
     def record_measurement(self, month, *, inventory_version, verified, estimate, covered_until, reason):
         """The AWS guard and its highest notification transition commit together."""
         now = int(self.clock())
@@ -174,15 +227,18 @@ class CostState:
         monitor = self.read(month, "MONITOR")
         base = max(int(previous.get("base_estimate_micro_usd", 0)), estimate)
         gross = base + int(monitor.get("scan_micro_usd", 0))
-        paused = bool(previous.get("paused")) or gross >= AWS_STOP
         verified = verified and not monitor.get("scan_bound_exceeded", False)
+        verified = bool(verified and type(covered_until) is int and now - FRESH_SECONDS < covered_until <= now)
+        policy, paused, migration = self._measurement_policy(
+            month, previous, inventory=inventory_version, complete=verified, gross=gross
+        )
         row = self._row(
             month,
             "AWS",
             previous,
             estimate_micro_usd=gross,
             base_estimate_micro_usd=base,
-            budget_micro_usd=AWS_LIMIT,
+            **policy,
             price_version=PRICE_VERSION,
             inventory_version=inventory_version,
             measurement_state="ESTIMATE_VERIFIED" if verified else "UNVERIFIED",
@@ -192,8 +248,12 @@ class CostState:
             paused=paused,
             reason="SCAN_BOUND_EXCEEDED" if monitor.get("scan_bound_exceeded") else reason,
         )
-        operations = [self._put(row, previous)]
-        notice = self._notice_operation(month, "AWS", gross, AWS_LIMIT, paused)
+        operations = [self._put(row, previous), *migration]
+        notice = (
+            self._notice_operation(month, "AWS", gross, AWS_LIMIT, paused)
+            if row.get("budget_policy") == BUDGET_POLICY
+            else None
+        )
         if notice:
             operations.extend(notice)
         if monitor:
@@ -223,17 +283,55 @@ class CostState:
 
     def _notice_operation(self, month, scope, amount, limit, paused):
         threshold = next((p for p in (100, 90, 80) if amount * 100 >= limit * p), 0)
-        if not threshold:
-            return None
-        rank = threshold * 2 + int(paused)
         previous = self.read(month, "NOTICE#" + scope)
-        if int(previous.get("rank", 0)) >= rank:
+        migrating = bool(previous) and previous.get("budget_policy") != BUDGET_POLICY
+        operations = []
+        if migrating:
+            if "budget_policy" in previous or previous.get("state") not in {"PENDING", "SENT", "EXPIRED"}:
+                raise CostStateConflict("Unknown notification policy")
+            if self._integer(previous.get("revision")) < 1:
+                raise CostStateConflict("Malformed notification revision")
+            operations.append(self._archive_policy(month, "NOTICE#" + scope, previous))
+        rank = threshold * 2 + int(paused) if threshold else 0
+        if not migrating and (not threshold or int(previous.get("rank", 0)) >= rank):
             return None
+        if not threshold:
+            # Preserve the original event/time. Superseded does not mean an old
+            # SNS delivery was recalled; it only stops this outbox from retrying.
+            row = self._row(
+                month,
+                "NOTICE#" + scope,
+                previous,
+                state="SUPERSEDED",
+                rank=0,
+                budget_policy=BUDGET_POLICY,
+                budget_micro_usd=limit,
+            )
+            operations.append(self._put(row, previous))
+            if previous.get("state") == "PENDING":
+                operations.append(
+                    {
+                        "Delete": {
+                            "TableName": self.table.name,
+                            "Key": {"pk": "MEMORY_BUDGET#NOTICE_OUTBOX", "sk": month + "#" + scope},
+                            "ConditionExpression": "#revision = :revision AND #month = :month AND #scope = :scope",
+                            "ExpressionAttributeNames": {"#revision": "revision", "#month": "month", "#scope": "scope"},
+                            "ExpressionAttributeValues": {
+                                ":revision": previous["revision"],
+                                ":month": month,
+                                ":scope": scope,
+                            },
+                        }
+                    }
+                )
+            return operations
         row = self._row(
             month,
             "NOTICE#" + scope,
             previous,
             rank=rank,
+            budget_policy=BUDGET_POLICY,
+            budget_micro_usd=limit,
             state="PENDING",
             event={
                 "schema": "zerde.operations.v1",
@@ -257,7 +355,16 @@ class CostState:
             "scope": scope,
             "revision": row["revision"],
         }
-        return [self._put(row, previous), {"Put": {"TableName": self.table.name, "Item": marker}}]
+        marker_put = {"TableName": self.table.name, "Item": marker}
+        if previous.get("state") == "PENDING":
+            marker_put.update(
+                ConditionExpression="#revision = :revision AND #month = :month AND #scope = :scope",
+                ExpressionAttributeNames={"#revision": "revision", "#month": "month", "#scope": "scope"},
+                ExpressionAttributeValues={":revision": previous["revision"], ":month": month, ":scope": scope},
+            )
+        else:
+            marker_put["ConditionExpression"] = "attribute_not_exists(pk)"
+        return [*operations, self._put(row, previous), {"Put": marker_put}]
 
     def observe_model(self, month):
         """A fenced read of the existing model ledger; never write a second MODEL owner."""

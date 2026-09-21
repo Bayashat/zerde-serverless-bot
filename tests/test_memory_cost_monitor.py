@@ -111,7 +111,7 @@ def test_aws_pause_racing_model_reserve_cannot_escape_transaction(budget):
         nonlocal fired
         if not fired:
             fired = True
-            write_measurement(repo, now, amount=2_700_000)
+            write_measurement(repo, now, amount=27_000_000)
         return transaction(**kwargs)
 
     with patch.object(repo.table.meta.client, "transact_write_items", side_effect=race):
@@ -122,19 +122,19 @@ def test_aws_pause_racing_model_reserve_cannot_escape_transaction(budget):
 
 def test_model_ninety_percent_does_not_introduce_a_new_model_cap(budget):
     repo, now = budget
-    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 6_300_000})
+    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 63_000_000})
     before = repo.snapshot()
     state = CostState(repo, clock=lambda: now[0])
     state.observe_model(repo.month())
     assert repo.snapshot() == before
     assert state.read(repo.month(), "NOTICE#MODEL")["event"]["status"] == "warning"
     repo.reserve("ninety-still-has-headroom", purpose="answer")
-    assert repo.snapshot()["charged_micro_usd"] == 6_300_000 + RESERVATION_MICRO_USD
+    assert repo.snapshot()["charged_micro_usd"] == 63_000_000 + RESERVATION_MICRO_USD
 
 
 def test_aws_threshold_is_sticky_but_new_month_needs_fresh_evidence(budget):
     repo, now = budget
-    write_measurement(repo, now, amount=2_700_000)
+    write_measurement(repo, now, amount=27_000_000)
     write_measurement(repo, now, amount=0)
     with pytest.raises(MemoryBudgetPaused):
         repo.reserve("old-month", purpose="extract")
@@ -148,7 +148,7 @@ def test_aws_threshold_is_sticky_but_new_month_needs_fresh_evidence(budget):
 def test_lost_sns_ack_keeps_identical_outbox_and_cannot_rollback_pause(budget):
     repo, now = budget
     state = CostState(repo, clock=lambda: now[0])
-    write_measurement(repo, now, amount=2_700_000)
+    write_measurement(repo, now, amount=27_000_000)
     sns = Mock()
     sns.publish.side_effect = TimeoutError("synthetic unknown SNS")
     with pytest.raises(TimeoutError):
@@ -166,9 +166,9 @@ def test_lost_sns_ack_keeps_identical_outbox_and_cannot_rollback_pause(budget):
 def test_pending_warning_is_replaced_by_highest_atomic_transition(budget):
     repo, now = budget
     state = CostState(repo, clock=lambda: now[0])
-    write_measurement(repo, now, amount=2_400_000)
+    write_measurement(repo, now, amount=24_000_000)
     now[0] += 1
-    write_measurement(repo, now, amount=3_000_000)
+    write_measurement(repo, now, amount=30_000_000)
     sns = Mock(publish=Mock(return_value={"MessageId": "confirmed"}))
     state.dispatch_notices(sns=sns, topic_arn="synthetic")
     event = json.loads(sns.publish.call_args.kwargs["Message"])
@@ -180,7 +180,7 @@ def test_long_shutdown_expires_pending_notice_without_refreshing_observation(bud
     repo, now = budget
     state = CostState(repo, clock=lambda: now[0])
     month = repo.month()
-    write_measurement(repo, now, amount=2_400_000)
+    write_measurement(repo, now, amount=24_000_000)
     original = state.read(month, "NOTICE#AWS")["event"]
     now[0] += 70 * 86400
     sns = Mock()
@@ -397,7 +397,7 @@ def test_query_reservation_invalidates_previous_permit_before_external_scan(budg
 @pytest.mark.parametrize("control_owner", ["global", "month"])
 def test_model_notification_is_fenced_against_accounting_pause_races(budget, control_owner):
     repo, now = budget
-    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 6_300_000})
+    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 63_000_000})
     state = CostState(repo, clock=lambda: now[0])
     original = repo.table.meta.client.transact_write_items
 
@@ -517,7 +517,7 @@ def test_history_progress_waits_for_notice_ack_and_preserves_sticky_pause(budget
     service, _, now = monitor(budget)
     now[0] += 13 * 3600
     repo = service.state.budget
-    write_measurement(repo, now, amount=2_700_000)
+    write_measurement(repo, now, amount=27_000_000)
     service.sns.publish.side_effect = TimeoutError("synthetic unknown SNS")
     with pytest.raises(TimeoutError):
         service.run()
@@ -598,11 +598,11 @@ def test_telemetry_region_must_match_the_price_catalog(budget):
 
 def test_aws_only_preflight_does_not_inherit_model_exhaustion(budget):
     repo, now = budget
-    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 7_000_000})
+    repo.table.put_item(Item={**repo._key(repo.month(), "MODEL"), "charged_micro_usd": 70_000_000})
     with pytest.raises(MemoryBudgetPaused):
         repo.check_available()
     repo.check_aws_available()
-    write_measurement(repo, now, amount=2_700_000)
+    write_measurement(repo, now, amount=27_000_000)
     with pytest.raises(MemoryBudgetPaused):
         repo.check_aws_available()
 

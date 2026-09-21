@@ -20,7 +20,7 @@ from services.repositories._common import get_dynamodb
 
 MODEL = "gemini-3.1-flash-lite"
 PRICE_VERSION = "google-standard-text-2026-09-10"
-MONTHLY_LIMIT_MICRO_USD = 7_000_000
+MONTHLY_LIMIT_MICRO_USD = 70_000_000
 # Full published model limits; do not mistake chars/4 for a multilingual token bound.
 # Reserve a separate full output allowance for thoughts as an additional margin.
 INPUT_CEILING = 1_048_576
@@ -101,7 +101,7 @@ class MemoryBudgetRepository:
         return self.table.get_item(Key=self._key(month or self.month(), "MODEL"), ConsistentRead=True).get("Item", {})
 
     def _aws_permit(self, month, now):
-        from services.memory_v2._cost_state import AWS_STOP, FRESH_SECONDS, PRICE_VERSION
+        from services.memory_v2._cost_state import AWS_LIMIT, AWS_STOP, BUDGET_POLICY, FRESH_SECONDS, PRICE_VERSION
 
         row = self.table.get_item(Key=self._key(month, "AWS"), ConsistentRead=True).get("Item") or {}
         try:
@@ -114,6 +114,8 @@ class MemoryBudgetRepository:
 
             numbers_valid = (
                 integer("revision") > 0
+                and integer("budget_micro_usd") == AWS_LIMIT
+                and integer("stop_micro_usd") == AWS_STOP
                 and 0 <= integer("estimate_micro_usd", -1) < AWS_STOP
                 and now - FRESH_SECONDS < integer("observed_at") <= now
                 and now - FRESH_SECONDS < integer("covered_until") <= now
@@ -123,6 +125,7 @@ class MemoryBudgetRepository:
             numbers_valid = False
         if (
             not numbers_valid
+            or row.get("budget_policy") != BUDGET_POLICY
             or not self.inventory_version
             or row.get("inventory_version") != self.inventory_version
             or row.get("price_version") != PRICE_VERSION
