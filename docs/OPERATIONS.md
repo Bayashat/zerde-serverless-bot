@@ -31,7 +31,7 @@ aws ce get-cost-and-usage --region us-east-1 --time-period Start="$START",End="$
 aws ce get-cost-and-usage --region us-east-1 --time-period Start="$START",End="$END" --granularity MONTHLY --filter '{"Tags":{"Key":"Project","Values":["ZerdeBot"]}}' --metrics UnblendedCost --group-by Type=TAG,Key=Environment Type=TAG,Key=Component
 ```
 
-记录响应的 currency、estimated、usage、credit/refund、tax 和 net；另列无法标签分配的费用。账户总额、Zerde 可归属额、Memory V2 增量额是三种口径。USD 3 是 V2 新增 AWS 预算，不是整个旧 bot 的 AWS 月上限；operations 资源的归属/共用分摊也须进入增量估算，不能因标签为 operations 而漏掉。
+记录响应的 currency、estimated、usage、credit/refund、tax 和 net；另列无法标签分配的费用。账户总额、Zerde 可归属额、Memory V2 增量额是三种口径。USD 30 是 V2 新增 AWS 预算，不是整个旧 bot 的 AWS 月上限；operations 资源的归属/共用分摊也须进入增量估算，不能因标签为 operations 而漏掉。
 
 最终每个活跃环境有 **22 个告警**：四个业务 Lambda 各三个，共 12 个；主/向量 DLQ 两个；operations 三个；Memory V2 worker/队列五个。dev 停用时为 0，因此 prod 活跃而 dev 停用共 22 个，两环境都活跃共 44 个，不是 27 个。成本 inventory 的 `alarm_count=10` 只表示两环境最多十个 **Memory V2 新增告警**的整月毛价预留；dev 停用也不退回这项预留，它不是 stack 告警总数。通知 Lambda/SNS/状态读写按事件使用，没有额外常开 SQS poller。真实节省和费用应以部署后同等观察窗口及 CE 为准。
 
@@ -57,7 +57,7 @@ notifier 只接收已配置 topic，核对注册的 alarm 名称、账号、regi
 
 ## Z08 预算事件与可选 AWS Budget
 
-Z08 是预算的唯一 owner，决定 USD 7 全项目模型硬预留、USD 3 增量 AWS 估算及暂停策略。USD 7 是项目总额，dev/prod 共享费用账本，不能各获一份；通知的 environment 仅表示发起运行环境，跨环境阈值去重由 Z08 的共享账本负责。它通过 `operations.grant_budget_publish(worker)` 获得 topic 的 Publish 权限，注入 topic ARN，持久化阈值事件并在重试时保留同一 `observed_at`。同一 environment/scope/period 共享通知 stream，按 observation 排序；同批跨过多个阈值时只发布最高有效状态，不在更晚时间发布过时的较低阈值。本组件不重新计算预算或暂停业务。以下为唯一可接受的预算消息格式示例（使用当前真实观察时间，不能复制旧日期上线）：
+Z08 是预算的唯一 owner，决定 USD 70 全项目模型硬预留、USD 30 增量 AWS 估算及暂停策略。USD 70 是项目总额，dev/prod 共享费用账本，不能各获一份；通知的 environment 仅表示发起运行环境，跨环境阈值去重由 Z08 的共享账本负责。它通过 `operations.grant_budget_publish(worker)` 获得 topic 的 Publish 权限，注入 topic ARN，持久化阈值事件并在重试时保留同一 `observed_at`。同一 environment/scope/period 共享通知 stream，按 observation 排序；同批跨过多个阈值时只发布最高有效状态，不在更晚时间发布过时的较低阈值。本组件不重新计算预算或暂停业务。以下为唯一可接受的预算消息格式示例（使用当前真实观察时间，不能复制旧日期上线）：
 
 ```json
 {"schema":"zerde.operations.v1","kind":"budget","project":"ZerdeBot","environment":"prod","component":"memory-v2","budget_scope":"incremental_aws","threshold_percent":80,"status":"warning","period":"2026-09","observed_at":"2026-09-10T12:00:00Z"}
@@ -65,7 +65,7 @@ Z08 是预算的唯一 owner，决定 USD 7 全项目模型硬预留、USD 3 增
 
 `budget_scope` 可为 `model` 或 `incremental_aws`，threshold 只允许 80/90/100，status 为 warning/paused；period 必须与 observation 的 UTC 月份一致。模型和 AWS 通知必须准确标注各自账本/估算来源。Z08 的持久化通知 outbox 和小时监控已在源码中接线，仍未经过生产送达与真实账单验收；不能称预算通知已全面工作。首次部署计费起点、完整计量和暂停范围见 [运行时契约](MEMORY_V2_RUNTIME.md) 与 [成本监控契约](MEMORY_V2_COST_MONITOR.md)。
 
-AWS Budgets 是按账单刷新运行的辅助工具，不能提供模型级硬停止，也不能直接替代 V2 的增量估算。AWS 原生 Budget SNS 通知不是上面的 JSON 契约，**不要把它直接订阅到当前 notifier topic**。本阶段不启用 Budget SNS publisher，也不增设第二套解析逻辑。若需要单独的控制台费用 backstop，在成本标签有效后由账号 owner 确定整个项目的月金额，创建一个无订阅的 COST budget；其上限不能写成 V2 的 USD 3。金额和通知连接是后续明确配置与验收项。[AWS Budget 更新频率与边界](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-best-practices.html)
+AWS Budgets 是按账单刷新运行的辅助工具，不能提供模型级硬停止，也不能直接替代 V2 的增量估算。AWS 原生 Budget SNS 通知不是上面的 JSON 契约，**不要把它直接订阅到当前 notifier topic**。本阶段不启用 Budget SNS publisher，也不增设第二套解析逻辑。若需要单独的控制台费用 backstop，在成本标签有效后由账号 owner 确定整个项目的月金额，创建一个无订阅的 COST budget；其上限不能写成 V2 的 USD 30。金额和通知连接是后续明确配置与验收项。[AWS Budget 更新频率与边界](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-best-practices.html)
 
 AWS Budgets 的 TagKeyValue 需要 `user:` 前缀（与 CE 的 Tags filter 形式不同），见 [AWS CLI 官方示例](https://docs.aws.amazon.com/cli/latest/userguide/cli_budgets_code_examples.html)。
 

@@ -2,7 +2,7 @@
 
 `services/memory_budget.py` is the sole model-cost reservation owner. Extraction,
 retries and the entire request for a memory-enhanced answer share the independent
-Memory V2 table. The limit is USD 7 per UTC month across the project. Both environments use
+Memory V2 table. The limit is USD 70 per UTC month across the project. Both environments use
 the production V2 table's cost-only key prefixes via an explicit budget-table
 configuration. Dev facts stay in the dev table; dev IAM must restrict access to
 `MEMORY_BUDGET#*` and `MEMORY_ATTEMPT#*`. A missing shared ledger disables optional
@@ -95,6 +95,6 @@ deterministic valid profiles, correction/forget/optout and no-memory explicit as
 remain available. The old RPD counter is a provider-quota guard and does not own
 this cost boundary.
 
-AWS increment estimation, USD 3 reserve, threshold notifications and source-safe
+AWS increment estimation, USD 30 reserve, threshold notifications and source-safe
 answer integration are the remainder of Z08; this module alone is not their
 acceptance evidence. Production enablement still requires Z11 gates.

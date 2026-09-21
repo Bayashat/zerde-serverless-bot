@@ -211,27 +211,25 @@ The deploy creates:
 
 Telegram must send updates to your API Gateway URL.
 
-**Option A — Manual (recommended for first time):**
+Use the repository registration owner with the existing credentials and exact
+endpoint (provide secrets through your normal local environment, not shell history):
 
 ```bash
-curl -F "url=<YOUR_API_ENDPOINT>/webhook" \
-     -F "secret_token=<YOUR_WEBHOOK_SECRET_TOKEN>" \
-     "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook"
+# BOT_TOKEN and WEBHOOK_SECRET_TOKEN must already be set for this environment.
+export WEBHOOK_URL="https://<YOUR_API_ENDPOINT>/webhook"
+./scripts/setup_webhook.sh
 ```
 
-Example:
+The script reads the existing registration, preserves its connection limit and
+extra subscribed update types, adds `edited_message`, and verifies the result.
+Telegram's default empty update list is preserved. Pending updates are never
+dropped. An already configured bot cannot be moved to a different URL by this
+maintenance script. A failed or ambiguous registration must be inspected before
+retrying; errors deliberately omit credential-bearing URLs.
 
-```bash
-curl -F "url=https://abc123.execute-api.eu-central-1.amazonaws.com/dev/webhook" \
-     -F "secret_token=your_hex_secret_from_env" \
-     "https://api.telegram.org/bot123456789:ABCdef.../setWebhook"
-```
-
-**Option B — Script:**
-
-```bash
-./scripts/setup_webhook.sh dev <YOUR_BOT_TOKEN> <YOUR_API_ENDPOINT>/webhook
-```
+The historical argument order is `bot_token secret_token webhook_url` (there is
+no `dev` argument). Prefer environment variables to avoid credentials in process
+arguments. CDK deployment does not register Telegram webhooks.
 
 ---
 

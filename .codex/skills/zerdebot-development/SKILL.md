@@ -256,3 +256,13 @@ News/Quiz public integration: keep original scheduled_at in daily inputs and sta
 Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.
 
 Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.
+
+
+2026-09-21 Memory V2 budget policy: the owner raised the application target to
+USD 70 model + USD 30 incremental AWS per UTC month. Keep the existing
+MemoryBudgetRepository/CostState owners, unknown liabilities and accounting
+pauses. A verified fresh observation migrates only the attributable legacy USD 3
+threshold pause, preserving conditional policy/notice history. No direct ledger
+unpause. See docs/MEMORY_V2_COST_MONITOR.md. Telegram registration is owned by
+scripts/setup_webhook.sh -> setup_webhook.py: retain existing endpoint/secret and
+subscriptions, include edited_message, and never drop pending updates.
