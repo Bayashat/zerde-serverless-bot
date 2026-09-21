@@ -7,7 +7,9 @@ import time
 from boto3.dynamodb.conditions import Attr, Key
 
 from .leases import ANSWER_LEASE_SECONDS
-from .models import MemoryConflict, MemoryInputError, MemoryUnavailable, chat_key, positive_id
+from .models import WORK_INDEX_NAME, MemoryConflict, MemoryInputError, MemoryUnavailable, chat_key, positive_id
+
+PURGE_QUEUE = "MEMORY_PURGE"
 
 
 class MemoryPurgeRecoveryError(RuntimeError):
@@ -57,6 +59,8 @@ class MemoryLifecycle:
             "created_at": now,
             "cursor": {},
             "deleted_rows": 0,
+            "work_queue": PURGE_QUEUE,
+            "due_at": now,
         }
         if scope == "group":
             stopped = {
@@ -117,7 +121,7 @@ class MemoryLifecycle:
             return int(row.get("lease_until", 0)) > self.repo.now() and self._belongs(job, row)
         return False
 
-    def _inflight(self, chat_id, job):
+    def _inflight(self, chat_id, job, *, deadline=None):
         # Every prior answer has a fixed <=360s lease and extraction <=130s.
         # begin() changes CONTROL revision, so a newly acquired answer cannot
         # bind a pre-deletion snapshot. This deadline bounds even a huge scan.
@@ -126,6 +130,8 @@ class MemoryLifecycle:
         for prefix in ("ANSWER_LEASE#", "WORK#"):
             cursor = None
             for _ in range(4):
+                if deadline is not None and time.monotonic() >= deadline:
+                    return True  # An incomplete lease inventory never permits deletion.
                 args = {
                     "KeyConditionExpression": Key("pk").eq(chat_key(chat_id)) & Key("sk").begins_with(prefix),
                     "ConsistentRead": True,
@@ -224,20 +230,26 @@ class MemoryLifecycle:
             return True  # Replaced with a minimal tombstone on completion.
         return False
 
-    def advance(self, chat_id, job_key, *, max_pages=4):
+    def advance(self, chat_id, job_key, *, max_pages=4, deadline=None):
         if not isinstance(job_key, str) or not job_key.startswith("PURGE#"):
             raise MemoryInputError("Expected deletion job identity")
         for _ in range(max(1, min(20, int(max_pages)))):
             job = self.repo._read(chat_id, job_key)
             if not job or job["state"] == "DONE":
                 return job
+            if deadline is not None and time.monotonic() >= deadline:
+                return job
             fences = self._fence(chat_id, job)
+            if deadline is not None and time.monotonic() >= deadline:
+                return job
             if job["state"] == "DERIVED":
-                return self._complete(chat_id, job)
+                return self._complete(chat_id, job, deadline=deadline)
             if job["state"] == "WAITING":
                 # No new matching lease can pass its source/subject/control CAS
                 # after begin(). Unbound answers conservatively cover the whole chat.
-                if self._inflight(chat_id, job):
+                if self._inflight(chat_id, job, deadline=deadline):
+                    return job
+                if deadline is not None and time.monotonic() >= deadline:
                     return job
                 updated = {**job, "revision": int(job["revision"]) + 1, "state": "DELETING"}
                 self.repo._transaction(
@@ -249,6 +261,8 @@ class MemoryLifecycle:
                 args["ExclusiveStartKey"] = job["cursor"]
             page = self.repo.table.query(**args)
             rows = [row for row in page.get("Items", []) if not self._retained(job, row) and self._belongs(job, row)]
+            if deadline is not None and time.monotonic() >= deadline:
+                return job
             updated = {
                 **job,
                 "revision": int(job["revision"]) + 1,
@@ -265,15 +279,22 @@ class MemoryLifecycle:
                 ]
             )
             if updated["state"] == "DERIVED":
-                return self._complete(chat_id, updated)
+                return self._complete(chat_id, updated, deadline=deadline)
         return self.repo._read(chat_id, job_key)
 
-    def _complete(self, chat_id, job):
+    def _complete(self, chat_id, job, *, deadline=None):
         # Registered owners must report completion. A raised error or False leaves
         # the durable job fenced and recoverable, never a success confirmation.
-        if any(cleaner(chat_id, job) is not True for cleaner in self.derived_cleaners):
+        for cleaner in self.derived_cleaners:
+            if deadline is not None and time.monotonic() >= deadline:
+                return job
+            if cleaner(chat_id, job) is not True:
+                return job
+        if deadline is not None and time.monotonic() >= deadline:
             return job
         fences = self._fence(chat_id, job)
+        if deadline is not None and time.monotonic() >= deadline:
+            return job
         now = self.repo.now()
         operations = []
         if job["scope"] == "group":
@@ -320,41 +341,124 @@ class MemoryLifecycle:
             "ttl": now + 7 * 86400,
         }
         done.pop("actor_user_id", None)
+        done.pop("work_queue", None)
+        done.pop("due_at", None)
         self.repo._transaction([*operations, self.repo._put_cas(done, job)])
         return done
 
-    def recover(self, *, max_pages=2, runtime_seconds=20):
-        deadline = time.monotonic() + max(1, min(60, runtime_seconds))
-        checkpoint = self.repo.recovery_checkpoint("purges")
+    def _index_legacy(self, candidate):
+        chat_id = candidate["pk"].removeprefix("CHAT#")
+        job = self.repo._read(chat_id, candidate["sk"])
+        if not job or job.get("kind") != "PURGE" or job["state"] == "DONE" or "work_queue" in job:
+            return
+        fences = self._fence(chat_id, job)
+        updated = {
+            **job,
+            "revision": int(job["revision"]) + 1,
+            "work_queue": PURGE_QUEUE,
+            "due_at": int(job["created_at"]),
+        }
+        self.repo._transaction([*[self.repo._check_snapshot(row) for row in fences], self.repo._put_cas(updated, job)])
+
+    def _advance_due(self, candidate, deadline):
+        chat_id = candidate["pk"].removeprefix("CHAT#")
+        job = self.repo._read(chat_id, candidate["sk"])
+        # KEYS_ONLY index entries can be stale, duplicated or not yet visible.
+        # The strong base read and advance's original fences alone permit work.
+        if (
+            job
+            and job.get("kind") == "PURGE"
+            and job["state"] != "DONE"
+            and job.get("work_queue") == PURGE_QUEUE
+            and job.get("due_at", self.repo.now() + 1) <= self.repo.now()
+        ):
+            result = self.advance(chat_id, job["sk"], max_pages=20, deadline=deadline)
+            return result.get("state") != "DONE"
+        return False
+
+    def _recover_pages(self, name, fetch, process, key_fields, *, max_pages, deadline):
+        checkpoint = self.repo.recovery_checkpoint(name)
         cursor = checkpoint.get("cursor") or None
         attempted = failures = 0
-        for _ in range(max(1, min(20, int(max_pages)))):
+        unfinished = False
+        for _ in range(max_pages):
             if time.monotonic() >= deadline:
-                break
-            args = {
-                "FilterExpression": Attr("kind").eq("PURGE") & Attr("state").ne("DONE"),
-                "ConsistentRead": True,
-                "Limit": 25,
-            }
-            if cursor:
-                args["ExclusiveStartKey"] = cursor
-            page = self.repo.table.scan(**args)
-            for job in page.get("Items", []):
+                return attempted, failures, True
+            page = fetch(cursor)
+            for candidate in page.get("Items", []):
                 if time.monotonic() >= deadline:
-                    if failures:
-                        raise MemoryPurgeRecoveryError("Some durable memory purges remain pending")
-                    return {"attempted": attempted, "failures": failures, "pending": True}
+                    return attempted, failures, True
                 try:
-                    self.advance(job["pk"].removeprefix("CHAT#"), job["sk"], max_pages=2)
+                    unfinished |= bool(process(candidate))
                 except Exception:
                     failures += 1  # No body/provider detail is persisted or logged.
                 attempted += 1
+                # Checkpoint each attempted hint, including WAITING, partial and
+                # failed jobs. A large/poison job cannot own the start of every run.
+                following = {key: candidate[key] for key in key_fields}
+                try:
+                    checkpoint = self.repo.save_recovery_checkpoint(name, checkpoint, following)
+                except MemoryConflict:
+                    return attempted, failures, True  # Another runner owns progress.
             following = page.get("LastEvaluatedKey")
-            self.repo.save_recovery_checkpoint("purges", checkpoint, following)
-            checkpoint = self.repo.recovery_checkpoint("purges")
+            try:
+                checkpoint = self.repo.save_recovery_checkpoint(name, checkpoint, following)
+            except MemoryConflict:
+                return attempted, failures, True
             cursor = following
             if not following:
                 break
+        return attempted, failures, unfinished or bool(cursor)
+
+    def recover(self, *, max_pages=2, runtime_seconds=20):
+        started = time.monotonic()
+        duration = max(1, min(60, runtime_seconds))
+        deadline = started + duration
+        max_pages = max(1, min(20, int(max_pages)))
+
+        def legacy_page(cursor):
+            return self.repo.table.scan(
+                FilterExpression=Attr("kind").eq("PURGE") & Attr("state").ne("DONE") & Attr("work_queue").not_exists(),
+                ConsistentRead=True,
+                Limit=25,
+                **({"ExclusiveStartKey": cursor} if cursor else {}),
+            )
+
+        def due_page(cursor):
+            return self.repo.table.query(
+                IndexName=WORK_INDEX_NAME,
+                KeyConditionExpression=Key("work_queue").eq(PURGE_QUEUE) & Key("due_at").lte(self.repo.now()),
+                Limit=10,
+                **({"ExclusiveStartKey": cursor} if cursor else {}),
+            )
+
+        failures, pending, counts = 0, False, {}
+        for name, fetch, process, keys, lane_deadline in (
+            # Old deployments need bounded discovery once, not a full-table tour
+            # before every advance. Reserve time even under a busy indexed lane.
+            ("purges", legacy_page, self._index_legacy, ("pk", "sk"), started + min(5, duration / 4)),
+            (
+                "purge_due",
+                due_page,
+                lambda candidate: self._advance_due(candidate, deadline),
+                ("pk", "sk", "work_queue", "due_at"),
+                deadline,
+            ),
+        ):
+            try:
+                count, failed, more = self._recover_pages(
+                    name, fetch, process, keys, max_pages=max_pages, deadline=lane_deadline
+                )
+                counts[name] = count
+                failures += failed
+                pending |= more
+            except Exception:
+                failures += 1  # One unavailable lane must not block the other.
         if failures:
             raise MemoryPurgeRecoveryError("Some durable memory purges remain pending")
-        return {"attempted": attempted, "failures": 0, "pending": bool(cursor)}
+        return {
+            "attempted": counts["purge_due"],
+            "legacy_candidates": counts["purges"],
+            "failures": 0,
+            "pending": pending,
+        }

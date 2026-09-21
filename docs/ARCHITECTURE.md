@@ -333,3 +333,5 @@ threshold pause, preserving conditional policy/notice history. No direct ledger
 unpause. See docs/MEMORY_V2_COST_MONITOR.md. Telegram registration is owned by
 scripts/setup_webhook.sh -> setup_webhook.py: retain existing endpoint/secret and
 subscriptions, include edited_message, and never drop pending updates.
+
+Memory V2 deletion recovery now discovers pending PURGE records through the existing work-due sparse index under MEMORY_PURGE, isolated from extraction work. Creation/fences and completion/index removal remain atomic in MemoryLifecycle. Index hints are strongly revalidated; a separate durable discovery cursor rotates partial/failed jobs. Legacy whole-table scanning only backfills missing index fields. See [the bounded recovery contract](goals/zerdebot-memory-v2/PURGE_RECOVERY_EXECUTION.md); deployment and measured real deletion latency are separate evidence.

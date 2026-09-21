@@ -1,0 +1,34 @@
+{
+  "status": "LOCAL_VERIFIED_DEPLOYMENT_PENDING",
+  "base_main": "a9b7b4f560fed2b9df665f547f45b01920fc9755",
+  "full_tests": {
+    "passed": 2376,
+    "seconds": 226.13,
+    "python": "3.14.0",
+    "warnings": 1
+  },
+  "targeted_new_tests": 17,
+  "independent_relevant_tests": {
+    "passed": 75,
+    "seconds": 12.39
+  },
+  "reviews": {
+    "pre": "ALIGNED",
+    "correctness_post": "ALIGNED",
+    "maintainability_post": "ALIGNED",
+    "fixed_finding": "Deadline rechecked after slow fence/query and before completion."
+  },
+  "files_sha256": {
+    "src/bot/services/memory_v2/lifecycle.py": "bcaa464a075eedfb01c66e66aa01239e4248e30f25e76a90d70b55bae0b03e67",
+    "src/bot/services/memory_v2/repository.py": "ea0583a790d10649de6570df805db0e61639e5c4d80ea50ec37c71bffe691f13",
+    "tests/test_memory_purge_recovery.py": "0a24deecae66bfda871c4226a6062083c58d84a9d7d543bb5c41af888f81c7c1"
+  },
+  "cloud_mutations": 0,
+  "real_deletion_latency_retest": "NOT_RUN",
+  "limits": [
+    "Local SDK/Moto coverage is not deployed behavior or a live latency SLO.",
+    "Existing five-minute schedule and leases are retained.",
+    "Old pending records need one bounded compatibility traversal before indexed recovery.",
+    "GSI hints and recovery pending summary are not a complete deletion inventory."
+  ]
+}

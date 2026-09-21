@@ -867,7 +867,7 @@ class MemoryRepository:
         )
 
     def recovery_checkpoint(self, name):
-        if name not in {"admissions", "clean", "purges", "work0", "work1", "work2", "work3"}:
+        if name not in {"admissions", "clean", "purges", "purge_due", "work0", "work1", "work2", "work3"}:
             raise MemoryInputError("Unknown recovery cursor")
         return self.table.get_item(Key={"pk": "RECOVERY", "sk": name}, ConsistentRead=True).get("Item") or {}
 
@@ -880,6 +880,7 @@ class MemoryRepository:
             "updated_at": self.now(),
         }
         self._transaction([self._put_cas(item, previous)])
+        return item
 
     def coverage_snapshot(self, chat_id):
         """Body-free observed outcomes, not a claim of product acceptance or perfect recall."""
