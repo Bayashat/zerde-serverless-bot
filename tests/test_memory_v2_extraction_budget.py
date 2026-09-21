@@ -6,6 +6,7 @@ from services.memory_budget import RESERVATION_MICRO_USD, cost_micro_usd
 
 from tests import test_memory_budget as budget_fixtures
 from tests.test_memory_v2_extraction import extractor, response, source
+from tests.test_memory_v2_source_retry import assert_neighbors, batch
 
 
 def test_actual_budget_settles_successful_extraction_with_provider_usage(budget):
@@ -57,6 +58,18 @@ def test_actual_paused_budget_does_not_consume_shared_provider_quota(budget):
     quota.increment_and_check.assert_not_called()
     provider.generate.assert_not_awaited()
     assert not repository.snapshot()
+
+
+def test_partial_success_settles_first_attempt_and_keeps_unknown_retry_reservation(budget):
+    repository, _ = budget
+    sources, payload = batch()
+    instance, provider, _, _, _ = extractor(replies=[payload, TimeoutError()])
+    instance.budget = repository
+    results = asyncio.run(instance.extract_batch(sources))
+    assert_neighbors(results, sources)
+    assert results[1].status == "defer" and results[1].changes == ()
+    assert provider.generate.await_count == 2
+    assert repository.snapshot()["charged_micro_usd"] == cost_micro_usd(100, 45) + RESERVATION_MICRO_USD
 
 
 budget = budget_fixtures.budget

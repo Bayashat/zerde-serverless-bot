@@ -1,6 +1,6 @@
 # Zerde Bot
 
-Memory V2 is still under validation. The pending fix preserves full short-message evidence and the exact spelling of preferred names. Longer or quoted messages remain pending rather than being silently learned from fragments. [Validation status](docs/MEMORY_PUBLIC_EVALUATION.md).
+Memory V2 is still under validation. Invalid extractions are retried separately so they do not hold up valid neighboring messages. When memory is unavailable, the bot should explain that it lacks context for this answer and ask for the relevant message; this does not establish that stored data is empty. Longer or quoted messages still remain pending. [Validation status](docs/MEMORY_PUBLIC_EVALUATION.md).
 
 > Memory is being rebuilt. Automatic group participation, channel comments and ambient reactions are disabled in the new code. `/ask`, direct mentions and requested bot followups remain available without long-term memory. Historical imports cannot write data. See [cutover operations](docs/MEMORY_CUTOVER.md); deployment and deletion are tracked separately.
 

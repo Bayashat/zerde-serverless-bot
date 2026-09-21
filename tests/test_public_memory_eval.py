@@ -214,3 +214,41 @@ def test_plain_provider_failure_uses_production_retry_and_unavailable_delivery(m
     assert len(calls) == (2 * group_agent.GROUP_CHAT_REPLY_GEMINI_MAX_ATTEMPTS if fail_all else 3)
     assert final["replay"]["state"] == ("UNSUPPORTED" if fail_all else "EXECUTED")
     assert all(answer["abstained"] is not fail_all for answer in final["answers"])
+
+
+@pytest.mark.parametrize("language", ["kk", "ru", "en", "mixed"])
+def test_actual_public_transport_matches_the_strict_plain_serializer(monkeypatch, language):
+    from unittest.mock import MagicMock
+
+    from services import group_agent
+    from services.ai import gemini_client
+    from services.repositories.group_memory import normalise_chat_style_profile
+
+    from dev.tools.memory_eval.plain_requests import plain_client
+
+    class Captured(BaseException):
+        pass
+
+    question = "What do you know about my current project?"
+    style = normalise_chat_style_profile({"tone": "concise"})
+    client, captured = plain_client(), []
+
+    def capture(**kwargs):
+        assert kwargs["operation"] == "group_chat_reply"
+        captured.append(json.loads(kwargs["body"]))
+        raise Captured()
+
+    client._post_generate_content = capture
+    monkeypatch.setattr(group_agent, "_get_gemini", lambda: client)
+    monkeypatch.setattr(group_agent, "_load_chat_style_profile", lambda *args: style)
+    monkeypatch.setattr(gemini_client, "_circuit_is_open", lambda *args: False)
+    with pytest.raises(Captured):
+        group_agent.answer_group_question(
+            repo=MagicMock(),
+            bot=MagicMock(),
+            chat_id=-100123,
+            reply_to_message_id=11,
+            user_text=question,
+            lang=language,
+        )
+    assert captured == [build_plain_payload(question, language, style)]

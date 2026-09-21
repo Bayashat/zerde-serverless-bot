@@ -1,5 +1,7 @@
 # AGENTS.md
 
+F4 isolates fact-validation failures only after full source-index validation; the existing extractor retries only pending refs within the same two-call limit. Worker/Writer still revalidate before atomic writes. Plain answers describe current context availability without asserting an empty database or promising history search. See [F4 contract](../docs/goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md).
+
 The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore contest commands, writers, TTL recovery or fairness requirements from historical plans. Old queued contest tasks are discarded; cleanup uses explicit retired-root scope while public memory deletion remains memory-only. See docs/MEMORY_CUTOVER.md.
 
 
