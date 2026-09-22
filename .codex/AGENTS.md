@@ -285,3 +285,5 @@ subscriptions, include edited_message, and never drop pending updates.
 Z09 deletion recovery uses the existing work-due index in its separate MEMORY_PURGE namespace. Only MemoryLifecycle may create/advance/complete PURGE; index hints require strong canonical reads and original fences. The old Scan only backfills unindexed pending jobs. Preserve the independent discovery/job cursors, per-item progress and bounded deadlines; see docs/goals/zerdebot-memory-v2/PURGE_RECOVERY_EXECUTION.md.
 
 The cost monitor processes at most two earliest incomplete 12-hour windows per run so a normal half-day handoff does not disable learning for an hour. Complete coverage is still required; partial progress and unknown scan liability cannot grant admission. See `docs/MEMORY_V2_COST_MONITOR.md`.
+
+Memory V2 definite pre-mutation ownership denials use the original command receipt owner to persist DENIED before localized feedback; unknown writes and source-purge recovery retain their existing behavior. See [runtime contract](../docs/MEMORY_V2_RUNTIME.md).

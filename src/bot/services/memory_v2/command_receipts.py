@@ -225,7 +225,7 @@ class CommandReceipt:
         return {"state": self.row["result_state"]}
 
     def recover(self):
-        if self.row["state"] == "APPLIED":
+        if self.row["state"] in {"APPLIED", "DENIED"}:
             return self._saved_result()
         if self.row["state"] != "PENDING":
             raise MemoryUnavailable("Control command is no longer actionable")
@@ -295,6 +295,20 @@ class CommandReceipt:
         self.repo._transaction([self.lock_check(), self.repo._put_cas(updated, self.row)])
         self.row = updated
         return result
+
+    def deny(self):
+        """Finish only a definite ownership rejection before any domain effect."""
+        if self.row["state"] != "PENDING":
+            raise MemoryUnavailable("Only a pending command can be denied")
+        updated = {
+            **self.row,
+            "revision": int(self.row["revision"]) + 1,
+            "state": "DENIED",
+            "result_state": "DENIED",
+        }
+        self.repo._transaction([*self.scope_checks(), self.lock_check(), self.repo._put_cas(updated, self.row)])
+        self.row = updated
+        return {"state": "DENIED"}
 
     def release(self):
         if self.lock is None:

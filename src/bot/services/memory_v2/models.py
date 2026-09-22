@@ -40,6 +40,10 @@ class MemoryUnavailable(RuntimeError):
     """Memory is stopped, opted out, stale, expired or pending deletion."""
 
 
+class MemoryOwnershipDenied(MemoryUnavailable):
+    """Known foreign subject/source, rejected before any domain mutation."""
+
+
 class MemoryLearningPaused(MemoryUnavailable):
     """A valid source is temporarily paused; keep its durable pending work."""
 

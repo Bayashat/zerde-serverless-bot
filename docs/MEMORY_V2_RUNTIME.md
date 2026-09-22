@@ -146,6 +146,16 @@ one-day acceptance window, with an original identity and generation fence. The
 same command cannot erase newly rebuilt data after a retry. Control tombstones
 are retained for anti-replay and are not erased facts or transcripts.
 
+A definite pre-mutation personal/source ownership rejection uses
+`MemoryOwnershipDenied` and the same receipt owner records terminal `DENIED`
+under the original scope, lease and CAS fences before returning the localized
+ownership message. Replayed denials do not invoke the domain mutation. Missing
+sources, expired authorization, uncertain writes and the existing source-purge
+recovery guard retain their unavailable/retry behavior. `REJECTED` continues to
+mean a successfully marked-wrong fact, not denied permission. No old PENDING
+receipts are rewritten in bulk. See [#219 execution contract](goals/zerdebot-memory-v2/COMMAND_DENIAL_EXECUTION.md).
+
+
 `ExplicitContextRepository` preserves inherited business settings storage
 but never writes or reads old `AGENT_REPLY` bodies. Album membership goes only to
 V2 metadata with a one-day original-time lifetime; no captions, filenames, aliases

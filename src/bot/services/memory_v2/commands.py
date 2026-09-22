@@ -8,6 +8,7 @@ from .models import (
     EvidenceSpan,
     FactChange,
     MemoryInputError,
+    MemoryOwnershipDenied,
     MemoryUnavailable,
     SelfConfirmation,
     SourceEvent,
@@ -48,7 +49,7 @@ class MemoryCommandService:
         elif fact["subject_id"] == "USER#" + actor:
             confirmation = SelfConfirmation(actor, True)
         else:
-            raise MemoryUnavailable("Personal memory can only be changed by its subject")
+            raise MemoryOwnershipDenied("Personal memory can only be changed by its subject")
         return fact, refs[0], confirmation
 
     def wrong(self, chat_id, actor_user_id, fact_ref):
@@ -132,8 +133,10 @@ class MemoryCommandService:
     def forget_source(self, chat_id, actor_user_id, source_id):
         actor = self._authorize(chat_id, actor_user_id)
         observation = self.repo.get_observation(chat_id, positive_id(source_id))
-        if observation.get("actor_user_id") != actor:
-            raise MemoryUnavailable("Only the source author may erase that source")
+        if not observation.get("actor_user_id"):
+            raise MemoryUnavailable("Selected source is no longer available")
+        if observation["actor_user_id"] != actor:
+            raise MemoryOwnershipDenied("Only the source author may erase that source")
         return self.lifecycle.begin(chat_id, scope="source", target=source_id)
 
     def forget_me(self, chat_id, actor_user_id, *, optout=False):

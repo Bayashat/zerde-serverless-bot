@@ -2,6 +2,8 @@
 
 Memory V2 is still under validation. Invalid extractions are retried separately so they do not hold up valid neighboring messages. When memory is unavailable, the bot should explain that it lacks context for this answer and ask for the relevant message; this does not establish that stored data is empty. Longer or quoted messages still remain pending. [Validation status](docs/MEMORY_PUBLIC_EVALUATION.md).
 
+Personal memory controls explain when a fact or source belongs to someone else. Such a refusal does not mean memory is disabled; temporary failures remain distinct.
+
 > Memory is being rebuilt. Automatic group participation, channel comments and ambient reactions are disabled in the new code. `/ask`, direct mentions and requested bot followups remain available without long-term memory. Historical imports cannot write data. See [cutover operations](docs/MEMORY_CUTOVER.md); deployment and deletion are tracked separately.
 
 [English](README.md) | [Қазақша](docs/README_kk.md) | [Русский](docs/README_ru.md)
