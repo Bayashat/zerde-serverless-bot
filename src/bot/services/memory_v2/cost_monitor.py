@@ -31,6 +31,7 @@ _LOG_QUERY_SECONDS = 45
 _SCAN_CEILING_BYTES = 64 * 1024 * 1024
 _UNCERTAINTY_MICRO_USD = 100_000
 _SHARED_LOG_BYTES_PER_REQUEST = 64 * 1024
+_BLOCKS_PER_RUN = 2
 
 
 def _utc(second):
@@ -348,26 +349,30 @@ class MemoryCostMonitor:
             metadata = self.telemetry.resources()
             blocks = self._blocks(now)
             rows = [(start, end, self.state.read(month, "DAY#" + str(start))) for start, end in blocks]
-            # Catch up an old incomplete block first; once complete, refresh the
-            # newest settled block. No unbounded historical Logs Insights query.
-            start, end, _ = next(((a, b, row) for a, b, row in rows if int(row.get("covered_until", 0)) < b), rows[-1])
-            metrics = self.telemetry.metrics(start, end)
-            reports = self.telemetry.reports(
-                start, end, state=self.state, month=month, metadata=metadata, metrics=metrics
-            )
-            row = self.state.save_day(
-                month,
-                str(start),
-                {
-                    "inventory_version": self.inventory.version,
-                    "covered_from": start,
-                    "covered_until": end,
-                    "observed_at": now,
-                    "variable_micro_usd": self._variable(metrics, reports, metadata, end - start),
-                    "write_units": sum(value for key, value in metrics.items() if len(key) == 3 and key[1] == "wru"),
-                },
-            )
-            rows = [(a, b, row if a == start else old) for a, b, old in rows]
+            # Close the previous block and observe the new one in this invocation.
+            # One-block catch-up otherwise revokes admission at every 12h handoff.
+            # Larger backlogs remain bounded and require complete coverage below.
+            pending = [item for item in rows if int(item[2].get("covered_until", 0)) < item[1]]
+            for start, end, _ in (pending or rows[-1:])[:_BLOCKS_PER_RUN]:
+                metrics = self.telemetry.metrics(start, end)
+                reports = self.telemetry.reports(
+                    start, end, state=self.state, month=month, metadata=metadata, metrics=metrics
+                )
+                row = self.state.save_day(
+                    month,
+                    str(start),
+                    {
+                        "inventory_version": self.inventory.version,
+                        "covered_from": start,
+                        "covered_until": end,
+                        "observed_at": now,
+                        "variable_micro_usd": self._variable(metrics, reports, metadata, end - start),
+                        "write_units": sum(
+                            value for key, value in metrics.items() if len(key) == 3 and key[1] == "wru"
+                        ),
+                    },
+                )
+                rows = [(a, b, row if a == start else old) for a, b, old in rows]
             verified = all(
                 value.get("inventory_version") == self.inventory.version and int(value.get("covered_until", 0)) >= b
                 for _, b, value in rows

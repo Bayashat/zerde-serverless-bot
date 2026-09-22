@@ -440,14 +440,15 @@ def test_complete_empty_logs_cannot_replace_expired_historical_reports(budget):
 
 
 def test_history_catchup_requires_every_block_before_admission(budget):
-    service, _, now = monitor(budget)
-    now[0] += 13 * 3600
+    service, clients, now = monitor(budget)
+    now[0] += 25 * 3600
     repo = service.state.budget
     unknown_scan = service.state.reserve_scan(repo.month(), "prior-unknown-query", 394)
     result = service.run()
     assert result["measurement_state"] == "UNVERIFIED"
     assert result["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"
-    assert result["covered_until"] == service._blocks(int(now[0]))[0][1]
+    assert result["covered_until"] == service._blocks(int(now[0]))[1][1]
+    assert clients.logs.start_query.call_count == 4
     assert service.state.read(repo.month(), "AWS")["valid_until"] == int(now[0])
     assert service.state.read(repo.month(), "MONITOR")["scan_micro_usd"] == 394
     assert repo.table.get_item(Key=unknown_scan, ConsistentRead=True)["Item"]["state"] == "RESERVED"
@@ -460,6 +461,65 @@ def test_history_catchup_requires_every_block_before_admission(budget):
             operation()
     assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
     repo.reserve("complete-history", purpose="answer")
+
+
+@pytest.mark.parametrize("hour", [12, 24])
+def test_half_day_handoff_keeps_admission_after_both_windows_are_verified(budget, hour):
+    service, clients, now = monitor(budget)
+    start = service.inventory.value["metering_started_at"]
+    now[0] = start + hour * 3600 + 8 * 60
+    assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
+    service.state.budget.check_available()
+    clients.logs.start_query.reset_mock()
+    clients.cloudwatch.get_metric_data.reset_mock()
+
+    now[0] += 3600
+    result = service.run()
+
+    assert result["measurement_state"] == "ESTIMATE_VERIFIED"
+    assert result["covered_until"] == start + hour * 3600 + 50 * 60
+    service.state.budget.reserve("after-handoff", purpose="extract")
+    assert clients.logs.start_query.call_count == 4
+    assert clients.cloudwatch.get_metric_data.call_count == 2
+    windows = [call.kwargs for call in clients.cloudwatch.get_metric_data.call_args_list]
+    assert int(windows[0]["EndTime"].timestamp()) == start + hour * 3600
+    assert windows[1]["StartTime"] == windows[0]["EndTime"]
+    clients.logs.start_query.reset_mock()
+    assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
+    assert clients.logs.start_query.call_count == 2  # Only the latest complete block is refreshed.
+
+
+def test_failed_second_handoff_window_keeps_progress_and_unknown_scan_without_admission(budget):
+    service, clients, now = monitor(budget)
+    start = service.inventory.value["metering_started_at"]
+    now[0] = start + 12 * 3600 + 8 * 60
+    service.run()
+    now[0] += 3600
+    clients.logs.start_query.reset_mock()
+    clients.logs.start_query.side_effect = [
+        {"queryId": "old-worker"},
+        {"queryId": "old-shared"},
+        TimeoutError("synthetic lost query acknowledgement"),
+    ]
+
+    with pytest.raises(UnverifiedCost):
+        service.run()
+
+    repo = service.state.budget
+    assert service.state.read(repo.month(), "DAY#" + str(start))["covered_until"] == start + 12 * 3600
+    assert not service.state.read(repo.month(), "DAY#" + str(start + 12 * 3600))
+    liability = service.state.read(repo.month(), "MONITOR")["scan_micro_usd"]
+    assert liability > 0
+    for operation in (repo.check_aws_available, lambda: repo.reserve("failed-handoff", purpose="answer")):
+        with pytest.raises(MemoryBudgetPaused):
+            operation()
+
+    clients.logs.start_query.side_effect = None
+    clients.logs.start_query.reset_mock()
+    assert service.run()["measurement_state"] == "ESTIMATE_VERIFIED"
+    assert clients.logs.start_query.call_count == 2
+    assert service.state.read(repo.month(), "MONITOR")["scan_micro_usd"] == liability
+    repo.check_available()
 
 
 def test_exception_named_like_history_progress_is_still_a_failed_observation(budget):
@@ -504,7 +564,7 @@ def test_late_cost_validation_failure_revokes_complete_coverage(budget):
 @pytest.mark.parametrize("boundary", ["save_day", "record_measurement", "observe_model"])
 def test_history_progress_does_not_swallow_persistence_failures(budget, boundary):
     service, _, now = monitor(budget)
-    now[0] += 13 * 3600
+    now[0] += 25 * 3600
     expected = UnverifiedCost if boundary == "save_day" else TimeoutError
     with patch.object(service.state, boundary, side_effect=TimeoutError("synthetic persistence failure")):
         with pytest.raises(expected):
@@ -515,7 +575,7 @@ def test_history_progress_does_not_swallow_persistence_failures(budget, boundary
 
 def test_history_progress_waits_for_notice_ack_and_preserves_sticky_pause(budget):
     service, _, now = monitor(budget)
-    now[0] += 13 * 3600
+    now[0] += 25 * 3600
     repo = service.state.budget
     write_measurement(repo, now, amount=27_000_000)
     service.sns.publish.side_effect = TimeoutError("synthetic unknown SNS")
@@ -527,7 +587,7 @@ def test_history_progress_waits_for_notice_ack_and_preserves_sticky_pause(budget
     service.sns.publish.side_effect = None
     service.sns.publish.return_value = {"MessageId": "confirmed"}
     # Keep another historical block outstanding while retrying the same notice.
-    now[0] += 12 * 3600
+    now[0] += 24 * 3600
     result = service.run()
     assert result["measurement_state"] == "UNVERIFIED"
     assert result["reason"] == "HISTORICAL_COVERAGE_INCOMPLETE"

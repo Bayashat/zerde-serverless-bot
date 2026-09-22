@@ -335,3 +335,5 @@ scripts/setup_webhook.sh -> setup_webhook.py: retain existing endpoint/secret an
 subscriptions, include edited_message, and never drop pending updates.
 
 Memory V2 deletion recovery now discovers pending PURGE records through the existing work-due sparse index under MEMORY_PURGE, isolated from extraction work. Creation/fences and completion/index removal remain atomic in MemoryLifecycle. Index hints are strongly revalidated; a separate durable discovery cursor rotates partial/failed jobs. Legacy whole-table scanning only backfills missing index fields. See [the bounded recovery contract](goals/zerdebot-memory-v2/PURGE_RECOVERY_EXECUTION.md); deployment and measured real deletion latency are separate evidence.
+
+Memory V2 cost monitoring now closes the previous 12-hour block and observes the new settled block in the same bounded run. At most two missing blocks are processed; only complete coverage grants admission, and failed later blocks preserve earlier progress and unknown scan liability. See [cost monitor contract](MEMORY_V2_COST_MONITOR.md).
