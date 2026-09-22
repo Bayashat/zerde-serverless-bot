@@ -8,7 +8,7 @@ from dataclasses import replace
 from .command_receipts import CommandReceipt
 from .commands import MemoryCommandService
 from .lifecycle import MemoryLifecycle
-from .models import MemoryConflict, MemoryInputError, MemoryUnavailable
+from .models import MemoryConflict, MemoryInputError, MemoryOwnershipDenied, MemoryUnavailable
 from .public_answers import MemoryPublicRetryRequiredError, try_memory_answer
 from .telegram_ingestion import source_event
 
@@ -27,6 +27,7 @@ _TEXT = {
         ),
         "unavailable": "Memory V2 is not active or this operation is unavailable. No legacy memory is used.",
         "denied": "This operation requires current group membership; group changes require a group administrator.",
+        "ownership_denied": "You can only change your own personal memory or forget messages you sent.",
         "conflict": "The selected memory changed. Show the current profile and use its current fact reference.",
         "status": "Memory: {state}; learning: {learning}; your opt-out: {optout}; pending deletion: {pending}.",
     },
@@ -44,6 +45,7 @@ _TEXT = {
         ),
         "unavailable": "Memory V2 не активна или операция недоступна. Старая память не используется.",
         "denied": "Нужно действующее членство в группе; изменения группы доступны администраторам.",
+        "ownership_denied": "Можно изменять только свою личную память или удалять из памяти свои сообщения.",
         "conflict": "Запись изменилась. Покажите текущий профиль и используйте актуальную ссылку на факт.",
         "status": "Память: {state}; обучение: {learning}; ваш отказ: {optout}; удаление ожидает: {pending}.",
     },
@@ -61,6 +63,9 @@ _TEXT = {
         ),
         "unavailable": "Memory V2 қосылмаған немесе әрекет қолжетімсіз. Ескі жад қолданылмайды.",
         "denied": "Топтың қазіргі мүшесі болу қажет; топ өзгерістерін әкімші растайды.",
+        "ownership_denied": (
+            "Тек өзіңіз туралы жеке жадты өзгертуге немесе өз хабарламаларыңызды жадтан өшіруге болады."
+        ),
         "conflict": "Дерек өзгерді. Қазіргі профильді ашып, фактінің жаңа сілтемесін пайдаланыңыз.",
         "status": "Жад: {state}; үйрену: {learning}; сіздің бас тартуыңыз: {optout}; өшіру күтуде: {pending}.",
     },
@@ -75,6 +80,7 @@ _TEXT = {
         "pending": "本次删除范围已停止写入，清理仍在进行。请通过 /memory status 查看进度；此消息不代表已经删除完成。",
         "unavailable": "Memory V2 尚未启用，或本次操作不可用。不会使用旧记忆。",
         "denied": "需要当前群成员身份；群级修改需要群管理员身份。",
+        "ownership_denied": "你只能修改自己的个人记忆，或从记忆中遗忘自己发送的消息。",
         "conflict": "所选事实已发生变化，请显示当前档案并使用最新事实引用。",
         "status": "记忆：{state}；学习：{learning}；你的退出状态：{optout}；待完成删除：{pending}。",
     },
@@ -144,43 +150,52 @@ async def execute(ctx, repo, api):
     receipt = CommandReceipt(repo, ctx, action, fact_ref=ref, target_source=target)
     receipt.acquire()
     try:
-        result = receipt.recover()
-        if result is None:
-            scoped = receipt.fenced_repo
-            commands = MemoryCommandService(scoped, MemoryLifecycle(scoped), authorize=authorized)
-            if action in {"on", "off"}:
-                if not authorized(ctx.chat_id, ctx.user_id, require_admin=True):
-                    raise MemoryUnavailable("Live administrator authorization expired")
-                control = scoped.get_control(ctx.chat_id)
-                # Initial cutover is operator-gated. Group-forget may restart cleanly.
-                if action == "on" and control["state"] == "STOPPED" and control.get("purged_through"):
-                    scoped.activate_group(ctx.chat_id, expected_revision=int(control["revision"]))
+        try:
+            result = receipt.recover()
+            if result is None:
+                scoped = receipt.fenced_repo
+                commands = MemoryCommandService(scoped, MemoryLifecycle(scoped), authorize=authorized)
+                if action in {"on", "off"}:
+                    if not authorized(ctx.chat_id, ctx.user_id, require_admin=True):
+                        raise MemoryUnavailable("Live administrator authorization expired")
+                    control = scoped.get_control(ctx.chat_id)
+                    # Initial cutover is operator-gated. Group-forget may restart cleanly.
+                    if action == "on" and control["state"] == "STOPPED" and control.get("purged_through"):
+                        scoped.activate_group(ctx.chat_id, expected_revision=int(control["revision"]))
+                    else:
+                        scoped.set_learning_enabled(
+                            ctx.chat_id, action == "on", expected_revision=int(control["revision"])
+                        )
+                    result = {"state": "LEARNING_ON" if action == "on" else "LEARNING_OFF"}
+                elif action == "forget_me":
+                    result = commands.forget_me(ctx.chat_id, ctx.user_id)
+                elif action == "optout":
+                    result = commands.optout(ctx.chat_id, ctx.user_id)
+                elif action == "optin":
+                    result = commands.optin(ctx.chat_id, ctx.user_id)
+                elif action == "forget_group":
+                    result = commands.forget_group(ctx.chat_id, ctx.user_id)
+                elif action == "forget_this":
+                    result = commands.forget_source(ctx.chat_id, ctx.user_id, target)
+                elif action == "wrong":
+                    result = commands.wrong(ctx.chat_id, ctx.user_id, ref)
+                elif action == "correct":
+                    value = args.split(maxsplit=2)[2]
+                    source = replace(source_event(ctx._update), source_kind="confirmation")
+                    result = commands.correct(ctx.chat_id, ctx.user_id, ref, source_event=source, value=value)
                 else:
-                    scoped.set_learning_enabled(ctx.chat_id, action == "on", expected_revision=int(control["revision"]))
-                result = {"state": "LEARNING_ON" if action == "on" else "LEARNING_OFF"}
-            elif action == "forget_me":
-                result = commands.forget_me(ctx.chat_id, ctx.user_id)
-            elif action == "optout":
-                result = commands.optout(ctx.chat_id, ctx.user_id)
-            elif action == "optin":
-                result = commands.optin(ctx.chat_id, ctx.user_id)
-            elif action == "forget_group":
-                result = commands.forget_group(ctx.chat_id, ctx.user_id)
-            elif action == "forget_this":
-                result = commands.forget_source(ctx.chat_id, ctx.user_id, target)
-            elif action == "wrong":
-                result = commands.wrong(ctx.chat_id, ctx.user_id, ref)
-            elif action == "correct":
-                value = args.split(maxsplit=2)[2]
-                source = replace(source_event(ctx._update), source_kind="confirmation")
-                result = commands.correct(ctx.chat_id, ctx.user_id, ref, source_event=source, value=value)
-            else:
-                _, _, field, value = args.split(maxsplit=3)
-                source = replace(source_event(ctx._update), source_kind="confirmation")
-                result = commands.confirm_group(ctx.chat_id, ctx.user_id, source_event=source, field=field, value=value)
-            result = receipt.complete(result)
+                    _, _, field, value = args.split(maxsplit=3)
+                    source = replace(source_event(ctx._update), source_kind="confirmation")
+                    result = commands.confirm_group(
+                        ctx.chat_id, ctx.user_id, source_event=source, field=field, value=value
+                    )
+                result = receipt.complete(result)
+        except MemoryOwnershipDenied:
+            result = receipt.deny()
     finally:
         receipt.release()
+    if result["state"] == "DENIED":
+        return text("ownership_denied", ctx.lang_code)
     if result.get("kind") == "PURGE":
         result = MemoryLifecycle(repo).advance(ctx.chat_id, result["sk"], max_pages=2)
         if result["state"] != "DONE":

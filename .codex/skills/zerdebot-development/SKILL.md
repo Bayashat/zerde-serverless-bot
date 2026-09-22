@@ -270,3 +270,5 @@ subscriptions, include edited_message, and never drop pending updates.
 Memory V2 purge discovery reuses work-due/KEYS_ONLY with MEMORY_PURGE keys. Keep canonical PURGE and the original Lifecycle owner/fences authoritative, persist each attempted hint separately from deletion progress, and use old Scan only for bounded legacy backfill. No additional table or schedule. See [purge recovery contract](../../../docs/goals/zerdebot-memory-v2/PURGE_RECOVERY_EXECUTION.md).
 
 Memory V2 cost-monitor handoff: keep the single `MemoryCostMonitor` owner, process at most two oldest incomplete blocks per invocation, and refresh only the newest when all are complete. Never grant a permit on partial coverage or refund unknown scans; each block retains its bounded telemetry contract. See `docs/MEMORY_V2_COST_MONITOR.md`.
+
+Memory V2 definite pre-mutation ownership denials use the original command receipt owner to persist DENIED before localized feedback; unknown writes and source-purge recovery retain their existing behavior. See [runtime contract](../../../docs/MEMORY_V2_RUNTIME.md).
