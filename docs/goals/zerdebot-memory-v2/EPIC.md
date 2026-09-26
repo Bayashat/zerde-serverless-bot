@@ -1,32 +1,35 @@
 <!-- zerde-memory-v2:EPIC -->
 # ZerdeBot Memory V2 与可靠性整治
 
-本 Epic 执行 2026-09-10 用户批准的完整方案。目标是明确自述、证据事实、跨群隔离、可更正和遗忘的群机器人记忆，关闭所有自动社交参与，同时修复审阅发现的可靠性问题。
+目标：可靠、可维护的群机器人；个人记忆只来自本人在本群的明确自述，回答有来源，可查看/更正/遗忘。自动社交与抽奖永久退役。Python/Lambda/SQS/DynamoDB保留，V2独立表和唯一事实writer，不重写整个仓库。
 
-- [完整实施契约](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/PLAN.md)
-- [审阅与 AWS 账单快照](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/AUDIT.md)
-- [下一会话执行入口](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/GOAL.md)
-- [证据记录](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/EVIDENCE.md)
-- [最终代码集成 PR #204](https://github.com/Bayashat/zerde-serverless-bot/pull/204)
-- [代码交付后继续执行](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/HANDOFF.md)
+2026-09-26用户新增顺序：**启用新功能、新群或生产记忆前清除旧残留；删除前给精确准备删/保留清单；每次有实质进展及时同步计划和工单。** 现有dev测试群保持原控制/epoch，不把本次同步当成新启用。
 
-当前 Z01–Z19 均已有代码/工具/手册交付 PR，详见[任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/feat/zerde-complete-integration/docs/goals/zerdebot-memory-v2/TASKS.md)。**PR_OPEN / IMPLEMENTED_UNPROVEN**：尚未合并、部署、清零、运行真实模型或七天试运行，不勾选产品完成。
+- [完整计划](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/PLAN.md)
+- [当前收尾契约](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md)
+- [删除前清单](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/RETIREMENT_INVENTORY.md)
+- [任务看板](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/TASKS.md)
+- [下一会话入口](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/HANDOFF.md)
+- [证据](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/EVIDENCE.md)
 
-2026-09-11用户修订：直接在#204移除实验性抽奖，待用户审阅批准合并；此次没有部署或删除线上数据。
+## 当前完成与未完成
 
-## 不可漂移的边界
+- PR220已合并/两环境实际部署读回通过，源码72673/main54ce。2407测试/CI是代码证据，不能代替产品验收。
+- F5真实模型合成测量语义policy PASS，来源1176/1176、未知256/256、已知完整220/224；原strict FAIL、4预算缺答、UNKNOWN保留。F6/F7/F8/F10原生Telegram受控功能验收完成。
+- F9自然使用尚未建立起点，50有据/20未知样本仍0；production_ready=false，不承诺空等日历天数完成。prod未开学习。
+- 旧在线30794行/8259向量已清零，本地3份加密归档和key已移除；3 SETTINGS保留。旧运行代码/2张bot-memory表/向量专属资源仍待Z20移除。
+- Z18原清单/手册、Z19抽奖功能退役按限定范围结项；实际资源删除Z20、PITR/其他副本Z10继续，不能称物理副本全无。
+- Z12–Z16业务真实恢复验收、Z17实际项目费用归因仍待完成，不依赖自然群聊天。
 
-保留 Python/Lambda/SQS/DynamoDB；独立 V2 表、唯一 fact writer；profile 只读当前有效事实。各群隔离，只本人明确自述；原文30天，长期最小证据随事实维护；全部自动插话/reaction/频道评论关闭，显式问答独立可用。旧 reader/writer/task/import/backfill 先停，再按精确清单清零，保留settings、统计、验证码和其他业务数据；用户已取消抽奖，其残留仅通过显式退役root清单清理。不能整表删除或 purge 混用业务队列。V1 无向量检索，失败只能回无长期记忆问答。
+## 工作顺序
 
-新增记忆目标$100/月（$70模型预留计数+$30AWS用量预留），不是AWS账号硬止付。费用必须区分账号与项目，历史credits抵扣不是FreeTier全免。Z18仅清理清单/手册，不授权删除旧云资源。
+R1同步 → R2旧代码解耦/3 SETTINGS迁移/配置部署/资源精确删除；R3业务及实际费用验收可独立推进；R4自然使用和推广受清理与产品门槛控制。Z20前置停写/保护证据已满足，不等原Z01/Z03 issue关闭。每次交付分别记录代码、合并、部署读回、合成、真实、删除与副本证据。
 
-## 完成门槛
+保留6张现役stats/quiz/V2表、业务队列、预算UNKNOWN和恢复数据；禁止purge混合队列。prod Retain脱管不等于物理删除。未知消费者先核实，不能为清理误删。失败仅回无长期记忆显式问答。
 
-至少200多轮场景、300标注事实、100无依据问题，kk/ru/en/混语分切片；precision>=95%、recall>=90%、个人断言来源支持100%、未知正确表达>=95%；错误身份/跨群/敏感泄露/删除复活/业务误删均0。dev验证后单群至少7天并取得50事实问答及20未知问答；样本不足不算真实验收。普通学习p95<=5min，投递恢复<=10min单列。
+当前应用月目标USD70模型＋USD30新增AWS预留，沿原真实账本；不是AWS账号硬封顶或实付。Project/Environment标签ACTIVE不代表账单归因已完成；账号、项目、模型供应商费用、credits/税分别说明。
 
-初版按任务独立PR；Z19退役修订按用户要求直接进入#204。代码、合并、部署读回、合成与真实证据分开记录；不能因为测试通过就关闭产品验收。先Z01-Z04，之后Z05-Z11按依赖推进；独立业务Z12-Z16可并行，共享入口及infra统一集成。
-
-## 子工单
+## 工单
 
 - [ ] Z01 #158 — FIX: 停用自动互动并隔离旧记忆路径
 - [ ] Z02 #159 — FIX: 日志脱敏和 Telegram 内容最小化
@@ -45,12 +48,10 @@
 - [ ] Z15 #172 — FIX: 新闻抓取时限与分群交付恢复
 - [ ] Z16 #173 — FIX: Quiz 发布、计分与答案恢复
 - [ ] Z17 #174 — FEATURE: 成本归因、dev 按需运行与有效告警
-- [ ] Z18 #175 — CHORE: 旧 AWS 资源清理清单与执行手册
+- [x] Z18 #175 — CHORE: 旧 AWS 资源清理清单与执行手册
+- [x] Z19 #178 — CHORE: 移除实验性抽奖功能
+- [ ] Z20 #221 — FIX: 退役旧记忆代码、迁移群设置并清理无用资源
 
-## 旧工单
+## 完成门槛
 
-#135 被清零后重新学习方案取代；#133 延期；#134 来源链接纳入Z08，实际链接验收完成后再关闭。
-
-## 执行中新发现的必要修复
-
-- [ ] [Z19 移除实验性抽奖](https://github.com/Bayashat/zerde-serverless-bot/issues/178)：用户取消该实验；命令、观察、存储和定时恢复从#204移除，旧任务无副作用消费，残留数据可按精确scope清理。取代原#181事务修复。
+四语言合成与真实证据分开，明确自述准确率≥95%、召回≥90%、来源支持100%、未知正确表达≥95%；身份错归属/跨群/敏感泄露/删后复活/误删为零。自然使用至少7天＋50有据和20未知逐条核对；学习p95≤5分钟、丢投恢复≤10分钟，暂停/过期缺口计入覆盖。副本义务保持原期限，PITR 2026-10-17 16:20:38UTC复查。

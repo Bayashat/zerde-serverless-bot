@@ -1,5 +1,7 @@
 # 执行证据
 
+当前入口：[2026-09-26收尾契约](FINISH_EXECUTION.md)、[逐项状态](TASKS.md)、[安全聚合证据](evidence/2026-09-26-retirement/status.safe.json)。以下按日期保留历史，不用起点或旧失败快照冒充当前状态。
+
 ## 2026-09-10 起点
 
 - 用户批准整个 PLAN；PRE 独立审阅 ALIGNED。
@@ -227,3 +229,13 @@ F7发布与真实客户端清理已经完成；本次新检查发现原成本监
 
 
 2026-09-23 #219：确定的个人事实/来源归属拒绝使用明确的四语言提示，并由原CommandReceipt记录DENIED终态，重投不执行业务。保留原scope/lease/CAS、未知写入恢复及来源purge恢复检查。新增28测试、相关82组合通过；独立正确性与维护POST ALIGNED。首轮missing-source测试仅mock原repo而非实际scopedrepo的夹具问题已修并独立复验。见[执行契约](COMMAND_DENIAL_EXECUTION.md)。本条记录本地阶段，发布和真实验收另行记录。
+
+## 2026-09-26 R1 状态同步与删除前清单
+
+main54ce/部署source72673已核对。PR220的2407 tests/CI/两环境实包读回、F5语义policy PASS和F10合成生命周期PASS归入当前摘要；原strict FAIL、4缺答、2个503 UNKNOWN和所有冻结报告保留。自然试用起点未建立，样本0/0，生产未启用。
+
+9张表当前盘点：2张旧bot-memory精确0/3行（prod全SETTINGS），6张现役业务/V2，1张更早stats候选。旧向量资源清单来自9月23日模板，孤儿候选9月10日证据需刷新，均未执行资源删除。Project/Environment标签ACTIVE，Component INACTIVE；未由标签状态推算实付。
+
+本轮R1仅更新契约/清单/状态/工单和自动任务优先级，未修改运行代码、迁移设置、删除AWS数据/资源或启用新群。PRE独审ALIGNED：用户的新清理前置覆盖旧验收后删；settings与V2媒体必须先解耦；Retain不等于删除；Z18清单交付和Z19功能退役可按限定范围结项，副本责任留Z10。后续POST/CI/发布证据追加。
+
+R1最终POST/maintainer独审ALIGNED；两项发现已修正：F9自然观察不包含在已完成合成阶段内，Z20的停写/保护前置按已满足证据处理，不等待Z01/Z03关闭。20个任务映射及本地链接检查PASS，pre-commit全项PASS。21个GitHub正文/状态与本地镜像逐项读回一致，#175/#178按限定范围关闭，#221新建；automation新增清理前置/同步及R2/R3优先执行，原schedule/target/ACTIVE保持且逐字段读回一致。详见[sync.safe.json](evidence/2026-09-26-retirement/sync.safe.json)。本PR为文档同步，未重跑业务全测试，CI与受控合并另记。

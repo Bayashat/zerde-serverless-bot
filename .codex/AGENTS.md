@@ -1,5 +1,12 @@
 # AGENTS.md
 
+## 2026-09-26 current execution gate
+
+Follow [the finishing contract](../docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md). The owner requires deletion of retired code and unused resources before new feature/group/production-memory activation, with an exact delete/keep inventory announced beforehand. Preserve the existing dev pilot CONTROL/epoch. Update PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and the relevant GitHub issues after material progress. Do not wait for an empty group to produce natural samples while independent cleanup/business/cost acceptance can proceed.
+
+The shipped V2 table/writer and source-validated explicit answers are current; legacy profiles, vectors, proactive/channel/ambient behavior below describe historical implementation only and MUST NOT be wired back in or treated as current product requirements. Legacy code/resources remain physically present pending the new cleanup task; migration of the three business SETTINGS and explicit-media dependency separation must precede old-table deletion. Never treat CloudFormation Retain as physical deletion. Current runtime contracts are in docs/MEMORY_V2_RUNTIME.md and the finishing contract.
+
+
 F4 isolates fact-validation failures only after full source-index validation; the existing extractor retries only pending refs within the same two-call limit. Worker/Writer still revalidate before atomic writes. Plain answers describe current context availability without asserting an empty database or promising history search. See [F4 contract](../docs/goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md).
 
 The owner removed experimental contests on 2026-09-11 in PR #204. Do not restore contest commands, writers, TTL recovery or fairness requirements from historical plans. Old queued contest tasks are discarded; cleanup uses explicit retired-root scope while public memory deletion remains memory-only. See docs/MEMORY_CUTOVER.md.
@@ -15,7 +22,7 @@ The bounded post-baseline handbook/education corrections are documented in
 [Memory quality follow-up](../docs/MEMORY_QUALITY_FOLLOWUP.md). Keep the sole public-content
 and answer owners; do not change the frozen real-evaluation gold to improve scores.
 
-Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They remain for reference until the V2 acceptance/retirement task. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
+Legacy memory learning, retrieval, history imports and all unsolicited social interactions are retired in code. Explicit `/ask`, @mentions and requested bot followups work without long-term memory and ignore old settings flags. Legacy AGENT_REPLY bodies are never read or written. Current V2 body-free answer receipts provide identity hints only. Old SQS memory/social/vector/ask payloads are acknowledged without work; do not re-enable the legacy helpers described below. They are pending removal before any new feature/group/production-memory activation; do not wait for natural acceptance to remove them. See [cutover operations](../docs/MEMORY_CUTOVER.md) and [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157). This source change does not itself prove deployment or data deletion.
 
 
 This file guides Codex when working in this repository. Keep it current with `docs/ARCHITECTURE.md` and `.codex/skills/zerdebot-development/SKILL.md`.
