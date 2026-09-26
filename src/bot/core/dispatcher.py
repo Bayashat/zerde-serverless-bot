@@ -7,7 +7,7 @@ from core.logger import LoggerAdapter, get_logger
 from core.utils import check_membership
 from services.repositories import (
     CaptchaRepository,
-    GroupMemoryRepository,
+    ExplicitContextRepository,
     LambdaInvoker,
     QuizRepository,
     SQSClient,
@@ -40,7 +40,7 @@ class Context:
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
         captcha_repo: CaptchaRepository | None = None,
-        memory_repo: GroupMemoryRepository | None = None,
+        memory_repo: ExplicitContextRepository | None = None,
     ):
         self._update = update
         self.bot = bot
@@ -152,7 +152,7 @@ class Dispatcher:
         quiz_repo: QuizRepository | None = None,
         lambda_invoker: LambdaInvoker | None = None,
         captcha_repo: CaptchaRepository | None = None,
-        memory_repo: GroupMemoryRepository | None = None,
+        memory_repo: ExplicitContextRepository | None = None,
     ):
         self.bot = bot
         self.stats_repo = stats_repo

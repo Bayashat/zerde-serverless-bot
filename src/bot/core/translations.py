@@ -13,9 +13,9 @@ TRANSLATIONS = {
         "quiz_reconcile_admin": "Only a current group administrator can reconcile a quiz.",
         "quiz_reconcile_ok": "The existing quiz has been verified and its scoring record restored.",
         "quiz_reconcile_unknown": "The quiz is not confirmed. Check the delivery record before trying again.",
-        "memory_rebuilding": (
-            "Memory is being rebuilt. Learning and automatic interactions are disabled. /ask, direct "
-            "mentions and requested replies remain available without long-term memory."
+        "legacy_agent_retired": (
+            "Automatic participation is retired. /ask, direct mentions and requested replies remain "
+            "available. Use /memory to view, correct or forget current memory."
         ),
         "start_message": (
             "👋 <b>Hello! I am Zerde — a smart assistant for IT communities.</b> 🤖\n\n"
@@ -36,7 +36,7 @@ TRANSLATIONS = {
             "• /ping — Health check.\n"
             "• /stats — Group stats (admins).\n"
             "• /memory on|off|status|forget me|forget group — Manage group memory.\n"
-            "• /agent on|off|status|why — Manage agent participation.\n"
+            "• /agent — Explain retired automatic participation.\n"
             "• /ask — Ask the agent, or reply to a message with /ask.\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /quizstats — Show your quiz stats in DM.\n"
@@ -127,57 +127,15 @@ TRANSLATIONS = {
             "Please open a chat with me and send /start first, then try /quizstats again."
         ),
         "quiz_not_configured": "⚙️ Quiz is not configured for this bot.",
-        "memory_usage": (
-            "🧠 <b>Group memory</b>\n\n"
-            "• <code>/memory on</code> — enable group memory\n"
-            "• <code>/memory off</code> — disable memory and agent\n"
-            "• <code>/memory status</code> — show memory status\n"
-            "• <code>/memory about me</code> — show what I know from your own messages\n"
-            "• <code>/memory forget me</code> — delete your memory in this group\n"
-            "• <code>/memory forget this</code> — reply to a bot answer or source message and delete related memory\n"
-            "• <code>/memory wrong</code> — reply to a bot answer and mark its memory sources as wrong\n"
-            "• <code>/memory forget group</code> — delete all group memory"
-        ),
         "agent_usage": (
-            "🤖 <b>Agent mode</b>\n\n"
-            "• <code>/agent on</code> — let me answer and occasionally join in\n"
-            "• <code>/agent off</code> — stop proactive, mention, and reply-thread participation\n"
-            "• <code>/agent status</code> — show agent and memory status\n"
-            "• <code>/agent why</code> — explain why I replied\n"
-            "• <code>/agent wrong</code> — reply to my answer and down-rank wrong memory sources"
+            "Automatic participation is retired. /ask, direct mentions and requested replies remain "
+            "available. Use /memory to view, correct or forget current memory."
         ),
         "memory_storage_not_configured": "⚙️ Group memory storage is not configured for this deployment.",
-        "memory_deployment_disabled": "⚙️ Group memory is disabled by deployment config.",
-        "agent_deployment_disabled": "⚙️ The group agent is disabled by deployment config.",
         "status_on": "on",
         "status_off": "off",
-        "memory_owner_only": "❌ Only the group owner or bot owner can change group memory settings.",
         "bot_owner_only": "❌ Only the bot owner can do that.",
-        "memory_enabled": "🧠 Group memory is now on. I will remember recent non-command messages for context.",
-        "memory_disabled": (
-            "🧠 Group memory is now off. Existing stored memory is kept until TTL or /memory forget group."
-        ),
-        "agent_enabled": "🤖 Group agent is now on. I can answer when asked and join in when it is useful.",
-        "agent_disabled": (
-            "🤖 Agent participation is disabled.\n"
-            "I will not proactively join conversations or respond to mentions/replies.\n"
-            "Explicit /ask remains available while memory is enabled."
-        ),
-        "memory_status_message": (
-            "🧠 <b>Group memory:</b> {memory}\n"
-            "🤖 <b>Group agent:</b> {agent}\n"
-            "💬 <b>Recent messages:</b> {recent_messages}\n"
-            "👥 <b>User profiles:</b> {user_profiles}\n"
-            "📚 <b>Long-term memory:</b> {events} events, {user_facts} user facts, "
-            "{group_facts} group facts, {jokes} jokes\n"
-            "🗓 <b>Daily summaries:</b> {daily_summaries}\n"
-            "🔎 <b>Vector memory:</b> configured {vector_configured}, indexed {vector_indexed}/{vector_total}, "
-            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
-            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
-            "🧾 <b>Recorded agent replies:</b> {agent_replies}"
-        ),
         "ask_usage": ("💬 Usage: <code>/ask question</code> or reply to a message/media with <code>/ask</code>."),
-        "ask_memory_off": "🧠 Group memory is off. Ask the group owner to run <code>/memory on</code> first.",
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
         "ask_multimodal_unavailable": "😵 Media understanding is not available right now.",
         "ask_media_unsupported": (
@@ -187,68 +145,7 @@ TRANSLATIONS = {
         "ask_media_too_large": "I could not read this media because it is too large.",
         "ask_media_unavailable": "I could not read this media. It may be unavailable, expired, or not downloadable.",
         "ask_daily_quota_exhausted": "⚠️ AI daily quota is exhausted for today.",
-        "forget_group_done": "🧹 Deleted {deleted} memory items for this group.\n{vector_note}",
-        "forget_me_no_user": "❌ I could not identify your Telegram user id.",
-        "forget_me_done": "🧹 Deleted {deleted} memory items linked to you in this group.\n{vector_note}",
-        "memory_about_me_empty": "🧠 I do not have a stored profile for you in this group yet.",
-        "memory_about_me_message": (
-            "🧠 <b>I know this from your own messages:</b>\n"
-            "- language style: {language_style}\n"
-            "- common topics: {common_topics}\n"
-            "- self-stated preferences: {preferences}\n"
-            "- self-stated background: {background}\n"
-            "- boundaries: {boundaries}\n\n"
-            "Use <code>/memory forget me</code> to remove your stored user memory."
-        ),
-        "forget_this_usage": ("Reply to a bot answer or source message with <code>/memory forget this</code>."),
-        "forget_this_not_allowed": (
-            "❌ You can only delete memory linked to your own messages. "
-            "The group owner or bot owner can delete group memory."
-        ),
-        "forget_this_no_sources": "🧠 That bot answer has no deletable recorded memory sources.",
-        "forget_this_nothing_deleted": "🧠 I did not find stored memory for that message.",
-        "forget_this_done": "🧹 Deleted {deleted} related memory item(s).\n{vector_note}",
-        "wrong_memory_usage": "Reply to a bot answer with <code>/agent wrong</code> or <code>/memory wrong</code>.",
-        "wrong_memory_no_sources": "🧠 That answer has no stored memory sources I can mark.",
-        "wrong_memory_done": "🧠 Marked {marked} memory source(s) as wrong. I will rank them lower in future answers.",
-        "vector_configured_yes": "yes",
-        "vector_configured_no": "no",
-        "vector_backfill_none": "-",
-        "vector_backfill_queued": "queued",
-        "vector_backfill_queued_next_page": "queued; more pages pending",
-        "vector_backfill_queued_with_failures": "queued with failures",
-        "vector_backfill_progress": (
-            "processed {processed_total}, enqueued {enqueued_total}, failures {failures_total}"
-        ),
-        "vector_cleanup_deleted": "Vector memory cleanup requested for {deleted} indexed item(s).",
-        "vector_cleanup_skipped": "Vector memory cleanup is not configured.",
-        "vector_cleanup_delayed": "Vector memory cleanup was not fully confirmed; stored memory was still deleted.",
-        "memory_cleanup_pending": (
-            "Cleanup is incomplete: source records are deleted, but vector deletion is still pending. Retry "
-            "the forget command to resume; administrators can also recover the saved cleanup work."
-        ),
-        "forget_me_scope": (
-            "Only directly owned records were removed. Shared group facts and summaries remain; complete "
-            "historical cleanup is handled separately."
-        ),
         "why_reply_missing": "🤷 I do not have a recorded reason for that reply.",
-        "why_reply_message": (
-            "🧾 <b>Why I replied</b>\n"
-            "Reason: {reason}\n"
-            "Trigger: {trigger}\n"
-            "Confidence: {confidence}\n"
-            "{sources}"
-        ),
-        "why_sources_none": "Memory sources: none recorded",
-        "why_sources_header": "Memory sources:",
-        "why_sources_item": "- {label}: {value}",
-        "why_source_yes": "yes",
-        "why_source_requester_profile": "requester profile",
-        "why_source_target_profile": "target profile",
-        "why_source_semantic": "semantic memory",
-        "why_source_lexical": "lexical memory",
-        "why_source_long_term": "long-term group memory",
-        "why_source_recent": "recent context",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda is not configured.",
         "genquiz_usage": (
             "❌ Usage: /genquiz &lt;topic&gt; [&lt;difficulty&gt; [&lt;lang&gt;]]\n"
@@ -303,9 +200,9 @@ TRANSLATIONS = {
         "quiz_reconcile_admin": "Викторинаны тек топтың қазіргі әкімшісі растай алады.",
         "quiz_reconcile_ok": "Бар викторина расталды, ұпай санау жазбасы қалпына келтірілді.",
         "quiz_reconcile_unknown": "Викторина расталмады. Қайта әрекеттенбес бұрын жіберу жазбасын тексеріңіз.",
-        "memory_rebuilding": (
-            "Жад қайта жасалып жатыр. Ақпаратты есте сақтау және автоматты әрекеттер өшірілген. /ask, "
-            "тікелей белгілеу және ботқа қойылған нақты сұрақтар ұзақ мерзімді жадсыз жұмыс істейді."
+        "legacy_agent_retired": (
+            "Автоматты түрде әңгімеге қосылу тоқтатылған. /ask, тікелей атау және ботқа жауап беру "
+            "қолжетімді. Қазіргі жадты көру, түзету немесе өшіру үшін /memory пайдаланыңыз."
         ),
         "start_message": (
             "👋 <b>Сәлем! Мен Zerde — IT қауымдастығына арналған ақылды көмекшімін.</b> 🤖\n\n"
@@ -326,7 +223,7 @@ TRANSLATIONS = {
             "• /ping — Тексеру пәрмені.\n"
             "• /stats — Топ статистикасы (админдер).\n"
             "• /memory on|off|status|forget me|forget group — Топ жадын басқару.\n"
-            "• /agent on|off|status|why — Agent режимін басқару.\n"
+            "• /agent — Автоматты қатысудың тоқтатылғаны туралы ақпарат.\n"
             "• /ask — Agent-тен сұрау немесе хабарламаға reply жасап сұрау.\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
@@ -423,58 +320,18 @@ TRANSLATIONS = {
             "Алдымен менімен жеке чат ашып, /start пәрменін жіберіңіз, содан соң /quizstats қайта көріңіз."
         ),
         "quiz_not_configured": "⚙️ Quiz бұл бот үшін бапталмаған.",
-        "memory_usage": (
-            "🧠 <b>Топ жады</b>\n\n"
-            "• <code>/memory on</code> — топ жадын қосу\n"
-            "• <code>/memory off</code> — жад пен agent режимін өшіру\n"
-            "• <code>/memory status</code> — жад күйін көрсету\n"
-            "• <code>/memory about me</code> — өз хабарламаларыңыздан не білгенімді көрсету\n"
-            "• <code>/memory forget me</code> — осы топтағы өз жадыңызды өшіру\n"
-            "• <code>/memory forget this</code> — bot жауабына не source хабарламаға reply жасап қатысты жадты өшіру\n"
-            "• <code>/memory wrong</code> — bot жауабына reply жасап оның memory source-тарын қате деп белгілеу\n"
-            "• <code>/memory forget group</code> — топтың барлық жадын өшіру"
-        ),
         "agent_usage": (
-            "🤖 <b>Agent режимі</b>\n\n"
-            "• <code>/agent on</code> — жауап беруге және қажет жерде чатқа қосылуға рұқсат беру\n"
-            "• <code>/agent off</code> — proactive, mention және reply-thread қатысуын өшіру\n"
-            "• <code>/agent status</code> — agent пен жад күйін көрсету\n"
-            "• <code>/agent why</code> — неге жауап бергенімді түсіндіру\n"
-            "• <code>/agent wrong</code> — жауабыма reply жасап қате memory source-тарды төмендету"
+            "Автоматты түрде әңгімеге қосылу тоқтатылған. /ask, тікелей атау және ботқа жауап беру "
+            "қолжетімді. Қазіргі жадты көру, түзету немесе өшіру үшін /memory пайдаланыңыз."
         ),
         "memory_storage_not_configured": "⚙️ Бұл deployment үшін топ жады қоймасы бапталмаған.",
-        "memory_deployment_disabled": "⚙️ Топ жады deployment конфигінде өшірілген.",
-        "agent_deployment_disabled": "⚙️ Топ agent-і deployment конфигінде өшірілген.",
         "status_on": "қосулы",
         "status_off": "өшірулі",
-        "memory_owner_only": "❌ Топ жадын тек топ иесі немесе bot owner өзгерте алады.",
         "bot_owner_only": "❌ Мұны тек bot owner істей алады.",
-        "memory_enabled": "🧠 Топ жады қосылды. Контекст үшін соңғы command емес хабарламаларды есте сақтаймын.",
-        "memory_disabled": "🧠 Топ жады өшірілді. Бар жад TTL біткенше немесе /memory forget group дейін сақталады.",
-        "agent_enabled": "🤖 Agent режимі қосылды. Сұрағанда жауап беремін, пайдалы кезде чатқа қосыла аламын.",
-        "agent_disabled": (
-            "🤖 Agent қатысуы өшірілді.\n"
-            "Мен proactive түрде чатқа қосылмаймын және mention/reply хабарламаларына жауап бермеймін.\n"
-            "Жад қосулы болса, explicit /ask қолжетімді болып қалады."
-        ),
-        "memory_status_message": (
-            "🧠 <b>Топ жады:</b> {memory}\n"
-            "🤖 <b>Agent режимі:</b> {agent}\n"
-            "💬 <b>Соңғы хабарламалар:</b> {recent_messages}\n"
-            "👥 <b>Қолданушы профильдері:</b> {user_profiles}\n"
-            "📚 <b>Ұзақ мерзімді жад:</b> {events} оқиға, {user_facts} қолданушы фактісі, "
-            "{group_facts} топ фактісі, {jokes} әзіл\n"
-            "🗓 <b>Күндік қорытындылар:</b> {daily_summaries}\n"
-            "🔎 <b>Vector жады:</b> бапталған {vector_configured}, indexed {vector_indexed}/{vector_total}, "
-            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
-            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
-            "🧾 <b>Жазылған agent жауаптары:</b> {agent_replies}"
-        ),
         "ask_usage": (
             "💬 Қолданылуы: <code>/ask сұрақ</code> немесе хабарлама/медиаға reply жасап "
             "<code>/ask</code> жіберіңіз."
         ),
-        "ask_memory_off": "🧠 Топ жады өшірулі. Топ иесінен алдымен <code>/memory on</code> жіберуді сұраңыз.",
         "ask_agent_unavailable": "😵 AI agent қазір қолжетімсіз.",
         "ask_multimodal_unavailable": "😵 Медиа түсіну қазір қолжетімсіз.",
         "ask_media_unsupported": (
@@ -486,72 +343,7 @@ TRANSLATIONS = {
             "Бұл медианы оқи алмадым. Ол қолжетімсіз, мерзімі өткен немесе жүктелмейтін болуы мүмкін."
         ),
         "ask_daily_quota_exhausted": "⚠️ Бүгінгі AI күндік лимиті таусылды.",
-        "forget_group_done": "🧹 Бұл топ үшін {deleted} жад элементі өшірілді.\n{vector_note}",
-        "forget_me_no_user": "❌ Telegram user id-іңізді анықтай алмадым.",
-        "forget_me_done": "🧹 Осы топта сізге қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
-        "memory_about_me_empty": "🧠 Бұл топта сіз туралы сақталған профиль әлі жоқ.",
-        "memory_about_me_message": (
-            "🧠 <b>Өз хабарламаларыңыздан мынаны білемін:</b>\n"
-            "- тіл стилі: {language_style}\n"
-            "- жиі тақырыптар: {common_topics}\n"
-            "- өзіңіз айтқан қалаулар: {preferences}\n"
-            "- өзіңіз айтқан background: {background}\n"
-            "- шекаралар: {boundaries}\n\n"
-            "Сақталған user memory өшіру үшін <code>/memory forget me</code> қолданыңыз."
-        ),
-        "forget_this_usage": (
-            "Bot жауабына немесе source хабарламаға reply жасап <code>/memory forget this</code> жіберіңіз."
-        ),
-        "forget_this_not_allowed": (
-            "❌ Тек өз хабарламаларыңызға байланысты жадты өшіре аласыз. "
-            "Топ иесі немесе bot owner group memory өшіре алады."
-        ),
-        "forget_this_no_sources": "🧠 Бұл bot жауабында өшіруге болатын жазылған memory source жоқ.",
-        "forget_this_nothing_deleted": "🧠 Ол хабарлама үшін сақталған жад таппадым.",
-        "forget_this_done": "🧹 Қатысты {deleted} жад элементі өшірілді.\n{vector_note}",
-        "wrong_memory_usage": (
-            "Bot жауабына reply жасап <code>/agent wrong</code> немесе <code>/memory wrong</code> жіберіңіз."
-        ),
-        "wrong_memory_no_sources": "🧠 Бұл жауапта белгілей алатын сақталған memory source жоқ.",
-        "wrong_memory_done": "🧠 {marked} memory source қате деп белгіленді. Келесі жауаптарда төменірек ранктеледі.",
-        "vector_configured_yes": "иә",
-        "vector_configured_no": "жоқ",
-        "vector_backfill_none": "-",
-        "vector_backfill_queued": "кезекке қойылды",
-        "vector_backfill_queued_next_page": "кезекке қойылды; тағы беттер бар",
-        "vector_backfill_queued_with_failures": "кезекке қойылды, кейбір қате бар",
-        "vector_backfill_progress": (
-            "өңделді {processed_total}, кезекке қойылды {enqueued_total}, қате {failures_total}"
-        ),
-        "vector_cleanup_deleted": "{deleted} indexed vector жад элементін өшіру сұралды.",
-        "vector_cleanup_skipped": "Vector жадын тазалау бапталмаған.",
-        "vector_cleanup_delayed": "Vector жадын тазалау толық расталмады; сақталған жад бәрібір өшірілді.",
-        "memory_cleanup_pending": (
-            "Тазалау аяқталмады: бастапқы жазбалар өшірілді, vector тазалауы күтілуде. Жалғастыру үшін өшіру "
-            "пәрменін қайталаңыз; әкімші сақталған тапсырманы қалпына келтіре алады."
-        ),
-        "forget_me_scope": (
-            "Тек өзіңізге тиесілі жазбалар өшірілді. Ортақ топ фактілері мен түйіндемелер сақталады; толық "
-            "тарихи тазалау бөлек орындалады."
-        ),
         "why_reply_missing": "🤷 Бұл жауап үшін жазылған себеп табылмады.",
-        "why_reply_message": (
-            "🧾 <b>Неге жауап бердім</b>\n"
-            "Себеп: {reason}\n"
-            "Триггер: {trigger}\n"
-            "Сенімділік: {confidence}\n"
-            "{sources}"
-        ),
-        "why_sources_none": "Memory sources: жазылмаған",
-        "why_sources_header": "Memory sources:",
-        "why_sources_item": "- {label}: {value}",
-        "why_source_yes": "иә",
-        "why_source_requester_profile": "сұраушы профилі",
-        "why_source_target_profile": "нысан user профилі",
-        "why_source_semantic": "semantic memory",
-        "why_source_lexical": "lexical memory",
-        "why_source_long_term": "ұзақ мерзімді group memory",
-        "why_source_recent": "соңғы контекст",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda бапталмаған.",
         "genquiz_usage": (
             "❌ Қолданылуы: /genquiz &lt;тақырып&gt; [&lt;деңгей&gt; [&lt;тіл&gt;]]\n"
@@ -606,6 +398,7 @@ TRANSLATIONS = {
         "quiz_reconcile_admin": "只有当前群管理员可以核对并恢复题目记录。",
         "quiz_reconcile_ok": "已核对现有题目并恢复其计分记录。",
         "quiz_reconcile_unknown": "题目尚未核实，请先检查发送记录再重试。",
+        "legacy_agent_retired": "自动插话功能已退役。/ask、直接提及和明确回复 bot 仍然可用。查看、更正或遗忘当前记忆请使用 /memory。",
         "start_message": (
             "👋 <b>你好！我是 Zerde —— 面向 IT 社群的智能助手。</b> 🤖\n\n"
             "我的主要职责是保护群聊免受垃圾机器人干扰，并收集有价值的统计数据。\n\n"
@@ -625,7 +418,7 @@ TRANSLATIONS = {
             "• /ping — 健康检查。\n"
             "• /stats — 查看群统计（管理员）。\n"
             "• /memory on|off|status|forget me|forget group — 管理群记忆。\n"
-            "• /agent on|off|status|why — 管理 agent 参与方式。\n"
+            "• /agent — 查看自动互动退役说明。\n"
             "• /ask — 向 agent 提问，也可回复消息提问。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
@@ -709,108 +502,19 @@ TRANSLATIONS = {
             "📬 我无法给你发送私信。\n" "请先打开与我的私聊并发送 /start，然后再试一次 /quizstats。"
         ),
         "quiz_not_configured": "⚙️ 本机器人未配置 Quiz 功能。",
-        "memory_usage": (
-            "🧠 <b>群记忆</b>\n\n"
-            "• <code>/memory on</code> — 开启群记忆\n"
-            "• <code>/memory off</code> — 关闭记忆和 agent\n"
-            "• <code>/memory status</code> — 查看记忆状态\n"
-            "• <code>/memory about me</code> — 查看我从你自己的消息中记住了什么\n"
-            "• <code>/memory forget me</code> — 删除你在本群的记忆\n"
-            "• <code>/memory forget this</code> — 回复 bot 答案或来源消息并删除相关记忆\n"
-            "• <code>/memory wrong</code> — 回复 bot 答案并标记其记忆来源有误\n"
-            "• <code>/memory forget group</code> — 删除整个群的记忆"
-        ),
-        "agent_usage": (
-            "🤖 <b>Agent 模式</b>\n\n"
-            "• <code>/agent on</code> — 允许我回答并在合适时加入聊天\n"
-            "• <code>/agent off</code> — 关闭主动、mention 和 reply-thread 参与\n"
-            "• <code>/agent status</code> — 查看 agent 和记忆状态\n"
-            "• <code>/agent why</code> — 解释我为什么回复\n"
-            "• <code>/agent wrong</code> — 回复我的答案并降低错误记忆来源的优先级"
-        ),
+        "agent_usage": "自动插话功能已退役。/ask、直接提及和明确回复 bot 仍然可用。查看、更正或遗忘当前记忆请使用 /memory。",
         "memory_storage_not_configured": "⚙️ 当前部署未配置群记忆存储。",
-        "memory_deployment_disabled": "⚙️ 群记忆已被部署配置关闭。",
-        "agent_deployment_disabled": "⚙️ 群 agent 已被部署配置关闭。",
         "status_on": "开启",
         "status_off": "关闭",
-        "memory_owner_only": "❌ 只有群主或 bot owner 可以修改群记忆设置。",
         "bot_owner_only": "❌ 只有 bot owner 可以这样做。",
-        "memory_enabled": "🧠 群记忆已开启。我会记住近期非命令消息，用于上下文。",
-        "memory_disabled": "🧠 群记忆已关闭。已有记忆会保留到 TTL 到期，或直到执行 /memory forget group。",
-        "agent_enabled": "🤖 Agent 模式已开启。有人问我时我会回答，也会在有帮助的时候加入聊天。",
-        "agent_disabled": (
-            "🤖 Agent 参与已关闭。\n"
-            "我不会主动加入对话，也不会响应 mention/reply。\n"
-            "只要群记忆开启，显式 /ask 仍然可用。"
-        ),
-        "memory_status_message": (
-            "🧠 <b>群记忆：</b>{memory}\n"
-            "🤖 <b>群 agent：</b>{agent}\n"
-            "💬 <b>近期消息：</b>{recent_messages}\n"
-            "👥 <b>用户画像：</b>{user_profiles}\n"
-            "📚 <b>长期记忆：</b>{events} 个事件，{user_facts} 条用户事实，"
-            "{group_facts} 条群事实，{jokes} 个梗\n"
-            "🗓 <b>每日摘要：</b>{daily_summaries}\n"
-            "🔎 <b>向量记忆：</b>已配置 {vector_configured}，已索引 {vector_indexed}/{vector_total}，"
-            "待处理 {vector_pending}，失败 {vector_failed}，跳过 {vector_skipped}\n"
-            "🧵 <b>向量回填：</b>{vector_backfill}\n"
-            "🧾 <b>已记录 agent 回复：</b>{agent_replies}"
-        ),
         "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复消息/媒体并发送 <code>/ask</code>。",
-        "ask_memory_off": "🧠 群记忆未开启。请让群主先执行 <code>/memory on</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
         "ask_multimodal_unavailable": "😵 媒体理解功能现在不可用。",
         "ask_media_unsupported": "明确要求分析时，我可以读取图片、视频、语音/音频、PDF 和文本/代码/日志文件，但暂不支持这种媒体类型。",
         "ask_media_too_large": "我无法读取这个媒体：文件太大。",
         "ask_media_unavailable": "我无法读取这个媒体。它可能不可用、已过期，或无法下载。",
         "ask_daily_quota_exhausted": "⚠️ 今天的 AI 日配额已用完。",
-        "forget_group_done": "🧹 已删除本群 {deleted} 条记忆。\n{vector_note}",
-        "forget_me_no_user": "❌ 我无法识别你的 Telegram user id。",
-        "forget_me_done": "🧹 已删除本群与你相关的 {deleted} 条记忆。\n{vector_note}",
-        "memory_about_me_empty": "🧠 我还没有在这个群里保存你的画像。",
-        "memory_about_me_message": (
-            "🧠 <b>我从你自己的消息中知道这些：</b>\n"
-            "- 语言风格：{language_style}\n"
-            "- 常见话题：{common_topics}\n"
-            "- 自述偏好：{preferences}\n"
-            "- 自述背景：{background}\n"
-            "- 边界：{boundaries}\n\n"
-            "使用 <code>/memory forget me</code> 删除你的用户记忆。"
-        ),
-        "forget_this_usage": "请回复一条 bot 答案或来源消息，并发送 <code>/memory forget this</code>。",
-        "forget_this_not_allowed": "❌ 你只能删除与你自己消息相关的记忆。群主或 bot owner 可以删除群记忆。",
-        "forget_this_no_sources": "🧠 那条 bot 答案没有可删除的已记录记忆来源。",
-        "forget_this_nothing_deleted": "🧠 我没有找到那条消息对应的已存记忆。",
-        "forget_this_done": "🧹 已删除 {deleted} 条相关记忆。\n{vector_note}",
-        "wrong_memory_usage": "请回复一条 bot 答案，并发送 <code>/agent wrong</code> 或 <code>/memory wrong</code>。",
-        "wrong_memory_no_sources": "🧠 那条答案没有可标记的已存记忆来源。",
-        "wrong_memory_done": "🧠 已标记 {marked} 条记忆来源有误。之后回答时会降低其优先级。",
-        "vector_configured_yes": "是",
-        "vector_configured_no": "否",
-        "vector_backfill_none": "-",
-        "vector_backfill_queued": "已入队",
-        "vector_backfill_queued_next_page": "已入队；还有后续分页",
-        "vector_backfill_queued_with_failures": "已入队，但有部分失败",
-        "vector_backfill_progress": "已扫描 {processed_total}，已入队 {enqueued_total}，失败 {failures_total}",
-        "vector_cleanup_deleted": "已请求删除 {deleted} 条已索引向量记忆。",
-        "vector_cleanup_skipped": "未配置向量记忆清理。",
-        "vector_cleanup_delayed": "向量记忆清理未完全确认；已删除存储记忆。",
-        "memory_cleanup_pending": "清理尚未完成：来源记录已删除，向量清理仍待处理。请重试遗忘命令恢复；管理员也可恢复已保存的清理任务。",
-        "forget_me_scope": "仅删除明确归属本人的记录。共享群事实及摘要保留，完整历史清零另行处理。",
         "why_reply_missing": "🤷 我没有找到那条回复的记录原因。",
-        "why_reply_message": (
-            "🧾 <b>我为什么回复</b>\n" "原因：{reason}\n" "触发：{trigger}\n" "置信度：{confidence}\n" "{sources}"
-        ),
-        "why_sources_none": "记忆来源：未记录",
-        "why_sources_header": "记忆来源：",
-        "why_sources_item": "- {label}: {value}",
-        "why_source_yes": "是",
-        "why_source_requester_profile": "提问者画像",
-        "why_source_target_profile": "目标用户画像",
-        "why_source_semantic": "语义记忆",
-        "why_source_lexical": "词面记忆",
-        "why_source_long_term": "长期群记忆",
-        "why_source_recent": "近期上下文",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda 未配置。",
         "genquiz_usage": (
             "❌ 用法：/genquiz &lt;主题&gt; [&lt;难度&gt; [&lt;语言&gt;]]\n"
@@ -863,9 +567,9 @@ TRANSLATIONS = {
         "quiz_reconcile_admin": "Подтвердить викторину может только текущий администратор группы.",
         "quiz_reconcile_ok": "Существующая викторина подтверждена, запись для подсчёта баллов восстановлена.",
         "quiz_reconcile_unknown": "Викторина не подтверждена. Перед повтором проверьте запись об отправке.",
-        "memory_rebuilding": (
-            "Память перестраивается. Запоминание и автоматические взаимодействия отключены. /ask, "
-            "прямые упоминания и явные вопросы в ответ боту доступны без долговременной памяти."
+        "legacy_agent_retired": (
+            "Автоматическое участие отключено. /ask, прямые упоминания и ответы боту доступны. Для "
+            "просмотра, исправления или удаления текущей памяти используйте /memory."
         ),
         "start_message": (
             "👋 <b>Привет! Я Zerde — умный помощник для IT-сообществ.</b> 🤖\n\n"
@@ -886,7 +590,7 @@ TRANSLATIONS = {
             "• /ping — проверка доступности.\n"
             "• /stats — статистика группы (для админов).\n"
             "• /memory on|off|status|forget me|forget group — управление памятью группы.\n"
-            "• /agent on|off|status|why — управление agent-режимом.\n"
+            "• /agent — Информация об отключённом автоматическом участии.\n"
             "• /ask — задать вопрос agent-у или спросить ответом на сообщение.\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
@@ -980,61 +684,16 @@ TRANSLATIONS = {
             "Сначала откройте со мной личный чат и отправьте /start, затем попробуйте /quizstats снова."
         ),
         "quiz_not_configured": "⚙️ Quiz для этого бота не настроен.",
-        "memory_usage": (
-            "🧠 <b>Память группы</b>\n\n"
-            "• <code>/memory on</code> — включить память группы\n"
-            "• <code>/memory off</code> — выключить память и agent\n"
-            "• <code>/memory status</code> — показать статус памяти\n"
-            "• <code>/memory about me</code> — показать, что я знаю из ваших сообщений\n"
-            "• <code>/memory forget me</code> — удалить вашу память в этой группе\n"
-            "• <code>/memory forget this</code> — ответьте на ответ бота или source-сообщение "
-            "и удалите связанную память\n"
-            "• <code>/memory wrong</code> — ответьте на ответ бота и отметьте его источники памяти как ошибочные\n"
-            "• <code>/memory forget group</code> — удалить всю память группы"
-        ),
         "agent_usage": (
-            "🤖 <b>Agent-режим</b>\n\n"
-            "• <code>/agent on</code> — разрешить мне отвечать и иногда подключаться к чату\n"
-            "• <code>/agent off</code> — выключить proactive, mention и reply-thread участие\n"
-            "• <code>/agent status</code> — показать статус agent-а и памяти\n"
-            "• <code>/agent why</code> — объяснить, почему я ответил\n"
-            "• <code>/agent wrong</code> — ответьте на мой ответ и понизьте ошибочные memory sources"
+            "Автоматическое участие отключено. /ask, прямые упоминания и ответы боту доступны. Для "
+            "просмотра, исправления или удаления текущей памяти используйте /memory."
         ),
         "memory_storage_not_configured": "⚙️ Хранилище памяти группы не настроено для этого deployment.",
-        "memory_deployment_disabled": "⚙️ Память группы выключена в deployment-конфиге.",
-        "agent_deployment_disabled": "⚙️ Group agent выключен в deployment-конфиге.",
         "status_on": "включено",
         "status_off": "выключено",
-        "memory_owner_only": "❌ Только владелец группы или bot owner может менять настройки памяти.",
         "bot_owner_only": "❌ Это может делать только bot owner.",
-        "memory_enabled": "🧠 Память группы включена. Я буду помнить недавние не-command сообщения для контекста.",
-        "memory_disabled": (
-            "🧠 Память группы выключена. Уже сохраненная память останется до TTL или /memory forget group."
-        ),
-        "agent_enabled": "🤖 Agent-режим включен. Я могу отвечать по запросу и подключаться, когда это полезно.",
-        "agent_disabled": (
-            "🤖 Участие agent-а выключено.\n"
-            "Я не буду proactive вступать в разговоры или отвечать на mentions/replies.\n"
-            "Явный /ask остается доступен, пока включена память."
-        ),
-        "memory_status_message": (
-            "🧠 <b>Память группы:</b> {memory}\n"
-            "🤖 <b>Agent-режим:</b> {agent}\n"
-            "💬 <b>Недавние сообщения:</b> {recent_messages}\n"
-            "👥 <b>Профили пользователей:</b> {user_profiles}\n"
-            "📚 <b>Долгосрочная память:</b> события {events}, факты пользователей {user_facts}, "
-            "факты группы {group_facts}, шутки {jokes}\n"
-            "🗓 <b>Дневные сводки:</b> {daily_summaries}\n"
-            "🔎 <b>Векторная память:</b> настроена {vector_configured}, indexed {vector_indexed}/{vector_total}, "
-            "pending {vector_pending}, failed {vector_failed}, skipped {vector_skipped}\n"
-            "🧵 <b>Vector backfill:</b> {vector_backfill}\n"
-            "🧾 <b>Записанные ответы agent-а:</b> {agent_replies}"
-        ),
         "ask_usage": (
             "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение/медиа командой " "<code>/ask</code>."
-        ),
-        "ask_memory_off": (
-            "🧠 Память группы выключена. Попросите владельца группы сначала выполнить <code>/memory on</code>."
         ),
         "ask_agent_unavailable": "😵 AI agent сейчас недоступен.",
         "ask_multimodal_unavailable": "😵 Понимание медиа сейчас недоступно.",
@@ -1047,72 +706,7 @@ TRANSLATIONS = {
             "Я не смог прочитать это медиа. Оно может быть недоступно, просрочено или не скачиваться."
         ),
         "ask_daily_quota_exhausted": "⚠️ Дневная квота AI на сегодня исчерпана.",
-        "forget_group_done": "🧹 Удалено элементов памяти для этой группы: {deleted}.\n{vector_note}",
-        "forget_me_no_user": "❌ Я не смог определить ваш Telegram user id.",
-        "forget_me_done": "🧹 Удалено элементов памяти, связанных с вами в этой группе: {deleted}.\n{vector_note}",
-        "memory_about_me_empty": "🧠 У меня пока нет сохраненного профиля для вас в этой группе.",
-        "memory_about_me_message": (
-            "🧠 <b>Я знаю это из ваших собственных сообщений:</b>\n"
-            "- стиль языка: {language_style}\n"
-            "- частые темы: {common_topics}\n"
-            "- заявленные предпочтения: {preferences}\n"
-            "- заявленный background: {background}\n"
-            "- границы: {boundaries}\n\n"
-            "Используйте <code>/memory forget me</code>, чтобы удалить вашу user memory."
-        ),
-        "forget_this_usage": ("Ответьте на ответ бота или source-сообщение командой <code>/memory forget this</code>."),
-        "forget_this_not_allowed": (
-            "❌ Вы можете удалять только память, связанную с вашими сообщениями. "
-            "Владелец группы или bot owner может удалять group memory."
-        ),
-        "forget_this_no_sources": "🧠 У этого ответа бота нет записанных источников памяти, которые можно удалить.",
-        "forget_this_nothing_deleted": "🧠 Я не нашел сохраненную память для этого сообщения.",
-        "forget_this_done": "🧹 Удалено связанных элементов памяти: {deleted}.\n{vector_note}",
-        "wrong_memory_usage": (
-            "Ответьте на ответ бота командой <code>/agent wrong</code> или <code>/memory wrong</code>."
-        ),
-        "wrong_memory_no_sources": "🧠 У этого ответа нет сохраненных источников памяти, которые можно отметить.",
-        "wrong_memory_done": (
-            "🧠 Источники памяти отмечены как ошибочные: {marked}. В будущих ответах они будут ранжироваться ниже."
-        ),
-        "vector_configured_yes": "да",
-        "vector_configured_no": "нет",
-        "vector_backfill_none": "-",
-        "vector_backfill_queued": "поставлен в очередь",
-        "vector_backfill_queued_next_page": "поставлен в очередь; есть следующие страницы",
-        "vector_backfill_queued_with_failures": "поставлен в очередь с ошибками",
-        "vector_backfill_progress": (
-            "обработано {processed_total}, поставлено в очередь {enqueued_total}, ошибок {failures_total}"
-        ),
-        "vector_cleanup_deleted": "Запрошено удаление indexed vector-памяти: {deleted}.",
-        "vector_cleanup_skipped": "Очистка vector-памяти не настроена.",
-        "vector_cleanup_delayed": "Очистка vector-памяти не полностью подтверждена; сохраненная память удалена.",
-        "memory_cleanup_pending": (
-            "Очистка не завершена: исходные записи удалены, векторы ожидают удаления. Повторите команду "
-            "забывания; администратор также может возобновить сохранённую задачу."
-        ),
-        "forget_me_scope": (
-            "Удалены только записи, принадлежащие вам. Общие факты и сводки группы остаются; полная "
-            "историческая очистка выполняется отдельно."
-        ),
         "why_reply_missing": "🤷 У меня нет записанной причины для этого ответа.",
-        "why_reply_message": (
-            "🧾 <b>Почему я ответил</b>\n"
-            "Причина: {reason}\n"
-            "Триггер: {trigger}\n"
-            "Уверенность: {confidence}\n"
-            "{sources}"
-        ),
-        "why_sources_none": "Источники памяти: не записаны",
-        "why_sources_header": "Источники памяти:",
-        "why_sources_item": "- {label}: {value}",
-        "why_source_yes": "да",
-        "why_source_requester_profile": "профиль запросившего",
-        "why_source_target_profile": "профиль целевого пользователя",
-        "why_source_semantic": "семантическая память",
-        "why_source_lexical": "лексическая память",
-        "why_source_long_term": "долгосрочная память группы",
-        "why_source_recent": "недавний контекст",
         "genquiz_lambda_not_configured": "❌ Quiz Lambda не настроена.",
         "genquiz_usage": (
             "❌ Использование: /genquiz &lt;тема&gt; [&lt;сложность&gt; [&lt;язык&gt;]]\n"

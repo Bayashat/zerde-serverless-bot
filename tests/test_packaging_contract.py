@@ -86,6 +86,27 @@ def test_bundle_probe_checks_shared_layer_but_allows_dependency_cache(tmp_path):
         verify(asset, tmp_path / "layer", "operations")
 
 
+@pytest.mark.parametrize(
+    "module",
+    runpy.run_path("scripts/verify_lambda_bundles.py")["RETIRED_BOT_MODULES"],
+)
+@pytest.mark.parametrize("form", [".py", ".pyc", ".pyo", "cache", "package"])
+def test_bundle_rejects_reintroduced_retired_memory_in_every_packaged_form(tmp_path, module, form):
+    verify = runpy.run_path("scripts/verify_lambda_bundles.py")["verify_first_party_assets"]
+    asset = tmp_path / "asset"
+    path = asset.joinpath(*module.split("."))
+    if form == "cache":
+        path = path.parent / "__pycache__" / f"{path.name}.cpython-313.pyc"
+    elif form == "package":
+        path = path / "__init__.py"
+    else:
+        path = path.with_suffix(form)
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"stale deployed code")
+    with pytest.raises(SystemExit, match="(First-party Python cache|Retired memory module)"):
+        verify(asset, tmp_path / "layer", "bot")
+
+
 def test_shared_layer_glob_filter_stages_source_without_local_caches(tmp_path, monkeypatch):
     from aws_cdk import App, Stack
 

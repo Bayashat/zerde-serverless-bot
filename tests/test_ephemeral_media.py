@@ -9,7 +9,6 @@ from botocore.exceptions import ClientError
 from services.memory_v2.lifecycle import MemoryLifecycle
 from services.memory_v2.media_ephemeral import MEDIA_RETENTION_SECONDS, EphemeralMediaRepository
 from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
-from services.repositories import group_memory
 from services.repositories.explicit_context_repository import ExplicitContextRepository
 from services.telegram_media import detect_media_references
 
@@ -74,8 +73,9 @@ def overlay(env, monkeypatch):
         ],
         BillingMode="PAY_PER_REQUEST",
     )
-    monkeypatch.setattr(group_memory, "get_dynamodb", lambda: db)
-    return ExplicitContextRepository(legacy.name, memory_v2_repo=env.repo)
+    context = ExplicitContextRepository(memory_v2_repo=env.repo)
+    context.protected_test_table = legacy
+    return context
 
 
 def test_store_only_one_day_metadata_and_no_raw_work_fact(env, cached):
@@ -323,15 +323,19 @@ def test_tampered_cache_row_fails_closed(env, cached, mutation):
         EphemeralMediaRepository(env.repo).get_refs(CHAT, "album-1")
 
 
-def test_legacy_reply_calls_do_zero_io_and_settings_keep_working(env, overlay):
-    overlay.set_chat_settings(CHAT, memory_enabled=False, agent_enabled=False)
-    assert overlay.get_chat_settings(CHAT)["memory_enabled"] is False
-    overlay.table = MagicMock()
-    overlay.record_agent_reply(chat_id=CHAT, bot_message_id=55, answer_text="old response")
-    assert overlay.get_agent_reply_explanation(CHAT, bot_message_id=55) == {}
-    assert overlay.get_agent_reply_explanation(CHAT) == {}
-    assert overlay.count_recent_agent_replies(CHAT, since_epoch=0) == 0
-    assert not overlay.table.mock_calls
+def test_context_has_no_legacy_knowledge_or_settings_interface(env, overlay):
+    from services.explicit_context import normalise_chat_style_profile
+
+    assert normalise_chat_style_profile(None)["tone"] == "concise"
+    for name in (
+        "table",
+        "get_chat_settings",
+        "set_chat_settings",
+        "record_agent_reply",
+        "get_agent_reply_explanation",
+        "count_recent_agent_replies",
+    ):
+        assert not hasattr(overlay, name)
 
 
 def test_overlay_album_writes_only_v2_and_keeps_legacy_business_rows(env, overlay):
@@ -340,16 +344,16 @@ def test_overlay_album_writes_only_v2_and_keeps_legacy_business_rows(env, overla
     env.repo.observe(source)
     # Album handling cannot delete retired non-memory data as a side effect.
     business = {"pk": f"CHAT#{CHAT}", "sk": "CONTEST#1#META", "kind": "contest", "business": "unchanged"}
-    overlay.table.put_item(Item=business)
+    overlay.protected_test_table.put_item(Item=business)
     overlay.store_media_group_item(
         chat_id=CHAT, media_group_id="album-1", message_id=8, media_ref=media(), created_at=source.original_sent_at
     )
     assert overlay.get_media_group_refs(CHAT, "album-1")[0]["file_id"] == "file-8"
-    assert overlay.table.scan()["Items"] == [business]
+    assert overlay.protected_test_table.scan()["Items"] == [business]
 
 
 def test_no_control_or_v2_configuration_uses_direct_media_without_legacy_lookup(env, overlay):
-    overlay.table = MagicMock()
+    overlay.protected_test_table = MagicMock()
     message = {"reply_to_message": {"message_id": 8, "media_group_id": "album-1", "photo": [{"file_id": "direct"}]}}
     for configured in (True, False):
         if not configured:
@@ -362,12 +366,12 @@ def test_no_control_or_v2_configuration_uses_direct_media_without_legacy_lookup(
             overlay.store_media_group_item(
                 chat_id=CHAT, media_group_id="album-1", message_id=8, media_ref=media(), created_at=env.clock.now
             )
-    assert not overlay.table.mock_calls
+    assert not overlay.protected_test_table.mock_calls
     assert not env.repo.get_subject(CHAT, USER)
 
 
 def test_database_error_propagates_and_never_uses_legacy_album(env, overlay, cached, monkeypatch):
-    overlay.table = MagicMock()
+    overlay.protected_test_table = MagicMock()
 
     def fail(**kwargs):
         raise ClientError({"Error": {"Code": "InternalServerError"}}, "Query")
@@ -375,7 +379,7 @@ def test_database_error_propagates_and_never_uses_legacy_album(env, overlay, cac
     monkeypatch.setattr(env.repo.table, "query", fail)
     with pytest.raises(ClientError):
         overlay.get_media_group_refs(CHAT, "album-1")
-    assert not overlay.table.mock_calls
+    assert not overlay.protected_test_table.mock_calls
 
 
 def test_missing_source_does_not_create_subject_or_observation(env, overlay):

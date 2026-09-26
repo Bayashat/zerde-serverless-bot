@@ -25,7 +25,7 @@ def catalog():
 
 @pytest.mark.parametrize("language", ["kk", "ru", "en", "mixed"])
 def test_plain_wire_reuses_production_without_memory_and_rejects_modifications(language):
-    from services.repositories.group_memory import normalise_chat_style_profile
+    from services.explicit_context import normalise_chat_style_profile
 
     request = {
         "question": "What do you know about me?",
@@ -122,8 +122,8 @@ def test_unverifiable_semantic_classification_is_not_abstention():
 
 @pytest.mark.parametrize("kind", ["plain_answer", "plain_answer_audit"])
 def test_new_wire_kinds_reserve_once_and_require_frozen_public_route(tmp_path, kind):
+    from services.explicit_context import normalise_chat_style_profile
     from services.memory_budget import RESERVATION_MICRO_USD
-    from services.repositories.group_memory import normalise_chat_style_profile
 
     from dev.tools.memory_eval.gemini_broker import BrokerEngine
     from dev.tools.memory_eval.live_session import AttemptLedger, SessionError
@@ -222,7 +222,7 @@ def test_actual_public_transport_matches_the_strict_plain_serializer(monkeypatch
 
     from services import group_agent
     from services.ai import gemini_client
-    from services.repositories.group_memory import normalise_chat_style_profile
+    from services.explicit_context import normalise_chat_style_profile
 
     from dev.tools.memory_eval.plain_requests import plain_client
 
@@ -240,7 +240,6 @@ def test_actual_public_transport_matches_the_strict_plain_serializer(monkeypatch
 
     client._post_generate_content = capture
     monkeypatch.setattr(group_agent, "_get_gemini", lambda: client)
-    monkeypatch.setattr(group_agent, "_load_chat_style_profile", lambda *args: style)
     monkeypatch.setattr(gemini_client, "_circuit_is_open", lambda *args: False)
     with pytest.raises(Captured):
         group_agent.answer_group_question(

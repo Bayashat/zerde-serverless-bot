@@ -7,6 +7,28 @@ import main
 import pytest
 
 
+@pytest.mark.parametrize("old_table", [None, "retired-table"])
+@pytest.mark.parametrize("v2_configured", [False, True])
+def test_explicit_media_facade_never_connects_to_legacy_storage(monkeypatch, old_table, v2_configured):
+    if old_table is None:
+        monkeypatch.delenv("MEMORY_TABLE_NAME", raising=False)
+    else:
+        monkeypatch.setenv("MEMORY_TABLE_NAME", old_table)
+    v2 = MagicMock() if v2_configured else None
+    monkeypatch.setattr(app, "_memory_repo", None)
+    monkeypatch.setattr(app, "get_memory_v2_repo", lambda: v2)
+    with patch("boto3.resource", side_effect=AssertionError("unexpected legacy connection")):
+        facade = app.get_memory_repo()
+        assert app.get_memory_repo() is facade
+    assert not hasattr(facade, "get_chat_settings")
+    assert not hasattr(facade, "table")
+    if v2_configured:
+        assert facade.ephemeral_media.repo is v2
+    else:
+        assert facade.ephemeral_media is None
+        assert facade.get_media_group_refs(-100123, "album") == []
+
+
 @pytest.mark.parametrize("quiz_enabled", [False, True])
 def test_app_dispatcher_reuses_and_injects_shared_dependencies(monkeypatch, quiz_enabled) -> None:
     bot = MagicMock()
@@ -15,7 +37,7 @@ def test_app_dispatcher_reuses_and_injects_shared_dependencies(monkeypatch, quiz
     sqs = MagicMock()
     quiz, invoker = MagicMock(), MagicMock()
 
-    monkeypatch.setattr(app, "MEMORY_TABLE_NAME", "memory-table")
+    monkeypatch.delenv("MEMORY_TABLE_NAME", raising=False)
     monkeypatch.setattr(app, "QUIZ_TABLE_NAME", "quiz-table" if quiz_enabled else "")
     monkeypatch.setattr(app, "QUIZ_LAMBDA_NAME", "quiz-lambda" if quiz_enabled else "")
     monkeypatch.setattr(app, "_quiz_repo", None)

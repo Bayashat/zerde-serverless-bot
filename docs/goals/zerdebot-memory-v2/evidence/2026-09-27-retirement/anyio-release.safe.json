@@ -1,0 +1,39 @@
+{
+  "phase": "RELEASE_COMPLETE_WORKFLOW_ACTIVE",
+  "source": "c9a42199ec14984eeb543245c3a7987284c3280e",
+  "merged_main": "b232df6b4f2438794917f90c80e443b24b1af1f1",
+  "readbacks": {
+    "dev": {
+      "root_sha256": "f0fb3be0b8d8686a257f396b7e23e490a01d0487e95d6de3c26a7d4cdea06c59",
+      "independent_sha256": "2b858fd3090506711e64ae09ba058828ecc81c900d44d639fd315a659eb9491f"
+    },
+    "prod": {
+      "root_sha256": "f7b4ef959ab610a1e3d21de6fa11687bae44857ca7361a5e7599af3cd87c21e1",
+      "independent_sha256": "d369fce49221b6ec4fbf06dd75c414584e6f063af4992e1f588745390021c302"
+    }
+  },
+  "root_readback_filename": "readback-published.safe.json",
+  "independent_readback_filename": "independent-published-readback.safe.json",
+  "payload_review_sha256": "56a221b05f8a7dacc02e1edb616b304470dbe4f5a65bbb3e80d984ed795b8178",
+  "runtime_patch_review_sha256": "8775470505d48ca939c5ffc2e2f7a10341042016d0c7783a83bbcb5ba0c2779b",
+  "started_at": 1790454882.9299588,
+  "status": "PASS",
+  "completed_at": 1790454884.8188422,
+  "production_ready": false,
+  "natural_observation_start": null,
+  "retirement_performed": false,
+  "anyio": "4.15.1",
+  "typing_extensions": "4.16.0",
+  "ci_run": 36266070652,
+  "ci_tests_passed": 2409,
+  "dependabot_open_at_readback": 0,
+  "old_resources_deleted": false,
+  "scope": "PR223 dependency security and preserving disabled Chinese news; not Z20 retirement acceptance",
+  "final_private_receipt_sha256": "be9c8f7492114d182388ed7e7cb17e47ee60e5212f458aff79d023450dbeef26",
+  "limitations": [
+    "dev S3 ZIP binding was reconciled after execution; prior incomplete reports retained",
+    "S3 reused reviewed source-addressed packages; all bytes including pyc were verified",
+    "News and Quiz Auto runtime patch changes independently verified",
+    "natural observation not started; production memory inactive"
+  ]
+}

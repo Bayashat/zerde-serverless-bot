@@ -11,7 +11,7 @@ from core.logger import LoggerAdapter, get_logger
 from services.handlers import process_group_ask_task, process_timeout_task
 from services.memory_cutover import RETIRED_TASK_TYPES, is_current_explicit_task
 from services.repositories.captcha import CaptchaRepository
-from services.repositories.group_memory import GroupMemoryRepository
+from services.repositories.explicit_context_repository import ExplicitContextRepository
 from services.repositories.sqs import SQSClient
 from services.spam.processor import process_spam_check_task
 from services.telegram import TelegramClient
@@ -61,7 +61,7 @@ def process_sqs_event(
     event: dict[str, Any],
     bot: TelegramClient,
     captcha_repo: CaptchaRepository,
-    memory_repo: GroupMemoryRepository | None = None,
+    memory_repo: ExplicitContextRepository | None = None,
     *,
     sqs_repo: SQSClient | None = None,
     memory_ingestion=None,
@@ -102,7 +102,7 @@ def process_sqs_event(
                         raise ValueError("Unsupported quiz recovery envelope")
                     recover_quiz_answers(repo=quiz_repo, sqs_repo=sqs_repo or SQSClient())
             elif task_type == "SPAM_CHECK":
-                outcome = process_spam_check_task(bot, body, captcha_repo=captcha_repo, memory_repo=None)
+                outcome = process_spam_check_task(bot, body, captcha_repo=captcha_repo)
                 if outcome == "clean" and body.get("source_ref") and memory_ingestion is not None:
                     # Persisted CLEAN plus staged original source authorize admission.
                     # The moderation task's text is never used as the source body.
@@ -128,7 +128,7 @@ def process_sqs_event(
 
 def process_vector_sqs_event(
     event: dict[str, Any],
-    memory_repo: GroupMemoryRepository | None = None,
+    memory_repo: ExplicitContextRepository | None = None,
 ) -> None:
     """Process vector memory SQS tasks only. Failures bubble up for retry/DLQ."""
     logger.debug(

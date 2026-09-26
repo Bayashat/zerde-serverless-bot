@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from core.config import MEMORY_TABLE_NAME, MEMORY_V2_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
+from core.config import MEMORY_V2_TABLE_NAME, QUIZ_LAMBDA_NAME, QUIZ_TABLE_NAME
 from core.dispatcher import Dispatcher
 from core.logger import LoggerAdapter, get_logger
 from services.handlers import register_handlers
 from services.memory_v2.runtime import get_memory_ingestion  # noqa: F401 -- public bot composition export
 from services.repositories import (
     CaptchaRepository,
-    GroupMemoryRepository,
+    ExplicitContextRepository,
     LambdaInvoker,
     QuizRepository,
     SQSClient,
@@ -22,7 +22,7 @@ logger = LoggerAdapter(get_logger(__name__), {})
 
 _bot: TelegramClient | None = None
 _captcha_repo: CaptchaRepository | None = None
-_memory_repo: GroupMemoryRepository | None = None
+_memory_repo: ExplicitContextRepository | None = None
 _memory_v2_repo = None
 _sqs_repo: SQSClient | None = None
 _quiz_repo: QuizRepository | None = None
@@ -45,11 +45,9 @@ def get_captcha_repo() -> CaptchaRepository:
     return _captcha_repo
 
 
-def get_memory_repo() -> GroupMemoryRepository | None:
-    """Return a singleton group-memory repository when memory storage is configured."""
+def get_memory_repo() -> ExplicitContextRepository:
+    """Return explicit-media context independently of retired memory configuration."""
     global _memory_repo
-    if not MEMORY_TABLE_NAME:
-        return None
     if _memory_repo is None:
         from services.repositories.explicit_context_repository import ExplicitContextRepository
 

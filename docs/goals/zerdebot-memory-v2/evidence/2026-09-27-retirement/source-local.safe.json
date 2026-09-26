@@ -1,0 +1,31 @@
+{
+  "phase": "SOURCE_IMPLEMENTED_LOCALLY_NOT_DEPLOYED",
+  "base_main": "b232df6b4f2438794917f90c80e443b24b1af1f1",
+  "retired_algorithm_modules": 13,
+  "full_tests": {
+    "passed": 2264,
+    "seconds": 182.98,
+    "log_sha256": "5c4af6b9bfb910bf68e2915089de929db9da7c7c41e46a452570885898e3f082"
+  },
+  "initial_full_attempt": {
+    "passed": 2193,
+    "failed": 2,
+    "reason": "Removed runtime config references remained in tests; no-fallback and infra compaction assertions preserved in replacements.",
+    "log_sha256": "b6509a07779ad127d2520928d90a6c57d10fe4a29b68bae0770b73363dade3ab"
+  },
+  "precommit": "PASS",
+  "mixed_existing_cases_accounted_for": 158,
+  "stale_bundle_injection_cases": 65,
+  "correctness_review_sha256": "5a94ca33308fc22ea5149117892614c4f4b97e2c74dd89ff9b220f74a4737e8a",
+  "maintainability_review_sha256": "e04b15a383bb21f17086371ce770d76236eec0e3758a7b46c12e44864ed82e60",
+  "current_pending": [
+    "frozen complete request comparison",
+    "PR and CI",
+    "actual ARM bundles",
+    "fresh SETTINGS before stopped-read deployment",
+    "dev/prod deployment and independent actual ZIP readback",
+    "separate physical resource retirement"
+  ],
+  "cloud_resources_deleted": false,
+  "production_ready": false
+}

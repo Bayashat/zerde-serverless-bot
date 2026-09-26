@@ -168,10 +168,9 @@ class PublicAnswerReplay:
         from services.repositories.explicit_context_repository import ExplicitContextRepository
 
         domain = self.domain
-        with patch("services.repositories.group_memory.get_dynamodb", return_value=domain.db):
-            legacy = ExplicitContextRepository(domain.business.name, memory_v2_repo=domain.repo)
+        legacy = ExplicitContextRepository(memory_v2_repo=domain.repo)
         context = group_agent.build_explicit_question_context(legacy, message["chat"]["id"], message)
-        style = group_agent._load_chat_style_profile(legacy, message["chat"]["id"])
+        style = group_agent.normalise_chat_style_profile(None)
         client = plain_client()
 
         def transport(*, operation, url, body, headers, before_attempt=None):
