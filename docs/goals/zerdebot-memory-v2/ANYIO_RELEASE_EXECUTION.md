@@ -29,3 +29,21 @@ Forbidden moves：开启新功能/新群/prod学习、重跑旧 once 发布脚�
 官方依据：[TLS 域名公告](https://github.com/agronholm/anyio/security/advisories/GHSA-82r6-8w77-94w6)、
 [进程池公告](https://github.com/agronholm/anyio/security/advisories/GHSA-5p39-cfhj-2xmp)。
 两项首修版本均为4.14.2；升级不代表发现当前入口已遭利用。
+
+## 实际 changeset 发现后的修订（尚未执行）
+
+第一次五Code候选触及News/Quiz的ARN依赖，prod中文news rule及其permission明确在
+changeset中。现场DISABLED但旧模板ENABLED，直接执行或回滚有恢复中文推送风险；
+这两份未执行候选精确撤销，保留原构建/独审/CI及阻断证据，不当成已发布。
+
+源码补充仅固定中文新闻规则`enabled=False`，其他语言和恢复任务保持；不新增配置入口。
+先使用已验证旧模板仅修改该规则State一个leaf，独审其changeset（可能含完整对象未变的
+permission ARN依赖），以DisableRollback=True校准CF声明与现有DISABLED状态。
+这一步不更改任何Lambda Code，失败保留现场并前向修复，禁止恢复旧ENABLED模板。
+UPDATE_COMPLETE及实际State/所有保护项读回后，重新捕获代码发布基线/LastUpdatedTime，
+再建立五Code候选。此后代码发布可正常回滚到已DISABLED基线。新source须重新通过CI/独审。
+
+五Code changeset另含唯一Bot DefaultPolicy的`PolicyDocument ← QuizLambda.Arn`
+动态依赖；该完整模板对象不变、函数无替换且ARN固定。仅允许这一精确原因，并须
+执行前后GetRolePolicy对同RoleName/PolicyName完整policy document等值；不泛化放行IAM。
+新发布操作者/候选/changeset的审阅与实际读回均在新私有目录保存，旧once脚本不重跑。

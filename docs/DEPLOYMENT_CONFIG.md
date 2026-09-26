@@ -103,6 +103,13 @@ reports the AnyIO version. Packaging alone is not deployed acceptance.
 See [the release contract](goals/zerdebot-memory-v2/ANYIO_RELEASE_EXECUTION.md)
 for frozen candidate, dev/prod changeset and actual ZIP/config/control gates.
 
+Chinese production news is deliberately suspended: CDK now declares its rule
+DISABLED, preserving the existing live state across deployment. Other configured
+languages retain their schedules. The first rollout must reconcile the old
+template-only ENABLED drift separately, with rollback disabled for that one-leaf
+calibration, before publishing the dependency code update. See the release
+contract for the guarded failure and readback sequence.
+
 ## Build and release evidence
 
 ```bash

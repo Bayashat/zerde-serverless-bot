@@ -9,7 +9,7 @@ PR220已合并并部署两环境（main54ce/source72673），F5模型合成与F6
 | Z01 [#158](https://github.com/Bayashat/zerde-serverless-bot/issues/158) | 自动互动与旧任务已隔离；旧实现/资源由Z20删除。 | 清理后显式问答、自动输出为零和旧协议拒绝回归。 |
 | Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | 脱敏与内容最小化已实现并部署。 | 逐条关联日志/异常/未授权群验收证据，不以总测试数结项。 |
 | Z03 [#160](https://github.com/Bayashat/zerde-serverless-bot/issues/160) | 在线精确清零及业务SETTINGS保护已验证。 | Z20拆旧仓库；清理工具和保护边界回归，副本归Z10。 |
-| Z04 [#161](https://github.com/Bayashat/zerde-serverless-bot/issues/161) | PR220两环境实包、配置和依赖读回通过。 | AnyIO 4.15.1及必需typing-extensions 4.16.0定向修复正在验证；待CI/独审、两环境五个受影响包及六函数保护读回。随后Z20精确打包/readback集合。 |
+| Z04 [#161](https://github.com/Bayashat/zerde-serverless-bot/issues/161) | PR220两环境实包、配置和依赖读回通过。 | PR223首次CI2408通过；实际changeset发现中文news模板漂移和精确Quiz ARN→Bot policy依赖，已撤销未执行候选。补源码固定关闭、单leaf无自动回滚校准，再重建五包发布/六函数保护读回；Z20尚待。 |
 | Z05 [#162](https://github.com/Bayashat/zerde-serverless-bot/issues/162) | V2身份、事实、控制与唯一writer已运行并通过合成验证。 | 按原契约核对证据并收口；Z11自然使用与prod启用未完成。 |
 | Z06 [#163](https://github.com/Bayashat/zerde-serverless-bot/issues/163) | 事务摄取、后台恢复已部署并有真实Telegram合成完成证据。 | 覆盖/暂停/过期分母及学习/恢复延迟分布；单次耗时不是p95。 |
 | Z07 [#164](https://github.com/Bayashat/zerde-serverless-bot/issues/164) | F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。 | 自然使用事实正确性/来源和语言切片，未知时不编造。 |

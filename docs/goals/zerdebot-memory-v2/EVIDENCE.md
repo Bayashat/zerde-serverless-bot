@@ -247,3 +247,5 @@ settings切换独审补充已纳入：0/3精确字段/类型/hash门禁同时位
 ## 2026-09-27 Z04依赖修复开始（尚未部署）
 
 定向锁AnyIO4.15.1（安全下限4.14.2,<5），其Python<3.15所需typing-extensions4.16.0；其余锁定版本不变。5个导出check通过，实际ARM probe增加AnyIO/httpx导入与版本读回；本地实际socket取消回归及打包契约25通过。升级后全量既有2407项通过（224.93秒）；新增socket取消用例连同HTTP/打包专项25项通过，范围重叠不累加。CI/独审/发布尚待。见[执行契约](ANYIO_RELEASE_EXECUTION.md)。旧源码和资源清理尚未执行，既有学习和预算不改变。
+
+第一候选ad49acfe的CI36265065402两job成功，2408通过；两环境实际ARM/候选独审通过。实际CF changeset进一步发现中文news历史模板ENABLED/现场DISABLED及Quiz ARN→Bot policy动态依赖，故原候选未执行并撤销，追加源码固定停用和单leaf校准契约；旧PASS不替代新head CI和新发布证据。

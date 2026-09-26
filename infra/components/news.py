@@ -117,6 +117,8 @@ class NewsConstruct(Construct):
                         f"{CONSTRUCT_PREFIX}NewsRule{lang.upper()}{slot}",
                         rule_name=f"{RESOURCE_PREFIX}-news-{lang}-{slot}-{env_name}",
                         description=f"Trigger news lambda at {hour_utc:02d}:{minute_utc:02d} UTC for {lang} chats",
+                        # Preserve the owner's existing Chinese-news suspension on redeploy/rollback.
+                        enabled=lang != "zh",
                         schedule=events.Schedule.cron(
                             minute=str(minute_utc),
                             hour=str(hour_utc),

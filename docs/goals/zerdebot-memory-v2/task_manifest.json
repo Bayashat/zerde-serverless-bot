@@ -102,7 +102,7 @@
     "status": "anyio_security_fix_in_validation",
     "status_as_of": "2026-09-27",
     "completed": "PR220两环境实包、配置和依赖读回通过。",
-    "remaining": "AnyIO 4.15.1及必需typing-extensions 4.16.0定向修复正在验证；待CI/独审、两环境五个受影响包及六函数保护读回。随后Z20精确打包/readback集合。",
+    "remaining": "PR223首次CI2408通过；实际changeset发现中文news模板漂移和精确Quiz ARN→Bot policy依赖，已撤销未执行候选。补源码固定关闭、单leaf无自动回滚校准，再重建五包发布/六函数保护读回；Z20尚待。",
     "issue_state": "OPEN",
     "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
     "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
