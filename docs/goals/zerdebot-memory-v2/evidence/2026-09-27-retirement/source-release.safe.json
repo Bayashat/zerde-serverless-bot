@@ -1,0 +1,66 @@
+{
+  "status": "SOURCE_RETIREMENT_DEPLOYED_CLOUD_RESOURCES_PENDING",
+  "date": "2026-09-27",
+  "pull_request": 224,
+  "source": "63916a3189a912c84c12be85b75c4d3eb2fa5f5e",
+  "merged_main": "dd416f86c001666ec9c9c4007ae2e52480e83abf",
+  "full_tests": 2264,
+  "ci_run_id": 36271659997,
+  "ci_jobs": "both_success",
+  "synthetic_request_equality": {
+    "cases": 18,
+    "exact_equal": 18,
+    "model_calls": 0
+  },
+  "removed_algorithm_modules": 13,
+  "original_module_cache_resurrection_cases": 65,
+  "workflow": "ACTIVE",
+  "cloud_resource_deletion_performed": false,
+  "production_ready": false,
+  "natural_observation_start": null,
+  "natural_supported_answers": 0,
+  "natural_unknown_answers": 0,
+  "final_release_sha256": "fd4d982c65a546f5e307f9eede60c418c02b8b0281dd90da6b3748b4f86bb9f3",
+  "preserved_failed_readback": {
+    "reason": "local report path variable shadowed by module path; no runtime fault inferred",
+    "status": "INCOMPLETE",
+    "sha256": "8a290c51291403d48122bc6cc1701e101277a034d6334a26c2a45bb6064603ef"
+  },
+  "continuation_operator_review_sha256": "2c3ab05878242f3b4660139e89d1b35a7fd35cb0b65edab6782aba86540d595e",
+  "environments": {
+    "dev": {
+      "root_readback_sha256": "d5c604473dbddf7210f1754940cef2018062b45dd1992a3c7a967503ccc3b753",
+      "independent_readback_sha256": "18e6f6afbc5e86c736ff1638db6f5c0af5a876252125c62093d88bb82c81016d",
+      "functions_verified": 6,
+      "core_packages_changed": 3,
+      "shared_layer_preserved": true,
+      "settings_gate_sha256": "2cf0e199a656d8eb1fa1752ed3602e3c5d5c7aeaa27f123e7e289a82eda8302f",
+      "settings_gate_purpose": "before-removing-settings-reader",
+      "protected_state": {
+        "control_count": 1,
+        "controls_equal_fresh_pre": true,
+        "all_six_configs_unchanged_except_three_core_code_revisions": true,
+        "all_storage_identities_preserved": true,
+        "mappings_rules_legacy_denies_equal_fresh_pre": true,
+        "no_control_or_budget_writes": true
+      }
+    },
+    "prod": {
+      "root_readback_sha256": "21b0363d43667afef06e3471bc0b9c4ca139deac340c3b27e4458a2960a461b3",
+      "independent_readback_sha256": "6b223385cb5ee6a32c92785790069075737b9a568eccb241b3c4533f14d5e5d7",
+      "functions_verified": 6,
+      "core_packages_changed": 3,
+      "shared_layer_preserved": true,
+      "settings_gate_sha256": "6e419dc603fe0f07e2152b3884b3e59c4a6edd10e64269f5cd5d07732a88c084",
+      "settings_gate_purpose": "before-removing-settings-reader",
+      "protected_state": {
+        "control_count": 0,
+        "controls_equal_fresh_pre": true,
+        "all_six_configs_unchanged_except_three_core_code_revisions": true,
+        "all_storage_identities_preserved": true,
+        "mappings_rules_legacy_denies_equal_fresh_pre": true,
+        "no_control_or_budget_writes": true
+      }
+    }
+  }
+}

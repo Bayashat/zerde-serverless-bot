@@ -6,7 +6,7 @@
 
 目标仍是可靠、可维护的群机器人：只从成员在本群的明确自述学习，当前事实有出处、可更正和遗忘；显式问答与验证码、反垃圾、投票、新闻、Quiz 可靠运行。自动社交和抽奖已退役，不恢复。预算以质量为先，使用原 USD70 模型＋USD30 新增 AWS 预留及真实账本，未知费用不清零。
 
-截至9月27日：PR223已合并，部署源码 `c9a42199ec14984eeb543245c3a7987284c3280e`、main `b232df6b4f2438794917f90c80e443b24b1af1f1`。2409项测试、CI及两环境各6函数实际ZIP/层/配置/保护项的主检和独审均通过；AnyIO已升级4.15.1，当前安全告警0，workflow恢复ACTIVE。Z20源码清理在本地实施，尚未发布或删除云资源。真实模型合成测量及 Telegram 合成功能测试完成；自然试用起点仍未建立，50有据/20未知样本均为0，`production_ready=false`。不能用空群经过的日历天数代替试用。
+PR224已合并为dd416f86；13个旧知识/主动互动模块与调用已移除并部署dev/prod。2264全测、18完整请求等价、CI、两环境6函数/层/配置/控制的主检及独审通过；两环境各一次停读前fresh SETTINGS核验通过。 workflow已恢复ACTIVE。详见[源码发布证据](evidence/2026-09-27-retirement/source-release.safe.json)。当前进入[S4资源退役](RESOURCE_RETIREMENT_EXECUTION.md)，尚未删除云资源。真实模型合成与Telegram合成功能测试已完成；自然试用起点未建立，0/50有据、0/20未知，production_ready=false。
 
 旧在线记忆30794行、8259向量已清零，3条业务SETTINGS保留；这不等于旧代码、物理表和向量资源已删除。9月26日实际盘点仍为9张项目表，其中6张现役表、2张旧bot-memory表和1张更早的旧stats候选。精确清单见 [RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)。本轮同步没有删除云资源。
 
