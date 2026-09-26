@@ -42,6 +42,7 @@
     "code_maintainer_initial": "Z20 evidence prerequisites clarified",
     "plan_post_initial": "F9 excluded from completed synthetic phases",
     "plan_post_final": "ALIGNED",
-    "code_maintainer_final": "ALIGNED"
+    "code_maintainer_final": "ALIGNED",
+    "incremental_settings_and_cost": "plan, code dependency and AWS correctness ALIGNED; no dead-flag migration; exact source change blocks deletion"
   }
 }

@@ -1,0 +1,51 @@
+{
+  "scope": "read-only R2/R3 preparation; no runtime changes, no migration/deletion",
+  "settings": {
+    "dev_count": 0,
+    "prod_count": 3,
+    "fields": [
+      "pk",
+      "sk",
+      "memory_enabled",
+      "agent_enabled",
+      "updated_at"
+    ],
+    "custom_style_count": 0,
+    "active_setter_calls": 0,
+    "decision": "no dead-flag migration; revalidate exact row fields/types/hashes before retirement; stop on change",
+    "stats_key": "stat_key STRING",
+    "checked_target_keys": 6,
+    "occupied_target_keys": 0,
+    "source_sha256": "f2949b56166648befee2f1d53cb145325766a449e51ec16b8a4bc4b608df3251"
+  },
+  "cost": {
+    "observed_utc": "2026-09-26T18:02:35Z",
+    "period_start": "2026-09-01",
+    "period_end_exclusive": "2026-09-27",
+    "includes_current_day_partial": true,
+    "estimated": true,
+    "metric": "UnblendedCost",
+    "project_tag": "ZerdeBot",
+    "dev_usd": "0.4012865637",
+    "prod_usd": "0.8205746736",
+    "total_usd": "1.2218612373",
+    "not_invoice_or_complete_zerde_cost": true,
+    "unattributed_account_cost_not_assigned": true,
+    "credits_tax_free_tier_model_cost_not_reconciled": true,
+    "source_sha256": "a87ee042cd8ee228e9775911a7331326748a2be788effd8a2dfe9a7648645879"
+  },
+  "anyio": {
+    "current_lock": "4.12.1",
+    "first_patched": "4.14.2",
+    "alerts": 8,
+    "unique_advisories": 2,
+    "introduced_by_this_pr": false,
+    "exploitation_of_current_entry_not_proven": true,
+    "owner_issue": 161,
+    "advisories": [
+      "GHSA-82r6-8w77-94w6",
+      "GHSA-5p39-cfhj-2xmp"
+    ],
+    "fix_deployed": false
+  }
+}

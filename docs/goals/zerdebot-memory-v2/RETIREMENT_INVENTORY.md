@@ -1,6 +1,6 @@
 # 删除前清单（2026-09-26；均未在本轮删除）
 
-本清单执行 [FINISH_EXECUTION](FINISH_EXECUTION.md) 的R2。`计划删除`不是`已删除`；正式操作前必须刷新精确身份、消费者、数据/保护项校验和changeset，并先向用户告知。区域均为`eu-central-1`，不以名称通配符删除。
+本清单执行 [FINISH_EXECUTION](FINISH_EXECUTION.md) 的R2。`计划删除`不是`已删除`；补充字段核验确认3条旧SETTINGS没有自定义style，当前无需迁移有效业务设置；这不是删完的证明。正式操作前必须刷新精确身份、消费者、数据/保护项校验和changeset，并先向用户告知。区域均为`eu-central-1`，不以名称通配符删除。
 
 ## 准备删除的代码
 
@@ -8,18 +8,18 @@
 |---|---|
 | `src/bot/services/group_memory.py`、`group_memory_processor.py`、`memory_extractor.py`、`memory_retrieval.py`、`vector_memory.py` | 旧记忆算法仍在仓库/打包范围，入口退休；拆除所有现役import后删除 |
 | `src/bot/services/ambient_reactions.py`、`ai/proactive_decision.py`、`ai/ambient_reaction_prompt.py`、`ai/ambient_reaction_classifier.py`、`ai/channel_post_comment.py` | 自动互动已停；删除实现、仅支持这些能力的配置/测试/依赖 |
-| `src/bot/services/repositories/group_memory.py`、`repositories/vector_memory.py` | 旧巨型仓库仍通过继承承接settings；抽离唯一settings owner和V2临时相册后删 |
+| `src/bot/services/repositories/group_memory.py`、`repositories/vector_memory.py` | 旧巨型仓库仍通过继承承接settings；保留纯style normalizer，取消已无有效自定义设置的读取，并解耦V2临时相册后删 |
 | `src/bot/services/group_agent.py`内旧主动/频道分支 | 只删退役分支；显式/ask、mention、reply和有效provider fallback保留，不整文件误删 |
 | `src/bot/services/history_import.py`及历史导入CLI旧写入实现 | 不再提供可运行导入器；已完成清理的审计证据与必要离线恢复记录保留 |
 | vector-indexer入口和`infra/components/vector_indexer.py`等专属资源接线 | 先撤所有生产者；代码过渡期仅拒绝旧任务，云资源移除后删薄壳及专属打包目标 |
 
 保留`memory_cutover`及router里的小型旧任务拒绝协议，防止混合主队列中的历史载荷恢复旧行为；它不是旧知识算法或可启用功能。删除它需另证所有入口不可能接受旧schema，不能为了“零关键词”移除安全边界。新V2、显式问答、临时媒体、验证码、反垃圾、投票、新闻、Quiz继续保留。
 
-## 迁移后删除：当前栈内退役资源
+## 核验后删除：当前栈内退役资源
 
 | 类型 | dev 精确名称 | prod 精确名称 | 删除前置 |
 |---|---|---|---|
-| DynamoDB旧记忆表 | `zerde-serverless-bot-memory-dev` | `zerde-serverless-bot-memory-prod` | 本次精确计数0/3，prod全为SETTINGS；先保存语义并迁移3条、解除读取/env/IAM引用，再删 |
+| DynamoDB旧记忆表 | `zerde-serverless-bot-memory-dev` | `zerde-serverless-bot-memory-prod` | 本次精确计数0/3；3条均只有旧开关和更新时间，无style_profile。删除前重验整行hash/字段白名单；有变化即停，再保护有效语义；解除读取/env/IAM后删 |
 | Lambda | `zerde-serverless-vector-indexer-dev` | `zerde-serverless-vector-indexer-prod` | 无生产者，旧在途退出，专属映射/权限退役 |
 | 向量主队列 | `zerde-serverless-vector-memory-tasks-queue-dev` | `zerde-serverless-vector-memory-tasks-queue-prod` | 归属确认，visible/inflight/delayed均0；不用Receive/Purge证明空 |
 | 向量DLQ | `zerde-serverless-vector-memory-tasks-dlq-dev` | `zerde-serverless-vector-memory-tasks-dlq-prod` | 上游退役、无其他redrive引用、数量核对 |
@@ -44,7 +44,7 @@
 
 | 名称 | 用途 |
 |---|---|
-| `zerde-serverless-bot-stats-dev` / `zerde-serverless-bot-stats-prod` | 统计、验证码、投票、反垃圾、operations等业务；设置迁入隔离命名空间前验证冲突 |
+| `zerde-serverless-bot-stats-dev` / `zerde-serverless-bot-stats-prod` | 统计、验证码、投票、反垃圾、operations等业务；本次无有效自定义设置需要迁入，不新增死开关记录 |
 | `zerde-serverless-quiz-dev` / `zerde-serverless-quiz-prod` | Quiz发布、poll、答案和计分 |
 | `zerde-serverless-memory-v2-dev` / `zerde-serverless-memory-v2-prod` | V2事实、控制、来源、恢复与预算；prod还承接项目共享费用账本，非空不表示已开生产学习 |
 
