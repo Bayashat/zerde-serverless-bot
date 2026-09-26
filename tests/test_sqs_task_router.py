@@ -57,9 +57,7 @@ def test_retired_contest_task_does_not_skip_other_records_in_mixed_batch():
         patch("services.sqs_task_router.process_spam_check_task", return_value="rejected") as spam,
     ):
         process_sqs_event({"Records": records}, bot, captcha)
-    spam.assert_called_once_with(
-        bot, {"task_type": "SPAM_CHECK", "chat_id": -1001}, captcha_repo=captcha, memory_repo=None
-    )
+    spam.assert_called_once_with(bot, {"task_type": "SPAM_CHECK", "chat_id": -1001}, captcha_repo=captcha)
 
 
 def test_check_timeout_routes_and_injects_captcha_repo() -> None:
@@ -102,44 +100,6 @@ def test_process_group_ask_routes() -> None:
     mock_pa.assert_called_once_with(repo=memory_repo, bot=bot, body=body)
 
 
-def test_process_proactive_candidate_routes() -> None:
-    body = {
-        "task_type": "PROCESS_PROACTIVE_CANDIDATE",
-        "chat_id": -1001,
-        "trigger_message_id": 3,
-        "trigger_user_id": 42,
-        "user_text": "does anyone know how k8s pricing works?",
-        "lang": "en",
-    }
-    memory_repo = MagicMock()
-    bot = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.group_agent.process_proactive_candidate_task") as mock_pc,
-    ):
-        process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
-    mock_pc.assert_not_called()
-
-
-def test_process_ambient_reaction_routes() -> None:
-    body = {
-        "task_type": "PROCESS_AMBIENT_REACTION",
-        "chat_id": -1001,
-        "message_id": 3,
-        "user_id": 42,
-        "text": "This OpenSearch debugging note is useful",
-        "lang": "en",
-    }
-    memory_repo = MagicMock()
-    bot = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.ambient_reactions.process_ambient_reaction_task") as mock_ar,
-    ):
-        process_sqs_event({"Records": [_record(body)]}, bot, MagicMock(), memory_repo)
-    mock_ar.assert_not_called()
-
-
 def test_spam_check_routes() -> None:
     body = {
         "task_type": "SPAM_CHECK",
@@ -157,79 +117,7 @@ def test_spam_check_routes() -> None:
         bot = MagicMock()
         memory_repo = MagicMock()
         process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory_repo)
-    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha, memory_repo=None)
-
-
-def test_process_group_memory_routes() -> None:
-    body = {
-        "task_type": "PROCESS_GROUP_MEMORY",
-        "chat_id": -1001,
-        "user_id": 7,
-        "message_id": 8,
-        "display_name": "Ada",
-        "text": "Tomorrow we deploy the memory processor",
-    }
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.group_memory_processor.process_group_memory_task") as mock_pm,
-    ):
-        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pm.assert_not_called()
-
-
-def test_process_daily_group_summaries_routes() -> None:
-    body = {
-        "task_type": "PROCESS_DAILY_GROUP_SUMMARIES",
-        "chat_ids": [-1001, -1002],
-        "summary_date": "2026-06-10",
-    }
-    with patch("services.group_memory_processor.process_daily_group_summaries_task") as mock_pd:
-        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock())
-    mock_pd.assert_not_called()
-
-
-def test_process_vector_memory_routes() -> None:
-    body = {
-        "task_type": "PROCESS_VECTOR_MEMORY",
-        "chat_id": -1001,
-        "source_sk": "EVENT#1#2",
-    }
-    memory_repo = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.vector_memory.process_vector_memory_task") as mock_pv,
-    ):
-        process_vector_sqs_event({"Records": [_record(body)]}, memory_repo)
-    mock_pv.assert_not_called()
-
-
-def test_process_vector_memory_backfill_routes() -> None:
-    body = {
-        "task_type": "PROCESS_VECTOR_MEMORY_BACKFILL",
-        "chat_id": -1001,
-        "limit": 25,
-    }
-    memory_repo = MagicMock()
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.vector_memory.process_vector_memory_backfill_task") as mock_pb,
-    ):
-        process_vector_sqs_event({"Records": [_record(body)]}, memory_repo)
-    mock_pb.assert_not_called()
-
-
-def test_main_sqs_router_ignores_vector_tasks() -> None:
-    body = {
-        "task_type": "PROCESS_VECTOR_MEMORY",
-        "chat_id": -1001,
-        "source_sk": "EVENT#1#2",
-    }
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.vector_memory.process_vector_memory_task") as mock_pv,
-    ):
-        process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), MagicMock())
-    mock_pv.assert_not_called()
+    mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha)
 
 
 def test_vector_sqs_router_ignores_main_tasks() -> None:
@@ -288,17 +176,25 @@ def test_handler_failure_reraises_for_sqs_retry() -> None:
             process_sqs_event({"Records": [_record(body)]}, MagicMock(), MagicMock(), MagicMock())
 
 
-def test_vector_handler_failure_reraises_for_sqs_retry() -> None:
-    body = {
-        "task_type": "PROCESS_VECTOR_MEMORY",
-        "chat_id": -1001,
-        "source_sk": "EVENT#1#2",
-    }
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch(
-            "services.vector_memory.process_vector_memory_task",
-            side_effect=RuntimeError("vector boom"),
-        ),
-    ):
-        process_vector_sqs_event({"Records": [_record(body)]}, MagicMock())
+@pytest.mark.parametrize(
+    "task_type",
+    [
+        "PROCESS_PROACTIVE_CANDIDATE",
+        "PROCESS_AMBIENT_REACTION",
+        "PROCESS_GROUP_MEMORY",
+        "PROCESS_DAILY_GROUP_SUMMARIES",
+        "PROCESS_VECTOR_MEMORY",
+        "PROCESS_VECTOR_MEMORY_BACKFILL",
+    ],
+)
+@pytest.mark.parametrize("router", ["main", "vector"])
+def test_retired_memory_and_social_tasks_need_no_modules_or_dependencies(task_type, router):
+    dependencies = [MagicMock() for _ in range(4)]
+    bot, captcha, memory, sqs = dependencies
+    body = {"task_type": task_type, "chat_id": "invalid-retired-chat", "text": "old payload"}
+    with patch("services.sqs_task_router.is_configured_group_chat", side_effect=AssertionError("no chat lookup")):
+        if router == "main":
+            process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory, sqs_repo=sqs)
+        else:
+            process_vector_sqs_event({"Records": [_record(body)]}, memory)
+    assert all(not dependency.mock_calls for dependency in dependencies)

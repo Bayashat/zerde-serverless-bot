@@ -15,7 +15,6 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.captcha import CaptchaRepository
-from services.repositories.group_memory import GroupMemoryRepository
 from services.repositories.spam import SpamRepository
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import (
@@ -33,8 +32,6 @@ from zerde_common.ai_errors import ProviderResponseError
 logger = LoggerAdapter(get_logger(__name__), {})
 
 _detector: GroqSpamDetector | None = None
-_RECENT_CONTEXT_QUERY_LIMIT = 12
-_RECENT_CONTEXT_RENDER_LIMIT = 8
 _USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,32}$")
 _STRONG_AUTO_ENFORCE_RULES = frozenset(
     {
@@ -62,7 +59,6 @@ def process_spam_check_task(
     bot: TelegramClient,
     body: dict,
     captcha_repo: CaptchaRepository | None = None,
-    memory_repo: GroupMemoryRepository | None = None,
     moderation_repo: SpamRepository | None = None,
 ) -> str | None:
     """Process a SPAM_CHECK SQS task: classify with Groq and enforce if confident."""
@@ -112,11 +108,10 @@ def process_spam_check_task(
             moderation_repo.update(case["case_id"], owner, {"reason": "administrator_exempt"})
             moderation_repo.finish_clean(case, owner)
             return "clean"
-        recent_context = _load_recent_context(memory_repo, chat_id, message_id)
         classifier_input = format_spam_ai_context(
             text=text,
             message_context=message_context,
-            recent_context=recent_context,
+            recent_context=[],
             rule_score=rule_score,
             triggered_rules=triggered_rules,
         )
@@ -149,7 +144,7 @@ def process_spam_check_task(
                 "rule_score": rule_score,
                 "strong_auto_enforce_signal": strong_signal,
                 "auto_enforce": auto_enforce,
-                "recent_context_count": len(recent_context),
+                "recent_context_count": 0,
                 "decision_source": (
                     "guest_structure" if guest and "repeated_obfuscated_url" in current_rules else "groq"
                 ),
@@ -302,41 +297,6 @@ def _send_spam_review_alert(
     except Exception as e:
         logger.warning("Failed to send uncertain spam alert", extra={"error": e})
         raise
-
-
-def _load_recent_context(
-    memory_repo: GroupMemoryRepository | None,
-    chat_id: int,
-    current_message_id: int,
-) -> list[dict[str, Any]]:
-    if memory_repo is None:
-        return []
-    try:
-        items = memory_repo.get_recent_messages(chat_id, limit=_RECENT_CONTEXT_QUERY_LIMIT)
-    except Exception as e:
-        logger.warning(
-            "Failed to load recent context for SPAM_CHECK",
-            extra={"chat_id": chat_id, "message_id": current_message_id, "error": e},
-        )
-        return []
-
-    recent: list[dict[str, Any]] = []
-    for item in items:
-        if str(item.get("message_id")) == str(current_message_id):
-            continue
-        text = str(item.get("text") or "").strip()
-        if not text:
-            continue
-        recent.append(
-            {
-                "message_id": item.get("message_id"),
-                "user_id": item.get("user_id"),
-                "username": item.get("username"),
-                "display_name": item.get("display_name"),
-                "text": text,
-            }
-        )
-    return recent[-_RECENT_CONTEXT_RENDER_LIMIT:]
 
 
 def _normalise_triggered_rules(value: Any) -> list[str]:

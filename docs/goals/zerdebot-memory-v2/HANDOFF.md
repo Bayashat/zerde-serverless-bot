@@ -4,7 +4,9 @@
 
 PR220已经合并/部署，F5真实模型合成测量及F6/F7/F8/F10 Telegram合成功能验收已结束；没有Google额度或旧部署等待卡点。仅dev既有测试群学习，prod未启用；自然样本0，起点未建立，不能承诺空等七天完成。旧在线记忆与本地归档已清，旧代码/表/向量资源尚未删净。
 
-**当前执行（2026-09-27）**：R1文档PR222已合并为9e1365d。正在[Z04 AnyIO安全发布](ANYIO_RELEASE_EXECUTION.md)：五个受影响运行包、六函数整体保护读回，完成后直接推进Z20源码解耦。原候选实际CS触及中文news历史模板漂移，已撤销未执行计划；当前先补固定DISABLED及单leaf校准/回滚保护，再重建五Code发布。此时未发布新版、未删除旧源码或云资源。
+**当前执行（2026-09-27）**：PR223已合并为b232df6；source c9a4219，CI2409，dev/prod六函数实际ZIP、共享层及配置/控制独审PASS，workflow ACTIVE，Dependabot本次open0。历史两次失败读回保留，最终published回执见[evidence](evidence/2026-09-27-retirement/anyio-release.safe.json)。不得重跑已经完成的发布。
+
+同一managed checkout当前 `feat/zerde-retire-legacy-source` 正在[Z20源码退役](SOURCE_RETIREMENT_EXECUTION.md)，13模块已在工作分支本地删除，现役测试/文档正在迁移，尚未新提交/上线Z20或删表/资源。先检查现branch/PR/工作进程，避免并行重复。R2私有入口 `2026-09-27-legacy-source-retirement/CURRENT.md`；18组原请求基线和mixed-test清单不能覆盖。新预算瞬时只读入口为 `2026-09-27-anyio-calibrated/read_budget_published.py`，绑定c9实际包，源码再次发布后须重绑；旧F10 reader已不适用。
 
 **上一轮入口**：核对本R1文档PR合并状态；新Z20清理执行工单[#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221)已创建，原19工单及Epic已同步，#175/#178按限定范围结项。随后直接推进R2纯style normalizer/V2相册解耦，删除旧算法，再按字段/hash重验3条旧开关并退役资源。R3验证码/反垃圾/投票/新闻/Quiz/实际费用验收并行准备，不等自然群聊天。所有新功能/新群/生产记忆启用须先通过清理闸门。每次有实质进展同步task_manifest、TASKS、EVIDENCE及GitHub issue；每次删除前向用户给清单。
 

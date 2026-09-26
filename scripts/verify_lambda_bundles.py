@@ -11,13 +11,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 # Captured from the public AWS Python 3.13 ARM64 runtime image; update deliberately.
 RUNTIME_IMAGE = "public.ecr.aws/lambda/python@sha256:d52afe970081b30397342d019525dade26073d9e557fd94a3615de9b62ff9e27"
+RETIRED_BOT_MODULES = (
+    "services.group_memory",
+    "services.group_memory_processor",
+    "services.memory_extractor",
+    "services.memory_retrieval",
+    "services.vector_memory",
+    "services.ambient_reactions",
+    "services.ai.proactive_decision",
+    "services.ai.ambient_reaction_prompt",
+    "services.ai.ambient_reaction_classifier",
+    "services.ai.channel_post_comment",
+    "services.repositories.group_memory",
+    "services.repositories.vector_memory",
+    "services.history_import",
+)
 SYNTHETIC_ENV = {
     "AWS_DEFAULT_REGION": "eu-central-1",
     "AWS_EC2_METADATA_DISABLED": "true",
     "AWS_ACCESS_KEY_ID": "synthetic",
     "AWS_SECRET_ACCESS_KEY": "synthetic",
     "STATS_TABLE_NAME": "synthetic-stats",
-    "MEMORY_TABLE_NAME": "synthetic-memory",
     "TABLE_NAME": "synthetic-quiz",
     "QUIZ_TABLE_NAME": "synthetic-quiz",
     "QUEUE_URL": "https://sqs.eu-central-1.amazonaws.com/000000000000/synthetic",
@@ -34,11 +48,16 @@ SYNTHETIC_ENV = {
     "PYTHONPATH": "/var/task:/opt/python",
 }
 PROBE = """
-import importlib, importlib.metadata, io, json, platform, sys
+import importlib, importlib.metadata, importlib.util, io, json, os, platform, sys
 assert sys.version_info[:2] == (3, 13), sys.version
 assert platform.machine() == 'aarch64', platform.machine()
 expected = json.loads(sys.argv[1])
 kind, handler = sys.argv[2:4]
+retired = json.loads(sys.argv[4])
+if kind == 'bot':
+    assert 'MEMORY_TABLE_NAME' not in os.environ
+    for name in retired:
+        assert importlib.util.find_spec(name) is None, ('retired module importable', name)
 for distribution in importlib.metadata.distributions(path=['/var/task']):
     name = distribution.metadata['Name'].lower().replace('_', '-')
     assert expected.get(name) == distribution.version, (name, distribution.version)
@@ -71,7 +90,7 @@ print(json.dumps({'package': kind, 'handler': handler, 'architecture': platform.
     'python': platform.python_version(), 'boto3': importlib.metadata.version('boto3'),
     'urllib3': importlib.metadata.version('urllib3'), 'imports': 'passed', 'network': 'disabled',
     'anyio': importlib.metadata.version('anyio') if kind in {'bot', 'news', 'quiz'} else None,
-    'first_party_assets': 'clean'}))
+    'first_party_assets': 'clean', 'retired_modules_absent': len(retired) if kind == 'bot' else None}))
 """
 
 
@@ -92,6 +111,12 @@ def verify_first_party_assets(asset: Path, layer: Path, kind: str) -> None:
         if any(path.exists() for path in candidates):
             raise SystemExit(f"First-party Python cache in Lambda asset: {module.stem}")
     if kind == "bot":
+        for module in RETIRED_BOT_MODULES:
+            path = asset.joinpath(*module.split("."))
+            candidates = [path.with_suffix(suffix) for suffix in (".py", ".pyc", ".pyo")]
+            candidates.extend((path.parent / "__pycache__").glob(f"{path.name}.*"))
+            if any(candidate.exists() for candidate in candidates) or path.exists():
+                raise SystemExit(f"Retired memory module in Lambda asset: {module}")
         for directory in ("services", "services/handlers", "services/repositories"):
             if any((asset / directory / f"contest{suffix}").exists() for suffix in (".py", ".pyc", ".pyo")):
                 raise SystemExit(f"Retired contest module in Lambda asset: {directory}")
@@ -158,7 +183,17 @@ def main() -> None:
         for key, value in SYNTHETIC_ENV.items():
             command += ["--env", f"{key}={value}"]
         subprocess.run(
-            command + [args.image, "-c", PROBE, json.dumps(expected), kind, properties["Handler"]], check=True
+            command
+            + [
+                args.image,
+                "-c",
+                PROBE,
+                json.dumps(expected),
+                kind,
+                properties["Handler"],
+                json.dumps(RETIRED_BOT_MODULES),
+            ],
+            check=True,
         )
 
     if seen != set(registrations):

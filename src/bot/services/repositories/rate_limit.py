@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from botocore.exceptions import ClientError
-from core.config import GEMINI_EMBEDDING_RPD_LIMIT, GEMINI_RPD_LIMIT, STATS_TABLE_NAME
+from core.config import GEMINI_RPD_LIMIT, STATS_TABLE_NAME
 from core.logger import LoggerAdapter, get_logger
 from services.repositories._common import get_dynamodb
 
@@ -24,7 +24,6 @@ _TTL_DELTA = timedelta(hours=48)
 _DEFAULT_SCOPE = "gemini_generate"
 _SCOPE_LIMITS = {
     _DEFAULT_SCOPE: GEMINI_RPD_LIMIT,
-    "gemini_embedding": GEMINI_EMBEDDING_RPD_LIMIT,
 }
 
 

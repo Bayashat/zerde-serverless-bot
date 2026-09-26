@@ -49,6 +49,13 @@ _CONFIG_DEFAULTS = {
     "AGENT_DAILY_PROACTIVE_LIMIT": "3",
     "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": "3",
 }
+_ACTIVE_RUNTIME_CONFIG_KEYS = {
+    "AGENT_BOT_ID",
+    "MULTIMODAL_ENABLED",
+    "MULTIMODAL_MAX_DOWNLOAD_BYTES",
+    "MULTIMODAL_INLINE_MAX_BYTES",
+    "MULTIMODAL_TEXT_FILE_MAX_CHARS",
+}
 _QUEUE_CONFIG_KEYS = {
     "MAIN_TASK_QUEUE_RETENTION_DAYS",
     "MAIN_TASK_DLQ_RETENTION_DAYS",
@@ -140,7 +147,10 @@ def test_config_defaults_agree_between_example_runtime_and_lambda_template(monke
                 assert key not in deployed, key
             else:
                 assert deployed[key] == expected, key
-            assert _runtime_value_as_text(runtime[key]) == expected, key
+            if key in _ACTIVE_RUNTIME_CONFIG_KEYS:
+                assert _runtime_value_as_text(runtime[key]) == expected, key
+            else:
+                assert key not in runtime, key
 
 
 def test_typed_config_overrides_reach_bot_runtime_and_indexer(monkeypatch: Any) -> None:
@@ -172,7 +182,10 @@ def test_typed_config_overrides_reach_bot_runtime_and_indexer(monkeypatch: Any) 
         deployed = function["Properties"]["Environment"]["Variables"]
         for key, expected in overrides.items():
             assert deployed[key] == expected, (name, key)
-            assert _runtime_value_as_text(runtime[key]) == expected, key
+            if key in _ACTIVE_RUNTIME_CONFIG_KEYS:
+                assert _runtime_value_as_text(runtime[key]) == expected, key
+            else:
+                assert key not in runtime, key
 
 
 def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambda_.Function:
@@ -823,19 +836,12 @@ def _resolved_lambda_environment(template: Template, name: str) -> dict[str, str
     return {key: resolve(value) for key, value in function["Properties"]["Environment"]["Variables"].items()}
 
 
-def test_retired_environment_defaults_match_runtime_and_keep_overrides(monkeypatch: Any) -> None:
+def test_retired_environment_compaction_is_inert_in_runtime_and_preserves_infra_overrides(monkeypatch: Any) -> None:
     defaults = bot_component.RETIRED_DEFAULT_ENVIRONMENT
     for key in defaults:
         monkeypatch.delenv(key, raising=False)
     runtime = runpy.run_path("src/bot/core/config.py")
-    for key, expected in defaults.items():
-        actual = runtime[key]
-        if isinstance(actual, tuple):
-            assert ",".join(actual) == expected, key
-        elif isinstance(actual, float):
-            assert actual == float(expected), key
-        else:
-            assert _runtime_value_as_text(actual) == expected, key
+    assert not (defaults.keys() & runtime.keys())
     env = {**defaults, "AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}
     compact = bot_component.omit_retired_default_environment(env)
     assert compact == {"AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}

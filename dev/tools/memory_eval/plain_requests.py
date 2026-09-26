@@ -30,13 +30,11 @@ def build_plain_payload(question, language, style_profile=None):
     """
     from services import group_agent
     from services.ai import gemini_client
-    from services.repositories.group_memory import normalise_chat_style_profile
+    from services.explicit_context import normalise_chat_style_profile
 
     if not isinstance(question, str) or not 1 <= len(question) <= 6000 or language not in {"kk", "ru", "en", "mixed"}:
         raise EvaluationInputError("Invalid plain evaluation input")
-    policy = group_agent._reply_policy(
-        question, style_profile=normalise_chat_style_profile(style_profile), low_confidence_retrieval=False
-    )
+    policy = group_agent._reply_policy(question, style_profile=normalise_chat_style_profile(style_profile))
     client, captured = plain_client(), []
 
     def capture(**kwargs):
@@ -67,7 +65,7 @@ def build_plain_payload(question, language, style_profile=None):
 
 
 def validate_plain_request(request):
-    from services.repositories.group_memory import normalise_chat_style_profile
+    from services.explicit_context import normalise_chat_style_profile
 
     if not isinstance(request, dict) or set(request) != {"question", "language", "style_profile", "payload"}:
         raise EvaluationInputError("Invalid plain request envelope")

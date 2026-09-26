@@ -52,6 +52,7 @@ def test_absent_v2_configuration_does_not_use_legacy_table(monkeypatch):
     app = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(app)
     monkeypatch.setattr(app, "MEMORY_V2_TABLE_NAME", None)
-    monkeypatch.setattr(app, "MEMORY_TABLE_NAME", "legacy-business-table")
+    monkeypatch.setenv("MEMORY_TABLE_NAME", "legacy-business-table")
+    assert not hasattr(app, "MEMORY_TABLE_NAME")
     monkeypatch.setattr(app, "_memory_v2_repo", None)
     assert app.get_memory_v2_repo() is None

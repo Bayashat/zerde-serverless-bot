@@ -11,5 +11,5 @@
 - 保护6张现役表、3条旧SETTINGS的精确核验边界、预算UNKNOWN和恢复记录；禁止purge混合队列。
 - Z18清单交付与Z20实际资源删除分开；未知消费者不得假称无用。
 - Z10保留副本责任、期限及真实延迟记录不变；不删用户原始Telegram导出。
-- 本轮基线main54ce4df，PR220两环境部署读回完成；自然使用样本尚0，production_ready=false。详细证据与后续状态以TASKS/HANDOFF为准。
+- 当前基线main b232df6，PR223源码c9a4219两环境部署读回完成；Z20本地源码拆除进行中，未部署或删云资源；自然使用样本尚0，production_ready=false。详细证据与后续状态以TASKS/HANDOFF为准。
 - 不向GitHub或日志写聊天正文、个人标识、token或模型原文。

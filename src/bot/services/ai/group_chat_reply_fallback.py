@@ -43,7 +43,6 @@ class GroupChatReplyProvider(Protocol):
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
-        proactive: bool = False,
         before_attempt: Callable[[], None] | None = None,
     ) -> str:
         """Return plain answer text or raise a provider error."""
@@ -69,7 +68,6 @@ def _build_group_chat_reply_prompts(
     reply_instructions: str,
     lang: str,
     text_only_media_context: str,
-    proactive: bool,
 ) -> tuple[str, str]:
     media_instructions = (
         "The user attached media, but this fallback provider receives text only. "
@@ -77,13 +75,6 @@ def _build_group_chat_reply_prompts(
         "hear audio, inspect PDFs, or read binary files unless the text content is explicitly included below. "
         "If media details are necessary and unavailable, say that briefly and answer what can be answered from text. "
         if text_only_media_context
-        else ""
-    )
-    proactive_instructions = (
-        "This is a proactive answer to an ordinary group message. The message was not necessarily directed at "
-        "ZerdeBot, so do not phrase the reply as if the user asked you personally. Add value briefly and avoid "
-        "forcing a conversation. "
-        if proactive
         else ""
     )
     system_prompt = (
@@ -111,7 +102,6 @@ def _build_group_chat_reply_prompts(
         "Semantic long-term memory retrieval is query-matched historical context; use it when relevant, "
         "but do not let it override the trusted requester or target-user profile or clear recent evidence. "
         f"{media_instructions}"
-        f"{proactive_instructions}"
         "Decide the answer style from the user's wording and the replied-to context. "
         "Answer naturally and directly; if the context is insufficient, say so briefly. "
         "Respect the response length instructions exactly; short follow-ups should stay short. "
@@ -122,11 +112,7 @@ def _build_group_chat_reply_prompts(
     media_prompt_section = (
         "Text-only attached media context:\n" f"{text_only_media_context}\n\n" if text_only_media_context else ""
     )
-    current_label = (
-        "Current ordinary group message selected for a proactive answer:"
-        if proactive
-        else "Current message directed at you:"
-    )
+    current_label = "Current message directed at you:"
     user_prompt = (
         f"{_language_instruction(lang)}\n\n"
         "Trusted current requester profile context:\n"
@@ -179,7 +165,6 @@ class OpenAICompatibleGroupChatReplyProvider:
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
-        proactive: bool = False,
         before_attempt: Callable[[], None] | None = None,
     ) -> str:
         system_prompt, user_prompt = _build_group_chat_reply_prompts(
@@ -192,7 +177,6 @@ class OpenAICompatibleGroupChatReplyProvider:
             reply_instructions=reply_instructions,
             lang=lang,
             text_only_media_context=text_only_media_context,
-            proactive=proactive,
         )
         payload: dict[str, Any] = {
             "model": self._model,
@@ -222,7 +206,6 @@ class OpenAICompatibleGroupChatReplyProvider:
                 "requester_profile_context_chars": len(requester_profile_context),
                 "media_context_chars": len(text_only_media_context),
                 "message_chars": len(user_message),
-                "proactive": proactive,
                 "lang": lang,
             },
         )
@@ -288,7 +271,6 @@ class FallbackGroupChatReplyProvider:
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
-        proactive: bool = False,
         before_attempt: Callable[[], None] | None = None,
     ) -> tuple[str, str]:
         last_error: ZerdeProviderError | None = None
@@ -307,7 +289,6 @@ class FallbackGroupChatReplyProvider:
                     max_output_tokens=max_output_tokens,
                     lang=lang,
                     text_only_media_context=text_only_media_context,
-                    proactive=proactive,
                     **({"before_attempt": before_attempt} if before_attempt is not None else {}),
                 )
                 logger.info(

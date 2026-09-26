@@ -273,13 +273,13 @@ def test_spam_processor_adds_bounded_recent_context(
         {"message_id": 2, "display_name": "Lio", "text": "За что."},
     ]
 
-    process_spam_check_task(mock_bot, _BODY, memory_repo=memory_repo)
+    process_spam_check_task(mock_bot, _BODY)
 
-    memory_repo.get_recent_messages.assert_called_once_with(_BODY["chat_id"], limit=12)
+    memory_repo.get_recent_messages.assert_not_called()
     classifier_input = mock_detector.classify.call_args[0][0]
     assert "CURRENT_MESSAGE:" in classifier_input
-    assert "RECENT_GROUP_MESSAGES" in classifier_input
-    assert "Aman: ФГДС жасап кету керек." in classifier_input
+    assert "RECENT_GROUP_MESSAGES" not in classifier_input
+    assert "Aman: ФГДС жасап кету керек." not in classifier_input
     mock_enforcer_cls.return_value.enforce.assert_not_called()
 
 

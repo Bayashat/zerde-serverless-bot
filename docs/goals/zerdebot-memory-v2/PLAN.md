@@ -1,3 +1,5 @@
+> 2026-09-27执行更新：PR223依赖安全修复已完成两环境实包独审，当前进入Z20源码退役。新激活仍受R2清理门禁；云表/向量资源尚未删除。逐项状态见task_manifest/TASKS；执行见[SOURCE_RETIREMENT_EXECUTION](SOURCE_RETIREMENT_EXECUTION.md)。
+
 # ZerdeBot 可靠性修复与 Memory V2 实施计划
 
 **Intent:** 让机器人可靠地记住成员在本群的明确自述、维护当前事实，并在被明确询问时给出有来源的回答。

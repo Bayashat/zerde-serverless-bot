@@ -4,15 +4,13 @@ from pathlib import Path
 import zerde_common.secrets as secrets
 
 
-def test_raw_message_retention_never_falls_back_to_legacy_value(monkeypatch):
+def test_retired_memory_settings_are_not_parsed_or_used(monkeypatch):
     monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "3650")
-    monkeypatch.delenv("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", raising=False)
-    config_path = Path(__file__).parents[1] / "src" / "bot" / "core" / "config.py"
-    config = runpy.run_path(str(config_path))
-    assert config["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == 30
-    assert config["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == 3650
-    monkeypatch.setenv("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "14")
-    assert runpy.run_path(str(config_path))["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == 14
+    monkeypatch.setenv("GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "not-a-number")
+    monkeypatch.setenv("MEMORY_TABLE_NAME", "retired-table")
+    config = runpy.run_path(str(Path(__file__).parents[1] / "src/bot/core/config.py"))
+    assert not any(name.startswith("GROUP_MEMORY_") for name in config)
+    assert "MEMORY_TABLE_NAME" not in config
 
 
 def test_bot_config_loads_only_the_requested_ssm_secret(monkeypatch):

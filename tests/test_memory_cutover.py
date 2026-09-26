@@ -63,19 +63,18 @@ def test_old_reply_text_cannot_bypass_memory_retirement(monkeypatch, condition):
     assert context.user_text == "explain why?"
     assert context.retrieval_query == "explain why?"
     assert not context.source_message_context
+    assert repo.mock_calls == []
 
 
 def test_explicit_generation_never_invokes_legacy_retrieval(monkeypatch):
     repo, bot = MagicMock(), MagicMock()
     bot.send_message.return_value = {"message_id": 100}
-    retrieve = MagicMock(side_effect=AssertionError("legacy retrieval called"))
     generate = MagicMock(return_value=("I do not know.", "synthetic"))
-    monkeypatch.setattr(group_agent, "build_agent_memory_context", retrieve)
     monkeypatch.setattr(group_agent, "_generate_group_chat_reply", generate)
     assert group_agent.answer_group_question(
         repo=repo, bot=bot, chat_id=-1001, reply_to_message_id=11, user_text="Where does Ada work?", lang="en"
     )
-    retrieve.assert_not_called()
+    assert repo.mock_calls == []
     for name in [
         "recent_context",
         "long_term_memory_context",
@@ -84,8 +83,6 @@ def test_explicit_generation_never_invokes_legacy_retrieval(monkeypatch):
         "requester_profile_context",
     ]:
         assert generate.call_args.kwargs[name] == ""
-    assert repo.record_agent_reply.call_args.kwargs["context_version"] == EXPLICIT_CONTEXT_VERSION
-    assert repo.record_agent_reply.call_args.kwargs["retrieval_sources"] == []
 
 
 def test_plain_answer_main_and_fallback_share_accurate_context_and_capability_limits(monkeypatch):

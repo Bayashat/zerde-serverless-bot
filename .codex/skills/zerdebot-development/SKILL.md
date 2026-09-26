@@ -1,283 +1,34 @@
 ---
 name: zerdebot-development
-description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram group-chat agent with Python Lambdas for bot/webhook/SQS, RAG memory, DynamoDB profiles, S3 Vectors semantic retrieval, Gemini/Groq/DeepSeek AI integrations, news digests, quizzes, spam controls, and CDK infrastructure. Use when Codex is asked to inspect, modify, test, review, document, deploy-plan, debug, or optimize this repo, especially changes involving `src/bot`, `src/news`, `src/quiz`, `src/shared`, `infra`, group memory, agent behavior, `/ask`, vector indexing, Telegram behavior, SQS workflows, DynamoDB repositories, or AI providers.
+description: Inspect, implement, test, review and operate ZerdeBot's Python Lambda Telegram bot, Memory V2, explicit AI answers/media, captcha, spam, votes, news, Quiz, operational alerts and AWS CDK. Follow the current memory ownership, retirement, deployment and evidence contracts.
 ---
 
-# ZerdeBot Development
+# ZerdeBot development
 
-## 2026-09-26 current execution gate
+Read [.codex/AGENTS](../../AGENTS.md), [architecture](../../../docs/ARCHITECTURE.md), [finishing contract](../../../docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md), current TASKS/HANDOFF and the relevant issue. Check current source/branch/PR and live evidence before continuing. Historical plans and frozen reports do not authorize rerunning completed scripts.
 
-Follow [the finishing contract](../../../docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md). The owner requires deletion of retired code and unused resources before new feature/group/production-memory activation, with an exact delete/keep inventory announced beforehand. Preserve the existing dev pilot CONTROL/epoch. Update PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and the relevant GitHub issues after material progress. Do not wait for an empty group to produce natural samples while independent cleanup/business/cost acceptance can proceed.
+## Product and ownership
 
-The shipped V2 table/writer and source-validated explicit answers are current; legacy profiles, vectors, proactive/channel/ambient behavior below describe historical implementation only and MUST NOT be wired back in or treated as current product requirements. Legacy code/resources remain physically present pending the new cleanup task; exact revalidation of the three old SETTINGS and explicit-media dependency separation must precede old-table deletion. The fresh field audit found only retired flags, no custom style and no active setter: retain one pure style normalizer, do not create pointless settings rows; any new/unknown field or source change blocks deletion and requires explicit semantic preservation. Never treat CloudFormation Retain as physical deletion. Current runtime contracts are in docs/MEMORY_V2_RUNTIME.md and the finishing contract.
+Memory V2 is the unique fact/source/control/lifecycle owner. Explicit self-statements are scoped by group and Telegram ID, supported by evidence and corrected/forgotten through one interface. Profiles are views, not another free-text knowledge store. Preserve source version/epoch/generation/expiry checks and the original model/AWS budget owners; UNKNOWN liability remains.
 
+The legacy 13-module memory/profile/extraction/retrieval/vector/social/import implementation is deleted in the source-retirement change. Do not recreate rule fallback, autonomous replies/reactions, channel comments, historical import or contests. Source removal, deployed package absence and physical AWS deletion are separate proofs. The discard-only vector entry remains only until its dedicated resources retire; old task rejection prevents delayed envelopes from acting.
 
-## Approved cutover overrides
+Explicit `/ask`, mentions and requested bot replies stay usable independently of old switches. Current pure text/reference/style helpers live in `services/explicit_context.py`; the temporary-media facade directly delegates to V2 EphemeralMediaRepository. It does not inherit an old repository or need `MEMORY_TABLE_NAME`. Preserve ephemeral source/actor/TTL fences, before-attempt checks and final delivery leases across primary/fallback models. Do not use quoted old bot answers or old recent/profile/vector context as fallback knowledge.
 
-F4 source-scoped retry and plain-answer capability limits follow [the bounded contract](../../../docs/goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md). Keep one parser, a strict whole-response attribution envelope, atomic per-source facts and at most two model calls. Completed neighbors remain protected by the existing worker freshness check and unique writer; unknown implementation errors must not become partial success.
+## Cleanup and operating boundary
 
-The legacy daily group summary EventBridge rule and its SQS send grant are removed from CDK. Do not restore them behind old memory flags or configured chat lists. Existing deployments still require the reviewed infrastructure update; V2 recovery, news and quiz schedules retain their existing owners.
+The user requires retired code/resources cleared before new feature/group/prod-memory activation, and a precise delete/keep/unverified list before deletion. Follow [inventory](../../../docs/goals/zerdebot-memory-v2/RETIREMENT_INVENTORY.md) and [source execution](../../../docs/goals/zerdebot-memory-v2/SOURCE_RETIREMENT_EXECUTION.md). Keep current dev CONTROL/epoch; never force a historic revision after legitimate activity.
 
-The deployed self-claims-v2.6 source-boundary/name fix, public evaluation route and offline occurrence review follow [the current quality/evidence contract](../../../docs/MEMORY_PUBLIC_EVALUATION.md). Keep the frozen gold unchanged, distinguish model-observed audit from independent semantic review, and pause real evaluation on provider rate limits.
+The last old-SETTINGS audit found dev0/prod3 retired-flag rows without custom style. Before stopping their reads in deployment and before physical deletion, recheck complete strong pagination, exact keys, AV types/full-row hashes, strict fields and preserved stop-write protection. Changes block that path until actual semantics are protected. Do not create pointless settings rows or map retired flags to V2 ACTIVE. Retain the six current business/Quiz/V2 tables; unknown orphan consumers still require evidence. Never purge/receive mixed queues or delete stacks/shared assets.
 
-The post-baseline handbook/education fixes use the existing V2 safety and answer
-owners; their bounded scope and unverified model-quality status are recorded in
-[Memory quality follow-up](../../../docs/MEMORY_QUALITY_FOLLOWUP.md).
+Keep captcha generation/decision/recovery, confirmed spam enforcement and CLEAN admission, vote session/expiry, news per-group delivery and Quiz publication/answer recovery intact. Preserve production Chinese news DISABLED and absence of the old summary schedule. Operational alerts go to the configured administrator private chat.
 
-The owner removed the experimental contest feature on 2026-09-11. No contest command, observation, repository, recovery schedule or runtime writer remains in this PR; deployed old code is unchanged until release. Old contest task envelopes are acknowledged without action. Retired rows are not a source of memory and may be explicitly scoped for offline cleanup; deployment and production deletion remain separate operations. This supersedes prior contest preservation/fairness guidance.
+## Implementation and verification
 
-The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Remove old helpers before any new feature/group/production-memory activation, after extracting active settings/explicit-media dependencies. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
+Use current providers and existing error/fallback handling; avoid unrelated SDK/model upgrades. Verify changed model availability/pricing against official sources when needed. Do not log complete Telegram events, source/model text, secrets or media; preserve redaction of nested exceptions and SDK errors.
 
-## Operating Posture
+Main agent implements sequentially; independent agents review ownership, correctness and maintainability. Preserve useful mixed tests while deleting retired-owner tests. Keep frozen gold/scorer/runs unchanged. Compare complete current explicit requests against the saved 18-case pre-cleanup synthetic baseline, not just a new serializer against itself. Source grep/tests do not prove a deployed package: verify actual ARM handlers, locked dependency versions and physical ZIP contents, including absence of retired modules/bytecode.
 
-Treat ZerdeBot as a **memory-enabled agentic Telegram bot**, not a simple LLM wrapper. The bot combines serverless community tooling with RAG memory and social agent behavior:
+Use `uv sync --frozen`, focused then full meaningful tests, and repo pre-commit hooks. For infra, inspect synth/dev diff and exact changeset; maintain config/workflow/example/repo-variable parity. Use a managed worktree, default `feat/` branch, conventional commits and FEATURE/FIX PR titles. Finish scoped changes through a PR and already-authorized review/CI/deployment gates, with actual readback.
 
-- Recent group context, requester identity, and user profiles live in DynamoDB.
-- Long-term memory and daily summaries live in DynamoDB; only long-term memory and high-information daily summaries are indexed in S3 Vectors.
-- Long-term memory extraction uses a structured Gemini schema with rule-based fallback and safety guards.
-- Gemini handles agent answers, multimodal linked-channel post comments, summaries, and embeddings. Linked-channel comments fall back to DeepSeek and then Groq with text-only context when Gemini is unavailable after retries.
-- Groq model pools handle high-volume strict-JSON decisions for ordinary proactive answers and ambient emoji reactions. DeepSeek then Groq provide text-only answer-generation fallback when Gemini fails; Groq handles async spam checks.
-- The bot should answer only when useful, keep reply length appropriate, and avoid prompt pollution from irrelevant memories.
-
-## First Steps
-
-1. Read `.codex/AGENTS.md` before non-trivial code, infra, AI, memory, or deployment work.
-2. Read `docs/ARCHITECTURE.md` before changing group memory, agent behavior, SQS routing, DynamoDB schema, vector retrieval, or CDK wiring.
-3. Check branch and worktree with `git status --short --branch`.
-4. Preserve user changes. Do not revert unrelated files.
-5. Prefer repo patterns and focused changes over new abstractions.
-
-## Git Workflow
-
-- When creating a new branch, use conventional prefixes such as `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`, or `test/`.
-- Do not create `codex/` branches for this repository.
-- Use conventional commit-style titles for commits and PRs, for example `feat: improve RAG memory grounding` or `fix: scope self-reference retrieval`.
-- Do not add `codex` or `[codex]` to commit messages or PR titles.
-- For development requests that change code, tests, docs, or infra, finish by staging the intended changes, committing them, pushing the branch, and opening a GitHub PR against `main` unless the user explicitly asks not to. Do not leave completed implementation work only as local uncommitted changes.
-
-## Repository Map
-
-- `src/bot/`: Telegram webhook, dispatcher, main SQS worker tasks, captcha, voteban, spam screening, `/ask`, group agent, group memory, vector enqueue/query/delete helpers, and the dedicated vector indexer entrypoint.
-- `src/bot/services/group_agent.py`: agent trigger policy, ordinary proactive AI decision orchestration, linked-channel post immediate comments, provider fallback orchestration, reply-thread continuity, response length/style policy.
-- `src/bot/services/group_memory.py`: recent context observation and prompt formatting, requester/target-user profiles, query-filtered long-term context.
-- `src/bot/services/memory_retrieval.py`: Memory Retrieval Pipeline V1 for query intent, raw candidate retrieval, local scoring/dedupe, candidate-driven prompt packing, and selected-source tracking.
-- `src/bot/services/memory_extractor.py`: structured long-term memory schema, Gemini extraction normalization, rule fallback, and storage guards.
-- `src/bot/services/group_memory_processor.py`: async long-term extraction task orchestration, cheap Gemini candidate gating, extractor LLM budgets, and daily summaries.
-- `src/bot/services/ambient_reactions.py`: ambient emoji reaction eligibility, sampling, bounded context, strict classifier validation, cooldowns, provider fallback, and `setMessageReaction` task processing.
-- `src/bot/services/ai/proactive_decision.py`: Groq model-pool strict-JSON decision chain for ordinary proactive group answers, with DeepSeek decision fallback disabled by default.
-- `src/bot/services/ai/group_chat_reply_fallback.py`: DeepSeek then Groq text-only fallback chain for group answer generation when Gemini fails.
-- `src/bot/services/ai/ambient_reaction_classifier.py`: Groq-only model-pool strict-JSON classification for ambient emoji reactions.
-- `src/bot/services/ai/channel_post_comment.py`: DeepSeek then Groq text-only fallback chain for linked-channel post comments after Gemini retry exhaustion.
-- `src/bot/services/telegram_actor.py`: shared Telegram actor attribution, including linked-channel discussion mirror detection and `sender_chat` actor selection.
-- `src/bot/vector_indexer_main.py`: dedicated vector memory SQS Lambda entrypoint.
-- `src/bot/services/vector_memory.py`: Gemini embeddings, S3 Vectors indexing/retrieval with metadata filters and distance cutoffs, vector cleanup/backfill.
-- `src/bot/services/repositories/group_memory.py`: DynamoDB single-table layout for settings, messages, metadata-only Telegram album manifests, profiles, long-term memory, agent replies, vector status, proactive counters, and targeted memory deletion helpers.
-- `src/news/`: scheduled news digest Lambda.
-- `src/quiz/`: scheduled and on-demand quiz Lambda.
-- `src/operations/`: independent SNS operational notifier; only private ADMIN_USER_ID and operations# state keys.
-- `src/shared/python/zerde_common/`: shared Lambda layer utilities.
-- `infra/`: AWS CDK stack and constructs.
-- `docs/ARCHITECTURE.md`: current architecture source of truth.
-- `tests/`: pytest coverage for bot, quiz, spam, shared utilities, memory, and agent behavior.
-
-## Memory And Agent Guardrails
-
-- Do not inject unfiltered long-term memory into agent prompts. Use query-filtered long-term context and semantic vector retrieval.
-- Do not let preformatted whole context sections bypass the local reranker; prompt memory sections should be rendered from selected, deduped candidates.
-- Self-reference questions must include requester identity/profile context in the answer path.
-- User profile context must be derived from the target user's own messages; third-party roasts or labels are low trust.
-- Query-filtered long-term memory must stay empty when the current query has no usable relevance terms.
-- Semantic vector retrieval should use metadata filters and distance cutoffs before prompt injection.
-- Keep answer generation prompts separate from semantic retrieval queries. Reply-thread generation may include the previous bot answer for continuity, but vector retrieval should use a compact `retrieval_query` based on the current ask, previous user request, and original source message whenever available.
-- Keep explicit multimodal media ephemeral. Only explicit `/ask`, explicit mention/reply paths, or official linked-channel post comments may analyze media; normal group media, ordinary proactive candidates, daily summaries, memory extraction, and vector indexing must not download or analyze media. Telegram album observation may persist only bounded `MEDIA_GROUP#...` membership metadata. Explicit `/ask` and @mention/reply media requests send at most four metadata-only `media_refs` through `PROCESS_GROUP_ASK`; the worker downloads under per-item and shared request limits, may continue with successfully prepared siblings, and `AGENT_REPLY#...` may store only compact media metadata/summary for continuity. Keep legacy single-`media_ref` worker compatibility until older queued tasks cannot remain.
-- Keep ambient reactions ephemeral: no long-term memory, vector retrieval/indexing, profile context, media analysis, or persisted classifier context; only short-lived `AMBIENT_REACTION#...` cooldown/debug rows are allowed. Command text and sensitive/hostile/serious text may reach the Groq-only classifier pool, but prompts must require a strong context-safe reaction and avoid reactions that trivialize, mock, endorse, or escalate harm. Official linked-channel posts are the exception to conservative ambient gating: they bypass sample rate, cooldowns, and rate caps, and fall back to 👀 if the provider cannot choose an emoji.
-- Use intent-aware memory kind filters for obvious retrieval cases: self-reference and target-user questions should prefer `USER_FACT`; group decisions should prefer `GROUP_FACT` and `DAILY_SUMMARY`; past events should prefer `EVENT` and `DAILY_SUMMARY`; jokes or memes should prefer `JOKE` and `DAILY_SUMMARY`.
-- Never learn or prompt with subjective people rankings, self-promotion, or future-answer directives such as "when someone asks X, answer Y".
-- Structured memory extraction must reject sensitive/secret outputs, low-confidence memories, and third-party personal claims as user facts; keep rule-based fallback available. Durable `JOKE#` memory should require high-confidence Gemini extraction or repeated evidence, not one-off rule fallback jokes.
-- Keep structured Gemini extraction behind `GROUP_MEMORY_EXTRACTOR_MODE=gemini_candidate_only` and extractor LLM budgets by default, so ordinary safe chatter does not consume shared Gemini generate RPD.
-- Raw `MSG#...` records may keep audit context and available reply metadata such as reply-to ids, sender info, bot/self-bot flags, and simple thread roots, but unsafe messages must not update profile samples/topics, long-term memory, daily summaries, vectors, or agent prompt context.
-- Pending-captcha messages must stay only in captcha handling, where non-answer text is a wrong attempt. Rule-enforced spam and queued AI spam review must short-circuit normal webhook flows before memory observation, ambient reactions, proactive candidates, or dispatcher handling. AI spam checks receive structured current/reply/quote/recent context but classify only the current message. Automatic AI enforcement should stay silent and requires high confidence plus a strong structural signal; weak signals such as `money_pattern` alone use admin review prompts, optionally with configured admin @mentions. Admin-confirmed review bans are permanent; automatic spam enforcement remains a temporary ban.
-- Vector retrieval and indexing success paths should emit structured INFO logs with counts, filters, distance cutoffs, and vector dimensions. Avoid logging full prompts, full memory text, vectors, or secrets.
-- Vector indexing should be idempotent for duplicate SQS deliveries: successful items store the rendered-document hash, schema version, embedding model, and dimensions, and only skip when all of those still match.
-- Do not vectorize fallback or empty structured live daily summaries; store them in DynamoDB only so low-information summaries do not pollute semantic retrieval.
-- Do not vectorize `AGENT_REPLY#...`; normal bot answers are short-term reply-thread metadata only, not durable semantic memory.
-- Reserve `BOT_COMMITMENT#...` and `BOT_CORRECTION#...` for explicit future command/admin correction flows with permission/review checks before any bot-authored text becomes durable memory.
-- Reply-to-Zerde follow-ups must include prior `AGENT_REPLY#...` answer context when available.
-- Reply-to-Zerde follow-ups should include the captured quoted source message, previous user request, previous bot answer, and current follow-up when available.
-- Do not treat replies to other bots as Zerde reply threads; pure reactions, thanks, laughter, and short comments should be locally skipped unless the user explicitly mentions the bot.
-- Store useful bot answer metadata in `AGENT_REPLY#...` so `/agent why` and thread continuation work.
-- Keep `/agent why` explainable without exposing full memory text: show trigger, reason, confidence, and source types/counts only.
-- Keep `/agent wrong` and `/memory wrong` non-destructive: mark a replied bot answer's recorded memory sources with negative feedback metadata and lower future retrieval priority.
-- Keep `/memory about me` scoped to the requester profile derived from their own messages. Keep `/memory forget this` permission-scoped to own durable memory unless the caller is the group owner or bot owner, and never delete `USER#` profiles, raw `MSG#` items, or recent context through bot-answer retrieval sources.
-- Keep ordinary proactive participation conservative through the AI decision prompt, not local heuristics: queue eligible ordinary group text with `AGENT_PROACTIVE_DELAY_SECONDS`; the worker gathers recent context and query-filtered long-term context, asks the `AGENT_PROACTIVE_DECISION_GROQ_MODELS` pool for strict JSON using capped decision-only context, requires `AGENT_PROACTIVE_FINAL_THRESHOLD`, reserves `AGENT_DAILY_PROACTIVE_LIMIT` only after a yes decision, then generates with Gemini retry plus DeepSeek/Groq fallback. DeepSeek proactive decision fallback is opt-in only through `AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK`.
-- Do not reintroduce local open-question, length, bot-meta, stop-cue, score, recent-bot, or human-answer gates for ordinary proactive answering. Keep only narrow routing guards such as skipping messages that start with a non-bot `@username`, because those are directed at a human rather than the bot or the group. Put a general social-permission rubric into the proactive decision prompt: intended audience, conversation act, concrete bot incremental value, and timing. The prompt should handle multilingual messy questions while staying silent for human-directed side conversations, FYI/status updates, reactions, human-already-answered threads, bot-meta, stop-cue, and sensitive/hostile/serious-content cases where a bot reply would add noise or harm.
-- Keep linked-channel post participation separate from ordinary proactive replies: detect official linked channel discussion mirrors via `is_automatic_forward` or Telegram `777000` plus `sender_chat.type=channel`, use `sender_chat` as the actor, queue a zero-delay `channel_post` worker task, bypass ordinary proactive delay/confidence/daily-limit/text-only rules, and use the dedicated channel-post comment prompt. Supported attached media may be analyzed ephemerally by Gemini in that worker. If Gemini fails after three attempts or cannot be used, fall back to DeepSeek and then Groq with text-only context; if every provider fails, let SQS retry/DLQ instead of returning `False`.
-- Keep response length proportional to the user's request. Short follow-ups should stay short unless the user asks for detail.
-- Keep chat-level `style_profile` defaults concise and socially safe. Weak selected memory should add uncertainty instructions instead of letting the model sound certain.
-- If cleaning production memory, first back up exact DynamoDB items and vector keys locally, then delete narrowly.
-
-## SQS And Persistence
-
-Captcha recovery is generation-scoped: persist and enqueue before restricting/sending; serialize verification versus timeout with revision CAS and a live action lease; persist terminal decisions before Telegram calls and reconcile ambiguous results by membership readback. Never unconditionally delete current captcha state from a timeout, and never map database failures to NotFound. Keep the lease longer than the Bot Lambda timeout. Legacy queued timeouts require both exact anchors. Follow the rollout gate in `docs/captcha-lifecycle.md` so old in-flight unconditional writers finish before new creation starts.
-
-SQS handler failures should re-raise when retry/DLQ semantics are intended. Current main bot SQS task types:
-
-- `CHECK_TIMEOUT`
-- `SPAM_CHECK`
-- `PROCESS_GROUP_ASK`
-- `PROCESS_PROACTIVE_CANDIDATE`
-- `PROCESS_AMBIENT_REACTION`
-- `PROCESS_GROUP_MEMORY`
-- `PROCESS_DAILY_GROUP_SUMMARIES`
-
-Current vector-indexer SQS task types:
-
-- `PROCESS_VECTOR_MEMORY`
-- `PROCESS_VECTOR_MEMORY_BACKFILL`
-
-Queue retention defaults are operationally conservative: main task queue 1 day, vector memory queue
-4 days, and both DLQs 14 days. CDK deploy-time env vars
-`MAIN_TASK_QUEUE_RETENTION_DAYS`, `MAIN_TASK_DLQ_RETENTION_DAYS`,
-`VECTOR_MEMORY_QUEUE_RETENTION_DAYS`, and `VECTOR_MEMORY_DLQ_RETENTION_DAYS` can tune retention
-within SQS's 1-14 day range.
-
-DynamoDB memory key families:
-
-- `SETTINGS` with memory/agent flags and optional chat `style_profile`
-- `MSG#...`
-- `MEDIA_GROUP#<media_group_id>#<message_id>`
-  - Metadata-only supported Telegram album item reference; use raw-message retention and never store downloaded bytes.
-- `USER#...`
-- `USERNAME#...`
-- `EVENT#...`
-- `USER_FACT#...`
-- `GROUP_FACT#...`
-- `JOKE#...`
-- `DAILY_SUMMARY#...`
-- `TERM#...`
-- `AGENT_REPLY#...`
-  - Optional compact media metadata/summary for explicit multimodal request continuity only. Do not store raw media bytes, downloaded files, full OCR/transcripts, or media-derived durable facts here.
-- `AMBIENT_REACTION#...`
-  - Short-lived reaction metadata for cooldowns/debugging only. Do not write ambient reaction context to long-term memory or vectors.
-- `BOT_COMMITMENT#...`
-- `BOT_CORRECTION#...`
-- `VECTOR_BACKFILL` with cumulative `processed_total`, `enqueued_total`, `failures_total`,
-  `started_at`, `last_updated_at`, optional `finished_at`, and page continuation tokens. Legacy
-  `vector_backfill_*` fields are still written for compatibility.
-- `PROACTIVE#...`
-
-Memory items may carry feedback/consolidation metadata such as `wrong_feedback_count`, `negative_feedback_count`, `last_feedback_at`, `feedback_status`, and `superseded_by`.
-
-Memory TTLs are type-specific. Use `GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS` for `MSG#...` and `MEDIA_GROUP#...`, `GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS` for `AGENT_REPLY#...`, `GROUP_MEMORY_LONG_TERM_RETENTION_DAYS` for `EVENT#...` / `USER_FACT#...` / `GROUP_FACT#...` / `JOKE#...`, `GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS` for `DAILY_SUMMARY#...`, and `GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS` for `PROACTIVE#...`. Raw-message retention defaults independently to 30 days and never inherits `GROUP_MEMORY_RETENTION_DAYS`; only long-term-memory and daily-summary retention fall back to that legacy variable when omitted; `AGENT_REPLY#...` and `PROACTIVE#...` keep their existing short defaults unless explicitly configured. Explicit long-term `expires_in_days` still sets `expires_at` and DynamoDB TTL takes the shorter expiry.
-
-## Common Commands
-
-Use the repo's existing tooling:
-
-```bash
-uv sync --frozen
-uv run pytest tests/ -q
-uv run pre-commit run --all-files
-cd infra && uv run cdk synth -c env=dev
-cd infra && uv run cdk diff -c env=dev
-```
-
-When changing `infra/`, run `cd infra && uv run cdk diff -c env=dev` and report the meaningful diff. If the diff includes environment-only changes such as `CHAT_LANG_MAP`, call that out separately.
-
-## AI Provider Work
-
-Treat AI behavior as user-facing reliability work:
-
-- Verify current model names against official provider docs when model availability, preview/stable status, or rate limits matter.
-- Avoid preview/shutdown model IDs for production defaults.
-- Prefer fast fallback for interactive commands and `/ask` paths over long primary-provider retries.
-- Keep scheduled/batch paths allowed to retry longer than interactive user commands.
-- Map provider transport, 429, 5xx, and parse failures into consistent error types where the codebase already has that pattern.
-- Treat Gemini HTTP 200 responses with no candidate text as non-retryable for interactive `/ask`; log safe response-shape metadata such as block reason, finish reason, and candidate counts without logging full model responses.
-- Do not log full prompts, model responses, API keys, Telegram file contents, or user secrets.
-
-## Implementation Guidance
-
-- Keep Lambda cold-start cost low: use lazy wiring and avoid unnecessary runtime dependencies.
-- Use `zerde_common` for shared provider errors, config helpers, redaction, and structured logging.
-- Keep Lambda env names consistent with code: `BOT_TOKEN`, `WEBHOOK_SECRET_TOKEN`, `GEMINI_API_KEY`, `GEMINI_EMBEDDING_API_KEY`, `DEEPSEEK_API_KEY`, `GROQ_API_KEY`.
-- When adding or changing non-secret runtime/CDK env vars, wire them through `.env.example`, `infra/stack.py`, relevant construct environment maps, `.github/workflows/deploy.yml`, `.github/workflows/pr_check.yml`, docs, and GitHub repo Actions variables with `gh variable set <NAME> --repo Bayashat/zerde-serverless-bot --body <value>`. Do this before declaring deployment config complete; repo variables alone are ignored if workflow env mappings are missing.
-- Use `CONSTRUCT_PREFIX` and `RESOURCE_PREFIX` from `infra/components/constants.py`; do not duplicate those string literals in constructs.
-- S3 Vectors queries with metadata filters or `returnMetadata=True` need both `s3vectors:QueryVectors` and `s3vectors:GetVectors` in the Lambda role policy. Keep Bot Lambda permissions limited to query/get/delete/get-index; reserve `s3vectors:PutVectors` and `s3vectors:ListVectors` for the vector-indexer Lambda.
-- If editing Telegram HTML output, normalize/escape LLM output before sending and respect Telegram length constraints.
-
-## Documentation Maintenance
-
-For substantial changes, update documentation proactively in the same work:
-
-- Always update `.codex/AGENTS.md`, `docs/ARCHITECTURE.md`, and this skill for architecture, memory, agent, SQS, data schema, or infra changes.
-- Update `README.md`, `docs/README_kk.md`, and `docs/README_ru.md` for user-visible behavior changes.
-- Update `docs/LOCAL_TESTING.md` and `.env.example` for setup/config changes.
-- Update `docs/telegram_history_import.md` for import, backfill, or vector indexing changes.
-- Historical files under `docs/superpowers/` are plan snapshots; do not rewrite them as current architecture unless explicitly asked.
-
-## Validation Expectations
-
-Choose validation proportional to risk:
-
-- Narrow Python change: run relevant pytest files.
-- Shared behavior, AI provider routing, repositories, dispatcher, memory, or Telegram formatting: run `uv run pytest tests/ -q`.
-- Formatting/lint-sensitive work: run `uv run pre-commit run --all-files`.
-- CDK or Lambda env changes: run `cd infra && uv run cdk diff -c env=dev` and report the diff.
-
-
-Guest-bot spam moderation: Telegram guest responses (`from.is_bot` plus
-`guest_bot_caller_user`/`guest_bot_caller_chat`) are screened, including edits,
-while ordinary bot messages and administrator senders keep their exemptions.
-Current caption/text, hidden link targets and URL button text are screened without
-fetching media or opening URLs. NFKC and format-control removal apply only to
-moderation input. Three repeated identical URLs with mixed-script words and at
-least three invisible format controls form a deterministic guest-response deletion
-signal, recomputed from current-message text only; ordinary links still use AI.
-Guest spam never automatically bans the caller or the guest bot. High-confidence
-spam is deleted and a separate, explicitly attributed admin review proposes a
-permanent ban of the Telegram-provided personal caller. A chat caller never becomes
-a guessed user target. Ordinary member automatic temp-ban policy is unchanged.
-SQS enqueue failures return a retryable webhook error; guest deletion/review failures
-retry through SQS (an already deleted message is tolerated). Duplicate SQS deliveries
-can repeat review notices, but cannot automatically ban a caller.
-
-Legacy deletion must use a closed memory type allowlist, never an entire CHAT partition or arbitrary user_id match. Protect SETTINGS and unrelated non-memory rows. Retired contest residue is removable only through explicit retirement scope in the offline cleanup tool, never through public memory-forget commands. Reference-only MEMORY_VECTOR_DELETE partitions retain failed vector cleanup until confirmed; see [legacy deletion contract](../../../docs/legacy-memory-deletion.md).
-
-Deployment dependency locks and configuration parity follow `docs/DEPLOYMENT_CONFIG.md`. Export Lambda requirements from the root uv.lock; validate actual ARM64 assets with `scripts/verify_lambda_bundles.py`. Changing retention configuration never rewrites existing DynamoDB TTLs.
-
-Memory V2 domain and lifecycle contracts are owned by `src/bot/services/memory_v2/` and documented in `docs/memory-v2-domain.md`. Use the independent Memory V2 table; never fall back to the shared legacy memory/business table. Profiles are read projections of current source-backed facts. CDK provisions infrastructure but never seeds ACTIVE controls; absent CONTROL rows leave learning stopped.
-
-运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](../../../docs/OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
-
-Idle dev must disable all three SQS mappings and omit their maximum concurrency when Lambda reserved concurrency is zero. Active dev and prod retain limits 10/3/2. Verify actual updates/readback, including the transition from existing active mappings; disabled mappings still undergo Lambda configuration validation.
-
-Voteban session identities, conditional decisions, temporary-ban recovery, and rollout limits are documented in `docs/VOTEBAN_LIFECYCLE.md`.
-
-Memory V2 webhook/moderation admission, dedicated queue/worker, shared project budget IAM and real six-handler packaging gates are documented in `docs/MEMORY_V2_RUNTIME.md`. Learning activation remains a separate validated cutover.
-
-News deadlines, frozen manifests, per-chat delivery receipts, and operator recovery are documented in `docs/NEWS_DELIVERY.md`.
-
-News/Quiz public integration: keep original scheduled_at in daily inputs and stable News slot. Quiz answer persistence failure must produce HTTP 500; enqueue failure after durable acceptance relies on five-minute recovery. Keep recovery schedules without chat lists, gate dev with runtime activation, and send bounded async failures to the unconsumed DLQ for inspection. Never replay Lambda destination envelopes as task bodies. `/quizreconcile` requires live administrator and own-bot poll evidence; see docs/QUIZ_RECOVERY.md.
-
-Z08/Z09 public entrypoints now use one `tg:<chat>:<message>` delivery identity, actor/source leases, current membership, strict fact selection and the V2 command owner. Old question tasks and AGENT_REPLY bodies are retired. Cost hooks/compact inventory and the hourly monitor in the existing prod Bot are wired; default metering epoch zero means optional work has no permit. See `docs/MEMORY_V2_RUNTIME.md` for first-deployment versus later learning activation, sample limitations and live acceptance gates.
-
-Lambda environment capacity: omit only exact runtime-default values from the reviewed retired proactive/ambient/extractor tuning allowlist; preserve non-default inputs and every active/identity/resource setting. Measure resolved serialized JSON, including nested JSON escaping, with at least 600 bytes of release headroom; key/value sums and unresolved token lengths are insufficient. See docs/DEPLOYMENT_CONFIG.md for the 4114-byte production failure and capacity regression contract.
-
-
-2026-09-21 Memory V2 budget policy: the owner raised the application target to
-USD 70 model + USD 30 incremental AWS per UTC month. Keep the existing
-MemoryBudgetRepository/CostState owners, unknown liabilities and accounting
-pauses. A verified fresh observation migrates only the attributable legacy USD 3
-threshold pause, preserving conditional policy/notice history. No direct ledger
-unpause. See docs/MEMORY_V2_COST_MONITOR.md. Telegram registration is owned by
-scripts/setup_webhook.sh -> setup_webhook.py: retain existing endpoint/secret and
-subscriptions, include edited_message, and never drop pending updates.
-
-Memory V2 purge discovery reuses work-due/KEYS_ONLY with MEMORY_PURGE keys. Keep canonical PURGE and the original Lifecycle owner/fences authoritative, persist each attempted hint separately from deletion progress, and use old Scan only for bounded legacy backfill. No additional table or schedule. See [purge recovery contract](../../../docs/goals/zerdebot-memory-v2/PURGE_RECOVERY_EXECUTION.md).
-
-Memory V2 cost-monitor handoff: keep the single `MemoryCostMonitor` owner, process at most two oldest incomplete blocks per invocation, and refresh only the newest when all are complete. Never grant a permit on partial coverage or refund unknown scans; each block retains its bounded telemetry contract. See `docs/MEMORY_V2_COST_MONITOR.md`.
-
-Memory V2 definite pre-mutation ownership denials use the original command receipt owner to persist DENIED before localized feedback; unknown writes and source-purge recovery retain their existing behavior. See [runtime contract](../../../docs/MEMORY_V2_RUNTIME.md).
-
-2026-09-27发布保护：生产中文news定时规则在源码中固定DISABLED，与既有现场停用保持一致；其他语言调度不变。首次CF基线校准与回滚保护见docs/goals/zerdebot-memory-v2/ANYIO_RELEASE_EXECUTION.md。不要通过常规部署恢复中文推送。
+Every material result updates PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and corresponding GitHub issues. Natural acceptance requires real use and answer quality, not generated chats or elapsed idle days. Continue cleanup/business/cost work while samples are missing. Keep deployment, data deletion, resource absence and retained-copy expiry separate; do not claim all copies erased. User exports remain; Z10 retains PITR/log/DLQ/backup duties and real historical delay/UNKNOWN records.
