@@ -19,7 +19,7 @@
 
 | 类型 | dev 精确名称 | prod 精确名称 | 删除前置 |
 |---|---|---|---|
-| DynamoDB旧记忆表 | `zerde-serverless-bot-memory-dev` | `zerde-serverless-bot-memory-prod` | 本次精确计数0/3；3条均只有旧开关和更新时间，无style_profile。删除前重验整行hash/字段白名单；有变化即停，再保护有效语义；解除读取/env/IAM后删 |
+| DynamoDB旧记忆表 | `zerde-serverless-bot-memory-dev` | `zerde-serverless-bot-memory-prod` | 本次精确计数0/3；3条均只有旧开关和更新时间，无style_profile。取消旧读取的代码部署前及删表前均重验整行hash/字段白名单，期间保持停写保护；有变化即停，再保护有效语义；解除读取/env/IAM后删 |
 | Lambda | `zerde-serverless-vector-indexer-dev` | `zerde-serverless-vector-indexer-prod` | 无生产者，旧在途退出，专属映射/权限退役 |
 | 向量主队列 | `zerde-serverless-vector-memory-tasks-queue-dev` | `zerde-serverless-vector-memory-tasks-queue-prod` | 归属确认，visible/inflight/delayed均0；不用Receive/Purge证明空 |
 | 向量DLQ | `zerde-serverless-vector-memory-tasks-dlq-dev` | `zerde-serverless-vector-memory-tasks-dlq-prod` | 上游退役、无其他redrive引用、数量核对 |

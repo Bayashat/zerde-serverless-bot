@@ -26,7 +26,7 @@ R2中源码审阅与R3各业务只读准备可并行；同一文件写入、控�
 ## R2 的单一所有权与切换顺序
 
 1. **源码解耦**：本轮补充只读核验发现prod的3条SETTINGS均只有旧memory/agent开关和更新时间，没有style_profile；dev为空。当前源码无现役set_chat_settings调用者。因此保留一个纯style normalizer给显式问答与评估serializer，取消无效数据库读取和MEMORY_TABLE_NAME存在门；显式媒体继续由V2 EphemeralMediaRepository负责。删除旧抽取、profile、检索、主动互动、向量算法及生产者。旧任务拒绝协议保留，vector入口在资源退役前最多是丢弃旧任务的薄壳。
-2. **旧设置核验与退役**：不为死开关新建ChatSettingsRepository、stats行或迁移3份默认值。实际删除前再次强一致完整枚举旧表，核对0/3精确键、AttributeValue整行hash、字段/类型白名单`pk/sk/memory_enabled/agent_enabled/updated_at`，要求style_profile缺失且无当前writer。任何新行、未知字段、自定义style或变化立即阻止本路径，再按实际有效语义设计唯一settings owner迁移；不能只因normalize成默认就丢弃未知字段。旧开关绝不映射为V2 ACTIVE。先前“必迁移3条业务设置”的假设已被字段核验收窄，3条当前仅为待精确退役的旧控制记录，仍尚未删除。
+2. **旧设置核验与退役**：不为死开关新建ChatSettingsRepository、stats行或迁移3份默认值。在部署取消旧SETTINGS读取的新代码之前，以及实际删除之前，两次均须强一致完整枚举旧表；期间保持已证明的停写保护，再，核对0/3精确键、AttributeValue整行hash、字段/类型白名单`pk/sk/memory_enabled/agent_enabled/updated_at`，要求style_profile缺失且无当前writer。任何新行、未知字段、自定义style或变化立即阻止本路径，再按实际有效语义设计唯一settings owner迁移；不能只因normalize成默认就丢弃未知字段。旧开关绝不映射为V2 ACTIVE。先前“必迁移3条业务设置”的假设已被字段核验收窄，3条当前仅为待精确退役的旧控制记录，仍尚未删除。
 3. **配置与资源退役**：移除旧环境变量、IAM、producer/consumer映射及专属告警；审核changeset。dev的Delete可在更新时真正销毁；prod的Retain移出模板只会脱管，必须另有精确物理删除与不存在读回，不能提前记完成。真实包/readback从6函数变为5函数时按精确清单修改校验，不放宽为任意忽略。
 4. **更早孤儿候选**：逐项更新归属、活动、外部脚本/旧版本/stream引用、保护和恢复证据；确认无用后按清单清理。发现现役用途则明确保留理由；依赖不明仍未完成，不假称已清干净。
 5. **退役完成闸门**：旧知识算法及其专属部署资源、表、索引、队列和已核验的死开关已按清单删除；现役业务和V2控制/预算未受损；未知消费者已解决。安全拒绝旧任务的小协议与审计/恢复证据不是旧知识实现，保留目的与删除条件必须写明。

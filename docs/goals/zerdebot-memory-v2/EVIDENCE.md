@@ -241,3 +241,5 @@ main54ce/部署source72673已核对。PR220的2407 tests/CI/两环境实包读�
 R1最终POST/maintainer独审ALIGNED；两项发现已修正：F9自然观察不包含在已完成合成阶段内，Z20的停写/保护前置按已满足证据处理，不等待Z01/Z03关闭。20个任务映射及本地链接检查PASS，pre-commit全项PASS。21个GitHub正文/状态与本地镜像逐项读回一致，#175/#178按限定范围关闭，#221新建；automation新增清理前置/同步及R2/R3优先执行，原schedule/target/ACTIVE保持且逐字段读回一致。详见[sync.safe.json](evidence/2026-09-26-retirement/sync.safe.json)。本PR为文档同步，未重跑业务全测试，CI与受控合并另记。
 
 R2/R3补充只读进展：3条旧SETTINGS只含退役开关，无style_profile或现役setter，PRE复审同意取消无意义的死开关迁移，以精确字段/类型/hash再次核验作为退役门，任何变化先停。Project=ZerdeBot本月CE可归属Usage为USD1.2218612373（dev0.4012865637/prod0.8205746736），Estimated、含当日部分、非完整实付；未标记账号费用不归Zerde，账单责任尚未闭合。Z04追加现有AnyIO两项漏洞（8条重复清单告警）定向修复任务；本PR不升级运行依赖。见[followup.safe.json](evidence/2026-09-26-retirement/followup.safe.json)。
+
+settings切换独审补充已纳入：0/3精确字段/类型/hash门禁同时位于取消旧读取的新代码部署前和物理删除前，期间保持停写保护；避免先默认化已改变的style、到删表时才发现。public_replay/plain_requests须随源码解耦共用同一纯normalizer，冻结gold/scorer/run不改。
