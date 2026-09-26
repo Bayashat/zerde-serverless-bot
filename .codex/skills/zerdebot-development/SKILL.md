@@ -5,6 +5,13 @@ description: Work on the ZerdeBot repository, a serverless AWS CDK Telegram grou
 
 # ZerdeBot Development
 
+## 2026-09-26 current execution gate
+
+Follow [the finishing contract](../../../docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md). The owner requires deletion of retired code and unused resources before new feature/group/production-memory activation, with an exact delete/keep inventory announced beforehand. Preserve the existing dev pilot CONTROL/epoch. Update PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and the relevant GitHub issues after material progress. Do not wait for an empty group to produce natural samples while independent cleanup/business/cost acceptance can proceed.
+
+The shipped V2 table/writer and source-validated explicit answers are current; legacy profiles, vectors, proactive/channel/ambient behavior below describe historical implementation only and MUST NOT be wired back in or treated as current product requirements. Legacy code/resources remain physically present pending the new cleanup task; exact revalidation of the three old SETTINGS and explicit-media dependency separation must precede old-table deletion. The fresh field audit found only retired flags, no custom style and no active setter: retain one pure style normalizer, do not create pointless settings rows; any new/unknown field or source change blocks deletion and requires explicit semantic preservation. Never treat CloudFormation Retain as physical deletion. Current runtime contracts are in docs/MEMORY_V2_RUNTIME.md and the finishing contract.
+
+
 ## Approved cutover overrides
 
 F4 source-scoped retry and plain-answer capability limits follow [the bounded contract](../../../docs/goals/zerdebot-memory-v2/SOURCE_RETRY_EXECUTION.md). Keep one parser, a strict whole-response attribution envelope, atomic per-source facts and at most two model calls. Completed neighbors remain protected by the existing worker freshness check and unique writer; unknown implementation errors must not become partial success.
@@ -19,7 +26,7 @@ owners; their bounded scope and unverified model-quality status are recorded in
 
 The owner removed the experimental contest feature on 2026-09-11. No contest command, observation, repository, recovery schedule or runtime writer remains in this PR; deployed old code is unchanged until release. Old contest task envelopes are acknowledged without action. Retired rows are not a source of memory and may be explicitly scoped for offline cleanup; deployment and production deletion remain separate operations. This supersedes prior contest preservation/fairness guidance.
 
-The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Retain old helpers only until the separately gated V2 acceptance and removal task. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
+The approved Memory V2 plan supersedes the legacy behavior guidance below. During Z01 cutover: disable all unsolicited reactions/comments/replies and historical import writes; do not read legacy profiles, recent/raw context, summaries, vectors or bot reply threads in answers. Preserve explicit questions independently of old memory/agent switches, with new versioned, logically unexpired short reply records only. Runtime routers must discard old memory/social/vector/ask jobs. Remove old helpers before any new feature/group/production-memory activation, after extracting active settings/explicit-media dependencies. See `docs/MEMORY_CUTOVER.md` and Epic #157. Do not infer deployment or deletion from source changes.
 
 ## Operating Posture
 

@@ -4,7 +4,6 @@
     "title": "FIX: 停用自动互动并隔离旧记忆路径",
     "depends_on": [],
     "body_file": "issues/Z01.md",
-    "status": "deployed_acceptance_pending",
     "number": 158,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/180",
@@ -14,18 +13,28 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15",
     "followup_prs_merged": [
       205
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_retired_paths_cleanup_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "自动互动与旧任务已隔离；旧实现/资源由Z20删除。",
+    "remaining": "清理后显式问答、自动输出为零和旧协议拒绝回归。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z02",
     "title": "FIX: 日志脱敏和 Telegram 内容最小化",
     "depends_on": [],
     "body_file": "issues/Z02.md",
-    "status": "deployed_acceptance_pending",
     "number": 159,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/177",
@@ -33,14 +42,24 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_acceptance_reconciliation_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "脱敏与内容最小化已实现并部署。",
+    "remaining": "逐条关联日志/异常/未授权群验收证据，不以总测试数结项。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z03",
     "title": "FIX: 旧记忆删除与业务数据边界",
     "depends_on": [],
     "body_file": "issues/Z03.md",
-    "status": "deployed_acceptance_pending",
     "number": 160,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/182",
@@ -48,14 +67,24 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "online_cleanup_verified_final_retirement_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "在线精确清零及业务SETTINGS保护已验证。",
+    "remaining": "Z20拆旧仓库；清理工具和保护边界回归，副本归Z10。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z04",
     "title": "FIX: 统一部署配置和可复现打包",
     "depends_on": [],
     "body_file": "issues/Z04.md",
-    "status": "deployed_acceptance_pending",
     "number": 161,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/183",
@@ -63,10 +92,21 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       205
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_readback_pass_retirement_followup_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "PR220两环境实包、配置和依赖读回通过。",
+    "remaining": "Z20精确打包/readback集合；发布前修复现有AnyIO 4.12.1的两项安全advisory并核全包版本。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z05",
@@ -76,7 +116,6 @@
       "Z04"
     ],
     "body_file": "issues/Z05.md",
-    "status": "deployed_acceptance_pending",
     "number": 162,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/186",
@@ -84,7 +123,18 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_synthetic_verified_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "V2身份、事实、控制与唯一writer已运行并通过合成验证。",
+    "remaining": "按原契约核对证据并收口；Z11自然使用与prod启用未完成。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z06",
@@ -94,7 +144,6 @@
       "Z13"
     ],
     "body_file": "issues/Z06.md",
-    "status": "deployed_acceptance_pending",
     "number": 163,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/190",
@@ -104,7 +153,18 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_functional_verified_coverage_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "事务摄取、后台恢复已部署并有真实Telegram合成完成证据。",
+    "remaining": "覆盖/暂停/过期分母及学习/恢复延迟分布；单次耗时不是p95。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z07",
@@ -113,7 +173,6 @@
       "Z06"
     ],
     "body_file": "issues/Z07.md",
-    "status": "deployed_acceptance_pending",
     "number": 164,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/188",
@@ -123,19 +182,30 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       207,
       211
     ],
-    "latest_followup_release": {
-      "pr": 211,
-      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
-      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
-      "dev": "deployed_readback_pass",
-      "prod": "deployed_readback_pass",
-      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
-    }
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "latest_followup_release": {
+        "pr": 211,
+        "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+        "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+        "dev": "deployed_readback_pass",
+        "prod": "deployed_readback_pass",
+        "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+      }
+    },
+    "status": "model_semantic_pass_natural_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。",
+    "remaining": "自然使用事实正确性/来源和语言切片，未知时不编造。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z08",
@@ -144,7 +214,6 @@
       "Z07"
     ],
     "body_file": "issues/Z08.md",
-    "status": "deployed_acceptance_pending",
     "number": 165,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/202",
@@ -154,19 +223,30 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       207,
       211
     ],
-    "latest_followup_release": {
-      "pr": 211,
-      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
-      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
-      "dev": "deployed_readback_pass",
-      "prod": "deployed_readback_pass",
-      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
-    }
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "latest_followup_release": {
+        "pr": 211,
+        "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+        "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+        "dev": "deployed_readback_pass",
+        "prod": "deployed_readback_pass",
+        "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+      }
+    },
+    "status": "source_links_functional_pass_billing_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "来源支持1176/1176；原生Telegram来源点击可回源。",
+    "remaining": "自然回答质量、费用归因与预算恢复完整周期；#134关联本工单，尚不代替整体结项。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z09",
@@ -176,7 +256,6 @@
       "Z08"
     ],
     "body_file": "issues/Z09.md",
-    "status": "deployed_acceptance_pending",
     "number": 166,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/191",
@@ -185,7 +264,18 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "lifecycle_synthetic_pass_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "F6/F7/F8/F10及PR220完成权限拒绝、本人更正、source-forget闭环。",
+    "remaining": "自然覆盖及各原验收项逐条收口；旧两个PENDING不回填。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z10",
@@ -197,7 +287,6 @@
       "Z19"
     ],
     "body_file": "issues/Z10.md",
-    "status": "online_clean_copies_pending",
     "number": 167,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/195",
@@ -206,14 +295,25 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
-    "overall_acceptance_complete": false,
     "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15",
     "followup_prs_merged": [
       206
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "online_clean_copies_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "overall_acceptance_complete": false
+    },
+    "status": "online_clean_local_files_removed_other_copies_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "30794行/8259向量在线清零；本地3归档及key已实际移除。",
+    "remaining": "PITR 2026-10-17复查，日志/DLQ/其他副本单列；Z20删表不等于所有副本抹除。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z11",
@@ -228,7 +328,6 @@
       "Z19"
     ],
     "body_file": "issues/Z11.md",
-    "status": "real_model_complete_failed_f1_deployed_f2_measurement_pending",
     "number": 168,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/196",
@@ -237,35 +336,50 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       207,
       210,
       211
     ],
-    "latest_followup_release": {
-      "pr": 211,
-      "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
-      "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
-      "dev": "deployed_readback_pass",
-      "prod": "deployed_readback_pass",
-      "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+    "historical_state_before_2026_09_26": {
+      "status": "real_model_complete_failed_f1_deployed_f2_measurement_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "latest_followup_release": {
+        "pr": 211,
+        "merged_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+        "build_source": "91582015cde0d98479293f68c2dfb8c9316f7db1",
+        "dev": "deployed_readback_pass",
+        "prod": "deployed_readback_pass",
+        "evidence": "evidence/2026-09-15-continuation/public-v25-release.json"
+      },
+      "next_real_evaluation": {
+        "route": "public-v1",
+        "prompt_version": "self-claims-v2.5",
+        "status": "not_started",
+        "planned_scenarios": 240,
+        "quality_accepted": false,
+        "pilot_started": false
+      }
     },
-    "next_real_evaluation": {
-      "route": "public-v1",
-      "prompt_version": "self-claims-v2.5",
-      "status": "not_started",
-      "planned_scenarios": 240,
-      "quality_accepted": false,
-      "pilot_started": false
-    }
+    "status": "synthetic_pass_natural_use_not_started",
+    "status_as_of": "2026-09-26",
+    "completed": "F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。",
+    "remaining": "真实使用起点未建立、0/50有据和0/20未知；至少7天；新启用先过Z20清理闸门。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "natural_started_at": null,
+    "natural_supported_answers": 0,
+    "natural_unknown_answers": 0,
+    "production_ready": false,
+    "activation_dependency": "Z20"
   },
   {
     "id": "Z12",
     "title": "FIX: 验证码状态竞争与失败恢复",
     "depends_on": [],
     "body_file": "issues/Z12.md",
-    "status": "deployed_acceptance_pending",
     "number": 169,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/179",
@@ -273,14 +387,24 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_real_business_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "验证码竞争/状态恢复实现已部署。",
+    "remaining": "测试身份真实正确解限、旧超时/重入群竞争和异常恢复。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z13",
     "title": "FIX: 反垃圾执行结果和重试语义",
     "depends_on": [],
     "body_file": "issues/Z13.md",
-    "status": "deployed_acceptance_pending",
     "number": 170,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/185",
@@ -288,17 +412,27 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       210
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_real_business_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "反垃圾执行结果/重试及CLEAN恢复实现已部署。",
+    "remaining": "真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z14",
     "title": "FIX: Voteban 会话身份和逻辑过期",
     "depends_on": [],
     "body_file": "issues/Z14.md",
-    "status": "deployed_acceptance_pending",
     "number": 171,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/189",
@@ -306,14 +440,24 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_real_business_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "投票会话版本和逻辑过期实现已部署。",
+    "remaining": "真实旧按钮/新会话、并发终结及临时封禁恢复计数。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z15",
     "title": "FIX: 新闻抓取时限与分群交付恢复",
     "depends_on": [],
     "body_file": "issues/Z15.md",
-    "status": "deployed_acceptance_pending",
     "number": 172,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/193",
@@ -322,17 +466,27 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       211
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_real_business_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "新闻总时限和分群交付恢复实现已部署。",
+    "remaining": "成功群不重复、失败群恢复、结果不明处理的实际证据。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z16",
     "title": "FIX: Quiz 发布、计分与答案恢复",
     "depends_on": [],
     "body_file": "issues/Z16.md",
-    "status": "deployed_acceptance_pending",
     "number": 173,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/194",
@@ -341,14 +495,24 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "deployed_real_business_acceptance_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "Quiz发布/计分/答案恢复实现已部署。",
+    "remaining": "真实poll、答案先于持久可见、重投只计一次和reconcile闭环。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z17",
     "title": "FEATURE: 成本归因、dev 按需运行与有效告警",
     "depends_on": [],
     "body_file": "issues/Z17.md",
-    "status": "deployed_cost_retry_readback_pass_acceptance_pending",
     "number": 174,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/187",
@@ -359,19 +523,29 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "followup_prs_merged": [
       205,
       208,
       209
-    ]
+    ],
+    "historical_state_before_2026_09_26": {
+      "status": "deployed_cost_retry_readback_pass_acceptance_pending",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "metering_readback_pass_actual_attribution_pending",
+    "status_as_of": "2026-09-26",
+    "completed": "成本/通知修复已部署；两tag ACTIVE；9月26日CE标签可归属dev $0.4012865637/prod $0.8205746736（预估）。",
+    "remaining": "闭合账期项目归因，未标记/共享费用、credits/税及模型账单；当前标签$1.2218612373不是完整实付，业务恢复证据仍待收口。",
+    "issue_state": "OPEN",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
   },
   {
     "id": "Z18",
     "title": "CHORE: 旧 AWS 资源清理清单与执行手册",
     "depends_on": [],
     "body_file": "issues/Z18.md",
-    "status": "runbook_merged_resource_deletion_not_executed",
     "number": 175,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/184",
@@ -379,24 +553,67 @@
       204
     ],
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    "historical_state_before_2026_09_26": {
+      "status": "runbook_merged_resource_deletion_not_executed",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
+    },
+    "status": "runbook_delivered",
+    "status_as_of": "2026-09-26",
+    "completed": "原清单与执行手册已由#184/#204交付，限定文档范围可结项。",
+    "remaining": "真实删除由Z20继续；不是资源已销毁。",
+    "issue_state": "CLOSED",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "completion_scope": "runbook_only"
   },
   {
     "id": "Z19",
     "title": "CHORE: 移除实验性抽奖功能",
     "depends_on": [],
     "body_file": "issues/Z19.md",
-    "status": "runtime_retired_online_residue_cleared",
     "number": 178,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
     "pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/204",
     "integration_prs": [],
     "superseded_pr_url": "https://github.com/Bayashat/zerde-serverless-bot/pull/181",
     "merged_via_pr": 204,
-    "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
     "online_cleanup_evidence": "evidence/2026-09-12-post-merge/cleanup-independent-final.json",
     "retained_copies_pending": true,
-    "overall_acceptance_complete": false,
-    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15"
+    "post_cleanup_retired_replay": "18_discarded_and_exact_data_unchanged_2026-09-15",
+    "historical_state_before_2026_09_26": {
+      "status": "runtime_retired_online_residue_cleared",
+      "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef",
+      "overall_acceptance_complete": false
+    },
+    "status": "runtime_retired_online_residue_cleared",
+    "status_as_of": "2026-09-26",
+    "completed": "抽奖命令/实现/定时恢复已退役，在线残留清除和旧任务重放已验证。",
+    "remaining": "功能范围可结项；历史副本义务明确留在Z10，不宣称物理抹除。",
+    "issue_state": "CLOSED",
+    "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
+    "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "completion_scope": "runtime_retirement_and_online_residue_only",
+    "retained_copies_tracked_by": "Z10"
+  },
+  {
+    "id": "Z20",
+    "title": "FIX: 退役旧记忆代码、核验旧设置并清理无用资源",
+    "depends_on": [],
+    "body_file": "issues/Z20.md",
+    "status": "plan_ready_no_runtime_or_cloud_deletion",
+    "status_as_of": "2026-09-26",
+    "completed": "代码/资源依赖及清单已核对；3条旧SETTINGS仅死开关，无自定义style。",
+    "remaining": "源码解耦与删除→旧SETTINGS精确重验退役（发现有效语义则先保护迁移）→部署与资源清理→独立验收。",
+    "issue_state": "OPEN",
+    "number": 221,
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221",
+    "evidence_dependencies": {
+      "Z01": "retired writers and task replay PASS; issue closure not required",
+      "Z03": "exact online cleanup/business protection PASS; issue closure not required",
+      "Z18": "inventory/runbook delivered; historical candidates need refresh",
+      "Z19": "runtime retirement and online residue PASS; copies remain Z10"
+    }
   }
 ]

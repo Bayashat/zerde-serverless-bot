@@ -1,7 +1,7 @@
 # ZerdeBot 可靠性修复与 Memory V2 实施计划
 
 **Intent:** 让机器人可靠地记住成员在本群的明确自述、维护当前事实，并在被明确询问时给出有来源的回答。
-**Planning Baseline（2026-09-10）:** 当时正则 profile、长期事实、摘要、向量存在重复知识来源；旧任务及删除生命周期不完整，生产原文保留3650天。现已部署的Memory V2原文配置为30天、学习STOPPED；旧数据不会因此自动改TTL，清零和真实验收以[LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md)为准。
+**Planning Baseline（2026-09-10）:** 当时正则 profile、长期事实、摘要、向量存在重复知识来源；旧任务及删除生命周期不完整，生产原文保留3650天。现已部署的Memory V2原文配置为30天；截至9月26日仅既有dev测试群启用，prod未启用；旧数据不会因此自动改TTL，清零和真实验收以[LIVE_ACCEPTANCE](LIVE_ACCEPTANCE.md)为准。
 **Expected Outcome:** 所有自动社交互动停止；新 epoch 之后的消息成为唯一学习来源；旧记忆在线不可用并按清单清除；业务功能保持可用。
 **Target-Perspective Output:** 成员可查看、更正、遗忘或停止记录；同群问答附证据和时间；不知道时明确表达；管理员收到实际故障、恢复和预算通知。
 **Truth Owner:** Memory V2 独立 DynamoDB 表及唯一 fact writer。Profile 是有效 facts 的只读投影。抽奖实验已由用户取消，不再保留运行时owner或将其数据迁入新版。
@@ -11,9 +11,13 @@
 **Value Density:** 保留 Python/Lambda/SQS/DynamoDB；一张新表、一个 fact writer、一条 memory queue/worker、一个 outbox recovery 入口。
 **Acceptance Evidence:** 分层多语言 gold evaluation、故障注入、dev 行为验收、真实群至少七天观察及数量/来源/成本/删除证据。
 **Evidence Lane:** 本地、构建、部署读回、合成 canary、真实产品样本分别记录，不能相互替代。
-**Kill Criteria:** V1 不启用向量，不保留旧知识读写作为 fallback；新版失败回退无长期记忆问答。首版验收后删除旧并行实现。
+**Kill Criteria:** V1 不启用向量，不保留旧知识读写作为 fallback；新版失败回退无长期记忆问答。按2026-09-26用户修订，在启用任何新功能、新群或生产记忆前，先完成旧并行实现和无用资源清理；删除前告知精确清单。
 **Architecture Slice:** Telegram/shared logging/explicit ask 接现有 bot；新 memory 域独立；captcha/moderation/votes/news/quiz 独立修复；infra/workflows 统一集成。
 **Plan Review Gate:** PRE 已在 2026-09-10 会话独立复查并 ALIGNED；用户明确批准执行。每张实现 PR 仍需 POST/correctness/maintainability review。
+
+## 2026-09-26 执行顺序与同步修订
+
+[收尾契约](FINISH_EXECUTION.md)把执行分为状态同步、退役清理、业务/费用验收、自然试用推广四条线；逐工单状态仍唯一存于task_manifest。每次有实质进展同步计划、证据和GitHub工单。当前仅dev既有测试群学习，原控制/epoch不因同步改变；尚无自然样本。新功能/新群/生产启用被旧残留清理闸门阻止。旧文件中的“验收后删”“Z18只读授权”仅说明当时范围，不覆盖本次明确追加要求。副本期限和Z10责任不被新清理延长。
 
 ## 1. 已批准的产品边界
 
@@ -78,9 +82,9 @@ UTC 自然月：USD 70 模型硬计数上限 + USD 30 新增 AWS 用量预留。
 5. 独立枚举向量，包括孤儿。专用旧 vector queues 在归属确认后处理；混用 main queue/DLQ 按任务类型处理，禁止 purge。无法立即清除副本时报告最迟 TTL/retention 截止，不提前声明物理清零。
 6. 验证旧任务/旧问答不能复活或发言、业务数据 key/count/hash 不变。日志七天、PITR 保留、DLQ 和备份分别登记副本消退证据。恢复旧备份后 memory 默认关闭，禁止自动导回。
 7. dev 合成验收后单群设新 epoch/started_at；至少七天且实际样本门槛满足后推广其余白名单群。失败回到无长期记忆 ask，不能重新开启旧 memory。
-8. 首版验收删除旧并行 profile/extractor/retrieval 路径。语义检索只能后续独立对照实验立项，不属于 V1。
+8. 2026-09-26修订：在任何新功能/新群/生产记忆启用之前删除旧并行 profile/extractor/retrieval 路径和已核实无用的专属资源；先告知清单，先核验3条旧SETTINGS，有有效语义才迁移并保护现役业务。语义检索只能后续独立对照实验立项，不属于 V1。
 
-Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除旧 stack、SSM 或共享资源。Memory 清零必须满足上述依赖与精确范围，不是直接删表。
+Z18原工单仅交付清单/手册。2026-09-26用户追加了残留清理要求；具体执行由Z20及[收尾契约](FINISH_EXECUTION.md)负责，先告知[删除前清单](RETIREMENT_INVENTORY.md)，完成依赖和保护核验后操作。不得删除现役stack、共享资源、未核实SSM或整表误伤有效业务。历史在线记忆清零与新资源退役分别记录。
 
 ## 4. 执行工单与所有权
 
@@ -114,3 +118,5 @@ Z18 云旧资源仅交付清单/手册；原授权是只读，不能据此删除
 ## 执行修订：Z19 移除实验性抽奖
 
 Z19 #178原先负责已确认的抽奖SDK事务问题，历史发现保留在AUDIT/EVIDENCE。用户取消该实验后，Z19改为功能退役，原PR #181不再作为待合入修复。新增改动直接进入PR #204，不再另开实现PR。Z10显式抽奖清理依赖Z19停写/退役证据；Z11保留settings、stats、captcha业务完整性与抽奖输出为零的检查，移除抽奖公平性和真实抽奖验收要求。
+
+2026-09-26字段核验补充：旧prod的3条SETTINGS只有旧memory/agent开关与更新时间，没有style_profile；dev0行，无现役setter。故不为死开关建新settings存储；纯normalizer和V2临时媒体保留。删除前重新验证完整键/字段/类型/整行hash，有新增或变化即停并保护有效语义。详见FINISH_EXECUTION；当前仍未删除。

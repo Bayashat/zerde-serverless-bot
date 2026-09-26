@@ -11,14 +11,14 @@ corrections described in [Memory quality follow-up](MEMORY_QUALITY_FOLLOWUP.md).
 
 CDK no longer defines the retired daily group summary rule or its SQS send grant. Legacy memory flags and configured chat lists cannot recreate this schedule. Existing deployments require the reviewed infrastructure update; disabling a live rule alone is temporary. V2 recovery, news and quiz schedules keep their existing owners.
 
-Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is retained only until V2 acceptance and must not be wired back in. Album membership uses one-day V2 source-fenced metadata; remaining business data retain their existing ownership; experimental contests are removed. No new memory table is active yet. See [cutover operations](MEMORY_CUTOVER.md).
+Z01 retires old memory reads/writes and unsolicited social output at runtime entrypoints. Explicit questions use current V2 source-validated facts when available; the plain fallback has empty long-term/recent/profile/vector context. Legacy reply bodies are never read or written. The legacy implementation described below is physically present but retired; the 2026-09-26 user gate requires its removal before any new activation, after the pure style normalizer/media dependencies are extracted and the three old control rows are revalidated; no custom style settings were found. It must not be wired back in. Album membership uses one-day V2 source-fenced metadata; remaining business data retain their existing ownership; experimental contests are removed. Both V2 tables are deployed; only the existing dev pilot has learning enabled. Production V2 also owns shared budget records and has no learning CONTROL at the last verified release. See [cutover operations](MEMORY_CUTOVER.md).
 
 
-This is the current developer-facing map of ZerdeBot. Keep it updated when changing memory, agent behavior, SQS task routing, DynamoDB schemas, vector retrieval, or CDK wiring.
+The current runtime and retirement boundary are recorded in [the finishing contract](goals/zerdebot-memory-v2/FINISH_EXECUTION.md) and [V2 runtime](MEMORY_V2_RUNTIME.md). The pre-V2 topology and algorithm sections below are a historical dependency map for removal, not active behavior or future implementation instructions. Keep it updated when changing memory, agent behavior, SQS task routing, DynamoDB schemas, vector retrieval, or CDK wiring.
 
 An approved [Memory V2 migration and reliability plan](goals/zerdebot-memory-v2/PLAN.md) is being executed. The runtime described below is the baseline, not a claim that the migration has shipped. Consult the [evidence ledger](goals/zerdebot-memory-v2/EVIDENCE.md) for implementation and deployment status.
 
-## Product Direction
+## Historical pre-V2 product direction (retired, not implementation instructions)
 
 ZerdeBot is no longer a simple LLM wrapper. The bot is now a serverless Telegram group-chat agent:
 

@@ -1,4 +1,16 @@
-# 下一次执行入口
+# 下一次执行入口（2026-09-26）
+
+当前请先读 [FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)。下面带日期的旧交接仅作历史证据，不能作为重跑发布、模型或清理的指令。
+
+PR220已经合并/部署，F5真实模型合成测量及F6/F7/F8/F10 Telegram合成功能验收已结束；没有Google额度或旧部署等待卡点。仅dev既有测试群学习，prod未启用；自然样本0，起点未建立，不能承诺空等七天完成。旧在线记忆与本地归档已清，旧代码/表/向量资源尚未删净。
+
+**下一步**：核对本R1文档PR合并状态；新Z20清理执行工单[#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221)已创建，原19工单及Epic已同步，#175/#178按限定范围结项。随后直接推进R2纯style normalizer/V2相册解耦，删除旧算法，再按字段/hash重验3条旧开关并退役资源。R3验证码/反垃圾/投票/新闻/Quiz/实际费用验收并行准备，不等自然群聊天。所有新功能/新群/生产记忆启用须先通过清理闸门。每次有实质进展同步task_manifest、TASKS、EVIDENCE及GitHub issue；每次删除前向用户给清单。
+
+私有证据根为`~/.local/share/zerde-memory-v2-acceptance`，入口`2026-09-23-testgroup-pilot/CURRENT.md`和`2026-09-23-native-denial-live/final-result.safe.json`，9月26日盘点见`2026-09-26-dynamodb-inventory`。保持冻结报告和一次性脚本完成状态；不重置学习控制，不绕开预算owner，不把只读预算PASS当调用许可。PITR下次2026-10-17 16:20:38UTC，其他副本单列。
+
+---
+
+# 历史交接记录
 
 ## 2026-09-21：F4/F5 完成，真实群预检发现两个阻碍
 

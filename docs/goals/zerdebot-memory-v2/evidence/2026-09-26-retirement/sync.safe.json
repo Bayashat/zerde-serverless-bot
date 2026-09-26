@@ -1,0 +1,48 @@
+{
+  "scope": "R1 docs and issue synchronization only",
+  "github_issue_bodies_and_states": {
+    "result": "PASS",
+    "count": 21,
+    "numbers": [
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      178,
+      221
+    ]
+  },
+  "task_mappings": "20 unique tasks with matching local links",
+  "hooks": "all pre-commit hooks PASS",
+  "runtime_code_changes": false,
+  "cloud_resource_mutations": false,
+  "automation": {
+    "updated": true,
+    "readback": "exact prompt, schedule, target and ACTIVE state matched",
+    "priority": "continue R2/R3 independently of empty natural pilot"
+  },
+  "independent_reviews": {
+    "plan_pre": "ALIGNED",
+    "aws_inventory_correctness": "ALIGNED; four original evidence hashes verified",
+    "code_maintainer_initial": "Z20 evidence prerequisites clarified",
+    "plan_post_initial": "F9 excluded from completed synthetic phases",
+    "plan_post_final": "ALIGNED",
+    "code_maintainer_final": "ALIGNED",
+    "incremental_settings_and_cost": "plan, code dependency and AWS correctness ALIGNED; no dead-flag migration; exact source change blocks deletion"
+  }
+}

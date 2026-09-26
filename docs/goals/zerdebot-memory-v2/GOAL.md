@@ -1,15 +1,15 @@
-# Goal: ZerdeBot Memory V2 与可靠性修复
+# Goal: ZerdeBot Memory V2 与可靠性收尾
 
-使用 Krypton Execution 执行同目录 [PLAN.md](PLAN.md)，由 [TASKS.md](TASKS.md) 选择依赖已满足的未完成工单。开始前读取 [EVIDENCE.md](EVIDENCE.md) 及对应 issue，检查当前分支/PR/部署，避免重复创建或覆盖正在执行的工作。
+目标是可靠、可维护的群记忆与业务功能：本人明确自述、同群隔离、有来源的显式问答、可更正/遗忘；自动社交、抽奖和旧知识路径永久退役。新版失败仅回无长期记忆问答。
 
-本次代码交付后的继续执行步骤见 [HANDOFF.md](HANDOFF.md)。完整实现位于 `feat/zerde-complete-integration`；PR_OPEN 不等于生产验收完成。
+先读 [收尾执行契约](FINISH_EXECUTION.md)、[删除前清单](RETIREMENT_INVENTORY.md)、[任务看板](TASKS.md)及对应issue。PLAN拥有契约，task_manifest拥有当前逐项状态，EVIDENCE追加实际证据，GitHub同步镜像。读当前main/PR/现场后选择依赖满足的下一步；不重跑已完成的冻结发布、模型或清理。
 
-- PLAN 是已批准契约；GitHub Epic/子工单镜像执行进度。
-- 坚持唯一事实 writer、独立 V2 表、epoch/revision、明确自述、跨群隔离、可更正/遗忘、来源支持。
-- 旧 memory 与自动社交不得成为 fallback；无记忆 ask 是安全回退。
-- 不把 code/PR/部署成功当真实产品验收，不足时标记 IMPLEMENTED_UNPROVEN。
-- 初版按任务独立 PR；用户追加的 Z19 抽奖退役直接进入 #204。记录本地、构建、部署读回、canary、真实样本的证据。
-- 保护 settings、验证码、统计及其他保留业务数据；已退役抽奖记录仅按明确root scope清理；清零必须精确 manifest、备份、旧任务隔离和回读核验，禁止整表删除/混合队列 purge。
-- Z18 只交付旧云资源清单和手册，旧云资源删除需要另有具体授权。
-- 不在 GitHub、日志或报告里提交聊天正文、个人标识、token、secret 或原始模型上下文。
-- 不重新执行已经记录完成的 audit 全表扫描/跨区枚举，只有状态可能变化且当前任务需要时才刷新。
+2026-09-26用户要求：先清理残留，再启用新功能；删除前先发精确“准备删/未删/保留”清单，每次工作及时同步计划与工单。依次执行R1同步、R2代码解耦/SETTINGS核验退役（有有效设置才迁移）/资源退役，独立推进R3业务和费用验收，R4自然使用/推广受清理闸门约束。现有dev测试群保持原控制与epoch，不开启prod/新群。
+
+- 现役V2表及唯一writer为事实来源；不引入第二profile或旧表fallback。
+- 所有源码、PR、合并、部署读回、合成测试、真实使用、资源删除与副本消退分别验收。
+- 保护6张现役表、3条旧SETTINGS的精确核验边界、预算UNKNOWN和恢复记录；禁止purge混合队列。
+- Z18清单交付与Z20实际资源删除分开；未知消费者不得假称无用。
+- Z10保留副本责任、期限及真实延迟记录不变；不删用户原始Telegram导出。
+- 本轮基线main54ce4df，PR220两环境部署读回完成；自然使用样本尚0，production_ready=false。详细证据与后续状态以TASKS/HANDOFF为准。
+- 不向GitHub或日志写聊天正文、个人标识、token或模型原文。
