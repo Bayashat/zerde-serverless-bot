@@ -2,17 +2,17 @@
 
 本清单执行 [FINISH_EXECUTION](FINISH_EXECUTION.md) 的R2。`计划删除`不是`已删除`；补充字段核验确认3条旧SETTINGS没有自定义style，当前无需迁移有效业务设置；这不是删完的证明。正式操作前必须刷新精确身份、消费者、数据/保护项校验和changeset，并先向用户告知。区域均为`eu-central-1`，不以名称通配符删除。
 
-## 已在本地删除、尚未部署的代码
+## 已合并并部署删除的旧代码
 
-9月27日已按事先告知清单移除下列13个旧算法模块及现役调用。当前仅工作区状态；实际运行包缺失、部署读回和物理资源删除仍待各自验收。
+9月27日已按事先告知清单移除下列13个旧算法模块及现役调用。PR224已合并并部署dev/prod，实际包及缓存缺失由双环境独立读回确认；云资源尚未删除。
 
 | 对象 | 当前状态 / 处理 |
 |---|---|
-| `src/bot/services/group_memory.py`、`group_memory_processor.py`、`memory_extractor.py`、`memory_retrieval.py`、`vector_memory.py` | 本地已删，现役import已迁出；待实际打包/发布验证 |
-| `src/bot/services/ambient_reactions.py`、`ai/proactive_decision.py`、`ai/ambient_reaction_prompt.py`、`ai/ambient_reaction_classifier.py`、`ai/channel_post_comment.py` | 本地已删实现及仅为其服务的调用、测试、runtime配置；infra配置待后续资源步骤 |
-| `src/bot/services/repositories/group_memory.py`、`repositories/vector_memory.py` | 本地已删；纯style normalizer已迁出，V2临时相册facade不再继承旧库，取消旧设置读取需部署前再次核验 |
-| `src/bot/services/group_agent.py`内旧主动/频道分支 | 本地已删退役分支；显式/ask、mention、reply和有效provider fallback保留 |
-| `src/bot/services/history_import.py`及历史导入CLI旧写入实现 | 本地已删算法，CLI所有参数在读文件或连接前立即说明退役并退出；审计证据保留 |
+| `src/bot/services/group_memory.py`、`group_memory_processor.py`、`memory_extractor.py`、`memory_retrieval.py`、`vector_memory.py` | 已部署删除，实际包和缓存缺失已核验 |
+| `src/bot/services/ambient_reactions.py`、`ai/proactive_decision.py`、`ai/ambient_reaction_prompt.py`、`ai/ambient_reaction_classifier.py`、`ai/channel_post_comment.py` | 已部署删除实现及仅为其服务的调用、测试、runtime配置；infra配置待后续资源步骤 |
+| `src/bot/services/repositories/group_memory.py`、`repositories/vector_memory.py` | 已部署删除；纯style normalizer已迁出，V2临时相册facade不再继承旧库，取消旧设置读取前已完成fresh核验，删表前仍需另验 |
+| `src/bot/services/group_agent.py`内旧主动/频道分支 | 已部署删除退役分支；显式/ask、mention、reply和有效provider fallback保留 |
+| `src/bot/services/history_import.py`及历史导入CLI旧写入实现 | 已部署删除算法，CLI所有参数在读文件或连接前立即说明退役并退出；审计证据保留 |
 | vector-indexer入口和`infra/components/vector_indexer.py`等专属资源接线 | 先撤所有生产者；代码过渡期仅拒绝旧任务，云资源移除后删薄壳及专属打包目标 |
 
 保留`memory_cutover`及router里的小型旧任务拒绝协议，防止混合主队列中的历史载荷恢复旧行为；它不是旧知识算法或可启用功能。删除它需另证所有入口不可能接受旧schema，不能为了“零关键词”移除安全边界。新V2、显式问答、临时媒体、验证码、反垃圾、投票、新闻、Quiz继续保留。

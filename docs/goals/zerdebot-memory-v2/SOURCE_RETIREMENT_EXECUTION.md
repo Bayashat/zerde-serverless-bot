@@ -15,6 +15,6 @@ PRE独审、explorer、mixed-test清单（另有两项补充）和18组c9请求�
 
 字段兼容的style normalizer保留纯数据字段；plain serializer空旧context标签是冻结请求接口，无法读取或存储旧知识。router的旧schema拒绝与vector discard薄壳保留至对应资源真正退役，不是可启用旧算法。shared assets、git历史和副本义务不等于现役知识路径；PITR/保留期限继续单列Z10。
 
-源码合并、部署、旧数据与云资源删除分别登记。出现旧引用依赖、请求漂移、媒体/发送围栏回退、未知settings或保护数据变化即停止对应步骤；回退仅无长期记忆显式问答。每次实质进展同步manifest/TASKS/HANDOFF/EVIDENCE与#221/#161/Epic157。当前IMPLEMENTING，未上线本源码清理，未删云资源。
+源码合并、部署、旧数据与云资源删除分别登记。出现旧引用依赖、请求漂移、媒体/发送围栏回退、未知settings或保护数据变化即停止对应步骤；回退仅无长期记忆显式问答。每次实质进展同步manifest/TASKS/HANDOFF/EVIDENCE与#221/#161/Epic157。当前SOURCE_RETIREMENT_DEPLOYED：PR224已合并并部署dev/prod，云资源尚未删除，下一步见[RESOURCE_RETIREMENT_EXECUTION](RESOURCE_RETIREMENT_EXECUTION.md)。
 
-本地实现门禁：2264全测PASS，pre-commit PASS，正确性/维护性POST ALIGNED。13模块物理缺失的打包反例65项通过；158混合现役case有明确对应。下一步冻结源码比较18请求、PR/CI及真实ARM构建。发布前首次fresh SETTINGS门禁尚未执行，云资源未删。
+本地实现门禁：2264全测PASS，pre-commit PASS，正确性/维护性POST ALIGNED。13模块物理缺失的打包反例65项通过；158混合现役case有明确对应。最终18请求逐字等价、CI、两环境真实ARM包及实际部署主检/独审通过；停读前fresh SETTINGS门禁已分别执行并通过。原prod依赖缓存差异在部署前通过提升同一封存包解决，原资产保全；dev首次本地报告保存错误保留，修复只读工具后final回执PASS。云资源未删。

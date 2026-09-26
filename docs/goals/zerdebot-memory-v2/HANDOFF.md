@@ -1,16 +1,16 @@
-# 下一次执行入口（2026-09-26）
+# 下一次执行入口（2026-09-27）
 
-当前请先读 [FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)。下面带日期的旧交接仅作历史证据，不能作为重跑发布、模型或清理的指令。
+先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)和[S4资源退役契约](RESOURCE_RETIREMENT_EXECUTION.md)。task_manifest是逐工单状态来源；下面历史发布不能重跑。
 
-PR220已经合并/部署，F5真实模型合成测量及F6/F7/F8/F10 Telegram合成功能验收已结束；没有Google额度或旧部署等待卡点。仅dev既有测试群学习，prod未启用；自然样本0，起点未建立，不能承诺空等七天完成。旧在线记忆与本地归档已清，旧代码/表/向量资源尚未删净。
+PR224已合并为`dd416f86c001666ec9c9c4007ae2e52480e83abf`，源码`63916a3189a912c84c12be85b75c4d3eb2fa5f5e`已部署dev/prod。13旧模块及现役调用退出；2264测试、18完整请求逐字等价、CI、两环境各6函数及层/配置/控制主检和独审通过，workflow ACTIVE。原读回工具保存错误的INCOMPLETE记录保全，新final回执才是最终证据。[脱敏摘要](evidence/2026-09-27-retirement/source-release.safe.json)。不要重跑旧源码发布。
 
-**当前执行（2026-09-27）**：PR223已合并为b232df6；source c9a4219，CI2409，dev/prod六函数实际ZIP、共享层及配置/控制独审PASS，workflow ACTIVE，Dependabot本次open0。历史两次失败读回保留，最终published回执见[evidence](evidence/2026-09-27-retirement/anyio-release.safe.json)。不得重跑已经完成的发布。
+下一步直接做S4：在最新main解除旧CDK/env/IAM和vector薄壳，独审实际变更集及精确消费者/空内容，第二轮fresh SETTINGS门禁后dev先、prod后；prod Retain物理删除另记。6现役表、当前控制/epoch、预算inventory/历史/UNKNOWN保留。更早stats/queue/log候选单独刷新证据，不顺手删。新功能、新群、prod记忆仍受R2完整清理闸门限制。
 
-同一managed checkout当前 `feat/zerde-retire-legacy-source` 正在[Z20源码退役](SOURCE_RETIREMENT_EXECUTION.md)，13模块已在工作分支本地删除，现役测试/文档正在迁移，尚未新提交/上线Z20或删表/资源。先检查现branch/PR/工作进程，避免并行重复。R2私有入口 `2026-09-27-legacy-source-retirement/CURRENT.md`；18组原请求基线和mixed-test清单不能覆盖。新预算瞬时只读入口为 `2026-09-27-anyio-calibrated/read_budget_published.py`，绑定c9实际包，源码再次发布后须重绑；旧F10 reader已不适用。
+私有当前发布入口为`~/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-source-release/CURRENT.md`；最终是`readback-final.safe.json`、`independent-final-readback.safe.json`、`final-release.safe.json`。新预算瞬时只读入口为该目录`read_budget_published.py`，使用105文件clean owner并绑定639实际包；只读PASS不是持久调用许可，后续源码发布仍须重绑。原c9/F10 reader不再代表当前。
 
-**上一轮入口**：核对本R1文档PR合并状态；新Z20清理执行工单[#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221)已创建，原19工单及Epic已同步，#175/#178按限定范围结项。随后直接推进R2纯style normalizer/V2相册解耦，删除旧算法，再按字段/hash重验3条旧开关并退役资源。R3验证码/反垃圾/投票/新闻/Quiz/实际费用验收并行准备，不等自然群聊天。所有新功能/新群/生产记忆启用须先通过清理闸门。每次有实质进展同步task_manifest、TASKS、EVIDENCE及GitHub issue；每次删除前向用户给清单。
+R3业务真实验收和项目/模型实际费用归因继续，不能等空群替代。F5–F10冻结，真实自然起点仍未建立，0/50有据、0/20未知，production_ready=false；dev仅既有测试群，prod未启用。每次实质进展同步计划、manifest、看板、证据及GitHub工单，删除前告知清单。
 
-私有证据根为`~/.local/share/zerde-memory-v2-acceptance`，入口`2026-09-23-testgroup-pilot/CURRENT.md`和`2026-09-23-native-denial-live/final-result.safe.json`，9月26日盘点见`2026-09-26-dynamodb-inventory`。保持冻结报告和一次性脚本完成状态；不重置学习控制，不绕开预算owner，不把只读预算PASS当调用许可。PITR下次2026-10-17 16:20:38UTC，其他副本单列。
+Z10副本责任独立：本地旧密文/key已移除，不重建；PITR下次2026-10-17 16:20:38UTC复查，日志/DLQ/其他副本另记，源表删除不能等同所有副本抹除。
 
 ---
 

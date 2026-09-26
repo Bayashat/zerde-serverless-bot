@@ -14,10 +14,10 @@
 
 ## 当前完成与未完成
 
-- PR220已合并/两环境实际部署读回通过，源码72673/main54ce。2407测试/CI是代码证据，不能代替产品验收。
+- 当前发布PR224：源码63916a3/main dd416f86，旧13模块已从dev/prod实际包移除；2264测试、18完整请求逐字等价、CI及六函数/层/配置独审通过。先前PR223的AnyIO4.15.1安全修复保持；这些是交付证据，不能代替自然产品验收。
 - F5真实模型合成测量语义policy PASS，来源1176/1176、未知256/256、已知完整220/224；原strict FAIL、4预算缺答、UNKNOWN保留。F6/F7/F8/F10原生Telegram受控功能验收完成。
 - F9自然使用尚未建立起点，50有据/20未知样本仍0；production_ready=false，不承诺空等日历天数完成。prod未开学习。
-- 旧在线30794行/8259向量已清零，本地3份加密归档和key已移除；3 SETTINGS保留。旧运行代码/2张bot-memory表/向量专属资源仍待Z20移除。
+- 旧在线30794行/8259向量已清零，本地3份加密归档和key已移除；3 SETTINGS保留。旧算法源码已由PR224部署删除；2张bot-memory表和向量专属资源仍待Z20的S4实际删除，vector入口目前仅保留拒绝旧任务的薄壳。
 - Z18原清单/手册、Z19抽奖功能退役按限定范围结项；实际资源删除Z20、PITR/其他副本Z10继续，不能称物理副本全无。
 - Z12–Z16业务真实恢复验收、Z17实际项目费用归因仍待完成，不依赖自然群聊天。
 
@@ -58,4 +58,7 @@ R1同步 → R2旧代码解耦/3 SETTINGS核验退役（有有效设置才迁移
 
 2026-09-26字段核验补充：旧prod的3条SETTINGS只有旧memory/agent开关与更新时间，没有style_profile；dev0行，无现役setter。故不为死开关建新settings存储；纯normalizer和V2临时媒体保留。删除前重新验证完整键/字段/类型/整行hash，有新增或变化即停并保护有效语义。详见FINISH_EXECUTION；当前仍未删除。
 
-费用线已有9月26日CE标签归属快照：dev约$0.40、prod约$0.82，合计约$1.22（本月预估、非完整实付）；未标记/共享及税/credit/模型账单仍待归因。Z04追加现有AnyIO安全告警修复，下一次运行包发布前验证完整依赖与包，不属于新功能。
+费用线已有9月26日CE标签归属快照：dev约$0.40、prod约$0.82，合计约$1.22（本月预估、非完整实付）；未标记/共享及税/credit/模型账单仍待归因。Z04的AnyIO安全修复已由PR223部署并实际核验，仍待S4五函数/旧配置清理后收尾；本次不属于新功能。
+
+
+下一步：[S4资源退役契约](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/RESOURCE_RETIREMENT_EXECUTION.md)；[PR224实际发布证据](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/evidence/2026-09-27-retirement/source-release.safe.json)。删前再核验3条旧设置和精确资源身份，现役六表与预算历史保留。
