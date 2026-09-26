@@ -99,14 +99,15 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "deployed_readback_pass_retirement_followup_pending",
-    "status_as_of": "2026-09-26",
+    "status": "anyio_security_fix_in_validation",
+    "status_as_of": "2026-09-27",
     "completed": "PR220两环境实包、配置和依赖读回通过。",
-    "remaining": "Z20精确打包/readback集合；发布前修复现有AnyIO 4.12.1的两项安全advisory并核全包版本。",
+    "remaining": "AnyIO 4.15.1及必需typing-extensions 4.16.0定向修复正在验证；待CI/独审、两环境五个受影响包及六函数保护读回。随后Z20精确打包/readback集合。",
     "issue_state": "OPEN",
     "runtime_baseline": "54ce4dfb4098775c5ed9c544187d929580b7b04d",
     "deployed_build_source": "72673be5dfdf136c9a90d78835482efd7dd6ef62",
-    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json"
+    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "execution_contract": "ANYIO_RELEASE_EXECUTION.md"
   },
   {
     "id": "Z05",

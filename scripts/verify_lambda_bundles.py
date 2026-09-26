@@ -43,6 +43,8 @@ for distribution in importlib.metadata.distributions(path=['/var/task']):
     name = distribution.metadata['Name'].lower().replace('_', '-')
     assert expected.get(name) == distribution.version, (name, distribution.version)
 modules = ['boto3', 'botocore', 'urllib3']
+if kind in {'bot', 'news', 'quiz'}:
+    modules += ['anyio', 'httpx']
 if kind == 'bot':
     modules += ['PIL.Image']
 elif kind in {'news', 'quiz'}:
@@ -68,6 +70,7 @@ assert callable(getattr(importlib.import_module(module_name), function_name))
 print(json.dumps({'package': kind, 'handler': handler, 'architecture': platform.machine(),
     'python': platform.python_version(), 'boto3': importlib.metadata.version('boto3'),
     'urllib3': importlib.metadata.version('urllib3'), 'imports': 'passed', 'network': 'disabled',
+    'anyio': importlib.metadata.version('anyio') if kind in {'bot', 'news', 'quiz'} else None,
     'first_party_assets': 'clean'}))
 """
 
