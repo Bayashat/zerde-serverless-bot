@@ -279,3 +279,52 @@ def test_default_tcp_backend_uses_literal_ip_without_threaded_dns(monkeypatch):
             await server.wait_closed()
 
     asyncio.run(run())
+
+
+def test_default_tcp_backend_cancellation_closes_stalled_response_connection():
+    """Exercise the installed AnyIO socket backend, not a mock network transport."""
+
+    async def run():
+        started = asyncio.Event()
+        peer_closed = asyncio.Event()
+        handlers = set()
+
+        async def handler(reader, writer):
+            task = asyncio.current_task()
+            handlers.add(task)
+            try:
+                await reader.readuntil(b"\r\n\r\n")
+                writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\n\r\nfirst")
+                await writer.drain()
+                started.set()
+                assert await reader.read() == b""
+                peer_closed.set()
+            finally:
+                writer.close()
+                await writer.wait_closed()
+
+        server = await asyncio.start_server(handler, "127.0.0.1", 0)
+        port = server.sockets[0].getsockname()[1]
+        request = None
+        try:
+            async with async_http.bounded_async_client(timeout=5) as client:
+                request = asyncio.create_task(client.get(f"http://127.0.0.1:{port}"))
+                await asyncio.wait_for(started.wait(), timeout=2)
+                request.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await request
+                # Verify cancellation closes the socket before AsyncClient exits.
+                await asyncio.wait_for(peer_closed.wait(), timeout=2)
+            await asyncio.wait_for(asyncio.gather(*handlers), timeout=2)
+        finally:
+            if request is not None and not request.done():
+                request.cancel()
+                await asyncio.gather(request, return_exceptions=True)
+            server.close()
+            await server.wait_closed()
+            for task in handlers:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*handlers, return_exceptions=True)
+
+    asyncio.run(asyncio.wait_for(run(), timeout=8))

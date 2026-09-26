@@ -243,3 +243,9 @@ R1最终POST/maintainer独审ALIGNED；两项发现已修正：F9自然观察不
 R2/R3补充只读进展：3条旧SETTINGS只含退役开关，无style_profile或现役setter，PRE复审同意取消无意义的死开关迁移，以精确字段/类型/hash再次核验作为退役门，任何变化先停。Project=ZerdeBot本月CE可归属Usage为USD1.2218612373（dev0.4012865637/prod0.8205746736），Estimated、含当日部分、非完整实付；未标记账号费用不归Zerde，账单责任尚未闭合。Z04追加现有AnyIO两项漏洞（8条重复清单告警）定向修复任务；本PR不升级运行依赖。见[followup.safe.json](evidence/2026-09-26-retirement/followup.safe.json)。
 
 settings切换独审补充已纳入：0/3精确字段/类型/hash门禁同时位于取消旧读取的新代码部署前和物理删除前，期间保持停写保护；避免先默认化已改变的style、到删表时才发现。public_replay/plain_requests须随源码解耦共用同一纯normalizer，冻结gold/scorer/run不改。
+
+## 2026-09-27 Z04依赖修复开始（尚未部署）
+
+定向锁AnyIO4.15.1（安全下限4.14.2,<5），其Python<3.15所需typing-extensions4.16.0；其余锁定版本不变。5个导出check通过，实际ARM probe增加AnyIO/httpx导入与版本读回；本地实际socket取消回归及打包契约25通过。升级后全量既有2407项通过（224.93秒）；新增socket取消用例连同HTTP/打包专项25项通过，范围重叠不累加。CI/独审/发布尚待。见[执行契约](ANYIO_RELEASE_EXECUTION.md)。旧源码和资源清理尚未执行，既有学习和预算不改变。
+
+第一候选ad49acfe的CI36265065402两job成功，2408通过；两环境实际ARM/候选独审通过。实际CF changeset进一步发现中文news历史模板ENABLED/现场DISABLED及Quiz ARN→Bot policy动态依赖，故原候选未执行并撤销，追加源码固定停用和单leaf校准契约；旧PASS不替代新head CI和新发布证据。

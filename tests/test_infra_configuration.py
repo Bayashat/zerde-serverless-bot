@@ -57,6 +57,26 @@ _QUEUE_CONFIG_KEYS = {
 }
 
 
+def test_production_news_preserves_chinese_suspension_without_disabling_other_languages(monkeypatch: Any) -> None:
+    for lang, chat in (("KK", "-1000000000001"), ("ZH", "-1000000000002"), ("RU", "-1000000000003")):
+        monkeypatch.setenv(f"CHATS_{lang}", chat)
+    template = _template(monkeypatch, env_name="prod")
+    rules = {
+        r["Properties"]["Name"]: r["Properties"]
+        for r in template.find_resources("AWS::Events::Rule").values()
+        if r["Properties"].get("Name", "").startswith("zerde-serverless-news-")
+    }
+    assert set(rules) == {
+        "zerde-serverless-news-kk-0400-prod",
+        "zerde-serverless-news-zh-0405-prod",
+        "zerde-serverless-news-ru-0410-prod",
+    }
+    for name, rule in rules.items():
+        lang = name.split("-")[3]
+        assert rule["State"] == ("DISABLED" if lang == "zh" else "ENABLED")
+        assert len(rule["Targets"]) == 1
+
+
 def _workflow_variables(filename: str) -> dict[str, str]:
     return dict(
         re.findall(

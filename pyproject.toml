@@ -61,6 +61,7 @@ dev = [
 [tool.uv]
 # Patched floors for transitive Lambda dependencies (GitHub security alerts, Z04).
 constraint-dependencies = [
+    "anyio>=4.14.2,<5",
     "idna>=3.15",
     "pyasn1>=0.6.4",
     "cryptography>=50.0.0",

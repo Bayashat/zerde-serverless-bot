@@ -279,3 +279,5 @@ Memory V2 purge discovery reuses work-due/KEYS_ONLY with MEMORY_PURGE keys. Keep
 Memory V2 cost-monitor handoff: keep the single `MemoryCostMonitor` owner, process at most two oldest incomplete blocks per invocation, and refresh only the newest when all are complete. Never grant a permit on partial coverage or refund unknown scans; each block retains its bounded telemetry contract. See `docs/MEMORY_V2_COST_MONITOR.md`.
 
 Memory V2 definite pre-mutation ownership denials use the original command receipt owner to persist DENIED before localized feedback; unknown writes and source-purge recovery retain their existing behavior. See [runtime contract](../../../docs/MEMORY_V2_RUNTIME.md).
+
+2026-09-27发布保护：生产中文news定时规则在源码中固定DISABLED，与既有现场停用保持一致；其他语言调度不变。首次CF基线校准与回滚保护见docs/goals/zerdebot-memory-v2/ANYIO_RELEASE_EXECUTION.md。不要通过常规部署恢复中文推送。

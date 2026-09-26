@@ -24,11 +24,13 @@ def test_lambda_locks_include_the_complete_matching_sdk_and_hashes():
         assert "aws-cdk-lib" not in pins and "pytest" not in pins and "moto" not in pins
         assert ("pillow" in pins) == (package == "bot")
         assert ("google-genai" in pins) == (package in {"news", "quiz"})
+        assert ("anyio" in pins) == (package in {"bot", "news", "quiz"})
 
 
 def test_security_fixed_versions_and_ci_toolchain_remain_pinned():
     locked = {package["name"]: package["version"] for package in tomllib.loads(Path("uv.lock").read_text())["package"]}
     floors = {
+        "anyio": "4.14.2",
         "pillow": "12.3.0",
         "urllib3": "2.7.0",
         "idna": "3.15",

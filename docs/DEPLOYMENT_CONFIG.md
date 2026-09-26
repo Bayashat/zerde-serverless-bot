@@ -91,6 +91,25 @@ schema update only as required by that pair. boto3/botocore remain matched at
 `1.42.38`. Fixing a local branch does not mean GitHub has closed the main-branch
 alerts or that deployed Lambda code has been updated.
 
+## 2026-09-27 AnyIO security follow-up
+
+The root constraint requires `anyio>=4.14.2,<5`; the lock selects 4.15.1.
+Python <3.15 additionally requires typing-extensions>=4.16.0, so that sole
+transitive update also changes the infrastructure export. All other package
+versions stay fixed. Bot, vector indexer and Memory worker share the Bot asset;
+News and Quiz have separate affected assets. Operations/common is unchanged.
+The six-handler ARM probe now imports AnyIO/HTTPX from each affected asset and
+reports the AnyIO version. Packaging alone is not deployed acceptance.
+See [the release contract](goals/zerdebot-memory-v2/ANYIO_RELEASE_EXECUTION.md)
+for frozen candidate, dev/prod changeset and actual ZIP/config/control gates.
+
+Chinese production news is deliberately suspended: CDK now declares its rule
+DISABLED, preserving the existing live state across deployment. Other configured
+languages retain their schedules. The first rollout must reconcile the old
+template-only ENABLED drift separately, with rollback disabled for that one-leaf
+calibration, before publishing the dependency code update. See the release
+contract for the guarded failure and readback sequence.
+
 ## Build and release evidence
 
 ```bash
