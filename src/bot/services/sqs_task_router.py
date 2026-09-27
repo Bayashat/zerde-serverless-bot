@@ -1,4 +1,4 @@
-"""SQS record routing for real-time bot work and vector indexing work."""
+"""SQS record routing for current bot work and rejection of retired tasks."""
 
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ def process_sqs_event(
     memory_ingestion=None,
     quiz_repo=None,
 ) -> None:
-    """Process main bot SQS tasks. Vector tasks are handled by the vector-indexer Lambda."""
+    """Process current bot tasks; discard retired envelopes before any dependencies."""
     logger.debug(
         "Received SQS batch",
         extra={"record_count": len(event.get("Records", []))},
@@ -124,35 +124,3 @@ def process_sqs_event(
             raise
 
     logger.info("SQS batch processing completed")
-
-
-def process_vector_sqs_event(
-    event: dict[str, Any],
-    memory_repo: ExplicitContextRepository | None = None,
-) -> None:
-    """Process vector memory SQS tasks only. Failures bubble up for retry/DLQ."""
-    logger.debug(
-        "Received vector SQS batch",
-        extra={"record_count": len(event.get("Records", []))},
-    )
-
-    for record in event["Records"]:
-        try:
-            body = _load_task_body(record)
-            task_type = body.get("task_type")
-            if task_type in RETIRED_TASK_TYPES or (
-                task_type == "PROCESS_GROUP_ASK" and not is_current_explicit_task(body)
-            ):
-                logger.info("Discarded retired task", extra={"task_type": task_type})
-                continue
-            if _should_skip_unconfigured_chat(body):
-                continue
-            t0 = time.monotonic()
-            logger.warning("Unsupported vector task ignored", extra={"task_type": task_type})
-            _log_task_completed(record, body, task_type, t0)
-
-        except Exception as e:
-            _log_task_failure(record, e)
-            raise
-
-    logger.info("Vector SQS batch processing completed")

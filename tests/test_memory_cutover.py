@@ -8,7 +8,7 @@ import pytest
 from services import group_agent
 from services.handlers.commands import process_group_ask_task
 from services.memory_cutover import EXPLICIT_CONTEXT_VERSION, RETIRED_TASK_TYPES
-from services.sqs_task_router import process_sqs_event, process_vector_sqs_event
+from services.sqs_task_router import process_sqs_event
 
 
 @pytest.mark.parametrize("task_type", sorted(RETIRED_TASK_TYPES) + ["PROCESS_GROUP_ASK"])
@@ -17,7 +17,6 @@ def test_old_task_replay_cannot_read_write_or_speak(task_type, monkeypatch):
     event = {"Records": [{"body": json.dumps({"task_type": task_type, "user_text": "OLD SECRET"})}]}
     bot, repo = MagicMock(), MagicMock()
     process_sqs_event(event, bot, MagicMock(), repo)
-    process_vector_sqs_event(event, repo)
     assert bot.mock_calls == []
     assert repo.mock_calls == []
 

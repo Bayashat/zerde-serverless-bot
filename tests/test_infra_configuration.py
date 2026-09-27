@@ -19,35 +19,16 @@ from components import memory_worker as memory_worker_component  # noqa: E402
 from components import news as news_component  # noqa: E402
 from components import operations as operations_component  # noqa: E402
 from components import quiz as quiz_component  # noqa: E402
-from components import vector_indexer as vector_indexer_component  # noqa: E402
 from stack import ZerdeTelegramBotStack  # noqa: E402
 
 _CONFIG_DEFAULTS = {
     "MAIN_TASK_QUEUE_RETENTION_DAYS": "1",
     "MAIN_TASK_DLQ_RETENTION_DAYS": "14",
-    "VECTOR_MEMORY_QUEUE_RETENTION_DAYS": "4",
-    "VECTOR_MEMORY_DLQ_RETENTION_DAYS": "14",
-    "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS": "30",
-    "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS": "7",
-    "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS": "3650",
-    "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS": "3650",
-    "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS": "3",
-    "GROUP_MEMORY_EXTRACTOR_PROVIDER": "gemini",
-    "GROUP_MEMORY_EXTRACTOR_MODE": "gemini_candidate_only",
-    "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.65",
-    "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "50",
-    "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "20",
     "AGENT_BOT_ID": "",
-    "AGENT_PROACTIVE_DELAY_SECONDS": "45",
     "MULTIMODAL_ENABLED": "true",
     "MULTIMODAL_MAX_DOWNLOAD_BYTES": "12000000",
     "MULTIMODAL_INLINE_MAX_BYTES": "8000000",
     "MULTIMODAL_TEXT_FILE_MAX_CHARS": "20000",
-    "VECTOR_MEMORY_SCHEMA_VERSION": "1",
-    "GROUP_MEMORY_RECENT_LIMIT": "300",
-    "AGENT_RECENT_CONTEXT_LIMIT": "100",
-    "AGENT_DAILY_PROACTIVE_LIMIT": "3",
-    "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": "3",
 }
 _ACTIVE_RUNTIME_CONFIG_KEYS = {
     "AGENT_BOT_ID",
@@ -59,8 +40,6 @@ _ACTIVE_RUNTIME_CONFIG_KEYS = {
 _QUEUE_CONFIG_KEYS = {
     "MAIN_TASK_QUEUE_RETENTION_DAYS",
     "MAIN_TASK_DLQ_RETENTION_DAYS",
-    "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
-    "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
 }
 
 
@@ -123,8 +102,6 @@ def test_deploy_and_preview_map_the_same_variables_and_defaults() -> None:
     }
     for key, value in defaults.items():
         fallback = f" || '{value}'" if value else ""
-        if key in {"GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"}:
-            fallback = " || vars.GROUP_MEMORY_RETENTION_DAYS" + fallback
         assert deploy[key] == "${{ vars." + key + fallback + " }}"
     for unused in ("AI_PROVIDER", "WTF_GEMINI_MODEL", "FALLBACK_MODEL"):
         assert unused not in deploy
@@ -133,8 +110,6 @@ def test_deploy_and_preview_map_the_same_variables_and_defaults() -> None:
 def test_config_defaults_agree_between_example_runtime_and_lambda_template(monkeypatch: Any) -> None:
     for key in _CONFIG_DEFAULTS:
         monkeypatch.delenv(key, raising=False)
-    # Reproduce the deployed legacy value that previously forced raw retention to ten years.
-    monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "3650")
     runtime = runpy.run_path("src/bot/core/config.py")
     example = dict(re.findall(r"^([A-Z][A-Z0-9_]+)=(.*)$", Path(".env.example").read_text(), re.MULTILINE))
     template = _dev_template(monkeypatch)
@@ -143,41 +118,26 @@ def test_config_defaults_agree_between_example_runtime_and_lambda_template(monke
     for key, expected in _CONFIG_DEFAULTS.items():
         assert example[key] == expected, key
         if key not in _QUEUE_CONFIG_KEYS:
-            if key in bot_component.RETIRED_DEFAULT_ENVIRONMENT:
-                assert key not in deployed, key
-            else:
-                assert deployed[key] == expected, key
+            assert deployed[key] == expected, key
             if key in _ACTIVE_RUNTIME_CONFIG_KEYS:
                 assert _runtime_value_as_text(runtime[key]) == expected, key
             else:
                 assert key not in runtime, key
 
 
-def test_typed_config_overrides_reach_bot_runtime_and_indexer(monkeypatch: Any) -> None:
+def test_typed_config_overrides_reach_bot_runtime(monkeypatch: Any) -> None:
     overrides = {
-        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS": "11",
-        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS": "5",
-        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS": "180",
-        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS": "90",
-        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS": "2",
-        "GROUP_MEMORY_EXTRACTOR_PROVIDER": "rules",
-        "GROUP_MEMORY_EXTRACTOR_MODE": "off",
-        "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.91",
-        "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "17",
-        "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "8",
         "AGENT_BOT_ID": "12345",
-        "AGENT_PROACTIVE_DELAY_SECONDS": "62",
         "MULTIMODAL_ENABLED": "false",
         "MULTIMODAL_MAX_DOWNLOAD_BYTES": "9000000",
         "MULTIMODAL_INLINE_MAX_BYTES": "6000000",
         "MULTIMODAL_TEXT_FILE_MAX_CHARS": "15000",
-        "VECTOR_MEMORY_SCHEMA_VERSION": "2",
     }
     for key, value in overrides.items():
         monkeypatch.setenv(key, value)
     runtime = runpy.run_path("src/bot/core/config.py")
     template = _dev_template(monkeypatch)
-    for name in ("zerde-serverless-bot-dev", "zerde-serverless-vector-indexer-dev"):
+    for name in ("zerde-serverless-bot-dev",):
         _, function = _find_resource_by_property(template, "AWS::Lambda::Function", "FunctionName", name)
         deployed = function["Properties"]["Environment"]["Variables"]
         for key, expected in overrides.items():
@@ -211,7 +171,7 @@ def _stub_python_function(scope: Any, construct_id: str, **kwargs: Any) -> lambd
     )
 
 
-def test_all_six_functions_filter_local_python_caches(monkeypatch: Any) -> None:
+def test_all_five_functions_filter_local_python_caches(monkeypatch: Any) -> None:
     from components.constants import LAMBDA_BUNDLING
 
     seen = set()
@@ -226,8 +186,7 @@ def test_all_six_functions_filter_local_python_caches(monkeypatch: Any) -> None:
     monkeypatch.setattr(sys.modules[__name__], "_stub_python_function", capture)
     _dev_template(monkeypatch)
     assert seen == {
-        f"zerde-serverless-{name}-dev"
-        for name in ("bot", "vector-indexer", "news", "quiz", "operations", "memory-v2-worker")
+        f"zerde-serverless-{name}-dev" for name in ("bot", "news", "quiz", "operations", "memory-v2-worker")
     }
 
 
@@ -239,7 +198,6 @@ def _template(monkeypatch: Any, *, env_name: str) -> Template:
     monkeypatch.setattr(bot_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(news_component, "PythonFunction", _stub_python_function)
     monkeypatch.setattr(quiz_component, "PythonFunction", _stub_python_function)
-    monkeypatch.setattr(vector_indexer_component, "PythonFunction", _stub_python_function)
 
     app = App()
     stack = ZerdeTelegramBotStack(app, "TestStack", env_name=env_name)
@@ -329,49 +287,7 @@ def _role_actions_for_service(template: Template, role_logical_id: str, service_
     return actions
 
 
-def test_s3_vectors_permissions_are_scoped_by_lambda_role(monkeypatch: Any) -> None:
-    monkeypatch.setenv("VECTOR_MEMORY_ENABLED", "true")
-    monkeypatch.setenv("VECTOR_MEMORY_PROVIDER", "s3_vectors")
-    template = _dev_template(monkeypatch)
-    _, bot_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-bot-dev",
-    )
-    _, vector_indexer_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-vector-indexer-dev",
-    )
-
-    bot_actions = _role_actions_for_service(template, _function_role_id(bot_lambda), "s3vectors")
-    vector_indexer_actions = _role_actions_for_service(
-        template,
-        _function_role_id(vector_indexer_lambda),
-        "s3vectors",
-    )
-
-    assert {
-        "s3vectors:QueryVectors",
-        "s3vectors:GetVectors",
-        "s3vectors:DeleteVectors",
-        "s3vectors:GetIndex",
-    }.issubset(bot_actions)
-    assert "s3vectors:PutVectors" not in bot_actions
-    assert "s3vectors:ListVectors" not in bot_actions
-    assert {
-        "s3vectors:PutVectors",
-        "s3vectors:QueryVectors",
-        "s3vectors:GetVectors",
-        "s3vectors:DeleteVectors",
-        "s3vectors:ListVectors",
-        "s3vectors:GetIndex",
-    }.issubset(vector_indexer_actions)
-
-
-def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any) -> None:
+def test_main_and_v2_queues_have_separate_lambda_consumers(monkeypatch: Any) -> None:
     template = _dev_template(monkeypatch)
     bot_lambda_id, _ = _find_resource_by_property(
         template,
@@ -379,11 +295,11 @@ def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any)
         "FunctionName",
         "zerde-serverless-bot-dev",
     )
-    vector_indexer_lambda_id, _ = _find_resource_by_property(
+    memory_worker_lambda_id, _ = _find_resource_by_property(
         template,
         "AWS::Lambda::Function",
         "FunctionName",
-        "zerde-serverless-vector-indexer-dev",
+        "zerde-serverless-memory-v2-worker-dev",
     )
     main_queue_id, _ = _find_resource_by_property(
         template,
@@ -391,15 +307,15 @@ def test_main_and_vector_queues_have_separate_lambda_consumers(monkeypatch: Any)
         "QueueName",
         "zerde-serverless-timeout-tasks-queue-dev",
     )
-    vector_queue_id, _ = _find_resource_by_property(
+    v2_queue_id, _ = _find_resource_by_property(
         template,
         "AWS::SQS::Queue",
         "QueueName",
-        "zerde-serverless-vector-memory-tasks-queue-dev",
+        "zerde-serverless-memory-v2-queue-dev",
     )
 
     assert _event_source_targets(template, main_queue_id) == [{"Ref": bot_lambda_id}]
-    assert _event_source_targets(template, vector_queue_id) == [{"Ref": vector_indexer_lambda_id}]
+    assert _event_source_targets(template, v2_queue_id) == [{"Ref": memory_worker_lambda_id}]
 
 
 @pytest.mark.parametrize("env_name", ["dev", "prod"])
@@ -409,7 +325,7 @@ def test_retired_contest_has_no_schedule_or_iam_queue_grant(monkeypatch, env_nam
     _find_resource_by_property(
         template, "AWS::SQS::Queue", "QueueName", f"zerde-serverless-timeout-tasks-queue-{env_name}"
     )
-    _find_resource_by_property(template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-bot-memory-{env_name}")
+    _find_resource_by_property(template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-memory-v2-{env_name}")
 
 
 @pytest.mark.parametrize("env_name", ["dev", "prod"])
@@ -425,14 +341,14 @@ def test_retired_daily_summary_cannot_be_recreated_by_legacy_settings(monkeypatc
     assert "PROCESS_DAILY_GROUP_SUMMARIES" not in rendered
     assert "DailyGroupSummaryRule" not in rendered  # Includes its former SQS policy grant.
     assert "group-memory-daily-summary" not in rendered
-    for table in ("bot-stats", "bot-memory", "memory-v2", "quiz"):
+    for table in ("bot-stats", "memory-v2", "quiz"):
         _, resource = _find_resource_by_property(
             template, "AWS::DynamoDB::Table", "TableName", f"zerde-serverless-{table}-{env_name}"
         )
         if env_name == "prod":
             assert resource["DeletionPolicy"] == "Retain"
             assert resource["Properties"]["DeletionProtectionEnabled"] is True
-    for queue in ("timeout-tasks-queue", "vector-memory-tasks-queue", "memory-v2-queue"):
+    for queue in ("timeout-tasks-queue", "memory-v2-queue"):
         _find_resource_by_property(template, "AWS::SQS::Queue", "QueueName", f"zerde-serverless-{queue}-{env_name}")
     for rule in ("memory-v2-recovery", "quiz-answer-recovery", "quiz-publication-recovery"):
         _find_resource_by_property(template, "AWS::Events::Rule", "Name", f"zerde-serverless-{rule}-{env_name}")
@@ -446,8 +362,6 @@ def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -
     for key in (
         "MAIN_TASK_QUEUE_RETENTION_DAYS",
         "MAIN_TASK_DLQ_RETENTION_DAYS",
-        "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
-        "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
     ):
         monkeypatch.delenv(key, raising=False)
 
@@ -464,30 +378,14 @@ def test_sqs_queue_retention_defaults_are_operationally_safe(monkeypatch: Any) -
         "QueueName",
         "zerde-serverless-timeout-tasks-dlq-dev",
     )
-    _, vector_queue = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-queue-dev",
-    )
-    _, vector_dlq = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-dlq-dev",
-    )
 
     assert main_queue["Properties"]["MessageRetentionPeriod"] == 86_400
     assert main_dlq["Properties"]["MessageRetentionPeriod"] == 1_209_600
-    assert vector_queue["Properties"]["MessageRetentionPeriod"] == 345_600
-    assert vector_dlq["Properties"]["MessageRetentionPeriod"] == 1_209_600
 
 
 def test_sqs_queue_retention_is_configurable_from_env(monkeypatch: Any) -> None:
     monkeypatch.setenv("MAIN_TASK_QUEUE_RETENTION_DAYS", "2")
     monkeypatch.setenv("MAIN_TASK_DLQ_RETENTION_DAYS", "3")
-    monkeypatch.setenv("VECTOR_MEMORY_QUEUE_RETENTION_DAYS", "7")
-    monkeypatch.setenv("VECTOR_MEMORY_DLQ_RETENTION_DAYS", "10")
 
     template = _dev_template(monkeypatch)
     _, main_queue = _find_resource_by_property(
@@ -502,89 +400,17 @@ def test_sqs_queue_retention_is_configurable_from_env(monkeypatch: Any) -> None:
         "QueueName",
         "zerde-serverless-timeout-tasks-dlq-dev",
     )
-    _, vector_queue = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-queue-dev",
-    )
-    _, vector_dlq = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-dlq-dev",
-    )
 
     assert main_queue["Properties"]["MessageRetentionPeriod"] == 172_800
     assert main_dlq["Properties"]["MessageRetentionPeriod"] == 259_200
-    assert vector_queue["Properties"]["MessageRetentionPeriod"] == 604_800
-    assert vector_dlq["Properties"]["MessageRetentionPeriod"] == 864_000
 
 
-def test_bot_can_send_but_not_consume_vector_queue(monkeypatch: Any) -> None:
-    template = _dev_template(monkeypatch)
-    _, bot_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-bot-dev",
-    )
-    vector_queue_id, _ = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-queue-dev",
-    )
-    bot_role_id = _function_role_id(bot_lambda)
-
-    assert _role_has_action_on_queue(template, bot_role_id, {"sqs:SendMessage"}, vector_queue_id)
-    assert not _role_has_action_on_queue(
-        template,
-        bot_role_id,
-        {"sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:ChangeMessageVisibility"},
-        vector_queue_id,
-    )
-
-
-def test_vector_indexer_consumes_vector_queue(monkeypatch: Any) -> None:
-    template = _dev_template(monkeypatch)
-    _, vector_indexer_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-vector-indexer-dev",
-    )
-    vector_queue_id, _ = _find_resource_by_property(
-        template,
-        "AWS::SQS::Queue",
-        "QueueName",
-        "zerde-serverless-vector-memory-tasks-queue-dev",
-    )
-    vector_role_id = _function_role_id(vector_indexer_lambda)
-
-    assert _role_has_action_on_queue(
-        template,
-        vector_role_id,
-        {"sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:ChangeMessageVisibility"},
-        vector_queue_id,
-    )
-    assert _role_has_action_on_queue(template, vector_role_id, {"sqs:SendMessage"}, vector_queue_id)
-
-
-def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
+def test_bot_environment_preserves_explicit_providers_and_media(monkeypatch: Any) -> None:
     for key in (
-        "GROUP_MEMORY_RETENTION_DAYS",
-        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
-        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
-        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
-        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
-        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
         "DEEPSEEK_API_BASE",
         "DEEPSEEK_MODEL",
         "GROQ_MODEL",
         "GROQ_SPAM_MODEL",
-        "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
-        "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
     ):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
@@ -598,29 +424,8 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     )
 
     env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
-    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "3650"
-    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
-    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
-    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "3650"
-    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "3650"
-    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
-    assert "GROUP_MEMORY_EXTRACTOR_PROVIDER" not in env_vars
-    assert "GROUP_MEMORY_EXTRACTOR_MODE" not in env_vars
-    assert "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE" not in env_vars
-    assert "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT" not in env_vars
-    assert "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT" not in env_vars
-    assert "AGENT_PROACTIVE_DELAY_SECONDS" not in env_vars
-    assert env_vars["AMBIENT_REACTIONS_ENABLED"] == "true"
-    assert "AMBIENT_REACTIONS_SAMPLE_RATE" not in env_vars
-    assert "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD" not in env_vars
-    assert "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS" not in env_vars
-    assert "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS" not in env_vars
-    assert "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR" not in env_vars
-    assert "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY" not in env_vars
     assert env_vars["GROQ_MODEL"] == "openai/gpt-oss-120b"
     assert env_vars["GROQ_SPAM_MODEL"] == "openai/gpt-oss-safeguard-20b"
-    assert "AGENT_PROACTIVE_DECISION_GROQ_MODELS" not in env_vars
-    assert "AMBIENT_REACTIONS_DECISION_GROQ_MODELS" not in env_vars
     assert env_vars["DEEPSEEK_API_BASE"] == "https://api.deepseek.com"
     assert env_vars["DEEPSEEK_MODEL"] == "deepseek-chat"
     assert env_vars["MULTIMODAL_ENABLED"] == "true"
@@ -629,74 +434,7 @@ def test_bot_environment_configures_memory_extractor(monkeypatch: Any) -> None:
     assert env_vars["MULTIMODAL_TEXT_FILE_MAX_CHARS"] == "20000"
 
 
-def test_raw_retention_does_not_inherit_legacy_long_term_retention(monkeypatch: Any) -> None:
-    monkeypatch.setenv("GROUP_MEMORY_RETENTION_DAYS", "42")
-    for key in (
-        "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
-        "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
-        "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
-        "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
-        "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
-    ):
-        monkeypatch.delenv(key, raising=False)
-
-    template = _dev_template(monkeypatch)
-    _, bot_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-bot-dev",
-    )
-
-    env_vars = bot_lambda["Properties"]["Environment"]["Variables"]
-    assert env_vars["GROUP_MEMORY_RETENTION_DAYS"] == "42"
-    assert env_vars["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
-    assert env_vars["GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS"] == "7"
-    assert env_vars["GROUP_MEMORY_LONG_TERM_RETENTION_DAYS"] == "42"
-    assert env_vars["GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS"] == "42"
-    assert env_vars["GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS"] == "3"
-
-
-def test_vector_indexer_ssm_access_is_limited_to_gemini(monkeypatch: Any) -> None:
-    template = _dev_template(monkeypatch)
-    _, vector_indexer_lambda = _find_resource_by_property(
-        template,
-        "AWS::Lambda::Function",
-        "FunctionName",
-        "zerde-serverless-vector-indexer-dev",
-    )
-    vector_role_id = _function_role_id(vector_indexer_lambda)
-    ssm_statements = [
-        statement
-        for statement in _role_statements(template, vector_role_id)
-        if "ssm:GetParameters" in _as_list(statement.get("Action", []))
-    ]
-    serialized_statements = repr(ssm_statements)
-
-    assert "gemini-api-key" in serialized_statements
-    assert "gemini-embedding-api-key" in serialized_statements
-    assert "bot-token" not in serialized_statements
-    assert "webhook-secret-token" not in serialized_statements
-    assert "groq-api-key" not in serialized_statements
-    assert "deepseek-api-key" not in serialized_statements
-
-
-def test_synthesizes_vector_indexer_operational_alarms(monkeypatch: Any) -> None:
-    monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
-    template = _dev_template(monkeypatch)
-
-    template.has_resource_properties(
-        "AWS::CloudWatch::Alarm",
-        {
-            "AlarmName": "zerde-serverless-vector-indexer-dev-errors",
-            "MetricName": "Errors",
-            "Namespace": "AWS/Lambda",
-            "Threshold": 1,
-        },
-    )
-
-
-def test_synthesizes_main_and_vector_dlq_visible_alarms(monkeypatch: Any) -> None:
+def test_synthesizes_main_dlq_visible_alarm(monkeypatch: Any) -> None:
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
     template = _dev_template(monkeypatch)
 
@@ -709,15 +447,6 @@ def test_synthesizes_main_and_vector_dlq_visible_alarms(monkeypatch: Any) -> Non
             "Threshold": 1,
         },
     )
-    template.has_resource_properties(
-        "AWS::CloudWatch::Alarm",
-        {
-            "AlarmName": "zerde-serverless-vector-memory-tasks-dlq-visible-dev",
-            "MetricName": "ApproximateNumberOfMessagesVisible",
-            "Namespace": "AWS/SQS",
-            "Threshold": 1,
-        },
-    )
 
 
 def test_idle_dev_stops_ingress_and_consumers_without_alarm_spend(monkeypatch):
@@ -725,10 +454,10 @@ def test_idle_dev_stops_ingress_and_consumers_without_alarm_spend(monkeypatch):
     monkeypatch.setattr("stack.load_dotenv", lambda *args, **kwargs: None)
     template = _dev_template(monkeypatch)
     functions = template.find_resources("AWS::Lambda::Function")
-    assert len(functions) == 6
+    assert len(functions) == 5
     assert all(fn["Properties"]["ReservedConcurrentExecutions"] == 0 for fn in functions.values())
     mappings = template.find_resources("AWS::Lambda::EventSourceMapping")
-    assert len(mappings) == 3
+    assert len(mappings) == 2
     assert all(mapping["Properties"]["Enabled"] is False for mapping in mappings.values())
     # Lambda validates SQS limits even when the mapping is disabled.
     assert all("ScalingConfig" not in mapping["Properties"] for mapping in mappings.values())
@@ -742,11 +471,10 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
     assert all(mapping["Properties"]["Enabled"] is True for mapping in mappings.values())
     assert sorted(mapping["Properties"]["ScalingConfig"]["MaximumConcurrency"] for mapping in mappings.values()) == [
         2,
-        3,
         10,
     ]
     alarms = template.find_resources("AWS::CloudWatch::Alarm")
-    assert len(alarms) == 22
+    assert len(alarms) == 18
     for alarm in alarms.values():
         props = alarm["Properties"]
         assert len(props["AlarmActions"]) == 1
@@ -758,7 +486,7 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
         "zerde-serverless-operations-dev",
     )
     variables = notifier["Properties"]["Environment"]["Variables"]
-    assert len(json.loads(variables["OPERATIONS_ALARM_NAMES"])) == 22
+    assert len(json.loads(variables["OPERATIONS_ALARM_NAMES"])) == 18
     assert notifier["Properties"]["Timeout"] == 60
     assert "DeadLetterConfig" in notifier["Properties"]
     subscription = next(iter(template.find_resources("AWS::SNS::Subscription").values()))
@@ -770,7 +498,7 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
     assert ddb[0]["Condition"]["ForAllValues:StringLike"]["dynamodb:LeadingKeys"] == ["operations#*"]
 
 
-def test_prod_ignores_dev_idle_flag_preserves_vector_limit_and_enables_quiz_pitr(monkeypatch):
+def test_prod_ignores_dev_idle_flag_preserves_active_limits_and_enables_quiz_pitr(monkeypatch):
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "false")
     monkeypatch.setenv("KICK_BAN_DURATION_SECONDS", "31")
     template = _template(monkeypatch, env_name="prod")
@@ -799,8 +527,8 @@ def test_prod_ignores_dev_idle_flag_preserves_vector_limit_and_enables_quiz_pitr
     assert sorted(
         m["Properties"]["ScalingConfig"]["MaximumConcurrency"]
         for m in template.find_resources("AWS::Lambda::EventSourceMapping").values()
-    ) == [2, 3, 10]
-    assert len(template.find_resources("AWS::CloudWatch::Alarm")) == 22
+    ) == [2, 10]
+    assert len(template.find_resources("AWS::CloudWatch::Alarm")) == 18
     tags = {tag["Key"]: tag["Value"] for tag in quiz["Properties"]["Tags"]}
     assert tags == {"Project": "ZerdeBot", "Environment": "prod", "Component": "quiz"}
 
@@ -836,35 +564,8 @@ def _resolved_lambda_environment(template: Template, name: str) -> dict[str, str
     return {key: resolve(value) for key, value in function["Properties"]["Environment"]["Variables"].items()}
 
 
-def test_retired_environment_compaction_is_inert_in_runtime_and_preserves_infra_overrides(monkeypatch: Any) -> None:
-    defaults = bot_component.RETIRED_DEFAULT_ENVIRONMENT
-    for key in defaults:
-        monkeypatch.delenv(key, raising=False)
-    runtime = runpy.run_path("src/bot/core/config.py")
-    assert not (defaults.keys() & runtime.keys())
-    env = {**defaults, "AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}
-    compact = bot_component.omit_retired_default_environment(env)
-    assert compact == {"AGENT_ENABLED": "true", "AMBIENT_REACTIONS_ENABLED": "false", "GEMINI_MODEL": "current-model"}
-    assert env.keys() == defaults.keys() | compact.keys()
-    for key in defaults:
-        assert bot_component.omit_retired_default_environment({key: "explicit-custom-value"}) == {
-            key: "explicit-custom-value"
-        }
-
-
 @pytest.mark.parametrize("env_name", ["prod", "dev"])
 def test_resolved_bot_environment_keeps_serialized_capacity_headroom(monkeypatch: Any, env_name: str) -> None:
-    for key in bot_component.RETIRED_DEFAULT_ENVIRONMENT:
-        monkeypatch.delenv(key, raising=False)
-    # Reproduce the four production non-default retired settings; retain them.
-    overrides = {
-        "AGENT_DAILY_PROACTIVE_LIMIT": "10",
-        "AMBIENT_REACTIONS_SAMPLE_RATE": "0.5",
-        "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS": "60",
-        "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR": "25",
-    }
-    for key, value in overrides.items():
-        monkeypatch.setenv(key, value)
     monkeypatch.setenv("CHATS_KK", "-1000000000001,-1000000000002")
     monkeypatch.setenv("CHATS_ZH", "-1000000000003,-1000000000004")
     monkeypatch.setenv("CHATS_RU", "")
@@ -874,10 +575,7 @@ def test_resolved_bot_environment_keeps_serialized_capacity_headroom(monkeypatch
     monkeypatch.setenv("MEMORY_COST_METERING_STARTED_AT", "1789134091")
     template = _template(monkeypatch, env_name=env_name)
     resolved = _resolved_lambda_environment(template, f"zerde-serverless-bot-{env_name}")
-    for key, value in overrides.items():
-        assert resolved[key] == value
     assert len(json.loads(resolved["CHAT_LANG_MAP"])) == 4
-    assert resolved["GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS"] == "30"
     assert resolved["QUEUE_URL"].startswith("https://sqs.eu-central-1.amazonaws.com/111122223333/")
     assert resolved["MEMORY_V2_QUEUE_URL"].endswith(f"memory-v2-queue-{env_name}")
     inventory = json.loads(resolved["MEMORY_COST_INVENTORY"])
@@ -887,5 +585,84 @@ def test_resolved_bot_environment_keeps_serialized_capacity_headroom(monkeypatch
     # production environment that AWS measured as 4114 bytes (>4096).
     serialized_bytes = len(json.dumps({"Variables": resolved}, ensure_ascii=True).encode("utf-8"))
     assert serialized_bytes <= 3500, serialized_bytes
-    original = {**bot_component.RETIRED_DEFAULT_ENVIRONMENT, **resolved}
-    assert len(json.dumps({"Variables": original}, ensure_ascii=True).encode("utf-8")) > 4096
+
+
+_RETIRED_ENV_KEYS = (
+    "MEMORY_TABLE_NAME",
+    "VECTOR_MEMORY_QUEUE_URL",
+    "GROUP_MEMORY_ENABLED",
+    "GROUP_MEMORY_RECENT_LIMIT",
+    "GROUP_MEMORY_RETENTION_DAYS",
+    "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS",
+    "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS",
+    "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS",
+    "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS",
+    "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS",
+    "GROUP_MEMORY_EXTRACTOR_PROVIDER",
+    "GROUP_MEMORY_EXTRACTOR_MODE",
+    "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE",
+    "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT",
+    "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT",
+    "GROUP_MEMORY_DAILY_SUMMARY_DAYS",
+    "GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT",
+    "VECTOR_MEMORY_ENABLED",
+    "VECTOR_MEMORY_PROVIDER",
+    "VECTOR_MEMORY_VECTOR_BUCKET_NAME",
+    "VECTOR_MEMORY_INDEX_NAME",
+    "VECTOR_MEMORY_DIMENSIONS",
+    "VECTOR_MEMORY_EMBEDDING_MODEL",
+    "VECTOR_MEMORY_SCHEMA_VERSION",
+    "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS",
+    "VECTOR_MEMORY_BACKFILL_BATCH_SIZE",
+    "VECTOR_MEMORY_MAX_DISTANCE",
+    "AGENT_ENABLED",
+    "AGENT_RECENT_CONTEXT_LIMIT",
+    "AGENT_DAILY_PROACTIVE_LIMIT",
+    "AGENT_PROACTIVE_DELAY_SECONDS",
+    "AGENT_PROACTIVE_FINAL_THRESHOLD",
+    "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
+    "AGENT_PROACTIVE_DECISION_CONTEXT_CHARS",
+    "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK",
+    "AMBIENT_REACTIONS_ENABLED",
+    "AMBIENT_REACTIONS_SAMPLE_RATE",
+    "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD",
+    "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
+    "AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS",
+    "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS",
+    "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS",
+    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR",
+    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY",
+    "GEMINI_EMBEDDING_RPD_LIMIT",
+)
+
+
+@pytest.mark.parametrize("env_name", ["dev", "prod"])
+def test_retired_resources_permissions_and_overrides_cannot_return(monkeypatch, env_name):
+    for key in _RETIRED_ENV_KEYS:
+        monkeypatch.setenv(key, "true")
+    monkeypatch.setenv("VECTOR_MEMORY_PROVIDER", "s3_vectors")
+    monkeypatch.setenv("VECTOR_MEMORY_DIMENSIONS", "768")
+    monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
+    template = _template(monkeypatch, env_name=env_name)
+    rendered = json.dumps(template.to_json())
+    for retired in (
+        "bot-memory-",
+        "vector-indexer",
+        "vector-memory-tasks",
+        "MemoryVector",
+        "s3vectors:",
+        "gemini-embedding-api-key",
+    ):
+        assert retired not in rendered
+    assert not template.find_resources("AWS::S3Vectors::VectorBucket")
+    assert not template.find_resources("AWS::S3Vectors::Index")
+    assert len(template.find_resources("AWS::DynamoDB::Table")) == 3
+    for resource in template.find_resources("AWS::Lambda::Function").values():
+        assert not set(_RETIRED_ENV_KEYS).intersection(resource["Properties"]["Environment"]["Variables"])
+    for filename in ("deploy.yml", "pr_check.yml"):
+        assert not set(_RETIRED_ENV_KEYS).intersection(_workflow_variables(filename))
+    example = dict(re.findall(r"^([A-Z][A-Z0-9_]+)=(.*)$", Path(".env.example").read_text(), re.MULTILINE))
+    assert not set(_RETIRED_ENV_KEYS).intersection(example)
+    from services.memory_v2.models import RAW_RETENTION_SECONDS
+
+    assert RAW_RETENTION_SECONDS == 30 * 86400

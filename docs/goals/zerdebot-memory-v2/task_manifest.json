@@ -603,10 +603,10 @@
     "title": "FIX: 退役旧记忆代码、核验旧设置并清理无用资源",
     "depends_on": [],
     "body_file": "issues/Z20.md",
-    "status": "source_retirement_deployed_resource_retirement_pending",
+    "status": "resource_retirement_implemented_validation_pending",
     "status_as_of": "2026-09-27",
-    "completed": "PR224已合并为dd416f86；13个旧知识/主动互动模块与调用已移除并部署dev/prod。2264全测、18完整请求等价、CI、两环境6函数/层/配置/控制的主检及独审通过；两环境各一次停读前fresh SETTINGS核验通过。",
-    "remaining": "S4精确移除旧配置/权限/表/向量资源，执行前第二轮fresh SETTINGS及消费者/空内容门禁；prod Retain另做物理删除和不存在独审。更早孤儿候选仍待核实，云资源尚未删除。",
+    "completed": "PR224旧源码双环境部署完成；S4已移除14项/环境旧CDK声明、45项旧配置白名单、专用indexer入口与权限，保留主队列退休拒绝和原费用owner。",
+    "remaining": "完成新实现全测/五函数ARM/独审与CI，部署前告知精确物理清单、闭锁旧入口并核验fresh SETTINGS/空内容；dev实际删除及prod Retain另行删除、逐项不存在独审。更早候选与副本义务仍未完成。",
     "issue_state": "OPEN",
     "number": 221,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221",
@@ -621,6 +621,7 @@
     "source_retirement_pr": 224,
     "runtime_baseline": "dd416f86c001666ec9c9c4007ae2e52480e83abf",
     "deployed_build_source": "63916a3189a912c84c12be85b75c4d3eb2fa5f5e",
-    "resource_execution_contract": "RESOURCE_RETIREMENT_EXECUTION.md"
+    "resource_execution_contract": "RESOURCE_RETIREMENT_EXECUTION.md",
+    "implementation_evidence": "evidence/2026-09-27-retirement/resource-implementation.safe.json"
   }
 ]

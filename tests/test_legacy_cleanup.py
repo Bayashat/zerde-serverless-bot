@@ -542,7 +542,7 @@ def test_known_marker_outside_scope_remains_protected():
 
 def test_cleaned_moto_data_stays_empty_after_real_retired_worker_replay(adapter):
     from services.memory_cutover import RETIRED_TASK_TYPES
-    from services.sqs_task_router import process_sqs_event, process_vector_sqs_event
+    from services.sqs_task_router import process_sqs_event
 
     manifest, backup = prepared(adapter)
     execute(adapter, manifest, backup)
@@ -555,7 +555,6 @@ def test_cleaned_moto_data_stays_empty_after_real_retired_worker_replay(adapter)
             ]
         }
         process_sqs_event(event, bot, MagicMock(), adapter)
-        process_vector_sqs_event(event, adapter)
     assert not bot.mock_calls and digest(adapter.scan_rows()) == before and not adapter.vectors.rows
 
 

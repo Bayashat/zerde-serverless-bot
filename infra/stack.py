@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from aws_cdk import CfnOutput, Stack, Tags
-from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct, VectorIndexerConstruct
+from components import BotConstruct, MessagingConstruct, NewsConstruct, QuizConstruct
 from components.background_recovery import add_background_recovery
 from components.constants import CONSTRUCT_PREFIX, RESOURCE_PREFIX
 from components.memory_cost import MemoryCostConstruct
@@ -66,23 +66,7 @@ class ZerdeTelegramBotStack(Stack):
             min_value=1,
             max_value=14,
         )
-        vector_memory_queue_retention_days = _parse_int_env(
-            "VECTOR_MEMORY_QUEUE_RETENTION_DAYS",
-            4,
-            min_value=1,
-            max_value=14,
-        )
-        vector_memory_dlq_retention_days = _parse_int_env(
-            "VECTOR_MEMORY_DLQ_RETENTION_DAYS",
-            14,
-            min_value=1,
-            max_value=14,
-        )
         main_task_dlq_retention_days = max(main_task_dlq_retention_days, main_task_queue_retention_days)
-        vector_memory_dlq_retention_days = max(
-            vector_memory_dlq_retention_days,
-            vector_memory_queue_retention_days,
-        )
 
         # ── Timing parameters ──────────────────────────────────────────────────
         captcha_timeout_seconds = os.environ.get("CAPTCHA_TIMEOUT_SECONDS", "120")
@@ -100,7 +84,6 @@ class ZerdeTelegramBotStack(Stack):
         # ── Gemini parameters ──────────────────────────────────────────────────
         gemini_api_base = os.environ.get("GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta/models")
         gemini_rpd_limit = os.environ.get("GEMINI_RPD_LIMIT", "500")
-        gemini_embedding_rpd_limit = os.environ.get("GEMINI_EMBEDDING_RPD_LIMIT", "1000")
         quiz_llm_rpd = os.environ.get("QUIZ_LLM_RPD", "20")
         gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
         news_gemini_model = os.environ.get("NEWS_GEMINI_MODEL", "gemini-3.1-flash-lite")
@@ -119,81 +102,13 @@ class ZerdeTelegramBotStack(Stack):
         deepseek_api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
         deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
-        # ── Group memory / agent MVP ─────────────────────────────────────────
-        legacy_group_memory_retention_days = os.environ.get("GROUP_MEMORY_RETENTION_DAYS")
-
-        def _memory_retention_days_env(name: str, default_days: str, *, legacy_fallback: bool = True) -> str:
-            fallback = legacy_group_memory_retention_days if legacy_fallback else None
-            return os.environ.get(name, fallback or default_days)
-
-        group_memory_enabled = os.environ.get("GROUP_MEMORY_ENABLED", "true")
-        group_memory_recent_limit = os.environ.get("GROUP_MEMORY_RECENT_LIMIT", "300")
-        group_memory_retention_days = legacy_group_memory_retention_days or "3650"
-        group_memory_raw_message_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS", "30", legacy_fallback=False
-        )
-        group_memory_agent_reply_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS", "7", legacy_fallback=False
-        )
-        group_memory_long_term_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS", group_memory_retention_days
-        )
-        group_memory_daily_summary_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS", group_memory_retention_days
-        )
-        group_memory_proactive_counter_retention_days = _memory_retention_days_env(
-            "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS", "3", legacy_fallback=False
-        )
-        group_memory_extractor_provider = os.environ.get("GROUP_MEMORY_EXTRACTOR_PROVIDER", "gemini")
-        group_memory_extractor_mode = os.environ.get("GROUP_MEMORY_EXTRACTOR_MODE", "gemini_candidate_only")
-        group_memory_extractor_min_confidence = os.environ.get("GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE", "0.65")
-        group_memory_extractor_daily_llm_limit = os.environ.get("GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT", "50")
-        group_memory_extractor_per_chat_daily_limit = os.environ.get(
-            "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT", "20"
-        )
-        group_memory_daily_summary_days = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_DAYS", "7")
-        group_memory_daily_summary_message_limit = os.environ.get("GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT", "500")
-        agent_enabled = os.environ.get("AGENT_ENABLED", "true")
+        # Explicit bot identity and requested media.
         agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
         agent_bot_id = os.environ.get("AGENT_BOT_ID", "")
-        agent_recent_context_limit = os.environ.get("AGENT_RECENT_CONTEXT_LIMIT", "100")
-        agent_daily_proactive_limit = os.environ.get("AGENT_DAILY_PROACTIVE_LIMIT", "3")
-        agent_proactive_delay_seconds = os.environ.get("AGENT_PROACTIVE_DELAY_SECONDS", "45")
-        agent_proactive_final_threshold = os.environ.get("AGENT_PROACTIVE_FINAL_THRESHOLD", "0.72")
-        agent_proactive_decision_groq_models = os.environ.get(
-            "AGENT_PROACTIVE_DECISION_GROQ_MODELS",
-            "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b",
-        )
-        agent_proactive_decision_context_chars = os.environ.get("AGENT_PROACTIVE_DECISION_CONTEXT_CHARS", "4000")
-        agent_proactive_decision_allow_deepseek_fallback = os.environ.get(
-            "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK", "false"
-        )
-        ambient_reactions_enabled = os.environ.get("AMBIENT_REACTIONS_ENABLED", "true")
-        ambient_reactions_sample_rate = os.environ.get("AMBIENT_REACTIONS_SAMPLE_RATE", "0.80")
-        ambient_reactions_confidence_threshold = os.environ.get("AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD", "0.80")
-        ambient_reactions_decision_groq_models = os.environ.get(
-            "AMBIENT_REACTIONS_DECISION_GROQ_MODELS",
-            "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b",
-        )
-        ambient_reactions_decision_context_chars = os.environ.get("AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS", "3000")
-        ambient_reactions_min_gap_per_chat_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS", "60")
-        ambient_reactions_min_gap_per_user_seconds = os.environ.get("AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS", "300")
-        ambient_reactions_max_per_chat_per_hour = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR", "12")
-        ambient_reactions_max_per_chat_per_day = os.environ.get("AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY", "100")
         multimodal_enabled = os.environ.get("MULTIMODAL_ENABLED", "true")
         multimodal_max_download_bytes = os.environ.get("MULTIMODAL_MAX_DOWNLOAD_BYTES", "12000000")
         multimodal_inline_max_bytes = os.environ.get("MULTIMODAL_INLINE_MAX_BYTES", "8000000")
         multimodal_text_file_max_chars = os.environ.get("MULTIMODAL_TEXT_FILE_MAX_CHARS", "20000")
-        vector_memory_enabled = os.environ.get("VECTOR_MEMORY_ENABLED", "true")
-        vector_memory_provider = os.environ.get("VECTOR_MEMORY_PROVIDER", "s3_vectors")
-        vector_memory_dimensions = os.environ.get("VECTOR_MEMORY_DIMENSIONS", "768")
-        vector_memory_embedding_model = os.environ.get("VECTOR_MEMORY_EMBEDDING_MODEL", "gemini-embedding-2")
-        vector_memory_schema_version = os.environ.get("VECTOR_MEMORY_SCHEMA_VERSION", "1")
-        vector_memory_index_throttle_seconds = os.environ.get("VECTOR_MEMORY_INDEX_THROTTLE_SECONDS", "3")
-        vector_memory_backfill_batch_size = os.environ.get("VECTOR_MEMORY_BACKFILL_BATCH_SIZE", "50")
-        vector_memory_max_distance = os.environ.get("VECTOR_MEMORY_MAX_DISTANCE", "0.85")
-        vector_memory_vector_bucket_name = os.environ.get("VECTOR_MEMORY_VECTOR_BUCKET_NAME")
-        vector_memory_index_name = os.environ.get("VECTOR_MEMORY_INDEX_NAME")
 
         # Shared chats used for bot's chat→lang routing (union of all feature chats)
         bot_chats: dict[str, list[str]] = {
@@ -234,8 +149,6 @@ class ZerdeTelegramBotStack(Stack):
             is_prod=is_prod,
             main_queue_retention_days=main_task_queue_retention_days,
             main_dlq_retention_days=main_task_dlq_retention_days,
-            vector_queue_retention_days=vector_memory_queue_retention_days,
-            vector_dlq_retention_days=vector_memory_dlq_retention_days,
         )
 
         bot = BotConstruct(
@@ -250,12 +163,10 @@ class ZerdeTelegramBotStack(Stack):
             default_lang=default_lang,
             ssm_secret_prefix=ssm_secret_prefix,
             queue=messaging.queue,
-            vector_queue=messaging.vector_queue,
             admin_user_id=admin_user_id,
             gemini_api_base=gemini_api_base,
             gemini_model=gemini_model,
             gemini_rpd_limit=gemini_rpd_limit,
-            gemini_embedding_rpd_limit=gemini_embedding_rpd_limit,
             groq_api_base=groq_api_base,
             groq_model=groq_model,
             groq_spam_model=groq_spam_model,
@@ -271,75 +182,17 @@ class ZerdeTelegramBotStack(Stack):
             kick_ban_duration_seconds=kick_ban_duration_seconds,
             voteban_threshold=voteban_threshold,
             voteban_forgive_threshold=voteban_forgive_threshold,
-            group_memory_enabled=group_memory_enabled,
-            group_memory_recent_limit=group_memory_recent_limit,
-            group_memory_retention_days=group_memory_retention_days,
-            group_memory_raw_message_retention_days=group_memory_raw_message_retention_days,
-            group_memory_agent_reply_retention_days=group_memory_agent_reply_retention_days,
-            group_memory_long_term_retention_days=group_memory_long_term_retention_days,
-            group_memory_daily_summary_retention_days=group_memory_daily_summary_retention_days,
-            group_memory_proactive_counter_retention_days=group_memory_proactive_counter_retention_days,
-            group_memory_extractor_provider=group_memory_extractor_provider,
-            group_memory_extractor_mode=group_memory_extractor_mode,
-            group_memory_extractor_min_confidence=group_memory_extractor_min_confidence,
-            group_memory_extractor_daily_llm_limit=group_memory_extractor_daily_llm_limit,
-            group_memory_extractor_per_chat_daily_limit=group_memory_extractor_per_chat_daily_limit,
-            group_memory_daily_summary_days=group_memory_daily_summary_days,
-            group_memory_daily_summary_message_limit=group_memory_daily_summary_message_limit,
-            agent_enabled=agent_enabled,
             agent_bot_username=agent_bot_username,
             agent_bot_id=agent_bot_id,
-            agent_recent_context_limit=agent_recent_context_limit,
-            agent_daily_proactive_limit=agent_daily_proactive_limit,
-            agent_proactive_delay_seconds=agent_proactive_delay_seconds,
-            agent_proactive_final_threshold=agent_proactive_final_threshold,
-            agent_proactive_decision_groq_models=agent_proactive_decision_groq_models,
-            agent_proactive_decision_context_chars=agent_proactive_decision_context_chars,
-            agent_proactive_decision_allow_deepseek_fallback=agent_proactive_decision_allow_deepseek_fallback,
-            ambient_reactions_enabled=ambient_reactions_enabled,
-            ambient_reactions_sample_rate=ambient_reactions_sample_rate,
-            ambient_reactions_confidence_threshold=ambient_reactions_confidence_threshold,
-            ambient_reactions_decision_groq_models=ambient_reactions_decision_groq_models,
-            ambient_reactions_decision_context_chars=ambient_reactions_decision_context_chars,
-            ambient_reactions_min_gap_per_chat_seconds=ambient_reactions_min_gap_per_chat_seconds,
-            ambient_reactions_min_gap_per_user_seconds=ambient_reactions_min_gap_per_user_seconds,
-            ambient_reactions_max_per_chat_per_hour=ambient_reactions_max_per_chat_per_hour,
-            ambient_reactions_max_per_chat_per_day=ambient_reactions_max_per_chat_per_day,
             multimodal_enabled=multimodal_enabled,
             multimodal_max_download_bytes=multimodal_max_download_bytes,
             multimodal_inline_max_bytes=multimodal_inline_max_bytes,
             multimodal_text_file_max_chars=multimodal_text_file_max_chars,
-            vector_memory_enabled=vector_memory_enabled,
-            vector_memory_provider=vector_memory_provider,
-            vector_memory_dimensions=vector_memory_dimensions,
-            vector_memory_embedding_model=vector_memory_embedding_model,
-            vector_memory_schema_version=vector_memory_schema_version,
-            vector_memory_index_throttle_seconds=vector_memory_index_throttle_seconds,
-            vector_memory_backfill_batch_size=vector_memory_backfill_batch_size,
-            vector_memory_max_distance=vector_memory_max_distance,
-            vector_memory_vector_bucket_name=vector_memory_vector_bucket_name,
-            vector_memory_index_name=vector_memory_index_name,
         )
 
         memory_v2 = MemoryV2Construct(self, f"{CONSTRUCT_PREFIX}MemoryV2", env_name=env_name, is_prod=is_prod)
         memory_v2.table.grant_read_write_data(bot.handler_lambda)
         bot.handler_lambda.add_environment("MEMORY_V2_TABLE_NAME", memory_v2.table.table_name)
-
-        vector_indexer = VectorIndexerConstruct(
-            self,
-            f"{CONSTRUCT_PREFIX}VectorIndexer",
-            shared_layer=zerde_layer,
-            env_name=env_name,
-            is_prod=is_prod,
-            runtime_active=self.runtime_active,
-            ssm_secret_prefix=ssm_secret_prefix,
-            vector_queue=messaging.vector_queue,
-            memory_table=bot.memory_table,
-            stats_table=bot.stats_table,
-            vector_bucket=bot.vector_bucket,
-            vector_index=bot.vector_index,
-            environment=bot.bot_environment,
-        )
 
         news = NewsConstruct(
             self,
@@ -433,7 +286,6 @@ class ZerdeTelegramBotStack(Stack):
         )
         for construct, component in (
             (bot, "bot"),
-            (vector_indexer, "vector-indexer"),
             (news, "news"),
             (quiz, "quiz"),
             (messaging, "messaging"),
@@ -442,7 +294,6 @@ class ZerdeTelegramBotStack(Stack):
         if self.runtime_active:
             for slug, fn, duration in (
                 ("bot", bot.handler_lambda, 80_000),
-                ("vector-indexer", vector_indexer.handler_lambda, 240_000),
                 ("news", news.news_lambda, 240_000),
                 ("quiz", quiz.quiz_lambda, 48_000),
             ):
@@ -454,7 +305,7 @@ class ZerdeTelegramBotStack(Stack):
                     duration_p95_threshold_ms=duration,
                 ):
                     self.operations.register(alarm)
-            for slug, dlq in (("timeout-tasks", messaging.dlq), ("vector-memory-tasks", messaging.vector_dlq)):
+            for slug, dlq in (("timeout-tasks", messaging.dlq),):
                 self.operations.register(
                     add_sqs_dlq_visible_alarm(
                         self,

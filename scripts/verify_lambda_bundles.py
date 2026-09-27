@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # Captured from the public AWS Python 3.13 ARM64 runtime image; update deliberately.
 RUNTIME_IMAGE = "public.ecr.aws/lambda/python@sha256:d52afe970081b30397342d019525dade26073d9e557fd94a3615de9b62ff9e27"
 RETIRED_BOT_MODULES = (
+    "vector_indexer_main",
     "services.group_memory",
     "services.group_memory_processor",
     "services.memory_extractor",
@@ -136,7 +137,6 @@ def main() -> None:
     # Explicit registration prevents unknown handlers from silently escaping the probe.
     registrations = {
         "bot": ("bot", "main.lambda_handler"),
-        "vector-indexer": ("bot", "vector_indexer_main.lambda_handler"),
         "news": ("news", "main.lambda_handler"),
         "quiz": ("quiz", "main.lambda_handler"),
         "operations": ("operations", "main.lambda_handler"),

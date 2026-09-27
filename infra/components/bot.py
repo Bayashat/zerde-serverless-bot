@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 
 from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_apigatewayv2 as apigwv2
@@ -11,45 +10,10 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_event_sources
 from aws_cdk import aws_logs as logs
-from aws_cdk import aws_s3vectors as s3vectors
 from aws_cdk import aws_sqs as sqs
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from components.constants import CONSTRUCT_PREFIX, LAMBDA_BUNDLING, LAMBDA_RUNTIME, PROJECT_ROOT, RESOURCE_PREFIX
 from constructs import Construct
-
-# These retired paths still import core.config, whose defaults remain compatible.
-# Only equal defaults are omitted; preserve every configured override and all
-# active/enable/identity keys. Tests compare this list against runtime defaults.
-RETIRED_DEFAULT_ENVIRONMENT: dict[str, str] = {
-    "AGENT_DAILY_PROACTIVE_LIMIT": "3",
-    "AGENT_PROACTIVE_DELAY_SECONDS": "45",
-    "AGENT_PROACTIVE_FINAL_THRESHOLD": "0.72",
-    "AGENT_PROACTIVE_DECISION_GROQ_MODELS": "openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.8-27b",
-    "AGENT_PROACTIVE_DECISION_CONTEXT_CHARS": "4000",
-    "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK": "false",
-    "AMBIENT_REACTIONS_SAMPLE_RATE": "0.80",
-    "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD": "0.80",
-    "AMBIENT_REACTIONS_DECISION_GROQ_MODELS": "openai/gpt-oss-20b,qwen/qwen3.8-27b,openai/gpt-oss-120b",
-    "AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS": "3000",
-    "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS": "60",
-    "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS": "300",
-    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR": "12",
-    "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY": "100",
-    "GROUP_MEMORY_EXTRACTOR_PROVIDER": "gemini",
-    "GROUP_MEMORY_EXTRACTOR_MODE": "gemini_candidate_only",
-    "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": "0.65",
-    "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": "50",
-    "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": "20",
-}
-
-
-def omit_retired_default_environment(environment: dict[str, Any]) -> dict[str, Any]:
-    """Drop only exact redundant defaults; never abbreviate values or resources."""
-    return {
-        key: value
-        for key, value in environment.items()
-        if key not in RETIRED_DEFAULT_ENVIRONMENT or value != RETIRED_DEFAULT_ENVIRONMENT[key]
-    }
 
 
 class BotConstruct(Construct):
@@ -73,12 +37,10 @@ class BotConstruct(Construct):
         default_lang: str,
         ssm_secret_prefix: str,
         queue: sqs.Queue,
-        vector_queue: sqs.Queue,
         admin_user_id: str,
         gemini_api_base: str,
         gemini_model: str,
         gemini_rpd_limit: int,
-        gemini_embedding_rpd_limit: str,
         groq_api_base: str,
         groq_model: str,
         groq_spam_model: str,
@@ -94,65 +56,16 @@ class BotConstruct(Construct):
         kick_ban_duration_seconds: int,
         voteban_threshold: int,
         voteban_forgive_threshold: int,
-        group_memory_enabled: str,
-        group_memory_recent_limit: str,
-        group_memory_retention_days: str,
-        group_memory_raw_message_retention_days: str,
-        group_memory_agent_reply_retention_days: str,
-        group_memory_long_term_retention_days: str,
-        group_memory_daily_summary_retention_days: str,
-        group_memory_proactive_counter_retention_days: str,
-        group_memory_extractor_provider: str,
-        group_memory_extractor_mode: str,
-        group_memory_extractor_min_confidence: str,
-        group_memory_extractor_daily_llm_limit: str,
-        group_memory_extractor_per_chat_daily_limit: str,
-        group_memory_daily_summary_days: str,
-        group_memory_daily_summary_message_limit: str,
-        agent_enabled: str,
         agent_bot_username: str,
         agent_bot_id: str,
-        agent_recent_context_limit: str,
-        agent_daily_proactive_limit: str,
-        agent_proactive_delay_seconds: str,
-        agent_proactive_final_threshold: str,
-        agent_proactive_decision_groq_models: str,
-        agent_proactive_decision_context_chars: str,
-        agent_proactive_decision_allow_deepseek_fallback: str,
-        ambient_reactions_enabled: str,
-        ambient_reactions_sample_rate: str,
-        ambient_reactions_confidence_threshold: str,
-        ambient_reactions_decision_groq_models: str,
-        ambient_reactions_decision_context_chars: str,
-        ambient_reactions_min_gap_per_chat_seconds: str,
-        ambient_reactions_min_gap_per_user_seconds: str,
-        ambient_reactions_max_per_chat_per_hour: str,
-        ambient_reactions_max_per_chat_per_day: str,
         multimodal_enabled: str,
         multimodal_max_download_bytes: str,
         multimodal_inline_max_bytes: str,
         multimodal_text_file_max_chars: str,
-        vector_memory_enabled: str,
-        vector_memory_provider: str,
-        vector_memory_dimensions: str,
-        vector_memory_embedding_model: str,
-        vector_memory_schema_version: str,
-        vector_memory_index_throttle_seconds: str,
-        vector_memory_backfill_batch_size: str,
-        vector_memory_max_distance: str,
-        vector_memory_vector_bucket_name: str | None = None,
-        vector_memory_index_name: str | None = None,
     ) -> None:
         super().__init__(scope, construct_id)
 
         removal_policy = RemovalPolicy.RETAIN if is_prod else RemovalPolicy.DESTROY
-        vector_memory_create_resources = (
-            vector_memory_enabled.strip().lower() in {"1", "true", "yes", "on"}
-            and vector_memory_provider.strip().lower() == "s3_vectors"
-        )
-        vector_bucket_name = vector_memory_vector_bucket_name or f"{RESOURCE_PREFIX}-memory-vectors-{env_name}"
-        vector_index_name = vector_memory_index_name or f"{RESOURCE_PREFIX}-group-memory-{env_name}"
-
         stats_table = dynamodb.Table(
             self,
             f"{CONSTRUCT_PREFIX}StatsTable",
@@ -170,51 +83,6 @@ class BotConstruct(Construct):
             time_to_live_attribute="ttl",
         )
 
-        memory_table = dynamodb.Table(
-            self,
-            f"{CONSTRUCT_PREFIX}MemoryTable",
-            table_name=f"{RESOURCE_PREFIX}-bot-memory-{env_name}",
-            partition_key=dynamodb.Attribute(
-                name="pk",
-                type=dynamodb.AttributeType.STRING,
-            ),
-            sort_key=dynamodb.Attribute(
-                name="sk",
-                type=dynamodb.AttributeType.STRING,
-            ),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            removal_policy=removal_policy,
-            deletion_protection=is_prod,
-            point_in_time_recovery_specification=dynamodb.PointInTimeRecoverySpecification(
-                point_in_time_recovery_enabled=is_prod
-            ),
-            time_to_live_attribute="ttl",
-        )
-
-        vector_bucket: s3vectors.CfnVectorBucket | None = None
-        vector_index: s3vectors.CfnIndex | None = None
-        if vector_memory_create_resources:
-            vector_bucket = s3vectors.CfnVectorBucket(
-                self,
-                f"{CONSTRUCT_PREFIX}MemoryVectorBucket",
-                vector_bucket_name=vector_bucket_name,
-            )
-            vector_bucket.apply_removal_policy(removal_policy)
-            vector_index = s3vectors.CfnIndex(
-                self,
-                f"{CONSTRUCT_PREFIX}MemoryVectorIndex",
-                vector_bucket_name=vector_bucket.vector_bucket_name,
-                index_name=vector_index_name,
-                data_type="float32",
-                dimension=int(vector_memory_dimensions),
-                distance_metric="cosine",
-                metadata_configuration=s3vectors.CfnIndex.MetadataConfigurationProperty(
-                    non_filterable_metadata_keys=["text"],
-                ),
-            )
-            vector_index.add_dependency(vector_bucket)
-            vector_index.apply_removal_policy(removal_policy)
-
         bot_environment = {
             "LOG_LEVEL": log_level,
             "TELEGRAM_API_BASE": telegram_api_base,
@@ -223,55 +91,11 @@ class BotConstruct(Construct):
             "SSM_SECRET_PREFIX": ssm_secret_prefix,
             # -- Non-secret bot parameters ─────────────────────────────────────
             "STATS_TABLE_NAME": stats_table.table_name,
-            "MEMORY_TABLE_NAME": memory_table.table_name,
             "QUEUE_URL": queue.queue_url,
-            "VECTOR_MEMORY_QUEUE_URL": vector_queue.queue_url,
             "ADMIN_USER_ID": admin_user_id,
-            # -- Group memory / agent MVP ─────────────────────────────────────
-            "GROUP_MEMORY_ENABLED": group_memory_enabled,
-            "GROUP_MEMORY_RECENT_LIMIT": group_memory_recent_limit,
-            "GROUP_MEMORY_RETENTION_DAYS": group_memory_retention_days,
-            "GROUP_MEMORY_RAW_MESSAGE_RETENTION_DAYS": group_memory_raw_message_retention_days,
-            "GROUP_MEMORY_AGENT_REPLY_RETENTION_DAYS": group_memory_agent_reply_retention_days,
-            "GROUP_MEMORY_LONG_TERM_RETENTION_DAYS": group_memory_long_term_retention_days,
-            "GROUP_MEMORY_DAILY_SUMMARY_RETENTION_DAYS": group_memory_daily_summary_retention_days,
-            "GROUP_MEMORY_PROACTIVE_COUNTER_RETENTION_DAYS": group_memory_proactive_counter_retention_days,
-            "GROUP_MEMORY_EXTRACTOR_PROVIDER": group_memory_extractor_provider,
-            "GROUP_MEMORY_EXTRACTOR_MODE": group_memory_extractor_mode,
-            "GROUP_MEMORY_EXTRACTOR_MIN_CONFIDENCE": group_memory_extractor_min_confidence,
-            "GROUP_MEMORY_EXTRACTOR_DAILY_LLM_LIMIT": group_memory_extractor_daily_llm_limit,
-            "GROUP_MEMORY_EXTRACTOR_PER_CHAT_DAILY_LIMIT": group_memory_extractor_per_chat_daily_limit,
-            "GROUP_MEMORY_DAILY_SUMMARY_DAYS": group_memory_daily_summary_days,
-            "GROUP_MEMORY_DAILY_SUMMARY_MESSAGE_LIMIT": group_memory_daily_summary_message_limit,
-            "VECTOR_MEMORY_ENABLED": vector_memory_enabled,
-            "VECTOR_MEMORY_PROVIDER": vector_memory_provider if vector_memory_create_resources else "",
-            "VECTOR_MEMORY_VECTOR_BUCKET_NAME": vector_bucket_name if vector_memory_create_resources else "",
-            "VECTOR_MEMORY_INDEX_NAME": vector_index_name if vector_memory_create_resources else "",
-            "VECTOR_MEMORY_DIMENSIONS": vector_memory_dimensions,
-            "VECTOR_MEMORY_EMBEDDING_MODEL": vector_memory_embedding_model,
-            "VECTOR_MEMORY_SCHEMA_VERSION": vector_memory_schema_version,
-            "VECTOR_MEMORY_INDEX_THROTTLE_SECONDS": vector_memory_index_throttle_seconds,
-            "VECTOR_MEMORY_BACKFILL_BATCH_SIZE": vector_memory_backfill_batch_size,
-            "VECTOR_MEMORY_MAX_DISTANCE": vector_memory_max_distance,
-            "AGENT_ENABLED": agent_enabled,
+            # -- Explicit bot identity ─────────────────────────────────────
             "AGENT_BOT_USERNAME": agent_bot_username,
             "AGENT_BOT_ID": agent_bot_id,
-            "AGENT_RECENT_CONTEXT_LIMIT": agent_recent_context_limit,
-            "AGENT_DAILY_PROACTIVE_LIMIT": agent_daily_proactive_limit,
-            "AGENT_PROACTIVE_DELAY_SECONDS": agent_proactive_delay_seconds,
-            "AGENT_PROACTIVE_FINAL_THRESHOLD": agent_proactive_final_threshold,
-            "AGENT_PROACTIVE_DECISION_GROQ_MODELS": agent_proactive_decision_groq_models,
-            "AGENT_PROACTIVE_DECISION_CONTEXT_CHARS": agent_proactive_decision_context_chars,
-            "AGENT_PROACTIVE_DECISION_ALLOW_DEEPSEEK_FALLBACK": agent_proactive_decision_allow_deepseek_fallback,
-            "AMBIENT_REACTIONS_ENABLED": ambient_reactions_enabled,
-            "AMBIENT_REACTIONS_SAMPLE_RATE": ambient_reactions_sample_rate,
-            "AMBIENT_REACTIONS_CONFIDENCE_THRESHOLD": ambient_reactions_confidence_threshold,
-            "AMBIENT_REACTIONS_DECISION_GROQ_MODELS": ambient_reactions_decision_groq_models,
-            "AMBIENT_REACTIONS_DECISION_CONTEXT_CHARS": ambient_reactions_decision_context_chars,
-            "AMBIENT_REACTIONS_MIN_GAP_PER_CHAT_SECONDS": ambient_reactions_min_gap_per_chat_seconds,
-            "AMBIENT_REACTIONS_MIN_GAP_PER_USER_SECONDS": ambient_reactions_min_gap_per_user_seconds,
-            "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_HOUR": ambient_reactions_max_per_chat_per_hour,
-            "AMBIENT_REACTIONS_MAX_PER_CHAT_PER_DAY": ambient_reactions_max_per_chat_per_day,
             "MULTIMODAL_ENABLED": multimodal_enabled,
             "MULTIMODAL_MAX_DOWNLOAD_BYTES": multimodal_max_download_bytes,
             "MULTIMODAL_INLINE_MAX_BYTES": multimodal_inline_max_bytes,
@@ -291,7 +115,6 @@ class BotConstruct(Construct):
             "GEMINI_API_BASE": gemini_api_base,
             "GEMINI_MODEL": gemini_model,
             "GEMINI_RPD_LIMIT": gemini_rpd_limit,
-            "GEMINI_EMBEDDING_RPD_LIMIT": gemini_embedding_rpd_limit,
             # -- Chat → language mapping ───────────────────────────────────────
             "CHAT_LANG_MAP": json.dumps(chat_lang_map),
             # -- Timing parameters ─────────────────────────────────────────────
@@ -302,8 +125,6 @@ class BotConstruct(Construct):
             "VOTEBAN_THRESHOLD": voteban_threshold,
             "VOTEBAN_FORGIVE_THRESHOLD": voteban_forgive_threshold,
         }
-
-        bot_environment = omit_retired_default_environment(bot_environment)
 
         webhook_lambda = PythonFunction(
             self,
@@ -331,9 +152,6 @@ class BotConstruct(Construct):
 
         self.handler_lambda = webhook_lambda
         self.stats_table = stats_table
-        self.memory_table = memory_table
-        self.vector_bucket = vector_bucket
-        self.vector_index = vector_index
         self.bot_environment = bot_environment
 
         # Grant least-privilege SSM read access for secrets under the env prefix.
@@ -345,7 +163,6 @@ class BotConstruct(Construct):
             "webhook-secret-token",
             "groq-api-key",
             "gemini-api-key",
-            "gemini-embedding-api-key",
             "deepseek-api-key",
         ]
 
@@ -378,26 +195,7 @@ class BotConstruct(Construct):
 
         queue.grant_send_messages(webhook_lambda)
         queue.grant_consume_messages(webhook_lambda)
-        vector_queue.grant_send_messages(webhook_lambda)
         stats_table.grant_read_write_data(webhook_lambda)
-        memory_table.grant_read_write_data(webhook_lambda)
-        if vector_bucket is not None and vector_index is not None:
-            webhook_lambda.add_to_role_policy(
-                iam.PolicyStatement(
-                    sid="UseZerdeMemoryVectors",
-                    actions=[
-                        "s3vectors:QueryVectors",
-                        "s3vectors:GetVectors",
-                        "s3vectors:DeleteVectors",
-                        "s3vectors:GetIndex",
-                    ],
-                    resources=[
-                        vector_bucket.attr_vector_bucket_arn,
-                        vector_index.attr_index_arn,
-                    ],
-                )
-            )
-
         webhook_lambda.add_event_source(
             lambda_event_sources.SqsEventSource(
                 queue,
