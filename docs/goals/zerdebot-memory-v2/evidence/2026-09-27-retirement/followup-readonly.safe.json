@@ -1,0 +1,76 @@
+{
+  "status": "BOUNDED_READONLY_FOLLOWUP_NOT_DELETE_APPROVAL_OR_INVOICE",
+  "date": "2026-09-27",
+  "source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
+  "initial_candidates_snapshot": "earlier-resource-candidates.safe.json",
+  "initial_candidates_snapshot_sha256": "26de2f88f60ca3c316ca8258a65d8685f3c498d465ee2b9199a905ba4694e6b3",
+  "candidate_count": 7,
+  "candidate_deletions": 0,
+  "r2_complete": false,
+  "phase_a": {
+    "status": "CLASSIFIED_READONLY_NOT_DELETION_APPROVAL",
+    "row_count_exact": 12,
+    "historical_moderation_statistics": 4,
+    "possible_voteban_state": 8,
+    "vote_expiry_proven": false,
+    "vote_rows_lack_time_ttl_status": true,
+    "classification_sha256": "91e251eced741755c863b31d3febea1a9e6b1dd09beb07300e4693e094581aa6",
+    "semantic_aggregate_sha256": "6a20d90254ab67dbaabe92fcde2f9bf4c49fcbf3ded49878c59204a7e6fdd9f2"
+  },
+  "phase_b": {
+    "scheduler_complete": true,
+    "schedules_listed": 0,
+    "pipes_complete": true,
+    "pipes_listed": 0,
+    "unknown_external_consumers_excluded": false,
+    "report_sha256": "0558866086595db0a2fa0e6a5f89abba1c11d59ee3403be5c3e214f4d799bc95"
+  },
+  "phase_c": {
+    "account_subscription_policies": 0,
+    "currently_listed_exports": 0,
+    "exact_old_stats_dynamodb_backups": 0,
+    "exact_old_stats_aws_backup_recovery_points": 0,
+    "historical_external_copies_absence_proven": false,
+    "report_sha256": "ec6eb6fdc8abe4bc0497ab74240db7fbf7146cb6dc5382aa0624ce6e4fdab349"
+  },
+  "temporary_av_copy": {
+    "owner": "R2/Z20",
+    "expires_at_utc": "2026-10-04T10:35:00Z",
+    "expires_at_epoch": 1791110100,
+    "delete_earlier_if_batch_completed": true,
+    "disaster_backup": false,
+    "old_archives_recreated": false,
+    "status": "PENDING_EXPIRY_OR_EARLIER_COMPLETION",
+    "evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json"
+  },
+  "cost": {
+    "observed_at_utc": "2026-09-27T10:53:07.083410+00:00",
+    "period_start_inclusive": "2026-09-01",
+    "period_end_exclusive": "2026-09-28",
+    "current_utc_day_partial": true,
+    "metric": "UnblendedCost",
+    "dev_usd": "0.4216791725",
+    "prod_usd": "0.8473312256",
+    "attributed_total_usd": "1.2690103981",
+    "estimated": true,
+    "unattributed_account_pool_not_zerde_usd": {
+      "Usage": "25.9433726729",
+      "Tax": "4.86"
+    },
+    "not_invoice": true,
+    "not_model_bill": true,
+    "full_free_tier_accounting_verified": false,
+    "not_memory_budget_or_permit": true,
+    "ce_calls_including_failed_local_attempt": 5,
+    "sts_calls": 2,
+    "cloud_mutations": 0,
+    "summary_sha256": "dd63e78bc1c5c444e9c49f711247931b694f95b26bce8f1a6974f7401d88b10c",
+    "report_sha256": "b67cd628e6c9acd938d3de0777b7666d37e49f8e1189eaa1d16c00a7ebd28728"
+  },
+  "preserved_obligations": {
+    "original_pitr_recheck_utc": "2026-10-17T16:20:38Z",
+    "new_system_backup_expiry_from_actual_report_utc": "2026-11-01T11:46:02.425Z",
+    "physical_erasure_proven": false
+  },
+  "public_scope": "Aggregates, timestamps and evidence hashes only; no row contents or private identity/path copies."
+}

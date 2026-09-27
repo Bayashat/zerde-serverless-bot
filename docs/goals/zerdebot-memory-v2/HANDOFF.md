@@ -1,18 +1,24 @@
-# 下一次执行入口（2026-09-27）
+# 下一次执行入口（2026-09-27 S4完成后）
 
-S4资源退役已在当前候选实现：14项/环境旧声明、旧Bot env/IAM、Operations的4个向量告警名及专用indexer入口移除；打包验证改为精确五函数，费用inventory和现役数据owner不变。尚未合并、部署或删除云资源。
+先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)和[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)。task_manifest拥有逐工单状态；下方历史发布、清零及once脚本不可重跑。
 
-先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)和[S4资源退役契约](RESOURCE_RETIREMENT_EXECUTION.md)。task_manifest是逐工单状态来源；下面历史发布不能重跑。
+PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。 [本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)。本次docs提交不是Lambda运行源。
 
-PR224已合并为`dd416f86c001666ec9c9c4007ae2e52480e83abf`，源码`63916a3189a912c84c12be85b75c4d3eb2fa5f5e`已部署dev/prod。13旧模块及现役调用退出；2264测试、18完整请求逐字等价、CI、两环境各6函数及层/配置/控制主检和独审通过，workflow ACTIVE。原读回工具保存错误的INCOMPLETE记录保全，新final回执才是最终证据。[脱敏摘要](evidence/2026-09-27-retirement/source-release.safe.json)。不要重跑旧源码发布。
+R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。 [7候选新只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)。据12行既有分类继续确认有效语义、外部消费者及恢复边界；Scheduler/Pipes与副本元数据有限核验已完成，不重做已完成盘点来代替剩余判断。按下一精确清单告知和执行，不使用S4已完成manifest再次删除。
 
-下一步直接做S4：在最新main解除旧CDK/env/IAM和vector薄壳，独审实际变更集及精确消费者/空内容，第二轮fresh SETTINGS门禁后dev先、prod后；prod Retain物理删除另记。6现役表、当前控制/epoch、预算inventory/历史/UNKNOWN保留。更早stats/queue/log候选单独刷新证据，不顺手删。新功能、新群、prod记忆仍受R2完整清理闸门限制。
+R3按原验证码、反垃圾、投票、News/Quiz和真实费用owner推进。仅用原公开业务或正常调度路径；本会话禁止为验收手动Invoke，News无单群公开入口的部分明确未覆盖。不得伪造update、成员或模型/Telegram结果。
 
-私有当前发布入口为`~/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-source-release/CURRENT.md`；最终是`readback-final.safe.json`、`independent-final-readback.safe.json`、`final-release.safe.json`。新预算瞬时只读入口为该目录`read_budget_published.py`，使用105文件clean owner并绑定639实际包；只读PASS不是持久调用许可，后续源码发布仍须重绑。原c9/F10 reader不再代表当前。
+本次预算仅在2026-09-27 11:54:48 UTC由原owner只读得到PASS_POINT_IN_TIME_NOT_A_PERMIT；不预留、不改账务、不释放UNKNOWN，也不授权后续调用或代表完整实付。
 
-R3业务真实验收和项目/模型实际费用归因继续，不能等空群替代。F5–F10冻结，真实自然起点仍未建立，0/50有据、0/20未知，production_ready=false；dev仅既有测试群，prod未启用。每次实质进展同步计划、manifest、看板、证据及GitHub工单，删除前告知清单。
+F5模型与F6/F7/F8/F10受控验收的冻结证据不重跑；自然使用起点仍未建立，0/50有据、0/20未知，production_ready=false。现有dev原控制/epoch保持，prod没有新增CONTROL。
 
-Z10副本责任独立：本地旧密文/key已移除，不重建；PITR下次2026-10-17 16:20:38UTC复查，日志/DLQ/其他副本另记，源表删除不能等同所有副本抹除。
+Z10原PITR复查仍为2026-10-17 16:20:38 UTC；本次删表新增SYSTEM副本已读到的实际服务到期字段为2026-11-01 11:46:02 UTC。这是复查/服务到期信息，不是已物理抹盘证明；日志/DLQ/其他副本职责继续，已移除本地密文/key不重建。
+
+R2/Z20新增精确私有AttributeValue临时证据副本于2026-10-04 10:35 UTC到期，本批提前完成则提前清理；它不是灾备，也不重建已到期的旧记忆归档。原10月17日PITR复查与本次11月1日SYSTEM副本服务到期分别保留；本次仅登记副本责任；自动任务由根代理按最终入口另行同步。
+
+2026-09-27 10:53 UTC的CE标签归属快照，UTC区间[2026-09-01,2026-09-28)（含当前日不完整用量），UnblendedCost为dev USD0.4216791725、prod USD0.8473312256，合计USD1.2690103981，Estimated。未标Project的Usage USD25.9433726729和Tax USD4.86不分配给Zerde；不是实付、模型账单或完整Free Tier核算，不与Memory预算估算/UNKNOWN预留相加，Z17仍OPEN。 [只读补充证据](evidence/2026-09-27-retirement/followup-readonly.safe.json)。
+
+Z03/Z04已按实际scope关闭；Z01/Z20/Z10及Epic保持OPEN。每次实质进展同步计划、manifest、看板、证据与GitHub。
 
 ---
 

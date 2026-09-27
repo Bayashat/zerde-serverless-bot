@@ -1,4 +1,4 @@
-> 2026-09-27执行更新：PR223依赖安全修复已完成两环境实包独审，当前进入Z20源码退役。新激活仍受R2清理门禁；云表/向量资源尚未删除。逐项状态见task_manifest/TASKS；执行见[SOURCE_RETIREMENT_EXECUTION](SOURCE_RETIREMENT_EXECUTION.md)。
+> 2026-09-27执行更新：PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。 R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。 逐项状态见TASKS/HANDOFF。
 
 # ZerdeBot 可靠性修复与 Memory V2 实施计划
 
@@ -21,7 +21,7 @@
 
 [收尾契约](FINISH_EXECUTION.md)把执行分为状态同步、退役清理、业务/费用验收、自然试用推广四条线；逐工单状态仍唯一存于task_manifest。每次有实质进展同步计划、证据和GitHub工单。当前仅dev既有测试群学习，原控制/epoch不因同步改变；尚无自然样本。新功能/新群/生产启用被旧残留清理闸门阻止。旧文件中的“验收后删”“Z18只读授权”仅说明当时范围，不覆盖本次明确追加要求。副本期限和Z10责任不被新清理延长。
 
-2026-09-27执行增量：PR223依赖修复、PR224旧源码移除均已合并并部署两环境，实际包/配置/保护项独审通过。接下来执行[S4资源退役](RESOURCE_RETIREMENT_EXECUTION.md)，云资源尚未删除；R3业务/实际费用验收继续，不等待空群样本。
+2026-09-27执行增量：PR223依赖修复、PR224旧源码及PR226本批资源退役均已实际验证；[本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)。R2更早7候选和Z10副本仍待，R3业务/实际费用验收继续，不等待空群样本。
 
 ## 1. 已批准的产品边界
 
@@ -41,7 +41,7 @@
 
 ### 唯一控制与事实存储
 
-Memory V2 表拥有 learning_enabled、epoch、learning_started_at、subject generation、optout 与删除控制。旧 SETTINGS 仅保留其他业务设置；所有 memory 命令使用同一个 V2 控制接口。
+Memory V2 表拥有 learning_enabled、epoch、learning_started_at、subject generation、optout 与删除控制。原先为其他业务语义保留的旧SETTINGS，经完整核验实际只有退役开关且无style，已随本批旧表退役；当前style为单一纯normalizer，不另建无用settings存储。所有 memory 命令使用同一个 V2 控制接口。
 
 SourceEvent 以 chat/message 标识，保存个人 actor id、原始发送时间、Telegram edit 时间、content hash、source revision、逻辑 expires_at。cutover 用原始发送时间；旧 epoch 之前消息及其新 edit 均不学习。更高 source revision 胜出，派生旧 facts 先失效再提取新版。纯转发、sender_chat、bot 输出不生成个人 facts；引用块不归属发言人。安全过滤先于 raw、profile、模型 context 和日志。
 
@@ -123,4 +123,4 @@ Z18原工单仅交付清单/手册。2026-09-26用户追加了残留清理要求
 
 Z19 #178原先负责已确认的抽奖SDK事务问题，历史发现保留在AUDIT/EVIDENCE。用户取消该实验后，Z19改为功能退役，原PR #181不再作为待合入修复。新增改动直接进入PR #204，不再另开实现PR。Z10显式抽奖清理依赖Z19停写/退役证据；Z11保留settings、stats、captcha业务完整性与抽奖输出为零的检查，移除抽奖公平性和真实抽奖验收要求。
 
-2026-09-26字段核验补充：旧prod的3条SETTINGS只有旧memory/agent开关与更新时间，没有style_profile；dev0行，无现役setter。故不为死开关建新settings存储；纯normalizer和V2临时媒体保留。删除前重新验证完整键/字段/类型/整行hash，有新增或变化即停并保护有效语义。详见FINISH_EXECUTION；当前仍未删除。
+2026-09-26字段核验补充：旧prod的3条SETTINGS只有旧memory/agent开关与更新时间，没有style_profile；dev0行，无现役setter。故不为死开关建新settings存储；纯normalizer和V2临时媒体保留。删除前重新验证完整键/字段/类型/整行hash，有新增或变化即停并保护有效语义。此处为9月26日历史核验；随后两次fresh门禁通过，旧设置已随PR226本批旧表退役。详见FINISH_EXECUTION及新资源证据；旧副本责任不因此消失。

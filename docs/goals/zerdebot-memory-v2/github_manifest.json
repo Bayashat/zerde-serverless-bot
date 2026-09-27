@@ -1,88 +1,111 @@
 {
   "epic": {
     "number": 157,
-    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/157"
+    "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/157",
+    "state": "OPEN"
   },
   "tasks": {
     "Z01": {
       "number": 158,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158",
+      "state": "OPEN"
     },
     "Z02": {
       "number": 159,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/159",
+      "state": "OPEN"
     },
     "Z03": {
       "number": 160,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160",
+      "state": "CLOSED"
     },
     "Z04": {
       "number": 161,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161",
+      "state": "CLOSED"
     },
     "Z05": {
       "number": 162,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/162",
+      "state": "OPEN"
     },
     "Z06": {
       "number": 163,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/163",
+      "state": "OPEN"
     },
     "Z07": {
       "number": 164,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/164",
+      "state": "OPEN"
     },
     "Z08": {
       "number": 165,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/165",
+      "state": "OPEN"
     },
     "Z09": {
       "number": 166,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/166",
+      "state": "OPEN"
     },
     "Z10": {
       "number": 167,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167",
+      "state": "OPEN"
     },
     "Z11": {
       "number": 168,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/168",
+      "state": "OPEN"
     },
     "Z12": {
       "number": 169,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/169",
+      "state": "OPEN"
     },
     "Z13": {
       "number": 170,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/170",
+      "state": "OPEN"
     },
     "Z14": {
       "number": 171,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/171",
+      "state": "OPEN"
     },
     "Z15": {
       "number": 172,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/172",
+      "state": "OPEN"
     },
     "Z16": {
       "number": 173,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/173",
+      "state": "OPEN"
     },
     "Z17": {
       "number": 174,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/174",
+      "state": "OPEN"
     },
     "Z18": {
       "number": 175,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/175",
+      "state": "CLOSED"
     },
     "Z19": {
       "number": 178,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/178",
+      "state": "CLOSED"
     },
     "Z20": {
       "number": 221,
-      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221"
+      "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221",
+      "state": "OPEN"
     }
-  }
+  },
+  "status_source": "task_manifest.json",
+  "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json"
 }

@@ -1,6 +1,31 @@
 # 执行证据
 
-当前入口：[收尾契约](FINISH_EXECUTION.md)、[逐项状态](TASKS.md)、[9月27日源码实际发布证据](evidence/2026-09-27-retirement/source-release.safe.json)。以下按日期保留历史，不用起点或旧失败快照冒充当前状态。
+当前入口：[收尾契约](FINISH_EXECUTION.md)、[逐项状态](TASKS.md)、[本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)、[7候选新只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)。[最新A/B/C与CE补充](evidence/2026-09-27-retirement/followup-readonly.safe.json)。以下按日期保留历史，不用旧失败或执行前状态冒充当前。
+
+## 2026-09-27：PR226本批28资源物理退役完成，R2整体仍待
+
+PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。
+
+- 五函数ARM构建、逐对象模板/真实changeset、已上传完整ZIP含pyc核验和两环境实际主/独审分别保留；测试计数不代替物理不存在读回。
+- prod的Retain脱管与另行物理删除分开，旧表删除前精确SETTINGS与空内容、旧消费者关闭/排空门禁通过。六张现役表和预算inventory/历史/UNKNOWN保持。
+- 已保留可选空列表/API singleton规范化、并发设置改变Revision及AWS Auto runtime变化等严格门禁失败和窄续接证据；不把读回适配当业务故障，也不覆盖原失败报告。
+
+本次预算仅在2026-09-27 11:54:48 UTC由原owner只读得到PASS_POINT_IN_TIME_NOT_A_PERMIT；不预留、不改账务、不释放UNKNOWN，也不授权后续调用或代表完整实付。
+
+Z10原PITR复查仍为2026-10-17 16:20:38 UTC；本次删表新增SYSTEM副本已读到的实际服务到期字段为2026-11-01 11:46:02 UTC。这是复查/服务到期信息，不是已物理抹盘证明；日志/DLQ/其他副本职责继续，已移除本地密文/key不重建。
+
+R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。 F5模型与F6/F7/F8/F10受控验收的冻结证据不重跑；自然使用起点仍未建立，0/50有据、0/20未知，production_ready=false。现有dev原控制/epoch保持，prod没有新增CONTROL。
+
+Z03/Z04根据限定scope和实际GitHub关闭记录结项；Z01/Z20/Z10、业务/费用工单和Epic保持OPEN。
+
+
+## 2026-09-27：更早7候选有限盘点及项目标签费用快照
+
+[聚合补充证据](evidence/2026-09-27-retirement/followup-readonly.safe.json)绑定A/B/C及CE原始报告SHA，不复制私有AV、逐行标识或本地路径。A：12行=4历史审核统计+8无时间/TTL/status的投票状态，不能认定已过期；B：全分页Scheduler/Pipes0；C：账号订阅策略/当前可列导出/精确旧stats独立备份与恢复点0。未证明未知外部消费者或历史副本不存在，7候选及2旧SSM继续保留，Z20不结项。
+
+R2/Z20新增精确私有AttributeValue临时证据副本于2026-10-04 10:35 UTC到期，本批提前完成则提前清理；它不是灾备，也不重建已到期的旧记忆归档。原10月17日PITR复查与本次11月1日SYSTEM副本服务到期分别保留；本次仅登记副本责任；自动任务由根代理按最终入口另行同步。
+
+2026-09-27 10:53 UTC的CE标签归属快照，UTC区间[2026-09-01,2026-09-28)（含当前日不完整用量），UnblendedCost为dev USD0.4216791725、prod USD0.8473312256，合计USD1.2690103981，Estimated。未标Project的Usage USD25.9433726729和Tax USD4.86不分配给Zerde；不是实付、模型账单或完整Free Tier核算，不与Memory预算估算/UNKNOWN预留相加，Z17仍OPEN。 本次5次CE（含保全的首轮尝试）、2次STS、0云写；不修改原9月26日费用快照。
 
 ## 2026-09-27：PR224旧源码实际发布完成，资源删除未开始
 
