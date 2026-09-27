@@ -7,7 +7,7 @@ from constructs import Construct
 
 
 class MessagingConstruct(Construct):
-    """SQS queues for real-time bot work and slower vector indexing work."""
+    """Main bot SQS queue and its recovery dead-letter queue."""
 
     def __init__(
         self,
@@ -18,8 +18,6 @@ class MessagingConstruct(Construct):
         is_prod: bool,
         main_queue_retention_days: int,
         main_dlq_retention_days: int,
-        vector_queue_retention_days: int,
-        vector_dlq_retention_days: int,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -44,27 +42,5 @@ class MessagingConstruct(Construct):
             dead_letter_queue=sqs.DeadLetterQueue(
                 max_receive_count=3,
                 queue=self.dlq,
-            ),
-        )
-
-        self.vector_dlq = sqs.Queue(
-            self,
-            f"{CONSTRUCT_PREFIX}VectorMemoryTasksDlq",
-            queue_name=f"{RESOURCE_PREFIX}-vector-memory-tasks-dlq-{env_name}",
-            retention_period=Duration.days(vector_dlq_retention_days),
-            removal_policy=removal_policy,
-        )
-
-        self.vector_queue = sqs.Queue(
-            self,
-            f"{CONSTRUCT_PREFIX}VectorMemoryTasksQueue",
-            queue_name=f"{RESOURCE_PREFIX}-vector-memory-tasks-queue-{env_name}",
-            retention_period=Duration.days(vector_queue_retention_days),
-            visibility_timeout=Duration.seconds(1800),
-            receive_message_wait_time=Duration.seconds(20),
-            removal_policy=removal_policy,
-            dead_letter_queue=sqs.DeadLetterQueue(
-                max_receive_count=3,
-                queue=self.vector_dlq,
             ),
         )

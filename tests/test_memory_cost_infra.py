@@ -9,7 +9,7 @@ def test_shared_inventory_fits_environment_and_monitor_is_only_on_prod(monkeypat
     monkeypatch.setenv("MEMORY_COST_METERING_STARTED_AT", "1789000000")
     for environment in ("dev", "prod"):
         template = _template(monkeypatch, env_name=environment)
-        assert len(template.find_resources("AWS::Lambda::Function")) == 6
+        assert len(template.find_resources("AWS::Lambda::Function")) == 5
         variables = []
         for kind in ("bot", "memory-v2-worker"):
             _, function = _find_resource_by_property(
@@ -43,3 +43,37 @@ def test_first_deployment_has_explicit_metering_epoch_gate(monkeypatch):
         if "MONITOR_MEMORY_V2_COST" in json.dumps(row)
     )
     assert rule["Properties"]["State"] == "DISABLED"
+
+
+def test_resource_retirement_preserves_the_original_cost_scope_and_epoch(monkeypatch):
+    from services.memory_v2._cost_catalog import parse_inventory
+
+    from tests.test_infra_configuration import _resolved_lambda_environment
+
+    monkeypatch.setenv("MEMORY_COST_METERING_STARTED_AT", "1789134091")
+    declarations = []
+    for environment in ("dev", "prod"):
+        template = _template(monkeypatch, env_name=environment)
+        for kind in ("bot", "memory-v2-worker"):
+            env = _resolved_lambda_environment(template, f"zerde-serverless-{kind}-{environment}")
+            raw = env["MEMORY_COST_INVENTORY"]
+            declarations.append(raw)
+            assert json.loads(raw) == {
+                "schema": 1,
+                "region": "eu-central-1",
+                "account_id": "111122223333",
+                "metering_started_at": 1789134091,
+                "alarm_count": 10,
+            }
+            inventory = parse_inventory(raw)
+            assert {row["name"] for row in inventory.functions} == {
+                f"zerde-serverless-{name}-{stage}" for name in ("bot", "memory-v2-worker") for stage in ("dev", "prod")
+            }
+            assert {row["name"] for row in inventory.tables} == {
+                "zerde-serverless-memory-v2-dev",
+                "zerde-serverless-memory-v2-prod",
+            }
+            assert {row["name"] for row in inventory.queues} == {
+                f"zerde-serverless-memory-v2-{name}-{stage}" for name in ("queue", "dlq") for stage in ("dev", "prod")
+            }
+    assert len(set(declarations)) == 1

@@ -26,7 +26,7 @@
 | Z17 [#174](https://github.com/Bayashat/zerde-serverless-bot/issues/174) | 成本/通知修复已部署；两tag ACTIVE；9月26日CE标签可归属dev $0.4012865637/prod $0.8205746736（预估）。 | 闭合账期项目归因，未标记/共享费用、credits/税及模型账单；当前标签$1.2218612373不是完整实付，业务恢复证据仍待收口。 |
 | Z18 [#175](https://github.com/Bayashat/zerde-serverless-bot/issues/175)（已结项：限定范围） | 原清单与执行手册已由#184/#204交付，限定文档范围可结项。 | 真实删除由Z20继续；不是资源已销毁。 |
 | Z19 [#178](https://github.com/Bayashat/zerde-serverless-bot/issues/178)（已结项：限定范围） | 抽奖命令/实现/定时恢复已退役，在线残留清除和旧任务重放已验证。 | 功能范围可结项；历史副本义务明确留在Z10，不宣称物理抹除。 |
-| Z20 [#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221) | PR224已合并为dd416f86；13个旧知识/主动互动模块与调用已移除并部署dev/prod。2264全测、18完整请求等价、CI、两环境6函数/层/配置/控制的主检及独审通过；两环境各一次停读前fresh SETTINGS核验通过。 | S4精确移除旧配置/权限/表/向量资源，执行前第二轮fresh SETTINGS及消费者/空内容门禁；prod Retain另做物理删除和不存在独审。更早孤儿候选仍待核实，云资源尚未删除。 |
+| Z20 [#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221) | PR224旧源码双环境部署完成；S4已移除14项/环境旧CDK声明、45项旧配置白名单、专用indexer入口与权限，保留主队列退休拒绝和原费用owner。 | 完成新实现全测/五函数ARM/独审与CI，部署前告知精确物理清单、闭锁旧入口并核验fresh SETTINGS/空内容；dev实际删除及prod Retain另行删除、逐项不存在独审。更早候选与副本义务仍未完成。 |
 
 Z20源码解耦及双环境发布已完成，进入S4；删除前刷新精确设置、消费者及空内容证据，不等待Z01/Z03关闭或自然试用。Z18关闭只代表原清单/手册完成，Z19关闭只代表功能退役/在线残留完成；资源删除由Z20、保留副本由Z10继续负责。Z01–Z17及Epic不按测试总数批量结项。
 

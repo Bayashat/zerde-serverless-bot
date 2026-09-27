@@ -2,7 +2,7 @@
 
 The current system keeps Python, Lambda, SQS and DynamoDB. Memory V2 is the sole knowledge owner: facts come from a member's explicit self-statements in one group, have current evidence, and can be corrected or forgotten. Profiles are views of valid facts. Automatic replies, reactions, channel comments, historical imports and experimental contests are retired.
 
-This source change removes the 13 legacy algorithm modules and their callers. It is not a claim that the new source has been deployed or that AWS resources have been destroyed. Read [TASKS](goals/zerdebot-memory-v2/TASKS.md), [HANDOFF](goals/zerdebot-memory-v2/HANDOFF.md) and [retirement inventory](goals/zerdebot-memory-v2/RETIREMENT_INVENTORY.md) for those separate states. The verified deployment before this cleanup is PR223 build c9a4219 / merge b232df6.
+PR224 removed the 13 legacy algorithm modules from the actual dev/prod packages (build63916a3). S4 removes the dedicated vector entry, old table/vector infrastructure and their configuration. Local declarations, deployment and physical deletion are separate states; see [TASKS](goals/zerdebot-memory-v2/TASKS.md), [HANDOFF](goals/zerdebot-memory-v2/HANDOFF.md) and [retirement inventory](goals/zerdebot-memory-v2/RETIREMENT_INVENTORY.md).
 
 ## Current runtime
 
@@ -30,7 +30,6 @@ flowchart LR
 |---|---|
 | `src/bot/main.py` | Webhook and current main SQS work; lazy dependencies in `app.py` |
 | `src/bot/memory_worker_main.py` | V2 extraction, recovery and lifecycle work; inspect current entry in CDK before deployment |
-| `src/bot/vector_indexer_main.py` | Temporary discard-only consumer; no vector algorithms, embeddings or producer remain; delete with its dedicated AWS resources |
 | `src/news/main.py` | News fetch and per-group delivery recovery |
 | `src/quiz/main.py` | Daily/on-demand polls, durable publication and scoring recovery |
 | `src/operations/main.py` | Deduplicated fault/recovery/budget messages to the configured private administrator |
@@ -64,7 +63,7 @@ Only the existing dev pilot is enabled at the last verified release. Production 
 
 ## Current task routing
 
-`services/sqs_task_router.py` handles captcha timeout/recovery, spam moderation, current-version explicit asks and Quiz answer/recovery tasks. Old memory/social/vector/contest schemas are rejected before chat lookup or business dependencies. The temporary vector consumer also discards those old envelopes. Keep this small rejection protocol until every ingress is proven unable to accept the old schemas; it cannot reactivate a deleted algorithm.
+`services/sqs_task_router.py` handles captcha timeout/recovery, spam moderation, current-version explicit asks and Quiz answer/recovery tasks. Old memory/social/vector/contest schemas are rejected before chat lookup or business dependencies. Keep this small rejection protocol until every ingress is proven unable to accept the old schemas; it cannot reactivate a deleted algorithm.
 
 Memory V2 has its own queue/worker and recovery owner. Do not purge or receive from a mixed queue to infer emptiness, and do not manually invoke business work to manufacture acceptance evidence.
 
@@ -74,7 +73,7 @@ Captcha uses generation/revision CAS, durable verification/rejection and a bound
 
 Spam records actual enforcement outcomes; failed deletion/ban cannot be reported as confirmed success. Classification uses the current message/reply/quote; no legacy recent-chat reader remains. Voteban session identity and expiry belong to the vote repository. News and Quiz retain their existing delivery/publication/answer recovery protocols; synthetic passes do not substitute for remaining controlled real-path acceptance.
 
-Preserve the six active tables: dev/prod business stats, Quiz and Memory V2. The two old bot-memory tables and dedicated vector resources still require separate deployment/physical retirement. The older stats/queue/log candidates need fresh consumer and identity checks. Shared assets/layer, active business queues, controls, budget and UNKNOWN records are protected.
+Preserve the six active tables: dev/prod business stats, Quiz and Memory V2. S4 has removed declarations for the two old bot-memory tables and dedicated vector resources; physical retirement still requires the recorded deletion gates. The older stats/queue/log candidates need fresh consumer and identity checks. Shared assets/layer, active business queues, controls, budget and UNKNOWN records are protected.
 
 Production Chinese news remains explicitly DISABLED in both template and live schedule; other languages retain their current settings. The retired daily group-summary schedule must never be recreated.
 

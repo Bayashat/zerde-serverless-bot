@@ -62,3 +62,9 @@ R1同步 → R2旧代码解耦/3 SETTINGS核验退役（有有效设置才迁移
 
 
 下一步：[S4资源退役契约](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/RESOURCE_RETIREMENT_EXECUTION.md)；[PR224实际发布证据](https://github.com/Bayashat/zerde-serverless-bot/blob/main/docs/goals/zerdebot-memory-v2/evidence/2026-09-27-retirement/source-release.safe.json)。删前再核验3条旧设置和精确资源身份，现役六表与预算历史保留。
+
+## S4 候选实施进度（2026-09-27）
+
+S4资源退役已在当前候选实现：14项/环境旧声明、旧Bot env/IAM、Operations的4个向量告警名及专用indexer入口移除；打包验证改为精确五函数，费用inventory和现役数据owner不变。尚未合并、部署或删除云资源。
+
+删除前先关闭精确旧写入口及indexer映射，排空当前执行，再执行第二轮完整强一致SETTINGS与队列/向量空内容核验。prod既有Deny一直保留；删除旧PITR表可能产生35天SYSTEM单时点副本，按真实BackupArn/Expiry另记Z10，不用原10月17日责任冒充新副本截止。

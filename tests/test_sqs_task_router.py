@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from services.memory_cutover import EXPLICIT_CONTEXT_VERSION
 from services.repositories.captcha import CaptchaRepository
-from services.sqs_task_router import process_sqs_event, process_vector_sqs_event
+from services.sqs_task_router import process_sqs_event
 
 
 def _record(body: dict) -> dict:
@@ -16,11 +16,10 @@ def _record(body: dict) -> dict:
 
 
 @pytest.mark.parametrize("task", ["PROCESS_CONTEST_TTL_SWEEP", "PROCESS_CONTEST_TTL_RECOVERY"])
-@pytest.mark.parametrize("router", ["main", "vector"])
 @pytest.mark.parametrize(
     "chat_fields", [{}, {"chat_id": None}, {"chat_id": "obsolete-invalid-chat"}, {"chat_id": -1001}]
 )
-def test_retired_contest_tasks_ack_without_any_dependency_or_chat_lookup(task, router, chat_fields):
+def test_retired_contest_tasks_ack_without_any_dependency_or_chat_lookup(task, chat_fields):
     body = {
         "task_type": task,
         "root_message_id": 11,
@@ -30,18 +29,15 @@ def test_retired_contest_tasks_ack_without_any_dependency_or_chat_lookup(task, r
     dependencies = [MagicMock() for _ in range(6)]
     bot, captcha, memory, sqs, ingestion, quiz = dependencies
     with patch("services.sqs_task_router.is_configured_group_chat") as configured:
-        if router == "main":
-            process_sqs_event(
-                {"Records": [_record(body)]},
-                bot,
-                captcha,
-                memory,
-                sqs_repo=sqs,
-                memory_ingestion=ingestion,
-                quiz_repo=quiz,
-            )
-        else:
-            process_vector_sqs_event({"Records": [_record(body)]}, memory)
+        process_sqs_event(
+            {"Records": [_record(body)]},
+            bot,
+            captcha,
+            memory,
+            sqs_repo=sqs,
+            memory_ingestion=ingestion,
+            quiz_repo=quiz,
+        )
     configured.assert_not_called()
     assert all(not dependency.mock_calls for dependency in dependencies)
 
@@ -120,24 +116,6 @@ def test_spam_check_routes() -> None:
     mock_ps.assert_called_once_with(bot, body, captcha_repo=captcha)
 
 
-def test_vector_sqs_router_ignores_main_tasks() -> None:
-    body = {
-        "task_type": "PROCESS_GROUP_ASK",
-        "context_version": EXPLICIT_CONTEXT_VERSION,
-        "chat_id": -1001,
-        "update_id": 99,
-        "reply_to_message_id": 3,
-        "user_text": "what is k8s?",
-        "lang": "kk",
-    }
-    with (
-        patch("services.sqs_task_router.is_configured_group_chat", return_value=True),
-        patch("services.sqs_task_router.process_group_ask_task") as mock_pa,
-    ):
-        process_vector_sqs_event({"Records": [_record(body)]}, MagicMock())
-    mock_pa.assert_not_called()
-
-
 def test_non_whitelisted_chat_skips_handlers() -> None:
     body = {
         "task_type": "SPAM_CHECK",
@@ -187,14 +165,10 @@ def test_handler_failure_reraises_for_sqs_retry() -> None:
         "PROCESS_VECTOR_MEMORY_BACKFILL",
     ],
 )
-@pytest.mark.parametrize("router", ["main", "vector"])
-def test_retired_memory_and_social_tasks_need_no_modules_or_dependencies(task_type, router):
+def test_retired_memory_and_social_tasks_need_no_modules_or_dependencies(task_type):
     dependencies = [MagicMock() for _ in range(4)]
     bot, captcha, memory, sqs = dependencies
     body = {"task_type": task_type, "chat_id": "invalid-retired-chat", "text": "old payload"}
     with patch("services.sqs_task_router.is_configured_group_chat", side_effect=AssertionError("no chat lookup")):
-        if router == "main":
-            process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory, sqs_repo=sqs)
-        else:
-            process_vector_sqs_event({"Records": [_record(body)]}, memory)
+        process_sqs_event({"Records": [_record(body)]}, bot, captcha, memory, sqs_repo=sqs)
     assert all(not dependency.mock_calls for dependency in dependencies)

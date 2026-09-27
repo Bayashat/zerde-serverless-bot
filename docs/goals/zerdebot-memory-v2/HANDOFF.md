@@ -1,5 +1,7 @@
 # 下一次执行入口（2026-09-27）
 
+S4资源退役已在当前候选实现：14项/环境旧声明、旧Bot env/IAM、Operations的4个向量告警名及专用indexer入口移除；打包验证改为精确五函数，费用inventory和现役数据owner不变。尚未合并、部署或删除云资源。
+
 先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)和[S4资源退役契约](RESOURCE_RETIREMENT_EXECUTION.md)。task_manifest是逐工单状态来源；下面历史发布不能重跑。
 
 PR224已合并为`dd416f86c001666ec9c9c4007ae2e52480e83abf`，源码`63916a3189a912c84c12be85b75c4d3eb2fa5f5e`已部署dev/prod。13旧模块及现役调用退出；2264测试、18完整请求逐字等价、CI、两环境各6函数及层/配置/控制主检和独审通过，workflow ACTIVE。原读回工具保存错误的INCOMPLETE记录保全，新final回执才是最终证据。[脱敏摘要](evidence/2026-09-27-retirement/source-release.safe.json)。不要重跑旧源码发布。
