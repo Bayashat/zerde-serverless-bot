@@ -1,0 +1,154 @@
+{
+  "status": "STACK_LEGACY_RESOURCES_RETIRED_WIDER_R2_PENDING",
+  "date": "2026-09-27",
+  "pull_request": 226,
+  "source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
+  "merged_main": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
+  "source_is_lambda_build_revision_not_future_docs_commit": true,
+  "full_tests": 2250,
+  "completed_at": 1790510077.483766,
+  "completed_at_utc": "2026-09-27 11:54:37 UTC",
+  "final_release_sha256": "af721cba74a31591f515a5076e1016adf644f76226836b8f87434e99e488a650",
+  "workflow": "ACTIVE",
+  "online_retired_resource_count": 28,
+  "protected_active_tables": [
+    "zerde-serverless-bot-stats-dev",
+    "zerde-serverless-bot-stats-prod",
+    "zerde-serverless-memory-v2-dev",
+    "zerde-serverless-memory-v2-prod",
+    "zerde-serverless-quiz-dev",
+    "zerde-serverless-quiz-prod"
+  ],
+  "protected_active_table_count": 6,
+  "protected_count_is_not_account_table_total": true,
+  "active_functions_per_environment": [
+    "bot",
+    "memory-v2-worker",
+    "news",
+    "operations",
+    "quiz"
+  ],
+  "active_mappings_per_environment": 2,
+  "active_alarms_per_environment": 18,
+  "environments": {
+    "dev": {
+      "root_sha256": "deabfa48a54b4a46d449928b65cb03bafc3a0c6072df29a2597d7c0726e93baf",
+      "independent_sha256": "c72a7de6ca09d347e85bf7b2dc214b214d63123e05339cf2bbf5991bd19fd3ec",
+      "physical_absence_count": 14,
+      "retained_pending_count": 0,
+      "functions_verified": 5,
+      "protected_tables_verified": 6,
+      "source_and_control_protection_verified": true
+    },
+    "prod": {
+      "root_sha256": "8ab7cdd63b87895e919142a4fcc60df69454696491b20d3a1843cda5a5a9e30c",
+      "independent_sha256": "5340e0f71e3c480156a37db71ea846b65fc9aca4c0652f6113195b5376bcf232",
+      "physical_absence_count": 14,
+      "retained_pending_count": 0,
+      "functions_verified": 5,
+      "protected_tables_verified": 6,
+      "source_and_control_protection_verified": true
+    }
+  },
+  "earlier_resource_candidates_remaining": 7,
+  "r2_overall_complete": false,
+  "production_ready": false,
+  "natural_observation_start": null,
+  "natural_supported_answers": 0,
+  "natural_unknown_answers": 0,
+  "new_prod_control_created": false,
+  "all_physical_copies_erased": false,
+  "backup": {
+    "status": "PASS_SIX_RETAINED_ABSENT_SYSTEM_BACKUP_REGISTERED",
+    "registration_binding_sha256": "4fa3e51d1ccc470ba386a77d926152bbae332ec73fa9e61c0e111b0da64feab9",
+    "actual_readback_sha256": "2a97d1913d558a9d5cafda5c25b470e31145f5ed68fbabb20109b0706c5cc789",
+    "original_pitr_recheck_epoch": 1792254038,
+    "original_pitr_recheck_utc": "2026-10-17 16:20:38 UTC",
+    "system_backup_count": 1,
+    "new_system_backup_expiry_epochs": [
+      1793533562.425
+    ],
+    "new_system_backup_expiry_utc": [
+      "2026-11-01 11:46:02 UTC"
+    ],
+    "expiry_is_observed_service_metadata_not_erasure_proof": true,
+    "other_copies_pending": true
+  },
+  "budget_point_in_time": {
+    "status": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+    "report_sha256": "dad55056ef08d8284a22244d06b4acd81b501ead87d3294dceddbebc765dfb68",
+    "reader_sha256": "1eb793b8c5f745eb518b994c8990a9828047f0812c4388c9588ecb999f2ee899",
+    "owner_manifest_sha256": "8582b0f11242c8b58fbcd41d3ece17176c7c1461f556cb5094c05798c2f17acd",
+    "started_at": 1790510086.582745,
+    "finished_at": 1790510088.913439,
+    "utc_month": "2026-09",
+    "aws": {
+      "measurement_state": "ESTIMATE_VERIFIED",
+      "paused": false,
+      "observed_at": "1790507310",
+      "covered_until": "1790506200",
+      "valid_until": "1790518110",
+      "estimate_micro_usd": "4090135"
+    },
+    "model": {
+      "charged_micro_usd": "5430",
+      "settled_micro_usd": "5430",
+      "paused": null
+    },
+    "cloud_writes": 0,
+    "model_calls": 0,
+    "budget_reservations": 0,
+    "is_future_call_permission": false,
+    "is_invoice_or_account_spending_cap": false,
+    "unknown_liability_recomputed_or_released": false
+  },
+  "github_readback": {
+    "observed_at": 1790510163.242542,
+    "issues": {
+      "157": {
+        "closedAt": null,
+        "number": 157,
+        "state": "OPEN",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/157"
+      },
+      "158": {
+        "closedAt": null,
+        "number": 158,
+        "state": "OPEN",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/158"
+      },
+      "160": {
+        "closedAt": "2026-09-27T11:55:43Z",
+        "number": 160,
+        "state": "CLOSED",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/160"
+      },
+      "161": {
+        "closedAt": "2026-09-27T11:55:48Z",
+        "number": 161,
+        "state": "CLOSED",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/161"
+      },
+      "167": {
+        "closedAt": null,
+        "number": 167,
+        "state": "OPEN",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/167"
+      },
+      "221": {
+        "closedAt": null,
+        "number": 221,
+        "state": "OPEN",
+        "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221"
+      }
+    },
+    "mutations": 0
+  },
+  "limitations": [
+    "Only this declared 14-per-environment online resource batch is complete; seven earlier candidates remain.",
+    "Natural-use start and samples remain absent; prior synthetic and live controlled tests do not count as natural use.",
+    "R3 business recovery and bill attribution remain open; no manual Lambda Invoke is authorized merely for acceptance.",
+    "Source table absence is not physical media or backup erasure; the original PITR duty and new SYSTEM expiry are separate.",
+    "This documentation synchronization is not a deployment, replay, budget mutation, or feature activation."
+  ]
+}

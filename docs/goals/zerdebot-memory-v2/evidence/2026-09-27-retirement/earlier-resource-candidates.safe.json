@@ -1,0 +1,61 @@
+{
+  "status": "SEVEN_EARLIER_CANDIDATES_PRESENT_DEPENDENCIES_PARTIAL_NOT_DELETE_GATE",
+  "observed_start_utc": "2026-09-27T09:58:33.851402+00:00",
+  "observed_end_utc": "2026-09-27T10:00:06.622376+00:00",
+  "source_report_sha256": "f2733a6bcb99ecf6554f5380d6995313c5592cdbc824e469b205be1a69b05ef2",
+  "inventory_sha256": "94690ebc983ac51590811b0ee41c71d904b1616836e7e70a8fc83c746a2bcf8c",
+  "reader_sha256": "0528211a8d6c4f649eb4cf24be2a58617976fb9fd922aed504380d29cedcc72b",
+  "candidate_count": 7,
+  "categories": {
+    "old_stats_table": 1,
+    "old_queue_and_dlq": 2,
+    "old_log_groups": 4
+  },
+  "objects_all_seven_present": true,
+  "old_stats": {
+    "approximate_count": 12,
+    "delete_protection": true,
+    "pitr_days": 35,
+    "content_classification": "UNREAD_UNRESOLVED",
+    "90_closed_days_read_write_datapoints_each": 90,
+    "90_closed_days_consumed_read_write_sum_each": 0
+  },
+  "queue_observation": {
+    "both_depths": [
+      0,
+      0,
+      0
+    ],
+    "main_90_day_metrics_sampled_days": 26,
+    "main_observed_sent_received_deleted_sums": 0,
+    "main_64_unrepresented_days": "UNKNOWN",
+    "dlq_metrics": "NOT_REQUESTED_LOCAL_CALL_BUDGET_EXHAUSTED"
+  },
+  "log_observation": {
+    "all_four_stored_bytes": 0,
+    "all_four_subscription_count": 0,
+    "90_day_metrics": "NOT_REQUESTED_LOCAL_CALL_BUDGET_EXHAUSTED"
+  },
+  "regional_lambda_reference_observation": {
+    "current_functions": 43,
+    "current_configs_checked": 43,
+    "published_versions": 0,
+    "aliases": 0,
+    "matching_mappings": 0,
+    "four_log_source_functions_present": 0
+  },
+  "old_ssm_metadata_count": 2,
+  "old_ssm_values_read": false,
+  "old_ssm_decision": "UNRESOLVED_KEEP_EXCLUDED_FROM_SEVEN",
+  "remaining_gates": [
+    "Old stats data classification and original on-demand-backup/restore proof remain unsatisfied.",
+    "Scheduler/Pipes/SNS/API integrations and external writers remain unexhausted.",
+    "Log account-level subscription/export destinations not yet checked.",
+    "Point-in-time empty counts and no matched Lambda config do not prove permanently unused.",
+    "SSM remains excluded from deletion; no value reads necessary.",
+    "S4 and original PITR/copy obligations unchanged."
+  ],
+  "deletion_performed": false,
+  "missing_metric_days_are_unknown_not_zero": true,
+  "point_in_time_empty_is_not_unused_proof": true
+}
