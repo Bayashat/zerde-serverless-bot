@@ -523,14 +523,14 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "deployed_real_business_acceptance_pending",
-    "status_as_of": "2026-09-26",
-    "completed": "Quiz发布/计分/答案恢复实现已部署。",
-    "remaining": "真实poll、答案先于持久可见、重投只计一次和reconcile闭环。",
+    "status": "real_quiz_normal_path_pass_recovery_pending",
+    "status_as_of": "2026-09-28",
+    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。",
+    "remaining": "并发daily、发送UNKNOWN/reconcile、答案先于持久可见/GSI迟到、数据库失败及重投幂等的真实证据；帮助文字的管理员限制说明与现有开放行为需统一。正常单次成功不代表异常恢复通过。",
     "issue_state": "OPEN",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
-    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "status_evidence": "evidence/2026-09-28-r3-quiz-live/result.safe.json",
     "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json"
   },
   {
