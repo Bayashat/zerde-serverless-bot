@@ -1,6 +1,8 @@
+> 2026-09-28六空资源收尾：[实际删除与独审证据](evidence/2026-09-28-orphan-retirement/final.safe.json)；[本批执行契约](ORPHAN_RETIREMENT_EXECUTION.md)。原S4已结束，不重跑；本批没有运行包/配置发布。
+
 # 删除前清单与执行状态（2026-09-27）
 
-PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。 [本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)。R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。
+PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。 [本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)。2026-09-28另批两条旧updates队列及四个孤儿日志组已实际删除，六对象不存在和保留七表/十函数保护投影已独立核验；前置失败及窄修复证据保留。原7候选只剩zerde-prod-bot-stats，另有2个旧SSM参数尚待核实。冻结旧表12行与现役精确键对照中，3/4条历史统计已被现役累计覆盖，另1条统计无对应行；8条旧投票没有迁入/过期证据，不能恢复到现役。后续先保护有效统计、明确旧会话退役语义及备份恢复，再另列删除范围；R2/Z20仍OPEN，不启用新功能、新群或prod记忆。
 
 本清单执行 [FINISH_EXECUTION](FINISH_EXECUTION.md) 的R2。`计划删除`不是`已删除`；补充字段核验确认3条旧SETTINGS没有自定义style，无需迁移有效业务设置；本批最终不存在证明见上方新证据。其余候选操作前仍须刷新精确身份、消费者、数据/保护项校验并先告知，不能复用本批删除许可。区域均为`eu-central-1`，不以名称通配符删除。
 
@@ -33,18 +35,22 @@ PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码
 
 对应栈为`zerde-serverless-telegram-bot-dev/prod`，**栈本身保留**。原dev Delete由CFN删除；原prod六个Retain对象已在脱管后另行删除，最终主检和独审逐项确认不存在。以上7种命名对象及各环境role/policy/mapping/4专属alarm合计14项，两环境28项；表中前置是已执行的审计契约，不是待重跑清单。
 
-## 待核实，尚不进入执行删除名单
+## 2026-09-28已实际退役：更早的六项空资源
 
-- `zerde-prod-bot-stats`：A阶段强一致完整枚举12行，4条历史审核统计、8条投票状态；8条没有时间、TTL或status，不能证明过期。区域43个Lambda配置及枚举版本/别名、B阶段全页Scheduler/Pipes未发现匹配引用，不证明外部消费者不存在。删除保护及PITR保留；C阶段该表当前可列独立备份/恢复点0并非恢复保障，仍需有效语义/消费者及恢复方案，不能直接删。
-- `zerde-prod-updates-queue`、`zerde-prod-updates-dlq`：新只读时点三类depth均0、自身redrive关系匹配；主队列90天只有26天指标，另64天UNKNOWN，DLQ历史未请求。其他服务及外部生产者核验未穷尽，仍不是删除门禁。
-- `/aws/lambda/TelegramBotStack-dev-LogRetentionaae0aa3c5b4d4f87b-VOs3WfeNiAH7`
-- `/aws/lambda/TelegramBotStack-dev-LogRetentionaae0aa3c5b4d4f87b-Vz797oVzECIN`
-- `/aws/lambda/tg-dev-receiver`
-- `/aws/lambda/tg-dev-worker`
+- `zerde-prod-updates-queue`、`zerde-prod-updates-dlq`。
+- `/aws/lambda/TelegramBotStack-dev-LogRetentionaae0aa3c5b4d4f87b-VOs3WfeNiAH7`。
+- `/aws/lambda/TelegramBotStack-dev-LogRetentionaae0aa3c5b4d4f87b-Vz797oVzECIN`。
+- `/aws/lambda/tg-dev-receiver`、`/aws/lambda/tg-dev-worker`。
 
-以上4个日志组在新只读时点均0 storedBytes、无组级subscription，源函数未发现；C阶段账号级订阅策略及当前可列导出均0；历史导出/外部副本与保留义务仍未穷尽，不能据此称无副本。恢复同名队列/日志不能恢复其内容。[7候选新只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)保留全部未穷尽/缺指标限制。
+精确依赖/空状态、两队列停写传播与稳定空窗、逐项删除及独立不存在读回均已完成。原S4的28项加本批6项共34项已退役对象；不代表账号只剩现役资源。没有新增备份，历史日志导出/外部副本未穷尽，不能宣称所有副本消失。恢复同名资源只恢复定义，不恢复内容。
 
-R2/Z20新增精确私有AttributeValue临时证据副本于2026-10-04 10:35 UTC到期，本批提前完成则提前清理；它不是灾备，也不重建已到期的旧记忆归档。原10月17日PITR复查与本次11月1日SYSTEM副本服务到期分别保留；本次仅登记副本责任；自动任务由根代理按最终入口另行同步。 [A/B/C补充证据](evidence/2026-09-27-retirement/followup-readonly.safe.json)；早前9:58快照原样保留。
+## 仍保留并待处理
+
+`zerde-prod-bot-stats`保留；4条历史统计中3条已被现役同started_at且不低于原数值的累计值覆盖，另1条尚未保全到现役。8条投票无时间/TTL/status且现役无对应键，不能声称过期或迁入，也不恢复旧会话。下一步保护剩余有效统计，明确旧实例退休语义，按需备份AVAILABLE与临时恢复逐行摘要验证后再公告、门禁删除。现有临时AV不是灾备。
+
+`/zerde/bot/token`、`/zerde/bot/webhook_secret`仍保留，有限已知消费者核查尚未闭合；没有读取或输出参数值。本批没有删表、参数、当前混合队列、共享资产或其他项目。
+
+原R2/Z20临时AV证据2026-10-04 10:35 UTC到期或旧stats批次提前完成时清理；本批只完成队列/日志，未将旧stats批次当成完成。原10月17日PITR及11月1日SYSTEM副本义务分别继续。
 
 ## 明确保留的6张现役表（不是账号表总数）
 

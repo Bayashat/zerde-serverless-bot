@@ -73,7 +73,7 @@ Captcha uses generation/revision CAS, durable verification/rejection and a bound
 
 Spam records actual enforcement outcomes; failed deletion/ban cannot be reported as confirmed success. Classification uses the current message/reply/quote; no legacy recent-chat reader remains. Voteban session identity and expiry belong to the vote repository. News and Quiz retain their existing delivery/publication/answer recovery protocols; synthetic passes do not substitute for remaining controlled real-path acceptance.
 
-Preserve the six active tables: dev/prod business stats, Quiz and Memory V2. S4 has removed declarations for the two old bot-memory tables and dedicated vector resources; physical retirement still requires the recorded deletion gates. The older stats/queue/log candidates need fresh consumer and identity checks. Shared assets/layer, active business queues, controls, budget and UNKNOWN records are protected.
+Preserve the six active tables: dev/prod business stats, Quiz and Memory V2. S4 has removed declarations for the two old bot-memory tables and dedicated vector resources; physical S4 retirement is complete with independent absence evidence. The later two orphan queues and four logs are also gone; the older stats table and two SSM parameters remain pending. The remaining older stats table and two SSM parameters require their own semantic and consumer checks. Shared assets/layer, active business queues, controls, budget and UNKNOWN records are protected.
 
 Production Chinese news remains explicitly DISABLED in both template and live schedule; other languages retain their current settings. The retired daily group-summary schedule must never be recreated.
 

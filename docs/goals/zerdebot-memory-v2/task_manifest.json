@@ -74,9 +74,9 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "online_memory_and_declared_resource_retirement_verified",
-    "status_as_of": "2026-09-27",
+    "status_as_of": "2026-09-28",
     "completed": "原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。",
-    "remaining": "本工单限定删除/业务边界范围已验收；历史及新SYSTEM副本责任留Z10，更早7候选留Z20，不宣称所有副本抹除。",
+    "remaining": "本工单限定删除/业务边界范围已验收；历史及新SYSTEM副本责任留Z10，剩余旧stats及2个旧SSM留Z20，不宣称所有副本抹除。",
     "issue_state": "CLOSED",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -591,9 +591,9 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "scoped_runbook_complete",
-    "status_as_of": "2026-09-27",
+    "status_as_of": "2026-09-28",
     "completed": "原清单与执行手册已由#184/#204交付，限定文档范围已结项；本批S4资源退役另有实际证据。",
-    "remaining": "更早7候选仍由Z20继续；本工单关闭不代表账号全资源或所有副本已清空。",
+    "remaining": "剩余旧stats及2个旧SSM仍由Z20继续；本工单关闭不代表账号全资源或所有副本已清空。",
     "issue_state": "CLOSED",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -637,10 +637,10 @@
     "title": "FIX: 退役旧记忆代码、核验旧设置并清理无用资源",
     "depends_on": [],
     "body_file": "issues/Z20.md",
-    "status": "declared_stack_retirement_verified_earlier_candidates_pending",
-    "status_as_of": "2026-09-27",
-    "completed": "PR224的13旧算法模块及PR226专用入口/env/IAM/14项每环境资源已部署退役；两环境共28项物理不存在和五函数/保护项已独审。 A/B/C已完成有限只读分类/引用/副本元数据核验：12行=4审核统计+8投票状态，Scheduler/Pipes及所查副本元数据未发现匹配项。",
-    "remaining": "R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。 临时AV副本归R2/Z20，2026-10-04 10:35 UTC到期，本批提前完成则提前清理。",
+    "status": "orphan_empty_resources_retired_legacy_stats_ssm_pending",
+    "status_as_of": "2026-09-28",
+    "completed": "PR224的13旧算法模块及PR226专用入口/env/IAM/14项每环境资源已部署退役；两环境共28项物理不存在和五函数/保护项已独审。 A/B/C已完成有限只读分类/引用/副本元数据核验：12行=4审核统计+8投票状态，Scheduler/Pipes及所查副本元数据未发现匹配项。 9月28日另批2旧updates队列/4孤儿日志已实际删除并独立读回；本批六对象不存在、七保留表/十函数保护投影相同，无新运行发布。",
+    "remaining": "2026-09-28另批两条旧updates队列及四个孤儿日志组已实际删除，六对象不存在和保留七表/十函数保护投影已独立核验；前置失败及窄修复证据保留。原7候选只剩zerde-prod-bot-stats，另有2个旧SSM参数尚待核实。冻结旧表12行与现役精确键对照中，3/4条历史统计已被现役累计覆盖，另1条统计无对应行；8条旧投票没有迁入/过期证据，不能恢复到现役。后续先保护有效统计、明确旧会话退役语义及备份恢复，再另列删除范围；R2/Z20仍OPEN，不启用新功能、新群或prod记忆。 临时AV到期责任仍归旧stats批次，不因六空资源完成而取消。",
     "issue_state": "OPEN",
     "number": 221,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221",
@@ -651,7 +651,7 @@
       "Z19": "runtime retirement and online residue PASS; copies remain Z10"
     },
     "execution_contract": "SOURCE_RETIREMENT_EXECUTION.md",
-    "status_evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json",
+    "status_evidence": "evidence/2026-09-28-orphan-retirement/final.safe.json",
     "source_retirement_pr": 224,
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -659,7 +659,7 @@
     "implementation_evidence": "evidence/2026-09-27-retirement/resource-implementation.safe.json",
     "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
     "resource_retirement_pr": 226,
-    "earlier_candidates_remaining": 7,
+    "earlier_candidates_remaining": 1,
     "overall_complete": false,
     "temporary_evidence_obligation": {
       "owner": "R2/Z20",
@@ -670,6 +670,8 @@
       "old_archives_recreated": false,
       "status": "PENDING_EXPIRY_OR_EARLIER_COMPLETION",
       "evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json"
-    }
+    },
+    "old_parameters_remaining": 2,
+    "orphan_execution_contract": "ORPHAN_RETIREMENT_EXECUTION.md"
   }
 ]

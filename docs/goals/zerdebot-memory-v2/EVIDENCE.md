@@ -1,3 +1,9 @@
+## 2026-09-28 六个更早空资源退役
+
+2026-09-28另批两条旧updates队列及四个孤儿日志组已实际删除，六对象不存在和保留七表/十函数保护投影已独立核验；前置失败及窄修复证据保留。原7候选只剩zerde-prod-bot-stats，另有2个旧SSM参数尚待核实。冻结旧表12行与现役精确键对照中，3/4条历史统计已被现役累计覆盖，另1条统计无对应行；8条旧投票没有迁入/过期证据，不能恢复到现役。后续先保护有效统计、明确旧会话退役语义及备份恢复，再另列删除范围；R2/Z20仍OPEN，不启用新功能、新群或prod记忆。
+
+[本批证据](evidence/2026-09-28-orphan-retirement/final.safe.json)绑定原预检失败、最终D、停写/稳定窗、六删除、根及独立读回；未重写原S4/F5–F10报告。没有新备份、CONTROL/预算/模型调用或新运行部署。
+
 # 执行证据
 
 当前入口：[收尾契约](FINISH_EXECUTION.md)、[逐项状态](TASKS.md)、[本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)、[7候选新只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)。[最新A/B/C与CE补充](evidence/2026-09-27-retirement/followup-readonly.safe.json)。以下按日期保留历史，不用旧失败或执行前状态冒充当前。
