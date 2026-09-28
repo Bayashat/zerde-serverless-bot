@@ -1,10 +1,12 @@
+> 2026-09-28六空资源收尾：[实际删除与独审证据](evidence/2026-09-28-orphan-retirement/final.safe.json)；[本批执行契约](ORPHAN_RETIREMENT_EXECUTION.md)。原S4已结束，不重跑；本批没有运行包/配置发布。
+
 # 下一次执行入口（2026-09-27 S4完成后）
 
 先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)和[RETIREMENT_INVENTORY](RETIREMENT_INVENTORY.md)。task_manifest拥有逐工单状态；下方历史发布、清零及once脚本不可重跑。
 
 PR226已合并为`f3f77bc28fd80948fcfd11e6cc18d1980c6b93db`；运行构建源码为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。两环境各14项、共28项本批旧资源已逐项确认不存在，prod的6个Retain对象也已另行物理删除并独审。两环境各五函数、层、配置、六张现役表和原控制/预算保护通过主检与独审，workflow ACTIVE。 [本轮实际资源退役证据](evidence/2026-09-27-retirement/resource-release.safe.json)。本次docs提交不是Lambda运行源。
 
-R2更早1张旧stats表、2条旧队列和4个日志组共7候选仍未删除。A/B/C有限只读核验已完成：12行分为4条历史审核统计和8条无法证实过期的投票状态；当前Scheduler/Pipes及所查副本元数据未发现匹配项，外部消费者与历史副本仍未穷尽。须据有效语义/消费者/恢复边界形成下一精确清单；2个旧SSM参数继续保留。R2/Z20仍OPEN，不据S4完成启用新功能、新群或prod记忆。 [7候选新只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)。据12行既有分类继续确认有效语义、外部消费者及恢复边界；Scheduler/Pipes与副本元数据有限核验已完成，不重做已完成盘点来代替剩余判断。按下一精确清单告知和执行，不使用S4已完成manifest再次删除。
+2026-09-28另批两条旧updates队列及四个孤儿日志组已实际删除，六对象不存在和保留七表/十函数保护投影已独立核验；前置失败及窄修复证据保留。原7候选只剩zerde-prod-bot-stats，另有2个旧SSM参数尚待核实。冻结旧表12行与现役精确键对照中，3/4条历史统计已被现役累计覆盖，另1条统计无对应行；8条旧投票没有迁入/过期证据，不能恢复到现役。后续先保护有效统计、明确旧会话退役语义及备份恢复，再另列删除范围；R2/Z20仍OPEN，不启用新功能、新群或prod记忆。 [历史7候选只读摘要](evidence/2026-09-27-retirement/earlier-resource-candidates.safe.json)。据12行既有分类继续确认有效语义、外部消费者及恢复边界；Scheduler/Pipes与副本元数据有限核验已完成，不重做已完成盘点来代替剩余判断。按下一精确清单告知和执行，不使用S4已完成manifest再次删除。
 
 R3按原验证码、反垃圾、投票、News/Quiz和真实费用owner推进。仅用原公开业务或正常调度路径；本会话禁止为验收手动Invoke，News无单群公开入口的部分明确未覆盖。不得伪造update、成员或模型/Telegram结果。
 

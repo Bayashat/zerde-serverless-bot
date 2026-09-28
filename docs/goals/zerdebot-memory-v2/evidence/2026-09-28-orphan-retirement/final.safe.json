@@ -1,0 +1,93 @@
+{
+  "status": "SIX_ORPHANS_DELETED_AND_INDEPENDENTLY_VERIFIED",
+  "as_of_utc": "2026-09-28T07:31:07Z",
+  "deployed_build_source_unchanged": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
+  "cloud_delete_requests": 6,
+  "queue_fence_updates": 2,
+  "absent_queue_count": 2,
+  "absent_log_count": 4,
+  "cumulative_retired_resource_count_including_s4": 34,
+  "active_tables_preserved": 6,
+  "old_stats_table_preserved": true,
+  "old_parameters_not_touched": 2,
+  "protected_function_count": 10,
+  "protection_scope": "7 table identity/protection projections and 10 function code/configuration digest projections; not a full package/CONTROL/PITR re-audit",
+  "old_candidate_resources_remaining": 1,
+  "r2_complete": false,
+  "production_ready": false,
+  "natural_supported_audited": 0,
+  "natural_unknown_audited": 0,
+  "new_feature_or_group_activation": false,
+  "table_data_writes": 0,
+  "model_calls": 0,
+  "new_backup_created_by_this_batch": false,
+  "all_physical_copies_erased": false,
+  "operator_sha256": "aa3eb33c74a055b0abc43a25fbf74759f0c9c5a6bb70a0aec0f35ca864ee219d",
+  "receipts": {
+    "preflight-D/final.safe.json": "7e39a2ad421713a2bf42a89972e8dbd21200f92efedf0591c81004ad02096f06",
+    "root-continue-review.safe.json": "e94c3cd4dd1edf1e732591c75fd7b892c3eb1bd8fce1f0c6efb3feffd5ef296f",
+    "independent-continue-review.safe.json": "a712515cd4b08c812b014ba7146086302fe2e2fdd3056056727db2249814f0e3",
+    "fence-B/final.safe.json": "4299e8cfc43be4e9a4b79fe75144f5fbe7fd57cd8a3eb3988f0d8e88ed7ce5d9",
+    "settle-A/final.safe.json": "320e0b75a75c3fb5f399674fecfbc7298e5dc1f257e8bd84267b27be188754db",
+    "delete-A/final.safe.json": "013ec614c0c887348d84fde8421cf465e9cff504f766bd359bbe3b00f19798c5",
+    "verify-A/final.safe.json": "2dee3f15baf06804901327c246abe7785cf369e7a0226c7b6477e0ae2580eb83",
+    "independent-final.safe.json": "5ad833125932861634d7012befb5c31b50511feb454782b32439119cb4fe326e"
+  },
+  "preserved_failed_attempts": [
+    {
+      "stage": "preflight-A/final.safe.json",
+      "error": {
+        "class": "ReadTimeoutError"
+      },
+      "cloud_writes": 0,
+      "receipt_sha256": "0aa6dd33c76ed9b61342e2179605f2ca5c34f6c9ed26309454e231360bc4d375"
+    },
+    {
+      "stage": "preflight-B/final.safe.json",
+      "error": {
+        "class": "ClientError",
+        "code": "InvalidSignatureException",
+        "operation": "DescribeLogGroups"
+      },
+      "cloud_writes": 0,
+      "receipt_sha256": "ec37a0aacb38a07f3a4d74decef233b3361bfa3af0f6407189f6202e4e6e129e"
+    },
+    {
+      "stage": "preflight-C/final.safe.json",
+      "error": {
+        "class": "RuntimeError",
+        "reason": "log_stream_changed"
+      },
+      "cloud_writes": 0,
+      "receipt_sha256": "5fdf0ba7c66fa693f1c734d6849d3d361b14a2646ae7744be34da927c7fa3f15"
+    },
+    {
+      "stage": "fence-A/final.safe.json",
+      "error": {
+        "class": "RuntimeError",
+        "reason": "protected_drift"
+      },
+      "cloud_writes": 0,
+      "receipt_sha256": "243ba7fa81168b9619966dc1fad584345279091ba8b0130d0e9a8584e1c38946"
+    }
+  ],
+  "remaining_semantics": {
+    "old_stats_rows_in_frozen_source": 12,
+    "historical_counters_covered_by_current": 3,
+    "historical_counters_without_current_key": 1,
+    "old_votes_without_current_key_or_expiry_proof": 8,
+    "old_votes_not_restored": true,
+    "comparison_sha256": "39602221eaff75a48ec406d24abbbb0f43e10f7c7eae9db980bc3cceed0efbe1"
+  },
+  "retention_obligations_utc": {
+    "old_stats_temporary_AV": "2026-10-04T10:35:00Z",
+    "original_PITR_recheck": "2026-10-17T16:20:38Z",
+    "S4_SYSTEM_actual_service_expiry": "2026-11-01T11:46:02.425Z"
+  },
+  "limitations": [
+    "External consumers and historical copies are not exhaustively disproved.",
+    "Older queue missing historical metric days remain UNKNOWN.",
+    "Business real recovery acceptance and actual cost attribution remain open.",
+    "No manual Invoke/Receive/Purge or historical once replay."
+  ]
+}
