@@ -76,7 +76,7 @@
     "status": "online_memory_and_declared_resource_retirement_verified",
     "status_as_of": "2026-09-28",
     "completed": "原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。",
-    "remaining": "本工单限定删除/业务边界范围已验收；历史及新SYSTEM副本责任留Z10，剩余旧stats及2个旧SSM留Z20，不宣称所有副本抹除。",
+    "remaining": "本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。",
     "issue_state": "CLOSED",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -323,14 +323,15 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-09-27",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。",
-    "remaining": "Z10原PITR复查仍为2026-10-17 16:20:38 UTC；本次删表新增SYSTEM副本已读到的实际服务到期字段为2026-11-01 11:46:02 UTC。这是复查/服务到期信息，不是已物理抹盘证明；日志/DLQ/其他副本职责继续，已移除本地密文/key不重建。",
+    "status_as_of": "2026-09-28",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。",
+    "remaining": "副本独立跟踪：旧stats USER备份于2026-10-05 08:18:35.953 UTC执行精确删除与不存在核验；原PITR于2026-10-17 16:20:38 UTC复查；旧memory SYSTEM服务到期2026-11-01 11:46:02.425 UTC；本批stats SYSTEM服务到期2026-11-02 08:45:11.254 UTC，均须按原身份到期读回。原Oct4临时AV已按本批提前完成条件移除并独审；文件移除不是安全抹盘。 日志/DLQ/其他副本仍按原台账逐项收口，用户Telegram导出不删。",
     "issue_state": "OPEN",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
-    "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json"
+    "status_evidence": "evidence/2026-09-28-legacy-stats-final/final.safe.json",
+    "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
+    "retention_register": "RETAINED_COPIES.md"
   },
   {
     "id": "Z11",
@@ -379,9 +380,9 @@
       }
     },
     "status": "synthetic_pass_natural_use_not_started",
-    "status_as_of": "2026-09-26",
+    "status_as_of": "2026-09-28",
     "completed": "F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。",
-    "remaining": "真实使用起点未建立、0/50有据和0/20未知；至少7天；新启用先过Z20清理闸门。",
+    "remaining": "Z20声明的旧残留清理前置已满足；真实使用起点未建立，0/50有据和0/20未知，至少7天及其他产品门槛仍未满足；本次不启用新群或prod记忆。",
     "issue_state": "OPEN",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -391,7 +392,8 @@
     "natural_unknown_answers": 0,
     "production_ready": false,
     "activation_dependency": "Z20",
-    "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json"
+    "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
+    "cleanup_dependency_satisfied": true
   },
   {
     "id": "Z12",
@@ -593,7 +595,7 @@
     "status": "scoped_runbook_complete",
     "status_as_of": "2026-09-28",
     "completed": "原清单与执行手册已由#184/#204交付，限定文档范围已结项；本批S4资源退役另有实际证据。",
-    "remaining": "剩余旧stats及2个旧SSM仍由Z20继续；本工单关闭不代表账号全资源或所有副本已清空。",
+    "remaining": "本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。",
     "issue_state": "CLOSED",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -637,11 +639,11 @@
     "title": "FIX: 退役旧记忆代码、核验旧设置并清理无用资源",
     "depends_on": [],
     "body_file": "issues/Z20.md",
-    "status": "orphan_empty_resources_retired_legacy_stats_ssm_pending",
+    "status": "declared_source_and_online_resource_retirement_complete",
     "status_as_of": "2026-09-28",
-    "completed": "PR224的13旧算法模块及PR226专用入口/env/IAM/14项每环境资源已部署退役；两环境共28项物理不存在和五函数/保护项已独审。 A/B/C已完成有限只读分类/引用/副本元数据核验：12行=4审核统计+8投票状态，Scheduler/Pipes及所查副本元数据未发现匹配项。 9月28日另批2旧updates队列/4孤儿日志已实际删除并独立读回；本批六对象不存在、七保留表/十函数保护投影相同，无新运行发布。",
-    "remaining": "2026-09-28另批两条旧updates队列及四个孤儿日志组已实际删除，六对象不存在和保留七表/十函数保护投影已独立核验；前置失败及窄修复证据保留。原7候选只剩zerde-prod-bot-stats，另有2个旧SSM参数尚待核实。冻结旧表12行与现役精确键对照中，3/4条历史统计已被现役累计覆盖，另1条统计无对应行；8条旧投票没有迁入/过期证据，不能恢复到现役。后续先保护有效统计、明确旧会话退役语义及备份恢复，再另列删除范围；R2/Z20仍OPEN，不启用新功能、新群或prod记忆。 临时AV到期责任仍归旧stats批次，不因六空资源完成而取消。",
-    "issue_state": "OPEN",
+    "completed": "2026-09-28最后一批旧stats表与两个旧SSM路径已删除并独立确认不存在；临时恢复表也已删除。1条缺失历史统计按条件保全，3条已有统计不重复相加，8条旧实例投票不迁入且不声称过期。原28项、随后6项及本批3项合计37个已声明旧对象在线退役，6张现役表继续保留。Z20的源码与已声明在线资源范围完成；备份责任留Z10，业务与自然验收未完成，不新增启用。",
+    "remaining": "已声明源码及在线资源范围结项；备份到期责任转由Z10统一跟踪，Z01最终业务回归及R3/R4仍待完成。",
+    "issue_state": "CLOSED",
     "number": 221,
     "url": "https://github.com/Bayashat/zerde-serverless-bot/issues/221",
     "evidence_dependencies": {
@@ -651,7 +653,7 @@
       "Z19": "runtime retirement and online residue PASS; copies remain Z10"
     },
     "execution_contract": "SOURCE_RETIREMENT_EXECUTION.md",
-    "status_evidence": "evidence/2026-09-28-orphan-retirement/final.safe.json",
+    "status_evidence": "evidence/2026-09-28-legacy-stats-final/final.safe.json",
     "source_retirement_pr": 224,
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
@@ -659,8 +661,8 @@
     "implementation_evidence": "evidence/2026-09-27-retirement/resource-implementation.safe.json",
     "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
     "resource_retirement_pr": 226,
-    "earlier_candidates_remaining": 1,
-    "overall_complete": false,
+    "earlier_candidates_remaining": 0,
+    "overall_complete": true,
     "temporary_evidence_obligation": {
       "owner": "R2/Z20",
       "expires_at_utc": "2026-10-04T10:35:00Z",
@@ -668,10 +670,17 @@
       "delete_earlier_if_batch_completed": true,
       "disaster_backup": false,
       "old_archives_recreated": false,
-      "status": "PENDING_EXPIRY_OR_EARLIER_COMPLETION",
-      "evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json"
+      "status": "REMOVED_AFTER_BATCH_COMPLETION",
+      "evidence": "evidence/2026-09-28-legacy-stats-final/final.safe.json",
+      "removed_at_utc": "2026-09-28T08:48:30.722463Z",
+      "independent_absence_verified": true
     },
-    "old_parameters_remaining": 2,
-    "orphan_execution_contract": "ORPHAN_RETIREMENT_EXECUTION.md"
+    "old_parameters_remaining": 0,
+    "orphan_execution_contract": "ORPHAN_RETIREMENT_EXECUTION.md",
+    "completion_scope": "declared_legacy_source_and_online_resources_only",
+    "scope_completed": true,
+    "overall_project_complete": false,
+    "final_execution_contract": "LEGACY_STATS_FINAL_EXECUTION.md",
+    "retained_copies_tracked_by": "Z10"
   }
 ]

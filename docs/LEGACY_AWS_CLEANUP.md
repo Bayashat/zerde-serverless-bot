@@ -1,3 +1,5 @@
+> 本文是早期清理手册，候选已完成精确退役。当前结果和仍保留的副本见[最终清单](goals/zerdebot-memory-v2/RETIREMENT_INVENTORY.md)与[副本台账](goals/zerdebot-memory-v2/RETAINED_COPIES.md)，不得重跑旧候选删除。
+
 # 旧 AWS 资源清理手册（Z18）
 
 状态：**清理候选已审阅；未执行删除。** 关联 [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157)、[Z18 #175](https://github.com/Bayashat/zerde-serverless-bot/issues/175)。基线为 `2f3abe7`，审计日期为 2026-09-10。此文档不是 Memory V2 清零工具；当前 memory 表和向量索引的内容清理由 Z10 单独管理。
