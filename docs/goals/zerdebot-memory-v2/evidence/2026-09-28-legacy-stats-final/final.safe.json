@@ -1,0 +1,206 @@
+{
+  "format": "zerde-legacy-stats-final-public-summary-v1",
+  "status": "LEGACY_STATS_AND_PARAMETERS_RETIRED_INDEPENDENTLY_VERIFIED",
+  "publishable_as_final": true,
+  "runtime_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
+  "stats_owner_sha256": "34f74c7db15db0aba73fbef94c2edd7874eddb6c7638b20952a63848ba06557b",
+  "continuation_sha256": "93ae84e9d394d4a433b3c9081f767b9527137ceb8dfca1c10479d685d69f87e6",
+  "independent_reader_sha256": "076784373e60081561b627a8ccc228c758fa8b9c2c08d47bff4ac367eb00d9cc",
+  "scope": {
+    "source_table": "zerde-prod-bot-stats",
+    "current_stats_preserved": "zerde-serverless-bot-stats-prod",
+    "temporary_restore_table": "zerde-retirement-stats-restore-20260928",
+    "old_ssm_paths": [
+      "/zerde/bot/token",
+      "/zerde/bot/webhook_secret"
+    ]
+  },
+  "legacy_object_accounting": {
+    "prior_s4_objects_absent": 28,
+    "prior_empty_queue_log_objects_absent": 6,
+    "this_batch_old_parameters_absent": 2,
+    "confirmed_across_linked_batches_so_far": 37,
+    "old_stats_source_absence": "INDEPENDENTLY_VERIFIED",
+    "temporary_restore_table_counts_as_legacy_object": false,
+    "backup_copy_deletion_counts_as_legacy_object": false
+  },
+  "statistics": {
+    "original_row_count": 12,
+    "historical_counters": 4,
+    "already_covered_counters": 3,
+    "missing_counter_conditionally_inserted": 1,
+    "conditional_write_count": 1,
+    "current_counter_coverage_after_write": 4,
+    "legacy_vote_rows": 8,
+    "legacy_vote_rows_migrated": 0,
+    "legacy_votes_expiry_and_terminal_status": "UNKNOWN_NOT_USED_AS_DELETE_REASON",
+    "no_existing_current_counter_overwritten": true,
+    "completed_at_utc": "2026-09-28T08:41:40.764435Z"
+  },
+  "backup_restore": {
+    "user_backup_status": "AVAILABLE",
+    "restored_row_count": 12,
+    "source_and_restore_full_typed_row_hashes_equal": true,
+    "source_rowset_sha256": "798674205c58cf8639d570f46a1363b9e3eb5e16e32f19002444e5a96a682b67",
+    "independent_observed_at_utc": "2026-09-28T08:36:53.124707Z",
+    "initial_restore_success_response_had_source_summary": true,
+    "active_describe_summary_present": false,
+    "provenance": "Exact successful request and initial source summary plus unchanged restored table identity and full row equality; absent optional summary is recorded, not fabricated.",
+    "independent_cloud_writes": 0,
+    "new_raw_row_or_secret_copy_saved_by_independent_reader": false,
+    "temporary_delete_request": "CONFIRMED",
+    "temporary_absence": "INDEPENDENTLY_VERIFIED"
+  },
+  "ssm": {
+    "old_paths_absent": 2,
+    "parameter_value_reads": 0,
+    "existing_current_parameter_metadata_unchanged": 4,
+    "current_functions_templates_unchanged": true,
+    "finite_consumer_audit": {
+      "current_functions": 10,
+      "current_templates": 2,
+      "known_source_and_workflow_references": 0,
+      "cloudtrail_pages": 15,
+      "cloudtrail_events_examined": 601,
+      "observed_target_matches": 0,
+      "get_parameter_events": 251,
+      "get_parameter_complete": true,
+      "get_parameters_events": 350,
+      "get_parameters_complete": false,
+      "by_path_and_history_events": 0,
+      "by_path_and_history_complete": true
+    },
+    "not_claims": [
+      "No proof that all external clients or all historical batch reads were absent.",
+      "Deleting parameter paths does not revoke Telegram token values.",
+      "No token value was read, compared, copied or rotated."
+    ],
+    "independent_final_absence_and_protection": true
+  },
+  "retention_obligations": [
+    {
+      "kind": "THIS_USER_BACKUP",
+      "due_utc": "2026-10-05T08:18:35.953000Z",
+      "deadline_kind": "OWNER_SEVEN_DAY_DELETE_AND_ABSENCE_VERIFICATION",
+      "aws_automatic_expiry": false,
+      "state": "PENDING",
+      "tracking_issue": "Z10/#167",
+      "origin_owner": "R2/Z20"
+    },
+    {
+      "kind": "ORIGINAL_STATS_CLASSIFICATION_AV",
+      "owner": "R2/Z20",
+      "due_utc": "2026-10-04T10:35:00Z",
+      "early_removal_after_stats_batch_completion": true,
+      "is_disaster_recovery_backup": false,
+      "state": "REMOVED_AFTER_BATCH_COMPLETION",
+      "removed_at_utc": "2026-09-28T08:48:30.722463Z",
+      "independently_verified": true,
+      "original_sha256": "526c87c21c39bdd8cf3db67676e139e3e653e2637abd9280828cdc17ecc21fb6",
+      "not_secure_disk_erasure": true
+    },
+    {
+      "kind": "ORIGINAL_Z10_PITR_RECHECK",
+      "due_utc": "2026-10-17T16:20:38Z",
+      "state": "PENDING"
+    },
+    {
+      "kind": "PRIOR_S4_SYSTEM_BACKUP",
+      "aws_reported_expiry_utc": "2026-11-01T11:46:02.425Z",
+      "state": "PENDING_EXPIRY_READBACK"
+    },
+    {
+      "kind": "NEW_STATS_DELETE_SYSTEM_BACKUP",
+      "state": "PENDING_EXPIRY_READBACK",
+      "tracking_issue": "Z10/#167",
+      "created_at_utc": "2026-09-28T08:45:11.254000Z",
+      "aws_reported_expiry_utc": "2026-11-02T08:45:11.254000Z",
+      "backup_arn_sha256": "be225c94e8f9916b9f1eb97dc28220336656d0528981f8b8ecc6cc36b89bf764"
+    }
+  ],
+  "failure_evidence": {
+    "initial_preflight": "STOPPED_ZERO_WRITE_POLICY_ABSENCE_ERROR_SHAPE",
+    "initial_restorecheck": "STOPPED_ZERO_WRITE_TEMP_IDENTITY_OR_READY_GATE; exact failing subcondition was not saved",
+    "later_active_summary_omission": "OBSERVED_OPTIONAL_FIELD_ABSENT",
+    "original_owner_and_failed_receipts_preserved": true,
+    "narrow_continuation_did_not_repeat_backup_or_restore_writes": true,
+    "constructor_stop": "ZERO_API_WRAPPED_KEY_HASH_COMPARISON_FIXED_BEFORE_WRITES",
+    "pseudo_iam_action_removed_before_final_preflight": true
+  },
+  "protected_scope": {
+    "current_tables": 6,
+    "current_functions": 10,
+    "independent_protection": "BEFORE_AND_AFTER_METADATA_PROJECTIONS_EQUAL",
+    "not_full_artifact_or_all_data_reaudit": true,
+    "independent_final_sha256": "e58851451537b257d9ab0de3590809535bf3dcf2de4dedf2af7aedd33736d878"
+  },
+  "final_steps": {
+    "source_delete": "PASS",
+    "source_absence_independent": "PASS",
+    "temporary_absence_final": "PASS",
+    "system_backup_registration": "PASS",
+    "classification_copy_disposition": "PASS",
+    "overall_final": "PASS"
+  },
+  "evidence_sha256": {
+    "independent_restore": "82eb1012f1f9534826902684c7f957bda1e0aada76b7797972225c682df7704d",
+    "migration": "8bc11c14c9f6e3ca516ed3a65ed26b2a936fcfc1caadc6f1a9085e6d770cc189",
+    "backup_available": "b05951e01f8e89461106f2a9cf05c311dfb9dda4e824319c1ee3d8eafd5f893c",
+    "backup_retention": "34d38b3b6b57cb60d7f0376bb8f7768b7423e134855fc45a0ea5691da2ce4eaf",
+    "ssm_consumer_audit": "8a51e999af25d0d66ef0cbad53782e7d5004d0a41bf87a76a981709fcbc6111e",
+    "ssm_token_absence": "75e91aa587c5a340c1fa5e8bdb60e97474ffc1588303d7793c1f10c080c763df",
+    "ssm_webhook_secret_absence": "6103a170ac19090b799d974f044d7c1e0597e8b7785be4e164842d5dc78f078b",
+    "initial_preflight_stop": "65409613fd6ac68e5414fdd1cf910430eb4a57cad1c8e780adac7af1dc2376ac",
+    "initial_restorecheck_stop": "810207243f468dc19863d20813d6f296263ed52596faa803ab6f5275263e2a05",
+    "active_optional_summary_diagnostic": "0395f7be827980e250c684e44504f0629369fffa0cd17b6ab1771e12985731fb",
+    "continuation_restorecheck": "a5536da2ffa9a08cef1c3db6272654f99b371949d7bf41b7728de4d3eb5a7975",
+    "temporary_delete_request": "51a9b915b9dbfa77b96bd585b2cae296a78af8b26d67b31458894d13ac82f680",
+    "final_preflight": "f7fcc8055452101335ebc5ec42de2d96e80151a5aebc59a7e81278270a6a7ef3",
+    "final_fence": "7a0584db7c203b5239144679b0b59411d647c19d625131a8195f86438f0d1dd4",
+    "final_stable": "1d12e27eb4bcb208d20a77144298a775713b979b451f6f4535f04eb4a3bd25a3",
+    "final_backup": "eeb3b4d49c2d45548e6b102f55de17ec280c419d12a2c1e57cc88a3d3c084c53",
+    "final_backupcheck": "b05951e01f8e89461106f2a9cf05c311dfb9dda4e824319c1ee3d8eafd5f893c",
+    "final_restore": "2e2bb582c18bd2242361fa7a0867c3548c9670a602b9223321fc6757f13be472",
+    "final_restorecheck": "a5536da2ffa9a08cef1c3db6272654f99b371949d7bf41b7728de4d3eb5a7975",
+    "final_migrate": "8bc11c14c9f6e3ca516ed3a65ed26b2a936fcfc1caadc6f1a9085e6d770cc189",
+    "final_tempdelete": "51a9b915b9dbfa77b96bd585b2cae296a78af8b26d67b31458894d13ac82f680",
+    "final_tempverify": "37054e39ac1b53d1009a405e2f0340a15a21a687a0eda09f75a52512a6331032",
+    "final_unlock": "2113e33b1297007e3a739e3215bd90d68c10f0a4ba95fc65a15f0388cdd18ef5",
+    "final_unlocked": "3d2e664488d3db128945a979763453ae643355c5d7ef1e1af387981380974405",
+    "final_delete": "bbdc375d7d7eb15d3ea24c46552e526bbbbee5f1f5ae28759d834c9918e07032",
+    "final_verify": "a6782239a5759fded311b5197f10980db8002bf10afa0d382e80c896b56bb609",
+    "final-review/once/independent-final.safe.json": "e58851451537b257d9ab0de3590809535bf3dcf2de4dedf2af7aedd33736d878",
+    "classification-removal.safe.json": "ddaea77690688350736d86004d1bcfd02c50d056aec9339507e8d6970bcb4223",
+    "classification-removal-independent.safe.json": "603b8f83cbf6b45624f66c73e879dcd189140b50942777779e11393bc997b54b",
+    "system-backup-retention.safe.json": "e7fafa9f137b5c216050dfe10efe27e4be6bdb280ed1f10ace1ccae5c663f943",
+    "final-review/binding.json": "79a5287a2de208eaf9e3bcbce4dac1e29a14ca7f631e5038cdd31578b6f27df6",
+    "root-operator-review.safe.json": "99f7d5cef56b02f279fe8f35c059d7cc709ba9a2c8fa06679049ee5048fe0dc2",
+    "independent-operator-review.safe.json": "59dc9921c08937f695d3e958f881f1d356fc437862db6ec0ac1d68282cfc9e70",
+    "code-review/operator-correctness.safe.json": "c17d061331ef17ebb4c4a66f4307b4b89f0e10eea02ceac13c1418ef8365feed",
+    "root-continuation-review.safe.json": "24541cb584e37d6aba1811617339a4444634896f19a7d6754a537fcbfbca94e6",
+    "independent-continuation-review.safe.json": "e71728158d35fda0b13011e6a6b43e21df8ee17ec7803d87dc0d491e51a9c444",
+    "final-review/root-review.safe.json": "c55a470aad8c07112404cb6c8d59107e4af046ed35898aff6de1cc52567af053"
+  },
+  "limitations": [
+    "Declared online retirement scope complete; not a new full Lambda artifact/CONTROL/PITR audit or project-wide acceptance.",
+    "Online resource deletion is not physical erasure of all backups or external copies.",
+    "No change to natural-sample or production quality acceptance is established by this retirement batch."
+  ],
+  "observed_at_utc": "2026-09-28T08:47:42.132091Z",
+  "cloud_mutations": {
+    "stats_protocol": 7,
+    "old_parameters": 2,
+    "total": 9
+  },
+  "online_cleanup_scope_complete": true,
+  "overall_project_complete": false,
+  "production_ready": false,
+  "no_new_runtime_release": true,
+  "new_feature_or_group_activation": false,
+  "model_calls": 0,
+  "evidence_correction": {
+    "previous_report_sha256": "54051b58f9144b5291ba5c50979df1a1924bc8f46c0035b281e4cca6677da8c0",
+    "previous_private_report_preserved": true,
+    "correction": "The original composite temp_identity_or_status failure receipt does not record TableStatus. CREATING was not established; later ACTIVE with matching identity is a separate observation. Final deletion, restore equality and protection conclusions are unchanged."
+  }
+}
