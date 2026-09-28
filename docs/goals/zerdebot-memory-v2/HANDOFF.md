@@ -1,14 +1,16 @@
-# 下一次执行入口（2026-09-28最终在线退役后）
+# 下一次执行入口（2026-09-28真实Quiz正常链路后）
 
 先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[清单](RETIREMENT_INVENTORY.md)与[副本台账](RETAINED_COPIES.md)。task_manifest拥有状态。
 
 2026-09-28最后一批旧stats表与两个旧SSM路径已删除并独立确认不存在；临时恢复表也已删除。1条缺失历史统计按条件保全，3条已有统计不重复相加，8条旧实例投票不迁入且不声称过期。原28项、随后6项及本批3项合计37个已声明旧对象在线退役，6张现役表继续保留。Z20的源码与已声明在线资源范围完成；备份责任留Z10，业务与自然验收未完成，不新增启用。
 
-本批私有入口是本机验收根目录的`2026-09-28-legacy-stats-final/CURRENT.md`、`final.safe.json`及最终docs发布回执。主检/恢复独审/最终独审、精确AV清理均已结束；原AV已不存在，旧验证脚本依赖它而不能再运行。所有源/临时表删除、参数删除、备份/恢复/迁移once均禁止重跑。[本批公开证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
+本批私有入口是本机验收根目录的`2026-09-28-legacy-stats-final/CURRENT.md`、`final-reviewed.safe.json`及最终docs发布回执（原私有final.safe.json保留；恢复前首次失败的具体TableStatus未保全，不能据它断言CREATING）。主检/恢复独审/最终独审、精确AV清理均已结束；原AV已不存在，旧验证脚本依赖它而不能再运行。所有源/临时表删除、参数删除、备份/恢复/迁移once均禁止重跑。[本批公开证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
 运行构建源仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`，本批没有新Lambda发布。原S4已结束；预算时点只读继续用绑定该运行源的`2026-09-27-legacy-resource-retirement/read_budget_published_s4_v6.py`，每次唯一label；不能用旧PR224/PR220 reader，时点PASS不是持续许可。原费用owner/epoch/DAY/UNKNOWN不变，模型调用仍走原预留。
 
-下一步推进Z01/Z02和R3真实公开业务验收：先确认专用测试群、账号、权限及原模型预算约束；可从kk/zh/ru的单次真实genquiz/poll/答题开始，不伪造update、成员、失败分支或手动Invoke。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
+9月28日晚已在唯一dev专用群完成一次原生`/genquiz@zerde_dev_bot Python easy ru`、poll与答题：发布DONE、答案SCORED、总分0→1/周分0、对应outbox缺席。私有`2026-09-28-r3-quiz-live/CURRENT.md`拥有这轮实际标识和回执；不重新发题或答题。正常链路证据见[R3验收](R3_QUIZ_ACCEPTANCE.md)，不计自然样本。
+
+下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN/reconcile、答案先到/GSI迟到、失败与重投未验证；先统一现有帮助文字与实际权限说明，再制定具体恢复验收，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
 
 R4自然起点仍未建立，0/50有据、0/20未知，production_ready=false。dev唯一测试群控制/epoch随合法命令变化，只读不回写历史revision；prod不新增CONTROL。不自动造聊天/邀请别人/启用新群；业务与费用工作不依赖自然样本。
 

@@ -1,5 +1,7 @@
 > 历史阶段契约；当前执行入口为[HANDOFF](HANDOFF.md)。本文件已有清理/发布均不得因旧措辞重跑；最新结果见[最终在线退役](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
+> 2026-09-28 R3入口复核更正：下文历史Quiz示例中的逗号会被现有parser并入topic，令difficulty回落medium。实际验收使用 `/genquiz@zerde_dev_bot Python easy ru`（空格分隔）；旧示例不再作为执行指令。
+
 # 更早空资源退役契约（2026-09-28）
 
 本批接续 [FINISH_EXECUTION](FINISH_EXECUTION.md) 的 R2/Z20，执行结果以 [task_manifest](task_manifest.json) 和独立 AWS 读回为准。S4 已完成的 28 对象不重复处理。主代理已在本对话告知下列准备删除、保留与待核实项；不要求重复授权。
