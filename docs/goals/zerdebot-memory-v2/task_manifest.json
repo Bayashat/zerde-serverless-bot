@@ -523,14 +523,14 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "real_quiz_normal_path_pass_recovery_pending",
-    "status_as_of": "2026-09-28",
-    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。",
-    "remaining": "并发daily、发送UNKNOWN/reconcile、答案先于持久可见/GSI迟到、数据库失败及重投幂等的真实证据；帮助文字的管理员限制说明与现有开放行为需统一。正常单次成功不代表异常恢复通过。",
+    "status": "real_quiz_normal_and_done_reconcile_pass_recovery_pending",
+    "status_as_of": "2026-09-29",
+    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。",
+    "remaining": "并发daily、发送UNKNOWN到DONE恢复、答案先于持久可见/GSI迟到、数据库失败及重投幂等的真实证据；统一genquiz权限帮助与reconcile成功提示，处理Quiz计数失败和备用供应商费用可见性。DONE对账通过不代表异常恢复通过。",
     "issue_state": "OPEN",
     "runtime_baseline": "f3f77bc28fd80948fcfd11e6cc18d1980c6b93db",
     "deployed_build_source": "01bdc1da2c5d995759eda0dfef99f7b427301d60",
-    "status_evidence": "evidence/2026-09-28-r3-quiz-live/result.safe.json",
+    "status_evidence": "evidence/2026-09-29-r3-quiz-reconcile/result.safe.json",
     "runtime_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json"
   },
   {

@@ -1,4 +1,4 @@
-# 下一次执行入口（2026-09-28真实Quiz正常链路后）
+# 下一次执行入口（2026-09-29真实Quiz终态对账后）
 
 先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[清单](RETIREMENT_INVENTORY.md)与[副本台账](RETAINED_COPIES.md)。task_manifest拥有状态。
 
@@ -10,7 +10,9 @@
 
 9月28日晚已在唯一dev专用群完成一次原生`/genquiz@zerde_dev_bot Python easy ru`、poll与答题：发布DONE、答案SCORED、总分0→1/周分0、对应outbox缺席。私有`2026-09-28-r3-quiz-live/CURRENT.md`拥有这轮实际标识和回执；不重新发题或答题。正常链路证据见[R3验收](R3_QUIZ_ACCEPTANCE.md)，不计自然样本。
 
-下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN/reconcile、答案先到/GSI迟到、失败与重投未验证；先统一现有帮助文字与实际权限说明，再制定具体恢复验收，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
+9月29日补充：管理员对昨日已完成的原始Quiz执行一次公开原生Reply对账，返回成功。八个精确记录前后与独立强读逐值相同，总分保持1、周分0、两个outbox缺席；UI只新增对账文字，没有新poll。仅通过DONE终态幂等边界，UNKNOWN恢复、故障重投和daily并发仍未覆盖，不增加自然样本。 私有入口为`2026-09-29-r3-quiz-reconcile/CURRENT.md`和最终回执；不再对同一poll重复命令来凑证据。
+
+下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN到DONE恢复、答案先到/GSI迟到、失败与重投未验证；先统一genquiz权限帮助和reconcile成功提示（DONE并没有恢复写入），再闭合计数失败/备用供应商可见性并制定具体恢复验收，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
 
 R4自然起点仍未建立，0/50有据、0/20未知，production_ready=false。dev唯一测试群控制/epoch随合法命令变化，只读不回写历史revision；prod不新增CONTROL。不自动造聊天/邀请别人/启用新群；业务与费用工作不依赖自然样本。
 

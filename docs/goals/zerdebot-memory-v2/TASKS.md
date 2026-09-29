@@ -1,4 +1,4 @@
-# 任务看板（2026-09-28）
+# 任务看板（2026-09-29）
 
 [Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157)仍OPEN。逐工单唯一状态：[task_manifest](task_manifest.json)；[执行顺序](FINISH_EXECUTION.md)。
 
@@ -23,7 +23,7 @@
 | Z13 [#170](https://github.com/Bayashat/zerde-serverless-bot/issues/170) | 反垃圾执行结果/重试及CLEAN恢复实现已部署。 | 真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。 |
 | Z14 [#171](https://github.com/Bayashat/zerde-serverless-bot/issues/171) | 投票会话版本和逻辑过期实现已部署。 | 真实旧按钮/新会话、并发终结及临时封禁恢复计数。 |
 | Z15 [#172](https://github.com/Bayashat/zerde-serverless-bot/issues/172) | 新闻总时限和分群交付恢复实现已部署。 | 成功群不重复、失败群恢复、结果不明处理的实际证据。 |
-| Z16 [#173](https://github.com/Bayashat/zerde-serverless-bot/issues/173) | Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 | 并发daily、发送UNKNOWN/reconcile、答案先于持久可见/GSI迟到、数据库失败及重投幂等的真实证据；帮助文字的管理员限制说明与现有开放行为需统一。正常单次成功不代表异常恢复通过。 |
+| Z16 [#173](https://github.com/Bayashat/zerde-serverless-bot/issues/173) | Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 | 并发daily、发送UNKNOWN到DONE恢复、答案先于持久可见/GSI迟到、数据库失败及重投幂等的真实证据；统一genquiz权限帮助与reconcile成功提示，处理Quiz计数失败和备用供应商费用可见性。DONE对账通过不代表异常恢复通过。 |
 | Z17 [#174](https://github.com/Bayashat/zerde-serverless-bot/issues/174) | 成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 | 闭合账期项目归因、未标记/共享费用、credits/税及模型账单；USD1.2690103981非实付或完整Free Tier结论，业务恢复证据仍待收口。 |
 | Z18 [#175](https://github.com/Bayashat/zerde-serverless-bot/issues/175)（已结项：限定范围） | 原清单与执行手册已由#184/#204交付，限定文档范围已结项；本批S4资源退役另有实际证据。 | 本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。 |
 | Z19 [#178](https://github.com/Bayashat/zerde-serverless-bot/issues/178)（已结项：限定范围） | 抽奖命令/实现/定时恢复已退役，在线残留清除和旧任务重放已验证。 | 功能范围可结项；历史副本义务明确留在Z10，不宣称物理抹除。 |
