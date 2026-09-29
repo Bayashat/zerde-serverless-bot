@@ -36,7 +36,7 @@
 - Z16：9月28日单次`/genquiz@zerde_dev_bot Python easy ru`、原生poll和实际答题正常链路已通过；不重发本次请求。继续并发daily、UNKNOWN到DONE恢复、答案先于持久/GSI迟到、失败和重投恢复，以及帮助说明一致性；未发生的分支不称通过。见[R3验收](R3_QUIZ_ACCEPTANCE.md)。
 - Z17：闭合账期的项目标签费用、credits/税/未标记与共享成本、供应商实际账单分别核对；应用预算/CloudWatch估算不当实付。不改支付、不手写预算许可、不清UNKNOWN。
 
-9月27日10:53UTC最后已归档CE快照：dev USD0.4216791725、prod USD0.8473312256，合计USD1.2690103981，Estimated；未标Project Usage USD25.9433726729及Tax USD4.86不分配给Zerde。这不是最终账单或完整Free Tier结论。本轮未新增费用查询；Quiz有一次真实生成请求，原当日Quiz计数0→1，但SDK重试/备用供应商调用与实付费用未由此测得。应用月目标仍USD70模型＋USD30新增AWS预留，原计量起点和不确定费用责任不变。
+9月27日10:53UTC最后已归档CE快照：dev USD0.4216791725、prod USD0.8473312256，合计USD1.2690103981，Estimated；未标Project Usage USD25.9433726729及Tax USD4.86不分配给Zerde。这不是最终账单或完整Free Tier结论。9月29日未新增费用查询；9月28日普通Quiz轮有一次真实生成请求和当日计数0→1，9月29日仅DONE对账且当日RPD行前后缺席。SDK重试/备用供应商调用与实付费用未由此测得。应用月目标仍USD70模型＋USD30新增AWS预留，原计量起点和不确定费用责任不变。
 
 ## 副本与恢复
 
