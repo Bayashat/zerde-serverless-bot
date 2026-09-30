@@ -26,10 +26,10 @@
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。",
     "remaining": "显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z02",
@@ -48,14 +48,14 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "deployed_acceptance_reconciliation_pending",
-    "status_as_of": "2026-09-26",
-    "completed": "脱敏与内容最小化已实现并部署。 PR232限定Quiz调用链移除内容/异常正文日志并交付安全attempt/usage观察；全仓逐项日志验收仍待。",
+    "status_as_of": "2026-09-30",
+    "completed": "脱敏与内容最小化已实现并部署。 PR232限定Quiz调用链移除内容/异常正文日志并交付安全attempt/usage观察；全仓逐项日志验收仍待。 PR235收紧实际Quiz反馈发送器的异常日志，只记录错误类型；全仓逐项日志证据仍待。",
     "remaining": "逐条关联日志/异常/未授权群验收证据，不以总测试数结项。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "local_followup": {
       "as_of": "2026-09-29",
       "contract": "QUIZ_ADMISSION_EXECUTION.md",
@@ -64,7 +64,8 @@
       "scope": "Quiz调用链内容日志移除及attempt/usage观察，不代表全仓日志或完整供应商费用归因完成"
     },
     "followup_prs_merged": [
-      232
+      232,
+      235
     ],
     "release_followup": {
       "as_of": "2026-09-30",
@@ -72,6 +73,14 @@
       "merge": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
       "evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
       "scope": "Quiz准入/安全观察/文案已部署；整体业务恢复、全仓日志和实际账单仍未验收"
+    },
+    "feedback_release": {
+      "pr": 235,
+      "source": "7d3f42827662cae428bc3276319a165add9c417a",
+      "merge": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+      "status": "deployed_packages_and_protection_verified",
+      "evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
+      "new_live_feedback_acceptance": false
     }
   },
   {
@@ -95,10 +104,10 @@
     "completed": "原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。",
     "remaining": "本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。",
     "issue_state": "CLOSED",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "issue_closed_at": "2026-09-27T11:55:43Z",
     "scope_completed": true,
     "resource_retirement_pr": 226
@@ -127,11 +136,11 @@
     "completed": "PR223依赖修复、PR224源码退役及PR226配置资源退役已部署；两环境五函数实际包/锁定依赖/层/完整配置、预算清单及保护项主检和独审通过。",
     "remaining": "本工单限定部署配置/打包范围已验收；业务真实恢复、费用归因和自然质量仍由各原工单负责。",
     "issue_state": "CLOSED",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
     "execution_contract": "ANYIO_RELEASE_EXECUTION.md",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "issue_closed_at": "2026-09-27T11:55:48Z",
     "scope_completed": true,
     "resource_retirement_pr": 226
@@ -160,10 +169,10 @@
     "completed": "V2身份、事实、控制与唯一writer已运行并通过合成验证。",
     "remaining": "按原契约核对证据并收口；Z11自然使用与prod启用未完成。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z06",
@@ -191,10 +200,10 @@
     "completed": "事务摄取、后台恢复已部署并有真实Telegram合成完成证据。",
     "remaining": "覆盖/暂停/过期分母及学习/恢复延迟分布；单次耗时不是p95。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z07",
@@ -233,10 +242,10 @@
     "completed": "F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。",
     "remaining": "自然使用事实正确性/来源和语言切片，未知时不编造。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z08",
@@ -275,10 +284,10 @@
     "completed": "来源支持1176/1176；原生Telegram来源点击可回源。",
     "remaining": "自然回答质量、费用归因与预算恢复完整周期；#134关联本工单，尚不代替整体结项。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z09",
@@ -305,10 +314,10 @@
     "completed": "F6/F7/F8/F10及PR220完成权限拒绝、本人更正、source-forget闭环。",
     "remaining": "自然覆盖及各原验收项逐条收口；旧两个PENDING不回填。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z10",
@@ -344,10 +353,10 @@
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。",
     "remaining": "副本独立跟踪：旧stats USER备份于2026-10-05 08:18:35.953 UTC执行精确删除与不存在核验；原PITR于2026-10-17 16:20:38 UTC复查；旧memory SYSTEM服务到期2026-11-01 11:46:02.425 UTC；本批stats SYSTEM服务到期2026-11-02 08:45:11.254 UTC，均须按原身份到期读回。原Oct4临时AV已按本批提前完成条件移除并独审；文件移除不是安全抹盘。 日志/DLQ/其他副本仍按原台账逐项收口，用户Telegram导出不删。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-28-legacy-stats-final/final.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "retention_register": "RETAINED_COPIES.md"
   },
   {
@@ -401,15 +410,15 @@
     "completed": "F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。",
     "remaining": "Z20声明的旧残留清理前置已满足；真实使用起点未建立，0/50有据和0/20未知，至少7天及其他产品门槛仍未满足；本次不启用新群或prod记忆。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
     "natural_started_at": null,
     "natural_supported_answers": 0,
     "natural_unknown_answers": 0,
     "production_ready": false,
     "activation_dependency": "Z20",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "cleanup_dependency_satisfied": true
   },
   {
@@ -433,10 +442,10 @@
     "completed": "验证码竞争/状态恢复实现已部署。",
     "remaining": "测试身份真实正确解限、旧超时/重入群竞争和异常恢复。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z13",
@@ -462,10 +471,10 @@
     "completed": "反垃圾执行结果/重试及CLEAN恢复实现已部署。",
     "remaining": "真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z14",
@@ -488,10 +497,10 @@
     "completed": "投票会话版本和逻辑过期实现已部署。",
     "remaining": "真实旧按钮/新会话、并发终结及临时封禁恢复计数。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z15",
@@ -518,10 +527,10 @@
     "completed": "新闻总时限和分群交付恢复实现已部署。",
     "remaining": "成功群不重复、失败群恢复、结果不明处理的实际证据。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z16",
@@ -542,15 +551,16 @@
     },
     "status": "deployed_normal_terminal_and_controlled_admission_recovery_verified_other_acceptance_pending",
     "status_as_of": "2026-09-30",
-    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。 一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。",
-    "remaining": "本次仅通过一个受控准入失败恢复及有限窗口不重复，不覆盖daily并发、发送UNKNOWN、GSI迟到、其他失败重投或自然记忆质量。下一步先修正已排队请求仍提示用户重发的反馈，再继续原Z16及其他R3业务/费用验收；Z16/Z17保持OPEN，production_ready=false。",
+    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。 一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。 PR235已合并并部署dev/prod：原请求确认保留后提示后台继续尝试且无需重发；处理中、待核对、过期和无效请求分别说明；提示发送或诊断失败不再重试整次出题。实际sendMessage异常日志仅记录类型。原publication/outbox/准入与计分所有者不变。",
+    "remaining": "新版反馈的真实Telegram补验、daily并发、发送UNKNOWN到DONE、答案先到/GSI迟到及其他失败重投仍未覆盖；不以本地测试或发布成功关闭Z16。其余R3业务/实际费用继续，自然0/50有据、0/20未知，production_ready=false。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "followup_prs_merged": [
-      232
+      232,
+      235
     ],
     "release_followup": {
       "as_of": "2026-09-30",
@@ -565,6 +575,14 @@
       "natural_samples_added": 0,
       "evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json",
       "runtime_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f"
+    },
+    "feedback_release": {
+      "pr": 235,
+      "source": "7d3f42827662cae428bc3276319a165add9c417a",
+      "merge": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+      "status": "deployed_packages_and_protection_verified",
+      "evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
+      "new_live_feedback_acceptance": false
     }
   },
   {
@@ -586,21 +604,22 @@
       205,
       208,
       209,
-      232
+      232,
+      235
     ],
     "historical_state_before_2026_09_26": {
       "status": "deployed_cost_retry_readback_pass_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "metering_readback_pass_actual_attribution_pending",
-    "status_as_of": "2026-09-27",
-    "completed": "成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 PR232交付Quiz应用尝试/usage未知观察及新运行包预算reader重绑；观察不是完整供应商账单。 9月30日受控Quiz恢复后原PT日计数0→1；有限窗口provider观察见新证据，不当完整账单或Memory许可。",
+    "status_as_of": "2026-09-30",
+    "completed": "成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 PR232交付Quiz应用尝试/usage未知观察及新运行包预算reader重绑；观察不是完整供应商账单。 9月30日受控Quiz恢复后原PT日计数0→1；有限窗口provider观察见新证据，不当完整账单或Memory许可。 PR235发布后104文件原费用闭包逐字保留、reader重绑时点PASS；没有新增模型测试或账单查询。",
     "remaining": "闭合账期项目归因、未标记/共享费用、credits/税及模型账单；USD1.2690103981非实付或完整Free Tier结论，业务恢复证据仍待收口。",
     "issue_state": "OPEN",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "cost_observation": {
       "observed_at_utc": "2026-09-27T10:53:07.083410+00:00",
       "metric": "UnblendedCost",
@@ -624,7 +643,15 @@
       "evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
       "scope": "Quiz准入/安全观察/文案已部署；整体业务恢复、全仓日志和实际账单仍未验收"
     },
-    "quiz_observation_evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json"
+    "quiz_observation_evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json",
+    "feedback_release": {
+      "pr": 235,
+      "source": "7d3f42827662cae428bc3276319a165add9c417a",
+      "merge": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+      "status": "deployed_packages_and_protection_verified",
+      "evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
+      "new_live_feedback_acceptance": false
+    }
   },
   {
     "id": "Z18",
@@ -647,11 +674,11 @@
     "completed": "原清单与执行手册已由#184/#204交付，限定文档范围已结项；本批S4资源退役另有实际证据。",
     "remaining": "本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。",
     "issue_state": "CLOSED",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
     "completion_scope": "runbook_only",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z19",
@@ -677,12 +704,12 @@
     "completed": "抽奖命令/实现/定时恢复已退役，在线残留清除和旧任务重放已验证。",
     "remaining": "功能范围可结项；历史副本义务明确留在Z10，不宣称物理抹除。",
     "issue_state": "CLOSED",
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
     "completion_scope": "runtime_retirement_and_online_residue_only",
     "retained_copies_tracked_by": "Z10",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json"
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json"
   },
   {
     "id": "Z20",
@@ -705,11 +732,11 @@
     "execution_contract": "SOURCE_RETIREMENT_EXECUTION.md",
     "status_evidence": "evidence/2026-09-28-legacy-stats-final/final.safe.json",
     "source_retirement_pr": 224,
-    "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
-    "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+    "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+    "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
     "resource_execution_contract": "RESOURCE_RETIREMENT_EXECUTION.md",
     "implementation_evidence": "evidence/2026-09-27-retirement/resource-implementation.safe.json",
-    "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "resource_retirement_pr": 226,
     "earlier_candidates_remaining": 0,
     "overall_complete": true,
