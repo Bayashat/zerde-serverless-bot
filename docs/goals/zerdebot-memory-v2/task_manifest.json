@@ -540,14 +540,14 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "quiz_admission_deployed_real_recovery_pending",
+    "status": "deployed_normal_terminal_and_controlled_admission_recovery_verified_other_acceptance_pending",
     "status_as_of": "2026-09-30",
-    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。",
-    "remaining": "真实daily并发、发送UNKNOWN恢复、GSI迟到和失败重投仍未验收；下一步按受控准入恢复契约实现并独审精确操作器，再执行一次新的真实公开请求。本次没有发题、模型测试或故障注入，不增加自然样本；Z16/Z17及整个项目仍未完成。",
+    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。 一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。",
+    "remaining": "本次仅通过一个受控准入失败恢复及有限窗口不重复，不覆盖daily并发、发送UNKNOWN、GSI迟到、其他失败重投或自然记忆质量。下一步先修正已排队请求仍提示用户重发的反馈，再继续原Z16及其他R3业务/费用验收；Z16/Z17保持OPEN，production_ready=false。",
     "issue_state": "OPEN",
     "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
     "deployed_build_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
-    "status_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
+    "status_evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json",
     "runtime_evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
     "followup_prs_merged": [
       232
@@ -559,7 +559,13 @@
       "evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
       "scope": "Quiz准入/安全观察/文案已部署；整体业务恢复、全仓日志和实际账单仍未验收"
     },
-    "next_acceptance_contract": "R3_QUIZ_ADMISSION_RECOVERY.md"
+    "completed_acceptance_contract": "R3_QUIZ_ADMISSION_RECOVERY.md",
+    "controlled_admission_recovery": {
+      "status": "scoped_pass",
+      "natural_samples_added": 0,
+      "evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json",
+      "runtime_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f"
+    }
   },
   {
     "id": "Z17",
@@ -588,7 +594,7 @@
     },
     "status": "metering_readback_pass_actual_attribution_pending",
     "status_as_of": "2026-09-27",
-    "completed": "成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 PR232交付Quiz应用尝试/usage未知观察及新运行包预算reader重绑；观察不是完整供应商账单。",
+    "completed": "成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 PR232交付Quiz应用尝试/usage未知观察及新运行包预算reader重绑；观察不是完整供应商账单。 9月30日受控Quiz恢复后原PT日计数0→1；有限窗口provider观察见新证据，不当完整账单或Memory许可。",
     "remaining": "闭合账期项目归因、未标记/共享费用、credits/税及模型账单；USD1.2690103981非实付或完整Free Tier结论，业务恢复证据仍待收口。",
     "issue_state": "OPEN",
     "runtime_baseline": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
@@ -617,7 +623,8 @@
       "merge": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
       "evidence": "evidence/2026-09-29-quiz-admission/release.safe.json",
       "scope": "Quiz准入/安全观察/文案已部署；整体业务恢复、全仓日志和实际账单仍未验收"
-    }
+    },
+    "quiz_observation_evidence": "evidence/2026-09-30-r3-admission-recovery/result.safe.json"
   },
   {
     "id": "Z18",

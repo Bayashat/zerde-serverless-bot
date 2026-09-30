@@ -1,6 +1,6 @@
 # 下一受控 dev Quiz 准入失败执行契约
 
-状态：边界契约已独立PRE对齐；操作器尚未实现或审阅，未执行故障注入。依据当前PR232源码及[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；研究原稿、首次归因修订与最终边界独审均冻结保留。具体身份和5分钟窗口须执行前重新冻结，不能把本文件当一次性执行许可。
+状态：本次契约已执行并结束，主检/独审通过限定的准入恢复及有限窗不重复；所有once、原生请求和临时policy操作均冻结，不得重跑。以下为原执行边界，实际结果见[脱敏证据](evidence/2026-09-30-r3-admission-recovery/result.safe.json)。依据当前PR232源码及[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；研究原稿、首次归因修订与最终边界独审均冻结保留。真实identity/固定窗口和19项本地检查已冻结留证；本文件不是下一次执行许可。
 
 目标：一次新的、真实的专用dev群公开genquiz请求，在真实准入依赖失败时留在原publication/outbox，撤销故障后由原业务链将同request/generation自动恢复成一个真实poll，有限复查窗不重复。此为业务受控合成验收，Z16/Z17仍OPEN，自然样本不增加；不验收UNKNOWN/GSI/daily并发/所有重投或完整费用。
 

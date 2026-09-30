@@ -1,18 +1,28 @@
-## 2026-09-30：Quiz准入修订已发布
+## 2026-09-30：真实受控准入失败已自动恢复
+
+一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。
+
+本次仅通过一个受控准入失败恢复及有限窗口不重复，不覆盖daily并发、发送UNKNOWN、GSI迟到、其他失败重投或自然记忆质量。下一步先修正已排队请求仍提示用户重发的反馈，再继续原Z16及其他R3业务/费用验收；Z16/Z17保持OPEN，production_ready=false。
+
+[本轮脱敏证据](evidence/2026-09-30-r3-admission-recovery/result.safe.json)。本轮没有新Lambda发布、新群/生产记忆启用或付款变更；运行构建仍为PR232的`0c6529d5c33b9afdf1229c559c83f961f04bc03f`。19项主工具及22项独立工具本地检查只验证操作器，真实结果由本轮原生操作、持久记录和独立云读回证明。
+
+## 此前发布记录：2026-09-30 Quiz准入修订
 
 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。
 
-运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，merge`4fda918ab5e5a8f4b65e349c9d6cfb6902d40181`；两环境300秒窗口后的配置重读通过，workflow ACTIVE，新104文件预算reader时点PASS（非持续许可或账单）。[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[下一验收契约](R3_QUIZ_ADMISSION_RECOVERY.md)。真实daily并发、发送UNKNOWN恢复、GSI迟到和失败重投仍未验收；下一步按受控准入恢复契约实现并独审精确操作器，再执行一次新的真实公开请求。本次没有发题、模型测试或故障注入，不增加自然样本；Z16/Z17及整个项目仍未完成。
+运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，merge`4fda918ab5e5a8f4b65e349c9d6cfb6902d40181`；两环境300秒窗口后的配置重读通过，workflow ACTIVE，新104文件预算reader时点PASS（非持续许可或账单）。[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[下一验收契约](R3_QUIZ_ADMISSION_RECOVERY.md)。本节记录PR232发布时点；后续受控恢复结果以上方最新记录为准。
 
 # 下一次执行入口（2026-09-30发布后）
 
-先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[下一受控恢复契约](R3_QUIZ_ADMISSION_RECOVERY.md)及[副本台账](RETAINED_COPIES.md)。task_manifest拥有逐工单状态。
+先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[已完成受控恢复契约](R3_QUIZ_ADMISSION_RECOVERY.md)及[副本台账](RETAINED_COPIES.md)。task_manifest拥有逐工单状态。
 
-当前私有入口为验收根目录的`2026-09-29-quiz-admission-fix/CURRENT.md`、`final-release.safe.json`、`budget-AdmissionFinal20260930A.safe.json`及最终文档发布回执。所有prepare/merge/execute/readback/finish once已经结束，不重跑；原工具误停及窄续接证据保留。final-release的budget_pending=true是预算时点读取前的历史阶段，后来单列的预算时点回执闭合，不能改旧报告。
+当前私有入口为验收根目录的`2026-09-30-r3-admission-recovery/CURRENT.md`、`final.safe.json`、`independent-Final/review.safe.json`及本轮最终文档发布回执。本轮注入/撤销/原生发题/恢复观察/独审均已结束，不重跑，也不重复发题或答题。
+
+运行发布与预算reader的历史入口另在`2026-09-29-quiz-admission-fix/CURRENT.md`、`final-release.safe.json`、`budget-AdmissionFinal20260930A.safe.json`及最终文档发布回执。所有prepare/merge/execute/readback/finish once已经结束，不重跑；原工具误停及窄续接证据保留。final-release的budget_pending=true是预算时点读取前的历史阶段，后来单列的预算时点回执闭合，不能改旧报告。
 
 当前预算只读使用该目录`read_budget_published.py`，绑定104文件原owner闭包和实际五函数发布，每次唯一label；旧S4/PR224/PR220 reader只作历史。时点PASS不是持久调用许可，原费用owner/epoch/DAY/UNKNOWN不变；Memory模型仍走原预留，Quiz沿独立原RPD。
 
-下一步实现并独审新受控dev准入失败操作器，先重新核实际角色/表/规则/原policy集合；边界契约已PRE对齐，但尚未注入或执行。允许一次新真实公开命令，失败/恢复按同request/generation验收；不重发2397、不答2398、不重复已完成的DONE对账，不手工Invoke或写状态。真实daily并发、UNKNOWN、GSI/答案恢复和其他业务验收仍待，不从本次代码发布推断通过。Z01/Z02及Z12–Z17继续按原工单推进，费用归因不能被usage日志代替。
+受控准入失败与自动恢复已按上述证据完成，本轮once工具和请求冻结，后续不能重跑；不重发2397、不答2398、不重复已完成的DONE对账，不手工Invoke或写状态。真实daily并发、UNKNOWN、GSI/答案恢复和其他业务验收仍待，不从本次代码发布推断通过。Z01/Z02及Z12–Z17继续按原工单推进，费用归因不能被usage日志代替。
 
 R2已声明13旧算法/专属vector入口及37旧在线对象清理完成，6现役表保留；不重做已结束清理。最后旧stats/两SSM及临时恢复表已不存在，旧AV也已移除；原清理脚本依赖已删除AV，禁止重跑。自动社交、历史导入和抽奖不恢复，不启用新群或prod记忆。
 
