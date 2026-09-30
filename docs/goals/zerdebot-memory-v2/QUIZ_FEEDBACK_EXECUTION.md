@@ -1,6 +1,14 @@
+## 2026-09-30晚：新版反馈真实补验（PARTIAL）
+
+新版真实提示已在专用dev群出现：请求已保存、后台重试、无需重发；原生Reply点击可跳回本轮命令。同请求在受控准入失败后自动恢复DONE，创建至完成176秒；两个后续观察的题目/poll不变、outbox缺席，恢复cursor继续推进。临时权限限制已提前撤销，截止时间后再核原策略恢复；独立30次只读核验确认同请求完成、原权限/配置/控制保持。
+
+整体仍为PARTIAL：原生消息链接菜单未能打开，feedback消息ID与精确Reply目标链接未取得；不补猜、不降低门槛，不重发本轮命令来补验。daily并发、发送UNKNOWN到DONE、答案先到/GSI迟到及其他失败重投仍待；Z16保持OPEN，production_ready=false。
+
+[本轮脱敏记录](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。这是一次已结束的受控业务合成测试，不能计入自然样本；本轮无代码发布、新群/生产记忆或付款变更。当前运行仍PR235。
+
 # Quiz 已保留请求的反馈修复
 
-状态：PR235已完成2334全测、CI及两环境实际包/保护主检和独审，预算reader重绑通过。上线证据见[发布回执](evidence/2026-09-30-quiz-feedback/release.safe.json)；新增真实Telegram反馈分支仍待单独验收。
+状态：PR235已完成2334全测、CI及两环境实际包/保护主检和独审，预算reader重绑通过。上线证据见[发布回执](evidence/2026-09-30-quiz-feedback/release.safe.json)；真实queued补验已取得全文/Reply导航和同请求恢复证据，但精确消息链接缺口仍使该项保持PARTIAL。
 
 ## 问题与目标
 

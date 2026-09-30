@@ -1,4 +1,4 @@
-# 当前执行入口（2026-09-30 Quiz反馈发布后）
+# 当前执行入口（2026-09-30晚反馈真实补验后）
 
 先读FINISH_EXECUTION/TASKS/task_manifest、QUIZ_FEEDBACK_EXECUTION和RETAINED_COPIES。逐工单状态由task_manifest拥有。
 
@@ -6,19 +6,21 @@ PR235已合并并部署dev/prod：原请求确认保留后提示后台继续尝�
 
 2334全测、两项CI、两环境五入口ARM及实际五函数/共享层的主检和独审通过，300秒窗口后配置稳定。实际只更新Quiz，其他四函数和层保持；104文件费用闭包逐字不变，预算读取器已重新绑定并时点PASS。运行构建源`7d3f42827662cae428bc3276319a165add9c417a`，merge`6a5acf160092a30b6b718135b11ac4ccb6feb38c`；部署workflow ACTIVE。
 
-私有最新入口：验收根下`2026-09-30-quiz-feedback-fix/CURRENT.md`、`final-release.safe.json`、`final-release-independent.safe.json`、`budget-FeedbackFinal20260930A.safe.json`及本轮文档收口回执。运行源是PR235，后续docs main不当新Lambda构建。所有本轮prepare/merge/execute/readback/finish已结束，不重跑；旧工具误停和精确CDK缓存保全另有回执，不能冒称首次成功。
+私有最新入口：验收根下`2026-09-30-quiz-feedback-live/CURRENT.md`及该轮最终safe/独审/文档回执；此前发布和预算reader仍在`2026-09-30-quiz-feedback-fix`。运行源是PR235，后续docs main不当新Lambda构建。此前W发布prepare/merge/execute/readback/finish已结束，不重跑；本轮N的freeze/inject/原生命令/discover/observe/withdraw/watchdog/post也全部结束。旧工具误停和精确CDK缓存保全另有回执，不能冒称首次成功。
 
-当前预算时点reader仅用本轮`read_budget_published.py`，104文件原owner逐字不变；每次唯一label，时点PASS非持续许可。旧U/PR232、S4、PR224、PR220 reader只作历史，不代表新包。原费用owner/epoch/DAY/UNKNOWN不变，Memory仍走预留，Quiz沿原RPD。没有付款变更。
+当前预算时点reader仅用`2026-09-30-quiz-feedback-fix/read_budget_published.py`，104文件原owner逐字不变；每次唯一label，时点PASS非持续许可。旧U/PR232、S4、PR224、PR220 reader只作历史，不代表新包。原费用owner/epoch/DAY/UNKNOWN不变，Memory仍走预留，Quiz沿原RPD。没有付款变更。
 
-新版反馈的真实Telegram补验、daily并发、发送UNKNOWN到DONE、答案先到/GSI迟到及其他失败重投仍未覆盖；不以本地测试或发布成功关闭Z16。其余R3业务/实际费用继续，自然0/50有据、0/20未知，production_ready=false。
+新版真实提示已在专用dev群出现：请求已保存、后台重试、无需重发；原生Reply点击可跳回本轮命令。同请求在受控准入失败后自动恢复DONE，创建至完成176秒；两个后续观察的题目/poll不变、outbox缺席，恢复cursor继续推进。临时权限限制已提前撤销，截止时间后再核原策略恢复；独立30次只读核验确认同请求完成、原权限/配置/控制保持。
 
-下一步先按新范围为反馈真实行为补验立契约，再继续原Z16的UNKNOWN/reconcile、daily并发与答案恢复；已有2397/2398/2401及全部旧轮次冻结，不复发、复答或清理造恢复。仅dev专用Test bots获准；不伪造update、成员、阈值、失败或模型结果，不手动Lambda Invoke，不Receive/Purge混合队列。并行继续Z01/Z02、Z12–Z17真实业务/费用；验证码有动作时确认要求，用户不在场不启动120秒踢出风险的入群流程。
+整体仍为PARTIAL：原生消息链接菜单未能打开，feedback消息ID与精确Reply目标链接未取得；不补猜、不降低门槛，不重发本轮命令来补验。daily并发、发送UNKNOWN到DONE、答案先到/GSI迟到及其他失败重投仍待；Z16保持OPEN，production_ready=false。 自然0/50有据、0/20未知。
+
+下一步优先推进Z02：先审私有本轮`NEXT_R3_SLICE_DRAFT.md`及新工具，使用已发布Bot/共享层在本地隔离环境核对Webhook授权边界到最终日志输出；草案尚未PRE或执行。原2404/queued反馈的精确UI链接缺口保持PARTIAL，仅在有可用的只读取证方式时再补；不自动重复界面流程，不重新发题/注入或猜feedbackID。新增REQUEST2404与poll2406以及既有2397/2398/2401/2403全部冻结，不复发、复答、对账或清理造恢复。仅dev专用Test bots获准；不伪造update、成员、阈值、失败或模型结果，不手动Lambda Invoke，不Receive/Purge混合队列。并行继续Z01/Z02、Z12–Z17真实业务/费用；验证码有动作时确认要求，用户不在场不启动120秒踢出风险的入群流程。
 
 R2已声明13旧算法/专属vector入口及37旧在线对象退役，六现役表保留；不重做清理。自动社交、历史导入和抽奖不恢复，不新增启用群或prod记忆。dev原CONTROL/epoch只观察，合法新revision不回写旧值；prod仍无CONTROL。合成、多账号同操作者和空转日历不算自然样本，不能机械造聊天或自行邀人。
 
 四项UTC副本责任保持：旧stats USER于2026-10-05 08:18:35.953精确人工删除并独审（早次任务先预检，等到原期限，每次等待≤60秒）；原PITR于10月17日16:20:38复查；旧memory SYSTEM于11月1日11:46:02.425到期；旧stats SYSTEM于11月2日08:45:11.254到期。按原BackupArn/TableId用新工具/新回执，不能推测不存在或延长原期限。Oct4临时AV义务已履行、旧三归档/key真实晚5h6m19.860s保留；不重建，不重删，文件移除不是安全抹盘。用户导出和现役PITR保留。
 
-[本轮脱敏证据](evidence/2026-09-30-quiz-feedback/release.safe.json)。每次实质交付同步计划、工单和自动任务；业务/自然/推广/副本全完成前不删除zerde自动任务。
+[本轮脱敏证据](evidence/2026-09-30-quiz-feedback-live/result.safe.json)；[此前运行发布](evidence/2026-09-30-quiz-feedback/release.safe.json)。每次实质交付同步计划、工单和自动任务；业务/自然/推广/副本全完成前不删除zerde自动任务。
 
 ---
 
