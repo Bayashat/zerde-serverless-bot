@@ -64,7 +64,7 @@ class QuizSender:
             result = json.loads(resp.data.decode("utf-8"))
             return result.get("result")
         except Exception as e:
-            logger.error("sendMessage error", extra={"chat_id": chat_id, "error": str(e)})
+            logger.error("sendMessage error", extra={"chat_id": chat_id, "error_type": type(e).__name__})
             return None
 
     def send_quiz_poll(

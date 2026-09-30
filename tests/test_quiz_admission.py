@@ -242,7 +242,12 @@ def test_original_publication_recovers_same_generation_after_quota_failure(quiz_
     provider.generate_json.side_effect = QuotaUnavailable()
     env.svc._generator = actual_generator(provider)
     result = env.svc.process_on_demand_quiz(CHAT, "ru", "python", "easy", request_id=99)
-    assert result == {"status": "error", "reason": "quiz admission unavailable", "retryable": True}
+    assert result == {
+        "status": "error",
+        "reason": "quiz admission unavailable",
+        "retryable": True,
+        "feedback_code": "queued",
+    }
     key = env.repo.publication_key(CHAT, "REQUEST#99")
     row = env.repo._publication_read(key)
     assert row["state"] == "GENERATING" and row["lease_until"] == 0
@@ -280,7 +285,8 @@ def test_failure_transition_database_error_keeps_existing_recovery(quiz_env, mon
 
     monkeypatch.setattr(env.repo, "_publication_transaction", fail)
     with pytest.raises(TimeoutError):
-        env.svc.process_on_demand_quiz(CHAT, "en", "python", "medium", request_id=90)
+        env.svc.process_on_demand_quiz_with_feedback(CHAT, "en", "python", "medium", reply_to_message_id=90)
+    env.svc._sender.send_message.assert_not_called()
     key = env.repo.publication_key(CHAT, "REQUEST#90")
     row = env.repo._publication_read(key)
     assert row["state"] == "GENERATING" and not env.sent

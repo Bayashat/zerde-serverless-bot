@@ -600,13 +600,25 @@ class QuizService:
         try:
             execution = self._repo.claim_publication(chat_id, request_key, intent)
         except QuizPublicationBusy:
-            return {"status": "pending", "reason": "publication in progress"}
+            return {
+                "status": "pending",
+                "reason": "publication in progress",
+                "feedback_code": "processing",
+            }
         if execution["state"] == "DONE":
             return {"status": "ok", "sent": 1, "total": 1}
         if execution["state"] == "EXPIRED":
-            return {"status": "expired", "reason": "quiz request expired before publication"}
+            return {
+                "status": "expired",
+                "reason": "quiz request expired before publication",
+                "feedback_code": "expired",
+            }
         if execution["state"] in {"UNKNOWN", "CONFLICT"}:
-            return {"status": "unknown", "reason": "poll outcome needs administrator verification"}
+            return {
+                "status": "unknown",
+                "reason": "poll outcome needs administrator verification",
+                "feedback_code": "needs_review",
+            }
         if execution["state"] != "SENT":
             if execution["state"] == "GENERATING":
                 self._repo._deck_snapshots = {}
@@ -616,15 +628,28 @@ class QuizService:
                         self._prepare_daily_publication(chat_id, stored["lang"], stored["difficulty"])
                         if stored["kind"] == "daily"
                         else self._prepare_on_demand_publication(
-                            chat_id, stored["lang"], stored["topic"], stored["difficulty"], stored["interactive"]
+                            chat_id,
+                            stored["lang"],
+                            stored["topic"],
+                            stored["difficulty"],
+                            stored["interactive"],
                         )
                     )
                 except QuizQuotaUnavailable:
                     self._repo.mark_publication_failed(execution, unknown=False, reason="quota_unavailable")
-                    return {"status": "error", "reason": "quiz admission unavailable", "retryable": True}
+                    return {
+                        "status": "error",
+                        "reason": "quiz admission unavailable",
+                        "retryable": True,
+                        "feedback_code": "queued",
+                    }
                 if not prepared:
                     self._repo.mark_publication_failed(execution, unknown=False, reason="generation_failed")
-                    return {"status": "error", "reason": "no valid question"}
+                    return {
+                        "status": "error",
+                        "reason": "no valid question",
+                        "feedback_code": "queued",
+                    }
                 execution = self._repo.prepare_publication(execution, *prepared)
             draft = execution["draft"]
             if draft.get("announcement") and not execution.get("announcement_attempted"):
@@ -642,13 +667,25 @@ class QuizService:
                 execution = self._repo.persist_poll_receipt(execution, result)
             except PollSendRejected:
                 self._repo.mark_publication_failed(execution, unknown=False, reason="send_rejected")
-                return {"status": "error", "reason": "Telegram rejected the quiz poll"}
+                return {
+                    "status": "error",
+                    "reason": "Telegram rejected the quiz poll",
+                    "feedback_code": "queued",
+                }
             except (PollSendUnknown, QuizPublicationUnknown):
                 self._repo.mark_publication_failed(execution, unknown=True, reason="send_unknown")
-                return {"status": "unknown", "reason": "poll outcome needs administrator verification"}
+                return {
+                    "status": "unknown",
+                    "reason": "poll outcome needs administrator verification",
+                    "feedback_code": "needs_review",
+                }
         complete = self._repo.finalize_publication(execution)
         if complete["state"] != "DONE":
-            return {"status": "error", "reason": "daily record conflict; known poll remains scoreable"}
+            return {
+                "status": "error",
+                "reason": "daily record conflict; known poll remains scoreable",
+                "feedback_code": "needs_review",
+            }
         return {"status": "ok", "sent": 1, "total": 1}
 
     def process_daily_quiz(self, chat_ids: list[str], lang: str, *, scheduled_at=None) -> dict:
@@ -728,14 +765,32 @@ class QuizService:
         return self._draft(question, topic, lang, difficulty), []
 
     def process_on_demand_quiz(
-        self, chat_id: str, lang: str, topic: str, difficulty: str, *, request_id: int | None = None, interactive=False
+        self,
+        chat_id: str,
+        lang: str,
+        topic: str,
+        difficulty: str,
+        *,
+        request_id: int | None = None,
+        interactive=False,
     ) -> dict:
         if type(request_id) is not int or request_id <= 0:
-            return {"status": "error", "reason": "missing stable request identity", "retryable": False}
+            return {
+                "status": "error",
+                "reason": "missing stable request identity",
+                "retryable": False,
+                "feedback_code": "rejected",
+            }
         return self._publish_request(
             str(chat_id),
             f"REQUEST#{request_id}",
-            {"kind": "on_demand", "lang": lang, "topic": topic, "difficulty": difficulty, "interactive": interactive},
+            {
+                "kind": "on_demand",
+                "lang": lang,
+                "topic": topic,
+                "difficulty": difficulty,
+                "interactive": interactive,
+            },
         )
 
     def reconcile_poll_receipt(self, chat_id, request_key, generation, poll_message, bot_user_id):
@@ -868,19 +923,48 @@ class QuizService:
         *,
         reply_to_message_id: int | None = None,
     ) -> dict:
-        """Run on-demand quiz and notify the user when async generation fails."""
+        """Explain the durable outcome without making feedback retry publication."""
         result = self.process_on_demand_quiz(
-            chat_id, lang, topic, difficulty, request_id=reply_to_message_id, interactive=True
+            chat_id,
+            lang,
+            topic,
+            difficulty,
+            request_id=reply_to_message_id,
+            interactive=True,
         )
         if result.get("status") == "ok":
             return result
 
-        reason = str(result.get("reason") or "unknown error")
-        text = get_translated_text("genquiz_failed", lang, reason=reason)
-        sent = self._sender.send_message(str(chat_id), text, reply_to_message_id=reply_to_message_id)
-        if not sent:
+        feedback_code = result.get("feedback_code")
+        feedback_keys = {
+            "queued": "genquiz_queued",
+            "processing": "genquiz_processing",
+            "needs_review": "genquiz_needs_review",
+            "expired": "genquiz_expired",
+            "rejected": "genquiz_rejected",
+        }
+        key = (
+            feedback_keys.get(feedback_code, "genquiz_unconfirmed")
+            if isinstance(feedback_code, str)
+            else "genquiz_unconfirmed"
+        )
+        text = get_translated_text(key, lang)
+        # Only presentation delivery is best effort. Business/commit failures above
+        # must still propagate instead of claiming that a request was retained.
+        try:
+            sent = self._sender.send_message(str(chat_id), text, reply_to_message_id=reply_to_message_id)
+        except Exception as exc:
+            error_type = type(exc).__name__
+        else:
+            if sent:
+                return result
+            error_type = "UnconfirmedSend"
+        try:
             logger.error(
-                "Failed to send genquiz failure feedback",
-                extra={"chat_id": chat_id, "reason": reason, "reply_to_message_id": reply_to_message_id},
+                "Quiz feedback delivery failed",
+                extra={"feedback_key": key, "error_type": error_type},
             )
+        except Exception:
+            # Diagnostics for optional feedback must not retry the business call.
+            pass
         return result
