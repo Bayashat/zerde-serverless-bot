@@ -1,0 +1,96 @@
+{
+  "status": "PARTIAL_REAL_FEEDBACK_OBSERVED_RECOVERY_VERIFIED_EXACT_UI_LINKS_UNCOVERED",
+  "runtime_source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "environment": "dev_dedicated_test_group",
+  "new_native_commands": 1,
+  "new_polls": 1,
+  "answers_submitted": 0,
+  "publication_created_to_completed_seconds": 176,
+  "same_request_generation_done": true,
+  "failure": {
+    "state": "GENERATING",
+    "reason": "quota_unavailable",
+    "lease_until": 0,
+    "outbox_present": true,
+    "published_or_poll_present": false,
+    "rpd_unchanged": true
+  },
+  "recovery": {
+    "same_request_generation_intent": true,
+    "execution_published_poll_bound": true,
+    "outbox_absent": true,
+    "two_done_rows_equal": true,
+    "cursor_first": "5502",
+    "cursor_second": "5503",
+    "finite_observation_seconds": 388.3070228099823
+  },
+  "ui": {
+    "full_new_queued_text_observed": true,
+    "dev_bot_profile_observed": true,
+    "native_reply_navigation_observed": true,
+    "exact_feedback_message_id_verified": false,
+    "exact_reply_target_link_verified": false,
+    "exact_feedback_link_verified": false,
+    "overall_gate": "UNCOVERED",
+    "full_feedback_acceptance": false,
+    "evidence_origin": "root actual native UI observations; independent local content review, no independent UI operation"
+  },
+  "temporary_policy": {
+    "put_requests": 1,
+    "delete_requests": 1,
+    "t0": 1790788250,
+    "t1": 1790788550,
+    "withdrawn_at": 1790788312.377113,
+    "fixed_window_seconds": 300,
+    "removed_before_deadline": true,
+    "deadline_watchdog_confirmed_absent": true
+  },
+  "protection": {
+    "root_post": "PASS",
+    "independent_business_and_scoped_protection": "PASS",
+    "independent_api_calls": 30,
+    "dev_five_function_config_projections_unchanged": true,
+    "original_role_policy_set_restored": true,
+    "dev_control_unchanged": true,
+    "prod_not_operated": true
+  },
+  "quiz_rpd": {
+    "before": 1,
+    "after": 2,
+    "complete_provider_calls_or_invoice": false
+  },
+  "new_runtime_deployment": false,
+  "new_payment_or_activation": false,
+  "natural_samples_added": 0,
+  "production_ready": false,
+  "limitations": [
+    "Exact native UI links and feedback ID remain unavailable; no guessed identifiers and no complete feedback PASS.",
+    "Sequential strong reads bracketed by execution equality are not a cross-row atomic snapshot.",
+    "Failure and UI are root observations, not independently witnessed live failure/UI.",
+    "Cursor/rule evidence supports recovery opportunity, not proof of a specific EventBridge invocation or exact AccessDenied service response.",
+    "No new provider logs or billing query in this round; RPD is not full model attempts/tokens/invoice or Memory permission.",
+    "No daily concurrency, send UNKNOWN recovery, GSI delay, feedback-send-error or natural-quality acceptance.",
+    "Preflight A stopped on wrong target-shape assumption with zero writes; UI reindex misclick briefly minimized window, restored without additional messages."
+  ],
+  "evidence_sha256": {
+    "EXECUTION_PROTOCOL.md": "2f2edb0187db84593b3592a846e6176c4a5c4d9e4ae572247ec34328b0755f36",
+    "PARTIAL_VERIFICATION_PROTOCOL.md": "473c012c79a03c8596d26d41d1a1590bc4e0e5597d65466906e2ed42ddc709b5",
+    "operator-review.safe.json": "f16e61c161f964d6011c26faee66297310b7cbc4955498335871d0fa51e974a1",
+    "maintainer-pre-review.safe.md": "031d3ffe6ede9fc77afe2abeb79f4d9dba139b143e1939e8ffeea19d7d295ffd",
+    "partial-verifier-pre-review.safe.json": "4deb90f55015bfc37f84d30aef47d06d2ae85dab9716720bf65809928617aba0",
+    "partial-ui-content-review.safe.json": "04cef8fec126e0768e77e83f1a4c08372f5de6702d6412533cae9e6d0760cecb",
+    "ui-observation.partial.private.json": "f1d1bde3a87fca2877ff90ffcb90e11d052c1ce92fcda7d68fddd107cf0bd2fa",
+    "request.safe.json": "65625794273e15f861e3dfd3f067ab01cfe9398ad3109cf5f6ba419eed8cea41",
+    "native-action.safe.json": "6253549cc4363f02f6d591cd099bfc3b9922e8b2bf7c7adbd4c53d621a357ee1",
+    "intent.safe.json": "430cce336c507d4891989614092831284a0aff3b9726aef468c620c0e88d43b5",
+    "observation-Failure.safe.json": "812f13a6e20f7fb8cf12cdb1074f18c7458726450d33654223a7bf4c00848270",
+    "observation-RecoveryA.safe.json": "eb48a5907c5297f58b4c9e5645fe13d267ffdb55c682fc21b87bdcf017877140",
+    "observation-RecoveryB.safe.json": "91c829d1aa9576d97b085d09f98457ec54f3841046f729eef2bc71493d2276e7",
+    "withdrawn-failure-captured.safe.json": "7fc46bf9e87fa460c526c0ab05b6b7196fb8e127587c090857ee1bc4774b6e62",
+    "withdrawn-watchdog.safe.json": "ef16a1e7653a89f6bc51c9946d83d4c2eaf887cf940d2b1dab23738dbc198edb",
+    "watchdog-ended.safe.json": "363998d831d91bdedb36d517e4cf9b72be23619494807452110029f73519244a",
+    "post-Final.safe.json": "ae323662227b262572b6ea726cac8dd8b84ccbaffba5dc7112ed54aa496c6bc6",
+    "independent-partial-Final/review.safe.json": "8738dfbb7c30e47b12ca549b8b19735a49893b92de67c60f42619a35118f6036"
+  },
+  "finalized_at": 1790789491.847408
+}
