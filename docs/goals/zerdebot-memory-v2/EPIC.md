@@ -1,8 +1,8 @@
-## 2026-09-29晚：Quiz调用准入修订
+## 2026-09-30：Quiz准入修订已发布
 
-Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。
 
-[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。 原运行构建仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`；以下既有资源/业务/自然/副本责任不变。
+运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，merge`4fda918ab5e5a8f4b65e349c9d6cfb6902d40181`；两环境300秒窗口后的配置重读通过，workflow ACTIVE，新104文件预算reader时点PASS（非持续许可或账单）。[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[下一验收契约](R3_QUIZ_ADMISSION_RECOVERY.md)。真实daily并发、发送UNKNOWN恢复、GSI迟到和失败重投仍未验收；下一步按受控准入恢复契约实现并独审精确操作器，再执行一次新的真实公开请求。本次没有发题、模型测试或故障注入，不增加自然样本；Z16/Z17及整个项目仍未完成。
 
 <!-- zerde-memory-v2:EPIC -->
 # ZerdeBot Memory V2 与可靠性整治
@@ -29,7 +29,7 @@ Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS�
 
 Z20的已声明源码与在线资源范围结项；Z01/Z02最终业务回归、Z12–Z16实际恢复、Z17真实费用归因仍OPEN。先做这些可独立推进的验收，不只等待空测试群。自然使用起点未建立，0/50有据和0/20未知；至少7天实际使用及逐条来源/完整答案门槛仍未达到，production_ready=false，不启用新群或prod记忆。
 
-运行构建仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`；本批是云资源收尾与文档同步，没有新Lambda部署。F5语义policy PASS、来源1176/1176、未知256/256、已知220/224；原strict FAIL、4预算缺答、UNKNOWN和全部冻结F5–F10证据保持，不复跑或算作自然样本。
+当前运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，PR232发布证据见上方；9月28日资源清理当时没有新Lambda部署。F5语义policy PASS、来源1176/1176、未知256/256、已知220/224；原strict FAIL、4预算缺答、UNKNOWN和全部冻结F5–F10证据保持，不复跑或算作自然样本。
 
 副本独立跟踪：旧stats USER备份于2026-10-05 08:18:35.953 UTC执行精确删除与不存在核验；原PITR于2026-10-17 16:20:38 UTC复查；旧memory SYSTEM服务到期2026-11-01 11:46:02.425 UTC；本批stats SYSTEM服务到期2026-11-02 08:45:11.254 UTC，均须按原身份到期读回。原Oct4临时AV已按本批提前完成条件移除并独审；文件移除不是安全抹盘。
 
