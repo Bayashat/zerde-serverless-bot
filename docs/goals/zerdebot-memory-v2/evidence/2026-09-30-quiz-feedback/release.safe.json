@@ -1,0 +1,47 @@
+{
+  "status": "DEV_PROD_QUIZ_FEEDBACK_RELEASE_VERIFIED",
+  "source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "merge": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+  "pr": 235,
+  "ci_run": 36721462269,
+  "local_tests_passed": 2334,
+  "updated_functions_per_environment": [
+    "quiz"
+  ],
+  "protected_functions_per_environment": [
+    "bot",
+    "memory-v2-worker",
+    "news",
+    "operations"
+  ],
+  "actual_all_five_functions_and_shared_layer_checked": true,
+  "post_quiz_window_seconds": 300,
+  "workflow": "active",
+  "budget_readback": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+  "owner_files_unchanged": 104,
+  "new_telegram_or_model_tests": false,
+  "natural_samples": {
+    "supported": 0,
+    "unknown": 0
+  },
+  "production_ready": false,
+  "evidence_sha256": {
+    "final-release.safe.json": "01c61b12581108bf10bf9128cb9857069262d7b53a98c711b24d442a18954b39",
+    "final-release-independent.safe.json": "b2f405a113438e885decd44d4b8a0c4a50f89ee1f40cb7aa94054d7d8e459372",
+    "budget-FeedbackFinal20260930A.safe.json": "ebe54be4a5141f69dab9ce67a5e51c11a0082d0e3151abfbc8cc901983a47ad9",
+    "ci-final.safe.json": "7e85c2ca0533ce4ad47ecdab68608070cf1edff71d321aa53fbd15e0d0e9f033",
+    "local.safe.json": "a0beae1f33dd77712397def87a4f921af87761c2148ad42f73f4f4a33c19b1ab",
+    "read_budget_published.py": "502655531f499ac3bc8bbedb1d82a5951bf59e5bb4c7a0c18cb0dd2ce4b539ed",
+    "post-main-dev/readback.safe.json": "21b5db6bbc228e4e83cd1b7d339ab0b2d88430bad31e1da6bdec2e499cf21257",
+    "post-independent-dev/review.safe.json": "7778da217fc616631fa40624d280f0779a90ed7d54d3a5136241b2399bf21b62",
+    "finish-after-transition-dev.safe.json": "ab47fc14c11ad67ee6a916114994e11290c5d94052455cd601e3489014450373",
+    "post-main-prod/readback.safe.json": "cca752689080ed13f2516b137c38e2ae6f198622d26831fb3d41fe3690b06a78",
+    "post-independent-prod/review.safe.json": "ef572e1167c6e2ad45c75f7975ffc44b903dd2a9461b57bba532c4c37f5b96f7",
+    "finish-after-transition-prod.safe.json": "41d7798773b7b263141e0788ac7d068696ca86a061818ef184da5fed6983cb5d"
+  },
+  "limitations": [
+    "This release verifies code, packages and protected configuration; it does not prove new live Telegram failure branches.",
+    "Earlier failed local tooling and candidate test evidence remains preserved, not overwritten.",
+    "Existing real Quiz acceptance remains separately frozen; other business, costs, natural use and retained copies remain open."
+  ]
+}
