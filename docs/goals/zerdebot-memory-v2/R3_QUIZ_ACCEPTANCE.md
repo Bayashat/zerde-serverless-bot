@@ -35,6 +35,13 @@ Quiz当日RPD从缺行（原语义0）到1；它统计外层Gemini生成请求�
 
 ## 继续执行
 
-先修正现有帮助与行为的冲突及DONE对账的成功提示，再核对Quiz计数失败时的处理与成本可观测性。然后按原Z16契约分别取得并发daily、发送不明及reconcile、答案先到/lookup延迟、数据库失败与重投幂等证据。任何尚未发生的分支标为未覆盖；不得伪造update、直接写答案/分数/阈值，或为验收手动Lambda Invoke、Receive/Purge混合队列。
+上述帮助/提示、计数失败与安全可观测性的源码候选现已本地实现；先完成该候选的CI/实际包发布与保护读回。然后按原Z16契约分别取得并发daily、发送不明及reconcile、答案先到/lookup延迟、数据库失败与重投幂等证据。任何尚未发生的分支标为未覆盖；不得伪造update、直接写答案/分数/阈值，或为验收手动Lambda Invoke、Receive/Purge混合队列。
 
 两次限定验收不会关闭Z16，也不会增加Memory自然样本；自然起点仍未建立，0/50有据、0/20未知，production_ready=false。继续Z01/Z02及Z12–Z17独立工作，备份期限保持[原台账](RETAINED_COPIES.md)。
+
+
+## Quiz准入修订候选
+
+Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+
+[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。

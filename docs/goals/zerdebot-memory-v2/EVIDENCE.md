@@ -1,3 +1,9 @@
+## 2026-09-29晚：Quiz调用准入修订
+
+Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+
+[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。 原运行构建仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`；以下既有资源/业务/自然/副本责任不变。
+
 ## 2026-09-29：真实管理员DONE终态对账
 
 9月29日补充：管理员对昨日已完成的原始Quiz执行一次公开原生Reply对账，返回成功。八个精确记录前后与独立强读逐值相同，总分保持1、周分0、两个outbox缺席；UI只新增对账文字，没有新poll。仅通过DONE终态幂等边界，UNKNOWN恢复、故障重投和daily并发仍未覆盖，不增加自然样本。 [脱敏结果](evidence/2026-09-29-r3-quiz-reconcile/result.safe.json)。本次八次顺序强读不是事务快照；独审未重复UI动作。新增命令/响应消息ID未从原生UI取得，不伪造。

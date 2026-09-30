@@ -21,7 +21,8 @@ from core.logger import LoggerAdapter, get_logger
 from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
-from services.rate_limit_repository import QuizRateLimitRepository
+from services.provider_observation import ProviderAttempt
+from services.rate_limit_repository import QuizQuotaUnavailable, QuizRateLimitRepository
 from urllib3.exceptions import HTTPError
 from zerde_common.ai_errors import (
     ProviderRateLimitError,
@@ -31,7 +32,6 @@ from zerde_common.ai_errors import (
     map_http_status_to_provider_error,
 )
 from zerde_common.groq_chat import apply_groq_chat_options
-from zerde_common.logging_utils import llm_text_log_fields
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -45,12 +45,12 @@ class _QuizQuestionResponse(TypedDict):
 
 def _map_gemini_api_error(exc: genai_errors.APIError) -> ZerdeProviderError:
     if exc.code == 429:
-        return ProviderRateLimitError(str(exc))
+        return ProviderRateLimitError("Gemini API request failed")
     if exc.code in (500, 503, 504):
-        return ProviderTransportError(str(exc))
+        return ProviderTransportError("Gemini API request failed")
     if exc.code and 400 <= int(exc.code) < 500:
-        return ProviderResponseError(str(exc))
-    return ProviderResponseError(str(exc))
+        return ProviderResponseError("Gemini API request failed")
+    return ProviderResponseError("Gemini API request failed")
 
 
 class RateLimitError(ProviderRateLimitError):
@@ -83,9 +83,12 @@ class GeminiQuizProvider(QuizLLMProvider):
         self._rate_repo = QuizRateLimitRepository()
         logger.info("GeminiQuizProvider initialized", extra={"model": model})
 
-    def get_rpd_status(self) -> tuple[int, int]:
-        used = self._rate_repo.get_today_count()
+    def get_rpd_status(self) -> tuple[int | None, int]:
         total = self._rate_repo.rpd_limit
+        try:
+            used = self._rate_repo.get_today_count()
+        except QuizQuotaUnavailable:
+            return None, total
         remaining = max(0, total - used)
         return remaining, total
 
@@ -95,76 +98,48 @@ class GeminiQuizProvider(QuizLLMProvider):
     _INTERACTIVE_TIMEOUT_MS = 12000
 
     def generate_json(self, prompt: str, temperature: float = 0.3, *, interactive: bool = False) -> dict:
-        count, within_limit = self._rate_repo.increment_and_check()
-        if not within_limit:
-            logger.warning(
-                "Quiz Gemini RPD limit reached",
-                extra={"count": count, "limit": self._rate_repo.rpd_limit, "model": self._model},
-            )
-            raise RateLimitError(f"Quiz Gemini RPD limit reached: {count}/{self._rate_repo.rpd_limit}")
-
         retry_delays = self._INTERACTIVE_RETRY_DELAYS if interactive else self._SCHEDULED_RETRY_DELAYS
         timeout_ms = self._INTERACTIVE_TIMEOUT_MS if interactive else self._SCHEDULED_TIMEOUT_MS
-
         for attempt in range(len(retry_delays) + 1):
+            # Local dependency failures deliberately bypass provider fallback.
+            count, within_limit = self._rate_repo.increment_and_check()
+            if not within_limit:
+                raise RateLimitError(f"Quiz Gemini RPD limit reached: {count}/{self._rate_repo.rpd_limit}")
+            config = types.GenerateContentConfig(
+                http_options=types.HttpOptions(timeout=timeout_ms, retry_options=types.HttpRetryOptions(attempts=1)),
+                temperature=temperature,
+                response_mime_type="application/json",
+                response_schema=_QuizQuestionResponse,
+                max_output_tokens=2000,
+                thinking_config=_thinking_config_for_model(self._model),
+            )
+            observation = ProviderAttempt("Gemini", self._model)
+            response = None
             try:
-                logger.info(
-                    "Quiz Gemini request started",
-                    extra={
-                        "model": self._model,
-                        "attempt": attempt + 1,
-                        "interactive": interactive,
-                        "temperature": temperature,
-                        "response_schema": _QuizQuestionResponse.__name__,
-                        "rpd_count": count,
-                        "rpd_limit": self._rate_repo.rpd_limit,
-                    },
-                )
-                thinking_config = _thinking_config_for_model(self._model)
-                response = self._client.models.generate_content(
-                    model=self._model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        http_options=types.HttpOptions(timeout=timeout_ms),
-                        temperature=temperature,
-                        response_mime_type="application/json",
-                        response_schema=_QuizQuestionResponse,
-                        max_output_tokens=2000,
-                        thinking_config=thinking_config,
-                    ),
-                )
+                response = self._client.models.generate_content(model=self._model, contents=prompt, config=config)
                 text = response.text.strip()
-                logger.debug("Quiz LLM response (preview)", extra=llm_text_log_fields(text))
                 try:
                     data = json.loads(text)
-                except json.JSONDecodeError as je:
-                    raise ProviderResponseError(f"Gemini returned invalid JSON: {je}") from je
-                logger.info(
-                    "Quiz Gemini response parsed",
-                    extra={"model": self._model, "attempt": attempt + 1, "response_chars": len(text)},
-                )
-                return data
+                except json.JSONDecodeError:
+                    raise ProviderResponseError("Gemini returned invalid JSON") from None
             except genai_errors.APIError as exc:
-                if exc.code == 429:
-                    logger.warning("Gemini 429 rate limit hit", extra={"model": self._model})
-                    raise ProviderRateLimitError(str(exc)) from exc
+                observation.finish("http_error", status=exc.code)
                 retryable = exc.code in (500, 503, 504)
-                is_last_attempt = attempt == len(retry_delays)
-                if not retryable or is_last_attempt:
-                    raise _map_gemini_api_error(exc) from exc
+                if not retryable or attempt == len(retry_delays):
+                    raise _map_gemini_api_error(exc) from None
                 wait = retry_delays[attempt] + random.uniform(0, 1 if interactive else 3)
-                logger.warning(
-                    "Quiz Gemini request failed, retrying with backoff",
-                    extra={
-                        "attempt": attempt + 1,
-                        "wait_s": round(wait, 1),
-                        "code": exc.code,
-                        "interactive": interactive,
-                    },
-                )
                 time.sleep(wait)
             except ZerdeProviderError:
+                observation.finish("response_invalid", response=response, gemini=True)
                 raise
+            except Exception:
+                observation.finish(
+                    "transport_unknown" if response is None else "response_invalid", response=response, gemini=True
+                )
+                raise
+            else:
+                observation.finish("success", response=response, gemini=True)
+                return data
 
 
 def _thinking_config_for_model(model: str | None) -> types.ThinkingConfig | None:
@@ -201,60 +176,40 @@ class OpenAICompatibleQuizProvider(QuizLLMProvider):
         if self._provider_name == "Groq":
             apply_groq_chat_options(payload, model=self._model, max_output_tokens=1024)
 
-        logger.info(
-            "Quiz fallback provider request started",
-            extra={
-                "provider": self._provider_name,
-                "model": self._model,
-                "temperature": temperature,
-                "response_format": "json_object",
-            },
-        )
+        observation = ProviderAttempt(self._provider_name, self._model)
         try:
             http = self._interactive_http if interactive else self._scheduled_http
             resp = http.request(
                 "POST",
                 f"{self._api_base}/chat/completions",
                 body=json.dumps(payload),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {self._api_key}",
-                },
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {self._api_key}"},
                 retries=False,
             )
-        except (HTTPError, OSError) as e:
-            raise ProviderTransportError(f"{self._provider_name} transport error: {e}") from e
-
-        if resp.status == 429:
-            logger.warning("Quiz fallback provider 429 rate limit hit", extra={"provider": self._provider_name})
-            raise ProviderRateLimitError(f"{self._provider_name} rate limited: {resp.status}")
-
+        except (HTTPError, OSError):
+            observation.finish("transport_unknown")
+            raise ProviderTransportError("Quiz provider transport unavailable") from None
+        except Exception:
+            observation.finish("transport_unknown")
+            raise
         if resp.status >= 400:
-            body = resp.data.decode("utf-8")
-            logger.error(
-                "Quiz fallback provider API error",
-                extra={"provider": self._provider_name, "status": resp.status, "body": body[:500]},
-            )
-            raise map_http_status_to_provider_error(
-                resp.status,
-                f"{self._provider_name} API {resp.status}: {body[:200]}",
-            )
-
+            observation.finish("http_error", status=resp.status, response={})
+            raise map_http_status_to_provider_error(resp.status, "Quiz provider API request failed") from None
+        data = None
         try:
-            data = json.loads(resp.data.decode("utf-8"))
-            content = data["choices"][0]["message"]["content"]
-        except json.JSONDecodeError as e:
-            raise ProviderResponseError(f"{self._provider_name} response was not valid JSON: {e}") from e
-        except (KeyError, IndexError, TypeError) as e:
-            raise ProviderResponseError(f"{self._provider_name} response schema invalid: {e}") from e
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError as e:
-            raise ProviderResponseError(f"{self._provider_name} returned invalid content JSON: {e}") from e
-        logger.info(
-            "Quiz fallback provider response parsed",
-            extra={"provider": self._provider_name, "model": self._model, "response_chars": len(content)},
-        )
+            try:
+                data = json.loads(resp.data.decode("utf-8"))
+                content = data["choices"][0]["message"]["content"]
+            except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+                raise ProviderResponseError("Quiz provider returned invalid JSON or schema") from None
+            try:
+                result = json.loads(content)
+            except json.JSONDecodeError:
+                raise ProviderResponseError("Quiz provider returned invalid content JSON") from None
+        except Exception:
+            observation.finish("response_invalid", status=resp.status, response=data if data is not None else {})
+            raise
+        observation.finish("success", status=resp.status, response=data)
         return result
 
 
@@ -282,15 +237,16 @@ class FallbackProvider(QuizLLMProvider):
         last_error: ZerdeProviderError | None = None
         for index, provider in enumerate(self._providers):
             try:
-                result = provider.generate_json(prompt, temperature, interactive=interactive)
-                logger.info("Quiz generated by provider", extra={"provider_index": index})
-                return result
+                return provider.generate_json(prompt, temperature, interactive=interactive)
             except ZerdeProviderError as e:
                 last_error = e
-                logger.warning(
-                    "Quiz provider failed, trying next provider",
-                    extra={"provider_index": index, "error": str(e), "error_type": type(e).__name__},
-                )
+                try:
+                    logger.warning(
+                        "Quiz provider failed, trying next provider",
+                        extra={"provider_index": index, "error_type": type(e).__name__},
+                    )
+                except Exception:
+                    pass  # A diagnostic must not alter the established fallback policy.
         if last_error:
             raise last_error
         raise ProviderResponseError("No quiz providers configured")

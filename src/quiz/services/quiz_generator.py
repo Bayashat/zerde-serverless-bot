@@ -7,6 +7,7 @@ from statistics import mean
 
 from core.logger import LoggerAdapter, get_logger
 from services.llm_provider import QuizLLMProvider
+from services.rate_limit_repository import QuizQuotaUnavailable
 
 logger = LoggerAdapter(get_logger(__name__), {})
 
@@ -262,11 +263,12 @@ class QuizGenerator:
             data = self._provider.generate_json(prompt, temperature=0.3, interactive=interactive)
             return self._validate(data, category, lang, difficulty, subtopic)
 
-        except Exception:
+        except QuizQuotaUnavailable:
+            raise
+        except Exception as exc:
             logger.error(
                 "Question generation failed",
-                extra={"category": category, "lang": lang, "difficulty": difficulty},
-                exc_info=True,
+                extra={"lang": lang, "difficulty": difficulty, "error_type": type(exc).__name__},
             )
             return None
 
@@ -311,11 +313,12 @@ class QuizGenerator:
                 )
                 return None
             return self._validate_translation(data, question, lang)
-        except Exception:
+        except QuizQuotaUnavailable:
+            raise
+        except Exception as exc:
             logger.error(
                 "Question translation failed",
-                extra={"lang": lang},
-                exc_info=True,
+                extra={"lang": lang, "error_type": type(exc).__name__},
             )
             return None
 
@@ -369,31 +372,31 @@ class QuizGenerator:
         explanation = (data.get("explanation") or "").strip() or None
 
         if not question:
-            logger.warning("Generated question is empty", extra={"category": category, "lang": lang})
+            logger.warning("Generated question is empty", extra={"category_chars": len(category), "lang": lang})
             return None
 
         if len(question) > _QUESTION_MAX_LEN:
             logger.warning(
                 "Generated question exceeds Telegram limit",
-                extra={"length": len(question), "category": category, "lang": lang},
+                extra={"length": len(question), "category_chars": len(category), "lang": lang},
             )
             return None
 
         if not isinstance(options, list) or len(options) != 4:
             logger.warning(
                 "Generated options count invalid",
-                extra={"got": len(options) if isinstance(options, list) else "n/a", "category": category},
+                extra={"got": len(options) if isinstance(options, list) else "n/a", "category_chars": len(category)},
             )
             return None
 
         for i, opt in enumerate(options):
             if not isinstance(opt, str) or not opt.strip():
-                logger.warning("Option is empty or non-string", extra={"index": i, "category": category})
+                logger.warning("Option is empty or non-string", extra={"index": i, "category_chars": len(category)})
                 return None
             if len(opt.strip()) > _OPTION_MAX_LEN:
                 logger.warning(
                     "Option exceeds Telegram limit",
-                    extra={"index": i, "length": len(opt.strip()), "category": category},
+                    extra={"index": i, "length": len(opt.strip()), "category_chars": len(category)},
                 )
                 return None
 
@@ -403,14 +406,14 @@ class QuizGenerator:
         if avg_length and max(lengths) / avg_length > _OPTION_LENGTH_RATIO_MAX:
             logger.warning(
                 "Generated options have obvious length imbalance",
-                extra={"lengths": lengths, "category": category, "difficulty": difficulty},
+                extra={"lengths": lengths, "category_chars": len(category), "difficulty": difficulty},
             )
             return None
 
         if not isinstance(correct_index, int) or isinstance(correct_index, bool) or not (0 <= correct_index <= 3):
             logger.warning(
                 "correct_option_index invalid",
-                extra={"value": correct_index, "category": category},
+                extra={"value_type": type(correct_index).__name__, "category_chars": len(category)},
             )
             return None
 
@@ -418,7 +421,7 @@ class QuizGenerator:
         if correct_length == max(lengths) and correct_length > avg_length * 1.35:
             logger.warning(
                 "Correct option is conspicuously longer than distractors",
-                extra={"lengths": lengths, "correct_index": correct_index, "category": category},
+                extra={"lengths": lengths, "correct_index": correct_index, "category_chars": len(category)},
             )
             return None
 
@@ -431,7 +434,7 @@ class QuizGenerator:
         if leaked_terms and len(leaked_terms) >= 2:
             logger.warning(
                 "Question wording appears to leak correct answer terms",
-                extra={"category": category, "leaked_terms": sorted(leaked_terms)[:5]},
+                extra={"category_chars": len(category), "leaked_term_count": len(leaked_terms)},
             )
             return None
 
