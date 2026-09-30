@@ -1,0 +1,94 @@
+{
+  "status": "ALIGNED_FINAL_ADMISSION_RELEASE_AND_SUBSEQUENT_BUDGET_BINDING",
+  "source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+  "merge": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
+  "ci_run": 36686173478,
+  "github": {
+    "source_merge_tree_equal": true,
+    "merge_parent": "d06a42c19041a29bb52345b73d0d416ebf35fed7",
+    "ci_two_jobs_success": true,
+    "workflow": "active",
+    "merge_deploy_runs": 0,
+    "read_calls": 8
+  },
+  "environments": {
+    "dev": {
+      "prepared_changes": 12,
+      "actual_five_functions": true,
+      "complete_members_and_shared_layer": true,
+      "protected_metadata_and_controls": true,
+      "quiz_old_window_300_seconds_complete": true,
+      "root_sha256": "be11bfc2045d3c8865ab23d9f66afc21ad63000358b88ca908e254197194341b",
+      "independent_sha256": "30f4d4239c89229e19042e3d85a3fc24201ad0748ccc4ae144c591a21cd376db",
+      "transition_sha256": "32eb2fd5fd2ceabde157d04bc1d5be3a7299db9590778e2816188d9968f65c6c"
+    },
+    "prod": {
+      "prepared_changes": 24,
+      "actual_five_functions": true,
+      "complete_members_and_shared_layer": true,
+      "protected_metadata_and_controls": true,
+      "quiz_old_window_300_seconds_complete": true,
+      "root_sha256": "cee2307264a995235b6aed34f043d98e9bdfabd8548b1e3acd54bef88f9a33ce",
+      "independent_sha256": "0fa3cb4d381e08e948c40720a850039a943084a111a8d119e530bc2b42fe4535",
+      "transition_sha256": "24ae7c6d3430736e9a133eaa9e53c5cf6c22601d701d8cf56445170e71963ab0"
+    }
+  },
+  "budget": {
+    "closure_files": 104,
+    "changed_vs_prior_owner": [
+      "src/bot/core/translations.py"
+    ],
+    "all_cost_owner_bytes_unchanged": true,
+    "current_source_and_deployed_members_bound": true,
+    "subsequent_point_read_receipt_sha256": "32897b37a438e26cbc3f57d3dd1b1bd5a33a15bc61c6dd75aac8dd82fb782b15",
+    "prior_final_pending_preserved": true,
+    "rebind_completed_by_separate_receipt": true,
+    "point_in_time_only_not_permit": true,
+    "reported_calls": 7,
+    "reserves": 0,
+    "models": 0,
+    "writes": 0
+  },
+  "evidence_sha256": {
+    "post-main-dev/readback.safe.json": "be11bfc2045d3c8865ab23d9f66afc21ad63000358b88ca908e254197194341b",
+    "post-independent-dev/review.safe.json": "30f4d4239c89229e19042e3d85a3fc24201ad0748ccc4ae144c591a21cd376db",
+    "finish-after-transition-dev.safe.json": "32eb2fd5fd2ceabde157d04bc1d5be3a7299db9590778e2816188d9968f65c6c",
+    "execute-dev/final.safe.json": "47d714fac7107da7fd8d3f5569b15fd4e665f3347ad6f437c38aaac52a3fc237",
+    "release-dev/prepared-independent.safe.json": "2772a74848a95e185b6d825964c249a70584abe1b4acb652b6cb2edbf3de5d21",
+    "release-dev/published.safe.json": "79439e175d4379ee5929c2c0a1b9bc36e0eae04e0c42890d30ff63d78fc7d4a1",
+    "post-main-prod/readback.safe.json": "cee2307264a995235b6aed34f043d98e9bdfabd8548b1e3acd54bef88f9a33ce",
+    "post-independent-prod/review.safe.json": "0fa3cb4d381e08e948c40720a850039a943084a111a8d119e530bc2b42fe4535",
+    "finish-after-transition-prod.safe.json": "24ae7c6d3430736e9a133eaa9e53c5cf6c22601d701d8cf56445170e71963ab0",
+    "execute-prod/final.safe.json": "31d63f716ecd0b31701f5ebcbae0930b4c6ccac5040ba1b1e15e95aed778eeca",
+    "release-prod/prepared-independent.safe.json": "32e8dde610f1cfd5a23cf6cfa971229f9eb53ad4dc71bad8a6a8dd19e9c7e7db",
+    "release-prod/published.safe.json": "4774cd7e0878c041dc6aa48147182918f47c4336ae1763555d50c9707d3b4dd7",
+    "final-release.safe.json": "42e82d9e9d22697f7f11254ce89ed40a0b3c213f594f75cff55a684fd20259c2",
+    "budget-AdmissionFinal20260930A.safe.json": "32897b37a438e26cbc3f57d3dd1b1bd5a33a15bc61c6dd75aac8dd82fb782b15",
+    "budget-owner-closure.safe.json": "c7ed34f5c46fbd9f1b8b60cdd4d0804dc0d16f1ecada4bfab03e14c96c2121bd",
+    "budget-owner-files.safe.json": "79a30299db6b21bad14ec367f88fa359efb7bde62081896feb5f41d75215c57f",
+    "read_budget_published.py": "a5a73b50756732ccc4b0faab26f7ef850db37168b13420d2a3672f1693b199c5",
+    "merge.safe.json": "cbfafe871c29f3d084da27a74c76f778aebc0d4aa7d3a86a8693bafb8f472a3a",
+    "ci-final.safe.json": "16f911cf65a0ad71663a8352c3edacc83a2649ad26ce337108690df36e3e03aa",
+    "release-inputs-v2.safe.json": "ba5b111de6692b2ffe7831b38ac0af1ae00b3defafa567763e94b67583eef94a",
+    "operator-supplement-v3.safe.json": "8cc5c5cd21753b3c27311a5bb2d5e7b5f81189bc24426fb1e3385b08e4af8cd6",
+    "operator-wire-v4.safe.json": "c0d3a8ee6dc97c53bac3cffed623d705eb45f1285a148a14ad1535ce9dd24dae",
+    "final-independent-github/readback.safe.json": "6a51567b95c06be803b3423411f720d7495461b0b4f0c45d0309eff0b9337e76",
+    "NEXT_CONTROLLED_ADMISSION.md": "91dde1fbb748f6b5e0b5163cc8659f2008d80c2bca862e0f01b643015db0fa63",
+    "next-controlled-admission-aligned.safe.json": "16e800840d4d084488511c625cb19ea18574d5ef9c804bc150f6d3ade5b64445"
+  },
+  "this_audit": {
+    "aws_account_calls": 0,
+    "github_gets": 8,
+    "github_writes": 0,
+    "model_calls": 0,
+    "package_downloads": 0,
+    "once_tools_executed": 0
+  },
+  "limitations": [
+    "Receipt-chain and preserved actual-artifact/metadata evidence audit plus fresh GitHub GETs; this reviewer did not repeat AWS runtime download or point budget query.",
+    "Budget availability only at receipt time; future model calls still require original owner reservation.",
+    "No new production Memory activation, natural quality evidence, controlled injection, actual failure recovery or provider invoice proof.",
+    "NEXT controlled slice is boundary-aligned only; future operators remain unimplemented and unreviewed."
+  ],
+  "completed_at": 1790760431.5063229
+}

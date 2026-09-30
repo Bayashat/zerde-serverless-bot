@@ -1,6 +1,6 @@
 # Quiz 调用准入与恢复修订契约（2026-09-29）
 
-状态：PRE、POST正确性和维护性审阅已ALIGNED；源码本地实现及完整2306测试通过，CI/实际包发布待完成。承接 Z16/#173、Z17/#174 与 Z02/#159，来源为9月29日 DONE 对账后的三份私有研究/作者自检/独审。旧对账验收和once工具冻结。
+状态：本切片已由PR232合并并完成dev/prod实际发布、主/独审和预算reader重绑；[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)。真实异常恢复仍待[R3下一契约](R3_QUIZ_ADMISSION_RECOVERY.md)，不以本地或发布检查替代。
 
 ## 目标与边界
 

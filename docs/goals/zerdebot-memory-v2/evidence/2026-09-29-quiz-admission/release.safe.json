@@ -1,0 +1,103 @@
+{
+  "status": "QUIZ_ADMISSION_DEPLOYED_AND_POINT_BUDGET_REBOUND_REAL_RECOVERY_PENDING",
+  "source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+  "merge": "4fda918ab5e5a8f4b65e349c9d6cfb6902d40181",
+  "pr": 232,
+  "ci_run": 36686173478,
+  "ci_jobs_passed": 2,
+  "full_tests_passed": 2306,
+  "runtime_changed_functions_per_environment": [
+    "bot",
+    "memory-v2-worker",
+    "quiz"
+  ],
+  "runtime_verified_functions_per_environment": 5,
+  "retained_actual_packages": [
+    "news",
+    "operations",
+    "shared-layer"
+  ],
+  "environments": {
+    "dev": {
+      "prepared_independent_sha256": "2772a74848a95e185b6d825964c249a70584abe1b4acb652b6cb2edbf3de5d21",
+      "published_sha256": "79439e175d4379ee5929c2c0a1b9bc36e0eae04e0c42890d30ff63d78fc7d4a1",
+      "root_sha256": "be11bfc2045d3c8865ab23d9f66afc21ad63000358b88ca908e254197194341b",
+      "independent_sha256": "30f4d4239c89229e19042e3d85a3fc24201ad0748ccc4ae144c591a21cd376db",
+      "transition_not_before": 1790759298.920921,
+      "post_transition_sha256": "32eb2fd5fd2ceabde157d04bc1d5be3a7299db9590778e2816188d9968f65c6c",
+      "functions_verified": 5,
+      "layers_verified": 1,
+      "control_count": 1,
+      "alarm_states_at_root_snapshot": {
+        "OK": 18
+      }
+    },
+    "prod": {
+      "prepared_independent_sha256": "32e8dde610f1cfd5a23cf6cfa971229f9eb53ad4dc71bad8a6a8dd19e9c7e7db",
+      "published_sha256": "4774cd7e0878c041dc6aa48147182918f47c4336ae1763555d50c9707d3b4dd7",
+      "root_sha256": "cee2307264a995235b6aed34f043d98e9bdfabd8548b1e3acd54bef88f9a33ce",
+      "independent_sha256": "0fa3cb4d381e08e948c40720a850039a943084a111a8d119e530bc2b42fe4535",
+      "transition_not_before": 1790760058.421162,
+      "post_transition_sha256": "24ae7c6d3430736e9a133eaa9e53c5cf6c22601d701d8cf56445170e71963ab0",
+      "functions_verified": 5,
+      "layers_verified": 1,
+      "control_count": 0,
+      "alarm_states_at_root_snapshot": {
+        "OK": 18
+      }
+    }
+  },
+  "workflow": "active",
+  "final_release_sha256": "42e82d9e9d22697f7f11254ce89ed40a0b3c213f594f75cff55a684fd20259c2",
+  "final_release_budget_pending_was_closed_by_later_receipt_not_rewritten": true,
+  "budget": {
+    "reader_sha256": "a5a73b50756732ccc4b0faab26f7ef850db37168b13420d2a3672f1693b199c5",
+    "owner_manifest_sha256": "79a30299db6b21bad14ec367f88fa359efb7bde62081896feb5f41d75215c57f",
+    "owner_closure_sha256": "c7ed34f5c46fbd9f1b8b60cdd4d0804dc0d16f1ecada4bfab03e14c96c2121bd",
+    "closure_files": 104,
+    "budget_cost_owner_bytes_unchanged": true,
+    "point_receipt_sha256": "32897b37a438e26cbc3f57d3dd1b1bd5a33a15bc61c6dd75aac8dd82fb782b15",
+    "point_status": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+    "api_counts": {
+      "sts/GetCallerIdentity": 1,
+      "lambda/GetFunctionConfiguration": 1,
+      "dynamodb/GetItem": 5
+    },
+    "cloud_writes": 0,
+    "model_calls": 0,
+    "budget_reservations": 0,
+    "not_persistent_permission": true,
+    "not_invoice": true
+  },
+  "local_evidence_sha256": "043a8d6964b1289d5207d9970dc6ed10d811fcadc08a39a4f59aac4481707a61",
+  "operator_reviews": {
+    "operator-review-v3.safe.json": "2037d79579a1653222180699b3ff20f073bd0f325c5593d2ed9714cb955f9ed5",
+    "operator-supplement-v3.safe.json": "8cc5c5cd21753b3c27311a5bb2d5e7b5f81189bc24426fb1e3385b08e4af8cd6",
+    "operator-wire-v4.safe.json": "c0d3a8ee6dc97c53bac3cffed623d705eb45f1285a148a14ad1535ce9dd24dae"
+  },
+  "preserved_stopped_attempts": {
+    "dev_published_input_seal": "0cfa6170a795f9d0143466389a80f926d2c2fd47aee6c6d16965eefb99ad04bb",
+    "prod_prepared_template_literal": "65258e00052bf36036212ee3601d10d990130c63919f3cdaa2f7f400100ae78c",
+    "meaning": "Local inspection stops; no runtime failure inferred. Derived CDK ZIP outputs preserved separately; only exact proven wire representations repaired."
+  },
+  "next_controlled_contract_sha256": "91dde1fbb748f6b5e0b5163cc8659f2008d80c2bca862e0f01b643015db0fa63",
+  "next_contract_review_sha256": "16e800840d4d084488511c625cb19ea18574d5ef9c804bc150f6d3ade5b64445",
+  "next_test_executed": false,
+  "real_failure_recovery_verified": false,
+  "new_prod_control": false,
+  "production_ready": false,
+  "natural_sample_audit_unchanged": {
+    "supported": 0,
+    "unknown": 0,
+    "this_release_collected_natural_samples": false
+  },
+  "release_operators_initiated_model_or_telegram_calls": 0,
+  "cloud_deletion_actions": 0,
+  "retained_copy_deadlines_utc": [
+    "2026-10-05T08:18:35.953Z",
+    "2026-10-17T16:20:38Z",
+    "2026-11-01T11:46:02.425Z",
+    "2026-11-02T08:45:11.254Z"
+  ],
+  "completed_at": 1790760373.168481
+}

@@ -1,6 +1,12 @@
+## 2026-09-30：Quiz准入修订已发布
+
+PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。
+
+运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，merge`4fda918ab5e5a8f4b65e349c9d6cfb6902d40181`；两环境300秒窗口后的配置重读通过，workflow ACTIVE，新104文件预算reader时点PASS（非持续许可或账单）。[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[下一验收契约](R3_QUIZ_ADMISSION_RECOVERY.md)。真实daily并发、发送UNKNOWN恢复、GSI迟到和失败重投仍未验收；下一步按受控准入恢复契约实现并独审精确操作器，再执行一次新的真实公开请求。本次没有发题、模型测试或故障注入，不增加自然样本；Z16/Z17及整个项目仍未完成。
+
 # R3真实Quiz正常链路与终态对账（2026-09-29）
 
-9月28日完成Z16的一次正常公开流程，9月29日增加一次DONE终态公开对账；以下前两节记录9月28日，Z16仍OPEN。运行构建源保持`01bdc1da2c5d995759eda0dfef99f7b427301d60`；没有部署、资源删除、新群/生产记忆启用或支付变更。
+9月28日完成Z16的一次正常公开流程，9月29日增加一次DONE终态公开对账；以下前两节记录9月28日，Z16仍OPEN。9月28/29日验收时运行构建源保持`01bdc1da2c5d995759eda0dfef99f7b427301d60`；没有部署、资源删除、新群/生产记忆启用或支付变更。
 
 ## 9月28日已发生的动作与结果
 
@@ -35,13 +41,13 @@ Quiz当日RPD从缺行（原语义0）到1；它统计外层Gemini生成请求�
 
 ## 继续执行
 
-上述帮助/提示、计数失败与安全可观测性的源码候选现已本地实现；先完成该候选的CI/实际包发布与保护读回。然后按原Z16契约分别取得并发daily、发送不明及reconcile、答案先到/lookup延迟、数据库失败与重投幂等证据。任何尚未发生的分支标为未覆盖；不得伪造update、直接写答案/分数/阈值，或为验收手动Lambda Invoke、Receive/Purge混合队列。
+上述帮助/提示、计数失败与安全可观测性已由PR232完成CI、实际包发布及保护主检/独审。下一步按[R3受控准入恢复契约](R3_QUIZ_ADMISSION_RECOVERY.md)实现并独审精确操作器，然后按原Z16契约分别取得并发daily、发送不明及reconcile、答案先到/lookup延迟、数据库失败与重投幂等证据。任何尚未发生的分支标为未覆盖；不得伪造update、直接写答案/分数/阈值，或为验收手动Lambda Invoke、Receive/Purge混合队列。
 
 两次限定验收不会关闭Z16，也不会增加Memory自然样本；自然起点仍未建立，0/50有据、0/20未知，production_ready=false。继续Z01/Z02及Z12–Z17独立工作，备份期限保持[原台账](RETAINED_COPIES.md)。
 
 
-## Quiz准入修订候选
+## Quiz准入修订交付（2026-09-30）
 
-Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+PR232已完成dev/prod实际发布、两环境五函数/层主检与独审、窗口后稳定读回及新预算reader绑定。原RPD强读/CAS、每次应用重试准入、错误穿透、原outbox恢复、安全attempt/usage与四语言文案已交付。完整2306测试和双job CI通过；本次没有新增发题、模型测试或故障注入。真实daily并发、UNKNOWN恢复、GSI迟到及失败重投仍待，不以发布成功替代。
 
-[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。
+[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[实现契约](QUIZ_ADMISSION_EXECUTION.md)；[冻结本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。

@@ -1,30 +1,26 @@
-## 2026-09-29晚：Quiz调用准入修订
+## 2026-09-30：Quiz准入修订已发布
 
-Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。
 
-[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。 原运行构建仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`；以下既有资源/业务/自然/副本责任不变。
+运行构建源`0c6529d5c33b9afdf1229c559c83f961f04bc03f`，merge`4fda918ab5e5a8f4b65e349c9d6cfb6902d40181`；两环境300秒窗口后的配置重读通过，workflow ACTIVE，新104文件预算reader时点PASS（非持续许可或账单）。[发布证据](evidence/2026-09-29-quiz-admission/release.safe.json)；[下一验收契约](R3_QUIZ_ADMISSION_RECOVERY.md)。真实daily并发、发送UNKNOWN恢复、GSI迟到和失败重投仍未验收；下一步按受控准入恢复契约实现并独审精确操作器，再执行一次新的真实公开请求。本次没有发题、模型测试或故障注入，不增加自然样本；Z16/Z17及整个项目仍未完成。
 
-# 下一次执行入口（2026-09-29真实Quiz终态对账后）
+# 下一次执行入口（2026-09-30发布后）
 
-先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[清单](RETIREMENT_INVENTORY.md)与[副本台账](RETAINED_COPIES.md)。task_manifest拥有状态。
+先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[下一受控恢复契约](R3_QUIZ_ADMISSION_RECOVERY.md)及[副本台账](RETAINED_COPIES.md)。task_manifest拥有逐工单状态。
 
-2026-09-28最后一批旧stats表与两个旧SSM路径已删除并独立确认不存在；临时恢复表也已删除。1条缺失历史统计按条件保全，3条已有统计不重复相加，8条旧实例投票不迁入且不声称过期。原28项、随后6项及本批3项合计37个已声明旧对象在线退役，6张现役表继续保留。Z20的源码与已声明在线资源范围完成；备份责任留Z10，业务与自然验收未完成，不新增启用。
+当前私有入口为验收根目录的`2026-09-29-quiz-admission-fix/CURRENT.md`、`final-release.safe.json`、`budget-AdmissionFinal20260930A.safe.json`及最终文档发布回执。所有prepare/merge/execute/readback/finish once已经结束，不重跑；原工具误停及窄续接证据保留。final-release的budget_pending=true是预算时点读取前的历史阶段，后来单列的预算时点回执闭合，不能改旧报告。
 
-本批私有入口是本机验收根目录的`2026-09-28-legacy-stats-final/CURRENT.md`、`final-reviewed.safe.json`及最终docs发布回执（原私有final.safe.json保留；恢复前首次失败的具体TableStatus未保全，不能据它断言CREATING）。主检/恢复独审/最终独审、精确AV清理均已结束；原AV已不存在，旧验证脚本依赖它而不能再运行。所有源/临时表删除、参数删除、备份/恢复/迁移once均禁止重跑。[本批公开证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
+当前预算只读使用该目录`read_budget_published.py`，绑定104文件原owner闭包和实际五函数发布，每次唯一label；旧S4/PR224/PR220 reader只作历史。时点PASS不是持久调用许可，原费用owner/epoch/DAY/UNKNOWN不变；Memory模型仍走原预留，Quiz沿独立原RPD。
 
-运行构建源仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`，本批没有新Lambda发布。原S4已结束；预算时点只读继续用绑定该运行源的`2026-09-27-legacy-resource-retirement/read_budget_published_s4_v6.py`，每次唯一label；不能用旧PR224/PR220 reader，时点PASS不是持续许可。原费用owner/epoch/DAY/UNKNOWN不变，模型调用仍走原预留。
+下一步实现并独审新受控dev准入失败操作器，先重新核实际角色/表/规则/原policy集合；边界契约已PRE对齐，但尚未注入或执行。允许一次新真实公开命令，失败/恢复按同request/generation验收；不重发2397、不答2398、不重复已完成的DONE对账，不手工Invoke或写状态。真实daily并发、UNKNOWN、GSI/答案恢复和其他业务验收仍待，不从本次代码发布推断通过。Z01/Z02及Z12–Z17继续按原工单推进，费用归因不能被usage日志代替。
 
-9月28日晚已在唯一dev专用群完成一次原生`/genquiz@zerde_dev_bot Python easy ru`、poll与答题：发布DONE、答案SCORED、总分0→1/周分0、对应outbox缺席。私有`2026-09-28-r3-quiz-live/CURRENT.md`拥有这轮实际标识和回执；不重新发题或答题。正常链路证据见[R3验收](R3_QUIZ_ACCEPTANCE.md)，不计自然样本。
+R2已声明13旧算法/专属vector入口及37旧在线对象清理完成，6现役表保留；不重做已结束清理。最后旧stats/两SSM及临时恢复表已不存在，旧AV也已移除；原清理脚本依赖已删除AV，禁止重跑。自动社交、历史导入和抽奖不恢复，不启用新群或prod记忆。
 
-9月29日补充：管理员对昨日已完成的原始Quiz执行一次公开原生Reply对账，返回成功。八个精确记录前后与独立强读逐值相同，总分保持1、周分0、两个outbox缺席；UI只新增对账文字，没有新poll。仅通过DONE终态幂等边界，UNKNOWN恢复、故障重投和daily并发仍未覆盖，不增加自然样本。 私有入口为`2026-09-29-r3-quiz-reconcile/CURRENT.md`和最终回执；不再对同一poll重复命令来凑证据。
+自然起点尚未建立，已审计0/50有据、0/20未知，production_ready=false；本轮未新增自然样本。现有dev控制/epoch随合法命令变化，只观察不强写历史revision，prod CONTROL读回为0。业务与费用推进不等待空群、不机械造聊天或邀请别人。
 
-下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN到DONE恢复、答案先到/GSI迟到、失败与重投未验证；上述帮助/提示及调用准入候选已本地实现，下一步发布该候选并核验实包；再单独制定并审阅受控恢复操作契约，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
+四个UTC副本责任不变：旧stats USER于2026-10-05 08:18:35.953精确人工删除；原PITR于2026-10-17 16:20:38复查；旧memory SYSTEM于2026-11-01 11:46:02.425到期；旧stats SYSTEM于2026-11-02 08:45:11.254到期。按原TableId/BackupArn新工具/新回执执行，不延长、不重建原归档；原Oct4临时AV责任已履行、原三归档/key真实晚5h6m19.860s保留。文件删除不是安全抹盘，用户Telegram导出和现役PITR保留。业务/自然/推广/副本全部完成前不删除自动任务。
 
-R4自然起点仍未建立，0/50有据、0/20未知，production_ready=false。dev唯一测试群控制/epoch随合法命令变化，只读不回写历史revision；prod不新增CONTROL。不自动造聊天/邀请别人/启用新群；业务与费用工作不依赖自然样本。
-
-副本独立跟踪：旧stats USER备份于2026-10-05 08:18:35.953 UTC执行精确删除与不存在核验；原PITR于2026-10-17 16:20:38 UTC复查；旧memory SYSTEM服务到期2026-11-01 11:46:02.425 UTC；本批stats SYSTEM服务到期2026-11-02 08:45:11.254 UTC，均须按原身份到期读回。原Oct4临时AV已按本批提前完成条件移除并独审；文件移除不是安全抹盘。
-
-副本未来到期操作重新绑定精确身份，新工具/新回执；不复用本批已结束once。原3归档/key移除晚5h6m19.860s事实保留，不重建。用户Telegram导出与现役PITR保留；到期副本、业务/成本及自然验收未完前不删自动任务。每次实质交付同步计划、工单与证据。
+每次实质交付同步计划、工单、证据与自动任务；文档merge永远不是新的Lambda运行源。
 
 ---
 
