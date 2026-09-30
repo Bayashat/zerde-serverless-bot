@@ -1,0 +1,50 @@
+{
+  "status": "LOCAL_IMPLEMENTED_AND_REVIEWED_RELEASE_PENDING",
+  "base": "d06a42c19041a29bb52345b73d0d416ebf35fed7",
+  "full_tests": {
+    "passed": 2306,
+    "warnings": 1,
+    "seconds": 164.12,
+    "log_sha256": "65f22089468e348440316642f2199434a1778a0ecaeeb708b31826586939e267"
+  },
+  "focused_tests": 56,
+  "correctness_independent_tests": 113,
+  "maintainability_independent_tests": 111,
+  "source_files": {
+    "src/bot/core/translations.py": "e0d84baf78e0a81f8e94eeec738459b62d09680d8f17cbf64b775d6378cc45d2",
+    "src/quiz/services/rate_limit_repository.py": "969ebf510de1789baf3366556d0a99ccc0d04ab4ca106531a1da1cc0afa10267",
+    "src/quiz/services/llm_provider.py": "d95f3559447ba83fe3610ed1f9d9209bf1af57af3e6a4b3922c31f9edae93955",
+    "src/quiz/services/provider_observation.py": "6086975c3f03868fcb2c824fb9b67b489b3a6e00f8d4874433b8c7a35ee71796",
+    "src/quiz/services/quiz_generator.py": "7afad6e301eb2b8945d20e023312165876150d065247b7f12db55a9bab64a73b",
+    "src/quiz/services/quiz_service.py": "25bd13b4226d590da1da0b8f2f740a666f8efffe267eb5e229433af21783f1cb",
+    "tests/quiz_support.py": "c3a318708ddcdb234b8c7ca70024158def8219863ab05bcb24668c2722c949fd",
+    "tests/test_quiz_admission.py": "be874b9ad6e3a9010f94f326c788f3232d9d31638a70d29a4d5ea22297a65c78"
+  },
+  "reviews": {
+    "pre-review.safe.md": "6fc3a11644e7f054a4c4658031bcb8ee8e66282dde25f17aee07c7f2b0a21512",
+    "code-review.safe.md": "21c0ccb11591bb33eeaef9492bd2144aeab653712d0a7134c2d8de4939a9f652",
+    "maintainability-review.safe.md": "3c700adfa61fe9307f1897fde56c41b89ad01d411ac2fd352c44b30bc02309e6"
+  },
+  "prior_checks": [
+    {
+      "name": "A",
+      "passed": 2298,
+      "failed": 1,
+      "reason": "operator umask077 masked requested public fixture directory permissions; default022 isolated test passes",
+      "log_sha256": "d06f31538703576facbcec89b886f0df046d724d20db2cfd7787f08c0bd9c3c8"
+    },
+    {
+      "name": "B",
+      "passed": 2302,
+      "reason": "pass before final four new regressions; final run above owns current count",
+      "log_sha256": "036f7264df532d81257363b9c7c604f695b741d8b02e288303904546645698c3"
+    }
+  ],
+  "runtime_deployed": false,
+  "cloud_failure_injection": false,
+  "real_model_calls": 0,
+  "real_telegram_actions": 0,
+  "memory_owner_and_infrastructure_unchanged": true,
+  "new_usage_logs_are_not_billing_ledger": true,
+  "production_ready": false
+}

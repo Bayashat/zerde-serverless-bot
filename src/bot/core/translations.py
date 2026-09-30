@@ -11,7 +11,7 @@ TRANSLATIONS = {
     "en": {
         "quiz_reconcile_usage": "Reply to this bot's quiz: /quizreconcile &lt;request_key&gt; &lt;generation&gt;",
         "quiz_reconcile_admin": "Only a current group administrator can reconcile a quiz.",
-        "quiz_reconcile_ok": "The existing quiz has been verified and its scoring record restored.",
+        "quiz_reconcile_ok": "The existing quiz and its scoring record have been checked.",
         "quiz_reconcile_unknown": "The quiz is not confirmed. Check the delivery record before trying again.",
         "legacy_agent_retired": (
             "Automatic participation is retired. /ask, direct mentions and requested replies remain "
@@ -40,7 +40,7 @@ TRANSLATIONS = {
             "• /ask — Ask the agent, or reply to a message with /ask.\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /quizstats — Show your quiz stats in DM.\n"
-            "• /genquiz — Generate quiz on demand (ADMIN_USER_ID only).\n"
+            "• /genquiz — Generate quiz on demand.\n"
             "\n"
             "🛡️ <b>For New Members (Anti-Spam):</b>\n"
             "Upon joining, you must click the <b>'I am human'</b> button.\n"
@@ -198,7 +198,7 @@ TRANSLATIONS = {
             "Осы боттың викторинасына жауап беріңіз: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
         ),
         "quiz_reconcile_admin": "Викторинаны тек топтың қазіргі әкімшісі растай алады.",
-        "quiz_reconcile_ok": "Бар викторина расталды, ұпай санау жазбасы қалпына келтірілді.",
+        "quiz_reconcile_ok": "Бар викторина мен оның ұпай санау жазбасы тексерілді.",
         "quiz_reconcile_unknown": "Викторина расталмады. Қайта әрекеттенбес бұрын жіберу жазбасын тексеріңіз.",
         "legacy_agent_retired": (
             "Автоматты түрде әңгімеге қосылу тоқтатылған. /ask, тікелей атау және ботқа жауап беру "
@@ -227,7 +227,7 @@ TRANSLATIONS = {
             "• /ask — Agent-тен сұрау немесе хабарламаға reply жасап сұрау.\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
-            "• /genquiz — Сұраныс бойынша quiz жасау (тек ADMIN_USER_ID).\n"
+            "• /genquiz — Сұраныс бойынша quiz жасау.\n"
             "\n"
             "🛡️ <b>Жаңа мүшелерге арналған (Анти-спам):</b>\n"
             "Топқа қосылған кезде арнайы <b>«Мен адаммын»</b> түймесін басу қажет.\n"
@@ -396,7 +396,7 @@ TRANSLATIONS = {
     "zh": {
         "quiz_reconcile_usage": "回复此 bot 已发出的题目：/quizreconcile &lt;request_key&gt; &lt;generation&gt;",
         "quiz_reconcile_admin": "只有当前群管理员可以核对并恢复题目记录。",
-        "quiz_reconcile_ok": "已核对现有题目并恢复其计分记录。",
+        "quiz_reconcile_ok": "已核对现有题目及其计分记录。",
         "quiz_reconcile_unknown": "题目尚未核实，请先检查发送记录再重试。",
         "legacy_agent_retired": "自动插话功能已退役。/ask、直接提及和明确回复 bot 仍然可用。查看、更正或遗忘当前记忆请使用 /memory。",
         "start_message": (
@@ -422,7 +422,7 @@ TRANSLATIONS = {
             "• /ask — 向 agent 提问，也可回复消息提问。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
-            "• /genquiz — 按需生成 Quiz（仅 ADMIN_USER_ID）。\n"
+            "• /genquiz — 按需生成 Quiz。\n"
             "\n"
             "🛡️ <b>新成员（反垃圾）</b>\n"
             "入群后，请点击 <b>“我是人类”</b> 按钮。\n"
@@ -565,7 +565,7 @@ TRANSLATIONS = {
             "Ответьте на викторину этого бота: " "/quizreconcile &lt;request_key&gt; &lt;generation&gt;"
         ),
         "quiz_reconcile_admin": "Подтвердить викторину может только текущий администратор группы.",
-        "quiz_reconcile_ok": "Существующая викторина подтверждена, запись для подсчёта баллов восстановлена.",
+        "quiz_reconcile_ok": "Существующая викторина и её запись для подсчёта баллов проверены.",
         "quiz_reconcile_unknown": "Викторина не подтверждена. Перед повтором проверьте запись об отправке.",
         "legacy_agent_retired": (
             "Автоматическое участие отключено. /ask, прямые упоминания и ответы боту доступны. Для "
@@ -594,7 +594,7 @@ TRANSLATIONS = {
             "• /ask — задать вопрос agent-у или спросить ответом на сообщение.\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
-            "• /genquiz — сгенерировать Quiz по запросу (только ADMIN_USER_ID).\n"
+            "• /genquiz — сгенерировать Quiz по запросу.\n"
             "\n"
             "🛡️ <b>Для новых участников (антиспам):</b>\n"
             "После входа нужно нажать кнопку <b>«Я человек»</b>.\n"

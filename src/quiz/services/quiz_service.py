@@ -13,6 +13,7 @@ from services._publication import QuizPublicationBusy, QuizPublicationUnknown, v
 from services.llm_provider import create_provider
 from services.quiz_generator import CATEGORY_POOL, DIFFICULTY_POINTS, SUBTOPIC_POOL, QuizGenerator
 from services.quiz_sender import PollSendRejected, PollSendUnknown, QuizSender
+from services.rate_limit_repository import QuizQuotaUnavailable
 from services.repository import QuizRepository
 
 logger = LoggerAdapter(get_logger(__name__), {})
@@ -610,13 +611,17 @@ class QuizService:
             if execution["state"] == "GENERATING":
                 self._repo._deck_snapshots = {}
                 stored = execution["intent"]
-                prepared = (
-                    self._prepare_daily_publication(chat_id, stored["lang"], stored["difficulty"])
-                    if stored["kind"] == "daily"
-                    else self._prepare_on_demand_publication(
-                        chat_id, stored["lang"], stored["topic"], stored["difficulty"], stored["interactive"]
+                try:
+                    prepared = (
+                        self._prepare_daily_publication(chat_id, stored["lang"], stored["difficulty"])
+                        if stored["kind"] == "daily"
+                        else self._prepare_on_demand_publication(
+                            chat_id, stored["lang"], stored["topic"], stored["difficulty"], stored["interactive"]
+                        )
                     )
-                )
+                except QuizQuotaUnavailable:
+                    self._repo.mark_publication_failed(execution, unknown=False, reason="quota_unavailable")
+                    return {"status": "error", "reason": "quiz admission unavailable", "retryable": True}
                 if not prepared:
                     self._repo.mark_publication_failed(execution, unknown=False, reason="generation_failed")
                     return {"status": "error", "reason": "no valid question"}

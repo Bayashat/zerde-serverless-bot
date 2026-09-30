@@ -1,3 +1,9 @@
+## 2026-09-29晚：Quiz调用准入修订
+
+Quiz调用准入修订已在本地实现并独审：原PT日键强读+条件CAS，坏计数或不明写入不放行，每次Gemini应用重试单独计数，计数故障穿透生成/翻译并沿原GENERATING/outbox恢复；安全attempt/usage未知日志与四语言权限/对账提示同步。完整2306测试通过，尚未合并或发布新包。 CI、实际ARM五handler验包、同一候选dev/prod发布和实际包/保护独审及新预算reader绑定待完成；旧Quiz最长300秒在途窗口单列。真实daily并发、UNKNOWN到DONE、GSI迟到和受控失败恢复仍待验收，不能用本地测试或DONE对账替代。
+
+[执行契约](QUIZ_ADMISSION_EXECUTION.md)；[本地证据](evidence/2026-09-29-quiz-admission/local.safe.json)。 原运行构建仍`01bdc1da2c5d995759eda0dfef99f7b427301d60`；以下既有资源/业务/自然/副本责任不变。
+
 # 下一次执行入口（2026-09-29真实Quiz终态对账后）
 
 先读[FINISH_EXECUTION](FINISH_EXECUTION.md)、[TASKS](TASKS.md)、[清单](RETIREMENT_INVENTORY.md)与[副本台账](RETAINED_COPIES.md)。task_manifest拥有状态。
@@ -12,7 +18,7 @@
 
 9月29日补充：管理员对昨日已完成的原始Quiz执行一次公开原生Reply对账，返回成功。八个精确记录前后与独立强读逐值相同，总分保持1、周分0、两个outbox缺席；UI只新增对账文字，没有新poll。仅通过DONE终态幂等边界，UNKNOWN恢复、故障重投和daily并发仍未覆盖，不增加自然样本。 私有入口为`2026-09-29-r3-quiz-reconcile/CURRENT.md`和最终回执；不再对同一poll重复命令来凑证据。
 
-下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN到DONE恢复、答案先到/GSI迟到、失败与重投未验证；先统一genquiz权限帮助和reconcile成功提示（DONE并没有恢复写入），再闭合计数失败/备用供应商可见性并制定具体恢复验收，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
+下一步推进Z01/Z02和R3未覆盖的真实业务及恢复分支。Z16仍OPEN：并发daily、UNKNOWN到DONE恢复、答案先到/GSI迟到、失败与重投未验证；上述帮助/提示及调用准入候选已本地实现，下一步发布该候选并核验实包；再单独制定并审阅受控恢复操作契约，不造失败结果或手动Invoke。Quiz自有RPD计数不是Memory许可或完整模型费上限，供应商实际计费待Z17归因。News缺单群入口时明确未覆盖，按正常调度或另设计必要入口。旧18条回放与F5–F10不复跑。
 
 R4自然起点仍未建立，0/50有据、0/20未知，production_ready=false。dev唯一测试群控制/epoch随合法命令变化，只读不回写历史revision；prod不新增CONTROL。不自动造聊天/邀请别人/启用新群；业务与费用工作不依赖自然样本。
 

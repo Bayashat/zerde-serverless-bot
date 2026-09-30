@@ -26,6 +26,10 @@ try:
     publication = importlib.import_module("services._publication")
     service_module = importlib.import_module("services.quiz_service")
     sender_module = importlib.import_module("services.quiz_sender")
+    rate_module = importlib.import_module("services.rate_limit_repository")
+    provider_module = importlib.import_module("services.llm_provider")
+    observation_module = importlib.import_module("services.provider_observation")
+    generator_module = importlib.import_module("services.quiz_generator")
     QuizService = service_module.QuizService
     PublicationRepository = service_module.QuizRepository
     _main_spec = importlib.util.spec_from_file_location("quiz_publication_main", Path(_quiz_dir) / "main.py")
