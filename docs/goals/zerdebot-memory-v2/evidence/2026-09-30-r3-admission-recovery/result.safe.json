@@ -1,0 +1,101 @@
+{
+  "status": "PASSED_SCOPED_ADMISSION_RECOVERY_AND_BOUNDED_NO_DUPLICATE",
+  "as_of": "2026-09-30",
+  "runtime_source": "0c6529d5c33b9afdf1229c559c83f961f04bc03f",
+  "runtime_pr": 232,
+  "scope": "one controlled dev Quiz admission failure and recovery for the same original request/generation; bounded subsequent recovery opportunity",
+  "production_ready": false,
+  "natural_samples_added": 0,
+  "new_lambda_deployment": false,
+  "new_groups_or_production_memory_enabled": false,
+  "payment_changes": false,
+  "native_commands_sent": 1,
+  "native_answers_submitted": 0,
+  "operator_iam_put_requests": 1,
+  "operator_iam_delete_requests": 1,
+  "operator_business_writes": 0,
+  "operator_lambda_invokes": 0,
+  "queue_receives_or_purges": 0,
+  "fault": {
+    "stable_generating_quota_unavailable_lease_zero": true,
+    "original_outbox_retained": true,
+    "rpd_attribute_values_unchanged": true,
+    "no_poll_or_published_row_at_capture": true,
+    "specific_AccessDenied_service_code_directly_observed": false
+  },
+  "recovery": {
+    "same_request_generation_intent": true,
+    "done_and_poll_mapping_agree": true,
+    "outbox_absent": true,
+    "created_to_completed_seconds": 289,
+    "ui_new_polls_this_round": 1,
+    "first_done_cursor_revision": 5443,
+    "second_done_cursor_revision": 5444,
+    "done_rows_equal_across_observations": true,
+    "bounded_done_observation_seconds": 298.909,
+    "specific_EventBridge_delivery_directly_attributed": false
+  },
+  "protection": {
+    "temporary_policy_removed_before_fixed_expiry": true,
+    "deadline_watchdog_rechecked_absence": true,
+    "original_role_policies_restored": true,
+    "root_post_config_control_async_concurrency_rules_dlq_checked": true,
+    "independent_five_function_config_three_rules_and_control_equal": true,
+    "independent_readonly_api_calls": 30,
+    "strong_brackets_not_cross_row_transaction": true
+  },
+  "usage_observation": {
+    "quiz_pt_day_count_before": 0,
+    "quiz_pt_day_count_after": 1,
+    "paired_successful_Gemini_attempts_in_captured_window": 1,
+    "observed_input_tokens": 416,
+    "observed_output_tokens": 95,
+    "observed_total_tokens": 511,
+    "usage_status": "known",
+    "is_complete_provider_invoice": false,
+    "is_precisely_attributed_all_provider_traffic": false,
+    "is_memory_budget_permit": false,
+    "missing_CloudWatch_FailedInvocations_datapoints_not_assumed_zero": true
+  },
+  "new_finding": "Failure feedback still asks user to resend even though original publication is queued for automatic recovery; repair this feedback before wider acceptance. Operator did not resend.",
+  "uncovered": [
+    "daily concurrency",
+    "UNKNOWN send recovery",
+    "GSI-late or early answer recovery",
+    "other failures and redelivery",
+    "natural memory quality",
+    "complete provider invoice and closed-period AWS attribution"
+  ],
+  "local_operator_test_counts": {
+    "root": 19,
+    "independent": 22
+  },
+  "preflight_tool_errors_preserved": [
+    "A historical describe_table shape mismatch before writes",
+    "C historical concurrency None shape mismatch before writes"
+  ],
+  "evidence_sha256": {
+    "operator-review.safe.json": "31eef9f0c687cac0d5b20341a330e6114ff51238943815b5b61433e1bb0b00d6",
+    "operator-maintainer.safe.md": "5be57933da2b5ac7e9c5090d4287daa94f72a2eabf34f62d54fc90ef91a13cb3",
+    "operator-maintainer-pagination.safe.md": "612ff9e442a8e8dafe92826190aede6c799dcf903e00c1b9b5ce157ddee2cc3d",
+    "independent-verifier-review.safe.json": "b1f66a68110f2fbd5c64ae055f00d9279fb754359716c79d4bff581859101ba6",
+    "freeze.safe.json": "ffd215db00c142603f83d0bbedf5c71dc71726ba7f2a845be65ce25c0deb9219",
+    "intent.safe.json": "26d1404920b66cc88ea90974f5b7a3a8c4fcf08d2e0704097d250b6e2aff6199",
+    "put.result.safe.json": "c79d7f9e9d9404df39a80963650a7c8392fa00e4fdcc6dbc4ba38ee779eb6668",
+    "native-action.safe.json": "0913cf58eb607701869d8f9b56b584ad05eb44090b00fac63abad91220be0993",
+    "native-failure-response.safe.json": "0c0e0ed91f2f0f3ef47bf37a79ff224cff411fa23dcbef7e44dc7856c56e9f66",
+    "observation-FailureA.safe.json": "81e221f873684f2ed6230552ef31e7a8e04a1b78b502d614c57d09f4dbc92d7f",
+    "observation-FailureA.private.json": "e54c58c760ae120123a1c16586bc64ac1416272e780c72838cac1ad00f8f9650",
+    "withdrawn-failure-captured.safe.json": "0c454a36a1144e466540fe2376d2e73c9671e17ebd3e387a6d7592f1fa9b881e",
+    "withdrawn-watchdog.safe.json": "eebebf143ed7a8cc7b9d7f2aff64e7c28fdaaf93acb1eb814581ac49a90cd33f",
+    "watchdog-ended.safe.json": "5494692fe996eb0ae69a9f22fabe3ce3ceb0b0d3f2a77284c7187406a7cdb3b0",
+    "observation-RecoveryC.safe.json": "d767e78fff5fa92e712048887379479fa7d7a7a3891f2cf66ca5b532f50a1dad",
+    "observation-SecondDone.safe.json": "53e21bd85c6ec40ea9450b850e4443ab5a11758fe58b35fbc16dbfdde61f484e",
+    "native-poll-first.safe.json": "c1a1423222a74caf2bb6af15e02dde93dc90c84800414c6770b5be7e79f9e339",
+    "native-poll-second.safe.json": "4df8d234e85775431fa7ec5ed1dd5bcdec6ab57f7c46884fdea7fb0a33f0fa5f",
+    "post-FirstDone.safe.json": "fac8b7f4bb941235b45c618464a653564a8e321ab3db541a44a87f30998a98ed",
+    "signals-Final/result.safe.json": "aa7ea51d441ce18954deaa66fc3109c683d9aa56f385e24e93ba8dbbac4f306e",
+    "independent-Final/review.safe.json": "ff24989d151e4f3f74e9ed799dc4e209ef7a94afaabfb2af05d867bd5f877680"
+  },
+  "recorded_at": 1790771262.1751208
+}
