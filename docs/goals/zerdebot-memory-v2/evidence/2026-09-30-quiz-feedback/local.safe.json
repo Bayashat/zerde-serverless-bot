@@ -1,0 +1,33 @@
+{
+  "status": "LOCAL_TESTS_AND_INDEPENDENT_CODE_REVIEWS_PASS_NOT_DEPLOYED",
+  "files": {
+    "src/quiz/services/quiz_service.py": "40220f49cdab61f09e308433a07609ac41f841059176888259cec37187ecc947",
+    "src/quiz/services/quiz_sender.py": "c0e7c821d0bc50b9b5c8c4d088a0bbfad1487b9d493c0a2441a0e1a4e72f1daa",
+    "src/quiz/core/translations.py": "49b15ed1687fa1dec11a2f9b5dafc14a5fc2791906326fbd726e47fac16c9637",
+    "tests/test_quiz_admission.py": "74357a1f4440a61324f9332c612af7bb14b4652dced46827659f1628cbb5f3fb",
+    "tests/test_quiz_feedback.py": "a41862a4fd767f1c096c3beb1152a5d8b1965fed6bcc9b4d2cecf39cc89158f4"
+  },
+  "full_tests": {
+    "passed": 2334,
+    "failed": 0,
+    "seconds": 161.85,
+    "log_sha256": "941cf7c11391d6593b2bfde65eea2b0a544e4f5d7405854ab25dc4bc336ed16c",
+    "umask": "022"
+  },
+  "earlier_run": {
+    "status": "FAILED_UMASK_FIXTURE_AND_CANDIDATE_CHANGED_DURING_RUN",
+    "passed": 2330,
+    "failed": 1,
+    "log_sha256": "9a4835bf82451599c4865bb2ffd713893d83545b1f439f622451c46d51cc06a6",
+    "security_code_changed": false
+  },
+  "targeted_tests_passed": 137,
+  "independent_tests_passed": 89,
+  "code_review_sha256": "f4ecfa791d0ae08a557fb698ef21ca1f460fb3a340b5c24ead59d9b3ab03bf0b",
+  "maintenance_review_sha256": "bb79c2fcff1d109223c7409e5b4d7b91e3b7310821bd96ee8afd2f51f2f64545",
+  "hooks_all_exit": 0,
+  "hooks_log_sha256": "b7358d12637b0d2cf46fa6eaac7a94e7ee21e3f258295c0b8a43d55f943f68f5",
+  "production_ready": false,
+  "cloud_mutations": 0,
+  "at": 1790774555.127208
+}
