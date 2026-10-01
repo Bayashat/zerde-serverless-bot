@@ -1,0 +1,38 @@
+{
+  "status": "CLOUD_CAPTURE_CONTENT_FAILURE_INDEPENDENTLY_CONFIRMED",
+  "collector_status": "FAIL_CONTENT_OR_CREDENTIAL_OBSERVED",
+  "collector_sha256": "e10cc1e664fd39c5babcc8c59e0d83c36c62cf14a4124a6cbdf165435fae70b6",
+  "independent_sha256": "e5546e9519d57ff2f053bebf4e071c7804a447947402dd5e4e6149143f096fce",
+  "runtime_source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "api_reads": 8,
+  "window_seconds": 374,
+  "window_events": 38,
+  "selected_application_records": 27,
+  "selected_platform_records": 3,
+  "cross_api_multiset_equal": true,
+  "content_failure": {
+    "field": "topic",
+    "unique_events": 1,
+    "credential_or_personal_sensitive_leak_demonstrated": false
+  },
+  "original_unclassified_producer_entries": 19,
+  "independent_classification": {
+    "stats_initialization": 1,
+    "static_handler_registration": 4,
+    "static_command_registration": 12,
+    "cost_metadata": 2
+  },
+  "original_failure_and_incomplete_preserved": true,
+  "specific_telegram_message_mapping_claimed": false,
+  "new_messages": 0,
+  "model_calls": 0,
+  "cloud_mutations": 0,
+  "raw_retention_sha256": "27b80ee4a7c224c97353c6dadb96458207932d332140a496bd41e2f678e729ea",
+  "raw_expires_at_utc": "2026-10-08T17:13:39.091570+00:00",
+  "original_raw_files": 9,
+  "independent_raw_derivatives": 0,
+  "local_fix_status": "2340_tests_pass_not_deployed",
+  "production_ready": false,
+  "z02_issue_state": "OPEN",
+  "at": 1790875348.8040059
+}

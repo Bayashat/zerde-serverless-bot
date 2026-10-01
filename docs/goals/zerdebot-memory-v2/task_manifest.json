@@ -47,14 +47,14 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "deployed_local_logging_contract_pass_cloud_capture_pending",
+    "status": "cloud_capture_content_failure_local_repair_release_pending",
     "status_as_of": "2026-10-01",
-    "completed": "脱敏与内容最小化已实现并部署；PR232/PR235收紧Quiz调用和提示发送日志。10月1日已完成实际发布包16个Webhook组合场景、69条日志独审；随后INFO/DEBUG两场景真实urllib3默认连接拒绝重试也通过独审，17条JSON日志、8次实际loopback连接拒绝、6条重试警告均符合固定脱敏与隔离契约。",
-    "remaining": "限定剩余：一个既有dev Webhook请求从Lambda入口到CloudWatch的完整采集证据，以及原日志契约逐项对账与独审。Z02仍OPEN。不承诺所有历史日志从未泄漏或穷举全部业务/重试排列；新发现具体旁路另记风险。没有新增启用群或prod记忆。",
+    "completed": "已完成发布包16个Webhook组合与2个真实urllib3重试场景。10月1日对既有dev日志作8次只读完整采集，发现/genquiz自由topic原文进入日志，原结果保留FAIL；两个相关诊断出口已本地修复，2340全测及定向独审通过，尚未新发布。",
+    "remaining": "Z02保持OPEN：当前实际运行仍PR235；须完成本次修复CI、两环境实际包发布与新出口实包验证，再按原契约逐项独审收口。CloudWatch旧FAIL不被新修复覆盖，Quiz精确UI链接/其它业务/自然门槛不由此完成。",
     "issue_state": "OPEN",
     "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
     "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
-    "status_evidence": "evidence/2026-10-01-z02-urllib3-retry/result.safe.json",
+    "status_evidence": "evidence/2026-10-01-z02-cloudwatch-capture/result.safe.json",
     "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "local_followup": {
       "as_of": "2026-09-29",
@@ -102,6 +102,25 @@
       "evidence": "evidence/2026-10-01-z02-urllib3-retry/result.safe.json",
       "code_changed": false,
       "new_deployment": false
+    },
+    "cloudwatch_capture": {
+      "status": "FAIL_CONTENT_OR_CREDENTIAL_OBSERVED",
+      "api_reads": 8,
+      "new_writes": 0,
+      "specific_telegram_message_mapping_claimed": false,
+      "raw_expires_at_utc": "2026-10-08T17:13:39.091570+00:00",
+      "evidence": "evidence/2026-10-01-z02-cloudwatch-capture/result.safe.json",
+      "independent_status": "ALIGNED_INDEPENDENT_POST_CONFIRMED_CONTENT_FAILURE",
+      "independent_evidence": "evidence/2026-10-01-z02-cloudwatch-capture/independent-final.safe.json"
+    },
+    "command_log_repair": {
+      "status": "local_pass_not_deployed",
+      "source_files": [
+        "src/bot/services/handlers/commands.py",
+        "src/bot/services/repositories/lambda_invoker.py"
+      ],
+      "full_tests": 2340,
+      "contract": "QUIZ_COMMAND_LOG_REPAIR.md"
     }
   },
   {

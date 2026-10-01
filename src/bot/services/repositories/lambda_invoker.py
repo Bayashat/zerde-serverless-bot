@@ -53,10 +53,9 @@ class LambdaInvoker:
                 Payload=json.dumps(payload).encode(),
             )
             return True
-        except Exception:
+        except Exception as exc:
             logger.error(
                 "Async Lambda invocation failed",
-                extra={"function_name": function_name},
-                exc_info=True,
+                extra={"function_name": function_name, "error_type": type(exc).__name__},
             )
             return False

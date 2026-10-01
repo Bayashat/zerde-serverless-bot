@@ -1,0 +1,743 @@
+{
+  "status": "ALIGNED_INDEPENDENT_POST_CONFIRMED_CONTENT_FAILURE",
+  "runtime_source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "started_at": 1790875261.7086568,
+  "findings": [],
+  "independent_cloud_calls": 0,
+  "ui_actions": 0,
+  "collector_or_scorer_executions": 0,
+  "original_scorer_imported": false,
+  "product_imports_or_executions": 0,
+  "new_raw_bearing_derivatives": [],
+  "production_ready": false,
+  "issue_z02_state": "OPEN",
+  "specific_telegram_message_mapping_claimed": false,
+  "root_result_sha256": "e10cc1e664fd39c5babcc8c59e0d83c36c62cf14a4124a6cbdf165435fae70b6",
+  "observed_result": "FAIL_CONTENT_MINIMIZATION_CONFIRMED_NOT_FALSE_POSITIVE",
+  "original_result_status": "FAIL_CONTENT_OR_CREDENTIAL_OBSERVED",
+  "inputs_sha256": "9516ec1de5e9339dc588168b5fd08b9f0d6c3d6e89ce89dc305e44bcb853d088",
+  "pre_sha256": "7dd134631ee75b7010a86f3c66c2294fc6cb4266b6d643a62bb8e2385e575889",
+  "raw_manifest_sha256": "27b80ee4a7c224c97353c6dadb96458207932d332140a496bd41e2f678e729ea",
+  "original_api_calls": 8,
+  "original_api_counts": {
+    "sts.GetCallerIdentity": 1,
+    "lambda.GetFunctionConfiguration": 1,
+    "logs.DescribeLogGroups": 1,
+    "logs.FilterLogEvents": 2,
+    "logs.GetLogEvents": 3
+  },
+  "collection_pages": {
+    "filter": [
+      38,
+      0
+    ],
+    "get": [
+      38,
+      0,
+      0
+    ]
+  },
+  "fixed_window_seconds": 374,
+  "cross_api_multiset_equal": true,
+  "selected_request_sha256": "5041c040daa2fc58e33bcb061ea215240ca12aaa1a64d9d42223dc5f901fe231",
+  "selected_stream_sha256": "970e731db07b567016c5d6628fd761f85cc812cb93c11bf251350605c04ddabb",
+  "selected_application_records": 27,
+  "selected_platform_records": 3,
+  "all_window_application_records": 32,
+  "all_window_platform_records": 6,
+  "positive_logs": {
+    "entry": 1,
+    "credential_verified": 1,
+    "update_metadata": 1
+  },
+  "content_failure": {
+    "field": "topic",
+    "category": "known_programming_language_label",
+    "value_type": "str",
+    "value_chars": 6,
+    "value_sha256": "45f13bf50ac1fca6e27296d5383380ef0a471d3d5d04f78c829a445829f7d05a",
+    "application_sha256": "990aa4e89a96627dad82df7178041373e2e5b3fa1691f72a0f4bb1927b4b65bb",
+    "raw_message_sha256": "f15a92973d0df7b2d9cd1c331e9c6b511bcb1c5130a6af8637bec807a1f982bb",
+    "filter_event_sha256": "6b07d4770e05c0e884d204b5539bea401d784ace6abb621be1658da9259c514b",
+    "get_event_sha256": "2622c89c20e552072cfafa6f27730269305ba1e134f62b060fe4152777c8e7ff",
+    "selected_get_event_sha256": "97256d1cf2cbaca57ae364c139423aa0758d62615f74849476071410915939b1",
+    "distinct_event_count": 1,
+    "api_observation_count": 2,
+    "producer_file": "services/handlers/commands.py",
+    "producer_line": 477,
+    "formatter_missing_content_key": true
+  },
+  "credential_shape_hits": 0,
+  "unredacted_secret_field_hits": 0,
+  "sensitive_content_assessment": "OBSERVED_TOPIC_IS_A_TECHNICAL_LABEL_NO_CREDENTIAL_OR_PERSONAL_SECRET_PROVEN; CONTENT_MINIMIZATION_STILL_FAILS",
+  "original_unclassified_producer_or_extra_count": 19,
+  "original_incomplete_preserved": true,
+  "independent_explanation_of_19": {
+    "configured_stats_table_metadata": 1,
+    "static_handler_registration": 4,
+    "static_command_registration": 12,
+    "cost_start_metadata": 1,
+    "cost_final_metadata": 1
+  },
+  "producer_records": [
+    {
+      "window_index": 1,
+      "selected_request": true,
+      "message_sha256": "fbd071a478b78f4b39b23d50814604ca78e30f5ed48be100a40a10600c21ceb9",
+      "application_sha256": "b15bbc51817a3c2291f938210c514d8edd7516ec23ce78ead0def9ac4aa60ebe",
+      "source_file": "main.py",
+      "source_line": 62,
+      "source_sha256": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "event_type",
+        "lambda_request_id",
+        "level",
+        "location",
+        "message",
+        "method",
+        "path",
+        "request_id",
+        "route_key",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 2,
+      "selected_request": true,
+      "message_sha256": "3e308f306abc0f2b7b2361f5ddbb1bb8d6974a8228878d4679a3226f18d99e88",
+      "application_sha256": "c0fce6eff835809d7a7f9c7e8fb7779b7dd2dde3d52b1dbcf07efc8bd8756e15",
+      "source_file": "services/repositories/stats.py",
+      "source_line": 28,
+      "source_sha256": "22286bc18eee6be3c7db6c9428618cba0568f2f6f5501269d6df47f62ce1da10",
+      "producer_form": "static",
+      "category": "configured_stats_table_metadata",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "table_name",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 3,
+      "selected_request": true,
+      "message_sha256": "653037548cf8541711018b98e8ab7b462aac49a41b790398d244034e06d0be36",
+      "application_sha256": "3922afcd8d3922681b76168b1d8f7ea8363b71f3d0d45c0c535b45a47ca435ad",
+      "source_file": "core/dispatcher.py",
+      "source_line": 187,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "static",
+      "category": "static_handler_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 4,
+      "selected_request": true,
+      "message_sha256": "aa073823bc4daf9c0fab3f2cc3539725dcb716f805953c93db712db99a00f8ce",
+      "application_sha256": "4b155f14933cf1f5221441d0c58fa1cfc28f45b94b72b6d3f2fbb55ac513c65d",
+      "source_file": "core/dispatcher.py",
+      "source_line": 205,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "static",
+      "category": "static_handler_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 5,
+      "selected_request": true,
+      "message_sha256": "36e2ed824f8467875575bf21a98111794272f3424e00b053d38d99434596133c",
+      "application_sha256": "57a246e8fb550f9e7ab4c36ec9db7d821099c2a651174ba7ca9864f5a7746cb8",
+      "source_file": "core/dispatcher.py",
+      "source_line": 193,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "static",
+      "category": "static_handler_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 6,
+      "selected_request": true,
+      "message_sha256": "7e06b299d7941f4d3c64767515ffd2d4b0818cdd22e7a73dabdf6b555f23d812",
+      "application_sha256": "c112fc2421f4d95221b2700d23cd23066daf0d0365e3693c29d1ab65e6f147c3",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 7,
+      "selected_request": true,
+      "message_sha256": "28af157c0ee976d0e9aa7d83d97d752d3a594deb900c91219058cd697d7da205",
+      "application_sha256": "a66bebaff9bc4f724d0ad9d28bf4630c761b47555adc76cbf7cf10e942787d36",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 8,
+      "selected_request": true,
+      "message_sha256": "b2d51d9272e51ee7a45a4cb837bf690ab8584dd105f938fc94f863de6cec0b95",
+      "application_sha256": "a0c6bc541851f90fb01d510fddf3150f9092c7e8488c879d333861cd3d01eb4e",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 9,
+      "selected_request": true,
+      "message_sha256": "241ba318e391e29b132dadcb00edd9e19d42385ee8861f24dada409405d99dc7",
+      "application_sha256": "49dda46b64980f7651e59629dc6f56d40a45ffe3d4ca6017f56d9df74c00a8c8",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 10,
+      "selected_request": true,
+      "message_sha256": "32db155f8192fd74dde5c70e32debfd4a73258291caa1a98091f1748e214eeff",
+      "application_sha256": "5831b5f628533267ae610b77346348b9ecc0af050b6a2f1d309b0b84cd689a2c",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 11,
+      "selected_request": true,
+      "message_sha256": "c95170046b4a861dd36f92ce4efbf14e3a8b8a33dba0afbfd23e0cdc68e27bcb",
+      "application_sha256": "1153a3c32a97168029c2143d15c6c42d95f75c85ab3a74a3e250bce2bf7ccba0",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 12,
+      "selected_request": true,
+      "message_sha256": "9960e7848bc0c0f5b86aa1e562379cb7a46c200eefdc62468b63e39d7de666fb",
+      "application_sha256": "a1cee951eff2cacf0a778baad93ce8eb7aacb9afdbea5a53dffd3a1ad110ec3c",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 13,
+      "selected_request": true,
+      "message_sha256": "2268c29304146ace2454f9274320334f38336055954bae8f4df60a01096a9b45",
+      "application_sha256": "e4776ca9b02c34ea72b05999e1f53c879a8c3d4479c8cb61d252553353a02c71",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 14,
+      "selected_request": true,
+      "message_sha256": "c4011cdd2c1e96ff743087b44e433e6a3f2b5b09caa35372161186663c43c17f",
+      "application_sha256": "eda5955af1c888063cdd6fd7bfdff546516d5a317015efccf827f67934102a40",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 15,
+      "selected_request": true,
+      "message_sha256": "cfb399dd708e2a7690bb1ba13781b7b2029386042239ab62a27d9679b9dc02ad",
+      "application_sha256": "daaa30fc961a0d07e6a66edccd78bedaa93944fbfb297ffb55ef5b33613bba52",
+      "source_file": "core/dispatcher.py",
+      "source_line": 199,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "static",
+      "category": "static_handler_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 16,
+      "selected_request": true,
+      "message_sha256": "c8930c93ccc19262d278e0fc296b05bf23ece4b4195867e01eb2f80b3533926b",
+      "application_sha256": "4531563f146465d673f6505b6e534021a9a65b8faf24088a7e2265569825a8a2",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 17,
+      "selected_request": true,
+      "message_sha256": "34355ef11795a2f838dade6a387227c4e188681d854c3657d870dd07d47d52b1",
+      "application_sha256": "2a0aa4e6b9d43c3d89c04278abeba678005d1e8b389331e8569f803cf8cf8ffc",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 18,
+      "selected_request": true,
+      "message_sha256": "3aaedd4f1c5c9718be46b348f704421e323823ab340b2c1fe210d91e67263903",
+      "application_sha256": "ed56d9a4fa8be3ccf98fa40b99f50ef7522ff595f3969da55ad4a8f1ac48e655",
+      "source_file": "core/dispatcher.py",
+      "source_line": 179,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "static_command_registration",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 19,
+      "selected_request": true,
+      "message_sha256": "7115b85e485a927865a1cb59c493444914744cdc94f2b791934eaeab4182b04e",
+      "application_sha256": "68cd966b53e437ffcf06221cbf0dea066430fe6d5642439fc42cf5c1b2f48b1e",
+      "source_file": "app.py",
+      "source_line": 103,
+      "source_sha256": "2e0cb49a29feda3b7e42e6ce2731b4d2676662228271a7ce94258e16efe02f1c",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 20,
+      "selected_request": true,
+      "message_sha256": "0ab1ae9be72cb54856280e4ccb9042efefd938a28f06c5ac08486e81230771e0",
+      "application_sha256": "49f0f802fb949b6854a5acfb6288667c4b03bfb61817ef65547e18c738fb44b7",
+      "source_file": "webhook.py",
+      "source_line": 46,
+      "source_sha256": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "event_type",
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 21,
+      "selected_request": true,
+      "message_sha256": "f2e13d185c90f446c714a346719afdec81f1c9ee49a0818e5b0e16c9081599f9",
+      "application_sha256": "4dacae7ce736e505ffa9a5cf1776c0ca6f61bdbe7685bb44e0a6975efd78e3fe",
+      "source_file": "webhook.py",
+      "source_line": 202,
+      "source_sha256": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 22,
+      "selected_request": true,
+      "message_sha256": "70598c378f2ea341bb2b6d6b9b13d0f3aedc43db153cf278bd9ed07cf5f51d3e",
+      "application_sha256": "a9f9862fa596681f7bc7d6d8014593b4f17598da58324d268b6f2860bc7f42b5",
+      "source_file": "webhook.py",
+      "source_line": 99,
+      "source_sha256": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "entities_count",
+        "event_type",
+        "level",
+        "location",
+        "message",
+        "text_chars",
+        "timestamp",
+        "update_id"
+      ]
+    },
+    {
+      "window_index": 23,
+      "selected_request": true,
+      "message_sha256": "74890a935d5e6d7d682271cd12817d3bc0d2dde63809ad2adccc9f2ef893138a",
+      "application_sha256": "5e6c5fcf59d0d2ffacdd80a3e59b20ec1c9d1ea2865a4559e18c488b5031c071",
+      "source_file": "services/memory_v2/cost_meter.py",
+      "source_line": 116,
+      "source_sha256": "4d34b49a01948ff7423629591093d3af611a8dcfd0be77efc1dc637bd7cdd0ca",
+      "producer_form": "static",
+      "category": "cost_start_metadata",
+      "fields": [
+        "cost_event",
+        "cost_schema",
+        "level",
+        "location",
+        "memory_request",
+        "message",
+        "request_id",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 24,
+      "selected_request": true,
+      "message_sha256": "f15a92973d0df7b2d9cd1c331e9c6b511bcb1c5130a6af8637bec807a1f982bb",
+      "application_sha256": "990aa4e89a96627dad82df7178041373e2e5b3fa1691f72a0f4bb1927b4b65bb",
+      "source_file": "services/handlers/commands.py",
+      "source_line": 477,
+      "source_sha256": "d89ccecb86adafdaf36a2ce6fdd5ffc2e8e348e53582cf9a657fe5cef4ec327f",
+      "producer_form": "static",
+      "category": "free_user_topic_content_bypass",
+      "fields": [
+        "chat_id",
+        "difficulty",
+        "lang",
+        "level",
+        "location",
+        "message",
+        "timestamp",
+        "topic"
+      ]
+    },
+    {
+      "window_index": 25,
+      "selected_request": true,
+      "message_sha256": "26bea150f1e7b02054d8f075bc59a6f94643e99414a926909833744ccb3d71cb",
+      "application_sha256": "9999984da95c575aa2e927442a267f097f923e88cc8ecbc827657738759f356f",
+      "source_file": "core/dispatcher.py",
+      "source_line": 251,
+      "source_sha256": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+      "producer_form": "formatted",
+      "category": "known_command_dispatch",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 26,
+      "selected_request": true,
+      "message_sha256": "c9fc009ae94e514b804290af35b7a773d395a5b62901f1d40d6a4c9118b0ed86",
+      "application_sha256": "90b4bdb58bb14c9d3b07b65a74d474edabf87e8af067f02a3c6273c5f47e7b1e",
+      "source_file": "webhook.py",
+      "source_line": 226,
+      "source_sha256": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce",
+      "producer_form": "static",
+      "category": "redacted_response_body",
+      "fields": [
+        "body",
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 27,
+      "selected_request": true,
+      "message_sha256": "e4b41f309e58f849b5243267930833bd28f4455af35bef6924c2721a58192611",
+      "application_sha256": "ef09f90b456e0966293d582f60807d1f9c04a5e6fb18ced4a0eadd804fb19d69",
+      "source_file": "services/memory_v2/cost_meter.py",
+      "source_line": 116,
+      "source_sha256": "4d34b49a01948ff7423629591093d3af611a8dcfd0be77efc1dc637bd7cdd0ca",
+      "producer_form": "static",
+      "category": "cost_final_metadata_not_budget_permission",
+      "fields": [
+        "complete",
+        "cost_event",
+        "cost_schema",
+        "elapsed_ms",
+        "level",
+        "location",
+        "message",
+        "request_id",
+        "shared_sqs_units",
+        "shared_stats_rru",
+        "shared_stats_wru",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 31,
+      "selected_request": false,
+      "message_sha256": "61c2dcfd7865d59e75ae8f8e131dbb270522a32c0e72044ba5b955cc4b24d95a",
+      "application_sha256": "a2c2a753ecc623b249a57dc6de9a9bc3d75389edc4f78c3880e2170654cb56e2",
+      "source_file": "main.py",
+      "source_line": 36,
+      "source_sha256": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "event_type",
+        "first_message_id",
+        "lambda_request_id",
+        "level",
+        "location",
+        "message",
+        "record_count",
+        "request_id",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 32,
+      "selected_request": false,
+      "message_sha256": "e5c215b461ed697f1d26aeca3b9cd43325198a0c2628428337898313762f5fb6",
+      "application_sha256": "ec443ea8cb220db75ef4d18b9bab5a7000467bd186a6a95f31ab0b95656083f4",
+      "source_file": "services/sqs_task_router.py",
+      "source_line": 71,
+      "source_sha256": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "record_count",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 33,
+      "selected_request": false,
+      "message_sha256": "7f08257313133813ed4432ccf1bfaa42872aa3887e8fefe15c147deaff33ced1",
+      "application_sha256": "4f4793820a36820c2ef1b46601fc038b3658bb2ff16236a8dd7638b3352a5ede",
+      "source_file": "services/sqs_task_router.py",
+      "source_line": 38,
+      "source_sha256": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "chat_id",
+        "latency_ms",
+        "level",
+        "location",
+        "message",
+        "message_id",
+        "task_type",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 34,
+      "selected_request": false,
+      "message_sha256": "4e3438c340890ef610918ae921ab04cc6db270d020b6a273f036b10bc0a3387e",
+      "application_sha256": "b93fcb40f84103637dca885941e361d971f5cf1673eba4902db63f183b33948e",
+      "source_file": "services/sqs_task_router.py",
+      "source_line": 126,
+      "source_sha256": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "level",
+        "location",
+        "message",
+        "timestamp"
+      ]
+    },
+    {
+      "window_index": 35,
+      "selected_request": false,
+      "message_sha256": "514c86ecc89cf5adfed57b1451faccfa85ebe563df038793f11bdc7e3f69b053",
+      "application_sha256": "3a39c52c9fcf6fa4562655302acdfc3ed211fc7bdd74c17674f50f736bf0e4d8",
+      "source_file": "main.py",
+      "source_line": 50,
+      "source_sha256": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+      "producer_form": "static",
+      "category": "source_matched_metadata",
+      "fields": [
+        "lambda_request_id",
+        "latency_ms",
+        "level",
+        "location",
+        "message",
+        "record_count",
+        "request_id",
+        "timestamp"
+      ]
+    }
+  ],
+  "producer_category_counts": {
+    "source_matched_metadata": 5,
+    "configured_stats_table_metadata": 1,
+    "static_handler_registration": 4,
+    "static_command_registration": 12,
+    "cost_start_metadata": 1,
+    "free_user_topic_content_bypass": 1,
+    "known_command_dispatch": 1,
+    "redacted_response_body": 1,
+    "cost_final_metadata_not_budget_permission": 1
+  },
+  "published_source_member_hashes": {
+    "app.py": "2e0cb49a29feda3b7e42e6ce2731b4d2676662228271a7ce94258e16efe02f1c",
+    "core/dispatcher.py": "d98b5c5e85d4a1181d5417b44bd1060d08998cf84ff613171db59ff17a514fc3",
+    "main.py": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+    "python/zerde_common/logger.py": "739d85a03666f677f5921fe98e8d002a3c259ec4b5ae9004ec11423e63aa4b1d",
+    "python/zerde_common/logging_utils.py": "1c65658295a5442c36f85415f704624d16bf24bba5b80b113fae562412e1fd32",
+    "services/handlers/__init__.py": "322d5b7673415f5c5521168ef8a9230605bbb485002b3c11b45b612b1f0dfb4e",
+    "services/handlers/commands.py": "d89ccecb86adafdaf36a2ce6fdd5ffc2e8e348e53582cf9a657fe5cef4ec327f",
+    "services/memory_v2/cost_meter.py": "4d34b49a01948ff7423629591093d3af611a8dcfd0be77efc1dc637bd7cdd0ca",
+    "services/repositories/stats.py": "22286bc18eee6be3c7db6c9428618cba0568f2f6f5501269d6df47f62ce1da10",
+    "services/sqs_task_router.py": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+    "webhook.py": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce"
+  },
+  "raw_retention_expires_at": 1791479619.09157,
+  "raw_retention_file_count": 9,
+  "local_repair_status": "NOT_USED_AS_DEPLOYED_EVIDENCE",
+  "completed_at": 1790875261.909072,
+  "passed_checks": 199,
+  "checker_sha256": "5ce6360de461520c40bc100e5d515b25c7d83c57d245bff29e725e43393d21cc",
+  "input_sha256_bindings": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/result.safe.json": "e10cc1e664fd39c5babcc8c59e0d83c36c62cf14a4124a6cbdf165435fae70b6",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/inputs.safe.json": "9516ec1de5e9339dc588168b5fd08b9f0d6c3d6e89ce89dc305e44bcb853d088",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/tool-pre-review.safe.json": "7dd134631ee75b7010a86f3c66c2294fc6cb4266b6d643a62bb8e2385e575889",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/execution.intent.safe.json": "6319620d6cde9f24a76d3ade85171a3ee7010ca47af94201fcf2e1e1b2ba4217",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-retention.safe.json": "27b80ee4a7c224c97353c6dadb96458207932d332140a496bd41e2f678e729ea",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/calls.safe.json": "8e5f3f5b1c809483496c421bac9dbd45e33c69e128107887f988e6da618ef507",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/analyze.py": "86a9c8d3690f5dd49c6fac0d8c42678aebeed69be3e364f3fa64e2d9ef254ddc",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/collector.py": "e831b52cf0bac35d7eda3ff161e876efdb310036bb02f6af9e49da6c8ab8d9e7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/controls.py": "e5dfa6e13b0a0d62e247ec3678b13640526f1c993775954d37af8a21686ba294",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/controls.safe.json": "60be072abc2f4e72793ecf7f19d7e6db3ed3925db7cc10ee0f80acf1237c7909",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-fix/post-independent-dev/snapshot.private.json": "cc28e3a99aa48c05e0636a151be2cf89d499b498d5e107d587bbb0b8b7689385",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-fix/post-independent-dev/review.safe.json": "7778da217fc616631fa40624d280f0779a90ed7d54d3a5136241b2399bf21b62",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-fix/final-release-independent.safe.json": "b2f405a113438e885decd44d4b8a0c4a50f89ee1f40cb7aa94054d7d8e459372",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-live/native-action.safe.json": "6253549cc4363f02f6d591cd099bfc3b9922e8b2bf7c7adbd4c53d621a357ee1",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-live/request.safe.json": "65625794273e15f861e3dfd3f067ab01cfe9398ad3109cf5f6ba419eed8cea41",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-urllib3-retry/NEXT_CLOUDWATCH_CAPTURE_V1.md": "ad3a219a29e526648030dcc544892676bd57316c36a82efa0f6cb7f710dac43b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-urllib3-retry/next-cloudwatch-plan-v1-pre-review.safe.json": "870104052c71362e2320e990ff54e1b92b53d4ad9021ee2d97476e1ec7c971df",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/tool-pre-review-initial.safe.json": "bfac12bfa845b714b19df1e2c0fdc8e246e6320afda0659ee2f2bc400f31e336",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/tool-pre-independent-checks.safe.json": "d3ec14ec07dc40756e7f17e0b6315babf03a527988ff58345cffdd1f13a065aa",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-001.private.json": "23f4997156c2ada2bc1ecbd0b80128b8cd67a5cb6fb8be79772923493c92cde9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-002.private.json": "5aae17ba66115d9f07f1ed2a69023b9c9acc83aab086015dd2a23b0df45bae09",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-003.private.json": "9ae59d6079681c3a147017a4dd3ab888b7c954155b496fc188bc76a130c0cdf2",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-004.private.json": "5df6372941b161fe4e2d8965aa1e5135f252643ea6e7e0a2f3d4cf2086afc401",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-005.private.json": "bef2beea3ae380478f8eb0107e8a1fb66e50257a87be20b35496646eaeb144c9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-007.private.json": "38557b36a5a29fbe4006c870e659dd42aa64886cfc5829a6db8ccf78ba3db68a",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-008.private.json": "dbd9b57a28e7a18fcd7a0afbf3758d366b20f7cfa0b76525695288e56870d87c",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/raw-009.private.json": "87c14e40fd2000547d147491e6e92e5120a312f5bc97cd1d71a7d2aed66313ee",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-01-z02-cloudwatch-capture/selected.private.json": "2ae0caef60c5db618d29fed217313e09f895aaa668c2b141cbb3385b818ba960",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-fix/post-independent-dev/bot.zip": "be4bb20b5a1641138dec1c4d51ce77e5dd8b64a9b31b2bfa0e8a1547f08447b4",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-30-quiz-feedback-fix/post-independent-dev/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+  },
+  "limitations": [
+    "Independent local POST only: no collector/scorer execution or import, no AWS/GitHub/UI/model call, no new messages or product execution. Historical eight cloud reads belong to the original collector.",
+    "The fixed 374-second window and actual Lambda RequestId establish one invocation boundary, not an exact Telegram command/message identity. No claim connecting it to REQUEST2404, poll, source link or prior UI gaps.",
+    "19 original whitelist gaps remain unchanged in original result. Independent source/field classification explains those observed rows; it is not a rerun, expanded acceptance whitelist or a new PASS for the collector.",
+    "The observed six-character topic is classified as a technical label. This sample does not prove exposure of an actual password/token or sensitive personal profile; logging free user topic remains a confirmed content-minimization breach.",
+    "No matches for the explicitly checked credential shapes/secret field names is a bounded observation, not proof that all historical logs or all possible secret formats are clean.",
+    "Only original PR235 deployed ZIP/layer bytes were used to classify producers and formatter behavior. Unpublished checkout repairs cannot change the original FAIL or historical stored log event.",
+    "All original nine raw files remain 0600 under their unchanged expiry1791479619.09157. Only sanitized hashes, source code locations, types, lengths and categories were added; no raw-bearing derivative was created.",
+    "This is a scoped dev historical log capture; no production capture, full Z02 closure, budget permission, natural sample or new deployment is established."
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "status": "ALIGNED_LOCAL_TOPIC_DIAGNOSTIC_REPAIR",
+  "review_type": "CORRECTNESS_AND_LOCAL_TESTS",
+  "as_of_utc": "2026-10-01T17:12:38.578644+00:00",
+  "base": "6212d1e8fd8699b8d3e770c923e66092bbdabad3",
+  "source": null,
+  "uncommitted_candidate": true,
+  "files": {
+    "src/bot/services/handlers/commands.py": "6689522ccdb925790e62ce89ca22905d713e9383db12726d4caedb9c29800b29",
+    "src/bot/services/repositories/lambda_invoker.py": "f39842f971e518838af03db37796f646c191bfb79f848e5229d89c13d116d276",
+    "tests/test_quiz_command_logging.py": "f3b0f34253de2d6d0088cace1ffaf9917d6350631528e1885d7b3a1d78043a6e"
+  },
+  "tracked_diff_sha256": "0caac3cacde1f554efe03d96a364d874526dfdb202123b6db5f4283263747248",
+  "plan_sha256": "30e238c32349b33764e2b2e0426198934cca1e2b4afb63934a1955de307a0f2f",
+  "plan_pre_sha256": "d40a951fcd1c94f5bb17ca7d2a505604ee526ac13f1aac974686c0a40bca2ac5",
+  "pre_fix_regression_log_sha256": "2ffc858bfdf0b500db3d1abec3354e3092ea683706a15eb791fbe625356b5e8c",
+  "root_targeted_log_sha256": "462ddca50f5f659fdf03bdba83686ab11583be917c830d9076748bd65d719dd2",
+  "independent_targeted_log_sha256": "8b64887edd358e594358f5a10800d84c247546339b54b7a8cb818b0bc10125bb",
+  "independent_tests": {
+    "command": "pytest -q -p no:cacheprovider tests/test_quiz_command_logging.py tests/test_zerde_common_logging_utils.py",
+    "passed": 30,
+    "exit_code": 0,
+    "new_topic_cases": 6,
+    "external_io_guard_calls": 0,
+    "environment": "cleared inherited runtime configuration; fake AWS credentials; EC2 metadata disabled; socket/DNS and botocore guards"
+  },
+  "findings": [],
+  "contract_checks": [
+    "complete parsed topic retained in exact Event payload",
+    "topic_chars only in final command log",
+    "ordinary multilingual content excluded, not just fake token",
+    "cause and context exception text not logged",
+    "single async call and original True/False protocol",
+    "sync invocation unchanged",
+    "shared formatter layer budget business owners unchanged"
+  ],
+  "full_suite_independently_run": false,
+  "ci_verified": false,
+  "new_deployment_verified": false,
+  "z02_complete": false,
+  "old_collector_results_changed": false,
+  "markdown_sha256": "dce0030936ceb7a7bfea56f3146311086797a006633281770a0dc159d3527f79",
+  "maintainer_markdown_sha256": "623158dfc5aeab5611429d18e723d1749a942daefc7de43d25d98a1f757523d3"
+}
