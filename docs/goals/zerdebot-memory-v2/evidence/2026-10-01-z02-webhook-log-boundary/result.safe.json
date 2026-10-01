@@ -1,0 +1,261 @@
+{
+  "status": "PASS_PUBLISHED_ARTIFACT_WEBHOOK_LOG_BOUNDARY_SYNTHETIC_INDEPENDENTLY_REVIEWED",
+  "as_of": "2026-10-01",
+  "runtime_source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "runtime_merge": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
+  "scope": "Local synthetic integration on previously downloaded published PR235 Bot and layer; not new AWS live readback",
+  "artifact_sha256": {
+    "bot": "be4bb20b5a1641138dec1c4d51ce77e5dd8b64a9b31b2bfa0e8a1547f08447b4",
+    "shared_layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+  },
+  "image_digest": "sha256:d52afe970081b30397342d019525dade26073d9e557fd94a3615de9b62ff9e27",
+  "planned_cases": 16,
+  "executed_cases": 16,
+  "passed_cases": 16,
+  "raw_streams": 32,
+  "json_log_records": 69,
+  "forbidden_variants": 19,
+  "forbidden_hits": 0,
+  "scorer_negative_controls": 42,
+  "independent_tool_checks": 135,
+  "actual_external_calls": {
+    "aws": 0,
+    "telegram": 0,
+    "model": 0
+  },
+  "network_guard_calls": 0,
+  "container_absence_independent": true,
+  "preparation_execution_seconds": 549.1904950141907,
+  "deadline_satisfied": true,
+  "evidence_sha256": {
+    "contract.safe.json": "f1a1066dc45c5d5d20b687df12003913db6ad1394536cdf68ccff2f3e5af8109",
+    "artifact-manifest.safe.json": "4f6fa833ad33c486a083f430fbb6045d036396b9bbb4d5ecf4556741d55de8d7",
+    "fixture-manifest.safe.json": "ce08363bd26ed1a6601286dfc573f1ba4a1b8d5f78c11a88df2ae02728324e7f",
+    "tool-pre-review.safe.json": "dbf8c783e6090b4aa27c0b680f68c60993c688a4a3dac343c95bd6684638a1f1",
+    "results.safe.json": "309a72a60cada00d8a993b492e3748f8466b85ce9085abc7f80e4cd107edc223",
+    "independent-final.safe.json": "c65cde60e47200516c30e4940968b4ddb3efa75ea0ec2c2b2aa92f484c664919",
+    "scorer-negative-controls.safe.json": "a5f7c1ac5a6099fc2842a8b3005d346dcd77b5f50cd13912b97bca8f6f282cf4"
+  },
+  "cases": [
+    {
+      "case": "A",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 2,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9290cc59543d5b9bde5b7f764a1b6891caa8b3db8927a6603a715cc4d5d20a04",
+      "result_sha256": "597a83cf4775a66042927135164621d670985749a14cefedc048e84f6850d839",
+      "trace_seams": [
+        "http"
+      ]
+    },
+    {
+      "case": "A",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 5,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9fa3854d55483a96827e7b819d10ac42d81c22bd1b0903a432985c16598ea8df",
+      "result_sha256": "a8b5318b072bc1b3927aaeef3ed711a73e73d448099aea0946f18fbaf36b838a",
+      "trace_seams": [
+        "http"
+      ]
+    },
+    {
+      "case": "B",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 2,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "65730e30bcc4f87a3923d2c65d5e45a82270262819e452bde70cc2da6788bd18",
+      "result_sha256": "fe98d92ece81c3bbdac6f400baf92277172df35776acc9f346f0fb9bab27475a",
+      "trace_seams": []
+    },
+    {
+      "case": "B",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 6,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bcf32d43d132d33e2ed68181d62dbb645c0c563988b04e0af8c51772f4de2c5c",
+      "result_sha256": "e9cff0a53c4fdfe22ef8da619ec556187d0a007090c9b5ec0acbc0336e59305f",
+      "trace_seams": []
+    },
+    {
+      "case": "C_missing",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 2,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "50415d9e0c5c28ff98a6a1189c632269280ed9251f54ab36fccfcefc31f9f63e",
+      "result_sha256": "3c49d919c5a5ce0e994370c72218cf2ee10635d6b0d25b8d56bfb5c31333f337",
+      "trace_seams": []
+    },
+    {
+      "case": "C_missing",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 5,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8930d933368952199c2b2c7bfad0e9f8a5c802ddf4e6d27cdbbff6bb3cd06e67",
+      "result_sha256": "b6b6045b69625e1ea7115613578ceea08bc5c5d9136f1b8224047f060e884911",
+      "trace_seams": []
+    },
+    {
+      "case": "C_wrong",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 2,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a3264eb247558a1d34de78898b309f9aa9d2ab2d01dacfb4de917ffedb051367",
+      "result_sha256": "7382b237b405078b66155e369a5292107f846af7e30f4ed9b5d3f9ec06b7b647",
+      "trace_seams": []
+    },
+    {
+      "case": "C_wrong",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 5,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e696301615fdf7f922657ccc17bbb0b83010ca0dc0d51266603238abcec92120",
+      "result_sha256": "54b2d43f95ff269d17cd6c7159ba8feddc9439d55a19f7b0fffe0cc5960a5f48",
+      "trace_seams": []
+    },
+    {
+      "case": "D",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 3,
+      "module_count": 75,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "219afc94571491b46fa198e203ddef72712e3e02afe719feea691c63bb386a63",
+      "result_sha256": "5ba24347734e9164b46edfc5b061bc0d06ca6f41041bbede8dd1b7d80317c319",
+      "trace_seams": [
+        "memory",
+        "spam",
+        "agent",
+        "dispatcher"
+      ]
+    },
+    {
+      "case": "D",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 6,
+      "module_count": 75,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2d3dc9b941eb732e1ecbaa4715d2043d8701c0a8380e95cf8b8cd45e8f4d6cc6",
+      "result_sha256": "bf1a1077e006abf902382ed6171568376979c9f1bf0a35fc53540770759f37dc",
+      "trace_seams": [
+        "memory",
+        "spam",
+        "agent",
+        "dispatcher"
+      ]
+    },
+    {
+      "case": "E",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 3,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "452598f356eff5caae425e3df1301db8f8e87e25e12112efb2108990d63acc48",
+      "result_sha256": "0d431ae8cd185f5bb662afcd88da08ee08f1c7b86432e808cf47ffb4ed0a9b1c",
+      "trace_seams": []
+    },
+    {
+      "case": "E",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 6,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b3c59630754cfbcc17f3a92ffe716a0eca713019fa2639f3ad7c2c007db11f97",
+      "result_sha256": "f0964504bf908fdc3775e32b7016891f8db1abbefd2c2d2cdc207dc32cbbedd6",
+      "trace_seams": []
+    },
+    {
+      "case": "F",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 4,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ca41ad9828e59fae8296a7ce021c267ab781e753c8fbba0e3c4e4f5481a5ea41",
+      "result_sha256": "d432b6fdf84f3af301c9769ed14fd003d187ddeb4d254f428114f752563db86d",
+      "trace_seams": [
+        "http"
+      ]
+    },
+    {
+      "case": "F",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 7,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4258250821dd32e0359b060e3562201da17234c4912f5a64a09b79d35c1c6517",
+      "result_sha256": "3310d0298bcd5f3f372c4e9da79a42b0f31996297f55da76044ca1d34278efea",
+      "trace_seams": [
+        "http"
+      ]
+    },
+    {
+      "case": "G",
+      "level": "INFO",
+      "status": "PASS",
+      "record_count": 4,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5b1805958cb3f78e8019ff4ff5623bdf91cb62046d69c61cb092278db5176f1c",
+      "result_sha256": "b46d8fde7c427f61465adff5aabd101078fdc2135ed1f7bf5f357b90be0711ab",
+      "trace_seams": [
+        "http"
+      ]
+    },
+    {
+      "case": "G",
+      "level": "DEBUG",
+      "status": "PASS",
+      "record_count": 7,
+      "module_count": 73,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "207d41f1d8515f0b3b3eb7caf8bb50865aab740e11eafa9231414e5f94189502",
+      "result_sha256": "cd32ca3a24a8b0d23fb740562283cb9a23a1d42c16a312ff2caf989fff46aa4a",
+      "trace_seams": [
+        "http"
+      ]
+    }
+  ],
+  "product_code_changed": false,
+  "new_runtime_deployment": false,
+  "issue_z02_state": "OPEN",
+  "production_ready": false,
+  "natural_samples_added": 0,
+  "uncovered": [
+    "Lambda wrapper/CloudWatch collection",
+    "production historical logs",
+    "urllib3 real internal retry logs",
+    "other message shapes/business/media/model paths",
+    "Quiz exact UI links and remaining recovery paths",
+    "natural-use acceptance",
+    "backup expiry"
+  ],
+  "limits": [
+    "Independent analysis of existing raw logs/results/artifacts and one fresh local Docker ps metadata read; no new product/container execution or cloud/UI/model call.",
+    "Container rm return code was asserted by the original runner but not separately saved. This review independently confirms the exact 16 IDs/names are absent now; it does not fabricate deletion timestamps/receipts.",
+    "Recorded module paths cover all 73/75 loaded first-party modules. The complete packaged dependencies were hash-checked and ordered sys.path/imports inspected, but this harness did not separately record every third-party module __file__; no new per-dependency runtime-path claim.",
+    "Ordinary message shapes and four explicitly cut downstream seams only; no Lambda wrapper/API Gateway/CloudWatch collector, production historical logs, actual urllib3 internal retry, other business/media/provider paths or adversarial reserved-extra-key new evidence.",
+    "G uses actual exception classes/chain supplied at the HTTP seam without network retries. Passing local synthetic logs does not pass Quiz exact UI identity, remaining business recovery, natural-use quality, cost attribution, production activation or retained-copy expiry.",
+    "Frozen contract PREPARING and root independent_review_pending fields retain their original historical meaning; this new report is the subsequent independent POST and does not rewrite earlier evidence."
+  ]
+}
