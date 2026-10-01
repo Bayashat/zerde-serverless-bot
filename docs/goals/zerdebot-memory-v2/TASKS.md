@@ -1,11 +1,11 @@
-# 任务看板（2026-10-01真实库重试验收）
+# 任务看板（2026-10-01日志修复发布）
 
-[逐项状态唯一来源](task_manifest.json)；[本轮CloudWatch失败证据](evidence/2026-10-01-z02-cloudwatch-capture/result.safe.json)；[此前Quiz缺口](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。代码、上线、真实业务、自然质量与副本消退分别验收。
+[逐项唯一状态](task_manifest.json)；[本轮发布及实包证据](evidence/2026-10-01-quiz-command-log-fix/release.safe.json)。
 
 | 工单 | 已完成 | 仍待完成 |
 |---|---|---|
 | Z01 [#158](https://github.com/Bayashat/zerde-serverless-bot/issues/158) | 旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 | 显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。 |
-| Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | 已完成发布包16个Webhook组合与2个真实urllib3重试场景。10月1日对既有dev日志作8次只读完整采集，发现/genquiz自由topic原文进入日志，原结果保留FAIL；两个相关诊断出口已本地修复，2340全测及定向独审通过，尚未新发布。 | Z02保持OPEN：当前实际运行仍PR235；须完成本次修复CI、两环境实际包发布与新出口实包验证，再按原契约逐项独审收口。CloudWatch旧FAIL不被新修复覆盖，Quiz精确UI链接/其它业务/自然门槛不由此完成。 |
+| Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | PR240已合并并部署dev/prod：/genquiz日志只保留主题长度，完整主题按原payload交付；异步Lambda调用失败仅记录固定字段和异常类型。2340全测、30定向、CI双job、两环境五入口ARM、实际五函数/共享层/配置保护主检独审及新实包本地隔离合成6例均通过。 | Z02保持OPEN：同步/quizreconcile使用的LambdaInvoker.invoke仍有任意异常正文诊断风险，尚无本轮线上泄漏实证；下一最小修订已独审。原CloudWatch FAIL和Quiz反馈ID/链接缺口保留；其它业务恢复、真实账单及自然0/50有据、0/20未知仍待，production_ready=false。 |
 | Z03 [#160](https://github.com/Bayashat/zerde-serverless-bot/issues/160)（限定范围已结项） | 原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。 | 本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。 |
 | Z04 [#161](https://github.com/Bayashat/zerde-serverless-bot/issues/161)（限定范围已结项） | PR223依赖修复、PR224源码退役及PR226配置资源退役已部署；两环境五函数实际包/锁定依赖/层/完整配置、预算清单及保护项主检和独审通过。 | 本工单限定部署配置/打包范围已验收；业务真实恢复、费用归因和自然质量仍由各原工单负责。 |
 | Z05 [#162](https://github.com/Bayashat/zerde-serverless-bot/issues/162) | V2身份、事实、控制与唯一writer已运行并通过合成验证。 | 按原契约核对证据并收口；Z11自然使用与prod启用未完成。 |
@@ -25,4 +25,4 @@
 | Z19 [#178](https://github.com/Bayashat/zerde-serverless-bot/issues/178)（限定范围已结项） | 抽奖命令/实现/定时恢复已退役，在线残留清除和旧任务重放已验证。 | 功能范围可结项；历史副本义务明确留在Z10，不宣称物理抹除。 |
 | Z20 [#221](https://github.com/Bayashat/zerde-serverless-bot/issues/221)（限定范围已结项） | 2026-09-28最后一批旧stats表与两个旧SSM路径已删除并独立确认不存在；临时恢复表也已删除。1条缺失历史统计按条件保全，3条已有统计不重复相加，8条旧实例投票不迁入且不声称过期。原28项、随后6项及本批3项合计37个已声明旧对象在线退役，6张现役表继续保留。Z20的源码与已声明在线资源范围完成；备份责任留Z10，业务与自然验收未完成，不新增启用。 | 已声明源码及在线资源范围结项；备份到期责任转由Z10统一跟踪，Z01最终业务回归及R3/R4仍待完成。 |
 
-[副本台账](RETAINED_COPIES.md)；本轮没有新增自然样本，prod记忆仍未启用。
+[副本台账](RETAINED_COPIES.md)；自然试用和prod记忆未新增启用。

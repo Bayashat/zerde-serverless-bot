@@ -1,0 +1,149 @@
+{
+  "status": "ALIGNED_INDEPENDENT_ACTUAL_PACKAGE_LOG_PROBE",
+  "source": "8708db0387c55f2d38dc2050f584837999d8d775",
+  "started_at": 1790881617.067266,
+  "root_result_sha256": "4ddf52eb4b8e5b246a18d6e6035d028da3f2bab9dfd7aa9ddbdc04a6dcf4d3ba",
+  "merge": "43dab2d29be9cbe6eca607939f200b4942958e1d",
+  "root_final_sha256": "39cc68f39c7f86a8ee11e2a5e1096be6bf0c03a8edc148e37e6c0d7f31f30d4c",
+  "pre_review_sha256": "81e8880b08aede92509d3e124d6289ed699b99363c550585343b9d9fab35ae7e",
+  "tools": {
+    "probe.py": "4540f5641c54cc1f522a71a1f9d10e3ae494f49dfffd7b304745cd13b09f961b",
+    "run.py": "abbe930d9b6aa64fcf273c2445df4c293c5db6afbc1c46f47010a088ef8984d0"
+  },
+  "raw_sha256": {
+    "stdout": "3a00f009e02ca379e087ef891a27b8e9c8dcde6a561e5895536f969ed0b74314",
+    "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "cases": [
+    {
+      "case": "topic_0",
+      "log_records": 1,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "fa76117b5e7c4648dd83b344c23ebc31e049c6654b3dc4d3d091b65f5f806704"
+    },
+    {
+      "case": "topic_1",
+      "log_records": 1,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "16ed950d3b9980b0ff3961b005472c6e7f2953e07cd2e48e2dbb1137335e9121"
+    },
+    {
+      "case": "topic_2",
+      "log_records": 1,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "6c15171ab0261e1fbe6011e20d519be4875a67a7b4bd1746f2b5d915bbe8add6"
+    },
+    {
+      "case": "cause",
+      "log_records": 1,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "80515eb57d3f93d1aa7af025b9d9859d4abd1d7ab1dc2cfb24cc0772abcd3742"
+    },
+    {
+      "case": "context",
+      "log_records": 1,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "80515eb57d3f93d1aa7af025b9d9859d4abd1d7ab1dc2cfb24cc0772abcd3742"
+    },
+    {
+      "case": "success",
+      "log_records": 0,
+      "calls": 1,
+      "payload_exact_assertion_observed": true,
+      "return_contract_checked": true,
+      "application_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "json_records": 5,
+  "forbidden_variants_checked": 19,
+  "module_sha256": {
+    "services.handlers.commands": "6689522ccdb925790e62ce89ca22905d713e9383db12726d4caedb9c29800b29",
+    "services.repositories.lambda_invoker": "f39842f971e518838af03db37796f646c191bfb79f848e5229d89c13d116d276",
+    "zerde_common.logger": "739d85a03666f677f5921fe98e8d002a3c259ec4b5ae9004ec11423e63aa4b1d",
+    "zerde_common.logging_utils": "1c65658295a5442c36f85415f704624d16bf24bba5b80b113fae562412e1fd32",
+    "core.logger": "66861c2f3ec9df5aa3fdc66bc886fa2e3ad5cd60d9c988ee8e6547ebd18de073"
+  },
+  "artifact_identity": {
+    "dev": {
+      "bot_zip_sha256": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+      "layer_zip_sha256": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+      "bot_file_members": 3248,
+      "layer_file_members": 8
+    },
+    "prod": {
+      "bot_zip_sha256": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+      "layer_zip_sha256": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+      "bot_file_members": 3248,
+      "layer_file_members": 8
+    }
+  },
+  "actual_container_exit": 0,
+  "actual_container_execution_seconds": 1.133683204650879,
+  "root_intent_to_complete_seconds": 2.044801950454712,
+  "actual_cleanup_receipts_verified": true,
+  "fresh_container_absence": true,
+  "independent_absence_sha256": "b362ebc100a32793e478aaa258d603da347a16af58eb905ce4ccb819e13bb286",
+  "completed_at": 1790881618.899561,
+  "checks": {
+    "assertions": 162,
+    "docker_read_calls": 2,
+    "cloud_calls": 0,
+    "models": 0,
+    "telegram_calls": 0,
+    "product_executions": 0,
+    "container_executions": 0
+  },
+  "inputs_sha256": {
+    "artifact-probe/result.safe.json": "4ddf52eb4b8e5b246a18d6e6035d028da3f2bab9dfd7aa9ddbdc04a6dcf4d3ba",
+    "artifact-probe/pre-review.safe.json": "81e8880b08aede92509d3e124d6289ed699b99363c550585343b9d9fab35ae7e",
+    "artifact-probe/intent.safe.json": "d09716dbdf82bd6aef1c723e96b6cb280fd25455dfcee8320246279a7e6c312b",
+    "final-release.safe.json": "39cc68f39c7f86a8ee11e2a5e1096be6bf0c03a8edc148e37e6c0d7f31f30d4c",
+    "artifact-probe/probe.py": "4540f5641c54cc1f522a71a1f9d10e3ae494f49dfffd7b304745cd13b09f961b",
+    "artifact-probe/run.py": "abbe930d9b6aa64fcf273c2445df4c293c5db6afbc1c46f47010a088ef8984d0",
+    "post-main-dev/readback.safe.json": "c0677e1f59303cf8db7f9eb3399ea217806c62530d1bb74cb42678b8cb91b293",
+    "post-independent-dev/review.safe.json": "c0e21888053316f840d6f094249444effc428c162614cba34c8eab9c8b7b9dfb",
+    "post-main-dev/bot.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-main-dev/memory-v2-worker.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-main-dev/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-independent-dev/bot.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-independent-dev/memory-v2-worker.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-independent-dev/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-main-prod/readback.safe.json": "9bf462434bf4a550fb0a7d763fe7a4807017087af3b2a99a22c228993ff68c70",
+    "post-independent-prod/review.safe.json": "65d55f90bc0e74d29d9a748e60aca52af94c84e91b2e70e92bcde7aa2b2258a1",
+    "post-main-prod/bot.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-main-prod/memory-v2-worker.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-main-prod/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-independent-prod/bot.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-independent-prod/memory-v2-worker.zip": "b5df3ad0e26e9dc301801b457fb48c54409581c38662475c4543a19951b18df2",
+    "post-independent-prod/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "artifact-probe/stdout.synthetic.log": "3a00f009e02ca379e087ef891a27b8e9c8dcde6a561e5895536f969ed0b74314",
+    "artifact-probe/stderr.synthetic.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifact-probe/image.safe.json": "f8eb457fb41fe2f2fc14ec441944e60533ccd1f0e48b0fabcf4f3e652bd57d7c",
+    "artifact-probe/configuration.safe.json": "1745e6240567e638f7b062d408d90ee90eff1fb6914e791013ada811e73c02fa",
+    "artifact-probe/create.safe.json": "656959efcf6699306b415967c41b7a9e785829c1774bb7e4e7493e5fea6bdded",
+    "artifact-probe/start.safe.json": "e692bae54c3e8f298c40abff0019c25078dd31df71286f9ac4b01689189b1f68",
+    "artifact-probe/state-before-remove.safe.json": "71363999db163e0ee7daef2f5ad094d430483a9e4d2d743fad797b834346a15f",
+    "artifact-probe/remove.safe.json": "326df480262e0ef0244ee9f1c6962dd35e007efa4a222507b0b6466d2fd3951f",
+    "artifact-probe/absence.safe.json": "f2a70f6167a1f611483327b4e1bdbb30437b26f8f97ada80b8b5e195de234922"
+  },
+  "reviewer_sha256": "3e3203a15464c681fd6148651a281cb26fc593ca45e0ce36453ac884e64b0c94",
+  "limitations": [
+    "This independently parses original synthetic application streams, modules, full package members and stored release/cleanup receipts; it does not rerun the product, probe, source tests or original scorer.",
+    "Exact external call payload and once-only behavior are backed by inspected assert_called_once_with assertions in the frozen probe plus its successful execution receipts; no independent AWS request was issued.",
+    "The outer stdout envelope intentionally contains synthetic inputs; leak checks target all embedded actual application log streams and complete stderr, not those evidence inputs.",
+    "Only five selected actual module paths/hashes are runtime-rostered. Full Bot/Worker/layer file sets are checked, without claiming every dependency executed.",
+    "The container uses fixed local ARM image and synthetic environment with external clients stubbed and IO guards. It is not a Telegram/AWS/model/network failure test or new CloudWatch capture.",
+    "Synchronous LambdaInvoker.invoke is not exercised; its pending next slice and the historical CloudWatch FAIL remain unchanged. No overall Z02 closure or natural-quality acceptance is implied.",
+    "Only two new precise Docker ps reads are executed; no new cloud/package download, budget permission, UI action or container execution occurs in this independent review."
+  ]
+}
