@@ -1,0 +1,83 @@
+{
+  "status": "DEV_PROD_COMMAND_LOG_REPAIR_AND_ACTUAL_PACKAGE_PROBE_VERIFIED",
+  "pr": 240,
+  "source": "8708db0387c55f2d38dc2050f584837999d8d775",
+  "merge": "43dab2d29be9cbe6eca607939f200b4942958e1d",
+  "ci_run": 36899435401,
+  "full_tests_passed": 2340,
+  "targeted_tests_passed": 30,
+  "actual_package_new_synthetic_cases": 6,
+  "updated_functions_per_environment": [
+    "bot",
+    "memory-v2-worker"
+  ],
+  "unchanged_package_functions": [
+    "news",
+    "quiz",
+    "operations"
+  ],
+  "shared_layer_unchanged": true,
+  "all_five_actual_functions_and_layer_independently_read": true,
+  "post_changed_function_window_seconds": 300,
+  "budget_reader_rebound_files": 104,
+  "budget_owner_closure_changed_only": [
+    "src/bot/services/handlers/commands.py",
+    "src/bot/services/repositories/lambda_invoker.py"
+  ],
+  "five_cost_owner_files_unchanged": true,
+  "managed_runtime_transition": {
+    "functions_per_environment": [
+      "bot",
+      "memory-v2-worker"
+    ],
+    "previous_suffix": "0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+    "actual_suffix": "9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+    "policy": "Auto",
+    "policy_unchanged": true,
+    "original_dev_incomplete_preserved": true
+  },
+  "budget_observation": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+  "new_telegram_or_model_test": false,
+  "new_prod_control": false,
+  "production_ready": false,
+  "natural_samples": {
+    "supported": 0,
+    "unknown": 0
+  },
+  "workflow": "active",
+  "evidence_sha256": {
+    "final-release.safe.json": "39cc68f39c7f86a8ee11e2a5e1096be6bf0c03a8edc148e37e6c0d7f31f30d4c",
+    "final-release-independent.safe.json": "a7c9a1dcab99048b1f4c88630e7a189a526de75cbebe7fd4b0a1ca1989df3993",
+    "budget-CommandLogFinal20261001A.safe.json": "ec71d60014430942c7991a8d64ec8c0e9232092dbc57d11243bbfac3b8044103",
+    "read_budget_published.py": "e40449faf0dec7594bcdb6cb565d88f8f0046f2b0f8466bf29e143b8d3542b9f",
+    "budget-owner-rebind.safe.json": "d181558e06be2eb220613406e0edbd3f2dc24d93c7f636d6d60495f61d81788d",
+    "ci-final.safe.json": "f8af0acf82601d83786441c12e7dc512f969861bdb58f0c99f24b0d022e0ea1f",
+    "local.safe.json": "3984a09316be10e13d72495f084591ca61e3e415b63adac1e47ebbbc2b25c4d6",
+    "artifact-probe/result.safe.json": "4ddf52eb4b8e5b246a18d6e6035d028da3f2bab9dfd7aa9ddbdc04a6dcf4d3ba",
+    "artifact-probe/independent-post.safe.json": "d16d10224a37ed852f737191316607d3a94300b0a83a7abb61f0564bdcc7cc35",
+    "z02-closeout-contract-review.safe.md": "52c772660e64b10d5d83240eebb5173202c417af23c750ee881e71da776f8567",
+    "NEXT_SYNC_LOG_REPAIR.md": "dfc0bdc9e42249201eb7157da16b44de8dcece98136dabfdd35ec0ff306d2e9f",
+    "next-sync-plan-pre.safe.json": "304a2be4f68a5f01e39887765ea47ddb24b280b2f9cf92254f0cb473a4a66580",
+    "cache-continuation-pre.safe.json": "be679ed4ebe60b9500ce7c3fabf324f0d7c37044309effbb0ee01bf7bbdcb431",
+    "cache-continuation-restored.safe.json": "8be839a4c0ddf2473d3e791c7e698d8ab40780bf0565b495fa3d1503c7851c73",
+    "RUNTIME_TRANSITION_CONTINUATION.md": "70b76f6f449c624ada02f3c3763e431e701efa43a54f545bfc7239a43bb19683",
+    "runtime-continuation-tools-pre.safe.json": "3f502ae76a1f7d64e83701a2bedf0913312a03dd92edea57350acd117f48c3a9",
+    "dev-runtime-drift-review.safe.json": "3344ea73a9d4696a6e938d8e963488b6d1743e4b90ee691f8c7094655a0539e2",
+    "failed-dev-post-archive.safe.json": "c4878a73b51f29f76671517653020f118b5d0205bed4c502f19d3f05b7d5e2f3",
+    "final_independent_verify_runtime_v2.py": "d1dc9a993fabb9ed4b844ac1b65ea183c4d5e68477a2411f69ed72b05d5ed3c3",
+    "post-main-dev/readback.safe.json": "c0677e1f59303cf8db7f9eb3399ea217806c62530d1bb74cb42678b8cb91b293",
+    "post-independent-dev/review.safe.json": "c0e21888053316f840d6f094249444effc428c162614cba34c8eab9c8b7b9dfb",
+    "finish-after-transition-dev.safe.json": "7429fcaf440b7edc4e4a8c28647fb36e3ee016b37ba0aab2de9364bd0720e9b6",
+    "post-main-prod/readback.safe.json": "9bf462434bf4a550fb0a7d763fe7a4807017087af3b2a99a22c228993ff68c70",
+    "post-independent-prod/review.safe.json": "65d55f90bc0e74d29d9a748e60aca52af94c84e91b2e70e92bcde7aa2b2258a1",
+    "finish-after-transition-prod.safe.json": "ed65de1afa23393a11e6cd7db5e6997303f851553b2f90d0e32f2924bcd2cb60"
+  },
+  "limitations": [
+    "Historical CloudWatch topic-content FAIL is preserved, not overwritten by this repair.",
+    "Actual package tests are new local isolated synthetic cases; they do not fill the Quiz UI message-link gap.",
+    "Synchronous LambdaInvoker.invoke exception diagnostics remain a concrete reachable but not live-proven content risk, tracked by the next scoped Z02 repair.",
+    "Earlier local environment import and CDK generated cache seal stops are preserved; no prior prepare or frozen once operation was replayed.",
+    "Only the exact recorded managed-runtime transition is accepted; other protection fields remain strict. Fixed local container tests do not reproduce the AWS managed-runtime patch.",
+    "Other business recovery, natural use, invoices and retained copies remain open."
+  ]
+}

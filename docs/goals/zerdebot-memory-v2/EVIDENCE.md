@@ -1,8 +1,18 @@
-## 2026-10-01晚：CloudWatch发现具体日志旁路，修复待发布
+## 2026-10-01最新交付：Quiz命令日志修复已上线
 
-已完成发布包16个Webhook组合与2个真实urllib3重试场景。10月1日对既有dev日志作8次只读完整采集，发现/genquiz自由topic原文进入日志，原结果保留FAIL；两个相关诊断出口已本地修复，2340全测及定向独审通过，尚未新发布。
+PR240已合并并部署dev/prod：/genquiz日志只保留主题长度，完整主题按原payload交付；异步Lambda调用失败仅记录固定字段和异常类型。2340全测、30定向、CI双job、两环境五入口ARM、实际五函数/共享层/配置保护主检独审及新实包本地隔离合成6例均通过。
 
-Z02保持OPEN：当前实际运行仍PR235；须完成本次修复CI、两环境实际包发布与新出口实包验证，再按原契约逐项独审收口。CloudWatch旧FAIL不被新修复覆盖，Quiz精确UI链接/其它业务/自然门槛不由此完成。
+实际更新Bot/MemoryWorker同包两处源码；另有如实列出的依赖pyc差异，Quiz/News/Operations/共享层实际字节保持。两更新函数同时出现AWS托管RuntimeArn从0aac…变为9559…，Auto策略未改；原dev读回INCOMPLETE整目录保全，新窄合同绑定精确变化后重新完整主检与独审。该现象符合[AWS Auto发布时更新机制](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html)，是行为吻合推断，不声称直接证明平台触发原因或全部补丁兼容性。其它配置保护仍严格一致，固定ARM容器不是AWS补丁复刻。两环境300秒后五函数稳定。104文件预算闭包只变两处诊断文件，五费用owner不变，reader已重绑并时点PASS（不是持续许可或账单）。运行构建源`8708db0387c55f2d38dc2050f584837999d8d775`，merge`43dab2d29be9cbe6eca607939f200b4942958e1d`，workflow ACTIVE。
+
+Z02保持OPEN：同步/quizreconcile使用的LambdaInvoker.invoke仍有任意异常正文诊断风险，尚无本轮线上泄漏实证；下一最小修订已独审。原CloudWatch FAIL和Quiz反馈ID/链接缺口保留；其它业务恢复、真实账单及自然0/50有据、0/20未知仍待，production_ready=false。
+
+[发布与实包证据](evidence/2026-10-01-quiz-command-log-fix/release.safe.json)；[本次边界及下一切片](QUIZ_COMMAND_LOG_REPAIR.md)。本次没有新Telegram/模型调用、预算计量/控制/支付修改或新群/prod记忆启用。CloudWatch原文9文件于2026-10-08 17:13:39.091570UTC精确清理；Z10原四期限仍独立，见[副本台账](RETAINED_COPIES.md)。
+
+## 同日此前发现与本地修复记录（现已由上方PR240发布）
+
+已完成发布包16个Webhook组合与2个真实urllib3重试场景。10月1日对既有dev日志作8次只读完整采集，发现/genquiz自由topic原文进入日志，原结果保留FAIL；两个相关诊断出口已本地修复，2340全测及定向独审通过；这是发布前记录，当时尚未发布。
+
+该阶段Z02保持OPEN：当时实际运行PR235，CI、两环境发布与新出口实包验证仍待；这些发布步骤现已完成，后续同步调用诊断风险见上方最新状态。CloudWatch旧FAIL不被新修复覆盖，Quiz精确UI链接/其它业务/自然门槛不由此完成。
 
 [本轮范围和修复契约](QUIZ_COMMAND_LOG_REPAIR.md)；[原采集安全结果](evidence/2026-10-01-z02-cloudwatch-capture/result.safe.json)。9份原始回执按采集起点＋7天于2026-10-08 17:13:39.091570 UTC精确清理，独立于Z10原四期限。没有新Telegram消息、模型调用、配置/控制/预算或支付变更，不启用新群或prod记忆。
 
@@ -30,7 +40,7 @@ Z02保持OPEN：当前实际运行仍PR235；须完成本次修复CI、两环境
 
 整体仍为PARTIAL：原生消息链接菜单未能打开，feedback消息ID与精确Reply目标链接未取得；不补猜、不降低门槛，不重发本轮命令来补验。daily并发、发送UNKNOWN到DONE、答案先到/GSI迟到及其他失败重投仍待；Z16保持OPEN，production_ready=false。
 
-[本轮脱敏记录](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。这是一次已结束的受控业务合成测试，不能计入自然样本；本轮无代码发布、新群/生产记忆或付款变更。当前运行仍PR235。
+[本轮脱敏记录](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。这是一次已结束的受控业务合成测试，不能计入自然样本；本轮无代码发布、新群/生产记忆或付款变更。该轮当时运行PR235。
 
 ## 此前2026-09-30发布记录：Quiz持久请求反馈
 
