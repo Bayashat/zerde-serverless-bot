@@ -476,7 +476,7 @@ def handle_quiz_generate(ctx: Context) -> None:
 
     logger.info(
         "Invoking quiz lambda on-demand",
-        extra={"topic": topic, "lang": lang, "difficulty": difficulty, "chat_id": ctx.chat_id},
+        extra={"topic_chars": len(topic), "lang": lang, "difficulty": difficulty, "chat_id": ctx.chat_id},
     )
 
     accepted = ctx.lambda_invoker.invoke_async(

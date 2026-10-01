@@ -1,0 +1,45 @@
+{
+  "owner": "Z02_cloudwatch_acceptance_temporary_raw",
+  "started_at": 1790874819.09157,
+  "expires_at": 1791479619.09157,
+  "expires_at_utc": "2026-10-08T17:13:39.091570+00:00",
+  "files": [
+    {
+      "path": "raw-001.private.json",
+      "sha256": "23f4997156c2ada2bc1ecbd0b80128b8cd67a5cb6fb8be79772923493c92cde9"
+    },
+    {
+      "path": "raw-002.private.json",
+      "sha256": "5aae17ba66115d9f07f1ed2a69023b9c9acc83aab086015dd2a23b0df45bae09"
+    },
+    {
+      "path": "raw-003.private.json",
+      "sha256": "9ae59d6079681c3a147017a4dd3ab888b7c954155b496fc188bc76a130c0cdf2"
+    },
+    {
+      "path": "raw-004.private.json",
+      "sha256": "5df6372941b161fe4e2d8965aa1e5135f252643ea6e7e0a2f3d4cf2086afc401"
+    },
+    {
+      "path": "raw-005.private.json",
+      "sha256": "bef2beea3ae380478f8eb0107e8a1fb66e50257a87be20b35496646eaeb144c9"
+    },
+    {
+      "path": "raw-007.private.json",
+      "sha256": "38557b36a5a29fbe4006c870e659dd42aa64886cfc5829a6db8ccf78ba3db68a"
+    },
+    {
+      "path": "raw-008.private.json",
+      "sha256": "dbd9b57a28e7a18fcd7a0afbf3758d366b20f7cfa0b76525695288e56870d87c"
+    },
+    {
+      "path": "raw-009.private.json",
+      "sha256": "87c14e40fd2000547d147491e6e92e5120a312f5bc97cd1d71a7d2aed66313ee"
+    },
+    {
+      "path": "selected.private.json",
+      "sha256": "2ae0caef60c5db618d29fed217313e09f895aaa668c2b141cbb3385b818ba960"
+    }
+  ],
+  "policy": "Exact listed raw and raw-bearing derivatives only; delete at deadline with independent absence check. Separate from Z10 original copy duties."
+}
