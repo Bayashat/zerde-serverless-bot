@@ -1,0 +1,116 @@
+{
+  "runtime_source": "7d3f42827662cae428bc3276319a165add9c417a",
+  "started_at": 1790864016.321905,
+  "completed_at": 1790864977.85781,
+  "planned_cases": 2,
+  "executed_cases": 2,
+  "results": [
+    {
+      "status": "PASS",
+      "failures": [],
+      "record_count": 7,
+      "retry_warning_count": 3,
+      "case": "RETRY",
+      "level": "INFO",
+      "container_id": "92c00b80bfe309bcec03516fe80b3fd06031a84cced5742d7bb611865a31c866",
+      "container_name": "zerde-z02-retry-info-20261001",
+      "cleanup_confirmed": true,
+      "operator_error": null,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "9e70824d5e80b02fd58f196a451c1a348d43f9a14d9790340dbd0bc4528ed516",
+      "result_sha256": "5bd2b83189de01cbab75f41c4aa026989fd7cb8782a9d8442261c5ffbc82402f",
+      "connect_count": 4,
+      "resolution_count": 4,
+      "guard_count": 0,
+      "module_count": 77
+    },
+    {
+      "status": "PASS",
+      "failures": [],
+      "record_count": 10,
+      "retry_warning_count": 3,
+      "case": "RETRY",
+      "level": "DEBUG",
+      "container_id": "75a1506003e68720d23831a714c83841ba2014fdd9d2c6525b293211c2e96696",
+      "container_name": "zerde-z02-retry-debug-20261001",
+      "cleanup_confirmed": true,
+      "operator_error": null,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8aefe9033fbef8bc83e596c79120e18fb562d21faf54c57d5c651a88f9cfbdd0",
+      "result_sha256": "acf1dfa249070b2d35806418c914b64720de8b8508de78f52bb4776f3a514ef4",
+      "connect_count": 4,
+      "resolution_count": 4,
+      "guard_count": 0,
+      "module_count": 77
+    }
+  ],
+  "scorer_negative_controls": 71,
+  "scorer_positive_controls": 2,
+  "product_code_changed": false,
+  "aws_calls": 0,
+  "telegram_actions": 0,
+  "model_calls": 0,
+  "external_connections": 0,
+  "loopback_attempts_are_not_telegram_api_requests": true,
+  "raw_exception_token_observation": "INFERRED_FROM_REAL_API_BASE_AND_UNCHANGED_URI_PATH_AND_REDACTED_WARNING_NOT_CAPTURED_INTERMEDIATE",
+  "production_ready": false,
+  "issue_z02_state": "OPEN",
+  "status": "PASS_PUBLISHED_ARTIFACT_REAL_URLLIB3_RETRY_LOCAL_INDEPENDENTLY_REVIEWED",
+  "scope": "LOCAL_PUBLISHED_ARM_BOT_REAL_URLLIB3_CONNECT_RETRY",
+  "new_deployment": false,
+  "actual_json_record_count": 17,
+  "actual_retry_warnings": 6,
+  "actual_refused_loopback_connects": 8,
+  "mandatory_forbidden_variant_count": 10,
+  "leakage_hits": 0,
+  "preparation_and_execution_elapsed_seconds": 961.535905,
+  "independent_review": {
+    "status": "ALIGNED_INDEPENDENT_PUBLISHED_ARTIFACT_REAL_URLLIB3_RETRY_LOCAL",
+    "report_sha256": "99621ac22e44b8153ba6d587062aaeda0b9f7376b90df6fa9c3f87466246888f",
+    "root_results_sha256": "2b9aa64a64515215cbe4f295557fdda4add0f6811d2af440b591d5d14b088dc4",
+    "docker_read_calls": 4,
+    "raw_streams_reviewed": 4,
+    "private_results_reviewed": 2,
+    "original_scorer_imported": false
+  },
+  "artifact_zip_verification": {
+    "bot": {
+      "zip_sha256": "be4bb20b5a1641138dec1c4d51ce77e5dd8b64a9b31b2bfa0e8a1547f08447b4",
+      "members": 3248,
+      "files": 3248,
+      "envs": [
+        "dev",
+        "prod"
+      ]
+    },
+    "shared-layer": {
+      "zip_sha256": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+      "members": 8,
+      "files": 8,
+      "envs": [
+        "dev",
+        "prod"
+      ]
+    }
+  },
+  "evidence_sha256": {
+    "contract.safe.json": "617aef312cc7c25de910f088653f122de7ba45c8261e59d5cbb73495ccd48a29",
+    "tool-pre-review.safe.json": "45eb29dfc148dc12222abd8499c3a1193748d1712aef5ad9e04d0c8192e95f3a",
+    "fixture-manifest.safe.json": "79dca808ddc9f3705b98a9f0de018a21c0bfc9620590056365220cc823d4c827",
+    "artifact-manifest.safe.json": "4f6fa833ad33c486a083f430fbb6045d036396b9bbb4d5ecf4556741d55de8d7",
+    "results.safe.json": "2b9aa64a64515215cbe4f295557fdda4add0f6811d2af440b591d5d14b088dc4",
+    "independent-final.safe.json": "99621ac22e44b8153ba6d587062aaeda0b9f7376b90df6fa9c3f87466246888f",
+    "NEXT_Z02_SCOPE_REVIEW.safe.json": "3656496fac6bd3092ecf73e01a46868af8d856ffd805107d83013be28ae6957f"
+  },
+  "limitations": [
+    "Independent POST parsed all four raw streams and two actual result files without importing or executing original score.py, controls.py, harness or product modules; no actual cases were rerun.",
+    "The two actual cases are local synthetic Linux ARM acceptance, not Telegram API requests, external network success, Lambda/CloudWatch execution, natural samples or full Z02 closure.",
+    "Actual intermediate exception object containing the raw token was not separately captured. Token carriage is inferred from the actual token-bearing api_base, unchanged Telegram/urllib3 URI construction and final redacted warnings/exception chain.",
+    "Log timestamps have second resolution; subsecond ordering is based on the recorded resolver/connect lifecycle and unchanged source, not timestamp precision of log records.",
+    "This reviewer checks frozen historical deployment ZIPs locally; no fresh AWS package query or runtime deployment occurred in this POST.",
+    "Artifact bytes and source ensure the unpatched urllib3 retry/HTTP/logger path. Socket connect and numeric-address resolution are exact scoped delegates; forbidden socket and botocore operations are guarded and no dispatch/database business calls are allowed.",
+    "Four fresh Docker ps reads only confirm the exact historical container IDs and names are absent now; original separate rc=0 removal receipts establish historical removal. No container was created, started, executed, killed or removed by this verifier.",
+    "Independent host POST completed after the product execution window if applicable; it does not extend the original 45-minute product execution deadline.",
+    "Unchanged product/code/configuration/Memory control/budget/UNKNOWN and project/natural acceptance remain outside this slice. Z02 remains OPEN and production_ready remains false."
+  ]
+}
