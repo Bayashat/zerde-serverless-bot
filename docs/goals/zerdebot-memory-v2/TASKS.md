@@ -1,11 +1,11 @@
-# 任务看板（2026-10-01日志组合验收）
+# 任务看板（2026-10-01真实库重试验收）
 
-[逐项状态唯一来源](task_manifest.json)；[本轮日志证据](evidence/2026-10-01-z02-webhook-log-boundary/result.safe.json)；[此前Quiz缺口](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。代码、上线、真实业务、自然质量与副本消退分别验收。
+[逐项状态唯一来源](task_manifest.json)；[本轮日志证据](evidence/2026-10-01-z02-urllib3-retry/result.safe.json)；[此前Quiz缺口](evidence/2026-09-30-quiz-feedback-live/result.safe.json)。代码、上线、真实业务、自然质量与副本消退分别验收。
 
 | 工单 | 已完成 | 仍待完成 |
 |---|---|---|
 | Z01 [#158](https://github.com/Bayashat/zerde-serverless-bot/issues/158) | 旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 | 显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。 |
-| Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | 脱敏与内容最小化已实现并部署。 PR232限定Quiz调用链移除内容/异常正文日志并交付安全attempt/usage观察；全仓逐项日志验收仍待。 PR235收紧实际Quiz反馈发送器的异常日志，只记录错误类型；全仓逐项日志证据仍待。 2026-10-01使用PR235发布时实际下载的Bot/共享层，在本地禁网ARM环境完成8类输入×INFO/DEBUG共16个组合场景，全部通过且独立复核通过；69条原始JSON日志中未出现测试内容或凭据，路由正证据与零外部IO保护符合契约。 | 本次仅为实际包的本地合成组合证据；Lambda入口/CloudWatch采集、生产历史日志、urllib3内部真实重试、其它业务/媒体/模型路径仍待逐项验证。Z02保持OPEN，生产记忆和新群未启用。 |
+| Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | 脱敏与内容最小化已实现并部署；PR232/PR235收紧Quiz调用和提示发送日志。10月1日已完成实际发布包16个Webhook组合场景、69条日志独审；随后INFO/DEBUG两场景真实urllib3默认连接拒绝重试也通过独审，17条JSON日志、8次实际loopback连接拒绝、6条重试警告均符合固定脱敏与隔离契约。 | 限定剩余：一个既有dev Webhook请求从Lambda入口到CloudWatch的完整采集证据，以及原日志契约逐项对账与独审。Z02仍OPEN。不承诺所有历史日志从未泄漏或穷举全部业务/重试排列；新发现具体旁路另记风险。没有新增启用群或prod记忆。 |
 | Z03 [#160](https://github.com/Bayashat/zerde-serverless-bot/issues/160)（限定范围已结项） | 原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。 | 本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。 |
 | Z04 [#161](https://github.com/Bayashat/zerde-serverless-bot/issues/161)（限定范围已结项） | PR223依赖修复、PR224源码退役及PR226配置资源退役已部署；两环境五函数实际包/锁定依赖/层/完整配置、预算清单及保护项主检和独审通过。 | 本工单限定部署配置/打包范围已验收；业务真实恢复、费用归因和自然质量仍由各原工单负责。 |
 | Z05 [#162](https://github.com/Bayashat/zerde-serverless-bot/issues/162) | V2身份、事实、控制与唯一writer已运行并通过合成验证。 | 按原契约核对证据并收口；Z11自然使用与prod启用未完成。 |

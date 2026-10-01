@@ -47,14 +47,14 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "deployed_webhook_log_boundary_local_pass_remaining_paths_pending",
+    "status": "deployed_local_logging_contract_pass_cloud_capture_pending",
     "status_as_of": "2026-10-01",
-    "completed": "脱敏与内容最小化已实现并部署。 PR232限定Quiz调用链移除内容/异常正文日志并交付安全attempt/usage观察；全仓逐项日志验收仍待。 PR235收紧实际Quiz反馈发送器的异常日志，只记录错误类型；全仓逐项日志证据仍待。 2026-10-01使用PR235发布时实际下载的Bot/共享层，在本地禁网ARM环境完成8类输入×INFO/DEBUG共16个组合场景，全部通过且独立复核通过；69条原始JSON日志中未出现测试内容或凭据，路由正证据与零外部IO保护符合契约。",
-    "remaining": "本次仅为实际包的本地合成组合证据；Lambda入口/CloudWatch采集、生产历史日志、urllib3内部真实重试、其它业务/媒体/模型路径仍待逐项验证。Z02保持OPEN，生产记忆和新群未启用。",
+    "completed": "脱敏与内容最小化已实现并部署；PR232/PR235收紧Quiz调用和提示发送日志。10月1日已完成实际发布包16个Webhook组合场景、69条日志独审；随后INFO/DEBUG两场景真实urllib3默认连接拒绝重试也通过独审，17条JSON日志、8次实际loopback连接拒绝、6条重试警告均符合固定脱敏与隔离契约。",
+    "remaining": "限定剩余：一个既有dev Webhook请求从Lambda入口到CloudWatch的完整采集证据，以及原日志契约逐项对账与独审。Z02仍OPEN。不承诺所有历史日志从未泄漏或穷举全部业务/重试排列；新发现具体旁路另记风险。没有新增启用群或prod记忆。",
     "issue_state": "OPEN",
     "runtime_baseline": "6a5acf160092a30b6b718135b11ac4ccb6feb38c",
     "deployed_build_source": "7d3f42827662cae428bc3276319a165add9c417a",
-    "status_evidence": "evidence/2026-10-01-z02-webhook-log-boundary/result.safe.json",
+    "status_evidence": "evidence/2026-10-01-z02-urllib3-retry/result.safe.json",
     "runtime_evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
     "local_followup": {
       "as_of": "2026-09-29",
@@ -88,6 +88,18 @@
       "scope": "published_artifact_local_synthetic_only",
       "cases": 16,
       "evidence": "evidence/2026-10-01-z02-webhook-log-boundary/result.safe.json",
+      "code_changed": false,
+      "new_deployment": false
+    },
+    "urllib3_retry_log_boundary": {
+      "as_of": "2026-10-01",
+      "status": "local_real_retry_pass_independently_reviewed",
+      "scope": "published_artifact_container_loopback_only",
+      "cases": 2,
+      "json_records": 17,
+      "retry_warnings": 6,
+      "real_refused_connects": 8,
+      "evidence": "evidence/2026-10-01-z02-urllib3-retry/result.safe.json",
       "code_changed": false,
       "new_deployment": false
     }
