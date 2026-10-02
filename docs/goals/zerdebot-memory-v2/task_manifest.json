@@ -47,10 +47,10 @@
       "status": "deployed_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "command_async_log_repair_deployed_sync_path_remaining",
-    "status_as_of": "2026-10-01",
+    "status": "sync_log_repair_local_verified_release_pending",
+    "status_as_of": "2026-10-02",
     "completed": "PR240已合并并部署dev/prod：/genquiz日志只保留主题长度，完整主题按原payload交付；异步Lambda调用失败仅记录固定字段和异常类型。2340全测、30定向、CI双job、两环境五入口ARM、实际五函数/共享层/配置保护主检独审及新实包本地隔离合成6例均通过。",
-    "remaining": "Z02保持OPEN：同步/quizreconcile使用的LambdaInvoker.invoke仍有任意异常正文诊断风险，尚无本轮线上泄漏实证；下一最小修订已独审。原CloudWatch FAIL和Quiz反馈ID/链接缺口保留；其它业务恢复、真实账单及自然0/50有据、0/20未知仍待，production_ready=false。",
+    "remaining": "同步invoke诊断修复本地已完成；尚待CI、dev/prod实际发布、新实包探针、原Z02有限契约逐项独审。Z02保持OPEN；原CloudWatch FAIL及其它工单/自然验收缺口分别保留。",
     "issue_state": "OPEN",
     "runtime_baseline": "43dab2d29be9cbe6eca607939f200b4942958e1d",
     "deployed_build_source": "8708db0387c55f2d38dc2050f584837999d8d775",
@@ -129,10 +129,13 @@
       "evidence": "evidence/2026-10-01-quiz-command-log-fix/release.safe.json"
     },
     "sync_invocation_log_followup": {
-      "status": "plan_aligned_not_implemented",
+      "status": "locally_verified_not_deployed",
       "live_leak_proven": false,
       "scope": "reachable_admin_quizreconcile_synchronous_invocation_exception_diagnostics",
-      "contract": "QUIZ_COMMAND_LOG_REPAIR.md"
+      "contract": "SYNC_LOG_REPAIR.md",
+      "new_test_cases": 17,
+      "full_tests": 2357,
+      "targeted_tests": 54
     }
   },
   {

@@ -33,11 +33,10 @@ class LambdaInvoker:
             )
             raw = response["Payload"].read()
             return json.loads(raw) if raw else {}
-        except Exception:
+        except Exception as exc:
             logger.error(
                 "Lambda invocation failed",
-                extra={"function_name": function_name},
-                exc_info=True,
+                extra={"function_name": function_name, "error_type": type(exc).__name__},
             )
             return {}
 
