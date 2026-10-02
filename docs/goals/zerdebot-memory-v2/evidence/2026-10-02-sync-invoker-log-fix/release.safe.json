@@ -1,0 +1,128 @@
+{
+  "status": "DEV_PROD_SYNC_LOG_REPAIR_VERIFIED_Z02_FINITE_SCOPE_CLOSED",
+  "pr": 242,
+  "source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "merge": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
+  "ci_run": 36987949116,
+  "full_tests_passed": 2357,
+  "targeted_tests_passed": 54,
+  "new_protocol_tests": 17,
+  "new_actual_package_synthetic_cases": 17,
+  "actual_error_json_records": 8,
+  "updated_functions_per_environment": [
+    "bot",
+    "memory-v2-worker"
+  ],
+  "unchanged_package_functions": [
+    "news",
+    "quiz",
+    "operations"
+  ],
+  "shared_layer_unchanged": true,
+  "runtime_changes_by_environment": {
+    "dev": {
+      "bot": {
+        "old_arn": "arn:aws:lambda:eu-central-1::runtime:9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_arn": "arn:aws:lambda:eu-central-1::runtime:0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "mode": "Auto",
+        "mode_changed": false,
+        "contract": "RUNTIME_TRANSITION_CONTINUATION.md"
+      },
+      "memory-v2-worker": {
+        "old_arn": "arn:aws:lambda:eu-central-1::runtime:9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_arn": "arn:aws:lambda:eu-central-1::runtime:0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "mode": "Auto",
+        "mode_changed": false,
+        "contract": "RUNTIME_TRANSITION_CONTINUATION.md"
+      }
+    },
+    "prod": {
+      "bot": {
+        "old_arn": "arn:aws:lambda:eu-central-1::runtime:9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_arn": "arn:aws:lambda:eu-central-1::runtime:0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "mode": "Auto",
+        "mode_changed": false,
+        "contract": "RUNTIME_TRANSITION_CONTINUATION.md"
+      },
+      "memory-v2-worker": {
+        "old_arn": "arn:aws:lambda:eu-central-1::runtime:9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_arn": "arn:aws:lambda:eu-central-1::runtime:0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "mode": "Auto",
+        "mode_changed": false,
+        "contract": "RUNTIME_TRANSITION_CONTINUATION.md"
+      }
+    }
+  },
+  "runtime_management_unchanged": true,
+  "initial_dev_runtime_incomplete_preserved": true,
+  "initial_prod_sts_timeout_preserved": true,
+  "initial_probe_fixture_collision_incomplete_preserved": true,
+  "source_change_only": "services/repositories/lambda_invoker.py",
+  "dependency_pyc_differences_per_updated_package": 564,
+  "all_five_actual_functions_and_layer_independently_read": true,
+  "stable_window_seconds": 300,
+  "budget_reader_closure_files": 104,
+  "five_cost_owner_files_unchanged": true,
+  "budget_point_not_permission": true,
+  "workflow": "active",
+  "new_telegram_or_model_test": false,
+  "production_ready": false,
+  "natural_samples": {
+    "supported": 0,
+    "unknown": 0
+  },
+  "evidence_sha256": {
+    "local.safe.json": "795f196de9258b3034cb3cce0f9074d6e3f4b519f256844d7c81f0a366d5dfea",
+    "ci-final.safe.json": "b1fb01428975f825aad1d04ee0fcc349e0cd0b0b7d43b0efc7da404899247df5",
+    "final-release.safe.json": "9343be1fec924c5f5b154f525b78a6a6389c03866f3824d29ee19c522ede1511",
+    "final-release-independent.safe.json": "4c3135bd92b7aac7f68ebaa3b8fc004a6adacf4bd79d556233bda9ed349f2ae4",
+    "budget-SyncLogFinal20261002A.safe.json": "5a55db4cee6d206a4d1bfffb974f76586d879fe4dd65dd5f2239ed56c9dcd574",
+    "budget-reader-pre.safe.json": "cabe12f76ccfb715aa8625b4cd526c4bdcffe1b1462a826d5402101aa9420713",
+    "budget-owner-rebind.safe.json": "7738ae5a0b1d99c894444e4d21eb239e861473cece4d50d52472066e9cbd547d",
+    "read_budget_published.py": "7deb663169c8246c97c27bf853bc9746f834ce520f95aba1d49dbb2d12f55f8a",
+    "artifact-probe-v2/result.safe.json": "19ed752a1db0bbd96a5339640cc69f00d471b7f2dd39ba03f804f81a7140eb59",
+    "artifact-probe-v2/independent-post.safe.json": "ba57b3ead82eb38046108fb5f6d310d12cdf9f8817e39348c4ec6b60f8ad117e",
+    "z02-final-closeout.safe.json": "43d2aa030d8f36b6daf9d304b901d332f120dd5e592c376a1fec1fb7369ac962",
+    "code-review.safe.json": "96c74131a97fc1dc7f24a135970de7211e35131c842f06d90841ebb68edf1cc3",
+    "maintainer-review.safe.json": "25a24379ab058454674891ea322a5eebf7f08747332758f9f585d85ba18048b4",
+    "canonical-independent/review.safe.json": "55b4364ddf76579fa9fc60ba2441a395a875ad51341670b5d49ccba1cf678002",
+    "operator-review.safe.json": "c9fecec4a4265cb8be9961e8ba36d0ad5b4e597863dfd981e1871f85da64030e",
+    "prepared-post-tools-pre.safe.json": "c4b7c8d2efc5aace4f679fabdf12e8872d66d348ba5e67d3b4a52c5c2037a2a3",
+    "seal-initial-env-failure.safe.json": "18dad18ab7088f4eb6a0ca02467afa0a5a9d6a685e35000d6c24f9de857d132b",
+    "RUNTIME_TRANSITION_CONTINUATION.md": "61130912429afccb7c0de2ee4cdeb49cce41cb0f29a8388abd94f57feb8c1141",
+    "runtime-continuation-tools-pre.safe.json": "ce58f397cee2500ef09b19c3ded8966ff9ed167d0a2c230ff7c75bc71e96f3dd",
+    "dev-runtime-observation-review.safe.json": "3cabc901056f9fe5a1a023b11d03783dc2c74f702d17e30370fadf3e733182bf",
+    "failed-dev-post-archive.safe.json": "1e69c2e4d1f8a8ac7b4bd7d1fb7944e0fb3e22a4727cc1ee2ae70c2beb0e5c83",
+    "runtime-original-dev-directory.safe.json": "f13b292b9a3a02435be9cbc8bdad838f799f4e0cccfdcb26784b5b146bcf6377",
+    "final_independent_verify_runtime_v2.py": "331f0f9778520d2d5de4138d90c20030a463cf175ae9ae952346d9ace62cf0a6",
+    "post-main-dev/readback.safe.json": "dac80aba7f32fc335e5d1a836f9c1dd0377957d03f3d8e9cb6ff1e77a31d8af0",
+    "post-independent-dev/review.safe.json": "1c767f40a02375bdba7ce003f78dbfdfcb6a68decb2631f54a18f5916668d8af",
+    "finish-after-transition-dev.safe.json": "02e00b62514fec04fb4cb295e2c592fe71c9770a32d9cc9a24e5d8e727650afd",
+    "post-main-prod/readback.safe.json": "7e5750128cdca84a3d8072fed180bdae00161b1fbb844d8aff1ab84bee92ed8f",
+    "post-independent-prod/review.safe.json": "3d70c6e5e0cfa0ec07f9ad706f7e145411b2c6a6242c02f2e0607257b97530e7",
+    "finish-after-transition-prod.safe.json": "1d59d594578579e9a3fe7b402f6a07f239cacbd04261cc8722965f49bfe6e435",
+    "ARTIFACT_PROBE_FIXTURE_REPAIR.md": "6c578ec0e3d1ddaf61cc1a318ffd531b28ebd70f29033cce3559d91292968fd6",
+    "artifact-probe-original-failed-manifest.safe.json": "d161a9b63019a5d5055c91f74dc58d367afe681e43aaeeec311f103f6d0cf3cf",
+    "artifact-probe-failed-independent.safe.json": "eea887ae3ea5c531b9065fa1162dcd478308f77305fb31becba2bd8405f6d37b",
+    "artifact-probe/result.safe.json": "a2964a6d4a864e795cfa1154fcd2fd16e34f407cb6f773171074ded8e0cf88b6",
+    "artifact-probe-v2/pre-review.safe.json": "398a988f73f70d714862458a0cb7096bc7b97364fdcfacd86c85bc28bb8390de",
+    "PROD_READONLY_RETRY.md": "657117b0caddad32cb023027c083f3c2975cb2084599b5e86c887fece5d9b191",
+    "prod_readonly_retry_v1.py": "f33e291e6e4536ceb632a6eb2efc59077ae3e444afd6f6bac20c45cca2a54b3f",
+    "prod-readonly-retry-original.safe.json": "2980846dd89e9d830398289ee88b59d753e62ad0cfebdd35edc00aa7bc156d07",
+    "prod-readonly-retry-pre.safe.json": "93b27baed2323bd33725ec7437b0ef37499d61be31606f9dbf61162cc1257665",
+    "prod-readonly-retry-archive.safe.json": "31df0e881582e5585832461955ee76edc068481f122cc59bbe832b4afa62f360",
+    "prod-readonly-retry.safe.json": "2cd5913888c0ac2260252dcad6eaf9f3bde8aab3c8a538dbf9279a4bde7d89c2",
+    "prod-readonly-retry-independent.safe.json": "4c630c5ba8417943cbdbf529979d3e74cff2863cb11c945e13ea381225cd2dda"
+  },
+  "limitations": [
+    "Historical CloudWatch content FAIL remains unchanged; no retrospective all-log safety claim.",
+    "New probe uses actual released packages in local network-disabled ARM isolation; not a Telegram or live synchronous AWS failure.",
+    "Previous Webhook, formatter, Telegram and retry evidence applies to byte-unchanged implementation; logger-failure propagation remains original behavior.",
+    "Original dev runtime INCOMPLETE is preserved; only exact Bot/Worker Auto9559-to-0aac changes are accepted, with unchanged prod9559 also allowed. This does not prove why AWS selected the identifier or complete patch compatibility.",
+    "Initial prod readback stopped at its first STS read with ReadTimeoutError; its two files are preserved, and a separately reviewed new read-only collection reused the frozen V2 implementation. No deployment was repeated.",
+    "First artifact probe stopped on a fixture metadata assertion with empty stdout; fake AWS secret synthetic overlaps the expected function name. The original failure is retained; V2 changes only two fake AWS values, preserves probe cases and all expectations, and has its own execution/review. The initial internal log line was not retained.",
+    "Other business recovery, exact Quiz UI link gap, project invoices and natural acceptance remain open.",
+    "The initial local Python import failure before seal creation is preserved; no cloud mutation occurred in that failed attempt.",
+    "Retained evidence and backup deadlines remain independent; no online or local data deletion was performed by this release."
+  ]
+}

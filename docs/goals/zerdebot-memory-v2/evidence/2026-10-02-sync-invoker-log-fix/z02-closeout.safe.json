@@ -1,0 +1,273 @@
+{
+  "status": "ALIGNED_Z02_FINITE_CONTRACT_CLOSED_ELIGIBLE",
+  "source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "merge": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
+  "pr": 242,
+  "reviewed_at_utc": "2026-10-02T10:56:44.163899+00:00",
+  "scope": "Original Z02 approved logging boundary plus concretely discovered topic, async and synchronous diagnostic bypasses. Implementation, both-environment delivery and finite layered verification are complete; GitHub/document state synchronization is subsequent work.",
+  "evidence_sha256": {
+    "final-release.safe.json": "9343be1fec924c5f5b154f525b78a6a6389c03866f3824d29ee19c522ede1511",
+    "final-release-independent.safe.json": "4c3135bd92b7aac7f68ebaa3b8fc004a6adacf4bd79d556233bda9ed349f2ae4",
+    "budget-SyncLogFinal20261002A.safe.json": "5a55db4cee6d206a4d1bfffb974f76586d879fe4dd65dd5f2239ed56c9dcd574",
+    "artifact-probe-v2/result.safe.json": "19ed752a1db0bbd96a5339640cc69f00d471b7f2dd39ba03f804f81a7140eb59",
+    "artifact-probe-v2/independent-post.safe.json": "ba57b3ead82eb38046108fb5f6d310d12cdf9f8817e39348c4ec6b60f8ad117e",
+    "prod-readonly-retry-independent.safe.json": "4c630c5ba8417943cbdbf529979d3e74cff2863cb11c945e13ea381225cd2dda",
+    "artifact-probe-failed-independent.safe.json": "eea887ae3ea5c531b9065fa1162dcd478308f77305fb31becba2bd8405f6d37b",
+    "source.safe.json": "85babedfc06143df443eccc137c18b64f2919c737e577e1fc87c45b485038a42",
+    "z02-closeout-preparation.safe.md": "ce043bb05b1f62b96bc14e3467a1598923726d099023c41afa559e4168baec0a",
+    "code-review.safe.json": "96c74131a97fc1dc7f24a135970de7211e35131c842f06d90841ebb68edf1cc3",
+    "maintainer-review.safe.json": "25a24379ab058454674891ea322a5eebf7f08747332758f9f585d85ba18048b4",
+    "local.safe.json": "795f196de9258b3034cb3cce0f9074d6e3f4b519f256844d7c81f0a366d5dfea",
+    "ci-final.safe.json": "b1fb01428975f825aad1d04ee0fcc349e0cd0b0b7d43b0efc7da404899247df5",
+    "canonical-independent/review.safe.json": "55b4364ddf76579fa9fc60ba2441a395a875ad51341670b5d49ccba1cf678002",
+    "runtime-continuation-tools-pre.safe.json": "ce58f397cee2500ef09b19c3ded8966ff9ed167d0a2c230ff7c75bc71e96f3dd",
+    "RUNTIME_TRANSITION_CONTINUATION.md": "61130912429afccb7c0de2ee4cdeb49cce41cb0f29a8388abd94f57feb8c1141",
+    "runtime-original-dev-directory.safe.json": "f13b292b9a3a02435be9cbc8bdad838f799f4e0cccfdcb26784b5b146bcf6377",
+    "failed-dev-post-archive.safe.json": "1e69c2e4d1f8a8ac7b4bd7d1fb7944e0fb3e22a4727cc1ee2ae70c2beb0e5c83",
+    "artifact-probe-original-failed-manifest.safe.json": "d161a9b63019a5d5055c91f74dc58d367afe681e43aaeeec311f103f6d0cf3cf",
+    "artifact-probe-v2/pre-review.safe.json": "398a988f73f70d714862458a0cb7096bc7b97364fdcfacd86c85bc28bb8390de",
+    "prod-readonly-retry-original.safe.json": "2980846dd89e9d830398289ee88b59d753e62ad0cfebdd35edc00aa7bc156d07",
+    "budget-owner-rebind.safe.json": "7738ae5a0b1d99c894444e4d21eb239e861473cece4d50d52472066e9cbd547d",
+    "budget-owner-files.safe.json": "c5390185d979e9c865ec9d552a6cc89031e478cd4f2c6d530054a691b6a7e788",
+    "read_budget_published.py": "7deb663169c8246c97c27bf853bc9746f834ce520f95aba1d49dbb2d12f55f8a",
+    "post-main-dev/readback.safe.json": "dac80aba7f32fc335e5d1a836f9c1dd0377957d03f3d8e9cb6ff1e77a31d8af0",
+    "post-independent-dev/review.safe.json": "1c767f40a02375bdba7ce003f78dbfdfcb6a68decb2631f54a18f5916668d8af",
+    "finish-after-transition-dev.safe.json": "02e00b62514fec04fb4cb295e2c592fe71c9770a32d9cc9a24e5d8e727650afd",
+    "post-main-prod/readback.safe.json": "7e5750128cdca84a3d8072fed180bdae00161b1fbb844d8aff1ab84bee92ed8f",
+    "post-independent-prod/review.safe.json": "3d70c6e5e0cfa0ec07f9ad706f7e145411b2c6a6242c02f2e0607257b97530e7",
+    "finish-after-transition-prod.safe.json": "1d59d594578579e9a3fe7b402f6a07f239cacbd04261cc8722965f49bfe6e435"
+  },
+  "inherited_evidence_sha256_relative_to_acceptance_root": {
+    "2026-10-01-z02-webhook-log-boundary/independent-final.safe.json": "c65cde60e47200516c30e4940968b4ddb3efa75ea0ec2c2b2aa92f484c664919",
+    "2026-10-01-z02-urllib3-retry/independent-final.safe.json": "99621ac22e44b8153ba6d587062aaeda0b9f7376b90df6fa9c3f87466246888f",
+    "2026-10-01-z02-cloudwatch-capture/independent-final.safe.json": "e5546e9519d57ff2f053bebf4e071c7804a447947402dd5e4e6149143f096fce",
+    "2026-10-01-quiz-command-log-fix/final-release-independent.safe.json": "a7c9a1dcab99048b1f4c88630e7a189a526de75cbebe7fd4b0a1ca1989df3993",
+    "2026-10-01-quiz-command-log-fix/artifact-probe/independent-post.safe.json": "d16d10224a37ed852f737191316607d3a94300b0a83a7abb61f0564bdcc7cc35",
+    "2026-10-01-quiz-command-log-fix/z02-closeout-contract-review.safe.md": "52c772660e64b10d5d83240eebb5173202c417af23c750ee881e71da776f8567"
+  },
+  "original_repo_contract_sha256": "eb9c7c13f9bc2469077eb15956a997b99ae5f478f1efbd2c49d614befdde5ebb",
+  "decision": {
+    "finite_implementation_and_acceptance_complete": true,
+    "eligible_issue_state_transition": {
+      "number": 159,
+      "from": "OPEN",
+      "to": "CLOSED"
+    },
+    "github_state_changed_by_this_review": false,
+    "other_issues_to_close": [],
+    "project_complete": false,
+    "production_ready": false
+  },
+  "contract_mapping": [
+    {
+      "boundary": "Final message, nested extra, exception chains and formatter fallback; authorized Webhook metadata and Telegram error boundary",
+      "evidence": "Inherited P16 actual-package 16 cases and original source tests, byte-identical targeted source in current actual package.",
+      "result": "FINITE_SCOPE_COVERED"
+    },
+    {
+      "boundary": "Real urllib3 retry exhaustion through final sink",
+      "evidence": "Inherited R2 two local real-library cases, 17 JSON, 8 loopback ECONNREFUSED calls and 6 warnings. No middle raw token exception capture claim.",
+      "result": "FINITE_SCOPE_COVERED"
+    },
+    {
+      "boundary": "Real Webhook request to CloudWatch complete chain",
+      "evidence": "C read-only complete request collection remains CONTENT_FAIL: ordinary topic text. Original 19 unclassified entries remain unchanged; no inference of personal sensitive or credential leakage.",
+      "result": "REAL_CHAIN_COLLECTED_HISTORICAL_CONTENT_FAILURE_PRESERVED"
+    },
+    {
+      "boundary": "Concrete topic and async Lambda diagnostic bypasses found during review",
+      "evidence": "PR240 actual dev/prod release and six actual-package local synthetic cases with independent original-stream POST; current commands and async behavior remain as reviewed.",
+      "result": "FIXED_DEPLOYED_AND_FINITE_VERIFIED"
+    },
+    {
+      "boundary": "Last reachable synchronous Lambda diagnostic bypass",
+      "evidence": "PR242 only sync diagnostic source change; 17 protocol tests within 54 targeted and 2357 full; actual two-environment release plus separate V2 local ARM actual-package 17-case original-stream POST.",
+      "result": "FIXED_DEPLOYED_AND_FINITE_VERIFIED"
+    }
+  ],
+  "current_release": {
+    "full_source_tests": 2357,
+    "targeted_tests": 54,
+    "new_protocol_cases": 17,
+    "test_counts_not_added_together": true,
+    "ci_two_jobs_success": true,
+    "workflow_active_at_final_readback": true,
+    "actual_updates_each_env": [
+      "bot",
+      "memory-v2-worker"
+    ],
+    "only_noncache_source_change": "services/repositories/lambda_invoker.py",
+    "dependency_pyc_differences_per_updated_package": 564,
+    "unchanged_package_functions": [
+      "news",
+      "quiz",
+      "operations"
+    ],
+    "shared_layer_unchanged": true,
+    "runtime_transitions_observed": {
+      "dev": {
+        "targets": [
+          "bot",
+          "memory-v2-worker"
+        ],
+        "old_runtime_suffix": "9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_runtime_suffix": "0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "runtime_management": "Auto unchanged",
+        "observed_count": 2
+      },
+      "prod": {
+        "targets": [
+          "bot",
+          "memory-v2-worker"
+        ],
+        "old_runtime_suffix": "9559a7291d7062b81e2ab2396d111ea65ce2a4c72a27d13452674ec717faf320",
+        "new_runtime_suffix": "0aacb188d2c5b3aad9e30760eeca867126ff27643ac0b027e44a1f156beaf2d8",
+        "runtime_management": "Auto unchanged",
+        "observed_count": 2
+      }
+    },
+    "protections": {
+      "dev": {
+        "functions": 5,
+        "independent_actual_zip_downloads": 6,
+        "tables": 3,
+        "queues": 6,
+        "mappings": 2,
+        "alarms": 18,
+        "control_count": 1,
+        "no_other_differences": true,
+        "stable_after_300_seconds": true
+      },
+      "prod": {
+        "functions": 5,
+        "independent_actual_zip_downloads": 6,
+        "tables": 3,
+        "queues": 6,
+        "mappings": 2,
+        "alarms": 18,
+        "control_count": 0,
+        "no_other_differences": true,
+        "stable_after_300_seconds": true
+      }
+    },
+    "budget": {
+      "owner_closure_files": 104,
+      "five_cost_owners_unchanged": true,
+      "point_result_sha256": "5a55db4cee6d206a4d1bfffb974f76586d879fe4dd65dd5f2239ed56c9dcd574",
+      "original_root_pending_flag_preserved": true,
+      "subsequent_point_read_closes_that_stage_only": true,
+      "model_null_fields_not_reinterpreted_as_zero": true,
+      "lasting_model_permission": false,
+      "complete_cost_or_invoice_proof": false
+    }
+  },
+  "actual_sync_probe": {
+    "path": "artifact-probe-v2",
+    "case_count": 17,
+    "error_json_records": 8,
+    "cases": [
+      "invoke_direct",
+      "invoke_cause",
+      "invoke_context",
+      "read_direct",
+      "read_cause",
+      "read_context",
+      "decode_json",
+      "decode_unicode",
+      "json_dict",
+      "json_list",
+      "json_string",
+      "json_number",
+      "json_false",
+      "json_null",
+      "function_error",
+      "empty",
+      "logger_failure"
+    ],
+    "independent_original_stream_post_assertions": 218,
+    "exact_application_calls_per_case": 1,
+    "sdk_wire_attempt_count_claimed": false,
+    "actual_container_exit": 0,
+    "actual_cleanup_and_fresh_absence_verified": true,
+    "real_cloud_failure": false,
+    "telegram_or_model_or_new_cloudwatch_test": false,
+    "fixed_arm_container_not_managed_runtime_patch_compatibility": true
+  },
+  "preserved_failures": {
+    "historical_cloudwatch": "Original CONTENT_FAIL and 19 unclassified producer results unchanged; no rescoring to PASS.",
+    "runtime_readbacks": "Both earlier PR240 dev runtime INCOMPLETE and current PR242 dev runtime INCOMPLETE archives remain exact ten-file sets. Their opposite exact runtime pairs have separate contracts, not a global ignore rule.",
+    "prod_sts": "Original first STS ReadTimeoutError remains INCOMPLETE with zero saved responses/zero artifact calls; exact two-file archive retained. Second full read-only collection and independent actual readback are separately evidenced; no deployment replay.",
+    "first_sync_probe": "Original result remains INCOMPLETE/exit1, stdout empty, 3274-file directory unchanged. Credential-fixture collision is source/configuration inference, not an invented original log row. New V2 changes only two fake AWS credential values; probe assertions and product bytes unchanged.",
+    "earlier_local_failures": "Source before-fix 8 FAIL/9 PASS and initial local release-gate failures remain historical evidence, not rewritten as first-attempt success."
+  },
+  "retained_obligations": [
+    {
+      "owner": "Z10",
+      "kind": "Exact legacy stats USER backup manual deletion",
+      "deadline_utc": "2026-10-05T08:18:35.953Z",
+      "completed_by_this_review": false
+    },
+    {
+      "owner": "Retained-copy ledger and automation",
+      "kind": "Exact nine private CloudWatch raw evidence files cleanup",
+      "deadline_utc": "2026-10-08T17:13:39.091570Z",
+      "completed_by_this_review": false
+    },
+    {
+      "owner": "Z10",
+      "kind": "Original legacy memory PITR read-only expiry review",
+      "deadline_utc": "2026-10-17T16:20:38Z",
+      "completed_by_this_review": false
+    },
+    {
+      "owner": "Z10",
+      "kind": "Legacy memory SYSTEM actual service expiry read-only verification",
+      "deadline_utc": "2026-11-01T11:46:02.425Z",
+      "completed_by_this_review": false
+    },
+    {
+      "owner": "Z10",
+      "kind": "Legacy stats SYSTEM actual service expiry read-only verification",
+      "deadline_utc": "2026-11-02T08:45:11.254Z",
+      "completed_by_this_review": false
+    }
+  ],
+  "remaining_outside_finite_z02": [
+    "Review and publish canonical closeout documentation and synchronize only issue159 state with exact readback.",
+    "Quiz request2404 exact feedback ID/native Reply links remain PARTIAL; no guessing or frozen-request replay.",
+    "Other Z01/Z12-Z16 business recovery and Z17 complete project/vendor cost attribution remain under their existing owners.",
+    "Natural use start remains unestablished; 0/50 supported and 0/20 unknown samples; no new group or prod Memory activation.",
+    "Retained-copy duties and original deletion-delay history remain; no claim of all physical copies erased."
+  ],
+  "inherited_implementation_actual_package_sha256": {
+    "src/bot/webhook.py": "521f05c08588867816bd66469c786db276379e0d13522eec0cc197204df29cce",
+    "src/bot/services/telegram.py": "5a601b6fd1a220575d08f9a2498270d033f3dab6ea96b674e66a8c975090a009",
+    "src/bot/core/logger.py": "66861c2f3ec9df5aa3fdc66bc886fa2e3ad5cd60d9c988ee8e6547ebd18de073",
+    "src/shared/python/zerde_common/logger.py": "739d85a03666f677f5921fe98e8d002a3c259ec4b5ae9004ec11423e63aa4b1d",
+    "src/shared/python/zerde_common/logging_utils.py": "1c65658295a5442c36f85415f704624d16bf24bba5b80b113fae562412e1fd32",
+    "src/bot/services/handlers/commands.py": "6689522ccdb925790e62ce89ca22905d713e9383db12726d4caedb9c29800b29"
+  },
+  "verification": {
+    "local_hash_binding_counts": {
+      "final_evidence": 23,
+      "retry_evidence": 18,
+      "probe_inputs": 31,
+      "failed_probe_evidence": 9,
+      "original_failed_probe_files": 3274,
+      "2026-10-02-sync-invoker-log-fix_runtime_archive": 10,
+      "2026-10-01-quiz-command-log-fix_runtime_archive": 10
+    },
+    "reviewer_network_calls": 0,
+    "new_product_test_runs": 0,
+    "new_container_runs_or_queries": 0,
+    "aws_github_ui_model_calls": 0,
+    "repo_writes": 0,
+    "frozen_evidence_overwrites": 0
+  },
+  "limitations": [
+    "Finite acceptance does not prove all historic logs safe or all future arbitrary text/third-party logger/media scenarios impossible to leak.",
+    "No production synchronous content leak was observed; this repaired a reachable logging risk confirmed by source and controlled local evidence.",
+    "Original logger-failure propagation remains intentional; no new logger or recovery owner was added.",
+    "This final review uses actual completed independent network and raw-POST evidence; it performs local hash/contract checks and does not repeat them."
+  ]
+}

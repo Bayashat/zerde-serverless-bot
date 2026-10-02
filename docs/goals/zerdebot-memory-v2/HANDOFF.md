@@ -1,32 +1,20 @@
-## 2026-10-02同步调用日志修复：本地完成，待发布
+## 2026-10-02最新交付：同步日志修复上线，Z02限定结项
 
-同步 `LambdaInvoker.invoke` 失败诊断已改为固定消息、函数名和异常类型；原一次 RequestResponse、完整 payload、JSON 解析及异常返回协议保持。新增17个回归，修复前8失败/9通过，修复后54定向、2357全测通过；仍需独审、CI、两环境实际发布和新实包探针后才能交付。
+日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。
 
-现运行仍为PR240构建源`8708db0387c55f2d38dc2050f584837999d8d775`。Z02保持OPEN，原CloudWatch FAIL保留；本次没有新Telegram/模型动作或新群/prod记忆启用。后续依[同步日志修复契约](SYNC_LOG_REPAIR.md)完成发布，再按原Z02有限契约逐项收口。
+PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`、merge`fb26b9444ff77b4f797354cea86c0e9c591e2b15`；17新增回归/54定向/2357全测、CI双job、五入口ARM、两环境实际五函数ZIP/层/配置保护主检和独审通过，300秒窗口后配置稳定。实际只更新Bot/MemoryWorker共同包，唯一非缓存源码变化是同步invoker；564个依赖pyc差异如实记录，其余News/Quiz/Operations和共享层逐字保持。新实包17例产生8条安全错误JSON，独立直接原流复核与容器删除/不存在核验通过；没有新Telegram/模型或线上异常测试。首轮实包探针因假AWS凭据synthetic与测试函数名前缀碰撞停在字段断言，stdout空，原INCOMPLETE保全；v2仅修两个假凭据值，17场景和全部期待逐字保持，新执行/独审通过。原内部应用行未留存，碰撞机制来自精确夹具/代码核验，非原流直接观察。dev两更新函数RuntimeVersionArn从9559…变为0aac…，原INCOMPLETE整目录精确保全；只允许本轮精确对象变化、Auto整对象不变，prod实际变化单列于证据。按新窄合同重新完整主读/独读通过；不能从ARN推断平台回滚原因、版本新旧或完整补丁兼容，固定容器也不是托管补丁复刻。prod首次主读首个STS查询ReadTimeoutError的两个原文件保全；新独审入口复用冻结读取实现重新完整只读采集，未重发部署。104文件费用闭包只变同步诊断模块，原五费用owner不变，新reader时点PASS（非持续许可或账单）。
 
-## 2026-10-01最新交付：Quiz命令日志修复已上线
-
-PR240已合并并部署dev/prod：/genquiz日志只保留主题长度，完整主题按原payload交付；异步Lambda调用失败仅记录固定字段和异常类型。2340全测、30定向、CI双job、两环境五入口ARM、实际五函数/共享层/配置保护主检独审及新实包本地隔离合成6例均通过。
-
-实际更新Bot/MemoryWorker同包两处源码；另有如实列出的依赖pyc差异，Quiz/News/Operations/共享层实际字节保持。两更新函数同时出现AWS托管RuntimeArn从0aac…变为9559…，Auto策略未改；原dev读回INCOMPLETE整目录保全，新窄合同绑定精确变化后重新完整主检与独审。该现象符合[AWS Auto发布时更新机制](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html)，是行为吻合推断，不声称直接证明平台触发原因或全部补丁兼容性。其它配置保护仍严格一致，固定ARM容器不是AWS补丁复刻。两环境300秒后五函数稳定。104文件预算闭包只变两处诊断文件，五费用owner不变，reader已重绑并时点PASS（不是持续许可或账单）。运行构建源`8708db0387c55f2d38dc2050f584837999d8d775`，merge`43dab2d29be9cbe6eca607939f200b4942958e1d`，workflow ACTIVE。
-
-Z02保持OPEN：同步/quizreconcile使用的LambdaInvoker.invoke仍有任意异常正文诊断风险，尚无本轮线上泄漏实证；下一最小修订已独审。原CloudWatch FAIL和Quiz反馈ID/链接缺口保留；其它业务恢复、真实账单及自然0/50有据、0/20未知仍待，production_ready=false。
-
-[发布与实包证据](evidence/2026-10-01-quiz-command-log-fix/release.safe.json)；[本次边界及下一切片](QUIZ_COMMAND_LOG_REPAIR.md)。本次没有新Telegram/模型调用、预算计量/控制/支付修改或新群/prod记忆启用。CloudWatch原文9文件于2026-10-08 17:13:39.091570UTC精确清理；Z10原四期限仍独立，见[副本台账](RETAINED_COPIES.md)。
+[发布与有限验收证据](evidence/2026-10-02-sync-invoker-log-fix/release.safe.json)；[实现边界](SYNC_LOG_REPAIR.md)。本工单原有限实现与验收范围已完成；历史CloudWatch FAIL永久保留，9份原文2026-10-08 17:13:39.091570UTC精确清理仍归副本台账与自动任务。其它业务恢复、Quiz精确UI链接、费用账单和自然使用由原工单继续，不声称全部历史日志安全。 自然起点仍未建立，0/50有据、0/20未知，production_ready=false；不启用新群或prod记忆。五项到期职责保持[副本台账](RETAINED_COPIES.md)。
 
 # 当前执行入口
 
-先读FINISH_EXECUTION/TASKS/task_manifest、SYNC_LOG_REPAIR和RETAINED_COPIES；task_manifest唯一逐工单状态。
+验收根`2026-10-02-sync-invoker-log-fix`：CURRENT、final-release及独审、artifact-probe-v2/result及independent-post（原artifact-probe首轮夹具失败完整冻结），artifact-probe-failed-independent.safe.json、budget-SyncLogFinal20261002A、z02-final-closeout、docs-release及独审。PR242全部build/prepare/hold/merge/execute/readback/finish/probe/reader均已结束，不重跑。运行源码08cc614；文档main不是Lambda构建。部署workflow ACTIVE。原dev post因9559→0aac的两个托管runtime标识差异INCOMPLETE保存在post-main-dev-runtime-incomplete；新V2严格限定目标/对象/Auto整对象并全量重读，不重跑旧post或复用PR240反向旧例外。prod首次STS只读超时原两文件保存在post-main-prod-sts-timeout，新prod_readonly_retry_v1只读入口及独立保全/读回链已结束，不重跑或重部署。当前唯一预算reader为本目录read_budget_published.py，每次唯一label、非持续许可；原计量和UNKNOWN保持。
 
-私有当前候选目录为验收根下`2026-10-02-sync-invoker-log-fix`，先读CURRENT与本地测试/独审；当前仍待CI、发布与实包探针。此前已完成发布目录`2026-10-01-quiz-command-log-fix`保留：CURRENT、final-release、final-release-independent、artifact-probe/result与independent-post、budget-CommandLogFinal20261001A及本轮docs-release/独审。PR240全部构建/prepare/merge/execute/readback/finish和新六例probe已结束，不重跑；原本地boto3环境误停及CDK生成cache seal误停保留，唯一cache已精确保全并新窄续接，未重prepare。dev原托管runtime差异INCOMPLETE保存在post-main-dev-runtime-incomplete，新V2严格限定两更新函数的精确old/new ARN和Auto不变，重新全读主检/独审通过；禁止全局忽略runtime字段或重跑旧post。文档main不是新的Lambda构建。
+Z02有限范围已结项；旧CloudWatch FAIL与19未分类原结果不改，原始9文件严格保留到Oct8期限。后续优先Z17固定九月UTC账期费用核对，参见私有next-cost-closeout-draft.safe.md（本地研究，尚未执行；新collector仍需精确范围/PRE）。旧9/27动态月份脚本不得在10月重跑当成九月；可归项目成本、未标池、税credits、FreeTier和供应商消费/充值/付款分别列，未知保留UNKNOWN，不加Memory估算。其它Z01/Z12-Z16真实业务恢复继续，原Quiz UI PARTIAL不补猜或重发冻结题。
 
-同步最小修订已本地完成；下一步CI、两环境新发布及同步出口实包探针，再回Z02契约映射决定有限收口；原CloudWatch FAIL、P16/R2和所有Quiz轮次冻结。新发布前当前唯一预算时点reader仍为`2026-10-01-quiz-command-log-fix/read_budget_published.py`，104闭包与实际PR240绑定；新label，非持久许可。五费用owner/epoch/DAY/UNKNOWN不改，Memory原预留和Quiz原RPD各自独立。
+五项UTC职责：Oct5 08:18:35.953唯一旧stats USER人工删除；Oct8 17:13:39.091570九CloudWatch原文人工清理；Oct17 16:20:38原PITR复查；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。精确身份/文件由RETAINED_COPIES及各原manifest拥有，提前到场同轮等到期限、单次等待不超60秒，迟延如实记录。Oct4临时AV已履行、旧归档/key真实延误保留，不重建/重删。
 
-新raw期限由`2026-10-01-z02-cloudwatch-capture/raw-retention.safe.json`拥有：9原始文件0600，于Oct8 17:13:39.091570UTC精确删除并独审，安全聚合保留；没有额外含原文派生文件。原Oct5 USER人工删除、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM按RETAINED_COPIES独立履行。Oct4临时AV义务已完成，旧归档/key真实晚5h6m19.860s记录保留，文件移除非安全抹盘。
-
-继续Z01/Z12-Z17真实业务恢复及实际账单；原Quiz反馈PARTIAL且不猜ID/链接、不重发/重答/对账或制造失败。只用获准dev Test bots和已授权账号；不手动Invoke、伪造update/模型/成员/状态、Receive/Purge混合queue。无人动作时确认不启动验证码踢出风险测试。当前CE仍Sep27快照，不当本轮/已结实付。
-
-R2已声明13旧算法/vector入口、37在线对象退役；六现役表/当前业务/层/assets保留，不重删。自动社交/历史导入/抽奖不恢复；不启用新群/prod记忆。dev CONTROL/epoch仅观察合法变化，prod无新CONTROL。自然0/50与0/20、production_ready=false；不造聊天或以空转天数/合成凑数。每次实质交付同步计划、工单、自动任务；全部业务/自然/推广/副本完成前不删除automation。
+仅获准dev Test bots与现有授权账号；不伪造线上update/模型/成员/UNKNOWN、不Invoke、不Receive/Purge混合队列；无人动作时确认不启动验证码踢出风险。dev原CONTROL/epoch仅观察合法变化，prod无新CONTROL。13旧算法/vector入口与37在线旧对象退役不重做，6现役表/业务/层/assets保留。自动社交/历史导入/抽奖不恢复。自然0/50与0/20、起点未建立、production_ready=false，不造聊天/邀人/开新群。完成全部业务/自然/推广/副本职责才删automation。
 
 ---
 
