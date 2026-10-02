@@ -1,3 +1,9 @@
+## 2026-10-02同步调用日志修复：本地完成，待发布
+
+同步 `LambdaInvoker.invoke` 失败诊断已改为固定消息、函数名和异常类型；原一次 RequestResponse、完整 payload、JSON 解析及异常返回协议保持。新增17个回归，修复前8失败/9通过，修复后54定向、2357全测通过；仍需独审、CI、两环境实际发布和新实包探针后才能交付。
+
+现运行仍为PR240构建源`8708db0387c55f2d38dc2050f584837999d8d775`。Z02保持OPEN，原CloudWatch FAIL保留；本次没有新Telegram/模型动作或新群/prod记忆启用。后续依[同步日志修复契约](SYNC_LOG_REPAIR.md)完成发布，再按原Z02有限契约逐项收口。
+
 ## 2026-10-01最新交付：Quiz命令日志修复已上线
 
 PR240已合并并部署dev/prod：/genquiz日志只保留主题长度，完整主题按原payload交付；异步Lambda调用失败仅记录固定字段和异常类型。2340全测、30定向、CI双job、两环境五入口ARM、实际五函数/共享层/配置保护主检独审及新实包本地隔离合成6例均通过。
@@ -10,11 +16,11 @@ Z02保持OPEN：同步/quizreconcile使用的LambdaInvoker.invoke仍有任意异
 
 # 当前执行入口
 
-先读FINISH_EXECUTION/TASKS/task_manifest、QUIZ_COMMAND_LOG_REPAIR和RETAINED_COPIES；task_manifest唯一逐工单状态。
+先读FINISH_EXECUTION/TASKS/task_manifest、SYNC_LOG_REPAIR和RETAINED_COPIES；task_manifest唯一逐工单状态。
 
-私有当前目录为验收根下`2026-10-01-quiz-command-log-fix`：CURRENT、final-release、final-release-independent、artifact-probe/result与independent-post、budget-CommandLogFinal20261001A及本轮docs-release/独审。PR240全部构建/prepare/merge/execute/readback/finish和新六例probe已结束，不重跑；原本地boto3环境误停及CDK生成cache seal误停保留，唯一cache已精确保全并新窄续接，未重prepare。dev原托管runtime差异INCOMPLETE保存在post-main-dev-runtime-incomplete，新V2严格限定两更新函数的精确old/new ARN和Auto不变，重新全读主检/独审通过；禁止全局忽略runtime字段或重跑旧post。文档main不是新的Lambda构建。
+私有当前候选目录为验收根下`2026-10-02-sync-invoker-log-fix`，先读CURRENT与本地测试/独审；当前仍待CI、发布与实包探针。此前已完成发布目录`2026-10-01-quiz-command-log-fix`保留：CURRENT、final-release、final-release-independent、artifact-probe/result与independent-post、budget-CommandLogFinal20261001A及本轮docs-release/独审。PR240全部构建/prepare/merge/execute/readback/finish和新六例probe已结束，不重跑；原本地boto3环境误停及CDK生成cache seal误停保留，唯一cache已精确保全并新窄续接，未重prepare。dev原托管runtime差异INCOMPLETE保存在post-main-dev-runtime-incomplete，新V2严格限定两更新函数的精确old/new ARN和Auto不变，重新全读主检/独审通过；禁止全局忽略runtime字段或重跑旧post。文档main不是新的Lambda构建。
 
-下一步先按NEXT_SYNC_LOG_REPAIR.md最终V2/next-sync-plan-pre.safe.json执行同步日志最小修订，再回Z02契约映射决定有限收口；原CloudWatch FAIL、P16/R2和所有Quiz轮次冻结。当前唯一预算时点reader为本目录read_budget_published.py，104闭包与实际PR240绑定；新label，非持久许可。五费用owner/epoch/DAY/UNKNOWN不改，Memory原预留和Quiz原RPD各自独立。
+同步最小修订已本地完成；下一步CI、两环境新发布及同步出口实包探针，再回Z02契约映射决定有限收口；原CloudWatch FAIL、P16/R2和所有Quiz轮次冻结。新发布前当前唯一预算时点reader仍为`2026-10-01-quiz-command-log-fix/read_budget_published.py`，104闭包与实际PR240绑定；新label，非持久许可。五费用owner/epoch/DAY/UNKNOWN不改，Memory原预留和Quiz原RPD各自独立。
 
 新raw期限由`2026-10-01-z02-cloudwatch-capture/raw-retention.safe.json`拥有：9原始文件0600，于Oct8 17:13:39.091570UTC精确删除并独审，安全聚合保留；没有额外含原文派生文件。原Oct5 USER人工删除、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM按RETAINED_COPIES独立履行。Oct4临时AV义务已完成，旧归档/key真实晚5h6m19.860s记录保留，文件移除非安全抹盘。
 
