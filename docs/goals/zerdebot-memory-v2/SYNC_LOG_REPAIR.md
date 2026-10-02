@@ -1,3 +1,17 @@
+## 2026-10-02最新交付：同步日志修复上线，Z02限定结项
+
+日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。
+
+PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`、merge`fb26b9444ff77b4f797354cea86c0e9c591e2b15`；17新增回归/54定向/2357全测、CI双job、五入口ARM、两环境实际五函数ZIP/层/配置保护主检和独审通过，300秒窗口后配置稳定。实际只更新Bot/MemoryWorker共同包，唯一非缓存源码变化是同步invoker；564个依赖pyc差异如实记录，其余News/Quiz/Operations和共享层逐字保持。新实包17例产生8条安全错误JSON，独立直接原流复核与容器删除/不存在核验通过；没有新Telegram/模型或线上异常测试。首轮实包探针因假AWS凭据synthetic与测试函数名前缀碰撞停在字段断言，stdout空，原INCOMPLETE保全；v2仅修两个假凭据值，17场景和全部期待逐字保持，新执行/独审通过。原内部应用行未留存，碰撞机制来自精确夹具/代码核验，非原流直接观察。dev两更新函数RuntimeVersionArn从9559…变为0aac…，原INCOMPLETE整目录精确保全；只允许本轮精确对象变化、Auto整对象不变，prod实际变化单列于证据。按新窄合同重新完整主读/独读通过；不能从ARN推断平台回滚原因、版本新旧或完整补丁兼容，固定容器也不是托管补丁复刻。prod首次主读首个STS查询ReadTimeoutError的两个原文件保全；新独审入口复用冻结读取实现重新完整只读采集，未重发部署。104文件费用闭包只变同步诊断模块，原五费用owner不变，新reader时点PASS（非持续许可或账单）。
+
+[发布与有限验收证据](evidence/2026-10-02-sync-invoker-log-fix/release.safe.json)；[实现边界](SYNC_LOG_REPAIR.md)。本工单原有限实现与验收范围已完成；历史CloudWatch FAIL永久保留，9份原文2026-10-08 17:13:39.091570UTC精确清理仍归副本台账与自动任务。其它业务恢复、Quiz精确UI链接、费用账单和自然使用由原工单继续，不声称全部历史日志安全。 自然起点仍未建立，0/50有据、0/20未知，production_ready=false；不启用新群或prod记忆。五项到期职责保持[副本台账](RETAINED_COPIES.md)。
+
+## 不变调用协议
+
+固定失败诊断不输出异常正文/cause/context；原单次RequestResponse完整payload、合法JSON含null→None、FunctionError不特判、空响应/捕获异常→{}、logger自身异常传播保持。新增17例包括invoke/read直抛与cause/context、实际decode异常、六类返回、FunctionError、空响应、logger故障。
+
+## 原本地与发布门槛记录（现已履行）
+
 # 同步 Lambda 调用日志修复
 
 `/quizreconcile`管理员校验后可以进入同步`LambdaInvoker.invoke`。原异常诊断带`exc_info=True`，凭据脱敏不等于任意普通正文移除。本地反例确认该路径能记录普通内容；没有据此声称线上同步调用已经泄漏或boto3必然回显poll。

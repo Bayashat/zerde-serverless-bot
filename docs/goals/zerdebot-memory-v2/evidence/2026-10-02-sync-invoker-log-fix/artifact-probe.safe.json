@@ -1,0 +1,52 @@
+{
+  "status": "PASS_ACTUAL_RELEASED_PACKAGE_NEW_LOG_BOUNDARIES",
+  "source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "cloud_calls": 0,
+  "model_calls": 0,
+  "telegram_calls": 0,
+  "cleanup_unconfirmed": false,
+  "cases": [
+    "invoke_direct",
+    "invoke_cause",
+    "invoke_context",
+    "read_direct",
+    "read_cause",
+    "read_context",
+    "decode_json",
+    "decode_unicode",
+    "json_dict",
+    "json_list",
+    "json_string",
+    "json_number",
+    "json_false",
+    "json_null",
+    "function_error",
+    "empty",
+    "logger_failure"
+  ],
+  "json_records": 8,
+  "modules": {
+    "services.repositories.lambda_invoker": {
+      "file": "/var/task/services/repositories/lambda_invoker.py",
+      "sha256": "55e19e7a619fcd333b870ff5165baa510b173748a3cbd8d31123c2e52ea6f85c"
+    },
+    "core.logger": {
+      "file": "/var/task/core/logger.py",
+      "sha256": "66861c2f3ec9df5aa3fdc66bc886fa2e3ad5cd60d9c988ee8e6547ebd18de073"
+    },
+    "zerde_common.logger": {
+      "file": "/opt/python/zerde_common/logger.py",
+      "sha256": "739d85a03666f677f5921fe98e8d002a3c259ec4b5ae9004ec11423e63aa4b1d"
+    },
+    "zerde_common.logging_utils": {
+      "file": "/opt/python/zerde_common/logging_utils.py",
+      "sha256": "1c65658295a5442c36f85415f704624d16bf24bba5b80b113fae562412e1fd32"
+    }
+  },
+  "actual_exit_code": 0,
+  "was_running_at_cleanup": false,
+  "container_absent": true,
+  "completed_at": 1790938160.200563,
+  "stdout_sha256": "661fdd9c08e2b4eaec2ecb4ef37e5aa12d754ee3bae44ffbf65a017490dacd69",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
