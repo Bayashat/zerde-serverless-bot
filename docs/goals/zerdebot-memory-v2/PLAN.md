@@ -1,3 +1,11 @@
+## 2026-10-04：九月费用有限核对已完成，完整实付仍未知
+
+固定UTC九月整月的6次AWS只读查询及独立原始复算确认：Project=ZerdeBot使用费USD1.4977694507（dev0.5206115692、prod0.9771578815），四组CE结果均Estimated=false。标签当前Active，最后更新时间为9月11日，未证明整月覆盖或历史回填；账号Usage38.6574992985及Tax6.18、未标Project池Usage32.5516953201及Tax6.18均不能归给Zerde。不是已付款或完整Free Tier结论。
+
+Google两个已授权账号的九月使用日期报表已下载：dev Zerde Bot的Gemini服务未舍入小计USD0.605498（显示0.61），prod Zerde项目未舍入小计USD0.438845（显示0.44）。Google采用太平洋日期，AWS采用UTC；不直接合成完整实付。账号/筛选关联来自主操作者UI，CSV由独立审阅核算；当前运行key与项目独占关系未另验证。充值、发票调整、税费、Groq/DeepSeek、AWS付款及历史免费额度仍分别未知，Z17保持OPEN。
+
+[九月费用报告与下一步](SEPTEMBER_COST_RECONCILIATION.md)；[AWS安全聚合](evidence/2026-10-04-september-costs/result.safe.json)。本次没有部署、Telegram/模型测试、控制/预算/支付修改或新增启用。运行仍PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`；自然0/50有据、0/20未知，production_ready=false。费用原文6份AWS回执、2份CSV和1份UI观察于2026-10-11 17:01:48.147210UTC精确清理；原五项职责不变。
+
 ## 2026-10-02最新交付：同步日志修复上线，Z02限定结项
 
 日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。

@@ -1,0 +1,54 @@
+{
+  "status": "ALIGNED_INDEPENDENT_PROVIDER_CSV_AND_PRIMARY_UI_EVIDENCE",
+  "reviewed_at_utc": "2026-10-04T17:10:02.068114+00:00",
+  "method": "Direct independent CSV parsing and high-precision Decimal checks. Read primary operator UI observation as attributed evidence; no independent browser operation, cloud query, invoice verification, runtime-key mapping or collector execution.",
+  "provider_result_sha256": "ef5c8b46d3d21aaf037994548318f3636d032a7e50b64798427ba41ee87d6134",
+  "retention_sha256": "add1255c80a7ad1d29778a7c1a78f5ad2badee8dd466d6272c0849348ba320c5",
+  "raw_sha256_by_file": {
+    "provider-raw/google-dev-september-usage.csv": "963374bbc99348f6c8aad60e60446be2709f8a709dccf867662b02d70fcd5886",
+    "provider-raw/google-prod-september-project.csv": "4e2eabfe5b42a58bf9ecb7d642f4aabaa981ec1143db78a3f479c9248c7d6311",
+    "provider-raw/provider-ui-observation.private.json": "07e4d2d36fa1e42aff1e77dc3bef50d026103a2ae66836383f2aabc9a3b58d85"
+  },
+  "source_file_count": 3,
+  "independent_cloud_calls": 0,
+  "independent_browser_actions": 0,
+  "raw_files_mode": "0600",
+  "raw_directory_mode": "0700",
+  "raw_files_regular_nonsymlink": true,
+  "dev": {
+    "csv_service": "Gemini API",
+    "unrounded_service_subtotal_usd": "0.605498",
+    "display_subtotal_usd": "0.61",
+    "csv_total_field_usd": "0.610000",
+    "display_rounding_matches": true,
+    "tax_and_adjustments_export_rows_zero": true,
+    "project_and_account_attribution": "Primary UI observation only; service-grouped CSV does not independently identify project or account."
+  },
+  "prod": {
+    "csv_project_label": "Zerde",
+    "unrounded_project_subtotal_usd": "0.438845",
+    "display_subtotal_usd": "0.44",
+    "csv_filtered_total_field_usd": "0.438845",
+    "display_rounding_matches": true,
+    "tax_export_row_zero": true,
+    "exact_project_identity_matches_private_primary_observation": true
+  },
+  "primary_observation_period_label": "2026-09-01 through 2026-09-30",
+  "period_basis": "Primary Google UI Charge period / usage date; stated Pacific calendar, not the AWS exact UTC interval. CSV files themselves do not contain date filters.",
+  "raw_delete_due_utc": "2026-10-11T17:01:48.147210+00:00",
+  "retention_no_later_than_original_ce_deadline": true,
+  "download_source_absence_basis": "Primary observation/retention declaration only; this verifier did not independently inspect Downloads.",
+  "new_raw_derivatives_created": false,
+  "frozen_ce_post_sha256_unchanged": "8e3761d71feef46fc870af6979b9e4783ed7ed9a4a230df10647a518431ee2f8",
+  "frozen_ce_result_sha256_unchanged": "e7995be1ebaeb1620fa6ddf2cd5bcf6c87908776292413269dceae96876edf7a",
+  "limitations": [
+    "CSV monetary contents are independently verified; UI account/date/project filters are primary-operator observations, not independent UI attestation.",
+    "Dev CSV has unrounded subtotal 0.605498 but exported total field 0.610000; preserve both rather than relabeling them.",
+    "Google Pacific usage calendar differs from AWS UTC; no unified exact-period sum is claimed.",
+    "Runtime credential to billing project and exclusive Zerde use remain unverified; no secret value was read.",
+    "Prepaid top-up is not usage consumption or an additional cost to add; payment and invoice settlement remain unverified.",
+    "Groq and DeepSeek September actual costs remain UNKNOWN; absence of billing evidence is not zero.",
+    "Exported zero tax/adjustment rows are limited report contents, not a claim that all account taxes/credits are absent.",
+    "No full-product net cost, Free Tier proportion or production readiness conclusion follows from these files."
+  ]
+}

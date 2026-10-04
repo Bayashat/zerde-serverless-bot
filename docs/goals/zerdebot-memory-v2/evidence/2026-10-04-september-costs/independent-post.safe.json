@@ -1,0 +1,97 @@
+{
+  "status": "ALIGNED_INDEPENDENT_SEPTEMBER_CE_SNAPSHOT",
+  "reviewed_at_utc": "2026-10-04T17:03:54.034486+00:00",
+  "method": "Directly reread six actual raw response files; independently rebuilt fixed requests, checked identity without publishing it, computed raw amounts using separate Decimal precision100/Inexact trap; only then compared safe result. No collector import or execution and no new cloud calls.",
+  "result_sha256": "e7995be1ebaeb1620fa6ddf2cd5bcf6c87908776292413269dceae96876edf7a",
+  "collector_sha256": "209fd9c41b2a8b3bcc209d986dc22674ee3724d5035b6fdbdd2d957658cb1102",
+  "contract_sha256": "c9445405b6c49e41c8d2942346326511932d067f28b4b3e2670b693bacc22ef7",
+  "pre_sha256": "e146a4f0cd6a049be79905de56225f38fa15bdbb5d34135dbb582f9a5d04cb9b",
+  "retention_sha256": "1aa9176dd83be79f70fff24c67a3d2c266158563213c8b1b97b8afa699c15fbb",
+  "raw_sha256": {
+    "raw/001.private.json": "f0e108ca7c272cd4a12ec4a6d84a108cf3a16dc6a93c1fd5968a7ea349b3df28",
+    "raw/002.private.json": "81dacfd88a0659283aacf7e768cb5217bcf4c482eee14e605a7965839f6cdb61",
+    "raw/003.private.json": "fe9d093564317b0670d211a7ef56cef3202c3a9ab96f4266b1d7b0f1dc0a9952",
+    "raw/004.private.json": "a6ae30c9e65a491d5281a6700bfb2942e65af0a796e0724c3c0cf79e091b63db",
+    "raw/005.private.json": "99758d0f5072666b7aa6d4781c0807d57bd5d78cb5cf64a63b55604206f86db0",
+    "raw/006.private.json": "e5ea6b0a826c153e7b36ca1acbd1cf8f8c927d3a8112a1bcceb878c54c43039d"
+  },
+  "raw_file_count": 6,
+  "source_api_call_count": 6,
+  "review_cloud_api_calls": 0,
+  "period": {
+    "Start": "2026-09-01",
+    "End": "2026-10-01"
+  },
+  "metric": "UnblendedCost",
+  "unit": "USD",
+  "all_four_cost_queries_estimated": false,
+  "each_query_pages": 1,
+  "complete_pagination": true,
+  "all_six_http_status": 200,
+  "all_six_retry_attempts": 0,
+  "account_identity_and_four_linked_filters_exact": true,
+  "project_environment_usd": {
+    "dev": "0.5206115692",
+    "prod": "0.9771578815"
+  },
+  "project_record_type_usd": {
+    "Usage": "1.4977694507"
+  },
+  "project_total_usd": "1.4977694507",
+  "service_record_type_total_matches": true,
+  "account_record_type_usd": {
+    "Tax": "6.18",
+    "Usage": "38.6574992985"
+  },
+  "missing_project_record_type_usd": {
+    "Tax": "6.18",
+    "Usage": "32.5516953201"
+  },
+  "other_tagged_project_arithmetic_remainder_usd": {
+    "Tax": "0.00",
+    "Usage": "4.6080345277"
+  },
+  "remainder_not_assigned_to_zerde": true,
+  "allocation_tags": [
+    {
+      "TagKey": "Environment",
+      "Type": "UserDefined",
+      "Status": "Active",
+      "LastUpdatedDate": "2026-09-11T17:33:55Z",
+      "LastUsedDate": "2026-10-01T00:00:00Z"
+    },
+    {
+      "TagKey": "Project",
+      "Type": "UserDefined",
+      "Status": "Active",
+      "LastUpdatedDate": "2026-09-11T17:33:55Z",
+      "LastUsedDate": "2026-10-01T00:00:00Z"
+    },
+    {
+      "TagKey": "Component",
+      "Type": "UserDefined",
+      "Status": "Inactive",
+      "LastUsedDate": "2026-10-01T00:00:00Z"
+    }
+  ],
+  "raw_directory_mode": "0700",
+  "all_raw_files_regular_nonsymlink_mode": "0600",
+  "raw_delete_due_utc": "2026-10-11T17:01:48.147210+00:00",
+  "exact_existing_raw_files_registered": [
+    "raw/001.private.json",
+    "raw/002.private.json",
+    "raw/003.private.json",
+    "raw/004.private.json",
+    "raw/005.private.json",
+    "raw/006.private.json"
+  ],
+  "no_new_raw_derivatives_created": true,
+  "prior_five_obligations_unchanged": true,
+  "limits": [
+    "Non-estimated CE snapshot is not an invoice or payment confirmation.",
+    "Only Project=ZerdeBot tagged portion is attributable; current tag activation does not establish complete September coverage/backfill.",
+    "No tax or untagged usage allocation to Zerde; no returned Credit/Refund rows is an observed scope fact, not proof of all provider costs or full project net cost.",
+    "Historical Free Tier coverage and model-provider invoices remain unverified; Memory estimates, Quiz counters and prepaid topups excluded.",
+    "Sequential responses are not one cross-query transaction and no new AWS call was made by this verifier."
+  ]
+}

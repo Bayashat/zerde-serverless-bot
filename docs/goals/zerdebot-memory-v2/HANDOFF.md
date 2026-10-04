@@ -1,3 +1,11 @@
+## 2026-10-04：九月费用有限核对已完成，完整实付仍未知
+
+固定UTC九月整月的6次AWS只读查询及独立原始复算确认：Project=ZerdeBot使用费USD1.4977694507（dev0.5206115692、prod0.9771578815），四组CE结果均Estimated=false。标签当前Active，最后更新时间为9月11日，未证明整月覆盖或历史回填；账号Usage38.6574992985及Tax6.18、未标Project池Usage32.5516953201及Tax6.18均不能归给Zerde。不是已付款或完整Free Tier结论。
+
+Google两个已授权账号的九月使用日期报表已下载：dev Zerde Bot的Gemini服务未舍入小计USD0.605498（显示0.61），prod Zerde项目未舍入小计USD0.438845（显示0.44）。Google采用太平洋日期，AWS采用UTC；不直接合成完整实付。账号/筛选关联来自主操作者UI，CSV由独立审阅核算；当前运行key与项目独占关系未另验证。充值、发票调整、税费、Groq/DeepSeek、AWS付款及历史免费额度仍分别未知，Z17保持OPEN。
+
+[九月费用报告与下一步](SEPTEMBER_COST_RECONCILIATION.md)；[AWS安全聚合](evidence/2026-10-04-september-costs/result.safe.json)。本次没有部署、Telegram/模型测试、控制/预算/支付修改或新增启用。运行仍PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`；自然0/50有据、0/20未知，production_ready=false。费用原文6份AWS回执、2份CSV和1份UI观察于2026-10-11 17:01:48.147210UTC精确清理；原五项职责不变。
+
 ## 2026-10-02最新交付：同步日志修复上线，Z02限定结项
 
 日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。
@@ -10,7 +18,7 @@ PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`、merge`fb26b9444ff77b4
 
 验收根`2026-10-02-sync-invoker-log-fix`：CURRENT、final-release及独审、artifact-probe-v2/result及independent-post（原artifact-probe首轮夹具失败完整冻结），artifact-probe-failed-independent.safe.json、budget-SyncLogFinal20261002A、z02-final-closeout、docs-release及独审。PR242全部build/prepare/hold/merge/execute/readback/finish/probe/reader均已结束，不重跑。运行源码08cc614；文档main不是Lambda构建。部署workflow ACTIVE。原dev post因9559→0aac的两个托管runtime标识差异INCOMPLETE保存在post-main-dev-runtime-incomplete；新V2严格限定目标/对象/Auto整对象并全量重读，不重跑旧post或复用PR240反向旧例外。prod首次STS只读超时原两文件保存在post-main-prod-sts-timeout，新prod_readonly_retry_v1只读入口及独立保全/读回链已结束，不重跑或重部署。当前唯一预算reader为本目录read_budget_published.py，每次唯一label、非持续许可；原计量和UNKNOWN保持。
 
-Z02有限范围已结项；旧CloudWatch FAIL与19未分类原结果不改，原始9文件严格保留到Oct8期限。后续优先Z17固定九月UTC账期费用核对，参见私有next-cost-closeout-draft.safe.md（本地研究，尚未执行；新collector仍需精确范围/PRE）。旧9/27动态月份脚本不得在10月重跑当成九月；可归项目成本、未标池、税credits、FreeTier和供应商消费/充值/付款分别列，未知保留UNKNOWN，不加Memory估算。其它Z01/Z12-Z16真实业务恢复继续，原Quiz UI PARTIAL不补猜或重发冻结题。
+Z02有限范围已结项；旧CloudWatch FAIL与19未分类原结果不改，原始9文件严格保留到Oct8期限。本段为10月2日交付时的下一步记录；九月费用现已按上方10月4日结果完成有限核对，原next-cost-closeout-draft仅保留为研究历史。旧9/27动态月份脚本不得在10月重跑当成九月；可归项目成本、未标池、税credits、FreeTier和供应商消费/充值/付款分别列，未知保留UNKNOWN，不加Memory估算。其它Z01/Z12-Z16真实业务恢复继续，原Quiz UI PARTIAL不补猜或重发冻结题。
 
 五项UTC职责：Oct5 08:18:35.953唯一旧stats USER人工删除；Oct8 17:13:39.091570九CloudWatch原文人工清理；Oct17 16:20:38原PITR复查；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。精确身份/文件由RETAINED_COPIES及各原manifest拥有，提前到场同轮等到期限、单次等待不超60秒，迟延如实记录。Oct4临时AV已履行、旧归档/key真实延误保留，不重建/重删。
 

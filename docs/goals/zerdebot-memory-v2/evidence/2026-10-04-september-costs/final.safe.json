@@ -1,0 +1,27 @@
+{
+  "status": "SEPTEMBER_CE_AND_PROVIDER_REPORTS_REVIEWED_FULL_BILL_PARTIAL",
+  "aws_attributed_usage_usd": "1.4977694507",
+  "aws_estimated": false,
+  "google_dev_unrounded_service_subtotal_usd": "0.605498",
+  "google_prod_unrounded_project_subtotal_usd": "0.438845",
+  "full_product_net_cost_usd": "UNKNOWN",
+  "z17_issue_state": "OPEN",
+  "runtime_source_unchanged": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "new_cloud_write_count": 0,
+  "new_model_request_count": 0,
+  "new_telegram_action_count": 0,
+  "new_runtime_deploy_count": 0,
+  "source_receipts_sha256": {
+    "result.safe.json": "e7995be1ebaeb1620fa6ddf2cd5bcf6c87908776292413269dceae96876edf7a",
+    "independent-post.safe.json": "8e3761d71feef46fc870af6979b9e4783ed7ed9a4a230df10647a518431ee2f8",
+    "provider-result.safe.json": "ef5c8b46d3d21aaf037994548318f3636d032a7e50b64798427ba41ee87d6134",
+    "provider-independent-post.safe.json": "61d123f24d184c5bd9683150e7f6081cfe0a7e1db69f74e3c45c4ebff9d271a3",
+    "raw-retention.safe.json": "1aa9176dd83be79f70fff24c67a3d2c266158563213c8b1b97b8afa699c15fbb",
+    "provider-raw-retention.safe.json": "add1255c80a7ad1d29778a7c1a78f5ad2badee8dd466d6272c0849348ba320c5"
+  },
+  "raw_files_actual_count": 9,
+  "raw_delete_due_utc": "2026-10-11T17:01:48.147210+00:00",
+  "natural_evidence_new_count": 0,
+  "production_ready": false,
+  "next_priority": "Oct5 exact old stats USER backup retention; then remaining business and cost evidence."
+}
