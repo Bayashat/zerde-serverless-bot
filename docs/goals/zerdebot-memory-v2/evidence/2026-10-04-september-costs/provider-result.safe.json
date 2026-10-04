@@ -1,0 +1,42 @@
+{
+  "status": "PROVIDER_PROJECT_USAGE_PARTIAL_NOT_FULL_PRODUCT_BILL",
+  "observed_date_utc": "2026-10-04",
+  "period_label": "2026-09-01 through 2026-09-30",
+  "timezone": "America/Los_Angeles (Google charge-period calendar)",
+  "dev": {
+    "project_label": "Zerde Bot",
+    "unrounded_service_subtotal_usd": "0.605498",
+    "display_usd": "0.61",
+    "csv_total_usd": "0.610000",
+    "group_by": "Service",
+    "project_identity_basis": "Primary UI account and report project-link observation; CSV service row only"
+  },
+  "prod": {
+    "project_label": "Zerde",
+    "unrounded_project_subtotal_usd": "0.438845",
+    "display_usd": "0.44",
+    "group_by": "Project",
+    "project_identity_basis": "Primary UI account/project filter plus exact named project CSV row"
+  },
+  "invoice_payment_verified": false,
+  "runtime_key_project_exclusivity_verified": false,
+  "groq_september_actual_usd": "UNKNOWN",
+  "deepseek_september_actual_usd": "UNKNOWN",
+  "full_product_net_cost_usd": "UNKNOWN",
+  "raw_sha256_by_file": {
+    "provider-raw/google-dev-september-usage.csv": "963374bbc99348f6c8aad60e60446be2709f8a709dccf867662b02d70fcd5886",
+    "provider-raw/google-prod-september-project.csv": "4e2eabfe5b42a58bf9ecb7d642f4aabaa981ec1143db78a3f479c9248c7d6311",
+    "provider-raw/provider-ui-observation.private.json": "07e4d2d36fa1e42aff1e77dc3bef50d026103a2ae66836383f2aabc9a3b58d85"
+  },
+  "limitations": [
+    "UI account/project/date observed by primary only; CSV does not independently attest all filters.",
+    "Runtime credential to project mapping and exclusive app usage not re-verified; no secret values read.",
+    "Google Charge period uses Pacific calendar, not exact AWS UTC period.",
+    "No recharge, payment, cap, credentials, settings, or model generation action.",
+    "AI Studio 28-day view spans Sep7-Oct4 and is excluded from whole-month arithmetic.",
+    "Dev CSV download waiting tool timed out but exact completed CSV located in Downloads; no download retry. Browser IDs changed on reset; original profile/tabs matched by fresh inventory.",
+    "No Groq/DeepSeek billing or AWS invoice/payment/historical Free Tier evidence obtained in this finite slice."
+  ],
+  "official_period_reference": "https://docs.cloud.google.com/billing/docs/how-to/reports",
+  "independent_post": "pending"
+}

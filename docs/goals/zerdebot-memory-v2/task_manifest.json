@@ -689,23 +689,29 @@
       "status": "deployed_cost_retry_readback_pass_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "metering_readback_pass_actual_attribution_pending",
-    "status_as_of": "2026-09-30",
-    "completed": "成本/通知修复已部署；Project/Environment标签ACTIVE；9月27日10:53 UTC的CE可归属dev USD0.4216791725/prod USD0.8473312256，合计USD1.2690103981（Estimated）。 PR232交付Quiz应用尝试/usage未知观察及新运行包预算reader重绑；观察不是完整供应商账单。 9月30日受控Quiz恢复后原PT日计数0→1；有限窗口provider观察见新证据，不当完整账单或Memory许可。 PR235发布后104文件原费用闭包逐字保留、reader重绑时点PASS；没有新增模型测试或账单查询。 9月30日晚新版反馈补验有真实Quiz生成，原PT日计数1→2；该计数不代表完整模型调用或账单，未新增CE查询。",
-    "remaining": "闭合账期项目归因、未标记/共享费用、credits/税及模型账单；USD1.2690103981非实付或完整Free Tier结论，业务恢复证据仍待收口。",
+    "status": "september_tag_cost_verified_provider_reports_partial_full_bill_pending",
+    "status_as_of": "2026-10-04",
+    "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。",
+    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；Google运行key独占映射/税与付款、Groq/DeepSeek未核。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护仍待；不由本轮查账关闭Z17。",
     "issue_state": "OPEN",
     "runtime_baseline": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
     "deployed_build_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
-    "status_evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json",
+    "status_evidence": "evidence/2026-10-04-september-costs/result.safe.json",
     "runtime_evidence": "evidence/2026-10-02-sync-invoker-log-fix/release.safe.json",
     "cost_observation": {
-      "observed_at_utc": "2026-09-27T10:53:07.083410+00:00",
+      "observed_at_utc": "2026-10-04T17:01:48.147210+00:00",
       "metric": "UnblendedCost",
-      "attributed_total_usd": "1.2690103981",
-      "estimated": true,
+      "time_period": {
+        "Start": "2026-09-01",
+        "End": "2026-10-01"
+      },
+      "attributed_total_usd": "1.4977694507",
+      "estimated": false,
       "not_invoice": true,
+      "complete_project_net_cost": "UNKNOWN",
       "not_application_budget_or_permit": true,
-      "evidence": "evidence/2026-09-27-retirement/followup-readonly.safe.json"
+      "evidence": "evidence/2026-10-04-september-costs/result.safe.json",
+      "provider_evidence": "evidence/2026-10-04-september-costs/provider-result.safe.json"
     },
     "local_followup": {
       "as_of": "2026-09-29",
