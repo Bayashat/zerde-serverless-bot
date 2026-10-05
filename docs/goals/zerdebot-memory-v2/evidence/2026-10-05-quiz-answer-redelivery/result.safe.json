@@ -1,0 +1,94 @@
+{
+  "status": "PARTIAL_UNCONFIRMED_UI",
+  "runtime_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "new_command_count": 1,
+  "new_poll_count": 1,
+  "native_click_actions": 1,
+  "confirmed_vote_submission": false,
+  "submission_delivery_status": "UNKNOWN",
+  "redelivery_acceptance": false,
+  "production_ready": false,
+  "natural_samples_added": 0,
+  "fault": {
+    "A_window_installed": false,
+    "B_window_t0": 1791223383,
+    "B_window_t1": 1791223683,
+    "actual_put_calls": 1,
+    "actual_delete_calls": 1,
+    "put_started_at": 1791223400.235633,
+    "put_finished_at": 1791223400.50417,
+    "delete_started_at": 1791223455.607028,
+    "delete_finished_at": 1791223455.8652759,
+    "watchdog_post_t1_at": 1791223686.452526,
+    "watchdog_status": "RESTORED_AFTER_T1",
+    "effective_inbound_failure_proven": false
+  },
+  "primary_final_observation": {
+    "answer_state": "ABSENT_AT_READ",
+    "poll_answer_count": 0,
+    "all_answer_outbox_count": 0,
+    "publication_outbox_absent": true,
+    "answer_outbox_absent": true,
+    "unchanged_keys": [
+      "execution",
+      "poll",
+      "quiz",
+      "score",
+      "coverage",
+      "control",
+      "rpd"
+    ],
+    "cursor_nonregressing": true
+  },
+  "independent_observation": {
+    "target_answer_state": "ABSENT_AT_READ",
+    "poll_answer_count": 0,
+    "all_answer_outbox_count": 0,
+    "target_answer_outbox_absent": true,
+    "target_publication_outbox_absent": true,
+    "score_unchanged_from_before": true,
+    "coverage_unchanged_from_before": true,
+    "cursor_nonregressing": true,
+    "rpd_unchanged": true,
+    "control_unchanged": true,
+    "vote_submission_attributed": false,
+    "score_acceptance_claimed": false
+  },
+  "independent_api_calls": 37,
+  "independent_protections": {
+    "full_dev_function_configs_unchanged": 5,
+    "protected_table_identity_projections": 3,
+    "rules_and_targets_unchanged": 3,
+    "bot_mapping_unchanged": true,
+    "role_policies_restored": true,
+    "exact_fault_policy_absent": true
+  },
+  "finite_poll_answer_frames": 0,
+  "finite_retry_markers": 0,
+  "finite_log_event_count": 102,
+  "finite_log_pages": 4,
+  "request_absence_proven": false,
+  "new_deployment": false,
+  "new_memory_activation": false,
+  "source_reports": {
+    "primary_sha256": "ae9d78b3a28af1df099e16c5a9354a59c306cef47879f724092804a055865e2c",
+    "independent_sha256": "dc0325bcec74a4e79a2f45e39d3d28b197b11a5185206263aedab10a8cbb0659",
+    "actual_tool_pre_sha256": "936eae7f204e2d2075815b04750cb9a7393dc0ac05aaf032bdecaef3bb30bcd5"
+  },
+  "raw_retention": {
+    "delete_after_utc": "2026-10-12T17:15:22.532382Z",
+    "actual_registered_file_count": 247,
+    "scope": "Exact shared manifest files including click intent and independent raw/derived objects; no wildcard deletion",
+    "other_deadlines_unchanged": true
+  },
+  "limitations": [
+    "Native click is primary UI observation, not confirmed submission. No retry click or extra fault.",
+    "No same update ID and two complete Lambda request envelopes, so no Telegram redelivery or single-score success claim.",
+    "Finite empty poll-answer log observation and absent answers do not prove no request reached service.",
+    "Sequential strong reads are not a cross-resource transaction; current configuration metadata is not a fresh full artifact check.",
+    "A prepare expired without installation; original tool errors and strict discovery gap are preserved.",
+    "Independent review did not operate the native UI.",
+    "One new Quiz generation uses its existing RPD owner; no new vendor usage or bill query in this evening batch.",
+    "Read counts here belong to this verification only, not subsequent GitHub CI infrastructure preview."
+  ]
+}

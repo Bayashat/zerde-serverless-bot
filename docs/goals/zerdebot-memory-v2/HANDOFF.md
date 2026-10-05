@@ -1,3 +1,13 @@
+## 2026-10-05晚：答案重送尝试未确认投票，权限已恢复
+
+当前私有入口：验收根 `2026-10-05-quiz-answer-redelivery` 的CURRENT、final.partial、independent-partial/final、docs-release及最终独审。缺发布回执不推定完成。所有本轮云操作/UI动作均已结束，不重跑once或复点新题。下一步 `NEXT_COST_GAPS.safe.md` 仅研究，先Groq有限只读计划与现场身份确认。
+
+当前六项UTC责任为Oct8 17:13:39.091570日志原文、Oct11 17:01:48.147210费用原文、Oct12 17:15:22.532382本轮Quiz原文人工精确清理；Oct17 16:20:38原PITR复查、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM到期只读。Oct5唯一USER已完成，不再待删；精确范围由[副本台账](RETAINED_COPIES.md)及各原manifest拥有。
+
+本轮新公开Quiz发题正常完成，但一次原生点击没有确认投票提交，答案重送验收保持 **PARTIAL_UNCONFIRMED_UI**。临时限制只安装一次、撤销一次；撤销完成于18:04:15.865276UTC，早于固定18:08:03UTC截止，看护在截止后再次确认原策略恢复。最后主读与独立强读均未见该题答案，分数未变；有限日志未观察到poll_answer。答案缺席与空日志都不证明没有请求，也不证明失败、重送或一次计分通过。
+
+[本轮边界与下一步](R3_QUIZ_ANSWER_REDELIVERY.md)；[安全结果](evidence/2026-10-05-quiz-answer-redelivery/result.safe.json)。独立37次只读确认原策略与dev保护保持；不是新运行发布或自然样本。Z16/Epic保持OPEN，运行仍PR242，自然0/50有据、0/20未知，production_ready=false。新增本轮原文精确清理期限2026-10-12 17:15:22.532382UTC，原Oct8/11/17/Nov1/2职责保持。下一步先有限核对Groq九月消费及非秘密归属，不重复本轮已结束操作。
+
 ## 2026-10-05：旧stats USER备份七日期限已履行
 
 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。
@@ -22,7 +32,7 @@ PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`、merge`fb26b9444ff77b4
 
 [发布与有限验收证据](evidence/2026-10-02-sync-invoker-log-fix/release.safe.json)；[实现边界](SYNC_LOG_REPAIR.md)。本工单原有限实现与验收范围已完成；历史CloudWatch FAIL永久保留，9份原文2026-10-08 17:13:39.091570UTC精确清理仍归副本台账与自动任务。其它业务恢复、Quiz精确UI链接、费用账单和自然使用由原工单继续，不声称全部历史日志安全。 自然起点仍未建立，0/50有据、0/20未知，production_ready=false；不启用新群或prod记忆。五项到期职责保持[副本台账](RETAINED_COPIES.md)。
 
-# 当前执行入口
+# 10月2日发布交接（历史，已结束）
 
 验收根`2026-10-02-sync-invoker-log-fix`：CURRENT、final-release及独审、artifact-probe-v2/result及independent-post（原artifact-probe首轮夹具失败完整冻结），artifact-probe-failed-independent.safe.json、budget-SyncLogFinal20261002A、z02-final-closeout、docs-release及独审。PR242全部build/prepare/hold/merge/execute/readback/finish/probe/reader均已结束，不重跑。运行源码08cc614；文档main不是Lambda构建。部署workflow ACTIVE。原dev post因9559→0aac的两个托管runtime标识差异INCOMPLETE保存在post-main-dev-runtime-incomplete；新V2严格限定目标/对象/Auto整对象并全量重读，不重跑旧post或复用PR240反向旧例外。prod首次STS只读超时原两文件保存在post-main-prod-sts-timeout，新prod_readonly_retry_v1只读入口及独立保全/读回链已结束，不重跑或重部署。当前唯一预算reader为本目录read_budget_published.py，每次唯一label、非持续许可；原计量和UNKNOWN保持。
 
