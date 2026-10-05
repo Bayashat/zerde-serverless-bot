@@ -1,0 +1,297 @@
+{
+  "status": "BACKUP_ABSENT_PROTECTIONS_UNCHANGED",
+  "phase": "apply",
+  "started_epoch": 1791188330.911488,
+  "operator_sha256": "683e2ba180b979d4075f81b9fca866b9d2bac54f283ea4d030a716a2caa0390e",
+  "binding_sha256": "ea0c5033fc936154f759e33fe5fd5211396592111729e183a0c9272f4941232c",
+  "backup_arn_canonical_sha256": "1eb3225787d7ea3c659c51715196cd17ade176d09c1685ab444479c1407a62d4",
+  "source_table_id_canonical_sha256": "d6169f44a79db66c34208023874cd9952774eb628241f7d02bf3131a072ad5ef",
+  "due_epoch": 1791188315.953,
+  "cloud_write_attempts": 1,
+  "no_other_mutations": true,
+  "production_ready": false,
+  "protected_sha256": "06475ef839e6bc7209d61e07e515cb3b76f0ddbfdce14af49d36db6a2ed6cf73",
+  "delete_attempt_epoch": 1791188334.216576,
+  "delete_delay_seconds": 18.2635760307312,
+  "delete_response": "ACKNOWLEDGED",
+  "absence_observed_epoch": 1791188334.445209,
+  "readback_complete": true,
+  "completed_epoch": 1791188336.1090062,
+  "api_calls": 34,
+  "calls": [
+    {
+      "service": "sts",
+      "method": "get_caller_identity",
+      "params_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "started_epoch": 1791188330.99228,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "70612aba2e22aaee68b5c62d21d64cbd7ad146b0c44a86280a5b893ec5494ec5"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "662150817da737dbe40606411e45342162a2347d102b4563cbdf11dc846240e1",
+      "started_epoch": 1791188331.67202,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "89a0d706e7c26617fc29ed3e9958d2b93ba309eb7a0a3ba930824491400f6c46"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "662150817da737dbe40606411e45342162a2347d102b4563cbdf11dc846240e1",
+      "started_epoch": 1791188332.096292,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "e524fe194ca6ee99cf53cad7c38f04c3ef925867eb1b2e2b6bd61a7797a7e956"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "95119323d9617ba0e79d11bbfc11132960234b1e98c8514c1aa7cf43ca562941",
+      "started_epoch": 1791188332.205951,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "ecd2d944bdaf9094b2c4230a361fe576d558b15bc7533c798d5e4e0045dd4a8f"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "95119323d9617ba0e79d11bbfc11132960234b1e98c8514c1aa7cf43ca562941",
+      "started_epoch": 1791188332.310524,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "4f6dc65e639a5ce68041c1b9dc414d51794089556c13739fac3fcc7f0f8dfb69"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "5bb936ad311b70c280a6a39a3c1d82a049f4ac2190a8bef8482aff347d3c8992",
+      "started_epoch": 1791188332.417682,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "debd0b50736b905162cebc459dcb42a78d96eb52d51eaeecd086e0691f1ed0d8"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "5bb936ad311b70c280a6a39a3c1d82a049f4ac2190a8bef8482aff347d3c8992",
+      "started_epoch": 1791188332.523392,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "1b4ddfb94f4a529222d51aa747b4ac5693666fe63e8e9a3edadd163288e6fc8d"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "6036179a1dd50672a52e484e8bd637df29dffc87232638fd298a62d90bd9147b",
+      "started_epoch": 1791188332.627418,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "f41abba4cb2866fad8cb198b9a85fb157ee61f656277967f0fb09261b29be98e"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "6036179a1dd50672a52e484e8bd637df29dffc87232638fd298a62d90bd9147b",
+      "started_epoch": 1791188332.730677,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "b60997316240f6b5bc2d7653fc647db4b2d125b21cfbd8c35165305bad22f8f1"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "04515b1ca6508fcdb9ffc83698233329b054aae5f6945672507184c569884b62",
+      "started_epoch": 1791188332.836566,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "ea7ab03aeb4c1ac1cb9e75a62ef9014355e81cd4029c30aa28d759c89f84f3c5"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "04515b1ca6508fcdb9ffc83698233329b054aae5f6945672507184c569884b62",
+      "started_epoch": 1791188332.942734,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "bf08abda212d087596809e90fb7ee8399f38d404c777309c5d07163edd484109"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "3464e671acdeaf6faff8b34506bf29d6d7f8663cfdd9a81cbf1f34b171c1a066",
+      "started_epoch": 1791188333.047617,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "4dd2c2d3af2e739d82bffd1678bab88ab215e83e9d29156eb7a86c45f87be350"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "3464e671acdeaf6faff8b34506bf29d6d7f8663cfdd9a81cbf1f34b171c1a066",
+      "started_epoch": 1791188333.1533859,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "889979b35d7f7b76d5c773578e326038b566725b4f4eeea2aec9acb9d774d120"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "fc7e2af933bd35c87fe37d583e8a98a56bd726c4631358f8bf83a56d55cdda36",
+      "started_epoch": 1791188333.258495,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "6503fa554e84c8060d23a46e6d10caaa0a071d1ea72f860ebbe8c62c9cebe6b5"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "d342024e15e213823db44a445564fca7ff9bab3fba5ee08b405f5c18bff184a7",
+      "started_epoch": 1791188333.884722,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "4643ad7b39a6a4a7dd6227822dcf2f71f3240f622e7f7c9b6a9c7ccb0a578b34"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "761b95065184c9a51557769c8d8b1eb57c050ebf15addc67ade962a914f72597",
+      "started_epoch": 1791188333.995142,
+      "outcome": "ResourceNotFoundException",
+      "receipt_sha256": "4d8b12f24b57fc616a88ecc0b8cca2071f2582d73f2973c49407cc24184da378"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "2b73aecb296f78e510804127646638ee126ea1966def8cdf853229cb0ad61a61",
+      "started_epoch": 1791188334.105696,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "c85dd3cb4df3cf45ca6c3483a9b4205c4ad8e9471943c5f752e2fa76e3344b46"
+    },
+    {
+      "service": "dynamodb",
+      "method": "delete_backup",
+      "params_sha256": "2b73aecb296f78e510804127646638ee126ea1966def8cdf853229cb0ad61a61",
+      "started_epoch": 1791188334.2169962,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "c4731b666b7b0b1ff29e924a7a98a9e49c9c2b5c7c8ef709869304af10c59058"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "2b73aecb296f78e510804127646638ee126ea1966def8cdf853229cb0ad61a61",
+      "started_epoch": 1791188334.340273,
+      "outcome": "BackupNotFoundException",
+      "receipt_sha256": "26b2ffdc8a39e1caa7cf8e6192f752929a33bd25bde0d2657284858eddc1e251"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "761b95065184c9a51557769c8d8b1eb57c050ebf15addc67ade962a914f72597",
+      "started_epoch": 1791188334.445266,
+      "outcome": "ResourceNotFoundException",
+      "receipt_sha256": "0954b761d38e3749cdcf891ccfa257eed1f6b6a9f84b4b04e07529e3604220bf"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "662150817da737dbe40606411e45342162a2347d102b4563cbdf11dc846240e1",
+      "started_epoch": 1791188334.551914,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "1cd393f4480bf7864cb068b46c02c5847ae88c9233dea6ac6988c0bb6275e62d"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "662150817da737dbe40606411e45342162a2347d102b4563cbdf11dc846240e1",
+      "started_epoch": 1791188334.656378,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "9e0e3ee3a336ac00467449916667fa9228f73cf0dfa63cdc2608ce3eefdf9727"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "95119323d9617ba0e79d11bbfc11132960234b1e98c8514c1aa7cf43ca562941",
+      "started_epoch": 1791188334.7606559,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "945e68a413ebb50fa14d4929984b91f591546e65e5137988f2a8a2d14fd42dbc"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "95119323d9617ba0e79d11bbfc11132960234b1e98c8514c1aa7cf43ca562941",
+      "started_epoch": 1791188334.8680708,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "560a09ac313917fa5e624d3f2e4b1238ad960a9dc2896a39c4082e245e318528"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "5bb936ad311b70c280a6a39a3c1d82a049f4ac2190a8bef8482aff347d3c8992",
+      "started_epoch": 1791188334.995729,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "7a84480eac69c0de0c6bf35ed8cf313436772a1d33d2d80aa3b863e3ef0f91e2"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "5bb936ad311b70c280a6a39a3c1d82a049f4ac2190a8bef8482aff347d3c8992",
+      "started_epoch": 1791188335.1173959,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "078c8ce25bfc6291aa2c4f569c8713e54916bd4f55994fe85f5dab8e3458451a"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "6036179a1dd50672a52e484e8bd637df29dffc87232638fd298a62d90bd9147b",
+      "started_epoch": 1791188335.22611,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "70a5f171b2469cd71e9814d28f84459294e54bcf6c0d75d54556e1dc86de80ce"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "6036179a1dd50672a52e484e8bd637df29dffc87232638fd298a62d90bd9147b",
+      "started_epoch": 1791188335.341836,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "084a952ae2aa3e62612857dffd18e319fbfe1e76cb2c587522fedd2121492435"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "04515b1ca6508fcdb9ffc83698233329b054aae5f6945672507184c569884b62",
+      "started_epoch": 1791188335.448259,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "b8edc0ce4a9ca6b3f5d8a102861fca613a02301cfa0ed334c6d7ba4cd60b23f1"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "04515b1ca6508fcdb9ffc83698233329b054aae5f6945672507184c569884b62",
+      "started_epoch": 1791188335.553051,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "32e3987d12194f3cb10b1d1920fca2b84443f5376dbd367feb7c0bb77573527a"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_table",
+      "params_sha256": "3464e671acdeaf6faff8b34506bf29d6d7f8663cfdd9a81cbf1f34b171c1a066",
+      "started_epoch": 1791188335.667257,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "4bd5dda517442f95c39ff06303164d07fa8d0598d48c68cf75e37069c1bbbe38"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_continuous_backups",
+      "params_sha256": "3464e671acdeaf6faff8b34506bf29d6d7f8663cfdd9a81cbf1f34b171c1a066",
+      "started_epoch": 1791188335.772197,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "7cb156b6b52c4a2e0fab333f153c2e5725b19a46bb4be80195b33a56a2c6634d"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "fc7e2af933bd35c87fe37d583e8a98a56bd726c4631358f8bf83a56d55cdda36",
+      "started_epoch": 1791188335.8783638,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "a775c660bd67993bf4e38714e22a52be3f0d88f29efad4745a03751b662b8a93"
+    },
+    {
+      "service": "dynamodb",
+      "method": "describe_backup",
+      "params_sha256": "d342024e15e213823db44a445564fca7ff9bab3fba5ee08b405f5c18bff184a7",
+      "started_epoch": 1791188335.998724,
+      "outcome": "RESPONSE",
+      "receipt_sha256": "e75574831ebaaee72ffe3e2b134d1cd54a8326669c5c205fe4157e6996bb496d"
+    }
+  ],
+  "other_copies_pending": true,
+  "physical_media_erasure_claim": false
+}
