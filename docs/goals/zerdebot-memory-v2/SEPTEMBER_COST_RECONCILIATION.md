@@ -1,3 +1,5 @@
+> 10月6日补充：AWS九月账号发票摘要已核，USD38.65＋税6.18＝44.83；付款、历史Free Tier与产品完整归属仍未知。Groq/DeepSeek实际控制台均需用户登录。详见[后续有限核对](PROVIDER_COST_GAPS.md)。以下带日期数据保留原口径。
+
 # 九月费用核对（2026-10-04）
 
 本次是完成账期的一次有限核对，结论为 **PARTIAL：已取得可直接归属的费用，完整产品实付未知**。Z17保持OPEN。金额均USD；不将应用预算、Quiz次数、充值或目录价估算加进账单。
@@ -24,7 +26,7 @@
 
 Project/Environment为Active，最后更新9月11日17:33:55UTC；Component为Inactive。本次没有证据证明整月标签完整或历史回填，故不能称上表覆盖Zerde整个九月。
 
-整个账号Usage为38.6574992985、Tax6.18，总44.8374992985；未标Project池Usage32.5516953201、Tax6.18，总38.7316953201。它们不是Zerde费用，税费不得按比例猜分。四个结果集合没有Credit行，不能据此推导充值余额/银行扣款或所有可能优惠为零。AWS发票、已付款和九月逐项Free Tier额度尚未核验；10月当前免费额度不能代替九月。
+整个账号Usage为38.6574992985、Tax6.18，总44.8374992985；未标Project池Usage32.5516953201、Tax6.18，总38.7316953201。它们不是Zerde费用，税费不得按比例猜分。四个结果集合没有Credit行，不能据此推导充值余额/银行扣款或所有可能优惠为零。原10月4日尚无AWS发票证据；10月6日已补摘要，已付款和九月逐项Free Tier额度仍未核验；10月当前免费额度不能代替九月。
 
 [固定账期API语义](https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_GetCostAndUsage.html)；[本次结果](evidence/2026-10-04-september-costs/result.safe.json)；[直接原始独立复算](evidence/2026-10-04-september-costs/independent-post.safe.json)。
 
@@ -48,12 +50,12 @@ Google的日期按美国太平洋午夜（随夏令时变化），税和发票�
 | 项目 | 当前证据及下一有限动作 |
 |---|---|
 | AWS未标/共享及税归属 | 缺历史资源级分摊，保持UNKNOWN；不新增基础设施或虚构历史回填 |
-| AWS发票、付款、Free Tier | 尚未取得九月证据；下一次只查九月发票/付款状态与逐服务免费/计费行，无法导出则明确UNKNOWN |
+| AWS发票、付款、Free Tier | 10月6日账号发票摘要USD44.83已独审；付款与历史Free Tier仍UNKNOWN，不重跑已完成摘要查询 |
 | Google | 使用报表已取得；运行key的非秘密项目映射、独占使用及发票/税/付款仍待，不能用项目名证明独占 |
-| Groq/DeepSeek | 本轮未读取对应账单，UNKNOWN，不能凭SDK配置或无日志称零 |
+| Groq/DeepSeek | 10月6日两官方控制台均需登录，未读取账号账单，UNKNOWN；等待用户登录，不凭SDK配置或无日志称零 |
 | Z17其余业务 | dev空轮询同窗比较、故障/恢复/预算通知及Quiz恢复保护按原工单，费用查询不代替业务验收 |
 
-本次CE已Estimated=false，不需为了等Estimated转正机械重跑Oct7；只有新增账单问题或实质修订才补查。优先履行Oct5旧stats USER备份到期清理，随后继续R3业务和上述缺口。全部项目、自然观察和副本责任未结束。
+本次CE已Estimated=false，不需为了等Estimated转正机械重跑Oct7；只有新增账单问题或实质修订才补查。下一到期责任是Oct8日志原文精确清理；Oct5旧stats USER备份已按原身份删除并独审，不可重跑。费用待登录项不阻止独立业务推进，不能用当前免费额度冒充九月历史。
 
 ## 原文保留及运行边界
 

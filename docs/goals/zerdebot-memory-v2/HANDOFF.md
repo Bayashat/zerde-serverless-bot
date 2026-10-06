@@ -1,8 +1,22 @@
+## 当前执行入口（2026-10-06）
+
+先读私有验收根`2026-10-06-provider-cost-gaps/CURRENT.md`、`final.safe.json`、`invoice-independent-post.safe.json`、`docs-release.safe.json`及最终独审。全部原/V2采集与已结束渲染/发布脚本不得重跑；两个登录页面保留等待用户，不反复打开。实际文档交付以最终回执为准，缺回执不推定通过。
+
+下一步：用户登录后，先核实际账号/组织与九月日期口径，再按有限新工具/现场审查读取Groq、DeepSeek报表；在此之前继续其它独立业务工作。AWS付款、历史Free Tier与Google非秘密映射分别有限核验，不能用当前免费额度推历史。原Quiz投票提交未确认的PARTIAL不重做，若另立新验收，先解决能确认提交的原生操作和同update_id证据。当前七项期限见RETAINED_COPIES，Oct8最先到期。原6现役表/控制/预算/UNKNOWN保持，prod记忆不开启。
+
+## 2026-10-06：九月账号发票已核对，供应商登录仍待
+
+有限只读查询取得九月一张AWS账号发票摘要：税前USD38.65、税USD6.18、总USD44.83；三种币种投影均为USD同值，不能相加。原始回执独立复核通过。它属于整个账号，不是Zerde独立费用或已付款证明；此前Zerde标签Usage USD1.4977694507仍按CE原口径单列。CE账号Usage比发票税前多USD0.0074992985，原因未核，不臆定为舍入或强行对齐。
+
+Groq和DeepSeek官方控制台均停在登录页，已交用户登录；没有读取账户账单、密钥或修改支付。两项九月消费仍UNKNOWN，不当零。AWS付款/完整历史Free Tier、Google非秘密运行映射/税与付款仍待；Z17和Epic保持OPEN。本轮原工具在端点校验误停，仅1次STS；V2显式正确端点后1次STS＋1次发票摘要成功，共3次AWS只读，原失败保留，独立POST未新增云调用。这不涵盖后续CI的基础设施只读预览。
+
+[本轮范围与下一步](PROVIDER_COST_GAPS.md)；[安全结果](evidence/2026-10-06-provider-cost-gaps/result.safe.json)。新增3份精确发票采集原文于2026-10-13 08:06:04.659429UTC人工清理并独审，原六项期限不变。没有产品代码/部署/Telegram/模型/控制/预算或付款修改；运行仍PR242，自然0/50有据、0/20未知，production_ready=false。
+
 ## 2026-10-05晚：答案重送尝试未确认投票，权限已恢复
 
-当前私有入口：验收根 `2026-10-05-quiz-answer-redelivery` 的CURRENT、final.partial、independent-partial/final、docs-release及最终独审。缺发布回执不推定完成。所有本轮云操作/UI动作均已结束，不重跑once或复点新题。下一步 `NEXT_COST_GAPS.safe.md` 仅研究，先Groq有限只读计划与现场身份确认。
+此前10月5日晚私有入口：验收根 `2026-10-05-quiz-answer-redelivery` 的CURRENT、final.partial、independent-partial/final、docs-release及最终独审。缺发布回执不推定完成。所有本轮云操作/UI动作均已结束，不重跑once或复点新题。下一步 `NEXT_COST_GAPS.safe.md` 仅研究，先Groq有限只读计划与现场身份确认。
 
-当前六项UTC责任为Oct8 17:13:39.091570日志原文、Oct11 17:01:48.147210费用原文、Oct12 17:15:22.532382本轮Quiz原文人工精确清理；Oct17 16:20:38原PITR复查、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM到期只读。Oct5唯一USER已完成，不再待删；精确范围由[副本台账](RETAINED_COPIES.md)及各原manifest拥有。
+此前该轮六项UTC责任为Oct8 17:13:39.091570日志原文、Oct11 17:01:48.147210费用原文、Oct12 17:15:22.532382本轮Quiz原文人工精确清理；Oct17 16:20:38原PITR复查、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM到期只读。Oct5唯一USER已完成，不再待删；精确范围由[副本台账](RETAINED_COPIES.md)及各原manifest拥有。
 
 本轮新公开Quiz发题正常完成，但一次原生点击没有确认投票提交，答案重送验收保持 **PARTIAL_UNCONFIRMED_UI**。临时限制只安装一次、撤销一次；撤销完成于18:04:15.865276UTC，早于固定18:08:03UTC截止，看护在截止后再次确认原策略恢复。最后主读与独立强读均未见该题答案，分数未变；有限日志未观察到poll_answer。答案缺席与空日志都不证明没有请求，也不证明失败、重送或一次计分通过。
 

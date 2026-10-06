@@ -417,9 +417,9 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-05",
+    "status_as_of": "2026-10-06",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。",
-    "remaining": "Z10继续OPEN：CloudWatch九份原文于10月8日17:13:39.091570UTC、九月费用九份原文于10月11日17:01:48.147210UTC精确清理；原PITR于10月17日16:20:38UTC复查；旧memory SYSTEM于11月1日11:46:02.425UTC、旧stats SYSTEM于11月2日08:45:11.254UTC服务到期后精确只读核验。日志/DLQ及其他原台账责任保持；用户导出、现役PITR和业务恢复数据保留。 新增本轮Quiz原始证据及登记派生于2026-10-12 17:15:22.532382UTC精确人工清理并独审，不延长其它原期限。",
+    "remaining": "Z10继续OPEN：CloudWatch九份原文于10月8日17:13:39.091570UTC、九月费用九份原文于10月11日17:01:48.147210UTC精确清理；原PITR于10月17日16:20:38UTC复查；旧memory SYSTEM于11月1日11:46:02.425UTC、旧stats SYSTEM于11月2日08:45:11.254UTC服务到期后精确只读核验。日志/DLQ及其他原台账责任保持；用户导出、现役PITR和业务恢复数据保留。 新增本轮Quiz原始证据及登记派生于2026-10-12 17:15:22.532382UTC精确人工清理并独审，不延长其它原期限。 新增3份账号发票原文于2026-10-13 08:06:04.659429UTC精确人工清理并独审；V2采用原更早期限，现共七项责任，不延长原六期限。",
     "issue_state": "OPEN",
     "runtime_baseline": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
     "deployed_build_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
@@ -432,6 +432,14 @@
       "due_utc": "2026-10-12T17:15:22.532382Z",
       "owner": "Z10",
       "private_batch": "2026-10-05-quiz-answer-redelivery",
+      "old_deadlines_unchanged": true
+    },
+    "invoice_raw_retention": {
+      "status": "PENDING_EXACT_EXPIRY",
+      "due_utc": "2026-10-13T08:06:04.659429Z",
+      "owner": "Z10",
+      "private_batch": "2026-10-06-provider-cost-gaps",
+      "actual_files": 3,
       "old_deadlines_unchanged": true
     }
   },
@@ -709,10 +717,10 @@
       "status": "deployed_cost_retry_readback_pass_acceptance_pending",
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
-    "status": "september_tag_cost_verified_provider_reports_partial_full_bill_pending",
-    "status_as_of": "2026-10-04",
-    "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。",
-    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；Google运行key独占映射/税与付款、Groq/DeepSeek未核。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护仍待；不由本轮查账关闭Z17。",
+    "status": "september_account_invoice_verified_provider_login_pending_full_cost_unknown",
+    "status_as_of": "2026-10-06",
+    "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。 10月6日AWS账号九月一张发票摘要及独立原始复算通过：税前38.65＋税6.18＝44.83 USD；并非Zerde独立费用或已付款。",
+    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；CE与发票税前差0.0074992985 USD原因未知。Groq/DeepSeek官方页均需用户登录，九月消费UNKNOWN；Google非秘密运行映射/税/付款仍待。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护继续；不因查账关闭Z17。",
     "issue_state": "OPEN",
     "runtime_baseline": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
     "deployed_build_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
@@ -755,6 +763,19 @@
       "status": "deployed_packages_and_protection_verified",
       "evidence": "evidence/2026-09-30-quiz-feedback/release.safe.json",
       "new_live_feedback_acceptance": false
+    },
+    "invoice_observation": {
+      "as_of": "2026-10-06",
+      "period": "2026-09",
+      "scope": "ACCOUNT_ONLY",
+      "count": 1,
+      "currency": "USD",
+      "before_tax": "38.65",
+      "tax": "6.18",
+      "total": "44.83",
+      "payment_status": "UNKNOWN",
+      "not_project_cost": true,
+      "evidence": "evidence/2026-10-06-provider-cost-gaps/result.safe.json"
     }
   },
   {
