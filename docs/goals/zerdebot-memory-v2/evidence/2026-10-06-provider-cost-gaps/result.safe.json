@@ -1,0 +1,87 @@
+{
+  "status": "SEPTEMBER_ACCOUNT_INVOICE_VERIFIED_PROVIDER_LOGIN_REQUIRED_PROJECT_PAYMENT_PARTIAL",
+  "as_of": "2026-10-06",
+  "runtime_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
+  "billing_period": {
+    "Month": 9,
+    "Year": 2026
+  },
+  "invoice_count": 1,
+  "invoice_base_currency": "USD",
+  "invoice_before_tax": "38.65",
+  "invoice_tax": "6.18",
+  "invoice_total": "44.83",
+  "invoice_discount": "0.00",
+  "invoice_fee": "0.00",
+  "invoice_three_currency_projections_equal_not_additive": true,
+  "account_level_not_zerde_exclusive": true,
+  "invoice_pdf_obtained": false,
+  "payment_status": "UNKNOWN",
+  "historical_free_tier_coverage": "UNKNOWN",
+  "complete_project_net_cost": "UNKNOWN",
+  "ce_comparison": {
+    "historical_source": "2026-10-04-september-costs",
+    "new_ce_query": false,
+    "ce_account_usage": "38.6574992985",
+    "invoice_before_tax": "38.65",
+    "ce_minus_invoice": "0.0074992985",
+    "difference_cause": "UNKNOWN",
+    "ce_account_tax_matches_invoice_tax": true,
+    "project_tag_usage_usd": "1.4977694507",
+    "not_summed_with_invoice": true
+  },
+  "provider_status": {
+    "Groq": "LOGIN_REQUIRED_SEPTEMBER_USAGE_UNKNOWN",
+    "DeepSeek": "LOGIN_REQUIRED_SEPTEMBER_USAGE_UNKNOWN",
+    "ui_independent_verified": false,
+    "private_account_bill_read": false,
+    "credentials_or_payment_modified": false
+  },
+  "execution": {
+    "original_status": "INCOMPLETE_invoice_endpoint",
+    "original_sts_calls": 1,
+    "original_invoice_calls": 0,
+    "v2_sts_calls": 1,
+    "v2_invoice_calls": 1,
+    "total_actual_aws_reads": 3,
+    "cloud_writes": 0,
+    "models": 0,
+    "telegram_actions": 0,
+    "deployments": 0,
+    "independent_post_additional_aws_calls": 0
+  },
+  "failure_boundary": "Original endpoint guard stopped before invoice request; local same-version reconstruction explains metadata/rule endpoint mismatch, not directly captured original client state.",
+  "retention": {
+    "due_utc": "2026-10-13T08:06:04.659429Z",
+    "actual_files": 3,
+    "private_ledgers": [
+      "invoice-retention.safe.json",
+      "invoice-v2/invoice-retention.safe.json"
+    ],
+    "exact_paths": [
+      "invoice-raw/001.private.json",
+      "invoice-v2/invoice-raw/001.private.json",
+      "invoice-v2/invoice-raw/002.private.json"
+    ],
+    "old_six_deadlines_unchanged": true,
+    "no_extra_raw_derivatives": true
+  },
+  "independent_post_sha256": "47d5b6d675f5466439f960cb3c39f5af8676802ed9ef32ec890daf88a2839bdf",
+  "source_hashes": {
+    "provider-result.safe.json": "8cd444c13f6279d426260c947beb54b7fbe2b889e5a30b793aff04967e55b10d",
+    "invoice-result.safe.json": "611add00b543b89b26128d3f90af47bc9e56939dc1c58b5052ea0df1af7c8708",
+    "invoice-v2/invoice-result.safe.json": "b8b0b9b36693a2617ec5fded4e42bc8afee4d10c834f54d8e80cd00d92ca9f30",
+    "invoice-retention.safe.json": "3c3c2c1f7b1c47e995e47b9450032fe94d654868ada5208baf18c41ad6f511cf",
+    "invoice-v2/invoice-retention.safe.json": "cb9ff7b8b6d7078d9fc5225c9373d88bbca77fc13f272d638f6e2925b2f85cdc"
+  },
+  "limitations": [
+    "Snapshot only, later invoice changes possible.",
+    "Invoice summary is not PDF, paid receipt or project attribution.",
+    "UI login state is main operator observation; independent POST reads saved AWS raw only.",
+    "Local and CI validation are separate from these three billing AWS reads."
+  ],
+  "issue_states_unchanged": true,
+  "production_ready": false,
+  "natural_supported": 0,
+  "natural_unknown": 0
+}
