@@ -33,4 +33,10 @@
 
 2026-10-06 08:06:04.659429UTC首次采集开始。原端点校验误停仅产生1份STS回执；V2产生1份STS和1份发票摘要，共3个实际原文文件。私有验收根`2026-10-06-provider-cost-gaps/invoice-retention.safe.json`与`invoice-v2/invoice-retention.safe.json`逐一绑定相对路径/hash；实际路径为`invoice-raw/001.private.json`、`invoice-v2/invoice-raw/001.private.json`、`invoice-v2/invoice-raw/002.private.json`。原文0600、目录0700，V2采用原更早期限，统一于2026-10-13 08:06:04.659429UTC人工精确删除并独审不存在，全部登记原文派生同一期限（当前无额外派生）。安全聚合/hash保留；API上限不当实际文件数量，不通配删除、不延长既有Oct8/11/12/17/Nov1/2责任。两供应商登录页没有产生账户原文或额外账单保留义务。
 
-当前七项剩余UTC责任：Oct8日志原文、Oct11费用原文、Oct12Quiz原文、Oct13本次发票原文、Oct17原PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与身份按各段/manifest。早次到期前先预检并同轮等待（单次不超过60秒），不故意拖到下轮；真实延误如实记。所有已结束采集/清理/恢复once保持冻结，文件移除不等于安全抹盘。
+以下为本轮新增前的七项职责摘要（均继续保持）：Oct8日志原文、Oct11费用原文、Oct12Quiz原文、Oct13本次发票原文、Oct17原PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与身份按各段/manifest。早次到期前先预检并同轮等待（单次不超过60秒），不故意拖到下轮；真实延误如实记。所有已结束采集/清理/恢复once保持冻结，文件移除不等于安全抹盘。
+
+## PR248首次dev读回失败元数据（第八项独立责任）
+
+最早采集2026-10-06 18:26:43.519150UTC，三份原文的人工清理期限保持2026-10-13 18:26:43.519150UTC。dev第一次实际包主读在第三ZIP下载时超时，原七文件完整保全于验收根`2026-10-06-explicit-quota-guard/post-main-dev-download-incomplete`。根失败部分只含`responses.private.json`、`artifact-responses.private.json`、`snapshot.private.json`三份元数据及登记含原文派生；三文件0600，目录0700，没有新增原文派生。
+
+权威迁移后精确清单是`2026-10-06-explicit-quota-guard/failed-dev-download-retention.safe.json`，逐项绑定原hash/身份/期限；目录内原unreviewed-retention清单保留历史字节，其旧路径已经由成功轮使用，绝不能据旧路径误删成功回执。按新清单另做工具PRE、到期精确删除并独审；两份完整代码ZIP与安全hash/聚合报告继续作为发布审计保留，不在根三份原文内。既有七项职责和已履行USER/AV记录不变，文件移除不是安全擦盘。另有独立首STS ReadTimeout失败，零响应零包下载；原review/空metadata/原ledger三文件完整归档post-independent-dev-sts-timeout，空metadata-responses.private.json由failed-independent-dev-retention.safe.json精确绑定并采用本批更早的同一期限，不延长原18:51:50.905062期限。该空记录不是AWS响应；第八项合计根三元数据加独立空记录四文件。新只读续接成功不改写两次首次INCOMPLETE。

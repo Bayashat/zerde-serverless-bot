@@ -1,3 +1,13 @@
+## 2026-10-06最新交付：显式配额结果门禁已发布
+
+显式Gemini调用现在拒绝不可靠的配额返回：整型计数必须大于0，允许标志必须是真正bool；共享counter故障返回0/True或坏形状不再放行后续模型网络，也不沿该失败换供应商。原writer、合法耗尽与原回退语义、Memory五计费owner均不变。
+
+PR248构建源`8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`，merge`f42d7dfd03ccb8d7223670a8b852dc0698b656e0`；18新增回归、127定向、2375全测、CI37502789560双job通过。两环境五入口ARM及实际五函数完整ZIP/共享层/配置保护主检和独审通过，300秒窗口后稳定。实际更新Bot/MemoryWorker共同包，唯一非cache源码为gemini_client.py，564依赖pyc差异如实记录；News/Quiz/Operations与层保持。
+
+17例新实际包禁网ARM合成及独立原流/容器清理核验通过；不是新Telegram/线上故障或自然样本。当前104文件费用闭包只改客户端，新reader时点PASS非持久许可。Z01/Z17及Epic保持OPEN；writer底层历史坏行处理和完整供应商账单不在本修复结项范围。 dev首次主读因第三ZIP下载期限而INCOMPLETE，原七文件保全；新独审合同下完整只读续接通过，没有再次部署dev。根三份元数据和独立首STS超时的一个空[]记录共四文件仍按本批最早采集期限Oct13 18:26:43.519150UTC清理；旧ledger路径已迁移，以新精确ledger为准，禁止误删后来成功轮同名文件。 [发布证据](evidence/2026-10-06-explicit-quota-guard/release.safe.json)；[修复契约](EXPLICIT_QUOTA_GUARD.md)。原七项UTC职责保持，新增本轮第八项见[副本台账](RETAINED_COPIES.md)。自然仍0/50有据、0/20未知，production_ready=false，不启用新群/prod记忆。
+
+## 以下为发布前或历史阶段记录（不作当前待做或重跑指令）
+
 # 显式 Gemini 准入校验
 
 ## 问题与唯一修改点

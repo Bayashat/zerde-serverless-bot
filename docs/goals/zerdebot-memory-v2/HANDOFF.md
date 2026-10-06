@@ -1,72 +1,20 @@
-## 2026-10-06晚：显式问答准入缺口本地修复，发布待验
+## 2026-10-06最新交付：显式配额结果门禁已发布
 
-Z01公开问答回归准备时，核对PR242发布源码与当前源码发现：原共享Gemini计数器遇DynamoDB ClientError返回`(0, True)`，显式客户端只检查布尔值，可能继续请求模型。该具体路径已本地修复：每次应用尝试要求严格正整数计数和真实bool；无效准入抛出独立异常，终止本次链路，不再尝试Gemini或切备用供应商。共享计数writer、Memory五费用owner、原账本和UNKNOWN责任不改。已经发生的先前模型尝试不由此撤销或重算。
+显式Gemini调用现在拒绝不可靠的配额返回：整型计数必须大于0，允许标志必须是真正bool；共享counter故障返回0/True或坏形状不再放行后续模型网络，也不沿该失败换供应商。原writer、合法耗尽与原回退语义、Memory五计费owner均不变。
 
-新增18个回归，修复前15失败/3通过，修复后127定向通过；独立正确性和维护审查通过。全测首轮因执行器umask077改变测试预期目录权限而1失败/2374通过，原回执保全，随后标准umask022完整2375测试通过（1个原SDK弃用警告），全部pre-commit通过。CI、两环境实际发布、实际包验收和预算reader重新绑定尚待，不把本地修复写成已上线。Z01/Z17/Epic均保持OPEN，当前运行仍PR242，未发送新Telegram测试或调用模型，自然0/50有据、0/20未知，production_ready=false。
+PR248构建源`8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`，merge`f42d7dfd03ccb8d7223670a8b852dc0698b656e0`；18新增回归、127定向、2375全测、CI37502789560双job通过。两环境五入口ARM及实际五函数完整ZIP/共享层/配置保护主检和独审通过，300秒窗口后稳定。实际更新Bot/MemoryWorker共同包，唯一非cache源码为gemini_client.py，564依赖pyc差异如实记录；News/Quiz/Operations与层保持。
 
-[本轮有限契约](EXPLICIT_QUOTA_GUARD.md)。修复完成后再继续Z01有限真实问答；既有共享writer坏存量字段的转换/补齐、完整备用供应商计费证据另留原工单，不用本修复关闭所有计费问题。七项副本/原文期限沿[原台账](RETAINED_COPIES.md)，不启用新群或prod记忆。
+17例新实际包禁网ARM合成及独立原流/容器清理核验通过；不是新Telegram/线上故障或自然样本。当前104文件费用闭包只改客户端，新reader时点PASS非持久许可。Z01/Z17及Epic保持OPEN；writer底层历史坏行处理和完整供应商账单不在本修复结项范围。 dev首次主读因第三ZIP下载期限而INCOMPLETE，原七文件保全；新独审合同下完整只读续接通过，没有再次部署dev。根三份元数据和独立首STS超时的一个空[]记录共四文件仍按本批最早采集期限Oct13 18:26:43.519150UTC清理；旧ledger路径已迁移，以新精确ledger为准，禁止误删后来成功轮同名文件。 [发布证据](evidence/2026-10-06-explicit-quota-guard/release.safe.json)；[修复契约](EXPLICIT_QUOTA_GUARD.md)。原七项UTC职责保持，新增本轮第八项见[副本台账](RETAINED_COPIES.md)。自然仍0/50有据、0/20未知，production_ready=false，不启用新群/prod记忆。
 
-## 当前执行入口（2026-10-06晚）
+# 当前执行入口
 
-先读私有`2026-10-06-explicit-quota-guard/PLAN.md`、`CURRENT.md`、计划/代码/维护独审和本轮本地测试；实际发布尚未开始，不能把已准备的操作器或本地修复当上线。当前分支`feat/zerde-explicit-quota-guard`，工作树仍`zerde-retirement-finish/ZerdeBot`，先核占用/当前commit。新基线只读先经过独审；随后CI/包/配置发布门禁逐项执行，冻结PR242和此前费用/清理工具不能重跑。
+验收根`2026-10-06-explicit-quota-guard`：CURRENT、final-release及独审、artifact-probe/result及independent-post、budget-QuotaGuardFinal20261006A、docs-release及独审。全部已结束build/prepare/hold/merge/execute/readback/finish/probe/reader不可重跑。当前唯一时点reader为该目录read_budget_published.py；新唯一label，实际包/配置改变须重新绑定。文档main不是新Lambda源码。
 
-## 此前费用交接入口（2026-10-06早，已交付）
+下一步回到Z01原有限真实业务缺口：以本轮私有NEXT_Z01_GAPS.safe.md为最新本地研究入口（尚非计划PRE/执行），原provider-cost-gaps源码指针作背景，在本次配额门禁实际发布基础上冻结专用dev公开问答/mention/clear Reply场景与现场证据合同、独审后再发消息。仍不重跑18旧schema/F5-F10或旧Quiz题/投票。Groq/DeepSeek待用户登录，无新回复不反复打开登录页；计费缺口UNKNOWN不当0。
 
-先读私有验收根`2026-10-06-provider-cost-gaps/CURRENT.md`、`final.safe.json`、`invoice-independent-post.safe.json`、`docs-release.safe.json`及最终独审。全部原/V2采集与已结束渲染/发布脚本不得重跑；两个登录页面保留等待用户，不反复打开。实际文档交付以最终回执为准，缺回执不推定通过。
+原七项UTC职责逐项保持，另新增第八项Oct13 18:26:43.519150本轮失败读回四文件，按failed-dev-download-retention.safe.json和failed-independent-dev-retention.safe.json两份迁移后精确路径/hash人工删除并独审，不按原ledger旧路径删成功轮文件：Oct8 17:13:39.091570日志9原文、Oct11 17:01:48.147210费用9原文、Oct12 17:15:22.532382答案试验247原文/派生、Oct13 08:06:04.659429发票3原文；Oct17 16:20:38旧memory PITR复查、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM。上述四类原文文件数量只作摘要，按实际ledger逐文件身份/hash执行；不能通配、不能提前、迟延如实记。Oct5 USER与Oct4临时AV已履行不重删；旧三归档/key真实延误保留。文件删除不等于介质安全擦除。
 
-下一步：用户登录后，先核实际账号/组织与九月日期口径，再按有限新工具/现场审查读取Groq、DeepSeek报表；在此之前继续其它独立业务工作。AWS付款、历史Free Tier与Google非秘密映射分别有限核验，不能用当前免费额度推历史。原Quiz投票提交未确认的PARTIAL不重做，若另立新验收，先解决能确认提交的原生操作和同update_id证据。当前七项期限见RETAINED_COPIES，Oct8最先到期。原6现役表/控制/预算/UNKNOWN保持，prod记忆不开启。
-
-## 2026-10-06：九月账号发票已核对，供应商登录仍待
-
-有限只读查询取得九月一张AWS账号发票摘要：税前USD38.65、税USD6.18、总USD44.83；三种币种投影均为USD同值，不能相加。原始回执独立复核通过。它属于整个账号，不是Zerde独立费用或已付款证明；此前Zerde标签Usage USD1.4977694507仍按CE原口径单列。CE账号Usage比发票税前多USD0.0074992985，原因未核，不臆定为舍入或强行对齐。
-
-Groq和DeepSeek官方控制台均停在登录页，已交用户登录；没有读取账户账单、密钥或修改支付。两项九月消费仍UNKNOWN，不当零。AWS付款/完整历史Free Tier、Google非秘密运行映射/税与付款仍待；Z17和Epic保持OPEN。本轮原工具在端点校验误停，仅1次STS；V2显式正确端点后1次STS＋1次发票摘要成功，共3次AWS只读，原失败保留，独立POST未新增云调用。这不涵盖后续CI的基础设施只读预览。
-
-[本轮范围与下一步](PROVIDER_COST_GAPS.md)；[安全结果](evidence/2026-10-06-provider-cost-gaps/result.safe.json)。新增3份精确发票采集原文于2026-10-13 08:06:04.659429UTC人工清理并独审，原六项期限不变。没有产品代码/部署/Telegram/模型/控制/预算或付款修改；运行仍PR242，自然0/50有据、0/20未知，production_ready=false。
-
-## 2026-10-05晚：答案重送尝试未确认投票，权限已恢复
-
-此前10月5日晚私有入口：验收根 `2026-10-05-quiz-answer-redelivery` 的CURRENT、final.partial、independent-partial/final、docs-release及最终独审。缺发布回执不推定完成。所有本轮云操作/UI动作均已结束，不重跑once或复点新题。下一步 `NEXT_COST_GAPS.safe.md` 仅研究，先Groq有限只读计划与现场身份确认。
-
-此前该轮六项UTC责任为Oct8 17:13:39.091570日志原文、Oct11 17:01:48.147210费用原文、Oct12 17:15:22.532382本轮Quiz原文人工精确清理；Oct17 16:20:38原PITR复查、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM到期只读。Oct5唯一USER已完成，不再待删；精确范围由[副本台账](RETAINED_COPIES.md)及各原manifest拥有。
-
-本轮新公开Quiz发题正常完成，但一次原生点击没有确认投票提交，答案重送验收保持 **PARTIAL_UNCONFIRMED_UI**。临时限制只安装一次、撤销一次；撤销完成于18:04:15.865276UTC，早于固定18:08:03UTC截止，看护在截止后再次确认原策略恢复。最后主读与独立强读均未见该题答案，分数未变；有限日志未观察到poll_answer。答案缺席与空日志都不证明没有请求，也不证明失败、重送或一次计分通过。
-
-[本轮边界与下一步](R3_QUIZ_ANSWER_REDELIVERY.md)；[安全结果](evidence/2026-10-05-quiz-answer-redelivery/result.safe.json)。独立37次只读确认原策略与dev保护保持；不是新运行发布或自然样本。Z16/Epic保持OPEN，运行仍PR242，自然0/50有据、0/20未知，production_ready=false。新增本轮原文精确清理期限2026-10-12 17:15:22.532382UTC，原Oct8/11/17/Nov1/2职责保持。下一步先有限核对Groq九月消费及非秘密归属，不重复本轮已结束操作。
-
-## 2026-10-05：旧stats USER备份七日期限已履行
-
-旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。
-
-Z10继续OPEN：CloudWatch九份原文于10月8日17:13:39.091570UTC、九月费用九份原文于10月11日17:01:48.147210UTC精确清理；原PITR于10月17日16:20:38UTC复查；旧memory SYSTEM于11月1日11:46:02.425UTC、旧stats SYSTEM于11月2日08:45:11.254UTC服务到期后精确只读核验。日志/DLQ及其他原台账责任保持；用户导出、现役PITR和业务恢复数据保留。
-
-[本次范围与证据](USER_BACKUP_EXPIRY.md)；[安全聚合](evidence/2026-10-05-user-backup-expiry/final.safe.json)。本次仅该一份备份删除，没有新部署、Telegram/模型/控制/预算/支付操作；运行定位仍PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`。这是资源元数据读回，不是现役行内容、运行包或自然质量重新验收。自然0/50有据、0/20未知，production_ready=false；不启用新群或prod记忆。此前日期段落保留为历史证据，不作为重复删除/发布指令。
-
-## 2026-10-04：九月费用有限核对已完成，完整实付仍未知
-
-固定UTC九月整月的6次AWS只读查询及独立原始复算确认：Project=ZerdeBot使用费USD1.4977694507（dev0.5206115692、prod0.9771578815），四组CE结果均Estimated=false。标签当前Active，最后更新时间为9月11日，未证明整月覆盖或历史回填；账号Usage38.6574992985及Tax6.18、未标Project池Usage32.5516953201及Tax6.18均不能归给Zerde。不是已付款或完整Free Tier结论。
-
-Google两个已授权账号的九月使用日期报表已下载：dev Zerde Bot的Gemini服务未舍入小计USD0.605498（显示0.61），prod Zerde项目未舍入小计USD0.438845（显示0.44）。Google采用太平洋日期，AWS采用UTC；不直接合成完整实付。账号/筛选关联来自主操作者UI，CSV由独立审阅核算；当前运行key与项目独占关系未另验证。充值、发票调整、税费、Groq/DeepSeek、AWS付款及历史免费额度仍分别未知，Z17保持OPEN。
-
-[九月费用报告与下一步](SEPTEMBER_COST_RECONCILIATION.md)；[AWS安全聚合](evidence/2026-10-04-september-costs/result.safe.json)。本次没有部署、Telegram/模型测试、控制/预算/支付修改或新增启用。运行仍PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`；自然0/50有据、0/20未知，production_ready=false。费用原文6份AWS回执、2份CSV和1份UI观察于2026-10-11 17:01:48.147210UTC精确清理；原五项职责不变。
-
-## 2026-10-02最新交付：同步日志修复上线，Z02限定结项
-
-日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。
-
-PR242构建源`08cc614a2f61d9001f3e2a77b9d9e6a7c73585df`、merge`fb26b9444ff77b4f797354cea86c0e9c591e2b15`；17新增回归/54定向/2357全测、CI双job、五入口ARM、两环境实际五函数ZIP/层/配置保护主检和独审通过，300秒窗口后配置稳定。实际只更新Bot/MemoryWorker共同包，唯一非缓存源码变化是同步invoker；564个依赖pyc差异如实记录，其余News/Quiz/Operations和共享层逐字保持。新实包17例产生8条安全错误JSON，独立直接原流复核与容器删除/不存在核验通过；没有新Telegram/模型或线上异常测试。首轮实包探针因假AWS凭据synthetic与测试函数名前缀碰撞停在字段断言，stdout空，原INCOMPLETE保全；v2仅修两个假凭据值，17场景和全部期待逐字保持，新执行/独审通过。原内部应用行未留存，碰撞机制来自精确夹具/代码核验，非原流直接观察。dev两更新函数RuntimeVersionArn从9559…变为0aac…，原INCOMPLETE整目录精确保全；只允许本轮精确对象变化、Auto整对象不变，prod实际变化单列于证据。按新窄合同重新完整主读/独读通过；不能从ARN推断平台回滚原因、版本新旧或完整补丁兼容，固定容器也不是托管补丁复刻。prod首次主读首个STS查询ReadTimeoutError的两个原文件保全；新独审入口复用冻结读取实现重新完整只读采集，未重发部署。104文件费用闭包只变同步诊断模块，原五费用owner不变，新reader时点PASS（非持续许可或账单）。
-
-[发布与有限验收证据](evidence/2026-10-02-sync-invoker-log-fix/release.safe.json)；[实现边界](SYNC_LOG_REPAIR.md)。本工单原有限实现与验收范围已完成；历史CloudWatch FAIL永久保留，9份原文2026-10-08 17:13:39.091570UTC精确清理仍归副本台账与自动任务。其它业务恢复、Quiz精确UI链接、费用账单和自然使用由原工单继续，不声称全部历史日志安全。 自然起点仍未建立，0/50有据、0/20未知，production_ready=false；不启用新群或prod记忆。五项到期职责保持[副本台账](RETAINED_COPIES.md)。
-
-# 10月2日发布交接（历史，已结束）
-
-验收根`2026-10-02-sync-invoker-log-fix`：CURRENT、final-release及独审、artifact-probe-v2/result及independent-post（原artifact-probe首轮夹具失败完整冻结），artifact-probe-failed-independent.safe.json、budget-SyncLogFinal20261002A、z02-final-closeout、docs-release及独审。PR242全部build/prepare/hold/merge/execute/readback/finish/probe/reader均已结束，不重跑。运行源码08cc614；文档main不是Lambda构建。部署workflow ACTIVE。原dev post因9559→0aac的两个托管runtime标识差异INCOMPLETE保存在post-main-dev-runtime-incomplete；新V2严格限定目标/对象/Auto整对象并全量重读，不重跑旧post或复用PR240反向旧例外。prod首次STS只读超时原两文件保存在post-main-prod-sts-timeout，新prod_readonly_retry_v1只读入口及独立保全/读回链已结束，不重跑或重部署。当前唯一预算reader为本目录read_budget_published.py，每次唯一label、非持续许可；原计量和UNKNOWN保持。
-
-Z02有限范围已结项；旧CloudWatch FAIL与19未分类原结果不改，原始9文件严格保留到Oct8期限。本段为10月2日交付时的下一步记录；九月费用现已按上方10月4日结果完成有限核对，原next-cost-closeout-draft仅保留为研究历史。旧9/27动态月份脚本不得在10月重跑当成九月；可归项目成本、未标池、税credits、FreeTier和供应商消费/充值/付款分别列，未知保留UNKNOWN，不加Memory估算。其它Z01/Z12-Z16真实业务恢复继续，原Quiz UI PARTIAL不补猜或重发冻结题。
-
-五项UTC职责：Oct5 08:18:35.953唯一旧stats USER人工删除；Oct8 17:13:39.091570九CloudWatch原文人工清理；Oct17 16:20:38原PITR复查；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。精确身份/文件由RETAINED_COPIES及各原manifest拥有，提前到场同轮等到期限、单次等待不超60秒，迟延如实记录。Oct4临时AV已履行、旧归档/key真实延误保留，不重建/重删。
-
-仅获准dev Test bots与现有授权账号；不伪造线上update/模型/成员/UNKNOWN、不Invoke、不Receive/Purge混合队列；无人动作时确认不启动验证码踢出风险。dev原CONTROL/epoch仅观察合法变化，prod无新CONTROL。13旧算法/vector入口与37在线旧对象退役不重做，6现役表/业务/层/assets保留。自动社交/历史导入/抽奖不恢复。自然0/50与0/20、起点未建立、production_ready=false，不造聊天/邀人/开新群。完成全部业务/自然/推广/副本职责才删automation。
+现役6表/业务/凭据/共享层保留，13旧算法/vector与37在线对象退役不重做。原计量/UNKNOWN/epoch不改，dev CONTROL仅观察合法变化，prod无新CONTROL。仅既有Test bots和授权账号；不伪造线上update/阈值/成员/模型，不Invoke/Receive/Purge混合队列；无动作时确认不做验证码踢出风险测试。全部业务/自然/推广/副本责任完成才删除automation。
 
 ---
 
