@@ -1,4 +1,16 @@
-## 当前执行入口（2026-10-06）
+## 2026-10-06晚：显式问答准入缺口本地修复，发布待验
+
+Z01公开问答回归准备时，核对PR242发布源码与当前源码发现：原共享Gemini计数器遇DynamoDB ClientError返回`(0, True)`，显式客户端只检查布尔值，可能继续请求模型。该具体路径已本地修复：每次应用尝试要求严格正整数计数和真实bool；无效准入抛出独立异常，终止本次链路，不再尝试Gemini或切备用供应商。共享计数writer、Memory五费用owner、原账本和UNKNOWN责任不改。已经发生的先前模型尝试不由此撤销或重算。
+
+新增18个回归，修复前15失败/3通过，修复后127定向通过；独立正确性和维护审查通过。全测首轮因执行器umask077改变测试预期目录权限而1失败/2374通过，原回执保全，随后标准umask022完整2375测试通过（1个原SDK弃用警告），全部pre-commit通过。CI、两环境实际发布、实际包验收和预算reader重新绑定尚待，不把本地修复写成已上线。Z01/Z17/Epic均保持OPEN，当前运行仍PR242，未发送新Telegram测试或调用模型，自然0/50有据、0/20未知，production_ready=false。
+
+[本轮有限契约](EXPLICIT_QUOTA_GUARD.md)。修复完成后再继续Z01有限真实问答；既有共享writer坏存量字段的转换/补齐、完整备用供应商计费证据另留原工单，不用本修复关闭所有计费问题。七项副本/原文期限沿[原台账](RETAINED_COPIES.md)，不启用新群或prod记忆。
+
+## 当前执行入口（2026-10-06晚）
+
+先读私有`2026-10-06-explicit-quota-guard/PLAN.md`、`CURRENT.md`、计划/代码/维护独审和本轮本地测试；实际发布尚未开始，不能把已准备的操作器或本地修复当上线。当前分支`feat/zerde-explicit-quota-guard`，工作树仍`zerde-retirement-finish/ZerdeBot`，先核占用/当前commit。新基线只读先经过独审；随后CI/包/配置发布门禁逐项执行，冻结PR242和此前费用/清理工具不能重跑。
+
+## 此前费用交接入口（2026-10-06早，已交付）
 
 先读私有验收根`2026-10-06-provider-cost-gaps/CURRENT.md`、`final.safe.json`、`invoice-independent-post.safe.json`、`docs-release.safe.json`及最终独审。全部原/V2采集与已结束渲染/发布脚本不得重跑；两个登录页面保留等待用户，不反复打开。实际文档交付以最终回执为准，缺回执不推定通过。
 

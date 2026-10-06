@@ -63,6 +63,10 @@ class GeminiRPDExhaustedError(Exception):
     """Daily RPD quota is exhausted (DynamoDB counter over limit)."""
 
 
+class GeminiQuotaUnavailableError(RuntimeError):
+    """Local admission is unconfirmed; do not retry or switch providers."""
+
+
 class GeminiUnavailableError(Exception):
     """Transient Gemini failure: HTTP 429/5xx, timeout, network, parse errors.
 
@@ -279,7 +283,13 @@ class GeminiClient:
             logger.warning("Gemini circuit open, skipping group agent request", extra={"model": self._model})
             raise GeminiUnavailableError("Gemini circuit open")
 
-        count, within_limit = self._rate_repo.increment_and_check()
+        admission = self._rate_repo.increment_and_check()
+        try:
+            count, within_limit = admission
+        except (TypeError, ValueError):
+            raise GeminiQuotaUnavailableError("Gemini quota admission unavailable") from None
+        if type(count) is not int or count < 1 or type(within_limit) is not bool:
+            raise GeminiQuotaUnavailableError("Gemini quota admission unavailable")
         if not within_limit:
             logger.warning("Gemini RPD limit reached (group agent)", extra={"count": count, "limit": self.rpd_limit})
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")

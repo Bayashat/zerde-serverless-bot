@@ -22,14 +22,21 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
-    "status_as_of": "2026-09-27",
+    "status_as_of": "2026-10-06",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。",
     "remaining": "显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。",
     "issue_state": "OPEN",
     "runtime_baseline": "fb26b9444ff77b4f797354cea86c0e9c591e2b15",
     "deployed_build_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-10-02-sync-invoker-log-fix/release.safe.json"
+    "runtime_evidence": "evidence/2026-10-02-sync-invoker-log-fix/release.safe.json",
+    "explicit_quota_guard": {
+      "status": "LOCAL_IMPLEMENTATION_RELEASE_PENDING",
+      "contract": "EXPLICIT_QUOTA_GUARD.md",
+      "changed_owner": "GeminiClient admission-result consumer only",
+      "writer_and_memory_owners_unchanged": true,
+      "live_test_started": false
+    }
   },
   {
     "id": "Z02",
@@ -776,6 +783,13 @@
       "payment_status": "UNKNOWN",
       "not_project_cost": true,
       "evidence": "evidence/2026-10-06-provider-cost-gaps/result.safe.json"
+    },
+    "explicit_quota_guard": {
+      "status": "LOCAL_IMPLEMENTATION_RELEASE_PENDING",
+      "contract": "EXPLICIT_QUOTA_GUARD.md",
+      "changed_owner": "GeminiClient admission-result consumer only",
+      "writer_and_memory_owners_unchanged": true,
+      "live_test_started": false
     }
   },
   {
