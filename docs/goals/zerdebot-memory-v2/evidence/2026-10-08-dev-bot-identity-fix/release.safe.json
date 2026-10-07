@@ -1,0 +1,59 @@
+{
+  "status": "CONFIG_ONLY_DEPLOYED_PUBLIC_RETEST_PENDING",
+  "config_pr": 251,
+  "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+  "config_merge": "ec72bea66c955782a94b87d10d6d5a7ba1287261",
+  "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+  "code_and_layer_bytes_unchanged": true,
+  "production_config_unchanged": true,
+  "source_tests_passed": 2390,
+  "infra_tests_passed": 38,
+  "new_infra_cases": 15,
+  "ci_run": 37690190550,
+  "ci_jobs_success": 3,
+  "release": {
+    "status": "CONFIG_ONLY_RELEASE_COMPLETE_WORKFLOW_ACTIVE",
+    "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+    "config_merge": "ec72bea66c955782a94b87d10d6d5a7ba1287261",
+    "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+    "pr": 251,
+    "scope_sha256": "6e8a83dcae0dea6560ef2797786d706c923fba1d873479a28980120466361524",
+    "execution_sha256": "cf9118af5268abbdb46a35f9b41fe0cf49042d385d3d27770e10905187cae0c9",
+    "stability_sha256": "8617e5c66a42b4247aaddb986268ddfc4241767750253354cc6d678f7b5db3dd",
+    "readbacks": {
+      "dev": {
+        "root_sha256": "610f8449e4fb66127a14e8437241aa245594003524b54cd2ac71336c63bff448",
+        "independent_sha256": "371e2a66ec4018a425b24bba856025e17af4dcbb4862393eb495cc065b7928ce"
+      },
+      "prod": {
+        "root_sha256": "0def30fd672a073dfbbf18acb302ea0fa776f35c71e496d6096e9447f4eecef2",
+        "independent_sha256": "06876fde2db4cb87dc8ed184e6734896fa024f4d6b91c7a64726b1258a7bf405"
+      }
+    },
+    "retention_ledger_sha256": "a23b0b8eff40e11356aaad08902642ff8570be816168090a9975cc03a04cd6ea",
+    "raw_files": 1030,
+    "raw_deadline_utc": "2026-10-14T21:48:46.021161+00:00",
+    "finished_at": 1791412337.540235,
+    "github_reads": 3,
+    "budget_reader_rebind_pending": true,
+    "new_public_mention_acceptance": false,
+    "production_ready": false,
+    "natural_samples_supported": 0,
+    "natural_samples_unknown": 0
+  },
+  "release_original_sha256": "ae5a2aefdd4f8ec5362a5336bc4897329b6b825910e46b1315e82283de20926e",
+  "independent_status": "ALIGNED_INDEPENDENT_CONFIG_ONLY_RELEASE_CHAIN",
+  "independent_sha256": "f362684175b362570ceeb4adbef521d06c284e2964a2187cd20e82a142813400",
+  "budget_status": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+  "budget_sha256": "630b852c80ff71b7b6c9b13bdf95a5062c95222eb28921761381bcf33bf80d17",
+  "budget_reader_sha256": "e363484ee5ee68ab789418db1362c99ec42bd8a738cf22b2a363b0a8f7659efe",
+  "original_execute_poll_incomplete_preserved": true,
+  "single_execute_change_set_http_200": true,
+  "readonly_continuation_calls": 6,
+  "prior_public_text_result": "PARTIAL_N_A_PASS_M_FAIL_R_NOT_RUN_UI_STOP",
+  "raw_files": 1030,
+  "raw_deadline_utc": "2026-10-14T21:48:46.021161+00:00",
+  "natural_supported": 0,
+  "natural_unknown": 0,
+  "production_ready": false
+}

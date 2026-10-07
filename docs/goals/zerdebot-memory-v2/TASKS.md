@@ -1,3 +1,17 @@
+## 2026-10-08：dev 提及身份配置已修复并完成实际读回
+
+实际公开验收发现 dev 用户名误继承生产值。PR251 已将 development 身份与目标默认值分开，并修正 PR 预览的身份来源；15项新回归、38项infra测试、2390全测及三项CI通过。配置源码 `59674f58cfa7e5f92170b88fa5e0bad5bdf81dff`、合并 `ec72bea66c955782a94b87d10d6d5a7ba1287261`。唯一 development 用户名变量已创建并精确读回；dev 数字ID原本正确，生产身份和其他配置来源保持。
+
+实际配置发布只改 dev Bot 的 AGENT_BOT_USERNAME 为 @zerde_dev_bot；全部两环境五函数及共享层的完整ZIP字节均保持PR248构建源 `8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`。主检、独立读回和十函数300秒后稳定检查通过；业务资源、控制与预算保护保持，prod没有执行变更集。原五费用owner和104文件闭包不变，新的预算reader已绑定本轮实际配置并通过7次只读时点核验，不是持续模型许可或账单。
+
+一次 ExecuteChangeSet 已获HTTP200；其后堆栈显示更新中、变更集暂为AVAILABLE，原轮询工具因此INCOMPLETE并完整保留。新独审合同只用6次AWS读取确认原次更新完成和精确模板，没有再次部署。独立首次查询默认视图时见三条记录而停止：另外两条是引用原Lambda ARN的动态依赖。新精确合同保全96文件并仅迁移95项ledger路径，直接读回API集成/调用权限符合原模板；随后独立前后同时核默认三行及属性一行，完整配置与包保护保持。此处只证明当前符合原模板及资源身份保持，不声称CloudFormation没有调用依赖服务。dev独立artifact阶段API上限只增加两次属性视图读取到26，原Lambda检查全部保留。首次全测的既有异步DNS超时失败也保留，未改旧测试，后续原用例和完整全测通过。
+
+本次完成的是配置修复；新公开mention/清晰Reply验收仍待另批计划、现场和独审，不能把旧失败输入补成PASS。此前普通文本静默及ask仅有限通过，提及真实FAIL、Reply未发及UI_STOP保持。Z01/Z10/Epic仍OPEN，20工单14OPEN/6CLOSED；自然0/50有据、0/20未知、production_ready=false，不开新群或prod记忆。
+
+当前入口为验收根 `2026-10-08-dev-bot-identity-fix` 的 final-release、最终独审和 budget-DevIdentityFinal20261008A；唯一当前时点reader为该目录 read_budget_published.py，原J reader不得冒充当前配置。新配置证据原文采用第十项期限2026-10-14 21:48:46.021161UTC，第九项公开文本原文仍为同日20:45:55.665021UTC，原八项期限不变。最近到期责任仍为Oct8九份CloudWatch原文，是否已履行以精确清理回执为准；此配置修复没有执行删除。见[配置交付证据](evidence/2026-10-08-dev-bot-identity-fix/release.safe.json)、[有限修复契约](DEV_BOT_IDENTITY_REPAIR.md)和[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前阶段与原失败证据，不作当前待做或重跑指令
+
 ## 2026-10-08：公开文本验收发现 dev 提及身份配置缺陷
 
 本批三条新原生输入中，普通文本在真实接收后的至少360秒有限窗口内保持无自动回复/反应；原`/ask`完整回答正确，持久请求SENT、单条回答关联及lease释放，分别有限通过。提及实际dev bot的输入已认证收到，但三次主读和独立读均无回答请求/lease，完整日志窗没有排队标记：dev运行用户名误为prod用户名，提及入口真实FAIL。数字bot ID属于dev且正确，不把Reply识别推断为同样失败；Reply没有发送。
@@ -35,7 +49,7 @@ PR248构建源`8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`，merge`f42d7dfd03ccb8d
 
 | 工单 | 已完成 | 仍待完成 |
 |---|---|---|
-| Z01 [#158](https://github.com/Bayashat/zerde-serverless-bot/issues/158) | 旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 | 显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。 |
+| Z01 [#158](https://github.com/Bayashat/zerde-serverless-bot/issues/158) | 已声明旧算法/资源退役；本批普通文本和ask有限通过；PR251 dev身份配置已发布，全部运行字节PR248保持，主独和稳定核验通过。 | 新mention/清晰Reply及频道/媒体原缺口仍待真实验收；原FAIL/UI_STOP不改，Z01 OPEN。 |
 | Z02 [#159](https://github.com/Bayashat/zerde-serverless-bot/issues/159) | 日志脱敏与内容最小化按原批准范围完成：原Webhook/formatter/Telegram边界及真实库重试已有证据，CloudWatch发现的topic出口经PR240修复，最后同步Lambda异常正文出口经PR242修复并部署dev/prod；两环境实际包/层/配置主独读回及17例新实包探针通过。 | 本工单原有限实现与验收范围已完成；历史CloudWatch FAIL永久保留，9份原文2026-10-08 17:13:39.091570UTC精确清理仍归副本台账与自动任务。其它业务恢复、Quiz精确UI链接、费用账单和自然使用由原工单继续，不声称全部历史日志安全。 |
 | Z03 [#160](https://github.com/Bayashat/zerde-serverless-bot/issues/160) | 原30794行/8259向量在线清零已验证；停读前及删表前精确SETTINGS门禁通过，本批两旧表及28项专属资源已不存在，六张现役表/控制保护独审通过。 | 本工单原限定范围已验收；Z20已完成声明的在线退役，Z10继续副本责任，不宣称账号全资源或全部副本已清空。 |
 | Z04 [#161](https://github.com/Bayashat/zerde-serverless-bot/issues/161) | PR223依赖修复、PR224源码退役及PR226配置资源退役已部署；两环境五函数实际包/锁定依赖/层/完整配置、预算清单及保护项主检和独审通过。 | 本工单限定部署配置/打包范围已验收；业务真实恢复、费用归因和自然质量仍由各原工单负责。 |
@@ -44,7 +58,7 @@ PR248构建源`8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`，merge`f42d7dfd03ccb8d
 | Z07 [#164](https://github.com/Bayashat/zerde-serverless-bot/issues/164) | F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。 | 自然使用事实正确性/来源和语言切片，未知时不编造。 |
 | Z08 [#165](https://github.com/Bayashat/zerde-serverless-bot/issues/165) | 来源支持1176/1176；原生Telegram来源点击可回源。 | 自然回答质量、费用归因与预算恢复完整周期；#134关联本工单，尚不代替整体结项。 |
 | Z09 [#166](https://github.com/Bayashat/zerde-serverless-bot/issues/166) | F6/F7/F8/F10及PR220完成权限拒绝、本人更正、source-forget闭环。 | 自然覆盖及各原验收项逐条收口；旧两个PENDING不回填。 |
-| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 | Z10继续OPEN：CloudWatch九份原文于10月8日17:13:39.091570UTC、九月费用九份原文于10月11日17:01:48.147210UTC精确清理；原PITR于10月17日16:20:38UTC复查；旧memory SYSTEM于11月1日11:46:02.425UTC、旧stats SYSTEM于11月2日08:45:11.254UTC服务到期后精确只读核验。日志/DLQ及其他原台账责任保持；用户导出、现役PITR和业务恢复数据保留。 新增本轮Quiz原始证据及登记派生于2026-10-12 17:15:22.532382UTC精确人工清理并独审，不延长其它原期限。 新增3份账号发票原文于2026-10-13 08:06:04.659429UTC精确人工清理并独审；V2采用原更早期限，该阶段共七项责任，不延长原六期限。 本轮新增第八项：2026-10-13 18:26:43.519150UTC精确清理dev首次读回失败根三元数据及独立一个空[]记录共四文件，依据failed-dev-download-retention.safe.json及failed-independent-dev-retention.safe.json两份迁移后路径/hash清单并独审；不误删成功轮同名文件，原七期限不变。 |
+| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 在线清零/退役、原归档移除、Oct5唯一USER与原临时AV义务已履行。 | 当前十项原文/副本职责及精确期限见RETAINED_COPIES；最新G原文Oct14 21:48:46.021161UTC，N同日20:45:55.665021UTC独立；用户导出/现役PITR保留。 |
 | Z11 [#168](https://github.com/Bayashat/zerde-serverless-bot/issues/168) | F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。 | Z20声明的旧残留清理前置已满足；真实使用起点未建立，0/50有据和0/20未知，至少7天及其他产品门槛仍未满足；本次不启用新群或prod记忆。 |
 | Z12 [#169](https://github.com/Bayashat/zerde-serverless-bot/issues/169) | 验证码竞争/状态恢复实现已部署。 | 测试身份真实正确解限、旧超时/重入群竞争和异常恢复。 |
 | Z13 [#170](https://github.com/Bayashat/zerde-serverless-bot/issues/170) | 反垃圾执行结果/重试及CLEAN恢复实现已部署。 | 真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。 |
