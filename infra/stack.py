@@ -103,7 +103,7 @@ class ZerdeTelegramBotStack(Stack):
         deepseek_model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
         # Explicit bot identity and requested media.
-        agent_bot_username = os.environ.get("AGENT_BOT_USERNAME", "@zerde_kz_bot")
+        agent_bot_username = os.environ.get("AGENT_BOT_USERNAME") or ("@zerde_kz_bot" if is_prod else "@zerde_dev_bot")
         agent_bot_id = os.environ.get("AGENT_BOT_ID", "")
         multimodal_enabled = os.environ.get("MULTIMODAL_ENABLED", "true")
         multimodal_max_download_bytes = os.environ.get("MULTIMODAL_MAX_DOWNLOAD_BYTES", "12000000")

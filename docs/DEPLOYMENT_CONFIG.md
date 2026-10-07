@@ -208,3 +208,18 @@ for realistic dev/prod environments, and require the conservative serialized Bot
 environment to remain below 3500 bytes. Before release, resolve the real target
 values again and retain the computed size plus actual AWS update/configuration
 readback. No user IDs or credentials belong in repository capacity fixtures.
+
+## Bot identity across deployment environments
+
+`AGENT_BOT_USERNAME` and `AGENT_BOT_ID` remain the sole configured runtime identity.
+The development GitHub environment overrides the repository production username;
+production keeps its existing repository/environment values. Empty username input
+uses the CDK target default (`@zerde_dev_bot` for dev, `@zerde_kz_bot` for prod);
+non-empty explicit overrides win. The optional numeric ID is unchanged.
+
+PR preview reads only these two non-secret values from a development-scoped job
+with no checkout, secrets or token permissions, then passes them to the existing
+preview job. Other preview variables and credentials retain their original scope.
+Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
+A configuration-only release must preserve the deployed code and layer references;
+source CI or a merged configuration change alone does not prove public behavior.

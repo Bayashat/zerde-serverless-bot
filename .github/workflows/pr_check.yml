@@ -45,8 +45,38 @@ jobs:
         run: |
           uv run pytest tests/ -v
 
+  development-identity:
+    name: Development Bot Identity
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    environment: development
+    permissions: {}
+    outputs:
+      AGENT_BOT_USERNAME: ${{ steps.identity.outputs.AGENT_BOT_USERNAME }}
+      AGENT_BOT_ID: ${{ steps.identity.outputs.AGENT_BOT_ID }}
+    steps:
+      # Environment vars are available after the runner enters development.
+      # Keep all other preview variables and credentials in their existing scope.
+      - name: Read non-secret bot identity
+        id: identity
+        env:
+          AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME }}
+          AGENT_BOT_ID: ${{ vars.AGENT_BOT_ID }}
+        run: |
+          python3 - <<'PYTHON'
+          import os
+          import re
+
+          username = os.environ["AGENT_BOT_USERNAME"]
+          bot_id = os.environ["AGENT_BOT_ID"]
+          if not re.fullmatch(r"(?:@?[A-Za-z0-9_]+)?", username) or not re.fullmatch(r"[0-9]*", bot_id):
+              raise SystemExit("Invalid bot identity configuration")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"AGENT_BOT_USERNAME={username}\nAGENT_BOT_ID={bot_id}\n")
+          PYTHON
+
   infra-preview:
-    needs: quality-check
+    needs: [quality-check, development-identity]
     name: Infrastructure Changes Preview
     runs-on: ubuntu-24.04-arm
     if: github.event.pull_request.head.repo.full_name == github.repository
@@ -56,7 +86,7 @@ jobs:
       MEMORY_COST_METERING_STARTED_AT: ${{ vars.MEMORY_COST_METERING_STARTED_AT || '0' }}
       MAIN_TASK_QUEUE_RETENTION_DAYS: ${{ vars.MAIN_TASK_QUEUE_RETENTION_DAYS || '1' }}
       MAIN_TASK_DLQ_RETENTION_DAYS: ${{ vars.MAIN_TASK_DLQ_RETENTION_DAYS || '14' }}
-      AGENT_BOT_ID: ${{ vars.AGENT_BOT_ID }}
+      AGENT_BOT_ID: ${{ needs.development-identity.outputs.AGENT_BOT_ID }}
       MULTIMODAL_ENABLED: ${{ vars.MULTIMODAL_ENABLED || 'true' }}
       MULTIMODAL_MAX_DOWNLOAD_BYTES: ${{ vars.MULTIMODAL_MAX_DOWNLOAD_BYTES || '12000000' }}
       MULTIMODAL_INLINE_MAX_BYTES: ${{ vars.MULTIMODAL_INLINE_MAX_BYTES || '8000000' }}
@@ -94,7 +124,7 @@ jobs:
       NEWS_CHATS_KK: ${{ vars.NEWS_CHATS_KK }}
       NEWS_CHATS_ZH: ${{ vars.NEWS_CHATS_ZH }}
       NEWS_CHATS_RU: ${{ vars.NEWS_CHATS_RU }}
-      AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME || '@zerde_kz_bot' }}
+      AGENT_BOT_USERNAME: ${{ needs.development-identity.outputs.AGENT_BOT_USERNAME }}
 
     steps:
       - name: Checkout code

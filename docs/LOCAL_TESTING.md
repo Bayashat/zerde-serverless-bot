@@ -300,3 +300,18 @@ For contribution workflow (branching, pre-commit, PRs), see [CONTRIBUTING.md](..
 Use uv 0.11.3 for the CI-matched workflow. Follow [DEPLOYMENT_CONFIG.md](DEPLOYMENT_CONFIG.md) to export/check the root lock and import the actual ARM64 Lambda assets before deployment. Raw message retention defaults to 30 days independently of legacy retention; existing database TTL values are unchanged by configuration updates.
 
 运维入口、dev 按需开关、成本标签激活及 Quiz 恢复步骤见 [docs/OPERATIONS.md](OPERATIONS.md)。Z17 增加独立 operations Lambda（仅 lambda-common）；V2 worker 接入时更新严格 bundle handler 注册。
+
+## Bot identity across deployment environments
+
+`AGENT_BOT_USERNAME` and `AGENT_BOT_ID` remain the sole configured runtime identity.
+The development GitHub environment overrides the repository production username;
+production keeps its existing repository/environment values. Empty username input
+uses the CDK target default (`@zerde_dev_bot` for dev, `@zerde_kz_bot` for prod);
+non-empty explicit overrides win. The optional numeric ID is unchanged.
+
+PR preview reads only these two non-secret values from a development-scoped job
+with no checkout, secrets or token permissions, then passes them to the existing
+preview job. Other preview variables and credentials retain their original scope.
+Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
+A configuration-only release must preserve the deployed code and layer references;
+source CI or a merged configuration change alone does not prove public behavior.
