@@ -41,3 +41,18 @@ Read current branch/main/PR and protect unrelated user work. Use a suitable exis
 Commands: `uv sync --frozen`, `uv run pytest tests/ -q`, `uv run pre-commit run --all-files`; for infrastructure, synth and inspect meaningful dev diff/changeset before deployment. Use lock-derived Lambda requirements and actual five-handler ARM verification for Bot, News, Quiz, Operations and MemoryV2Worker. Runtime config changes must stay consistent with infra, workflows, examples and repo variables; inert old infra settings are removed in the resource phase, not silently read again.
 
 No mixed-queue Receive/Purge, whole-stack deletion, unrelated resource cleanup or old-memory restoration. CloudFormation Retain is not physical deletion. User exports remain; PITR next review is 2026-10-17 16:20:38UTC, with log/DLQ/other-copy obligations separately tracked. Update this file together with architecture and the development skill when ownership changes.
+
+## Bot identity across deployment environments
+
+`AGENT_BOT_USERNAME` and `AGENT_BOT_ID` remain the sole configured runtime identity.
+The development GitHub environment overrides the repository production username;
+production keeps its existing repository/environment values. Empty username input
+uses the CDK target default (`@zerde_dev_bot` for dev, `@zerde_kz_bot` for prod);
+non-empty explicit overrides win. The optional numeric ID is unchanged.
+
+PR preview reads only these two non-secret values from a development-scoped job
+with no checkout, secrets or token permissions, then passes them to the existing
+preview job. Other preview variables and credentials retain their original scope.
+Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
+A configuration-only release must preserve the deployed code and layer references;
+source CI or a merged configuration change alone does not prove public behavior.

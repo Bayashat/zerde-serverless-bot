@@ -84,3 +84,18 @@ Production Chinese news remains explicitly DISABLED in both template and live sc
 Lock/export/build versions, actual ARM handler imports and actual downloaded ZIP contents must agree. The source-retirement package must contain none of the 13 removed modules or their bytecode. Preserve settings/control/budget and unchanged business configuration in before/after readback. Historical failed receipts remain immutable; do not replace them with later success.
 
 The user Telegram exports are retained. PITR/log/DLQ/backup obligations remain under Z10 and the existing retention ledger; an absent table or online fact is not proof that all physical copies have vanished.
+
+## Bot identity across deployment environments
+
+`AGENT_BOT_USERNAME` and `AGENT_BOT_ID` remain the sole configured runtime identity.
+The development GitHub environment overrides the repository production username;
+production keeps its existing repository/environment values. Empty username input
+uses the CDK target default (`@zerde_dev_bot` for dev, `@zerde_kz_bot` for prod);
+non-empty explicit overrides win. The optional numeric ID is unchanged.
+
+PR preview reads only these two non-secret values from a development-scoped job
+with no checkout, secrets or token permissions, then passes them to the existing
+preview job. Other preview variables and credentials retain their original scope.
+Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
+A configuration-only release must preserve the deployed code and layer references;
+source CI or a merged configuration change alone does not prove public behavior.

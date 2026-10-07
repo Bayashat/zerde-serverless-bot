@@ -32,3 +32,18 @@ Main agent implements sequentially; independent agents review ownership, correct
 Use `uv sync --frozen`, focused then full meaningful tests, and repo pre-commit hooks. For infra, inspect synth/dev diff and exact changeset; maintain config/workflow/example/repo-variable parity. Use a managed worktree, default `feat/` branch, conventional commits and FEATURE/FIX PR titles. Finish scoped changes through a PR and already-authorized review/CI/deployment gates, with actual readback.
 
 Every material result updates PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and corresponding GitHub issues. Natural acceptance requires real use and answer quality, not generated chats or elapsed idle days. Continue cleanup/business/cost work while samples are missing. Keep deployment, data deletion, resource absence and retained-copy expiry separate; do not claim all copies erased. User exports remain; Z10 retains PITR/log/DLQ/backup duties and real historical delay/UNKNOWN records.
+
+## Bot identity across deployment environments
+
+`AGENT_BOT_USERNAME` and `AGENT_BOT_ID` remain the sole configured runtime identity.
+The development GitHub environment overrides the repository production username;
+production keeps its existing repository/environment values. Empty username input
+uses the CDK target default (`@zerde_dev_bot` for dev, `@zerde_kz_bot` for prod);
+non-empty explicit overrides win. The optional numeric ID is unchanged.
+
+PR preview reads only these two non-secret values from a development-scoped job
+with no checkout, secrets or token permissions, then passes them to the existing
+preview job. Other preview variables and credentials retain their original scope.
+Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
+A configuration-only release must preserve the deployed code and layer references;
+source CI or a merged configuration change alone does not prove public behavior.

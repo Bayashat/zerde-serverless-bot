@@ -1,11 +1,14 @@
 import json
+import os
 import re
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from aws_cdk import App
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk.assertions import Template
@@ -666,3 +669,94 @@ def test_retired_resources_permissions_and_overrides_cannot_return(monkeypatch, 
     from services.memory_v2.models import RAW_RETENTION_SECONDS
 
     assert RAW_RETENTION_SECONDS == 30 * 86400
+
+
+@pytest.mark.parametrize("env_name,expected", [("dev", "@zerde_dev_bot"), ("prod", "@zerde_kz_bot")])
+@pytest.mark.parametrize("configured", [None, "", "@custom_test_bot"])
+def test_bot_username_follows_target_default_or_explicit_override(monkeypatch, env_name, expected, configured):
+    if configured is None:
+        monkeypatch.delenv("AGENT_BOT_USERNAME", raising=False)
+    else:
+        monkeypatch.setenv("AGENT_BOT_USERNAME", configured)
+    monkeypatch.setenv("AGENT_BOT_ID", "8157502831" if env_name == "dev" else "")
+    template = _template(monkeypatch, env_name=env_name)
+    _, bot = _find_resource_by_property(
+        template, "AWS::Lambda::Function", "FunctionName", f"zerde-serverless-bot-{env_name}"
+    )
+    values = bot["Properties"]["Environment"]["Variables"]
+    assert values["AGENT_BOT_USERNAME"] == (configured or expected)
+    assert values["AGENT_BOT_ID"] == ("8157502831" if env_name == "dev" else "")
+    _, worker = _find_resource_by_property(
+        template, "AWS::Lambda::Function", "FunctionName", f"zerde-serverless-memory-v2-worker-{env_name}"
+    )
+    assert "AGENT_BOT_USERNAME" not in worker["Properties"]["Environment"]["Variables"]
+    assert "AGENT_BOT_ID" not in worker["Properties"]["Environment"]["Variables"]
+
+
+def _preview_identity_job():
+    return yaml.safe_load(Path(".github/workflows/pr_check.yml").read_text())["jobs"]["development-identity"]
+
+
+def test_preview_uses_environment_identity_without_changing_other_config_context():
+    jobs = yaml.safe_load(Path(".github/workflows/pr_check.yml").read_text())["jobs"]
+    identity = _preview_identity_job()
+    preview = jobs["infra-preview"]
+    assert identity["environment"] == "development"
+    assert identity["permissions"] == {}
+    assert identity["if"] == preview["if"] == "github.event.pull_request.head.repo.full_name == github.repository"
+    assert "environment" not in preview
+    assert set(preview["needs"]) == {"quality-check", "development-identity"}
+    assert len(identity["steps"]) == 1
+    step = identity["steps"][0]
+    assert "uses" not in step and "${{" not in step["run"]
+    assert step["env"] == {
+        "AGENT_BOT_USERNAME": "${{ vars.AGENT_BOT_USERNAME }}",
+        "AGENT_BOT_ID": "${{ vars.AGENT_BOT_ID }}",
+    }
+    assert identity["outputs"] == {
+        key: "${{ steps.identity.outputs." + key + " }}" for key in ("AGENT_BOT_USERNAME", "AGENT_BOT_ID")
+    }
+    for key in identity["outputs"]:
+        assert preview["env"][key] == "${{ needs.development-identity.outputs." + key + " }}"
+    deploy = yaml.safe_load(Path(".github/workflows/deploy.yml").read_text())["jobs"]["deploy"]
+    deployed_env = next(step["env"] for step in deploy["steps"] if "AGENT_BOT_USERNAME" in step.get("env", {}))
+    for key, value in preview["env"].items():
+        if key not in identity["outputs"]:
+            assert value == deployed_env[key]
+    assert "secrets." not in json.dumps(identity)
+    assert "id-token" not in identity["permissions"]
+
+
+@pytest.mark.parametrize(
+    "username,bot_id,accepted",
+    [
+        ("@zerde_dev_bot", "8157502831", True),
+        ("@zerde_kz_bot", "", True),
+        ("custom_bot", "12345", True),
+        ("", "", True),
+        ("@dev_bot\nAGENT_BOT_ID=1", "12345", False),
+        ("$(touch invalid)", "12345", False),
+        ("@dev_bot", "12\nOTHER=value", False),
+        ("@dev_bot", "not-a-number", False),
+    ],
+)
+def test_identity_output_step_transfers_data_without_output_injection(tmp_path, username, bot_id, accepted):
+    output = tmp_path / "outputs"
+    step = _preview_identity_job()["steps"][0]
+    result = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", step["run"]],
+        env={
+            "PATH": os.environ["PATH"],
+            "GITHUB_OUTPUT": str(output),
+            "AGENT_BOT_USERNAME": username,
+            "AGENT_BOT_ID": bot_id,
+        },
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert (result.returncode == 0) is accepted
+    if accepted:
+        assert output.read_text() == f"AGENT_BOT_USERNAME={username}\nAGENT_BOT_ID={bot_id}\n"
+    else:
+        assert not output.exists()

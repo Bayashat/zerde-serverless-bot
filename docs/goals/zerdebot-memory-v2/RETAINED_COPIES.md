@@ -1,4 +1,4 @@
-# 保留副本与到期责任（更新至2026-10-07）
+# 保留副本与到期责任（更新至2026-10-08）
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -42,3 +42,7 @@
 最早采集2026-10-06 18:26:43.519150UTC，三份原文的人工清理期限保持2026-10-13 18:26:43.519150UTC。dev第一次实际包主读在第三ZIP下载时超时，原七文件完整保全于验收根`2026-10-06-explicit-quota-guard/post-main-dev-download-incomplete`。根失败部分只含`responses.private.json`、`artifact-responses.private.json`、`snapshot.private.json`三份元数据及登记含原文派生；三文件0600，目录0700，没有新增原文派生。
 
 权威迁移后精确清单是`2026-10-06-explicit-quota-guard/failed-dev-download-retention.safe.json`，逐项绑定原hash/身份/期限；目录内原unreviewed-retention清单保留历史字节，其旧路径已经由成功轮使用，绝不能据旧路径误删成功回执。按新清单另做工具PRE、到期精确删除并独审；两份完整代码ZIP与安全hash/聚合报告继续作为发布审计保留，不在根三份原文内。既有七项职责和已履行USER/AV记录不变，文件移除不是安全擦盘。另有独立首STS ReadTimeout失败，零响应零包下载；原review/空metadata/原ledger三文件完整归档post-independent-dev-sts-timeout，空metadata-responses.private.json由failed-independent-dev-retention.safe.json精确绑定并采用本批更早的同一期限，不延长原18:51:50.905062期限。该空记录不是AWS响应；第八项合计根三元数据加独立空记录四文件。新只读续接成功不改写两次首次INCOMPLETE。
+
+## Z01公开文本原文（第九项独立责任）
+
+2026-10-07 20:45:55.665021UTC开始，本批原始API、UI观察和所有含原文派生统一于2026-10-14 20:45:55.665021UTC人工精确删除并独审。私有清单`2026-10-08-z01-public-text/raw-retention.safe.json`当前128项：97根API、20独立API、10主UI、1审核源派生，最终ledger SHA`d0f60d4c7d29d2315cd1fb88a4e7698231d164be604d9cc98dbe2dbe71b3e61c`。全部已登记/hash/0600，目录0700；审核源最初迟登记与临时0644偏差已整改，但原报告保留，期限未延长。未来按当时实际ledger逐个核身份/hash，新工具PRE后清理，不通配；安全聚合保留，不以文件移除声称安全擦盘。原八项精确UTC期限、用户导出和现役PITR保持。

@@ -1,0 +1,32 @@
+{
+  "status": "PARTIAL_N_A_PASS_M_FAIL_R_NOT_RUN_UI_STOP",
+  "runtime_build_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+  "cases": {
+    "ordinary_text": "PASS_LIMITED",
+    "ask": "PASS_LIMITED",
+    "mention": "FAIL_DEV_USERNAME_MISMATCH",
+    "reply": "NOT_RUN"
+  },
+  "new_inputs_sent": 3,
+  "raw_finite_log_events": {
+    "ordinary": 39,
+    "ask": 28,
+    "mention": 13
+  },
+  "operator_reads": 124,
+  "operator_cloud_writes": 0,
+  "reads_boundary": "97 root AWS reads +20 independent AWS reads +7 separate budget reads; excludes GitHub research/CI. Actual ask used existing live model path; PT shared counter4 is not attributable request total or billing.",
+  "independent_post_sha256": "ce28fefc05bc9904d1da0181ec7dc8ade42a15e33f42a06f3f04960ed9ec0509",
+  "root_final_sha256": "08b916c43cc6f64dcb507986d7694671b8674bea7009ec908bc5bd56c8350c4e",
+  "raw_retention": {
+    "files": 128,
+    "expires_at_utc": "2026-10-14T20:45:55.665021Z",
+    "ledger_sha256": "d0f60d4c7d29d2315cd1fb88a4e7698231d164be604d9cc98dbe2dbe71b3e61c",
+    "registration_deviation_recorded": true
+  },
+  "ui_native_ids_and_links_unknown": true,
+  "ui_stop_permanent": true,
+  "natural_samples_added": 0,
+  "production_ready": false,
+  "configuration_repair_status": "NOT_YET_IMPLEMENTED_OR_DEPLOYED"
+}

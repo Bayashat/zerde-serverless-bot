@@ -118,7 +118,7 @@ jobs:
           VOTEBAN_FORGIVE_THRESHOLD: ${{ vars.VOTEBAN_FORGIVE_THRESHOLD || '7' }}
           CAPTCHA_MAX_ATTEMPTS: ${{ vars.CAPTCHA_MAX_ATTEMPTS || '3' }}
           QUIZ_LLM_RPD: ${{ vars.QUIZ_LLM_RPD || '20' }}
-          AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME || '@zerde_kz_bot' }}
+          AGENT_BOT_USERNAME: ${{ vars.AGENT_BOT_USERNAME }}
         run: |
           uv run --frozen --no-dev cdk synth -c env=${{ env.TARGET_ENV }} --quiet
           uv run --frozen --no-dev python ../scripts/verify_lambda_bundles.py
