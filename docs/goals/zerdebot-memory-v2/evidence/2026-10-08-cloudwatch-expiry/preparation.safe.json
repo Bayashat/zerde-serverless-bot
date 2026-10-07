@@ -1,0 +1,28 @@
+{
+  "status": "PREPARED_INSPECTED_NOT_DELETED",
+  "as_of_utc": "2026-10-07T08:44:18.023992+00:00",
+  "deadline_utc": "2026-10-08T17:13:39.091570Z",
+  "targets": 9,
+  "protected_same_directory_files": 41,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "remaining": "Fresh notice and original deadline gate, apply once then independent absence verification; no early deletion.",
+  "existing_obligation_count": 8,
+  "new_raw_retention_duties": 0,
+  "evidence_sha256": {
+    "PLAN.md": "3aef21a30c47cbb4195371516a72769c63a294add7ab73b4e5edd0e2bf4448dd",
+    "scope.safe.json": "5c0f0b8189096e55d7a2c6f66d4bf6480259ba4aa2a7a176024add5296a36254",
+    "tool-pre.safe.json": "4e28027fd363309b60425f8fc2ae9cbd9c6a5b64d7497ad1d040fd2a1554c64b",
+    "maintenance-pre-v2.safe.json": "c1287d10d3ae35bb201aacd51f5d5063a308615c055b708bb8eee0e8b2f7da95",
+    "independent-v2-controls.safe.json": "9b5d9a65880603d2110cdb9415796fad1e9351ca5e5225c05203d72584dadadd",
+    "inspect-Prep20261007A.intent.safe.json": "9e87378025f4713e464dd65a64e7308a8f269cdae3c213de1a70ea49db91706a",
+    "inspect-Prep20261007A.safe.json": "eecb1d3effeaf338648488f7e66e1ed3314230973ddb4b0b3fe531b076fd1e26"
+  },
+  "v1_failure_preserved": true,
+  "scope_limit": "Nine exact registered raw basenames; 41 same-directory protected files only, not recursive assets/cloud/runtime verification.",
+  "independent": {
+    "status": "ALIGNED_INDEPENDENT_PREPARATION_NINE_PRESENT_NOT_DELETED",
+    "sha256": "e95b5c3e782d21de343b114543b3b29a4a46271b25f8aff396561dd0588e8ace",
+    "scope": "Local before-expiry inspection verification only; no deletion or cloud."
+  }
+}

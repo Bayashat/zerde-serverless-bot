@@ -23,7 +23,7 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
-    "status_as_of": "2026-10-06",
+    "status_as_of": "2026-10-07",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。",
     "remaining": "显式问答、自动输出为零与迟到旧任务拒绝的最终业务回归仍需逐项证据；不为验收手动Invoke。",
     "issue_state": "OPEN",
@@ -42,6 +42,15 @@
       "merge": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
       "evidence": "evidence/2026-10-06-explicit-quota-guard/release.safe.json",
       "actual_package_synthetic_cases": 17
+    },
+    "public_text_preparation": {
+      "status": "NOT_RUN_UI_CONTEXT_CHANGED",
+      "contract": "Z01_PUBLIC_TEXT_PREPARATION.md",
+      "evidence": "evidence/2026-10-07-z01-preparation/result.safe.json",
+      "new_inputs_sent": 0,
+      "local_tool_controls": 36,
+      "new_cloud_preflight": false,
+      "new_retention_duty": false
     }
   },
   {
@@ -430,7 +439,7 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-06",
+    "status_as_of": "2026-10-07",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。",
     "remaining": "Z10继续OPEN：CloudWatch九份原文于10月8日17:13:39.091570UTC、九月费用九份原文于10月11日17:01:48.147210UTC精确清理；原PITR于10月17日16:20:38UTC复查；旧memory SYSTEM于11月1日11:46:02.425UTC、旧stats SYSTEM于11月2日08:45:11.254UTC服务到期后精确只读核验。日志/DLQ及其他原台账责任保持；用户导出、现役PITR和业务恢复数据保留。 新增本轮Quiz原始证据及登记派生于2026-10-12 17:15:22.532382UTC精确人工清理并独审，不延长其它原期限。 新增3份账号发票原文于2026-10-13 08:06:04.659429UTC精确人工清理并独审；V2采用原更早期限，该阶段共七项责任，不延长原六期限。 本轮新增第八项：2026-10-13 18:26:43.519150UTC精确清理dev首次读回失败根三元数据及独立一个空[]记录共四文件，依据failed-dev-download-retention.safe.json及failed-independent-dev-retention.safe.json两份迁移后路径/hash清单并独审；不误删成功轮同名文件，原七期限不变。",
     "issue_state": "OPEN",
@@ -464,6 +473,15 @@
         "2026-10-06-explicit-quota-guard/failed-independent-dev-retention.safe.json"
       ],
       "evidence": "evidence/2026-10-06-explicit-quota-guard/release.safe.json"
+    },
+    "cloudwatch_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED",
+      "contract": "CLOUDWATCH_RAW_EXPIRY.md",
+      "due_utc": "2026-10-08T17:13:39.091570Z",
+      "exact_target_files": 9,
+      "protected_same_directory_files": 41,
+      "evidence": "evidence/2026-10-08-cloudwatch-expiry/preparation.safe.json",
+      "actual_deletions": 0
     }
   },
   {

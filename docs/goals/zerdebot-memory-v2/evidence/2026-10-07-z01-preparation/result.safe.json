@@ -1,0 +1,49 @@
+{
+  "status": "NOT_RUN_UI_CONTEXT_CHANGED",
+  "as_of_utc": "2026-10-07T08:41:06.508875+00:00",
+  "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+  "business_cases": {
+    "N": "NOT_RUN",
+    "A": "NOT_RUN",
+    "M": "NOT_RUN",
+    "R": "NOT_RUN"
+  },
+  "reason": "Native draft and side-panel state changed without an action from this operator; cause unknown. Current batch stopped; draft not restored and no input sent.",
+  "preparation": {
+    "plan": "ALIGNED_V2",
+    "tools": "ALIGNED_LOCAL_WITH_UI_STOP",
+    "offline_controls": 36,
+    "includes_one_historical_false_pass_reproduction": true,
+    "live_preflight_executed": false
+  },
+  "scope_counters": {
+    "new_aws_api": 0,
+    "new_telegram_messages": 0,
+    "model_calls": 0,
+    "deletions": 0,
+    "deployment": 0
+  },
+  "new_raw_capture_files": 0,
+  "new_raw_retention_duties": 0,
+  "evidence_sha256": {
+    "PLAN_V2.md": "91e2d4411f65ab09eee9cdbdca04fa7dd8c64b18e8f32ae0ac53182b804c31f0",
+    "plan-v2-pre.safe.json": "700a18d2a621100273d74fe924cdfe9660fa7cd8fc129a038eaaac20eb6ab6e4",
+    "whole-tools-v2-pre.safe.json": "be52ce940ac7d6e4f0ebc8e271439fe03bfaab2667b5dfd3f73596d0126aa38b",
+    "whole-tools-v2-final-controls.safe.json": "5778b45f37e0425372a6f3d3302d3765436519c4a65ae2c727fea299cc110677",
+    "tools-maintenance-v2.safe.json": "552a04dc20432d1f8eae7b1af1c18e6275ba4c006c86b6fcc9d33038ff441003",
+    "UI_STOP.safe.md": "ffcf67bcf252b7ad482d24c0230d18a99be1206d717241012bdc73b5f1fb6e5a"
+  },
+  "remaining": "Z01 public behavior remains unverified; new UI batch needs fresh context, contract and PRE. Do not remove this UI_STOP to resume.",
+  "production_ready": false,
+  "natural_samples": {
+    "supported": 0,
+    "unknown": 0
+  },
+  "historical_failures_preserved": true,
+  "independent": {
+    "status": "ALIGNED_NOT_RUN_LOCAL_EVIDENCE_CHECK",
+    "sha256": "8afb5141820edecd96455bdbd144333c748512f74de298a40b052110f0585853",
+    "scope": "Offline local evidence verification; reviewer did not operate UI or cloud."
+  },
+  "maintenance_final_addon_sha256": "39e1d1775490debf833555b5d3dbf44c43113367fbe5854351735ccacf99da66"
+}
