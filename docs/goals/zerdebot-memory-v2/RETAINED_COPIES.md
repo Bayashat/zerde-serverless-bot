@@ -1,6 +1,6 @@
 # 保留副本与到期责任（更新至2026-10-08）
 
-当前剩余十一项独立UTC职责：Oct8日志、Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余十项独立UTC职责：Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -19,7 +19,11 @@
 
 现役表自己的PITR和业务恢复数据继续保留，不属于这张旧资源副本清单。线上不存在与物理副本消退分别验收；只要上述责任或整体验收仍未完成，现有zerde自动任务继续保留。
 
-## Z02本次CloudWatch临时原文（独立责任）
+## Z02本次CloudWatch临时原文（已履行）
+
+九份精确原文已于原期限2026-10-08 17:13:39.091570UTC之后逐项移除；首个完成2026-10-08T17:13:39.209172+00:00，最后2026-10-08T17:13:39.211508+00:00，实际晚0.117602至0.119938秒。独立重新核九路径不存在及41个列明同目录保留文件hash不变，原ledger SHA27b80ee4a7c224c97353c6dadb96458207932d332140a496bd41e2f678e729ea保留。见[实际结果](evidence/2026-10-08-cloudwatch-expiry/final.safe.json)和[独立回执](evidence/2026-10-08-cloudwatch-expiry/independent.safe.json)。唯一apply与verify已结束，不重删、不重采集/恢复原文。原普通topic FAIL和19未分类条目保留；文件移除不是安全擦盘或云历史副本全无。其他十项期限、用户导出/现役PITR不变。
+
+以下为准备期原记录，不作当前待删指令：
 
 10月7日已准备新的九文件精确清理工具和独立核验；当前仅准备/到期前核验，尚未删除。范围、保留41文件及失败停止规则见[CLOUDWATCH_RAW_EXPIRY](CLOUDWATCH_RAW_EXPIRY.md)。不增减原八项责任或变更期限。
 
@@ -27,7 +31,7 @@
 
 ## Z17九月费用原文（独立责任）
 
-2026-10-04 17:01:48.147210UTC开始的单次费用采集，实际6份AWS回执；另有2份Google UI下载CSV及1份主操作者UI观察。私有清单为验收根`2026-10-04-september-costs/raw-retention.safe.json`和`provider-raw-retention.safe.json`；实际文件列表/hash另见聚合。九个精确文件及登记的原文派生共同于2026-10-11 17:01:48.147210UTC人工删除并独审；CSV/观察采用更早的同一期限，没有延长到下载后七天。权限0600、原文目录0700，下载CSV已精确移出Downloads。安全聚合/hash保留；其余责任保持；Oct5旧stats USER已按上方回执履行，Oct8日志原文仍待清理。工具、原始采集和独立复算均冻结，不重跑旧动态月份脚本。
+2026-10-04 17:01:48.147210UTC开始的单次费用采集，实际6份AWS回执；另有2份Google UI下载CSV及1份主操作者UI观察。私有清单为验收根`2026-10-04-september-costs/raw-retention.safe.json`和`provider-raw-retention.safe.json`；实际文件列表/hash另见聚合。九个精确文件及登记的原文派生共同于2026-10-11 17:01:48.147210UTC人工删除并独审；CSV/观察采用更早的同一期限，没有延长到下载后七天。权限0600、原文目录0700，下载CSV已精确移出Downloads。安全聚合/hash保留；其余责任保持；Oct5旧stats USER已按上方回执履行，Oct8日志原文已按上方精确回执履行。工具、原始采集和独立复算均冻结，不重跑旧动态月份脚本。
 
 ## Z16答案重送验收原文（独立责任）
 

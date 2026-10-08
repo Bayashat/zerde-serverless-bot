@@ -467,12 +467,12 @@
     },
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-08",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。",
-    "remaining": "当前十一项精确UTC副本/原文责任见RETAINED_COPIES：Oct8 17:13:39.091570、Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。",
+    "remaining": "当前十项精确UTC副本/原文责任见RETAINED_COPIES：Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
     "deployed_build_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
-    "status_evidence": "evidence/2026-10-05-user-backup-expiry/final.safe.json",
+    "status_evidence": "evidence/2026-10-08-cloudwatch-expiry/final.safe.json",
     "runtime_evidence": "evidence/2026-10-06-explicit-quota-guard/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
@@ -508,7 +508,8 @@
       "exact_target_files": 9,
       "protected_same_directory_files": 41,
       "evidence": "evidence/2026-10-08-cloudwatch-expiry/preparation.safe.json",
-      "actual_deletions": 0
+      "actual_deletions": 0,
+      "historical_preparation_only": true
     },
     "public_text_raw_retention": {
       "status": "PENDING_DEADLINE",
@@ -530,6 +531,19 @@
       "files": 85,
       "ledger": "2026-10-08-z01-mention-reply/raw-retention.safe.json",
       "ledger_sha256": "d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed"
+    },
+    "cloudwatch_raw_expiry_completion": {
+      "status": "EXACT_NINE_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "evidence": "evidence/2026-10-08-cloudwatch-expiry/final.safe.json",
+      "independent_evidence": "evidence/2026-10-08-cloudwatch-expiry/independent.safe.json",
+      "original_deadline_utc": "2026-10-08T17:13:39.091570+00:00",
+      "deleted_files": 9,
+      "protected_same_directory_files": 41,
+      "first_unlink_utc": "2026-10-08T17:13:39.209172+00:00",
+      "last_unlink_utc": "2026-10-08T17:13:39.211508+00:00",
+      "first_lateness_seconds": 0.11760210990905762,
+      "last_lateness_seconds": 0.11993813514709473,
+      "not_secure_media_erasure": true
     }
   },
   {
