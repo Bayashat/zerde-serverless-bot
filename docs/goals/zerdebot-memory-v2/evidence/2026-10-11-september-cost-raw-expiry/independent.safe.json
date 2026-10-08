@@ -1,0 +1,145 @@
+{
+  "status": "ALIGNED_INDEPENDENT_PREPARATION_NINE_PRESENT_NOT_DELETED",
+  "reviewer": "z01_oct8_maint",
+  "started_at_utc": "2026-10-08T22:54:27.759628+00:00",
+  "finished_at_utc": "2026-10-08T22:54:27.778717+00:00",
+  "method": "不导入或运行新旧实际工具入口；独立直接只读四冻结文件/双PRE/inspect及preparation绑定，并对原九目标与57保留逐文件lstat/O_NOFOLLOW/fstat/SHA，对六目录与九目标重比inspect身份、完整库存及37未创建槽。未读取正文到报告，未复制原文。",
+  "files": {
+    "PLAN.md": "42fa56b6c44a2e74baa6a63c806c37c200291dfa7a1ca3ace1247be28a69fb85",
+    "scope.safe.json": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0",
+    "expire_raw.py": "bf4b9fd8ebbec788ae708e6be5cc9a921035ec4b26b08c4fd847a74ce59bc7a8",
+    "verify_absence.py": "ff7f46f0d97d483fc7c53af85332628c53af7aa714f2ee4a9895fb3d9bcf6ed5"
+  },
+  "plan_sha256": "42fa56b6c44a2e74baa6a63c806c37c200291dfa7a1ca3ace1247be28a69fb85",
+  "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0",
+  "tool_pre_sha256": "b287cadeb9aade7e19555d846b1493663058833ebc1f92b05bb8403cd9278aa1",
+  "maintenance_pre_sha256": "68dd2967b27c3b05b8c293af3e1170ab392f25a39d74809bc213dcd1422e67b4",
+  "inspect_sha256": "e439fe05932303c1f0f6dcd0774de5f5791aa49082b7e19f645689eb95190c9f",
+  "inspect_intent_sha256": "e3728966e56a99460ede1476576f9929f1e2a470bbf228ec8a56377249d3078b",
+  "preparation_sha256": "884743d1396881e98905ad16987f00d41247ccb1aa2cbfbcf1bfad67200c1c9f",
+  "deadline_utc": "2026-10-11T17:01:48.147210+00:00",
+  "deadline_epoch": 1791738108.14721,
+  "target_checks": {
+    "raw/001.private.json": {
+      "present": true,
+      "sha256": "f0e108ca7c272cd4a12ec4a6d84a108cf3a16dc6a93c1fd5968a7ea349b3df28",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "raw/002.private.json": {
+      "present": true,
+      "sha256": "81dacfd88a0659283aacf7e768cb5217bcf4c482eee14e605a7965839f6cdb61",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "raw/003.private.json": {
+      "present": true,
+      "sha256": "fe9d093564317b0670d211a7ef56cef3202c3a9ab96f4266b1d7b0f1dc0a9952",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "raw/004.private.json": {
+      "present": true,
+      "sha256": "a6ae30c9e65a491d5281a6700bfb2942e65af0a796e0724c3c0cf79e091b63db",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "raw/005.private.json": {
+      "present": true,
+      "sha256": "99758d0f5072666b7aa6d4781c0807d57bd5d78cb5cf64a63b55604206f86db0",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "raw/006.private.json": {
+      "present": true,
+      "sha256": "e5ea6b0a826c153e7b36ca1acbd1cf8f8c927d3a8112a1bcceb878c54c43039d",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "provider-raw/google-dev-september-usage.csv": {
+      "present": true,
+      "sha256": "963374bbc99348f6c8aad60e60446be2709f8a709dccf867662b02d70fcd5886",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "provider-raw/google-prod-september-project.csv": {
+      "present": true,
+      "sha256": "4e2eabfe5b42a58bf9ecb7d642f4aabaa981ec1143db78a3f479c9248c7d6311",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    },
+    "provider-raw/provider-ui-observation.private.json": {
+      "present": true,
+      "sha256": "07e4d2d36fa1e42aff1e77dc3bef50d026103a2ae66836383f2aabc9a3b58d85",
+      "regular_nonsymlink_single_link": true,
+      "mode": "0600",
+      "inspect_identity_unchanged": true
+    }
+  },
+  "target_count": 9,
+  "protected_file_count": 57,
+  "protected_file_hashes_match_scope": true,
+  "protected_files_regular_nonsymlink_single_link": true,
+  "directory_checks": {
+    ".": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    },
+    "__pycache__": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    },
+    "docs-final-independent-github": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    },
+    "docs-github-bodies": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    },
+    "provider-raw": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    },
+    "raw": {
+      "present": true,
+      "mode_and_inspect_identity_unchanged": true
+    }
+  },
+  "directory_count": 6,
+  "full_inventory_exact": true,
+  "reserved_aws_slots_total": 43,
+  "unused_reserved_slots_absent": 37,
+  "two_ledger_two_POST_hashes_match": true,
+  "original_deadline_unchanged": true,
+  "unique_real_inspect_receipt": true,
+  "apply_and_absence_entrypoints_not_executed": true,
+  "deleted": 0,
+  "remaining_numbered_duties": 10,
+  "new_raw_retention_duties": 0,
+  "findings": [],
+  "limits": [
+    "只证明准备复核时九份原文仍在及保留项未变，不能记为到期已删除或责任已履行。",
+    "到原期限仍须新鲜现场/精确公告及唯一apply；成功后再交独立不存在核验。",
+    "不改变九月费用原UNKNOWN、provider归属/付款限制或其它九项责任期限；无业务重采。"
+  ],
+  "actions": {
+    "local_report_files_written": 1,
+    "real_tool_entrypoints_executed": 0,
+    "source_file_writes": 0,
+    "source_file_deletions": 0,
+    "raw_body_copies": 0,
+    "cloud_calls": 0,
+    "github_calls": 0,
+    "UI_actions": 0,
+    "model_calls": 0
+  }
+}

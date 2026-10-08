@@ -78,6 +78,15 @@
       "native_UI_ids_and_links_obtained": false,
       "native_R_parent_preview_and_jump_verified": true,
       "natural_sample_increment": 0
+    },
+    "media_album_preparation": {
+      "status": "PREPARED_REVIEWED_LIVE_NOT_STARTED_WAITING_EXCLUSIVE_UI",
+      "evidence": "evidence/2026-10-09-z01-media-album/preparation.safe.json",
+      "root_offline_controls": 43,
+      "independent_offline_controls": 34,
+      "live_started": false,
+      "new_raw_retention_duties": 0,
+      "remaining": "确认独占Telegram窗口后仍须新鲜现场/preflight/当前预算reader，再按冻结有限计划一次相册和一次Reply ask；频道/其他格式缺口另列。"
     }
   },
   {
@@ -544,6 +553,16 @@
       "first_lateness_seconds": 0.11760210990905762,
       "last_lateness_seconds": 0.11993813514709473,
       "not_secure_media_erasure": true
+    },
+    "september_cost_raw_expiry_preparation": {
+      "status": "PREPARED_NINE_PRESENT_NOT_DELETED",
+      "evidence": "evidence/2026-10-11-september-cost-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-11-september-cost-raw-expiry/independent.safe.json",
+      "deadline_utc": "2026-10-11T17:01:48.147210+00:00",
+      "targets": 9,
+      "protected_files": 57,
+      "deleted": 0,
+      "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0"
     }
   },
   {

@@ -1,0 +1,93 @@
+{
+  "status": "ALIGNED_NEW_MEDIA_ALBUM_TOOLS_PRE",
+  "mode": "PRE",
+  "reviewer": "z01_oct8_pre",
+  "reviewed_at_utc": "2026-10-08T22:43:48.407958+00:00",
+  "plan_sha256": "f910f5980e34001412b2549b5346e4bbc38451707fd74858d774badd45a7a351",
+  "fixtures_sha256": "46207f43e671e44b6c3c5b153943f706f4c4ef91c9950f8a47d001738fd8c197",
+  "tools": {
+    "collector.py": "ba8fba7ad0e6232a6e19a52b1c5967e3d08bfb6b4ec5eeeffa8c3e0e70ecaa2b",
+    "log_collector.py": "e55996e655ae3a46cc624729b1f48126a7d2c287b9836832771371a66d5860e6",
+    "ui_record.py": "3ebfc53fd4fb3c0c53ecde1e44d91aa22e5b77dfced1e17d426484acb3e8207c",
+    "assess_logs.py": "425943e0e7254ea88d0ca03d2381d3f822b8e282dca3ea76d22bd97e0f10822c",
+    "independent_verify.py": "c1d61fbd3ffb60725f5c3158896c243ec0403048c0c3c955a5cb78a8b8e37bf8"
+  },
+  "plan_pre_sha256": "225e4a3ca2db55438269980aac38e8ea1346baf1bc2c8f792764bcebb8c55335",
+  "findings": [],
+  "scope": "新两图相册 B 与一次原生 Reply ask Q 的五个只读/本地观察工具；未执行 live 入口，未验收业务。",
+  "verification": {
+    "five_tools_compiled_without_execution": true,
+    "root_controls": {
+      "path": "local-controls-v4.safe.json",
+      "sha256": "294993ed450bd1f19b799ed364da7fa7c08f0be58dda6be0483a657d8715be8c",
+      "count": 43,
+      "result": "PASS",
+      "script_sha256": "1d75455bf1ce8e490711fc7c6b74c4813b2cd359e58a6f5f064dc9fb13f45de6"
+    },
+    "independent_controls": {
+      "path": "independent-tool-controls-v2.safe.json",
+      "sha256": "ccdb59af5342242b7823c3e35bec8d8b717a1af971b14f0a6c0f7eb5828d4516",
+      "count": 34,
+      "result": "PASS",
+      "script_sha256": "2cc1c9599a8e2f9804ce813cba79ea0130d8123313666c254ca2c728d5178055"
+    },
+    "earlier_independent_controls_preserved": {
+      "path": "independent-tool-controls-v1.safe.json",
+      "sha256": "0fb62a1a2007159a5355ce6db1e099b4b0ba3721ca1e94417729d9a5eb04af32",
+      "count": 32,
+      "scope": "绑定最终 duplicate RID 修订前的 v3 字节，不覆盖最终版本结论"
+    },
+    "prior_actual_offline_failure_preserved": {
+      "path": "local-controls-v2-failure.safe.json",
+      "sha256": "fe3c5ea4c9a3a01714d35c5eaf23ed8d95ce5b57c54b4fcdfa0a8cb14a86f408",
+      "status": "FAIL_OFFLINE_CONTROL",
+      "check": "escaped_question",
+      "meaning": "frames 在 leak 优先判级前解析导致本地失败；真实历史保留，未冒称首次全过"
+    },
+    "prior_draft_sources_preserved": "pre-tool-revision-1/"
+  },
+  "reviewed_guards": [
+    "固定 PLAN/fixtures/G发布/配置/当前预算reader，以及恰五文件 tool PRE hash；fixed two photos 不可通过同步更改图片和清单越过。",
+    "album 两photo与ask共三身份，观察使用真实 revision、当前 subject generation/actor/epoch/发送时间，captionless无需RAW/HEAD；caption来源与相册metadata/SK/TTL/两file_unique_id和完整前后库存。",
+    "照片无ANSWER_REQUEST/LEASE，首个双图ready强读起至少360秒，最终B轮及原生quiet原文登记/hash、真实认证frame和冻结日志窗同时门禁后才记录Q intent。",
+    "native account/group/actor/数字bot/username/owner-admin及证据来源字段，fresh30秒；原始draft登记hash/size、caption父目标预览；UI_STOP拒绝后续意图，不虚称独立UI或native数字ID取得。",
+    "闭合允许API/单账户区域/强读单partition和由真实身份派生精确键；无SSM/Invoke/Scan/Receive/Purge/云写；root400、preflight60、业务phase80、独审30、600秒阶段/30秒API/SDK1attempt；root每次API前后3600总边界。",
+    "独立API以root原始实际键/原样值及G绑定为基础，读取主体/CONTROL/两photo观察相册/ask观察请求租约回答/现PT日期计数；显式只给fresh protection结论，业务语义需独立直接原文审查。",
+    "强读Query分页token循环/重复行/cap；日志Filter+Get完整同stream多重集合、固定窗口/第二次capture同window hash、20页/10000事件上限，不按正文去重。",
+    "两照片认证START/END/REPORT桥接精确album/file_unique_id及caption元数据；双图准备与Gemini成功及provider=gemini发送属于同完整有序worker RID；一个目标首帧+同RID空帧也拒绝，重复END/单图/备用文本/歧义链不通过。",
+    "先扫描已见Filter和Get原文包括JSON递归解码的裸问题/完整输入和凭据形状，再判断分页与frame；观察到已识别正文或凭据泄露保留FAIL，不降为INCOMPLETE。",
+    "同一排他ledger锁；采集前PENDING intent、独占0600文件、最早anchor+604800不续期、Error.response同raw保全、hash/size闭合；未resolve PENDING、改期限、raw重用/越界、并行锁拒绝。"
+  ],
+  "closed_draft_findings": [
+    "fixtures清单hash未绑定",
+    "observation错误source_version字段",
+    "当前主体代际与时间边界缺失",
+    "Q意图只信手写quiet status",
+    "照片日志file_unique_id未对照相册原文",
+    "裸问题/API key漏检及不完整日志泄露降级",
+    "root3600只在phase入口检查",
+    "UI bot/admin/draft原文门禁不足",
+    "复采及quiet窗口hash未绑定",
+    "重复RID仅标记后帧"
+  ],
+  "limits_preserved": [
+    "这是工具正确性PRE，不是云预检、预算许可、Telegram发送、两图模型结果或自然样本。",
+    "主操作者静默/parent/完整答案观察及独立POST直接原文语义审查仍为必须的后续环节；独审工具不导入主评分器。",
+    "语言不另评分；shared PT counter不全归此批，不声称wire capture或完整实付。",
+    "本批正式群上下文建立前的UI变化由主操作者另行核实；本报告不宣称已经取得稳定现场，也不解除任何既有UI_STOP。",
+    "原N/A/M/R、Quiz、18schema、F5-F10及旧once均不重跑；频道/其他媒体/故障组合不扩围；原十期限不改。"
+  ],
+  "actions": {
+    "cloud_calls": 0,
+    "github_calls": 0,
+    "UI_actions": 0,
+    "telegram_sends": 0,
+    "model_calls": 0,
+    "live_entrypoints_executed": 0,
+    "product_source_edits": 0,
+    "operator_edits": 0,
+    "real_raw_or_ledger_writes": 0,
+    "local_control_data": "仅临时合成fixture，测试退出后删除；独立安全报告和测试源码保留"
+  },
+  "recommended_next_gate": "独立维护PRE、主操作者稳定且精确现场、当前G预算及新云preflight；仅这些实际门禁满足后按固定计划串行执行。"
+}
