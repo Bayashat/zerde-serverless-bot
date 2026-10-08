@@ -1,6 +1,6 @@
 # 保留副本与到期责任（更新至2026-10-08）
 
-当前剩余十项独立UTC职责：Oct8日志、Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余十一项独立UTC职责：Oct8日志、Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -52,3 +52,7 @@
 ## PR251配置发布原文（第十项独立责任）
 
 首次采集2026-10-07 21:48:46.021161UTC，原始API、完整配置快照、模板及登记含原文派生共1030个精确文件，统一于2026-10-14 21:48:46.021161UTC人工删除并独审。权威清单为验收根 `2026-10-08-dev-bot-identity-fix/release-raw-retention.safe.json`，最终SHA `a23b0b8eff40e11356aaad08902642ff8570be816168090a9975cc03a04cd6ea`；0600/0700，全部CAPTURED。原首次执行轮询失败及只读续接沿同一期限，不延长或重建原文。按届时实际ledger逐个核身份/hash，新工具PRE后精确删除；安全聚合、代码ZIP及现有assets桶中唯一配置审计模板保留。模板不是新代码包，不属于该本地原文清理范围。第九项N原文比本项早约一小时，不合并两期限，原八项保持。文件移除不等于安全擦盘或云副本全无。
+
+## Z01修复后提及与Reply原文（第十一项独立责任）
+
+本批首次采集2026-10-08 08:17:52.186798UTC，85份实际API/UI原文及登记含原文派生统一于2026-10-15 08:17:52.186798UTC人工精确删除并独审。私有清单为验收根`2026-10-08-z01-mention-reply/raw-retention.safe.json`，最终ledger SHA`d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed`，所有文件0600、目录0700、CAPTURED；独立17读沿原期限，不延期。工具上限不当实际数量，原生数字ID/链接缺失不由后续补猜。届时按实际ledger逐文件hash/身份、新工具PRE与精确公告后删除，安全聚合/hash保留，文件移除不是安全擦盘；其余十项精确UTC期限、用户导出与现役PITR保持。

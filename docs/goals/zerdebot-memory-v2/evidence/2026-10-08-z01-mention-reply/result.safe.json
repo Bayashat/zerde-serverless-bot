@@ -1,0 +1,135 @@
+{
+  "status": "PASS_LIMITED_MENTION_AND_NATIVE_REPLY",
+  "at_utc": "2026-10-08T08:37:25.632526+00:00",
+  "scope": "Two new public synthetic business inputs in the sole authorized dev group; not all Z01 or natural acceptance",
+  "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+  "runtime_merge": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
+  "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+  "config_merge": "ec72bea66c955782a94b87d10d6d5a7ba1287261",
+  "new_public_inputs": 2,
+  "cases": {
+    "M": {
+      "status": "PASS_LIMITED_PUBLIC_BEHAVIOR",
+      "case": "M",
+      "input_message_id": "2413",
+      "reply_message_id": "2414",
+      "expected_numeric_result": 41,
+      "full_UI_answer_correct": true,
+      "language_observed": "Chinese",
+      "request_single_SENT_and_reply_exact": true,
+      "lease_RELEASED_and_bound": true,
+      "native_output_reply_to_unique_input_seen": true,
+      "native_message_ids_and_links": null,
+      "identity_origin": "DB_unique_hash_actor_new_source_plus_native_exact_text_not_UI_ID",
+      "at": 1791447963.492171,
+      "evidence": {
+        "M1.safe.json": "a616a736e58541b4ffdf1a71d960c9ff69e6d3e2ddfce49bdc5ada54271e6834",
+        "Mlogs1.assessment.safe.json": "4d6911815db3493b48d8239bb6a08e5a962a533ce4b9893f250a41cd5b9c9222",
+        "M.ui-final.private.json": "95aafe33226bdb13cd03242a713268e206f21b9178817c1195ee504506767870",
+        "M.ui-after.private.json": "3e5251d1496ec18231be458209d95adb578deae73517fc966f516ac2bd2d8f9f"
+      }
+    },
+    "R": {
+      "status": "PASS_LIMITED_PUBLIC_BEHAVIOR",
+      "case": "R",
+      "input_message_id": "2415",
+      "reply_message_id": "2416",
+      "native_parent_correlated_message_id": "2414",
+      "native_parent_preview_and_postsend_highlight": true,
+      "native_message_ids_and_links": null,
+      "identity_origin": "DB_unique_hash_actor_new_source_plus_native_exact_text_and_parent_jump_not_UI_ID",
+      "expected_numeric_result": 56,
+      "full_UI_answer_correct": true,
+      "language_observed": "Chinese",
+      "request_single_SENT_and_reply_exact": true,
+      "lease_RELEASED_and_bound": true,
+      "at": 1791448130.643008,
+      "evidence": {
+        "R1.safe.json": "58d36348e42959df2836750abc46159e23bb93055e6171485074f632e025cc1e",
+        "Rlogs1.assessment.safe.json": "8dcc0dc3258ab8feac7ac86ce44138df98917917a647e391e507c69cb1a5ac0f",
+        "R.ui-final.private.json": "ddd78390de8a33695a9829ad1d07f5faf4f62fdd1e97e107534cd8eccaa245a6",
+        "R.ui-after.private.json": "8dec354f23fd93a59788ed20dfb0204d81296b4c2e1c66e544602f84eef12890"
+      }
+    }
+  },
+  "exact_frame_application_json_counts": {
+    "M": 34,
+    "R": 14
+  },
+  "log_windows_events": {
+    "M": 45,
+    "R": 17
+  },
+  "logs_cross_api_multisets_equal": true,
+  "api_reads": {
+    "root": 61,
+    "independent": 17,
+    "budget_reader": 7,
+    "total_operator_reads": 85,
+    "root_phases": {
+      "preflight.safe.json": 29,
+      "M1.safe.json": 9,
+      "Mlogs1.safe.json": 7,
+      "R1.safe.json": 9,
+      "Rlogs1.safe.json": 7
+    }
+  },
+  "direct_operator_cloud_writes": 0,
+  "real_Telegram_model_and_business_persistence_occurred": true,
+  "no_new_deployment_or_configuration_or_payment": true,
+  "shared_PT_counter": {
+    "before": "absent",
+    "after": 6,
+    "not_exclusive_attribution_or_provider_invoice": true
+  },
+  "budget_reader": {
+    "path": "2026-10-08-dev-bot-identity-fix/read_budget_published.py",
+    "label": "MRRetest20261008A",
+    "receipt_sha256": "82ce6391249b496787d04e01ee36c4987f12df74fb9ef5ac2a2126cd671c8d78",
+    "point_in_time_not_permission": true
+  },
+  "retention": {
+    "deadline_utc": "2026-10-15T08:17:52.186798+00:00",
+    "files": 85,
+    "ledger": "2026-10-08-z01-mention-reply/raw-retention.safe.json",
+    "ledger_sha256": "d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed",
+    "old_ten_deadlines_unchanged": true
+  },
+  "evidence_sha256": {
+    "PLAN.md": "20990fb117e716af2098376201faf27a47412d8066478ecc348e7dfa2c0951c7",
+    "plan-pre.safe.json": "46c8db660c5c4d68a5913d9ff2f62024ba5905ca708355971a4a1a35d714566f",
+    "tool-pre.safe.json": "aafe0f90707c11ab44d026292d4aa68997f71b482c2c3b722d0acaae81cea410",
+    "tool-maintenance.safe.json": "2e0ecf3f04a43ef64acc8cf4ecb08b39875b8438c66d87bf18ac935902e1c39a",
+    "local-controls.safe.json": "1a4c1f89f2269129fafd9bc49e401c7c4595dfa64104702bf3f8ba7723e93fa9",
+    "correctness-post.safe.json": "fd17d5e5a08a59abfd7ec50320729ce3159be68f5c315794a6b031480954afa3",
+    "independent-post.safe.json": "dbc2c408e7baf62fb386bf42f610b2aaf1d4e9eac1a960c249953079e296a165",
+    "M.verdict.safe.json": "7db3906dcc7eb76b7e97173bac87dff9149b6ee8557d043a83b536f073df10c7",
+    "R.verdict.safe.json": "220b353905747b905a24e9bf31a2a458f1a29c5d880fcad72ef633879a2cdfe0",
+    "Mlogs1.assessment.safe.json": "4d6911815db3493b48d8239bb6a08e5a962a533ce4b9893f250a41cd5b9c9222",
+    "Rlogs1.assessment.safe.json": "8dcc0dc3258ab8feac7ac86ce44138df98917917a647e391e507c69cb1a5ac0f"
+  },
+  "limitations": [
+    "Native numeric IDs and links not obtained; persistent identities cross-matched with exact unique UI text, author and target preview/jump",
+    "Independent review checked primary UI observations and did not operate UI",
+    "Russian inputs produced Chinese complete correct short answers; no language or multiturm generalization",
+    "Sequential reads, not transaction snapshot, full package or production reacceptance",
+    "Only fixed log windows; not all historical logging or full provider billing",
+    "Prior FAIL/UI_STOP and all old once results remain frozen"
+  ],
+  "historical_tool_failures_preserved": [
+    "v1 escaped JSON content false-negative corrected before live",
+    "temporary fixture path boundary error",
+    "UI record int IDs rejected before intent created; corrected string arguments only"
+  ],
+  "natural_supported": 0,
+  "natural_unknown": 0,
+  "production_ready": false,
+  "task_states_unchanged": {
+    "open": 14,
+    "closed": 6
+  },
+  "Z01": "OPEN",
+  "Z10": "OPEN",
+  "Epic157": "OPEN",
+  "next_priority": "Oct8 nine exact CloudWatch local files at original deadline; then finite remaining business/media/channel and cost gaps"
+}
