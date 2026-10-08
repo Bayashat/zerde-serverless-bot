@@ -25,8 +25,8 @@
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-08",
-    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。",
-    "remaining": "修复后的新公开mention/清晰Reply仍待另批真实验收，频道/媒体等原有限缺口保持。此前普通文本静默和ask仅有限通过，原提及FAIL/UI_STOP保持，不重发或重跑18旧schema回放。",
+    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。",
+    "remaining": "普通文本、ask及修复后新mention/清晰Reply已有有限真实证据；频道/媒体等原有限缺口和最终整体回归仍待。原失败/UI_STOP与18旧schema回放冻结，不重跑。",
     "issue_state": "OPEN",
     "runtime_baseline": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
     "deployed_build_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
@@ -62,13 +62,22 @@
       "natural_sample_increment": 0
     },
     "identity_config_release": {
-      "status": "DEPLOYED_CONFIG_ONLY_PUBLIC_RETEST_PENDING",
+      "status": "DEPLOYED_CONFIG_ONLY_MR_LIMITED_RETEST_PASS",
       "pr": 251,
       "source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
       "merge": "ec72bea66c955782a94b87d10d6d5a7ba1287261",
       "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
       "evidence": "evidence/2026-10-08-dev-bot-identity-fix/release.safe.json",
       "budget_reader": "2026-10-08-dev-bot-identity-fix/read_budget_published.py"
+    },
+    "public_mention_reply_retest": {
+      "status": "PASS_LIMITED_MENTION_AND_NATIVE_REPLY",
+      "contract": "Z01_MENTION_REPLY_ACCEPTANCE.md",
+      "evidence": "evidence/2026-10-08-z01-mention-reply/result.safe.json",
+      "new_inputs_sent": 2,
+      "native_UI_ids_and_links_obtained": false,
+      "native_R_parent_preview_and_jump_verified": true,
+      "natural_sample_increment": 0
     }
   },
   {
@@ -459,7 +468,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-08",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。",
-    "remaining": "当前十项精确UTC副本/原文责任见RETAINED_COPIES：Oct8 17:13:39.091570、Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
+    "remaining": "当前十一项精确UTC副本/原文责任见RETAINED_COPIES：Oct8 17:13:39.091570、Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
     "deployed_build_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
@@ -514,6 +523,13 @@
       "ledger": "2026-10-08-dev-bot-identity-fix/release-raw-retention.safe.json",
       "ledger_sha256": "a23b0b8eff40e11356aaad08902642ff8570be816168090a9975cc03a04cd6ea",
       "status": "PENDING_EXACT_EXPIRY"
+    },
+    "mention_reply_raw_retention": {
+      "status": "PENDING_EXACT_EXPIRY",
+      "deadline_utc": "2026-10-15T08:17:52.186798+00:00",
+      "files": 85,
+      "ledger": "2026-10-08-z01-mention-reply/raw-retention.safe.json",
+      "ledger_sha256": "d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed"
     }
   },
   {
