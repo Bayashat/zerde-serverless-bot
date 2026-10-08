@@ -1,0 +1,33 @@
+{
+  "status": "PREPARED_NINE_PRESENT_NOT_DELETED",
+  "as_of_utc": "2026-10-08T22:53:15.594707+00:00",
+  "deadline_utc": "2026-10-11T17:01:48.147210+00:00",
+  "deadline_epoch": 1791738108.14721,
+  "targets": 9,
+  "protected_files": 57,
+  "directories": 6,
+  "unused_reserved_slots_absent": 37,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "new_raw_retention_duties": 0,
+  "remaining_numbered_duties": 10,
+  "evidence_sha256": {
+    "PLAN.md": "42fa56b6c44a2e74baa6a63c806c37c200291dfa7a1ca3ace1247be28a69fb85",
+    "scope.safe.json": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0",
+    "expire_raw.py": "bf4b9fd8ebbec788ae708e6be5cc9a921035ec4b26b08c4fd847a74ce59bc7a8",
+    "verify_absence.py": "ff7f46f0d97d483fc7c53af85332628c53af7aa714f2ee4a9895fb3d9bcf6ed5",
+    "tool-pre.safe.json": "b287cadeb9aade7e19555d846b1493663058833ebc1f92b05bb8403cd9278aa1",
+    "maintenance-pre.safe.json": "68dd2967b27c3b05b8c293af3e1170ab392f25a39d74809bc213dcd1422e67b4",
+    "pre-control.safe.json": "c2ff94eac7af9b44a00ea8cf8dfc37a7c3bfe838f8d6198831cef32e5808cf5f",
+    "inspect-Prep20261009A.intent.safe.json": "e3728966e56a99460ede1476576f9929f1e2a470bbf228ec8a56377249d3078b",
+    "inspect-Prep20261009A.safe.json": "e439fe05932303c1f0f6dcd0774de5f5791aa49082b7e19f645689eb95190c9f"
+  },
+  "independent_offline_controls": 34,
+  "maintenance_offline_controls": 10,
+  "next_action": "Original deadline and fresh exact notice plus onsite identities before a single apply; independent absence afterward. apply and verifier not executed.",
+  "limitations": [
+    "Preparation only; original raw files still present.",
+    "No new AWS/provider/raw/UI/model operation; no billing reassessment or production-readiness claim.",
+    "Preserves original ledger and scoped57 files, not secure media erasure or all external copies."
+  ]
+}

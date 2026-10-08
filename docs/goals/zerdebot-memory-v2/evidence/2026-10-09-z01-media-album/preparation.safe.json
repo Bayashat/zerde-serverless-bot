@@ -1,0 +1,28 @@
+{
+  "status": "PREPARED_REVIEWED_LIVE_NOT_STARTED_WAITING_EXCLUSIVE_UI",
+  "as_of_utc": "2026-10-08T22:46:18.425272+00:00",
+  "evidence_sha256": {
+    "PLAN.md": "f910f5980e34001412b2549b5346e4bbc38451707fd74858d774badd45a7a351",
+    "fixtures.safe.json": "46207f43e671e44b6c3c5b153943f706f4c4ef91c9950f8a47d001738fd8c197",
+    "plan-pre.safe.json": "225e4a3ca2db55438269980aac38e8ea1346baf1bc2c8f792764bcebb8c55335",
+    "tool-pre.safe.json": "e13c809422fff18ef788be00086f7bb71882c1ef62e652e43f0e9aa99c58f14c",
+    "maintenance-tool-pre.safe.json": "8da54b6f0665fd6fbc0cb31d5233e64a0d4b0a54d5a8096d1539c2490d16fdd7",
+    "local-controls-v4.safe.json": "294993ed450bd1f19b799ed364da7fa7c08f0be58dda6be0483a657d8715be8c",
+    "independent-tool-controls-v2.safe.json": "ccdb59af5342242b7823c3e35bec8d8b717a1af971b14f0a6c0f7eb5828d4516"
+  },
+  "tools": {
+    "collector.py": "ba8fba7ad0e6232a6e19a52b1c5967e3d08bfb6b4ec5eeeffa8c3e0e70ecaa2b",
+    "log_collector.py": "e55996e655ae3a46cc624729b1f48126a7d2c287b9836832771371a66d5860e6",
+    "ui_record.py": "3ebfc53fd4fb3c0c53ecde1e44d91aa22e5b77dfced1e17d426484acb3e8207c",
+    "assess_logs.py": "425943e0e7254ea88d0ca03d2381d3f822b8e282dca3ea76d22bd97e0f10822c",
+    "independent_verify.py": "c1d61fbd3ffb60725f5c3158896c243ec0403048c0c3c955a5cb78a8b8e37bf8"
+  },
+  "root_offline_controls": 43,
+  "independent_offline_controls": 34,
+  "cloud_calls": 0,
+  "telegram_actions": 0,
+  "model_calls": 0,
+  "new_raw_files": 0,
+  "new_retention_duties": 0,
+  "limitation": "Primary UI readiness observed account/chat change without operator action before formal context. Exclusive Telegram window requested asynchronously; no reply yet. No old UI_STOP removed and no live tools run."
+}
