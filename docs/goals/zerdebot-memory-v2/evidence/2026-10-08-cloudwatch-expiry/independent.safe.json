@@ -1,0 +1,46 @@
+{
+  "status": "ALIGNED_EXACT_NINE_ABSENT_PROTECTED_FILES_UNCHANGED",
+  "cloud_calls": 0,
+  "started_at": 1791479647.783434,
+  "absent": {
+    "raw-001.private.json": true,
+    "raw-002.private.json": true,
+    "raw-003.private.json": true,
+    "raw-004.private.json": true,
+    "raw-005.private.json": true,
+    "raw-007.private.json": true,
+    "raw-008.private.json": true,
+    "raw-009.private.json": true,
+    "selected.private.json": true
+  },
+  "protected_count": 41,
+  "apply_sha256": "7acf63ec7481a5c260a3aeb1d15564151d78f07328df06dbdb194ebc347227b9",
+  "scope_sha256": "5c0f0b8189096e55d7a2c6f66d4bf6480259ba4aa2a7a176024add5296a36254",
+  "apply_intent_sha256": "326a806185f035280dadbebf297f569d516348c3a9522e9acd54c2af05f3bedb",
+  "notice_sha256": "9a3fc67bc23325aecd73f2cc9a1f75cc82704af81a11c4cacfdb6b67e5238a3d",
+  "journal_sha256": "55ef737926006539afe388f53764d990cd3934284bc5f00637c44fa0d22b695e",
+  "actual_unlink_times": [
+    1791479619.209172,
+    1791479619.209547,
+    1791479619.20991,
+    1791479619.210229,
+    1791479619.210506,
+    1791479619.210863,
+    1791479619.211027,
+    1791479619.21135,
+    1791479619.211508
+  ],
+  "actual_intent_delays": [
+    0.11719393730163574,
+    0.1177060604095459,
+    0.11806511878967285,
+    0.11843395233154297,
+    0.1187441349029541,
+    0.11902618408203125,
+    0.11937808990478516,
+    0.11954402923583984,
+    0.11986112594604492
+  ],
+  "not_secure_media_erasure": true,
+  "finished_at": 1791479647.790608
+}

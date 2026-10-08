@@ -1,0 +1,60 @@
+{
+  "status": "EXACT_NINE_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+  "deadline_utc": "2026-10-08T17:13:39.091570+00:00",
+  "deadline_epoch": 1791479619.09157,
+  "exact_targets": [
+    "raw-001.private.json",
+    "raw-002.private.json",
+    "raw-003.private.json",
+    "raw-004.private.json",
+    "raw-005.private.json",
+    "raw-007.private.json",
+    "raw-008.private.json",
+    "raw-009.private.json",
+    "selected.private.json"
+  ],
+  "deleted_files": 9,
+  "protected_same_directory_files": 41,
+  "first_unlink_utc": "2026-10-08T17:13:39.209172+00:00",
+  "last_unlink_utc": "2026-10-08T17:13:39.211508+00:00",
+  "first_unlink_lateness_seconds": 0.11760210990905762,
+  "last_unlink_lateness_seconds": 0.11993813514709473,
+  "actual_unlink_epochs": [
+    1791479619.209172,
+    1791479619.209547,
+    1791479619.20991,
+    1791479619.210229,
+    1791479619.210506,
+    1791479619.210863,
+    1791479619.211027,
+    1791479619.21135,
+    1791479619.211508
+  ],
+  "cloud_calls": 0,
+  "new_runtime_deployment": false,
+  "new_UI_or_model_actions": false,
+  "new_raw_retention_duties": 0,
+  "remaining_numbered_duties": 10,
+  "raw_ledger_preserved": true,
+  "historical_content_FAIL_preserved": true,
+  "runtime_source": "8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0",
+  "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+  "config_merge": "ec72bea66c955782a94b87d10d6d5a7ba1287261",
+  "evidence_sha256": {
+    "scope.safe.json": "5c0f0b8189096e55d7a2c6f66d4bf6480259ba4aa2a7a176024add5296a36254",
+    "tool-pre.safe.json": "4e28027fd363309b60425f8fc2ae9cbd9c6a5b64d7497ad1d040fd2a1554c64b",
+    "maintenance-pre-v2.safe.json": "c1287d10d3ae35bb201aacd51f5d5063a308615c055b708bb8eee0e8b2f7da95",
+    "deletion-notice.safe.json": "9a3fc67bc23325aecd73f2cc9a1f75cc82704af81a11c4cacfdb6b67e5238a3d",
+    "inspect-DuePrep20261008A.safe.json": "79a175408db48392924c4985e8ff2d0feaa3537cf150a5fb0ab068cdcff6defe",
+    "apply.intent.safe.json": "326a806185f035280dadbebf297f569d516348c3a9522e9acd54c2af05f3bedb",
+    "apply.safe.json": "7acf63ec7481a5c260a3aeb1d15564151d78f07328df06dbdb194ebc347227b9",
+    "apply.journal.safe.jsonl": "55ef737926006539afe388f53764d990cd3934284bc5f00637c44fa0d22b695e",
+    "independent.intent.safe.json": "343fc3e22d4aa848e1d337081f152bbb2e4d8df5d0a04893d549c80022e88ef9",
+    "independent.safe.json": "783d945ffe0d0bdb0105f2dacc0aa119d64d06cd867dc09b27d405e9d83ed36d"
+  },
+  "limitations": [
+    "Local exact file unlink, not secure media erasure or absence of all cloud or external historical copies.",
+    "Only41 named same-directory files are hash-protected, not recursive assets, full runtime/config, row data or a filesystem transaction.",
+    "No new business or natural acceptance; Z10 and Epic remain OPEN. CI infrastructure preview is outside this local cleanup zero-cloud count."
+  ]
+}
