@@ -1,3 +1,29 @@
+## 2026-10-09：共享 Gemini 配额 writer 已发布并完成实际包核验
+
+PR257 构建源 `43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c`、merge `10019418ca7bb1118213361c3847c5a80387b64c`。71项新回归、270项定向、2461项全测和三个CI job通过；两环境五入口ARM、实际五函数完整ZIP/共享层/配置保护主检独审以及各300秒稳定完成。实际仅Bot/MemoryWorker共同包更新，唯一非缓存源码为rate_limit.py；564个依赖pyc差异如实保留，其余三函数与层字节不变，PR251身份配置保持。
+
+原writer、RATE key/PT日期、limit和48小时墙钟TTL不换。强读区分整行缺席与存在坏行；已有计数仅接受有限非负整数，写前拒绝坏值。合法行CAS设置精确next，至多三轮只重试明确RetryAttempts为真整数0的条件冲突；不明写不自动重写/退款。合法耗尽仍递增，原ClientError不可用结果与非ClientError/logger异常传播保持。没有观察到线上坏行或超额，不能把源码缺陷称为已发生线上事故，也不声称跨业务重送严格一次。
+
+新实际包28例本地禁网ARM合成及独立直接原流/6模块/完整包/容器移除核验通过，存储和提供方为本地seam；没有新Telegram、模型、线上故障或自然样本测试。104文件费用闭包仅writer变化、原五Memory计费owner保持，新时点reader通过7次只读核验，非持续模型许可或实付。原final中的probe/budget pending是阶段记录，由后续真实回执闭合，不改冻结报告。
+
+首次canonical本地KeyError发生在云上传前；静态控制流与保全输出将其定位到dev不含两个prod-only旧规则，原运行traceback未直接捕获，不能冒称直接异常栈证据；原dev15,263文件和原工具/失败回执保全。新V2只接受dev精确缺席、保留prod原约束，随后完成原dev首次ARM与prod首次构建/ARM；不冒称首次成功。执行前留证工具缺口和本地fixture失败均保留。发布包含真实云读取/资产准备和每环境单次Execute，不能将本地探针0云扩大为整轮0云；CI既有OIDC/CDK只读另计。
+
+新增原文责任为Oct16 18:48:47.827167UTC，精确原文/含原文派生按本批release-raw-retention.safe.json；安全聚合/hash及完整ZIP保留。原十项期限不变，Oct13/14各两时点分开。Z01/Z10/Z12–Z17及Epic原状态保持，20工单14OPEN/6CLOSED，自然0/50有据、0/20未知、production_ready=false。Y相册旧绑定已失效，需新reader/工具绑定独审和新的Telegram独占窗口后另执行；本次不发送媒体。
+
+[实际发布证据](evidence/2026-10-09-shared-quota-writer/release.safe.json)；[有限修复合同](SHARED_QUOTA_WRITER_REPAIR.md)；[精确保留台账](RETAINED_COPIES.md)。
+
+# 当前执行入口
+
+验收根2026-10-09-shared-quota-writer：CURRENT、final-release及独审、artifact-probe/result与independent-post、budget-QuotaWriterFinal20261009A、docs-release及独审。PR257所有已结束build/canonical/V2/prepare/merge/execute/主独/稳定/finish/probe/reader/final once冻结，不重跑。当前唯一reader为本目录read_budget_published.py，未来每次新label，包或配置变化重新绑定；旧G/J/PR242等reader不得冒充当前包。文档main不是新Lambda构建。原canonical失败及执行前工具修订完整保留。
+
+下一最小业务工作为Y两图相册原有限合同的当前包/reader重新绑定与独审，且仍待用户明确的新15分钟Telegram独占窗口；不打开或重发旧草稿，不移除旧UI_STOP。Groq/DeepSeek登录无回复不反复开页。其它Quiz恢复和业务、完整费用及自然使用缺口继续，原冻结题/18schema/F5-F10不复跑。
+
+十一项UTC职责：Oct11 17:01:48.147210费用9；Oct12 17:15:22.532382答案247；Oct13 08:06:04.659429发票3；Oct13 18:26:43.519150旧PR248失败4；Oct14 20:45:55.665021公开文本128；Oct14 21:48:46.021161身份配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167本次发布原文按实际ledger；Oct17 16:20:38旧memory PITR；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。Oct11/12已准备未删除，原Oct8/USER/AV/三归档key责任已履行不重删。按各精确ledger/身份/期限；删除前公告与新PRE，到期同轮等待每次≤60秒，不提前或故意拖晚，迟延如实记。文件删除非安全擦盘。用户导出/现役PITR保留。
+
+仅dev Test bots与原授权账号，不启新群/prod记忆，不伪造线上update/模型/UNKNOWN，不Invoke/Receive/Purge混合queue。验证码解题动作须现场确认。原五计费owner/epoch/DAY/UNKNOWN不改、不充值或改付款。自然0/50与0/20、production_ready=false；全部业务/自然/推广/副本职责完成才删除automation。
+
+## 以下为冻结历史交接，不作重跑指令
+
 ## 2026-10-09：答案重送原文清理准备与共享计数器有限研究
 
 Oct12答案重送批次原文已完成新的精确清理准备：原ledger全部247项仍在且hash一致，其中246个private JSON及含原文的click-intent.safe.json；217保留文件、18目录完整。新工具正确性/维护PRE、唯一只读inspect和独立本地复核通过，零删除/云/UI。原期限2026-10-12 17:15:22.532382UTC不变；到期公告、全量身份/字节/时点门禁、唯一apply和独立不存在仍待。文件移除不是安全擦盘，不能把准备当责任履行。
@@ -94,7 +120,7 @@ PR248构建源`8f1ba52960d8fe1b551dcdfe3e104b9d06ef04a0`，merge`f42d7dfd03ccb8d
 
 17例新实际包禁网ARM合成及独立原流/容器清理核验通过；不是新Telegram/线上故障或自然样本。当前104文件费用闭包只改客户端，新reader时点PASS非持久许可。Z01/Z17及Epic保持OPEN；writer底层历史坏行处理和完整供应商账单不在本修复结项范围。 dev首次主读因第三ZIP下载期限而INCOMPLETE，原七文件保全；新独审合同下完整只读续接通过，没有再次部署dev。根三份元数据和独立首STS超时的一个空[]记录共四文件仍按本批最早采集期限Oct13 18:26:43.519150UTC清理；旧ledger路径已迁移，以新精确ledger为准，禁止误删后来成功轮同名文件。 [发布证据](evidence/2026-10-06-explicit-quota-guard/release.safe.json)；[修复契约](EXPLICIT_QUOTA_GUARD.md)。原七项UTC职责保持，新增本轮第八项见[副本台账](RETAINED_COPIES.md)。自然仍0/50有据、0/20未知，production_ready=false，不启用新群/prod记忆。
 
-# 当前执行入口
+# 历史执行入口（冻结，非当前待做）
 
 验收根`2026-10-06-explicit-quota-guard`：CURRENT、final-release及独审、artifact-probe/result及independent-post、budget-QuotaGuardFinal20261006A、docs-release及独审。全部已结束build/prepare/hold/merge/execute/readback/finish/probe/reader不可重跑。PR248发布当时唯一时点reader为该目录read_budget_published.py；PR251配置改变后已由上方G reader替代，旧入口不得用于当前配置。文档main不是新Lambda源码。
 
