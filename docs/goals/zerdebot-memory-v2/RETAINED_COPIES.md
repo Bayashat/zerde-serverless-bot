@@ -1,6 +1,6 @@
 # 保留副本与到期责任（更新至2026-10-09）
 
-当前剩余十项独立UTC职责：Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余十一项独立UTC职责：Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -64,3 +64,7 @@
 ## Z01修复后提及与Reply原文（第十一项独立责任）
 
 本批首次采集2026-10-08 08:17:52.186798UTC，85份实际API/UI原文及登记含原文派生统一于2026-10-15 08:17:52.186798UTC人工精确删除并独审。私有清单为验收根`2026-10-08-z01-mention-reply/raw-retention.safe.json`，最终ledger SHA`d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed`，所有文件0600、目录0700、CAPTURED；独立17读沿原期限，不延期。工具上限不当实际数量，原生数字ID/链接缺失不由后续补猜。届时按实际ledger逐文件hash/身份、新工具PRE与精确公告后删除，安全聚合/hash保留，文件移除不是安全擦盘；其余十项精确UTC期限、用户导出与现役PITR保持。
+
+## PR257共享writer发布原文（新增独立责任）
+
+首次采集2026-10-09 18:48:47.827167UTC；全部实际API/config/template及登记含原文派生统一于2026-10-16 18:48:47.827167UTC人工精确删除并独审。私有ledger为`2026-10-09-shared-quota-writer/release-raw-retention.safe.json`，实际hash见[交付证据](evidence/2026-10-09-shared-quota-writer/release.safe.json)，只按最终CAPTURED项逐个核身份/hash；NOT_CREATED/预留槽不当实际文件。0600/0700，原期限不因失败/续接延期；完整ZIP、纯源码和安全聚合保留。到期当轮新PRE、精确公告删/保留/待核且每项unlink距公告不超过一小时，未到期不apply；早到同轮等至期限，每次不超过60秒。实际失败保留partial另窄续接，不重建原文。文件移除不是安全擦盘；原十项期限、用户导出及现役PITR不变。
