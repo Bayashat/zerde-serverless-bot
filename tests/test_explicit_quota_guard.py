@@ -37,6 +37,7 @@ def rejected(delivery, overlay):
 def test_real_counter_client_error_cannot_authorize_http(env, monkeypatch):
     _, delivery, api, overlay, gemini, http, providers = ready(env, monkeypatch)
     table = Mock()
+    table.get_item.return_value = {}
     table.update_item.side_effect = ClientError(
         {"Error": {"Code": "ProvisionedThroughputExceededException", "Message": "synthetic"}}, "UpdateItem"
     )
