@@ -1,0 +1,29 @@
+{
+  "status": "PREPARED_247_PRESENT_NOT_DELETED",
+  "as_of_utc": "2026-10-09T08:02:24.021451+00:00",
+  "source_directory": "2026-10-05-quiz-answer-redelivery",
+  "original_deadline_utc": "2026-10-12T17:15:22.532382+00:00",
+  "targets": 247,
+  "protected_files": 217,
+  "directories": 18,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_files": 0,
+  "new_retention_duties": 0,
+  "independent_synthetic_controls": 39,
+  "maintenance_pure_controls": 11,
+  "evidence_sha256": {
+    "PLAN.md": "bcf171dc7f0612375a06edb0ad05c4a2ad2eec404c4b5ee3371d918cd0243716",
+    "scope.safe.json": "601da3f657e98cf879028fadefc9ede2df30c44a17005e11ad2c158b7c9decc6",
+    "expire_raw.py": "b905273371ccb47e6840e16fe32c8a6c688246d6c1e7891d5033ff852926d85a",
+    "verify_absence.py": "5ddb247598f4d38fdbbf363c7227bd13770728ee365f271a049edb5407b1d361",
+    "tool-pre.safe.json": "8489cddef74996709f1daa423eb71fe8b26809fe0b4bb98afef10564f09d0f97",
+    "maintenance-pre.safe.json": "e9a0a9b27f3d0abee3598d4d5eee9faebd19c1d5aae13e3b29c69159459a9e2d",
+    "pre-control.safe.json": "69ed9912815f387459a3fe43fc631f195289a52d2f7bdbd013300f6bdeec8b83",
+    "inspect-Prep20261009A.safe.json": "937c9e85a04a984657be943b243e26766f3367a0bdf03955b61b95db5583731b"
+  },
+  "independent_preparation_status": "PENDING",
+  "scope": "Local preparation only; original Quiz PARTIAL stays unchanged. Apply/verify_absence never executed on real source."
+}

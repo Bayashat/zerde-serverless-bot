@@ -563,6 +563,17 @@
       "protected_files": 57,
       "deleted": 0,
       "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0"
+    },
+    "quiz_answer_raw_expiry_preparation": {
+      "status": "PREPARED_247_PRESENT_NOT_DELETED",
+      "evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/independent.safe.json",
+      "deadline_utc": "2026-10-12T17:15:22.532382+00:00",
+      "targets": 247,
+      "protected_files": 217,
+      "directories": 18,
+      "deleted": 0,
+      "scope_sha256": "601da3f657e98cf879028fadefc9ede2df30c44a17005e11ad2c158b7c9decc6"
     }
   },
   {
@@ -911,6 +922,15 @@
       "merge": "f42d7dfd03ccb8d7223670a8b852dc0698b656e0",
       "evidence": "evidence/2026-10-06-explicit-quota-guard/release.safe.json",
       "actual_package_synthetic_cases": 17
+    },
+    "shared_quota_writer_research": {
+      "status": "DRAFT_RESEARCH_NOT_PLAN_PRE_NOT_IMPLEMENTED",
+      "contract": "SHARED_QUOTA_WRITER_RESEARCH.md",
+      "research_sha256": "3d6378086a51a8f564f049a34b5328420ca293fa7dc4d18c9bf742c18ce85845",
+      "live_bad_rows_observed": false,
+      "product_source_changed": false,
+      "new_cloud_calls": 0,
+      "next": "沿原共享RATE owner收紧缺整行/坏count验证与条件更新，先独审SDK不明写/消费者失败边界；不改Quiz/Memory五费用owner或历史行。"
     }
   },
   {
