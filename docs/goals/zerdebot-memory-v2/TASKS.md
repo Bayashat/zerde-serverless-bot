@@ -1,3 +1,17 @@
+## 2026-10-11：九月费用九份原文已删除，真实迟延保留
+
+原期限2026-10-11 17:01:48.147210UTC不变。九个精确文件实际首次/末次unlink为2026-10-11T21:20:31.636119+00:00和2026-10-11T21:20:31.639021+00:00，分别晚15523.488909秒和15523.491811秒（约4小时18分43秒）。本轮首次实际时钟检查已经晚于期限，后续执行间隔原因UNKNOWN，不猜测设备或调度原因，不改写为按时完成。
+
+唯一apply与独立不存在核验均完成：6份AWS原始响应、2份Google CSV和1份UI观察已移除；57份列明保留文件hash、6目录身份和37个未创建槽保持，18条逐项intent/result与公告、原ledger和实际时点一致。raw/007–043从未创建，不算已删；安全费用聚合、旧失败、原账本和全部费用UNKNOWN保留，原37在线对象计数不增。文件移除不是安全擦盘或所有云/外部副本消失。
+
+本清理/核验0云API、UI、模型或新运行部署，后续CI既有OIDC/CDK只读预览另计。运行仍PR257字节、PR251配置，唯一时点reader仍共享writer批次S；本轮不重复任何旧reader/采集/发布。剩余十项职责中最近是Oct12 17:15:22.532382UTC答案原文247文件，其准备已完成，apply尚未执行；Oct13/14各双时点及Oct15/16/17/Nov1/Nov2保持。用户导出、现役PITR和必要恢复数据保留。
+
+Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20未知，production_ready=false。相册尚未重绑定新包，也未获得新的Telegram独占窗口；本轮没有现场或业务验收。
+
+[精确清理契约](SEPTEMBER_COST_RAW_EXPIRY.md)；[实际结果](evidence/2026-10-11-september-cost-raw-expiry/final.safe.json)；[独立不存在核验](evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
+
 # 任务看板（2026-10-09共享writer实际发布）
 
 [逐项唯一状态](task_manifest.json)；[实际发布证据](evidence/2026-10-09-shared-quota-writer/release.safe.json)。
@@ -13,7 +27,7 @@
 | Z07 [#164](https://github.com/Bayashat/zerde-serverless-bot/issues/164) | F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。 | 自然使用事实正确性/来源和语言切片，未知时不编造。 |
 | Z08 [#165](https://github.com/Bayashat/zerde-serverless-bot/issues/165) | 来源支持1176/1176；原生Telegram来源点击可回源。 | 自然回答质量、费用归因与预算恢复完整周期；#134关联本工单，尚不代替整体结项。 |
 | Z09 [#166](https://github.com/Bayashat/zerde-serverless-bot/issues/166) | F6/F7/F8/F10及PR220完成权限拒绝、本人更正、source-forget闭环。 | 自然覆盖及各原验收项逐条收口；旧两个PENDING不回填。 |
-| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 | 当前十一项精确UTC副本/原文责任见RETAINED_COPIES：Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。 |
+| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 | 当前十项精确UTC副本/原文责任见RETAINED_COPIES：Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。 |
 | Z11 [#168](https://github.com/Bayashat/zerde-serverless-bot/issues/168) | F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。 | Z20声明的旧残留清理前置已满足；真实使用起点未建立，0/50有据和0/20未知，至少7天及其他产品门槛仍未满足；本次不启用新群或prod记忆。 |
 | Z12 [#169](https://github.com/Bayashat/zerde-serverless-bot/issues/169) | 验证码竞争/状态恢复实现已部署。 | 测试身份真实正确解限、旧超时/重入群竞争和异常恢复。 |
 | Z13 [#170](https://github.com/Bayashat/zerde-serverless-bot/issues/170) | 反垃圾执行结果/重试及CLEAN恢复实现已部署。 | 真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。 |

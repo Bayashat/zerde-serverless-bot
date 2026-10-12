@@ -1,0 +1,46 @@
+{
+  "status": "ALIGNED_EXACT_NINE_ABSENT_PROTECTED_FILES_UNCHANGED",
+  "cloud_calls": 0,
+  "started_at": 1791774136.0770361,
+  "absent": {
+    "raw/001.private.json": true,
+    "raw/002.private.json": true,
+    "raw/003.private.json": true,
+    "raw/004.private.json": true,
+    "raw/005.private.json": true,
+    "raw/006.private.json": true,
+    "provider-raw/google-dev-september-usage.csv": true,
+    "provider-raw/google-prod-september-project.csv": true,
+    "provider-raw/provider-ui-observation.private.json": true
+  },
+  "protected_count": 57,
+  "apply_sha256": "5e6aa20f95d054b29a3a3530d0c52d34d18735f3be964df1684cbca7007db869",
+  "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0",
+  "apply_intent_sha256": "8a92c877a6be29a13e9ec5ae0b0b96629fa9d9be3698f4cf8a1317c113bcaed5",
+  "notice_sha256": "66a052abc97c6e3737c2a3faf449f301053c830f55c0929d4f4be281600c82c4",
+  "journal_sha256": "0ea30e0bb73ca0adde508efb2c4ad3234f393656c8635102a43eb1ca772d9292",
+  "actual_unlink_times": [
+    1791753631.6361191,
+    1791753631.6364942,
+    1791753631.6368692,
+    1791753631.637207,
+    1791753631.637544,
+    1791753631.637874,
+    1791753631.6382148,
+    1791753631.638679,
+    1791753631.6390212
+  ],
+  "actual_intent_delays": [
+    15523.488601207733,
+    15523.489170074463,
+    15523.489546060562,
+    15523.489911079407,
+    15523.490245103836,
+    15523.490577936172,
+    15523.49090719223,
+    15523.491250038147,
+    15523.491724014282
+  ],
+  "not_secure_media_erasure": true,
+  "finished_at": 1791774136.090898
+}

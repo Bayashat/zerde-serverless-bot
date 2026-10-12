@@ -1,6 +1,6 @@
-# 保留副本与到期责任（更新至2026-10-09）
+# 保留副本与到期责任（更新至2026-10-11）
 
-当前剩余十一项独立UTC职责：Oct11费用、Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余十项独立UTC职责：Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -29,7 +29,19 @@
 
 2026-10-01 17:13:39.091570 UTC开始的单次只读采集产生9份必要原始回执（8份API响应和1份所选身份），均0600。按原契约7天后，即2026-10-08 17:13:39.091570 UTC，删除精确manifest列明的这些文件及任何登记的含原文派生文件，再独立核不存在。私有精确清单为验收根`2026-10-01-z02-cloudwatch-capture/raw-retention.safe.json`；只删该清单，不扫整个目录。安全hash/聚合报告保留；不改Z10原四期限，也不以本地文件移除声称安全擦盘或CloudWatch历史物理副本全部消失。
 
-## Z17九月费用原文（独立责任）
+## Z17九月费用原文（已履行）
+
+原期限2026-10-11 17:01:48.147210UTC不变。九个精确文件实际首次/末次unlink为2026-10-11T21:20:31.636119+00:00和2026-10-11T21:20:31.639021+00:00，分别晚15523.488909秒和15523.491811秒（约4小时18分43秒）。本轮首次实际时钟检查已经晚于期限，后续执行间隔原因UNKNOWN，不猜测设备或调度原因，不改写为按时完成。
+
+唯一apply与独立不存在核验均完成：6份AWS原始响应、2份Google CSV和1份UI观察已移除；57份列明保留文件hash、6目录身份和37个未创建槽保持，18条逐项intent/result与公告、原ledger和实际时点一致。raw/007–043从未创建，不算已删；安全费用聚合、旧失败、原账本和全部费用UNKNOWN保留，原37在线对象计数不增。文件移除不是安全擦盘或所有云/外部副本消失。
+
+本清理/核验0云API、UI、模型或新运行部署，后续CI既有OIDC/CDK只读预览另计。运行仍PR257字节、PR251配置，唯一时点reader仍共享writer批次S；本轮不重复任何旧reader/采集/发布。剩余十项职责中最近是Oct12 17:15:22.532382UTC答案原文247文件，其准备已完成，apply尚未执行；Oct13/14各双时点及Oct15/16/17/Nov1/Nov2保持。用户导出、现役PITR和必要恢复数据保留。
+
+Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20未知，production_ready=false。相册尚未重绑定新包，也未获得新的Telegram独占窗口；本轮没有现场或业务验收。
+
+[精确清理契约](SEPTEMBER_COST_RAW_EXPIRY.md)；[实际结果](evidence/2026-10-11-september-cost-raw-expiry/final.safe.json)；[独立不存在核验](evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+以下为已冻结准备期记录，不作待删指令：
 
 2026-10-09新精确清理准备已完成：九实际文件、57保留文件、6目录由新工具inspect及独立本地复核通过，零删除/云调用。原期限不变；[执行契约](SEPTEMBER_COST_RAW_EXPIRY.md)列精确目标，不能用43槽代替实际文件或重跑旧collector。到期公告/唯一apply/独立不存在尚待。
 
