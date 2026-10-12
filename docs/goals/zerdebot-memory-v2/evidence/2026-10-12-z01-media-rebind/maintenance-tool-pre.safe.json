@@ -1,0 +1,80 @@
+{
+  "status": "ALIGNED",
+  "stage": "MAINTENANCE_TOOL_PRE_PREPARATION_ONLY",
+  "reviewed_at_utc": "2026-10-12T18:17:55.822366+00:00",
+  "plan_sha256": "f4cfef5354116886cd354dd0f6de8f5d706e0797548a7044bf2a22bf799fe5e7",
+  "release_binding_sha256": "1441c573aff5e48c28ad46b6026187c6b805ee9dd651a6af6b788b87c509fd36",
+  "tools": {
+    "collector.py": "9e10784dafb85db948665c074de2a52274c5c75f2be4e39dd3af8e726bc5dbe8",
+    "log_collector.py": "e55996e655ae3a46cc624729b1f48126a7d2c287b9836832771371a66d5860e6",
+    "assess_logs.py": "425943e0e7254ea88d0ca03d2381d3f822b8e282dca3ea76d22bd97e0f10822c",
+    "ui_record.py": "5b3183d2a4c11e4c54866c59e91f20a47a00cd98df88e23c3bc57d58df53a53a",
+    "independent_verify.py": "0df5c081775d2f2f1bbecde174836c0085c328552cb0b6911d65e4204888a0da"
+  },
+  "fixtures_sha256": "46207f43e671e44b6c3c5b153943f706f4c4ef91c9950f8a47d001738fd8c197",
+  "plan_pre_sha256": "b9d6174f6fdf0f2b612d43128900e18fbba71cbac377db6672a1a4d6cc91562e",
+  "independent_controls": [
+    {
+      "path": "maintenance-controls-v2.safe.json",
+      "sha256": "4b913842da812ffb4ea2bac8bd7811f0bed66d38f5637ad06ce3e2437db10d4d",
+      "count": 31,
+      "script_sha256": "68a200fbba553de2548fa9e59a78982ecd0b3ca890259ed4b2939b27ed22fe3e",
+      "basis": "tools-v2原字节已保全，最后window顺序之外的独立函数AST/其余三工具相同，窄delta另外核。"
+    },
+    {
+      "path": "maintenance-window-controls-v4.safe.json",
+      "sha256": "4c323311a685b5633a1b6db0c7300b267263e05be4712fe133c4ac9c3ccbe320",
+      "count": 6,
+      "script_sha256": "6ad25469c060a2f49f103cdf83d752229c4267c2f00594e982d75224512ebbfb",
+      "basis": "当前root preflight/首次onsite/后续UI在过期window下均未触binding；合法窗口到fake binding即停止，无实际constructor/record完成。"
+    }
+  ],
+  "independent_control_count": 37,
+  "main_controls_sha256": "0097609c8d3430741d4f43424d47dad3052d32722d1e9f47d9a51b51f002f70d",
+  "main_control_count": 77,
+  "v1_review_sha256": "d026b9dba592bde9ba17b949935cfdd6200f5c19b29a7aa7c862ff67bd413dba",
+  "v1_proof_sha256": "4d20dfc1443d748c58c40eab4a15fdf2924e66ccd9d71ffb78c9d4eb8dde9d59",
+  "fixture_failure_preserved_sha256": "a2c95a911912e5951d215f25b6c22574f0902bc6ab8f966585b1f463226edbbf",
+  "resolved_findings": [
+    {
+      "id": "MEDIA-M1",
+      "resolution": "root在safe/ZIP验证后及snapshot hash/parse前后核原截止；独立helper将parse纳入同门禁并返回dict，caller不再另读。跨验证/hash/parse截止正负控通过，过期不返回配置。"
+    },
+    {
+      "id": "CORRECTNESS_WINDOW_ORDER",
+      "resolution": "root preflight与所有ui_record先检查当前direct-human窗口再触binding；六项独立顺序控制通过。"
+    }
+  ],
+  "findings": [],
+  "checks": [
+    "当前五工具严格hash固定；最后delta仅preflight/ui_record窗口顺序，期限独立函数AST和另外三工具不变；两日志工具完全等于冻结Y，未执行旧Y。",
+    "固定S runtime PR257/config PR251/原19safe、104owner ZIP闭包/8入口pin与原snapshot期限；实际pure gate在污染ambient budget_release_gate缓存下通过，未导入reader或读实际private snapshot。",
+    "唯一生产owner、共享PT/TTL/limit/五Memory成本owner和Quiz独立计量保持；预算点不等于模型许可或发票，PT变化不独占归因。",
+    "固定一个二图album+一个native Reply ask，三输入身份；原caption/hash/gold/quiet>=360s/完整鉴权与两媒体模型序列保持，未新增旧NAMR/Quiz/自然场景。",
+    "window严格direct_human_reply/True/原群actor/0<duration<=900/有效时点/hash形状；旧unlock不算许可，当前尚无window/context/capture/anchor或send。",
+    "初始化先独占intent再window/anchor/空ledger，唯一604800秒起点在首次onsite之前；PENDING/duplicate/path escape/400 cap拒绝，partial初始化留once且不能重置。",
+    "ui-onsite在无preflight时仅登记真实身份和空draft/no reply/no selection；后续draft/intent仍需preflight；onsite CAPTURED hash/size/freshness在首cloud前核。",
+    "root <=400 API/phase60或80/600s/每次30s/SDK单attempt；独立<=30/600s；ClientError.response/finally同ledger登记保持，无新业务写/Invoke/SSM/queue receive。",
+    "独立POST直接读原始证据和fresh固定键，五配置含CodeSha256/RevisionId完整投影，不导入root scorer、不称独立UI。",
+    "旧UI_STOP/FAIL/once和S原期限保持；独立raw同ledger同期限；新责任只在真实anchor建立时登记，文档准备不启动原文期限。"
+  ],
+  "execution_limits": {
+    "network_calls": 0,
+    "aws_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "budget_reader_runs": 0,
+    "actual_private_reads": 0,
+    "actual_ledger_writes": 0,
+    "old_or_new_main_runs": 0,
+    "product_or_repo_writes": 0,
+    "actual_safe_zip_gate_runs": 1,
+    "new_raw_duties": 0
+  },
+  "limitations": [
+    "独立31+6禁网控；77主控仅核实际报告/hash，不重跑或替代独立判断。",
+    "PRE和准备文档发布不是现场许可/业务PASS，需要新用户独占窗口及后续实际有限验收。",
+    "到原S期限后必须新窄证据契约，不能继续留存、重建或延期snapshot。",
+    "未运行现场入口、旧once、预算reader或实际S private读取。"
+  ]
+}

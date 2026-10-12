@@ -1,0 +1,59 @@
+{
+  "status": "ALIGNED_INDEPENDENT_TOOL_PRE_NOT_LIVE_PERMISSION",
+  "plan_sha256": "f4cfef5354116886cd354dd0f6de8f5d706e0797548a7044bf2a22bf799fe5e7",
+  "release_binding_sha256": "1441c573aff5e48c28ad46b6026187c6b805ee9dd651a6af6b788b87c509fd36",
+  "fixtures_sha256": "46207f43e671e44b6c3c5b153943f706f4c4ef91c9950f8a47d001738fd8c197",
+  "tools": {
+    "assess_logs.py": "425943e0e7254ea88d0ca03d2381d3f822b8e282dca3ea76d22bd97e0f10822c",
+    "collector.py": "9e10784dafb85db948665c074de2a52274c5c75f2be4e39dd3af8e726bc5dbe8",
+    "independent_verify.py": "0df5c081775d2f2f1bbecde174836c0085c328552cb0b6911d65e4204888a0da",
+    "log_collector.py": "e55996e655ae3a46cc624729b1f48126a7d2c287b9836832771371a66d5860e6",
+    "ui_record.py": "5b3183d2a4c11e4c54866c59e91f20a47a00cd98df88e23c3bc57d58df53a53a"
+  },
+  "independent_controls_sha256": "5b13a5c8b6595752bf53f48669d08226935346958fe3846b92716938c98d6a2e",
+  "independent_control_source_sha256": "9ab27c9fd8e757e61330337be1341e9f68cb9c0208ba3b9950b923d503f1343d",
+  "independent_controls_count": 54,
+  "main_controls_sha256": "0097609c8d3430741d4f43424d47dad3052d32722d1e9f47d9a51b51f002f70d",
+  "main_controls_count": 77,
+  "prior_needs_revision_sha256": "575ff626ab9f414a70e626c7394b67e241e1446ae0d34f80ee0cae18c1be91f1",
+  "resolved_findings": [
+    {
+      "id": "WINDOW-ORDER-1",
+      "resolution": "Initial preflight and all UI record entrypoints validate the current human-window record before private release binding. Missing and expired-window synthetic controls pass."
+    },
+    {
+      "id": "ORIGINAL-SNAPSHOT-EXPIRY",
+      "resolution": "Pure safe gate rechecks after validation. Root and independent snapshot helpers gate original deadline before hashing, before parsing and after reading; six exact-boundary synthetic negative controls plus a pure-gate crossing pass. No actual snapshot read."
+    }
+  ],
+  "verified_contracts": [
+    "Pinned current S reader/gate/PRE and 19 safe receipts; exact-byte unique-module pure gate independent of ambient module/sys.path. Budget reader main never imported or executed.",
+    "104 local owner files match the manifest; deployed Bot/Worker packages and shared layer match all manifest entries in the pinned safe/ZIP gate. 103 local owners unchanged from J, sole changed owner rate_limit.py is the released PR257 writer.",
+    "Independent verifier separately binds S safe evidence and original metadata hash and compares the same five complete configuration projections including CodeSha256, RevisionId, Environment and Layers.",
+    "One local retention initializer requires actual human-window attestation before any new anchor. Initial onsite observation can be registered before preflight using the same reserve/save/finish ledger. Reinitialization and unresolved raw intents fail closed.",
+    "Two fixed synthetic images, caption, native Reply, 360-second quiet window and ordered complete multimodal success evidence remain the original finite contract. Prepared images or HTTP200 alone cannot establish successful two-image acceptance.",
+    "Five tools retain bounded read-only API allowlists, precise identities, full pagination/multiplicity, single-intent paths and original raw retention. No new model/budget owner or permission is created."
+  ],
+  "owner_manifest_sha256": "7887c00c326b962356d487916452ef52aa2ea25c3cdebb86a1872401688d325e",
+  "local_owner_count": 104,
+  "unchanged_from_J_owner_count": 103,
+  "changed_owner_paths": [
+    "src/bot/services/repositories/rate_limit.py"
+  ],
+  "actual_private_snapshot_reads": 0,
+  "cloud_calls": 0,
+  "github_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "budget_reader_executions": 0,
+  "actual_pure_safe_zip_gate_validations": 2,
+  "new_live_anchor_ledger_or_intents": 0,
+  "new_retention_duties": 0,
+  "limits": [
+    "Tool PRE and synthetic controls only; no real album, caption, Telegram Reply, live cloud readback or natural-use acceptance.",
+    "Window fields are an operator-recorded attestation, not independent proof of a human message. Main must first obtain a fresh direct human exclusive-window reply and register the earliest real UI/API capture under a new anchor.",
+    "Original S snapshot expiry remains 2026-10-16T18:48:47.827167Z. It was not read or copied in this review.",
+    "Original failed reviewer controls and findings are preserved. Two V1 callable-harness errors were corrected and are not product failures.",
+    "Primary native observations do not become independent UI evidence; no native ID/link acquisition may be claimed from persisted IDs."
+  ]
+}

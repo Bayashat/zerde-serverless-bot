@@ -98,6 +98,18 @@
       "actual_package_synthetic_cases": 28,
       "live_bad_rows_observed": false,
       "original_rate_owner_and_memory_owners_unchanged": true
+    },
+    "media_album_rebind_preparation": {
+      "status": "PREPARED_REVIEWED_CURRENT_RUNTIME_LIVE_NOT_STARTED_WAITING_EXCLUSIVE_UI",
+      "contract": "Z01_MEDIA_REBIND_ACCEPTANCE.md",
+      "evidence": "evidence/2026-10-12-z01-media-rebind/preparation.safe.json",
+      "root_offline_controls": 77,
+      "independent_offline_controls": 54,
+      "runtime_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
+      "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+      "live_started": false,
+      "new_raw_retention_duties": 0,
+      "remaining": "等待新Telegram独占窗口，之后首次采集前建立原文账本、现场/当前preflight与唯一S预算时点；完整相册/Reply/独立POST尚待。旧Y绑定永久无效。"
     }
   },
   {
