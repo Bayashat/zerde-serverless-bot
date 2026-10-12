@@ -1,3 +1,25 @@
+## 2026-10-11：九月费用九份原文已删除，真实迟延保留
+
+原期限2026-10-11 17:01:48.147210UTC不变。九个精确文件实际首次/末次unlink为2026-10-11T21:20:31.636119+00:00和2026-10-11T21:20:31.639021+00:00，分别晚15523.488909秒和15523.491811秒（约4小时18分43秒）。本轮首次实际时钟检查已经晚于期限，后续执行间隔原因UNKNOWN，不猜测设备或调度原因，不改写为按时完成。
+
+唯一apply与独立不存在核验均完成：6份AWS原始响应、2份Google CSV和1份UI观察已移除；57份列明保留文件hash、6目录身份和37个未创建槽保持，18条逐项intent/result与公告、原ledger和实际时点一致。raw/007–043从未创建，不算已删；安全费用聚合、旧失败、原账本和全部费用UNKNOWN保留，原37在线对象计数不增。文件移除不是安全擦盘或所有云/外部副本消失。
+
+本清理/核验0云API、UI、模型或新运行部署，后续CI既有OIDC/CDK只读预览另计。运行仍PR257字节、PR251配置，唯一时点reader仍共享writer批次S；本轮不重复任何旧reader/采集/发布。剩余十项职责中最近是Oct12 17:15:22.532382UTC答案原文247文件，其准备已完成，apply尚未执行；Oct13/14各双时点及Oct15/16/17/Nov1/Nov2保持。用户导出、现役PITR和必要恢复数据保留。
+
+Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20未知，production_ready=false。相册尚未重绑定新包，也未获得新的Telegram独占窗口；本轮没有现场或业务验收。
+
+[精确清理契约](SEPTEMBER_COST_RAW_EXPIRY.md)；[实际结果](evidence/2026-10-11-september-cost-raw-expiry/final.safe.json)；[独立不存在核验](evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+# 当前执行入口
+
+验收根2026-10-11-september-cost-raw-expiry：CURRENT、final/apply/independent与docs-release及最终独审。唯一inspect Due20261011A/apply/verify已结束，不重删、不重建原文、不重跑费用collector。当前运行PR257和配置PR251保持，S/read_budget_published.py仍唯一当前reader；旧G/Y包绑定不能继续使用。文档不是新运行构建。
+
+剩余十项UTC职责：Oct12 17:15:22.532382答案247；Oct13 08:06:04.659429发票3；Oct13 18:26:43.519150旧PR248失败4；Oct14 20:45:55.665021公开文本128；Oct14 21:48:46.021161身份配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167共享writer发布原文1426；Oct17 16:20:38旧memory PITR；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。Oct12准备已完成未删除；Oct11费用/Oct8日志/USER/AV/三归档key已履行，真实迟延保留，不重删。到期现场精确公告/新label/hash/身份/原时点门禁后一次apply与独审；未知停止另窄续接，不提前或故意拖晚，早到同轮等待每次不超过60秒。
+
+随后继续相册有限新批的PR257/S reader重绑定与独审，用户新的15分钟Telegram独占窗口仍待；不操作旧草稿或解除旧UI_STOP。Groq/DeepSeek无登录回复不反复开页。其余业务恢复、费用和自然缺口保持，prod记忆/新群不启用，不充值/改支付/复制secret。自然0/50与0/20、production_ready=false，全部义务完成才删除automation。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
+
 ## 2026-10-09：共享 Gemini 配额 writer 已发布并完成实际包核验
 
 PR257 构建源 `43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c`、merge `10019418ca7bb1118213361c3847c5a80387b64c`。71项新回归、270项定向、2461项全测和三个CI job通过；两环境五入口ARM、实际五函数完整ZIP/共享层/配置保护主检独审以及各300秒稳定完成。实际仅Bot/MemoryWorker共同包更新，唯一非缓存源码为rate_limit.py；564个依赖pyc差异如实保留，其余三函数与层字节不变，PR251身份配置保持。
@@ -11,6 +33,8 @@ PR257 构建源 `43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c`、merge `10019418ca7b
 新增原文责任为Oct16 18:48:47.827167UTC，精确原文/含原文派生按本批release-raw-retention.safe.json；安全聚合/hash及完整ZIP保留。原十项期限不变，Oct13/14各两时点分开。Z01/Z10/Z12–Z17及Epic原状态保持，20工单14OPEN/6CLOSED，自然0/50有据、0/20未知、production_ready=false。Y相册旧绑定已失效，需新reader/工具绑定独审和新的Telegram独占窗口后另执行；本次不发送媒体。
 
 [实际发布证据](evidence/2026-10-09-shared-quota-writer/release.safe.json)；[有限修复合同](SHARED_QUOTA_WRITER_REPAIR.md)；[精确保留台账](RETAINED_COPIES.md)。
+
+# 以下为原执行入口，已由上方新回执覆盖
 
 # 当前执行入口
 

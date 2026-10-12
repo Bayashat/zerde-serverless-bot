@@ -486,13 +486,13 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-08",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。",
-    "remaining": "当前十一项精确UTC副本/原文责任见RETAINED_COPIES：Oct11 17:01:48.147210、Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
+    "status_as_of": "2026-10-11",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。",
+    "remaining": "当前十项精确UTC副本/原文责任见RETAINED_COPIES：Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-08-cloudwatch-expiry/final.safe.json",
+    "status_evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
@@ -573,7 +573,8 @@
       "targets": 9,
       "protected_files": 57,
       "deleted": 0,
-      "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0"
+      "scope_sha256": "8c51dbdc54f39cc74de23346eccb8a2187f6b4ca0cb1914c9c6f3cd692a7ceb0",
+      "historical_preparation_only": true
     },
     "quiz_answer_raw_expiry_preparation": {
       "status": "PREPARED_247_PRESENT_NOT_DELETED",
@@ -592,6 +593,20 @@
       "private_ledger": "2026-10-09-shared-quota-writer/release-raw-retention.safe.json",
       "ledger_sha256": "1fbda1fcba166f9ed270e2c658460d86c972bb99b344f45fc024cf64a527ac49",
       "evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json"
+    },
+    "september_cost_raw_expiry_completion": {
+      "status": "EXACT_NINE_COST_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-11T17:01:48.147210+00:00",
+      "deleted_files": 9,
+      "protected_files": 57,
+      "first_unlink_utc": "2026-10-11T21:20:31.636119+00:00",
+      "last_unlink_utc": "2026-10-11T21:20:31.639021+00:00",
+      "first_lateness_seconds": 15523.488909244537,
+      "last_lateness_seconds": 15523.491811275482,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
+      "independent_evidence": "evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json",
+      "not_secure_media_erasure": true
     }
   },
   {
@@ -962,6 +977,20 @@
       "actual_package_synthetic_cases": 28,
       "live_bad_rows_observed": false,
       "original_rate_owner_and_memory_owners_unchanged": true
+    },
+    "cost_raw_expiry": {
+      "status": "EXACT_NINE_COST_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-11T17:01:48.147210+00:00",
+      "deleted_files": 9,
+      "protected_files": 57,
+      "first_unlink_utc": "2026-10-11T21:20:31.636119+00:00",
+      "last_unlink_utc": "2026-10-11T21:20:31.639021+00:00",
+      "first_lateness_seconds": 15523.488909244537,
+      "last_lateness_seconds": 15523.491811275482,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
+      "independent_evidence": "evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json",
+      "not_secure_media_erasure": true
     }
   },
   {
