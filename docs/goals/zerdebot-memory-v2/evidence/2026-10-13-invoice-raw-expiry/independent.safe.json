@@ -1,0 +1,793 @@
+{
+  "status": "ALIGNED_THREE_PRESENT_PROTECTED_UNCHANGED_PREPARATION_ONLY",
+  "reviewer": "z01_oct8_pre",
+  "observed_at_utc": "2026-10-12T13:22:04.257793+00:00",
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-06-provider-cost-gaps",
+  "preparation_sha256": "c7c8953a56b1f4a3033d0b20114886c2568a32c60c9bbcecc987cc28b894f8e3",
+  "tool_pre_sha256": "46317a650ced4d3d59f18ba5efe6a0490500e4c9e70e673a7ea4e5bc321e77f6",
+  "maintenance_pre_sha256": "b68bc77b392140a58888c65b94726caebeb9bffa2ebe598bdaab5da8363cc918",
+  "files": {
+    "PLAN.md": "1e363c1b704571650c5d766a83ad14310fa7944d16e98a251b17e3ae6fd42860",
+    "scope.safe.json": "e610a41de296376b1e6e44eeb52a452d25febba056166f3f9d5a168ff37bdb38",
+    "expire_raw.py": "8c4a464bc76ec3733dcaeb6bb9a12d421ec9e0b0c358548bb1dcf1d3c5530ef9",
+    "verify_absence.py": "148c8099fb107c373b4d943bd2d5afa83fc4c34399877afdb47953907d5798ff"
+  },
+  "inspect_sha256": "b9ad3c81c2f6ad8a867d59a7db949c5acccfecd8ac1d571fb4531e9fbcc92cb8",
+  "inspect_intent_sha256": "dfd61d7621b8f6df2f5bd6997a967bb2c982d940d939c7264e5739067ac6c7ac",
+  "deadline_utc": "2026-10-13T08:06:04.659429+00:00",
+  "deadline_epoch": 1791878764.659429,
+  "targets": 3,
+  "protected_files": 83,
+  "directories": 7,
+  "inventory_files": 86,
+  "target_checks": {
+    "invoice-raw/001.private.json": {
+      "sha256": "a1ee9d5489b4099df77ec45c357becf1e9c39ee1b98b947aeaea6063d2111ee1",
+      "device": 16777232,
+      "inode": 123553320,
+      "size": 776,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-raw/001.private.json": {
+      "sha256": "7da7a5818dbcd9cc40da24a1b81e80c8b2d8e2338cc9725b150780936b627b7e",
+      "device": 16777232,
+      "inode": 123553645,
+      "size": 776,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-raw/002.private.json": {
+      "sha256": "bdd351daa52454a30ebad25a19b0c0e1dfbc67a569aa94ecd12b92481ec5dc7f",
+      "device": 16777232,
+      "inode": 123553648,
+      "size": 3267,
+      "mode": 384,
+      "nlink": 1
+    }
+  },
+  "protected_checks": {
+    "AWS_INVOICE_PLAN.md": {
+      "sha256": "3922e1cdf074697c8c97f0fc6c235e57e9d3cde6d3f7b7467d949e1d8c229786",
+      "device": 16777232,
+      "inode": 123552715,
+      "size": 2732,
+      "mode": 420,
+      "nlink": 1
+    },
+    "CURRENT.md": {
+      "sha256": "71b30e4b752ca52e7c49c72ef00c3a2dce47597da07506033dc6672e5d6a16a4",
+      "device": 16777232,
+      "inode": 123552635,
+      "size": 1153,
+      "mode": 420,
+      "nlink": 1
+    },
+    "DEEPSEEK_PLAN.md": {
+      "sha256": "7a477ff58ede89999bb1546689bc1fb02e3e1bcf88cbff0442da2795cab578c4",
+      "device": 16777232,
+      "inode": 123552331,
+      "size": 1169,
+      "mode": 384,
+      "nlink": 1
+    },
+    "DOCS_FINAL_VERIFY_CONTRACT.md": {
+      "sha256": "f46ead95a71dbbff22a61e0aba5e4bf7ed8c8461aebf1ddeb77fe56bcc86b0f4",
+      "device": 16777232,
+      "inode": 123556289,
+      "size": 1983,
+      "mode": 420,
+      "nlink": 1
+    },
+    "NEXT_ACTIONS.safe.md": {
+      "sha256": "5e80913fb51834dfbec42c4ae88c5684180bbda62bd64b3bb7ae6261e498c02f",
+      "device": 16777232,
+      "inode": 123555808,
+      "size": 1081,
+      "mode": 420,
+      "nlink": 1
+    },
+    "NEXT_AWS_INVOICE_RESEARCH.md": {
+      "sha256": "7863727ec9c58f556ebc608ac8d5e5166b5549010e9b20a7e6eeb67c4abe5816",
+      "device": 16777232,
+      "inode": 123552903,
+      "size": 10249,
+      "mode": 384,
+      "nlink": 1
+    },
+    "NEXT_Z01_EVIDENCE_POINTERS.safe.json": {
+      "sha256": "1cb4eff5f9c4dfcb7b4a3f9c13c7ff59479b3f53cc3c98bb69cf602aa72aa06b",
+      "device": 16777232,
+      "inode": 123556231,
+      "size": 3307,
+      "mode": 420,
+      "nlink": 1
+    },
+    "PLAN.md": {
+      "sha256": "9d02a19e5e5bd5fe4b9ce347965bd300b84fa5ea79c52f64ed795d908477c486",
+      "device": 16777232,
+      "inode": 123551705,
+      "size": 2932,
+      "mode": 384,
+      "nlink": 1
+    },
+    "__pycache__/collect_invoice.cpython-313.pyc": {
+      "sha256": "1725ae5ab34438f45628b19004eb8364ef6712a805ec7a49ac8ec6db6e45c3d7",
+      "device": 16777232,
+      "inode": 123552993,
+      "size": 17914,
+      "mode": 420,
+      "nlink": 1
+    },
+    "__pycache__/verify_docs_final.cpython-313.pyc": {
+      "sha256": "037d49456f27602afce9f3aaf9557f2377782eed7cb8cf0ed443ccb1bfb68312",
+      "device": 16777232,
+      "inode": 123556301,
+      "size": 29090,
+      "mode": 420,
+      "nlink": 1
+    },
+    "automation-before.private.toml": {
+      "sha256": "1b95ebd2dd368cbb6d325f461d53401d88c52847e770cfe970b80849d5d6f6d9",
+      "device": 16777232,
+      "inode": 123555122,
+      "size": 11693,
+      "mode": 384,
+      "nlink": 1
+    },
+    "automation-prompt-prefix.txt": {
+      "sha256": "3306c4f70e14ea2d3bb8eb0631130ceb7e181df9e624dd6630ec08fecdfe335f",
+      "device": 16777232,
+      "inode": 123556871,
+      "size": 4272,
+      "mode": 420,
+      "nlink": 1
+    },
+    "automation-prompt.new.txt": {
+      "sha256": "9ba3d5ad897cdb26d6d09b76a5134c47b1aff90d0d6052beab285cc2192231de",
+      "device": 16777232,
+      "inode": 123557563,
+      "size": 16446,
+      "mode": 384,
+      "nlink": 1
+    },
+    "automation-readback.safe.json": {
+      "sha256": "ba75b2c254716ff4e215dd28abf3d2862e3b013bbd068436950507ce9ef93468",
+      "device": 16777232,
+      "inode": 123557601,
+      "size": 426,
+      "mode": 420,
+      "nlink": 1
+    },
+    "automation-update-args.private.json": {
+      "sha256": "ca81da83f05a6d201cc28bbe3f6d454a2d2f2201286c5ba73c4aea56f4e19c94",
+      "device": 16777232,
+      "inode": 123557562,
+      "size": 16755,
+      "mode": 384,
+      "nlink": 1
+    },
+    "build_docs.py": {
+      "sha256": "32d01618799e938c4a35ab6e755fd88a62a85eff8527bb73259698843721c4e0",
+      "device": 16777232,
+      "inode": 123554147,
+      "size": 16823,
+      "mode": 420,
+      "nlink": 1
+    },
+    "ci-unit-summary.safe.json": {
+      "sha256": "6dd471f4d9b286fb516b561af362a48cf3ee33d882593e42f595b33815649cf3",
+      "device": 16777232,
+      "inode": 123557519,
+      "size": 183,
+      "mode": 420,
+      "nlink": 1
+    },
+    "collect_invoice.py": {
+      "sha256": "8c179be7652837fa83f4f208c93e581be8afad8242a70320601305705d35b241",
+      "device": 16777232,
+      "inode": 123552910,
+      "size": 9926,
+      "mode": 420,
+      "nlink": 1
+    },
+    "deepseek-pre.safe.json": {
+      "sha256": "576c38fc711c287d32df2b3db58e528a7f1a64b7c4ae302b69b096e0216b223a",
+      "device": 16777232,
+      "inode": 123552473,
+      "size": 2733,
+      "mode": 384,
+      "nlink": 1
+    },
+    "deepseek-result.safe.json": {
+      "sha256": "c9d9ae8833769fb14c371c812119f727b72353aef56969da801e20c56c011908",
+      "device": 16777232,
+      "inode": 123552634,
+      "size": 878,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-correctness-findings-v1.safe.json": {
+      "sha256": "78310957235a199055352a7bcaecc6de699f6d9bba0150b7f9d093b782e2599c",
+      "device": 16777232,
+      "inode": 123555629,
+      "size": 1375,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-correctness-review.safe.json": {
+      "sha256": "071400f0b59bf91d3e56726e6b2e65457da7d2db34fc3c0052a28ccefda68e1c",
+      "device": 16777232,
+      "inode": 123555888,
+      "size": 6126,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/calls.safe.json": {
+      "sha256": "fccd1b1816b780d40338371bd2b79b176cc8b3cf6492adb34f7431a90609262f",
+      "device": 16777232,
+      "inode": 123557529,
+      "size": 3722,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/ci.safe.json": {
+      "sha256": "b3351a62bc48d665692c9faff4ca3a7b8c2e14de4cc321f18bb869b799704ac9",
+      "device": 16777232,
+      "inode": 123557516,
+      "size": 277,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/ci_jobs.safe.json": {
+      "sha256": "22822b33d3e1485e3fcf0887bedbdf2a9fdb0068dc1dc3092f0ec76b2f268dc3",
+      "device": 16777232,
+      "inode": 123557520,
+      "size": 300,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/issue_157.safe.json": {
+      "sha256": "2c1a48305786f9ec946783d564a799691f80903b89119946d03b7a864916789e",
+      "device": 16777232,
+      "inode": 123557525,
+      "size": 270,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/issue_167.safe.json": {
+      "sha256": "d9e090cc98aa02dfd4e3a67275d2de27bdce2fa1527d06fa0ab718e7b8e6045d",
+      "device": 16777232,
+      "inode": 123557527,
+      "size": 270,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/issue_174.safe.json": {
+      "sha256": "9d61be5895f40072a7d80905a5c762b5fa3a7074c5c4d5174e902439b44ced4d",
+      "device": 16777232,
+      "inode": 123557528,
+      "size": 270,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/main.safe.json": {
+      "sha256": "a1add28b5061d18bd179f01b4c8b33506d96526403c15e20318fdbeb01613554",
+      "device": 16777232,
+      "inode": 123557515,
+      "size": 273,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/merge_commit.safe.json": {
+      "sha256": "e121909afed601725d46a7d9a370f4e20b168c97de805a80830dfc995b989b35",
+      "device": 16777232,
+      "inode": 123557514,
+      "size": 315,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/merge_deploy_runs.safe.json": {
+      "sha256": "f050fceed0d7e6e9c7d9a20e133706a5e0c7daccb44b29591ef141228e149ca8",
+      "device": 16777232,
+      "inode": 123557523,
+      "size": 364,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/pr.safe.json": {
+      "sha256": "69c04e13a49650a51ed253bbfad9f3b55fe36251916209757073b7745377a646",
+      "device": 16777232,
+      "inode": 123557512,
+      "size": 262,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/pr_files.safe.json": {
+      "sha256": "c907a1b634624072563cd346131ec5f078313d801374b31d5f33e5261bc45530",
+      "device": 16777232,
+      "inode": 123557521,
+      "size": 287,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/source_commit.safe.json": {
+      "sha256": "40c578faab47387539645f4cff6cfa70e1c186ed99385e9c5d32876141dee9a2",
+      "device": 16777232,
+      "inode": 123557513,
+      "size": 316,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-independent-github/workflow.safe.json": {
+      "sha256": "0de73cb958c9d9599abf2ef3942f10194ba7f140decd2310e739cd0601f98351",
+      "device": 16777232,
+      "inode": 123557522,
+      "size": 287,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-final-verifier-pre.safe.json": {
+      "sha256": "14ce46508f6eda88046a98757c532b479cbee8fd2f3e26922cc6fe945ac60e64",
+      "device": 16777232,
+      "inode": 123556715,
+      "size": 713,
+      "mode": 420,
+      "nlink": 1
+    },
+    "docs-github-bodies/157.md": {
+      "sha256": "8cbf11fe8fe8d7d4fc5f4fbe6c8837977c628ee1a6bab8b5179e7a4917f17a40",
+      "device": 16777232,
+      "inode": 123556045,
+      "size": 28346,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-github-bodies/167.md": {
+      "sha256": "824f24472e17747b9808b6a1eef6b27e1a533d45094af2f2755c818d67ee1168",
+      "device": 16777232,
+      "inode": 123556046,
+      "size": 7458,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-github-bodies/174.md": {
+      "sha256": "84f04f207b5855da9380d944109b3f261166967c7cc9eeaf1f4de96942fd02d3",
+      "device": 16777232,
+      "inode": 123556047,
+      "size": 15095,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-github-bodies/manifest.safe.json": {
+      "sha256": "1bc203b834e0f1dc7418ccd7e65391c21218aa50f13cc88bf16f75ea5cfdef41",
+      "device": 16777232,
+      "inode": 123556048,
+      "size": 1534,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-input.safe.json": {
+      "sha256": "1aa470da0c4b6b75d20ecd659802990d542c0a290ce17b9d3e21eaa8e2f34807",
+      "device": 16777232,
+      "inode": 123556100,
+      "size": 1896,
+      "mode": 420,
+      "nlink": 1
+    },
+    "docs-local-checks-v2.safe.json": {
+      "sha256": "c430a6bf27f35b52c2cde444ad5e7a399792fc51671a4c0e43ccd1bc066aa05b",
+      "device": 16777232,
+      "inode": 123555653,
+      "size": 1975,
+      "mode": 420,
+      "nlink": 1
+    },
+    "docs-local-checks.safe.json": {
+      "sha256": "ffe9ef7fbda6eca82768d96bb52a709eb2222b7336cb73dab5874290b0f5e061",
+      "device": 16777232,
+      "inode": 123555156,
+      "size": 1879,
+      "mode": 420,
+      "nlink": 1
+    },
+    "docs-maintenance-review.safe.json": {
+      "sha256": "2d3d45e9ca0849063ce80214a3690e8e4c4cea7a7e4a40480e5ce9f6ea5677f2",
+      "device": 16777232,
+      "inode": 123555771,
+      "size": 5842,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-maintenance-v1.safe.json": {
+      "sha256": "c08a44ffc3e9d904eab98a306dd0251f8ea02cad1dbf5a9e2affcad82d956d1e",
+      "device": 16777232,
+      "inode": 123555216,
+      "size": 3826,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-publication-pre.safe.json": {
+      "sha256": "723f3cfcf97712a1cb739529e5f8bdc2fb54c6f53d68ca0fcc9bc761a9f01cae",
+      "device": 16777232,
+      "inode": 123556264,
+      "size": 7218,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-release-independent.safe.json": {
+      "sha256": "832a581305a042bb0da9e04d66fac3e3b9f6694abc6239bcc7d0ee1ed419a6f4",
+      "device": 16777232,
+      "inode": 123557530,
+      "size": 5859,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-release.safe.json": {
+      "sha256": "4ebb506c00cced4618f46a3782129d1808fa73142b094dd4d0f658ed2c8d35a3",
+      "device": 16777232,
+      "inode": 123557489,
+      "size": 791,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs-verifier-author-pre.safe.json": {
+      "sha256": "1c31005339fba902ba613b06f70e3e883e3ba6e52832f9c48e3ab078d60dd27a",
+      "device": 16777232,
+      "inode": 123556302,
+      "size": 2721,
+      "mode": 384,
+      "nlink": 1
+    },
+    "docs_verifier_author_checks.py": {
+      "sha256": "fe553946cd86623a073b5b8b8bb3f8e97972d466e7cca7316375639902c617e1",
+      "device": 16777232,
+      "inode": 123556296,
+      "size": 4796,
+      "mode": 420,
+      "nlink": 1
+    },
+    "final.safe.json": {
+      "sha256": "d0812c8a93718cab2a752ed26f27842afa87d6f0bb46ad840b401a726d6f8e0d",
+      "device": 16777232,
+      "inode": 123554636,
+      "size": 3455,
+      "mode": 384,
+      "nlink": 1
+    },
+    "groq-result.safe.json": {
+      "sha256": "48495f93a4602be4c4fbdefb6641e98389ad637e7d754501168127cc3a6cf0c8",
+      "device": 16777232,
+      "inode": 123552330,
+      "size": 921,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-independent-post.safe.json": {
+      "sha256": "47d5b6d675f5466439f960cb3c39f5af8676802ed9ef32ec890daf88a2839bdf",
+      "device": 16777232,
+      "inode": 123554497,
+      "size": 7195,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-local-checks-v2.safe.json": {
+      "sha256": "49f71160552f4c7da2c105812ac92a7465b055c2a9b927a7a6a0659ef3dedb52",
+      "device": 16777232,
+      "inode": 123552994,
+      "size": 282,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-local-checks.safe.json": {
+      "sha256": "2fb01251683805402d5d2b8621fe851c2a884672434f7a7adefcb261d4a18b2f",
+      "device": 16777232,
+      "inode": 123552963,
+      "size": 578,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-result.safe.json": {
+      "sha256": "611add00b543b89b26128d3f90af47bc9e56939dc1c58b5052ea0df1af7c8708",
+      "device": 16777232,
+      "inode": 123553322,
+      "size": 1489,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-retention-start.safe.json": {
+      "sha256": "2d1f3907b27be785790ddfca3ed262ed1e6b07e1c562e60477bded528d49a132",
+      "device": 16777232,
+      "inode": 123553318,
+      "size": 327,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-retention.safe.json": {
+      "sha256": "3c3c2c1f7b1c47e995e47b9450032fe94d654868ada5208baf18c41ad6f511cf",
+      "device": 16777232,
+      "inode": 123553321,
+      "size": 385,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-tool-pre.safe.json": {
+      "sha256": "8d36ac7f1477f36bd0ad2625fdff0eb91d579a376d480266ae0a095df0490ad5",
+      "device": 16777232,
+      "inode": 123553276,
+      "size": 5276,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/AWS_INVOICE_PLAN.md": {
+      "sha256": "5c105eef087be047aa76fbd434230af0b38383e3e0cd6ee2a4d0d60d2bcfce3f",
+      "device": 16777232,
+      "inode": 123553423,
+      "size": 1299,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/collect_invoice.py": {
+      "sha256": "84bc736d2547ff3e8b74cd8c733aea40161d21ca753ea9ce5872342cffcbf201",
+      "device": 16777232,
+      "inode": 123553422,
+      "size": 10837,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-result.safe.json": {
+      "sha256": "b8b0b9b36693a2617ec5fded4e42bc8afee4d10c834f54d8e80cd00d92ca9f30",
+      "device": 16777232,
+      "inode": 123553650,
+      "size": 3470,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-retention-start.safe.json": {
+      "sha256": "79c728e04e443b4e7f5311e0db9c5a6edc7c56f69a874f8c4bd33ac5ecc3c2e4",
+      "device": 16777232,
+      "inode": 123553644,
+      "size": 327,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-retention.safe.json": {
+      "sha256": "cb9ff7b8b6d7078d9fc5225c9373d88bbca77fc13f272d638f6e2925b2f85cdc",
+      "device": 16777232,
+      "inode": 123553649,
+      "size": 527,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/invoice-tool-pre.safe.json": {
+      "sha256": "04cb9e029c2cacb9df54360eba09a15e74236077da0604aeae3bb0d39bb87c63",
+      "device": 16777232,
+      "inode": 123553626,
+      "size": 3998,
+      "mode": 384,
+      "nlink": 1
+    },
+    "invoice-v2/local-endpoint.safe.json": {
+      "sha256": "eb39c0d46fb0d4b2477e45136e3db8223c978fd9f9acf963bbc1ec75602402bf",
+      "device": 16777232,
+      "inode": 123553484,
+      "size": 313,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-157-before.private.json": {
+      "sha256": "12d923703823541963772ae3950f3339e52821c437d711a1529846bdf85dfe73",
+      "device": 16777232,
+      "inode": 123557469,
+      "size": 26947,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-157-intent.safe.json": {
+      "sha256": "1ecce924b590aab022449b70a4b3e7b8a53c9a758b3a07f174a34da6e80902f2",
+      "device": 16777232,
+      "inode": 123557477,
+      "size": 132,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-157-readback.safe.json": {
+      "sha256": "56522badc4ecc4b62e645f7bb4c71748097e7918ff0d843f469a71d2efc582dd",
+      "device": 16777232,
+      "inode": 123557483,
+      "size": 124,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-167-before.private.json": {
+      "sha256": "ef9f04696c2e7f29c53e48baedbb421fc6dbf8c3e4a6e88227aba67edba5b396",
+      "device": 16777232,
+      "inode": 123557470,
+      "size": 5909,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-167-intent.safe.json": {
+      "sha256": "2333c4f35c4f27da1e0e700d7750beef7a3bd222e3f500d36e35eac82918c053",
+      "device": 16777232,
+      "inode": 123557484,
+      "size": 132,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-167-readback.safe.json": {
+      "sha256": "0bf64e7ab6ba3a49dff26d08d003b4c44bd8832fb86fb9cba689d04452668fa5",
+      "device": 16777232,
+      "inode": 123557485,
+      "size": 124,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-174-before.private.json": {
+      "sha256": "29c654b1f56cd686da2dac4e25faf4da6293f88ce9cd7bfe7e7de5024e32df6d",
+      "device": 16777232,
+      "inode": 123557471,
+      "size": 13626,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-174-intent.safe.json": {
+      "sha256": "929390401edd4ae3d2898c4e58b0df3f5c43b9977f8a724bdd6269eed38b4f80",
+      "device": 16777232,
+      "inode": 123557486,
+      "size": 131,
+      "mode": 384,
+      "nlink": 1
+    },
+    "issue-174-readback.safe.json": {
+      "sha256": "2808193a6be93a077bd82b4d55e9cbf719d3274484cc15867aca0269348b5680",
+      "device": 16777232,
+      "inode": 123557487,
+      "size": 124,
+      "mode": 384,
+      "nlink": 1
+    },
+    "merge-intent.safe.json": {
+      "sha256": "3bb04fd15df863314d05bcca64214e749386627b82a2bc50ce877dc3a11371d8",
+      "device": 16777232,
+      "inode": 123557472,
+      "size": 288,
+      "mode": 384,
+      "nlink": 1
+    },
+    "merge-result.safe.json": {
+      "sha256": "c586c14ada4b2472bc941547f0ae1fda5acbeeda1364c647b2923e6f12254d7b",
+      "device": 16777232,
+      "inode": 123557475,
+      "size": 123,
+      "mode": 384,
+      "nlink": 1
+    },
+    "plan-pre.safe.json": {
+      "sha256": "e1ada0d8e5747efe2014bfb34bba76bc9ee5a82523a948795b170bafe83feb34",
+      "device": 16777232,
+      "inode": 123551843,
+      "size": 5155,
+      "mode": 384,
+      "nlink": 1
+    },
+    "pr-body.md": {
+      "sha256": "99bd5d5c05c56f845753ac1f74a3d4310a07f4bda7eed868cbf70148b0ca127a",
+      "device": 16777232,
+      "inode": 123555593,
+      "size": 760,
+      "mode": 420,
+      "nlink": 1
+    },
+    "provider-result.safe.json": {
+      "sha256": "8cd444c13f6279d426260c947beb54b7fbe2b889e5a30b793aff04967e55b10d",
+      "device": 16777232,
+      "inode": 123553179,
+      "size": 2764,
+      "mode": 420,
+      "nlink": 1
+    },
+    "publish_docs.py": {
+      "sha256": "22101af71a64fa0400b36c30e30c090b6e2581c8b39680672ca9b05f39d94626",
+      "device": 16777232,
+      "inode": 123554528,
+      "size": 7740,
+      "mode": 420,
+      "nlink": 1
+    },
+    "render_docs_bodies.py": {
+      "sha256": "f8ac34038cc766f98f97ca7e39b2838596a73ea19bdd52f9195654c251abc49a",
+      "device": 16777232,
+      "inode": 123554527,
+      "size": 3479,
+      "mode": 420,
+      "nlink": 1
+    },
+    "verify_docs_final.py": {
+      "sha256": "d9493e7dd2e597251a3c755339d460314aab6a993f57f4ddbe37d1792de2f05d",
+      "device": 16777232,
+      "inode": 123556245,
+      "size": 17627,
+      "mode": 420,
+      "nlink": 1
+    }
+  },
+  "directory_identity": {
+    ".": [
+      16777232,
+      123551704,
+      448
+    ],
+    "__pycache__": [
+      16777232,
+      123552961,
+      493
+    ],
+    "docs-final-independent-github": [
+      16777232,
+      123557501,
+      448
+    ],
+    "docs-github-bodies": [
+      16777232,
+      123556042,
+      448
+    ],
+    "invoice-raw": [
+      16777232,
+      123553317,
+      448
+    ],
+    "invoice-v2": [
+      16777232,
+      123553421,
+      448
+    ],
+    "invoice-v2/invoice-raw": [
+      16777232,
+      123553643,
+      448
+    ]
+  },
+  "ledger_bindings": {
+    "invoice-retention.safe.json": "3c3c2c1f7b1c47e995e47b9450032fe94d654868ada5208baf18c41ad6f511cf",
+    "invoice-v2/invoice-retention.safe.json": "cb9ff7b8b6d7078d9fc5225c9373d88bbca77fc13f272d638f6e2925b2f85cdc"
+  },
+  "historical_hash_sources": {
+    "invoice-retention-start.safe.json": "2d1f3907b27be785790ddfca3ed262ed1e6b07e1c562e60477bded528d49a132",
+    "invoice-v2/invoice-retention-start.safe.json": "79c728e04e443b4e7f5311e0db9c5a6edc7c56f69a874f8c4bd33ac5ecc3c2e4",
+    "final.safe.json": "d0812c8a93718cab2a752ed26f27842afa87d6f0bb46ad840b401a726d6f8e0d",
+    "invoice-independent-post.safe.json": "47d5b6d675f5466439f960cb3c39f5af8676802ed9ef32ec890daf88a2839bdf",
+    "docs-release-independent.safe.json": "832a581305a042bb0da9e04d66fac3e3b9f6694abc6239bcc7d0ee1ed419a6f4"
+  },
+  "deadline_check": "Both ledgers retain the first invoice capture plus seven days; invoice-v2 inherits the earlier Oct13 08:06:04.659429UTC deadline, not its own later seven-day boundary.",
+  "method": "Independent no-follow lstat/open/fstat and streaming hashes of all86 exact current files; seven directory identities checked against inspect; full inventory checked without importing or executing any expiry operator.",
+  "prior_v1_evidence_preserved": {
+    "maintenance-pre-v1.safe.json": "e1aeee6ec377203d8b76431e6ff6868d5e83d14e9a87df4c396e77ba69e0e09e",
+    "correctness-controls-v1.safe.json": "67f8c658774d336b6d366f6cef863008a722dd1a4e006270312d91888801d8cc",
+    "tool-pre-v1-findings.safe.json": "5b9596957977fd6543c43f74f0070ad531a703ab9c966d58530a6007c7b5b645",
+    "verify_absence-v1.py": "9153f57bb1eaf4d9427951c06e6fbe54ac8bf8d9d88a803b9e2251988f683062",
+    "maintenance-pre.safe.json": "e1aeee6ec377203d8b76431e6ff6868d5e83d14e9a87df4c396e77ba69e0e09e"
+  },
+  "root_preparation_still_pending_unchanged": true,
+  "findings": [],
+  "actions": {
+    "real_inspect_entrypoints": 0,
+    "apply_entrypoints": 0,
+    "verify_absence_entrypoints": 0,
+    "source_files_deleted_or_modified": 0,
+    "raw_copies_or_derivatives": 0,
+    "cloud_calls": 0,
+    "github_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "new_retention_duties": 0
+  },
+  "limits": [
+    "Preparation only; no deletion or due-duty completion claimed.",
+    "Original invoice amount/payment/attribution UNKNOWNs remain.",
+    "All target modes0600; source and raw directories0700; the existing __pycache__0755 is retained per frozen scope.",
+    "Prior v1 evidence remains preserved; current official PRE is bound to verifier148c8099 requiring literal unlink_returned True.",
+    "Original main PENDING report is not overwritten. At due time a fresh authorized inspect/notice/uniqueapply and separately handed-off independent verifier remain required."
+  ]
+}

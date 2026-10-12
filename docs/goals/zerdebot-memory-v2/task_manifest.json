@@ -486,18 +486,18 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-11",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。",
-    "remaining": "当前十项精确UTC副本/原文责任见RETAINED_COPIES：Oct12 17:15:22.532382、Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
+    "status_as_of": "2026-10-12",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。",
+    "remaining": "当前九项精确UTC副本/原文责任见RETAINED_COPIES：Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
+    "status_evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
     "quiz_answer_raw_retention": {
-      "status": "PENDING_EXACT_EXPIRY",
+      "status": "EXACT_EXPIRY_COMPLETED_INDEPENDENT_PASS",
       "due_utc": "2026-10-12T17:15:22.532382Z",
       "owner": "Z10",
       "private_batch": "2026-10-05-quiz-answer-redelivery",
@@ -585,7 +585,8 @@
       "protected_files": 217,
       "directories": 18,
       "deleted": 0,
-      "scope_sha256": "601da3f657e98cf879028fadefc9ede2df30c44a17005e11ad2c158b7c9decc6"
+      "scope_sha256": "601da3f657e98cf879028fadefc9ede2df30c44a17005e11ad2c158b7c9decc6",
+      "historical_preparation_only": true
     },
     "shared_quota_writer_raw_retention": {
       "status": "RETAINED_UNTIL_DEADLINE",
@@ -607,6 +608,45 @@
       "evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
       "independent_evidence": "evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "quiz_answer_raw_expiry_completion": {
+      "status": "EXACT_247_QUIZ_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-12T17:15:22.532382+00:00",
+      "deleted_files": 247,
+      "protected_files": 217,
+      "preserved_directories": 18,
+      "first_unlink_utc": "2026-10-12T17:15:22.647203+00:00",
+      "last_unlink_utc": "2026-10-12T17:15:22.983452+00:00",
+      "first_lateness_seconds": 0.11482095718383789,
+      "last_lateness_seconds": 0.45106983184814453,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json",
+      "independent_evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion-independent.safe.json",
+      "not_secure_media_erasure": true
+    },
+    "invoice_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-13T08:06:04.659429+00:00",
+      "targets": 3,
+      "protected_files": 83,
+      "directories": 7,
+      "actual_deletions": 0,
+      "scope_sha256": "e610a41de296376b1e6e44eeb52a452d25febba056166f3f9d5a168ff37bdb38",
+      "evidence": "evidence/2026-10-13-invoice-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-13-invoice-raw-expiry/independent.safe.json",
+      "contract": "INVOICE_RAW_EXPIRY.md"
+    },
+    "failed_readback_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-13T18:26:43.519150+00:00",
+      "targets": 4,
+      "protected_files": 12,
+      "directories": 5,
+      "actual_deletions": 0,
+      "scope_sha256": "923f1dd3062943e284bf8e8431ab2edcc74b3d980251b60ac7903a773c66511b",
+      "evidence": "evidence/2026-10-13-failed-readback-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-13-failed-readback-raw-expiry/independent.safe.json",
+      "contract": "FAILED_READBACK_RAW_EXPIRY.md"
     }
   },
   {
@@ -855,6 +895,21 @@
       "natural_samples_added": 0,
       "runtime_source": "08cc614a2f61d9001f3e2a77b9d9e6a7c73585df",
       "independent_restoration_verified": true
+    },
+    "answer_raw_expiry_completion": {
+      "status": "EXACT_247_QUIZ_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-12T17:15:22.532382+00:00",
+      "deleted_files": 247,
+      "protected_files": 217,
+      "preserved_directories": 18,
+      "first_unlink_utc": "2026-10-12T17:15:22.647203+00:00",
+      "last_unlink_utc": "2026-10-12T17:15:22.983452+00:00",
+      "first_lateness_seconds": 0.11482095718383789,
+      "last_lateness_seconds": 0.45106983184814453,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json",
+      "independent_evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion-independent.safe.json",
+      "not_secure_media_erasure": true
     }
   },
   {
@@ -991,6 +1046,18 @@
       "evidence": "evidence/2026-10-11-september-cost-raw-expiry/final.safe.json",
       "independent_evidence": "evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "invoice_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-13T08:06:04.659429+00:00",
+      "targets": 3,
+      "protected_files": 83,
+      "directories": 7,
+      "actual_deletions": 0,
+      "scope_sha256": "e610a41de296376b1e6e44eeb52a452d25febba056166f3f9d5a168ff37bdb38",
+      "evidence": "evidence/2026-10-13-invoice-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-13-invoice-raw-expiry/independent.safe.json",
+      "contract": "INVOICE_RAW_EXPIRY.md"
     }
   },
   {

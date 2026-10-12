@@ -1,3 +1,33 @@
+## 2026-10-12：247份答案原文清理已独审完成
+
+原期限2026-10-12 17:15:22.532382UTC不变。247个精确文件（246份private JSON及含原文click-intent.safe.json）已逐项移除；首次/末次unlink为2026-10-12T17:15:22.647203+00:00、2026-10-12T17:15:22.983452+00:00，实际晚0.114821至0.451070秒，原因UNKNOWN，不改写为提前或绝对准时。独立重新lstat全部目标不存在、217保留hash/18目录身份及剩余库存保持，494条intent/result与公告、原ledger和时间链一致。原__pycache__0755保留。
+
+原PARTIAL_UNCONFIRMED_UI、旧STOP/失败/安全聚合和原ledger保持；清理不证明投票提交、HTTP500重送或一次计分通过，不重发/重答旧题。文件移除不是安全擦盘或所有云/外部副本消失，顺序核验不是文件系统事务。清理和本地核验0云/UI/模型、新原文或运行部署；后续CI既有OIDC/CDK只读另计。
+
+剩余九项责任：Oct13早次发票3、晚次旧PR248失败4；Oct14早次公开文本128、晚次配置1030；Oct15提及Reply85；Oct16共享writer1426；Oct17 PITR；Nov1旧memory SYSTEM；Nov2旧stats SYSTEM。各原精确期限见副本台账，不合并双时点。Oct11费用/Oct8日志/USER/AV/三归档key已履行且真实延误保留，不重删重建；用户导出、现役PITR和必要恢复保留。
+
+运行PR257/配置PR251/S reader保持。Z10/Z16/Epic继续OPEN，20任务14OPEN/6CLOSED、自然0/50有据0/20未知及production_ready=false不变；相册仍待新包重绑和新的Telegram独占窗口，未操作UI。
+
+[清理契约](QUIZ_ANSWER_RAW_EXPIRY.md)；[实际聚合](evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-12-quiz-answer-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+# 当前执行入口
+
+验收根2026-10-12-quiz-answer-raw-expiry：CURRENT、apply/independent、completion/final、completion/docs-release及最终独审。Due20261012A及唯一apply/verify已经结束，不重复或重建原文。原准备PR256回执保留；当前运行仍PR257字节、PR251配置和S唯一reader，文档main非运行构建。
+
+下一到期Oct13 08:06:04.659429UTC发票3，晚次18:26:43.519150UTC旧PR248失败4，严格分开；Oct14 20:45:55.665021公开文本128和21:48:46.021161配置1030亦分开。Oct15 08:17:52.186798 M/R85、Oct16 18:48:47.827167共享writer1426、Oct17 16:20:38 PITR、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM保持。每批新PRE/公告/原hash身份/到期/一次apply/独审；早到同轮等，每次不超过60秒，不故意拖晚，未知停另窄续接。
+
+相册另建有限批重绑PR257/PR251/S reader/五工具/104owner并独审，仍待新的15分钟Telegram独占窗口；无回复不打开/上传/发送或解锁旧UI_STOP。供应商登录无回复不反复开页，不充值/支付/secret。业务和自然仍未总体完成，production_ready=false；全部业务/自然/推广/副本责任完成才删除automation。
+
+### Oct13早、晚两批只完成准备
+
+次日08:06:04.659429UTC发票3份已双PRE、主inspect及独立fresh核验：83保留hash/7目录/86库存保持；V2沿原更早期限。18:26:43.519150UTC失败读回4份亦完成双PRE、主inspect和独立fresh核验：12保留hash/5固定目录身份、两失败archive10文件完整；成功轮四同名路径保持，不使用旧previous_path删除。两批仅准备，apply/verify_absence均未执行，原时点分开、没有新增原文或期限。
+
+发票新工具V1负控发现未强制unlink_returned=true，已窄修严格门禁并保留原意见/工具；失败4主wrapper首轮因PRE状态全名误读在入口前停，修正读取schema后唯一inspect通过，原停止记录保留。这些本地准备记录不改旧业务FAIL/UNKNOWN或已删事实。
+
+[发票三文件契约](INVOICE_RAW_EXPIRY.md)；[失败读回四文件契约](FAILED_READBACK_RAW_EXPIRY.md)。到期另新label inspect/精确公告/hash身份/一次apply及独立不存在；准备label Prep20261012A已结束不能重用。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
+
 ## 2026-10-11：九月费用九份原文已删除，真实迟延保留
 
 原期限2026-10-11 17:01:48.147210UTC不变。九个精确文件实际首次/末次unlink为2026-10-11T21:20:31.636119+00:00和2026-10-11T21:20:31.639021+00:00，分别晚15523.488909秒和15523.491811秒（约4小时18分43秒）。本轮首次实际时钟检查已经晚于期限，后续执行间隔原因UNKNOWN，不猜测设备或调度原因，不改写为按时完成。
@@ -9,6 +39,8 @@
 Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20未知，production_ready=false。相册尚未重绑定新包，也未获得新的Telegram独占窗口；本轮没有现场或业务验收。
 
 [精确清理契约](SEPTEMBER_COST_RAW_EXPIRY.md)；[实际结果](evidence/2026-10-11-september-cost-raw-expiry/final.safe.json)；[独立不存在核验](evidence/2026-10-11-september-cost-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+# 原执行入口（已由上方覆盖）
 
 # 当前执行入口
 

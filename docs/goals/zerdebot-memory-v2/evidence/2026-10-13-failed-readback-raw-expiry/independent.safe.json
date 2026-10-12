@@ -1,0 +1,242 @@
+{
+  "status": "ALIGNED_FOUR_PRESENT_PROTECTED_UNCHANGED_PREPARATION_ONLY",
+  "reviewer": "z01_oct8_pre",
+  "observed_at_utc": "2026-10-12T13:23:42.200890+00:00",
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-06-explicit-quota-guard",
+  "preparation_sha256": "1c80d8d9546c4904a1b34658afca3f3f0da6e1e4ee641dd0adb7c8abae2e6f3f",
+  "tool_pre_sha256": "402e991a5d5466db0bea2a94287dc96a32c48bfa20f5f24ee12000ea7a7b4818",
+  "maintenance_pre_sha256": "38147ee1a543268f31eb869251ab28c45b4775e8760e88f26fe6c04c3a313bcd",
+  "files": {
+    "PLAN.md": "7c2ea0cbf437ee48f62e8942a06b7d53cc28de27f028290778b1f41ced16cd97",
+    "scope.safe.json": "923f1dd3062943e284bf8e8431ab2edcc74b3d980251b60ac7903a773c66511b",
+    "expire_raw.py": "04bf4025de78018abaa92319cd4b6873a21cadeda23a484683645a93ee3d54b8",
+    "verify_absence.py": "2eba67e0040dbb059fe1e34515b83d654a39e066b8061d4b71e403347085ef1b"
+  },
+  "inspect_sha256": "49bc0edc25e8f62e9d6981f3ebdaf5dc1e0625026bf41e3e699336282dfacfbd",
+  "inspect_intent_sha256": "6903caeeb0ad37a90b3ecf2b6708aea9ae94030ddbb34a1f3dcbb089d7273028",
+  "targets": 4,
+  "protected_files": 12,
+  "directories": 5,
+  "pinned_files": 16,
+  "archive_inventory_files": 10,
+  "success_same_name_protected_files": 4,
+  "deadline_utc": "2026-10-13T18:26:43.519150+00:00",
+  "deadline_epoch": 1791916003.51915,
+  "target_checks": {
+    "post-main-dev-download-incomplete/responses.private.json": {
+      "sha256": "fb989edf8d1f6c553c66338402008dcfe0ee65bd9d2a1338bf8fdbe3e7ceed8b",
+      "device": 16777232,
+      "inode": 123721665,
+      "size": 369881,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev-download-incomplete/artifact-responses.private.json": {
+      "sha256": "27ca1072c6f09931b5ee478f52e2b02037ad0fe4d861c52eafaad8689d04c0f8",
+      "device": 16777232,
+      "inode": 123721666,
+      "size": 19925,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev-download-incomplete/snapshot.private.json": {
+      "sha256": "4b282207951f890d05620d9011e9c6f3c3dc40f57ea7f16e8a69dda1a3946745",
+      "device": 16777232,
+      "inode": 123721505,
+      "size": 279939,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-independent-dev-sts-timeout/metadata-responses.private.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "device": 16777232,
+      "inode": 123723041,
+      "size": 3,
+      "mode": 384,
+      "nlink": 1
+    }
+  },
+  "protected_checks": {
+    "post-main-dev-download-incomplete/bot.zip": {
+      "sha256": "77d3280769f0457ef1d700491e5821673d3853efdf477b31184fbffec75c9bd2",
+      "device": 16777232,
+      "inode": 123721537,
+      "size": 27453583,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev-download-incomplete/news.zip": {
+      "sha256": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+      "device": 16777232,
+      "inode": 123721592,
+      "size": 34429910,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev-download-incomplete/readback.safe.json": {
+      "sha256": "cce6cf4e4b1b380ec2eea61ec0eb3369df2b6cf2ae5e35a964d4b4aaeb861980",
+      "device": 16777232,
+      "inode": 123721668,
+      "size": 1311,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev-download-incomplete/unreviewed-retention.safe.json": {
+      "sha256": "f553270797762a6d709ea2bb5406fa5a9ae1d5400fefa425b65c3d3c9942797a",
+      "device": 16777232,
+      "inode": 123721667,
+      "size": 1110,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-independent-dev-sts-timeout/review.safe.json": {
+      "sha256": "06bb6d93e894fcb64d59d7553ae2494084ca51950a099f68ee223fd614e327ea",
+      "device": 16777232,
+      "inode": 123723069,
+      "size": 1858,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-independent-dev-sts-timeout/unreviewed-retention.safe.json": {
+      "sha256": "f25bfffdf318b3fe8c18c530b1a81c5e46bfd73ca48221e0f8f313171d133742",
+      "device": 16777232,
+      "inode": 123723058,
+      "size": 370,
+      "mode": 384,
+      "nlink": 1
+    },
+    "failed-dev-download-retention.safe.json": {
+      "sha256": "8b4dbcf0023fdcddf30ccc482d68ea11372d47233ee6a47cc64dc6a55d6f4e75",
+      "device": 16777232,
+      "inode": 123722384,
+      "size": 1989,
+      "mode": 384,
+      "nlink": 1
+    },
+    "failed-independent-dev-retention.safe.json": {
+      "sha256": "e591e8281b9b01957c07e3b7b5e20b1bf880a45318d10936e75b20cf8acee9a9",
+      "device": 16777232,
+      "inode": 123741791,
+      "size": 1054,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev/responses.private.json": {
+      "sha256": "764d6e52e2b7f3542a292f0bc19150e8b8a5a6fdb5c19a91a96df2e3c2bff735",
+      "device": 16777232,
+      "inode": 123722857,
+      "size": 371444,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev/artifact-responses.private.json": {
+      "sha256": "dd7af398f279f7d93db376a98b6316c49f0becea08c2b8563fc6591bd1dd5b43",
+      "device": 16777232,
+      "inode": 123722858,
+      "size": 57082,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-main-dev/snapshot.private.json": {
+      "sha256": "92113a2520ab5cdef7fed1322d515bf90006d2eb9398dbc15a639268fea15286",
+      "device": 16777232,
+      "inode": 123722561,
+      "size": 279939,
+      "mode": 384,
+      "nlink": 1
+    },
+    "post-independent-dev/metadata-responses.private.json": {
+      "sha256": "ed4a72cacfb90bdc7fd539627e2d16be794c823824ec8dc7a1888481422fc507",
+      "device": 16777232,
+      "inode": 123742520,
+      "size": 371444,
+      "mode": 384,
+      "nlink": 1
+    }
+  },
+  "directory_identity": {
+    ".": [
+      16777232,
+      123587694,
+      448
+    ],
+    "post-main-dev-download-incomplete": [
+      16777232,
+      123721476,
+      448
+    ],
+    "post-independent-dev-sts-timeout": [
+      16777232,
+      123723032,
+      448
+    ],
+    "post-main-dev": [
+      16777232,
+      123722470,
+      448
+    ],
+    "post-independent-dev": [
+      16777232,
+      123741805,
+      448
+    ]
+  },
+  "archive_inventory": {
+    "post-main-dev-download-incomplete": [
+      "post-main-dev-download-incomplete/artifact-responses.private.json",
+      "post-main-dev-download-incomplete/bot.zip",
+      "post-main-dev-download-incomplete/news.zip",
+      "post-main-dev-download-incomplete/readback.safe.json",
+      "post-main-dev-download-incomplete/responses.private.json",
+      "post-main-dev-download-incomplete/snapshot.private.json",
+      "post-main-dev-download-incomplete/unreviewed-retention.safe.json"
+    ],
+    "post-independent-dev-sts-timeout": [
+      "post-independent-dev-sts-timeout/metadata-responses.private.json",
+      "post-independent-dev-sts-timeout/review.safe.json",
+      "post-independent-dev-sts-timeout/unreviewed-retention.safe.json"
+    ]
+  },
+  "ledger_bindings": {
+    "failed-dev-download-retention.safe.json": "8b4dbcf0023fdcddf30ccc482d68ea11372d47233ee6a47cc64dc6a55d6f4e75",
+    "failed-independent-dev-retention.safe.json": "e591e8281b9b01957c07e3b7b5e20b1bf880a45318d10936e75b20cf8acee9a9"
+  },
+  "historical_bindings": {
+    "post-main-dev-download-incomplete/unreviewed-retention.safe.json": "f553270797762a6d709ea2bb5406fa5a9ae1d5400fefa425b65c3d3c9942797a",
+    "post-independent-dev-sts-timeout/unreviewed-retention.safe.json": "f25bfffdf318b3fe8c18c530b1a81c5e46bfd73ca48221e0f8f313171d133742",
+    "failed-dev-download-original.safe.json": "c0150053751651a412184162be2e46af1512874fab6eec9e112ce738a6c7abe8",
+    "independent-dev-archive.safe.json": "bb83f149bf12e4488e3b2015ac03a56bd81d88726cdcac75591680eb7380169e"
+  },
+  "path_guard": "Four targets are only authoritative relocated archive paths. All four successful old-path files retain their exact distinct hash/inode and are protected.",
+  "deadline_guard": "Original main capture plus seven days and the historical independent shortened deadline remain Oct13 18:26:43.519150UTC; no extension.",
+  "method": "Fresh independent lstat/O_NOFOLLOW/open/fstat plus streaming hash for all16 files; exact five frozen directory identities; exhaustive inventory of only two archives. No importing or executing any expiry operator.",
+  "pre_entry_stop": {
+    "path": "pre-entry-schema-stop.safe.json",
+    "sha256": "3813e13387b98a753cc32e28227a75c7983742aaba23630b4a6c6df60e3356e1",
+    "status": "LOCAL_PRE_ENTRY_STOP",
+    "operation_entry_started": false,
+    "interpretation": "Recorded local wrapper schema comparison stop and subsequent missing-output read occurred before formal inspect; not a business or deletion failure. Preserved without modification."
+  },
+  "main_preparation_pending_unchanged": true,
+  "findings": [],
+  "actions": {
+    "real_inspect_entrypoints": 0,
+    "apply_entrypoints": 0,
+    "verify_absence_entrypoints": 0,
+    "old_entrypoints": 0,
+    "source_file_modifications_or_deletions": 0,
+    "cloud_calls": 0,
+    "github_calls": 0,
+    "ui_actions": 0,
+    "raw_response_copies_or_derivatives": 0,
+    "zip_extraction": 0,
+    "whole_J_tree_scan": 0,
+    "new_retention_duties": 0
+  },
+  "limitations": [
+    "Preparation verification only; not deletion, expiry fulfillment or absence proof.",
+    "Three failed metadata/snapshot files plus one archived empty record, not four AWS responses.",
+    "Actual shared global-lock/notice/due unique apply and later independently handed-off verifier remain future gates.",
+    "Root PENDING report, original failures, both original ledgers and all successful release evidence remain unchanged."
+  ]
+}

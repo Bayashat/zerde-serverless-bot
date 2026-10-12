@@ -1,6 +1,6 @@
-# 保留副本与到期责任（更新至2026-10-11）
+# 保留副本与到期责任（更新至2026-10-12）
 
-当前剩余十项独立UTC职责：Oct12Quiz、Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余九项独立UTC职责：Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -35,6 +35,8 @@
 
 唯一apply与独立不存在核验均完成：6份AWS原始响应、2份Google CSV和1份UI观察已移除；57份列明保留文件hash、6目录身份和37个未创建槽保持，18条逐项intent/result与公告、原ledger和实际时点一致。raw/007–043从未创建，不算已删；安全费用聚合、旧失败、原账本和全部费用UNKNOWN保留，原37在线对象计数不增。文件移除不是安全擦盘或所有云/外部副本消失。
 
+以下为Oct11履行时的历史摘要，待办已由本文件顶部当前九项覆盖，不作当前执行指令：
+
 本清理/核验0云API、UI、模型或新运行部署，后续CI既有OIDC/CDK只读预览另计。运行仍PR257字节、PR251配置，唯一时点reader仍共享writer批次S；本轮不重复任何旧reader/采集/发布。剩余十项职责中最近是Oct12 17:15:22.532382UTC答案原文247文件，其准备已完成，apply尚未执行；Oct13/14各双时点及Oct15/16/17/Nov1/Nov2保持。用户导出、现役PITR和必要恢复数据保留。
 
 Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20未知，production_ready=false。相册尚未重绑定新包，也未获得新的Telegram独占窗口；本轮没有现场或业务验收。
@@ -47,7 +49,19 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 
 2026-10-04 17:01:48.147210UTC开始的单次费用采集，实际6份AWS回执；另有2份Google UI下载CSV及1份主操作者UI观察。私有清单为验收根`2026-10-04-september-costs/raw-retention.safe.json`和`provider-raw-retention.safe.json`；实际文件列表/hash另见聚合。九个精确文件及登记的原文派生共同于2026-10-11 17:01:48.147210UTC人工删除并独审；CSV/观察采用更早的同一期限，没有延长到下载后七天。权限0600、原文目录0700，下载CSV已精确移出Downloads。安全聚合/hash保留；其余责任保持；Oct5旧stats USER已按上方回执履行，Oct8日志原文已按上方精确回执履行。工具、原始采集和独立复算均冻结，不重跑旧动态月份脚本。
 
-## Z16答案重送验收原文（独立责任）
+## Z16答案重送验收原文（已履行）
+
+原期限2026-10-12 17:15:22.532382UTC不变。247个精确文件（246份private JSON及含原文click-intent.safe.json）已逐项移除；首次/末次unlink为2026-10-12T17:15:22.647203+00:00、2026-10-12T17:15:22.983452+00:00，实际晚0.114821至0.451070秒，原因UNKNOWN，不改写为提前或绝对准时。独立重新lstat全部目标不存在、217保留hash/18目录身份及剩余库存保持，494条intent/result与公告、原ledger和时间链一致。原__pycache__0755保留。
+
+原PARTIAL_UNCONFIRMED_UI、旧STOP/失败/安全聚合和原ledger保持；清理不证明投票提交、HTTP500重送或一次计分通过，不重发/重答旧题。文件移除不是安全擦盘或所有云/外部副本消失，顺序核验不是文件系统事务。清理和本地核验0云/UI/模型、新原文或运行部署；后续CI既有OIDC/CDK只读另计。
+
+剩余九项责任：Oct13早次发票3、晚次旧PR248失败4；Oct14早次公开文本128、晚次配置1030；Oct15提及Reply85；Oct16共享writer1426；Oct17 PITR；Nov1旧memory SYSTEM；Nov2旧stats SYSTEM。各原精确期限见副本台账，不合并双时点。Oct11费用/Oct8日志/USER/AV/三归档key已履行且真实延误保留，不重删重建；用户导出、现役PITR和必要恢复保留。
+
+运行PR257/配置PR251/S reader保持。Z10/Z16/Epic继续OPEN，20任务14OPEN/6CLOSED、自然0/50有据0/20未知及production_ready=false不变；相册仍待新包重绑和新的Telegram独占窗口，未操作UI。
+
+[清理契约](QUIZ_ANSWER_RAW_EXPIRY.md)；[实际聚合](evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-12-quiz-answer-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
 
 2026-10-09已完成新工具和只读准备：247实际目标、217保留文件与18目录主独核验通过，尚未删除，原期限不变。click-intent.safe.json仍属原文。到期按[新精确契约](QUIZ_ANSWER_RAW_EXPIRY.md)及私有scope执行一次；原业务PARTIAL与全部已结束once保持。
 
@@ -55,11 +69,15 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 
 ## Z17账号发票摘要原文（独立责任）
 
+新三文件准备已独审通过：83保留/7目录/86库存，原期限不变，尚未apply。见[新契约](INVOICE_RAW_EXPIRY.md)。
+
 2026-10-06 08:06:04.659429UTC首次采集开始。原端点校验误停仅产生1份STS回执；V2产生1份STS和1份发票摘要，共3个实际原文文件。私有验收根`2026-10-06-provider-cost-gaps/invoice-retention.safe.json`与`invoice-v2/invoice-retention.safe.json`逐一绑定相对路径/hash；实际路径为`invoice-raw/001.private.json`、`invoice-v2/invoice-raw/001.private.json`、`invoice-v2/invoice-raw/002.private.json`。原文0600、目录0700，V2采用原更早期限，统一于2026-10-13 08:06:04.659429UTC人工精确删除并独审不存在，全部登记原文派生同一期限（当前无额外派生）。安全聚合/hash保留；API上限不当实际文件数量，不通配删除、不延长既有Oct8/11/12/17/Nov1/2责任。两供应商登录页没有产生账户原文或额外账单保留义务。
 
 以下为本轮新增前的七项职责摘要（均继续保持）：Oct8日志原文、Oct11费用原文、Oct12Quiz原文、Oct13本次发票原文、Oct17原PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与身份按各段/manifest。早次到期前先预检并同轮等待（单次不超过60秒），不故意拖到下轮；真实延误如实记。所有已结束采集/清理/恢复once保持冻结，文件移除不等于安全抹盘。
 
 ## PR248首次dev读回失败元数据（第八项独立责任）
+
+新四迁移目标准备已独审通过：12保护/5目录/两archive10库存，成功四同名路径及两ZIP保留；原期限不变，尚未apply。见[新契约](FAILED_READBACK_RAW_EXPIRY.md)。
 
 最早采集2026-10-06 18:26:43.519150UTC，三份原文的人工清理期限保持2026-10-13 18:26:43.519150UTC。dev第一次实际包主读在第三ZIP下载时超时，原七文件完整保全于验收根`2026-10-06-explicit-quota-guard/post-main-dev-download-incomplete`。根失败部分只含`responses.private.json`、`artifact-responses.private.json`、`snapshot.private.json`三份元数据及登记含原文派生；三文件0600，目录0700，没有新增原文派生。
 

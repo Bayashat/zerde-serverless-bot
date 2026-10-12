@@ -1,0 +1,31 @@
+{
+  "status": "PREPARED_THREE_PRESENT_NOT_DELETED_PENDING_INDEPENDENT",
+  "observed_at_utc": "2026-10-12T13:19:19.561702+00:00",
+  "targets": 3,
+  "protected_files": 83,
+  "directories": 7,
+  "inventory_files": 86,
+  "deadline_epoch": 1791878764.659429,
+  "deadline_utc": "2026-10-13T08:06:04.659429+00:00",
+  "actual_deletions": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_files": 0,
+  "new_retention_duties": 0,
+  "evidence_sha256": {
+    "PLAN.md": "1e363c1b704571650c5d766a83ad14310fa7944d16e98a251b17e3ae6fd42860",
+    "scope.safe.json": "e610a41de296376b1e6e44eeb52a452d25febba056166f3f9d5a168ff37bdb38",
+    "expire_raw.py": "8c4a464bc76ec3733dcaeb6bb9a12d421ec9e0b0c358548bb1dcf1d3c5530ef9",
+    "verify_absence.py": "148c8099fb107c373b4d943bd2d5afa83fc4c34399877afdb47953907d5798ff",
+    "tool-pre.safe.json": "46317a650ced4d3d59f18ba5efe6a0490500e4c9e70e673a7ea4e5bc321e77f6",
+    "maintenance-pre-v2.safe.json": "b68bc77b392140a58888c65b94726caebeb9bffa2ebe598bdaab5da8363cc918",
+    "inspect-Prep20261012A.safe.json": "b9ad3c81c2f6ad8a867d59a7db949c5acccfecd8ac1d571fb4531e9fbcc92cb8"
+  },
+  "limitations": [
+    "Preparation does not fulfill deletion duty.",
+    "Original invoice amount/payment/attribution UNKNOWNs remain.",
+    "Earlier shared deadline for V2 unchanged.",
+    "v1 unlink_returned negative-control gap preserved; current verifier requires strict True."
+  ]
+}
