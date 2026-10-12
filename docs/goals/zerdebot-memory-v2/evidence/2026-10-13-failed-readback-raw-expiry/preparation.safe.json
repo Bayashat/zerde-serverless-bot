@@ -1,0 +1,33 @@
+{
+  "status": "PREPARED_FOUR_PRESENT_NOT_DELETED_PENDING_INDEPENDENT",
+  "observed_at_utc": "2026-10-12T13:21:58.389918+00:00",
+  "targets": 4,
+  "protected_files": 12,
+  "directories": 5,
+  "archive_inventory_files": 10,
+  "success_same_name_protected_files": 4,
+  "deadline_epoch": 1791916003.51915,
+  "deadline_utc": "2026-10-13T18:26:43.519150+00:00",
+  "actual_deletions": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_files": 0,
+  "new_retention_duties": 0,
+  "evidence_sha256": {
+    "PLAN.md": "7c2ea0cbf437ee48f62e8942a06b7d53cc28de27f028290778b1f41ced16cd97",
+    "scope.safe.json": "923f1dd3062943e284bf8e8431ab2edcc74b3d980251b60ac7903a773c66511b",
+    "expire_raw.py": "04bf4025de78018abaa92319cd4b6873a21cadeda23a484683645a93ee3d54b8",
+    "verify_absence.py": "2eba67e0040dbb059fe1e34515b83d654a39e066b8061d4b71e403347085ef1b",
+    "tool-pre.safe.json": "402e991a5d5466db0bea2a94287dc96a32c48bfa20f5f24ee12000ea7a7b4818",
+    "maintenance-pre.safe.json": "38147ee1a543268f31eb869251ab28c45b4775e8760e88f26fe6c04c3a313bcd",
+    "inspect-Prep20261012A.safe.json": "49bc0edc25e8f62e9d6981f3ebdaf5dc1e0625026bf41e3e699336282dfacfbd"
+  },
+  "limitations": [
+    "Preparation does not fulfill deletion duty.",
+    "Three original metadata responses plus one empty array record, not four AWS responses.",
+    "Relocated ledger paths govern; successful same-name paths protected.",
+    "Full inventory limited to two failed archives, not J expanded build tree.",
+    "Root pre-entry schema stop and missing-inspect follow-up preserved; formal inspect only ran once after schema was read correctly."
+  ]
+}
