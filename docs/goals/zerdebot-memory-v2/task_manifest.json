@@ -25,7 +25,7 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
-    "status_as_of": "2026-10-08",
+    "status_as_of": "2026-10-13",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。",
     "remaining": "普通文本、ask及修复后新mention/清晰Reply已有有限真实证据；频道/媒体等原有限缺口和最终整体回归仍待。原失败/UI_STOP与18旧schema回放冻结，不重跑。",
     "issue_state": "OPEN",
@@ -100,7 +100,7 @@
       "original_rate_owner_and_memory_owners_unchanged": true
     },
     "media_album_rebind_preparation": {
-      "status": "PREPARED_REVIEWED_CURRENT_RUNTIME_LIVE_NOT_STARTED_WAITING_EXCLUSIVE_UI",
+      "status": "PREPARED_OLD_AGGREGATE_BINDING_INVALID_PENDING_NARROW_REBIND_AND_EXCLUSIVE_UI",
       "contract": "Z01_MEDIA_REBIND_ACCEPTANCE.md",
       "evidence": "evidence/2026-10-12-z01-media-rebind/preparation.safe.json",
       "root_offline_controls": 77,
@@ -109,7 +109,36 @@
       "config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
       "live_started": false,
       "new_raw_retention_duties": 0,
-      "remaining": "等待新Telegram独占窗口，之后首次采集前建立原文账本、现场/当前preflight与唯一S预算时点；完整相册/Reply/独立POST尚待。旧Y绑定永久无效。"
+      "remaining": "新Operations发布后旧S/Z完整聚合绑定失效；先有限重绑独审，再等真实新的Telegram独占窗口。旧准备/素材保留，live仍未开始，禁止沿旧许可发送。",
+      "historical_status_before_operations_release": "PREPARED_REVIEWED_CURRENT_RUNTIME_LIVE_NOT_STARTED_WAITING_EXCLUSIVE_UI"
+    },
+    "operations_alert_release": {
+      "status": "ALERT_POLICY_DEPLOYED_BOTH_ENVIRONMENTS_INDEPENDENT_PASS",
+      "runtime_source": "f049f6856f990c8ec2d997558f1c4d482a1dbca9",
+      "pr": 263,
+      "evidence": "evidence/2026-10-13-prod-alert-noise/release.safe.json",
+      "protected_other_functions": true,
+      "two_quiz_rule_actual_config_preserved": true,
+      "prod_initial_prepare_scope_failure_preserved": true,
+      "disable_rollback": {
+        "dev": {
+          "baseline": true,
+          "root_post": false,
+          "independent_post": false,
+          "preserved": false,
+          "accepted_deviation": true,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        },
+        "prod": {
+          "baseline": true,
+          "root_post": true,
+          "independent_post": true,
+          "preserved": true,
+          "accepted_deviation": false,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        }
+      },
+      "old_full_aggregate_binding_valid": false
     }
   },
   {
@@ -500,7 +529,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-13",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。",
-    "remaining": "当前八项精确UTC副本/原文责任见RETAINED_COPIES：Oct13 18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
+    "remaining": "当前九项精确UTC副本/原文责任见RETAINED_COPIES：Oct13 18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254，另新增Oct20 14:32:29.705948本批告警原文。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -675,6 +704,43 @@
       "evidence": "evidence/2026-10-13-invoice-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "operations_alert_release": {
+      "status": "ALERT_POLICY_DEPLOYED_BOTH_ENVIRONMENTS_INDEPENDENT_PASS",
+      "runtime_source": "f049f6856f990c8ec2d997558f1c4d482a1dbca9",
+      "pr": 263,
+      "evidence": "evidence/2026-10-13-prod-alert-noise/release.safe.json",
+      "protected_other_functions": true,
+      "two_quiz_rule_actual_config_preserved": true,
+      "prod_initial_prepare_scope_failure_preserved": true,
+      "disable_rollback": {
+        "dev": {
+          "baseline": true,
+          "root_post": false,
+          "independent_post": false,
+          "preserved": false,
+          "accepted_deviation": true,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        },
+        "prod": {
+          "baseline": true,
+          "root_post": true,
+          "independent_post": true,
+          "preserved": true,
+          "accepted_deviation": false,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        }
+      },
+      "old_full_aggregate_binding_valid": false
+    },
+    "operations_alert_raw_retention": {
+      "deadline_utc": "2026-10-20T14:32:29.705948+00:00",
+      "deadline_epoch": 1792506749.705948,
+      "captured_files": 341,
+      "ledger_sha256": "47e9cdbcc2d53e31b0f36301079d7592f659cdf921630d33dfd0b88c0fba97ba",
+      "ledger": "2026-10-13-prod-errors-diagnostic/raw-retention.safe.json",
+      "status": "RETAINED_UNTIL_EXACT_DEADLINE",
+      "owner": "Z10"
     }
   },
   {
@@ -969,9 +1035,9 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "september_account_invoice_verified_provider_login_pending_full_cost_unknown",
-    "status_as_of": "2026-10-06",
-    "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。 10月6日AWS账号九月一张发票摘要及独立原始复算通过：税前38.65＋税6.18＝44.83 USD；并非Zerde独立费用或已付款。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。",
-    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；CE与发票税前差0.0074992985 USD原因未知。Groq/DeepSeek官方页均需用户登录，九月消费UNKNOWN；Google非秘密运行映射/税/付款仍待。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护继续；不因查账关闭Z17。",
+    "status_as_of": "2026-10-13",
+    "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。 10月6日AWS账号九月一张发票摘要及独立原始复算通过：税前38.65＋税6.18＝44.83 USD；并非Zerde独立费用或已付款。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 生产Bot告警已改为连续三个5分钟错误窗口、一小时同类合并及恢复静默；两环境Operations实际包/保护主独及300秒稳定通过。",
+    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；CE与发票税前差0.0074992985 USD原因未知。Groq/DeepSeek官方页均需用户登录，九月消费UNKNOWN；Google非秘密运行映射/税/付款仍待。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护继续；不因查账关闭Z17。 本次5次Groq垃圾检测HTTP413的具体限制仍UNKNOWN，降噪不等于业务故障修复。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1102,6 +1168,34 @@
       "evidence": "evidence/2026-10-13-invoice-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "operations_alert_release": {
+      "status": "ALERT_POLICY_DEPLOYED_BOTH_ENVIRONMENTS_INDEPENDENT_PASS",
+      "runtime_source": "f049f6856f990c8ec2d997558f1c4d482a1dbca9",
+      "pr": 263,
+      "evidence": "evidence/2026-10-13-prod-alert-noise/release.safe.json",
+      "protected_other_functions": true,
+      "two_quiz_rule_actual_config_preserved": true,
+      "prod_initial_prepare_scope_failure_preserved": true,
+      "disable_rollback": {
+        "dev": {
+          "baseline": true,
+          "root_post": false,
+          "independent_post": false,
+          "preserved": false,
+          "accepted_deviation": true,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        },
+        "prod": {
+          "baseline": true,
+          "root_post": true,
+          "independent_post": true,
+          "preserved": true,
+          "accepted_deviation": false,
+          "contract_sha256": "d568532f5ef3e0c2c69430d0c4e3ccf1b5ecea909f28ca9452e3dc892d327f3c"
+        }
+      },
+      "old_full_aggregate_binding_valid": false
     }
   },
   {

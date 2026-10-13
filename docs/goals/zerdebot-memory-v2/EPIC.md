@@ -1,3 +1,11 @@
+## 2026-10-13：生产Bot告警降噪已发布
+
+连续三个5分钟错误窗口才提醒，一小时内合并同类私聊，恢复静默。两环境Operations包及prod单告警已更新；另dev DisableRollback实际true→false按窄合同记录接受，prod显式true并读回保持。主独实包及稳定通过；原prod预览失败保全，新模板保留告警标签/两Quiz现役描述；第二次预览类型检查失败后只读接续原CS，日程目标全标签保持；空Dimensions核验续接已完成。Groq HTTP413原因仍UNKNOWN。新Oct20原文期限加原八项共九项；旧S/Z聚合绑定须重绑，媒体独占窗口仍未确认。
+
+[发布证据](evidence/2026-10-13-prod-alert-noise/release.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
+
 ## 2026-10-13发票原文责任已履行
 
 3精确文件已移除并独审不存在；83保留hash/7目录/6条journal及五hash绑定通过。原期限08:06:04.659429UTC，首末unlink 2026-10-13T08:06:04.740853+00:00至2026-10-13T08:06:04.742064+00:00，真实晚0.081424至0.082635秒，原因UNKNOWN。费用结论/UNKNOWN、原失败保留；清理0云/UI/模型，不是安全擦盘。剩余8项原期限见[台账](RETAINED_COPIES.md)，下一Oct13 18:26:43.519150失败4单独处理。运行PR257/配置PR251/S reader保持，相册Z准备完成仍无独占窗口，20任务14OPEN/6CLOSED、自然0/50有据0/20未知、production_ready=false保持。[完成回执](evidence/2026-10-13-invoice-raw-expiry/completion.safe.json)及[独审](evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json)。
