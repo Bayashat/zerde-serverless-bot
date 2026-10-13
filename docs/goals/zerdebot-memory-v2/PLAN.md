@@ -1,3 +1,17 @@
+## 2026-10-13晚次：四份迁移失败原文清理已独审完成
+
+原期限18:26:43.519150 UTC保持。两迁移ledger的4精确文件（3份元数据和一个空[]记录，不是4份AWS响应）已移除；首末unlink为2026-10-13T18:26:43.630886+00:00、2026-10-13T18:26:43.632391+00:00，真实晚0.111736至0.113241秒，原因UNKNOWN。独立fresh核4路径不存在、12保留hash/身份、5目录和两失败archive剩余6文件；成功轮四个同名原路径及2ZIP保持。8条intent/result、公告和五hash绑定一致，apply与journal各自unlink_returned/absent均严格True。
+
+原失败、ledger、安全聚合和费用UNKNOWN保持，未恢复原文/补采集；清理本地0云/UI/模型/新原文/运行部署。文件移除不是安全擦盘或所有云副本消失，顺序核验非事务；用户导出/现役PITR保留，37在线退役计数不增。旧准备和唯一Due20261013B、Apply20261013B、verify均已结束不可重跑。
+
+剩余8项UTC责任：Oct14 20:45:55.665021公开128；Oct14 21:48:46.021161配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38 PITR；Nov1 11:46:02.425 memory SYSTEM；Nov2 08:45:11.254 stats SYSTEM；Oct20 14:32:29.705948告警341。原期限/逐文件身份不变，Oct14两时点不合并，已履行项不重删重建。
+
+Bot/Memory运行PR257和PR251身份配置保持；Operations及prod告警已由PR263发布，源码f049f6856f990c8ec2d997558f1c4d482a1dbca9。dev DisableRollback true→false已按窄合同接受、prodtrue保持；Groq413具体限制UNKNOWN。旧S/Z完整聚合绑定失效，未来reader/media须另窄重绑独审，仍无Telegram独占窗口。本批无新业务/自然验收；20任务14OPEN/6CLOSED、Epic OPEN，自然0/50有据0/20未知、production_ready=false保持。
+
+[清理契约](FAILED_READBACK_RAW_EXPIRY.md)；[完成聚合](evidence/2026-10-13-failed-readback-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-13-failed-readback-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、运行绑定或重跑指令
+
 ## 2026-10-13：三份发票原文清理已独审完成
 
 原期限08:06:04.659429 UTC保持。两份invoice ledger绑定的3个精确文件已移除；首次/末次unlink为2026-10-13T08:06:04.740853+00:00、2026-10-13T08:06:04.742064+00:00，实际晚0.081424至0.082635秒，原因UNKNOWN。独立重新核三个路径不存在、83保留文件hash、7目录身份及剩余库存，6条intent/result与公告、五项hash绑定和时间链一致，unlink_returned均严格为True。原cache模式保持。
