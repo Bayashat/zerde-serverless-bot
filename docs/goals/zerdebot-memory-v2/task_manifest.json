@@ -757,6 +757,44 @@
       "evidence": "evidence/2026-10-13-failed-readback-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-13-failed-readback-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "oct14_raw_expiry_preparations": {
+      "status": "PREPARED_NOT_DELETED",
+      "batches": [
+        {
+          "batch": "2026-10-14-public-text-raw-expiry",
+          "target_count": 128,
+          "protected_count": 68,
+          "directory_count": 5,
+          "inventory_count": 196,
+          "deadline_utc": "2026-10-14T20:45:55.665021+00:00",
+          "deadline_epoch": 1792010755.665021,
+          "scope_sha256": "a24032340dcc6039b88df44d5d82e6b45b31de98273d5bc01175fc4b465e7694",
+          "preparation_sha256": "4b57f8bcc56529f167baabdbddcfe0c217df8e7c6aaa1d8ee73dedaae63556b3",
+          "independent_sha256": "267a115feab63f18deacd282a58ab14c487010844926b02510b4c1ca70063400",
+          "contract": "PUBLIC_TEXT_RAW_EXPIRY.md",
+          "evidence": "evidence/2026-10-14-public-text-raw-expiry/preparation.safe.json",
+          "independent_evidence": "evidence/2026-10-14-public-text-raw-expiry/independent.safe.json"
+        },
+        {
+          "batch": "2026-10-14-identity-raw-expiry",
+          "target_count": 1030,
+          "protected_count": 310,
+          "directory_count": 37,
+          "inventory_count": 1340,
+          "deadline_utc": "2026-10-14T21:48:46.021161+00:00",
+          "deadline_epoch": 1792014526.021161,
+          "scope_sha256": "af65b8f3388c6bd9747ab7f79bca70e01ffd3da1caa6fc6b8e6ea3e3e9ef067e",
+          "preparation_sha256": "8d06232b44ea9732905f6b3b00837e5586704e5178b6814a3b39ddff90b597ab",
+          "independent_sha256": "d33be181095fa5bfa79373d94926050ba8854ec969305be234df1986bbe16c23",
+          "contract": "IDENTITY_RAW_EXPIRY.md",
+          "evidence": "evidence/2026-10-14-identity-raw-expiry/preparation.safe.json",
+          "independent_evidence": "evidence/2026-10-14-identity-raw-expiry/independent.safe.json"
+        }
+      ],
+      "original_deadlines_unchanged": true,
+      "apply_executed": false,
+      "remaining_numbered_duties": 8
     }
   },
   {
