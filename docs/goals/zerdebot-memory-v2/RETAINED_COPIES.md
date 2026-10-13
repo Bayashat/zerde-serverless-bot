@@ -1,6 +1,6 @@
-# 保留副本与到期责任（更新至2026-10-12）
+# 保留副本与到期责任（更新至2026-10-13）
 
-当前剩余九项独立UTC职责：Oct13早次发票、Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余八项独立UTC职责：Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -55,6 +55,8 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 
 原PARTIAL_UNCONFIRMED_UI、旧STOP/失败/安全聚合和原ledger保持；清理不证明投票提交、HTTP500重送或一次计分通过，不重发/重答旧题。文件移除不是安全擦盘或所有云/外部副本消失，顺序核验不是文件系统事务。清理和本地核验0云/UI/模型、新原文或运行部署；后续CI既有OIDC/CDK只读另计。
 
+以下为Oct12履行时历史摘要；当前八项职责以本文件顶部为准，媒体现状以新交接为准，不作待删或重绑指令。
+
 剩余九项责任：Oct13早次发票3、晚次旧PR248失败4；Oct14早次公开文本128、晚次配置1030；Oct15提及Reply85；Oct16共享writer1426；Oct17 PITR；Nov1旧memory SYSTEM；Nov2旧stats SYSTEM。各原精确期限见副本台账，不合并双时点。Oct11费用/Oct8日志/USER/AV/三归档key已履行且真实延误保留，不重删重建；用户导出、现役PITR和必要恢复保留。
 
 运行PR257/配置PR251/S reader保持。Z10/Z16/Epic继续OPEN，20任务14OPEN/6CLOSED、自然0/50有据0/20未知及production_ready=false不变；相册仍待新包重绑和新的Telegram独占窗口，未操作UI。
@@ -67,7 +69,19 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 
 2026-10-05 17:15:22.532382UTC开始的受控验收，所有实际API响应、请求参数、目标快照、UI观察及登记含原文派生采用同一七日期限：2026-10-12 17:15:22.532382UTC。精确私有清单为验收根`2026-10-05-quiz-answer-redelivery/raw-retention.safe.json`；目录0700、文件0600，逐文件登记/hash，完成后人工精确清理并独立核不存在。工具上限不是实际文件数量，安全聚合/hash保留；新准备窗口和独立读取不能延长原期限。此责任独立于Oct8、Oct11、Oct17、Nov1、Nov2，不重新删除已完成USER备份或旧AV。
 
-## Z17账号发票摘要原文（独立责任）
+## Z17账号发票摘要原文（已履行）
+
+原期限08:06:04.659429 UTC保持。两份invoice ledger绑定的3个精确文件已移除；首次/末次unlink为2026-10-13T08:06:04.740853+00:00、2026-10-13T08:06:04.742064+00:00，实际晚0.081424至0.082635秒，原因UNKNOWN。独立重新核三个路径不存在、83保留文件hash、7目录身份及剩余库存，6条intent/result与公告、五项hash绑定和时间链一致，unlink_returned均严格为True。原cache模式保持。
+
+两份ledger、原失败、费用结论和UNKNOWN保留；账号摘要38.65+6.18=44.83不变，非项目独占/付款/完整FreeTier，CE差0.0074992985原因仍UNKNOWN。清理及本地核验0云/UI/模型/新原文/运行部署；CI既有OIDC/CDK只读另计。文件移除不是安全擦盘或所有云副本消失，顺序读取不是全局事务，37在线退役数不增。
+
+剩余8项UTC责任：Oct13 18:26:43.519150失败4；Oct14 20:45:55.665021公开文本128和21:48:46.021161配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167共享writer1426；Oct17 16:20:38 PITR；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。各批不合并、原期限不延长；已履行项不重删重建，用户导出/现役PITR保留。
+
+相册Z已完成PR257/PR251/S reader五工具重绑准备，仍待直接人类确认新15分钟Telegram独占窗口；未启动现场或新期限。运行PR257、配置PR251、S reader与五费用owner保持。Z10/Z17/Epic仍OPEN；20任务14OPEN/6CLOSED、自然0/50有据0/20未知、production_ready=false保持。
+
+[清理契约](INVOICE_RAW_EXPIRY.md)；[完成聚合](evidence/2026-10-13-invoice-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
 
 新三文件准备已独审通过：83保留/7目录/86库存，原期限不变，尚未apply。见[新契约](INVOICE_RAW_EXPIRY.md)。
 

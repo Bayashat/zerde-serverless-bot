@@ -1,0 +1,28 @@
+{
+  "status": "ALIGNED_EXACT_3_ABSENT_PROTECTED_FILES_UNCHANGED",
+  "cloud_calls": 0,
+  "started_at": 1791878833.516124,
+  "absent": {
+    "invoice-raw/001.private.json": true,
+    "invoice-v2/invoice-raw/001.private.json": true,
+    "invoice-v2/invoice-raw/002.private.json": true
+  },
+  "protected_count": 83,
+  "apply_sha256": "708972a8fc05446183a29d343034f961b5d4da03812322b8e02c2bdfc2305f65",
+  "scope_sha256": "e610a41de296376b1e6e44eeb52a452d25febba056166f3f9d5a168ff37bdb38",
+  "apply_intent_sha256": "7aa4997be8d667dd939f2ea067e67df89c14182e58e32d6bea399ce2a5e88455",
+  "notice_sha256": "483c5bda26176c361dda0dac26428bdfc4510746fa3b5ef6c1f9003d0b83f7e4",
+  "journal_sha256": "2a16114f1a3e637ec768c786c40f7f0b9ce742e97ad1804e2c63e0ae57fbb633",
+  "actual_unlink_times": [
+    1791878764.740853,
+    1791878764.7415,
+    1791878764.7420642
+  ],
+  "actual_intent_delays": [
+    0.08097600936889648,
+    0.08179998397827148,
+    0.08240485191345215
+  ],
+  "not_secure_media_erasure": true,
+  "finished_at": 1791878833.5309691
+}
