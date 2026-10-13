@@ -1,8 +1,8 @@
-## 2026-10-13：告警降噪已发布，晚次原文清理已完成
+## Oct14 两批原文仅准备完成
 
-prod连续三个5分钟错误窗口提醒，一小时合并私聊、恢复静默。双环境实包/稳定通过；dev DisableRollback true→false偏差已接受、prodtrue。原失败/续接保全，Groq413原因UNKNOWN。[完整告警阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/9ef3c580f1065ba2230a78813a229d933229bd33/docs/goals/zerdebot-memory-v2/EPIC.md)。
+128份原期限20:45:55.665021UTC；1030份21:48:46.021161UTC，分别双PRE/主inspect/独立fresh通过，68保留5目录与310保留37目录不变，尚未删除。G1030含95迁移失败和后续成功路径，只认当前完整ledger。两批到期另公告/原hash身份/唯一apply/独审。[契约](PUBLIC_TEXT_RAW_EXPIRY.md)、[配置契约](IDENTITY_RAW_EXPIRY.md)、[八项台账](RETAINED_COPIES.md)。
 
-晚次4原文已删独审，12保护/5目录/8journal保持。原期限18:26:43.519150UTC，晚0.111736至0.113241秒UNKNOWN；0云/UI/模型，非安全擦盘。剩余8项含Oct20告警341见[台账](RETAINED_COPIES.md)；[完成证据](evidence/2026-10-13-failed-readback-raw-expiry/completion.safe.json)。旧S/Z须重绑，媒体窗口未确认，任务/自然状态不变。
+告警PR263和Oct13早晚清理已交付，[完整此前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/c509925fd9271963eb26004cd773349455d95b9e/docs/goals/zerdebot-memory-v2/EPIC.md)。Operations263/Bot-Memory257/身份251保持，旧S/Z须重绑，无媒体窗口；原任务/自然状态不变，本次0云/UI/模型/删除。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

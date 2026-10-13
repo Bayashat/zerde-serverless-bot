@@ -1,3 +1,15 @@
+## Oct14 两批原文清理已分别完成准备，尚未删除
+
+公开文本128份的原期限为2026-10-14 20:45:55.665021UTC，配置发布1030份为21:48:46.021161UTC，两时点独立。新工具正确性/维护PRE、主唯一inspect和独立fresh无跟随hash/身份核验通过：前批68保留/5目录/196库存，后批310保留/37目录/1340库存（含24个保留ZIP）。准备label Prep20261013A各自已结束；apply/verify_absence/notice均未执行，不把准备当已删。
+
+配置1030同时含95迁移失败和后来成功的账本路径，必须按完整当前路径，不按previous_path、basename或后缀误删；N的登记审计源派生包含在128内。原失败/STOP/晚登记偏差、ledger和UNKNOWN保持，原目录模式逐路径保持；G的pre-controls原为0755，不将其误称cache。到期另新inspect/精确公告/原hash身份库存/唯一apply/独立不存在；每项intent距真实公告<=3600秒，早到每次<=60秒等，不提前或故意拖晚，未知保全partial另窄续接。
+
+本地准备0云/UI/模型/删除/新原文，顺序核验非事务；文件移除非安全擦盘，用户导出/现役PITR保留。八项原期限仍见台账，已完成清理不重删重建，37在线对象不增。Operations PR263、Bot/Memory PR257、身份PR251保持，旧S/Z聚合许可失效，未来reader/媒体须另窄重绑；无Telegram独占确认，不启动现场。20任务14OPEN6CLOSED、Epic OPEN、自然0/50有据0/20未知和production_ready=false保持。
+
+[公开文本清理契约](PUBLIC_TEXT_RAW_EXPIRY.md)；[配置原文清理契约](IDENTITY_RAW_EXPIRY.md)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、绑定或重跑指令
+
 # 保留副本与到期责任（更新至2026-10-13）
 
 当前剩余八项独立UTC职责：Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM，另新增Oct20本批告警诊断/发布原文；精确时分与逐文件身份见各段台账。

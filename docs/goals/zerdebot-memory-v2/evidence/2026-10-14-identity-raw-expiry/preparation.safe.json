@@ -1,0 +1,53 @@
+{
+  "status": "PREPARED_NOT_DELETED",
+  "at": 1791918814.4450939,
+  "inspect_label": "Prep20261013A",
+  "scope_sha256": "af65b8f3388c6bd9747ab7f79bca70e01ffd3da1caa6fc6b8e6ea3e3e9ef067e",
+  "evidence_sha256": {
+    "PLAN.md": "69aaafdaaea22e2f79cc988082324a492807bba600ca4271fddc91c6af5a2f54",
+    "scope.safe.json": "af65b8f3388c6bd9747ab7f79bca70e01ffd3da1caa6fc6b8e6ea3e3e9ef067e",
+    "expire_raw.py": "555528cb66c2d34cd4cbbb5aa0730a0f65eb5ebfac93c9eb10c705a213544e1b",
+    "verify_absence.py": "4c65192b60fed904b3c2c3ceeacbece4d2ba9830d799760eb119668039776066",
+    "plan-pre.safe.json": "d9c626671d7a637438bdfc241e6f636a84a4dc1f50cfb98bd1f9879e9426ab11",
+    "tool-pre.safe.json": "c2ad3f2d593be4bc79be4d797a56251afbd0361ae51fe16254fc09160916b5d3",
+    "maintenance-pre.safe.json": "114e19f56dbbef90b1a1a1468f028966c6cccbf6abfacaa412e7edbab94a7dc4",
+    "inspect-Prep20261013A.intent.safe.json": "e3bc53e5af4d5aede22d88cc24a48b0560289ccc301355f32401ba726df836eb",
+    "inspect-Prep20261013A.safe.json": "e841bdd0b9b973f88d198898cd925d9e8c4d105ae23b4ca5aeacff4a3e4f458f"
+  },
+  "target_count": 1030,
+  "protected_count": 310,
+  "directory_count": 37,
+  "inventory_count": 1340,
+  "deadline_epoch": 1792014526.021161,
+  "deadline_utc": "2026-10-14T21:48:46.021161+00:00",
+  "ledger_sha256": "a23b0b8eff40e11356aaad08902642ff8570be816168090a9975cc03a04cd6ea",
+  "all_original_hashes_and_identities_verified": true,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_retention_duties": 0,
+  "independent_preparation": "PENDING_SEPARATE_RECEIPT",
+  "permission_exceptions": [
+    {
+      "path": "__pycache__",
+      "device": 16777232,
+      "inode": 124215702,
+      "mode": 493
+    },
+    {
+      "path": "operators/__pycache__",
+      "device": 16777232,
+      "inode": 124214864,
+      "mode": 493
+    },
+    {
+      "path": "pre-controls",
+      "device": 16777232,
+      "inode": 124215836,
+      "mode": 493
+    }
+  ],
+  "actual_apply_executed": false,
+  "actual_verify_absence_executed": false
+}

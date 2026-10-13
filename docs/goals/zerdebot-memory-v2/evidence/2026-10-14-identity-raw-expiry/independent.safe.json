@@ -1,0 +1,99 @@
+{
+  "status": "ALIGNED_PREPARATION_NOT_DELETED",
+  "started_at": 1791919028.501323,
+  "started_at_utc": "2026-10-13T19:17:08.501323+00:00",
+  "scope_sha256": "af65b8f3388c6bd9747ab7f79bca70e01ffd3da1caa6fc6b8e6ea3e3e9ef067e",
+  "preparation_sha256": "8d06232b44ea9732905f6b3b00837e5586704e5178b6814a3b39ddff90b597ab",
+  "tool_sha256": "73ab8e4519a27557fc963d5290fc9c11dae212382a136319b8a3e67d7892a717",
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "deleted": 0,
+  "new_raw_copies": 0,
+  "new_raw_retention_duties": 0,
+  "old_entry_calls": 0,
+  "target_hashes_checked": 1030,
+  "protected_hashes_checked": 310,
+  "target_count": 1030,
+  "protected_count": 310,
+  "directory_count": 37,
+  "inventory_count": 1340,
+  "inventory_before": {
+    "files": 1340,
+    "directories": 37,
+    "paths_sha256": "e6d11158ed0737ce9bc6df1ec7d8a242dc7554e10defc753303b2819e9c263ff"
+  },
+  "inventory_after": {
+    "files": 1340,
+    "directories": 37,
+    "paths_sha256": "e6d11158ed0737ce9bc6df1ec7d8a242dc7554e10defc753303b2819e9c263ff"
+  },
+  "target_files_present": true,
+  "all_hashes_identities_modes_nlinks_sizes_match_scope": true,
+  "no_follow_fd_and_before_after_stat_checks": true,
+  "streamed_hash_bytes": 567025144,
+  "ledger_sha256": "a23b0b8eff40e11356aaad08902642ff8570be816168090a9975cc03a04cd6ea",
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-08-dev-bot-identity-fix",
+  "started_retention_at_utc": "2026-10-07T21:48:46.021161+00:00",
+  "deadline_utc": "2026-10-14T21:48:46.021161+00:00",
+  "deadline_epoch": 1792014526.021161,
+  "duration_seconds": 604800,
+  "evidence_sha256": {
+    "scope.safe.json": "af65b8f3388c6bd9747ab7f79bca70e01ffd3da1caa6fc6b8e6ea3e3e9ef067e",
+    "plan-pre.safe.json": "d9c626671d7a637438bdfc241e6f636a84a4dc1f50cfb98bd1f9879e9426ab11",
+    "verify_absence.py": "4c65192b60fed904b3c2c3ceeacbece4d2ba9830d799760eb119668039776066",
+    "inspect-Prep20261013A.intent.safe.json": "e3bc53e5af4d5aede22d88cc24a48b0560289ccc301355f32401ba726df836eb",
+    "expire_raw.py": "555528cb66c2d34cd4cbbb5aa0730a0f65eb5ebfac93c9eb10c705a213544e1b",
+    "PLAN.md": "69aaafdaaea22e2f79cc988082324a492807bba600ca4271fddc91c6af5a2f54",
+    "inspect-Prep20261013A.safe.json": "e841bdd0b9b973f88d198898cd925d9e8c4d105ae23b4ca5aeacff4a3e4f458f",
+    "tool-pre.safe.json": "c2ad3f2d593be4bc79be4d797a56251afbd0361ae51fe16254fc09160916b5d3",
+    "maintenance-pre.safe.json": "114e19f56dbbef90b1a1a1468f028966c6cccbf6abfacaa412e7edbab94a7dc4"
+  },
+  "historical_hash_sources": {
+    "final-release.safe.json": "ae5a2aefdd4f8ec5362a5336bc4897329b6b825910e46b1315e82283de20926e",
+    "final-release-independent.safe.json": "f362684175b362570ceeb4adbef521d06c284e2964a2187cd20e82a142813400",
+    "independent-view-archive.safe.json": "b511c00168fc2b461204106c4a5efdf34045b732bcdd4977f66d85135567f019",
+    "independent-view-archive.intent.safe.json": "8df394b15fc87863b848c01ddb36dafd8ba4e32de5439f1d5207745e701e90cb",
+    "independent-view-continuation-bindings.safe.json": "eeef8f01abebb299b1b5bcb66f539eb46affd8c0cea19c0292e1dd4fbe6b58ca",
+    "independent-view-archive-ledger-before.safe.json": "def2dd55652ed1a0804027141312d39e19acad60299c402c1403c8776c4211e4"
+  },
+  "permission_exceptions": [
+    {
+      "path": "__pycache__",
+      "device": 16777232,
+      "inode": 124215702,
+      "mode": 493
+    },
+    {
+      "path": "operators/__pycache__",
+      "device": 16777232,
+      "inode": 124214864,
+      "mode": 493
+    },
+    {
+      "path": "pre-controls",
+      "device": 16777232,
+      "inode": 124215836,
+      "mode": 493
+    }
+  ],
+  "protected_zip_count": 24,
+  "g_migration": {
+    "current_ledger_paths_used": true,
+    "migrated_targets_checked": 95,
+    "old_prefix_later_success_targets": 121,
+    "prior_ledger_path_only_relocation_reconstructed": true,
+    "previous_path_used": false
+  },
+  "no_apply_notice_or_absence_entry": true,
+  "actual_apply_executed": false,
+  "actual_verify_absence_executed": false,
+  "root_preparation_report_unchanged": true,
+  "limitations": [
+    "Read-only preparation evidence, not expiry execution or deletion permission.",
+    "All files were read serially with lstat/O_NOFOLLOW/fstat and stable pre/post metadata; this is not an atomic filesystem snapshot.",
+    "No target or protected file bytes were copied into outputs; only hashes, counts and identity metadata are retained."
+  ],
+  "finished_at": 1791919029.04976,
+  "finished_at_utc": "2026-10-13T19:17:09.049760+00:00"
+}

@@ -1,0 +1,41 @@
+{
+  "status": "PREPARED_NOT_DELETED",
+  "at": 1791918814.4421551,
+  "inspect_label": "Prep20261013A",
+  "scope_sha256": "a24032340dcc6039b88df44d5d82e6b45b31de98273d5bc01175fc4b465e7694",
+  "evidence_sha256": {
+    "PLAN.md": "895ba270161868efb8ea729aeca7cc76b69d58c353ba847922ae17435c06b3db",
+    "scope.safe.json": "a24032340dcc6039b88df44d5d82e6b45b31de98273d5bc01175fc4b465e7694",
+    "expire_raw.py": "61516d7b5e84b2cee44d0c5f5b815d2486bda5696346c59bd48994a928ab60b4",
+    "verify_absence.py": "f3d72bdbe28353ca1139fdb5007993fb3c0714386ac3a2d4e4f209f0c12d7343",
+    "plan-pre.safe.json": "ad15dd0ddac5fe4c550cff806286ba0450c4d9b5e7bd471eaecff9c531bbabd8",
+    "tool-pre.safe.json": "b8c7a7df41b14977fb37ea971bbfd7f7d887a37c186f59ad4abc796790f87934",
+    "maintenance-pre.safe.json": "d5a2f7501c6820bc55ca1264957c97e11607f689417fc9e2e74dfee05b2d2bbb",
+    "inspect-Prep20261013A.intent.safe.json": "7574dd4e0ca8517c448e647398613690d2cde61b044a9d26ed0a75e99861ff3f",
+    "inspect-Prep20261013A.safe.json": "bcc2b2aa23eaaceb71b32d1b2727b606712090aee768ae92506c49711975c49b"
+  },
+  "target_count": 128,
+  "protected_count": 68,
+  "directory_count": 5,
+  "inventory_count": 196,
+  "deadline_epoch": 1792010755.665021,
+  "deadline_utc": "2026-10-14T20:45:55.665021+00:00",
+  "ledger_sha256": "d0f60d4c7d29d2315cd1fb88a4e7698231d164be604d9cc98dbe2dbe71b3e61c",
+  "all_original_hashes_and_identities_verified": true,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_retention_duties": 0,
+  "independent_preparation": "PENDING_SEPARATE_RECEIPT",
+  "permission_exceptions": [
+    {
+      "path": "__pycache__",
+      "device": 16777232,
+      "inode": 124169350,
+      "mode": 493
+    }
+  ],
+  "actual_apply_executed": false,
+  "actual_verify_absence_executed": false
+}

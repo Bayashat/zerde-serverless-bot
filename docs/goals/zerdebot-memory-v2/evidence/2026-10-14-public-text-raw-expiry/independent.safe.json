@@ -1,0 +1,77 @@
+{
+  "status": "ALIGNED_PREPARATION_NOT_DELETED",
+  "started_at": 1791919028.4583838,
+  "started_at_utc": "2026-10-13T19:17:08.458384+00:00",
+  "scope_sha256": "a24032340dcc6039b88df44d5d82e6b45b31de98273d5bc01175fc4b465e7694",
+  "preparation_sha256": "4b57f8bcc56529f167baabdbddcfe0c217df8e7c6aaa1d8ee73dedaae63556b3",
+  "tool_sha256": "73ab8e4519a27557fc963d5290fc9c11dae212382a136319b8a3e67d7892a717",
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "deleted": 0,
+  "new_raw_copies": 0,
+  "new_raw_retention_duties": 0,
+  "old_entry_calls": 0,
+  "target_hashes_checked": 128,
+  "protected_hashes_checked": 68,
+  "target_count": 128,
+  "protected_count": 68,
+  "directory_count": 5,
+  "inventory_count": 196,
+  "inventory_before": {
+    "files": 196,
+    "directories": 5,
+    "paths_sha256": "1b11bacfd80875caffca8904c143f50be774a25794455df89f657d9a696432dd"
+  },
+  "inventory_after": {
+    "files": 196,
+    "directories": 5,
+    "paths_sha256": "1b11bacfd80875caffca8904c143f50be774a25794455df89f657d9a696432dd"
+  },
+  "target_files_present": true,
+  "all_hashes_identities_modes_nlinks_sizes_match_scope": true,
+  "no_follow_fd_and_before_after_stat_checks": true,
+  "streamed_hash_bytes": 804848,
+  "ledger_sha256": "d0f60d4c7d29d2315cd1fb88a4e7698231d164be604d9cc98dbe2dbe71b3e61c",
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-08-z01-public-text",
+  "started_retention_at_utc": "2026-10-07T20:45:55.665021+00:00",
+  "deadline_utc": "2026-10-14T20:45:55.665021+00:00",
+  "deadline_epoch": 1792010755.665021,
+  "duration_seconds": 604800,
+  "evidence_sha256": {
+    "scope.safe.json": "a24032340dcc6039b88df44d5d82e6b45b31de98273d5bc01175fc4b465e7694",
+    "plan-pre.safe.json": "ad15dd0ddac5fe4c550cff806286ba0450c4d9b5e7bd471eaecff9c531bbabd8",
+    "verify_absence.py": "f3d72bdbe28353ca1139fdb5007993fb3c0714386ac3a2d4e4f209f0c12d7343",
+    "inspect-Prep20261013A.intent.safe.json": "7574dd4e0ca8517c448e647398613690d2cde61b044a9d26ed0a75e99861ff3f",
+    "expire_raw.py": "61516d7b5e84b2cee44d0c5f5b815d2486bda5696346c59bd48994a928ab60b4",
+    "PLAN.md": "895ba270161868efb8ea729aeca7cc76b69d58c353ba847922ae17435c06b3db",
+    "inspect-Prep20261013A.safe.json": "bcc2b2aa23eaaceb71b32d1b2727b606712090aee768ae92506c49711975c49b",
+    "tool-pre.safe.json": "b8c7a7df41b14977fb37ea971bbfd7f7d887a37c186f59ad4abc796790f87934",
+    "maintenance-pre.safe.json": "d5a2f7501c6820bc55ca1264957c97e11607f689417fc9e2e74dfee05b2d2bbb"
+  },
+  "historical_hash_sources": {
+    "final.safe.json": "08b916c43cc6f64dcb507986d7694671b8674bea7009ec908bc5bd56c8350c4e",
+    "independent-final-v2.safe.json": "ce28fefc05bc9904d1da0181ec7dc8ade42a15e33f42a06f3f04960ed9ec0509"
+  },
+  "permission_exceptions": [
+    {
+      "path": "__pycache__",
+      "device": 16777232,
+      "inode": 124169350,
+      "mode": 493
+    }
+  ],
+  "protected_zip_count": 0,
+  "g_migration": null,
+  "no_apply_notice_or_absence_entry": true,
+  "actual_apply_executed": false,
+  "actual_verify_absence_executed": false,
+  "root_preparation_report_unchanged": true,
+  "limitations": [
+    "Read-only preparation evidence, not expiry execution or deletion permission.",
+    "All files were read serially with lstat/O_NOFOLLOW/fstat and stable pre/post metadata; this is not an atomic filesystem snapshot.",
+    "No target or protected file bytes were copied into outputs; only hashes, counts and identity metadata are retained."
+  ],
+  "finished_at": 1791919028.498527,
+  "finished_at_utc": "2026-10-13T19:17:08.498527+00:00"
+}
