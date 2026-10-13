@@ -1,10 +1,12 @@
 """Real SDK state transitions and fake-only Telegram notification outcomes."""
 
+import hashlib
 import importlib.util
 import json
 import sys
 import time
 import traceback
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -67,11 +69,27 @@ def record(**changes):
     }
 
 
-def test_only_fault_and_actual_recovery_are_rendered_without_provider_reason():
+def test_production_bot_errors_have_sustained_notice_and_silent_recovery():
     notice = notifications.parse_notice(record(NewStateReason="raw sensitive payload"), now=NOW)
-    assert "故障" in notice.text and "raw sensitive" not in notice.text
-    assert "恢复" in notifications.parse_notice(record(NewStateValue="OK", OldStateValue="ALARM"), now=NOW).text
+    assert "持续请求错误" in notice.text and "raw sensitive" not in notice.text
+    assert notice.cooldown_seconds == 3600 and notice.silent is False
+    recovery = notifications.parse_notice(record(NewStateValue="OK", OldStateValue="ALARM"), now=NOW)
+    assert recovery.silent is True and recovery.cooldown_seconds == 0
     assert notifications.parse_notice(record(NewStateValue="OK", OldStateValue="INSUFFICIENT_DATA"), now=NOW) is None
+
+
+@pytest.mark.parametrize(
+    "env,name", [("prod", "zerde-serverless-news-prod-errors"), ("dev", "zerde-serverless-bot-dev-errors")]
+)
+def test_other_alarm_faults_and_recoveries_keep_immediate_notices(monkeypatch, env, name):
+    monkeypatch.setenv("ENVIRONMENT", env)
+    monkeypatch.setenv("OPERATIONS_ALARM_NAMES", json.dumps([name]))
+    fields = {"AlarmName": name, "AlarmArn": f"arn:aws:cloudwatch:eu-central-1:123456789012:alarm:{name}"}
+    fault = notifications.parse_notice(record(**fields), now=NOW)
+    recovery = notifications.parse_notice(record(**fields, NewStateValue="OK", OldStateValue="ALARM"), now=NOW)
+    assert "故障" in fault.text and "恢复" in recovery.text
+    assert not fault.silent and not recovery.silent
+    assert fault.cooldown_seconds == recovery.cooldown_seconds == 0
 
 
 @pytest.mark.parametrize(
@@ -261,3 +279,114 @@ def test_storage_failure_never_sends_and_is_not_acknowledged(monkeypatch):
     with pytest.raises(RuntimeError):
         entrypoint.lambda_handler({"Records": [record()]}, None)
     send.assert_not_called()
+
+
+def _transition(offset, state="ALARM", old="OK"):
+    stamp = datetime.fromtimestamp(NOW + offset, timezone.utc).isoformat()
+    value = record(StateChangeTime=stamp, NewStateValue=state, OldStateValue=old)
+    value["Sns"]["Timestamp"] = stamp
+    return {"Records": [value]}
+
+
+def test_fault_recovery_realarm_merges_and_suppressed_duplicates_never_replay(repository, monkeypatch):
+    send = MagicMock()
+    monkeypatch.setattr(entrypoint, "send_private", send)
+    for processing, observed, state, old in [
+        (0, 0, "ALARM", "OK"),
+        (60, 60, "OK", "ALARM"),
+        (120, 120, "ALARM", "OK"),
+        (3700, 120, "ALARM", "OK"),
+    ]:
+        monkeypatch.setattr(time, "time", lambda processing=processing: NOW + processing)
+        entrypoint.lambda_handler(_transition(observed, state, old), None)
+    assert send.call_count == 1
+    row = repository.table.scan()["Items"][0]
+    assert row["handled_at"] == (NOW + 120) * 1000
+    assert row["delivered_at"] == row["last_sent_at"] == NOW * 1000
+    entrypoint.lambda_handler(_transition(3700), None)
+    assert send.call_count == 2
+
+
+def test_silent_recovery_blocks_older_alarm_after_cooldown_without_claiming_delivery(repository, monkeypatch):
+    monkeypatch.setattr(time, "time", lambda: NOW + 60)
+    send = MagicMock()
+    monkeypatch.setattr(entrypoint, "send_private", send)
+    entrypoint.lambda_handler(_transition(60, "OK", "ALARM"), None)
+    monkeypatch.setattr(time, "time", lambda: NOW + 4000)
+    entrypoint.lambda_handler(_transition(0), None)
+    send.assert_not_called()
+    row = repository.table.scan()["Items"][0]
+    assert row["handled_at"] == (NOW + 60) * 1000
+    assert "delivered_at" not in row and "last_sent_at" not in row
+    entrypoint.lambda_handler(_transition(4000), None)
+    send.assert_called_once()
+
+
+@pytest.mark.parametrize("elapsed,expected", [(3599.999, 1), (3600, 2)])
+def test_cooldown_uses_processing_clock_with_exact_hour_boundary(repository, monkeypatch, elapsed, expected):
+    send = MagicMock()
+    monkeypatch.setattr(entrypoint, "send_private", send)
+    monkeypatch.setattr(time, "time", lambda: NOW)
+    entrypoint.lambda_handler(_transition(-120), None)
+    monkeypatch.setattr(time, "time", lambda: NOW + elapsed)
+    entrypoint.lambda_handler(_transition(3500), None)
+    assert send.call_count == expected
+
+
+def test_legacy_row_uses_existing_delivery_time_without_resetting_cooldown(repository, monkeypatch):
+    stream = "legacy"
+    key = "operations#" + hashlib.sha256(stream.encode()).hexdigest()
+    repository.table.put_item(Item={"stat_key": key, "delivered_at": NOW * 1000})
+    monkeypatch.setattr(time, "time", lambda: NOW + 10)
+    assert repository.claim(stream, (NOW + 10) * 1000, cooldown_seconds=3600) is None
+    row = repository.table.get_item(Key={"stat_key": key}, ConsistentRead=True)["Item"]
+    assert row["delivered_at"] == NOW * 1000 and "last_sent_at" not in row
+    monkeypatch.setattr(time, "time", lambda: NOW + 3600)
+    assert repository.claim(stream, (NOW + 3600) * 1000, cooldown_seconds=3600) is not None
+
+
+def test_suppression_is_fenced_against_expired_lease_owner(repository, monkeypatch):
+    monkeypatch.setattr(time, "time", lambda: NOW)
+    key, old = repository.claim("stream", 1)
+    monkeypatch.setattr(time, "time", lambda: NOW + 91)
+    _, new = repository.claim("stream", 2)
+    with pytest.raises(ClientError):
+        repository.suppress(key, old, 1)
+    repository.suppress(key, new, 2)
+    assert repository.claim("stream", 2) is None
+
+
+@pytest.mark.parametrize("anchor", [True, "1", -1])
+def test_invalid_cooldown_anchor_cannot_allow_a_send(repository, monkeypatch, anchor):
+    key = "operations#" + hashlib.sha256(b"bad-anchor").hexdigest()
+    repository.table.put_item(Item={"stat_key": key, "last_sent_at": anchor})
+    monkeypatch.setattr(time, "time", lambda: NOW)
+    with pytest.raises(ValueError):
+        repository.claim("bad-anchor", NOW * 1000, cooldown_seconds=3600)
+
+
+def test_failed_suppression_persistence_remains_retryable(repository, monkeypatch):
+    monkeypatch.setattr(time, "time", lambda: NOW)
+    key, owner = repository.claim("stream", 1)
+    repository.confirm(key, owner, 1)
+    monkeypatch.setattr(repository, "suppress", MagicMock(side_effect=RuntimeError("storage unavailable")))
+    with pytest.raises(RuntimeError):
+        repository.claim("stream", 2, cooldown_seconds=3600)
+    row = repository.table.get_item(Key={"stat_key": key}, ConsistentRead=True)["Item"]
+    assert row["handled_at"] == row["delivered_at"] == 1
+
+
+def test_send_confirmation_failure_does_not_fabricate_cooldown_or_exactly_once(repository, monkeypatch):
+    monkeypatch.setattr(time, "time", lambda: NOW)
+    send = MagicMock()
+    monkeypatch.setattr(entrypoint, "send_private", send)
+    original = DeliveryRepository.confirm
+    with monkeypatch.context() as patch:
+        patch.setattr(DeliveryRepository, "confirm", MagicMock(side_effect=RuntimeError("storage unavailable")))
+        with pytest.raises(RuntimeError):
+            entrypoint.lambda_handler(_transition(0), None)
+    row = repository.table.scan()["Items"][0]
+    assert "last_sent_at" not in row and "delivered_at" not in row
+    assert DeliveryRepository.confirm is original
+    entrypoint.lambda_handler(_transition(0), None)
+    assert send.call_count == 2  # Existing cross-system ambiguity remains explicit.

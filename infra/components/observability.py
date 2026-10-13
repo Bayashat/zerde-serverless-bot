@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from aws_cdk import Duration
 from aws_cdk import aws_cloudwatch as cloudwatch
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_sqs as sqs
@@ -20,16 +21,29 @@ def add_lambda_operational_alarms(
     """Errors, throttles, and duration p95 for a single Lambda function."""
     base = f"{CONSTRUCT_PREFIX}{logical_slug}"
     alarm_name_prefix = f"{RESOURCE_PREFIX}-{logical_slug}-{env_name}"
+    sustained_errors = logical_slug == "bot" and env_name == "prod"
+    error_metric = fn.metric_errors()
+    if sustained_errors:
+        # Fill quiet windows so older error points cannot bridge missing periods.
+        error_metric = cloudwatch.MathExpression(
+            expression="FILL(errors, 0)",
+            using_metrics={"errors": fn.metric_errors(period=Duration.minutes(5), statistic="Sum")},
+            period=Duration.minutes(5),
+        )
 
     errors = cloudwatch.Alarm(
         scope,
         f"{base}ErrorsAlarm",
         alarm_name=f"{alarm_name_prefix}-errors",
-        alarm_description=f"Lambda Errors >= 1 ({logical_slug}, {env_name})",
-        metric=fn.metric_errors(),
+        alarm_description=(
+            "Bot request errors in three consecutive five-minute windows; private notices merge for one hour"
+            if sustained_errors
+            else f"Lambda Errors >= 1 ({logical_slug}, {env_name})"
+        ),
+        metric=error_metric,
         threshold=1,
-        evaluation_periods=1,
-        datapoints_to_alarm=1,
+        evaluation_periods=3 if sustained_errors else 1,
+        datapoints_to_alarm=3 if sustained_errors else 1,
         comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
         treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
     )

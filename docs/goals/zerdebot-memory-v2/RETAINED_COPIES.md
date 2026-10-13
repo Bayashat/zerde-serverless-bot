@@ -1,6 +1,12 @@
 # 保留副本与到期责任（更新至2026-10-13）
 
-当前剩余八项独立UTC职责：Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与逐文件身份见各段台账。
+当前剩余九项独立UTC职责：Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM，另新增Oct20本批告警诊断/发布原文；精确时分与逐文件身份见各段台账。
+
+## 新增告警诊断与发布原文责任
+
+本批`2026-10-13-prod-errors-diagnostic/raw-retention.safe.json`最终登记341实际CAPTURED/0NOT_CREATED，SHA `47e9cdbcc2d53e31b0f36301079d7592f659cdf921630d33dfd0b88c0fba97ba`。首次2026-10-13 14:32:29.705948UTC，七日原期限2026-10-20 14:32:29.705948UTC（epoch1792506749.705948）固定。所有实际API/配置/template/日志与含原文派生同期限、0600/0700；完整ZIP/纯源码/安全聚合保留，asset桶本次配置模板作为审计配置保留。到期另新PRE/精确公告/ledger逐文件hash身份/唯一清理/独立不存在，不能按后缀或库存槽数删除。Github收口仅保存响应hash与必要安全投影，不新增业务原文。
+
+原八项时点保持，各Oct13/14双时点不合并，已履行项不重删重建、用户导出/现役PITR保留。以下逐批旧报告中的当时剩余数量与旧reader/运行聚合均是历史，不作为当前许可。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 

@@ -50,3 +50,7 @@ uv run cdk diff -c env=dev
 Build checks must inspect all five real ARM Lambda packages and their shared layer with `scripts/verify_lambda_bundles.py`. Test success, a PR merge, deployed-package verification and product acceptance are recorded separately. Follow the [execution and cleanup contract](docs/goals/zerdebot-memory-v2/FINISH_EXECUTION.md) before changing deployed resources or enabling a group.
 
 The Memory V2 cost inventory continues to meter the original Bot/Worker, V2 table/queue and incremental alarm scope. Retiring vectors does not reset charges, unresolved provider results or budget history. Estimated application cost is not the project's final bill.
+
+## Production Bot error notifications
+
+The production Bot error alert requires an error in each of three consecutive five-minute windows. Quiet windows count as zero. Operations merges repeated alerts for one hour after a confirmed private send and silently records recoveries. Other alarms and budget notifications retain their existing policy. A request error does not by itself mean the entire bot is unavailable. See the [release evidence](docs/goals/zerdebot-memory-v2/PROD_ERROR_ALERT_NOISE.md) for deployment status.

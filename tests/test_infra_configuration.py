@@ -501,6 +501,30 @@ def test_active_runtime_registers_private_alarm_and_recovery_actions(monkeypatch
     assert ddb[0]["Condition"]["ForAllValues:StringLike"]["dynamodb:LeadingKeys"] == ["operations#*"]
 
 
+def test_only_prod_bot_errors_require_three_filled_five_minute_windows(monkeypatch):
+    monkeypatch.setenv("DEV_RUNTIME_ENABLED", "true")
+    for env in ("dev", "prod"):
+        alarms = _template(monkeypatch, env_name=env).find_resources("AWS::CloudWatch::Alarm")
+        for resource in alarms.values():
+            alarm = resource["Properties"]
+            if alarm["AlarmName"] == "zerde-serverless-bot-prod-errors":
+                assert alarm["EvaluationPeriods"] == alarm["DatapointsToAlarm"] == 3
+                assert alarm["Threshold"] == 1 and alarm["TreatMissingData"] == "notBreaching"
+                metrics = {m["Id"]: m for m in alarm["Metrics"]}
+                expression = next(m for m in metrics.values() if "Expression" in m)
+                assert expression["Expression"] == "FILL(errors, 0)"
+                assert expression["ReturnData"] is True
+                metric = metrics["errors"]["MetricStat"]
+                assert metric["Period"] == 300 and metric["Stat"] == "Sum"
+                assert metric["Metric"]["Namespace"] == "AWS/Lambda"
+                assert metric["Metric"]["MetricName"] == "Errors"
+                assert alarm["OKActions"] == alarm["AlarmActions"]  # Silent recovery still advances its watermark.
+            elif alarm["AlarmName"].endswith("-errors"):
+                assert alarm["EvaluationPeriods"] == 1
+                assert alarm.get("DatapointsToAlarm", 1) == 1
+                assert "Metrics" not in alarm
+
+
 def test_prod_ignores_dev_idle_flag_preserves_active_limits_and_enables_quiz_pitr(monkeypatch):
     monkeypatch.setenv("DEV_RUNTIME_ENABLED", "false")
     monkeypatch.setenv("KICK_BAN_DURATION_SECONDS", "31")

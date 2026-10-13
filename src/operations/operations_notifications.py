@@ -18,6 +18,8 @@ class Notice:
     stream: str
     observed_at: int
     text: str
+    cooldown_seconds: int = 0
+    silent: bool = False
 
 
 def _timestamp(value: str) -> int:
@@ -37,6 +39,8 @@ def parse_notice(record: dict, *, now: float | None = None) -> Notice | None:
         raise ValueError("Invalid notification envelope")
     message = json.loads(sns["Message"])
     env = os.environ["ENVIRONMENT"]
+    cooldown_seconds = 0
+    silent = False
     if "AlarmName" in message:
         name = message["AlarmName"]
         allowed = json.loads(os.environ["OPERATIONS_ALARM_NAMES"])
@@ -50,6 +54,15 @@ def parse_notice(record: dict, *, now: float | None = None) -> Notice | None:
             return None
         observed = _timestamp(message["StateChangeTime"])
         text = f"ZerdeBot {env}: {'故障' if state == 'ALARM' else '恢复'}\n{name}"
+        if env == "prod" and name == "zerde-serverless-bot-prod-errors":
+            silent = state == "OK"
+            cooldown_seconds = 0 if silent else 3600
+            text = (
+                "ZerdeBot prod：持续请求错误\n"
+                "连续三个5分钟窗口出现请求失败，请检查处理日志。\n"
+                "同类提醒一小时内合并，短暂恢复不另发私聊。\n"
+                f"{name}"
+            )
         stream = arn
     else:
         if (
@@ -83,7 +96,7 @@ def parse_notice(record: dict, *, now: float | None = None) -> Notice | None:
     # Retained/dead-letter events are reviewed manually after this freshness window.
     if observed < (now - 7 * 86400) * 1000 or sent < (now - 7 * 86400) * 1000:
         raise ValueError("Notification expired; inspect recovery runbook")
-    return Notice(stream, observed, text)
+    return Notice(stream, observed, text, cooldown_seconds, silent)
 
 
 def send_private(text: str) -> None:

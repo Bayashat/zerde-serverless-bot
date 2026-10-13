@@ -19,13 +19,16 @@ def lambda_handler(event, context):
         for notice in notices:
             if notice is None:
                 continue
-            claim = repo.claim(notice.stream, notice.observed_at)
+            claim = repo.claim(notice.stream, notice.observed_at, cooldown_seconds=notice.cooldown_seconds)
             if claim is None:
                 continue
             key, owner = claim
             try:
-                send_private(notice.text)
-                repo.confirm(key, owner, notice.observed_at)
+                if notice.silent:
+                    repo.suppress(key, owner, notice.observed_at)
+                else:
+                    send_private(notice.text)
+                    repo.confirm(key, owner, notice.observed_at)
             finally:
                 repo.release(key, owner)
     except Exception:

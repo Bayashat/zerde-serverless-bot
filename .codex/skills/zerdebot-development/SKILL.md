@@ -47,3 +47,7 @@ preview job. Other preview variables and credentials retain their original scope
 Bot receives the identity fields; MemoryWorker's existing allowlist excludes them.
 A configuration-only release must preserve the deployed code and layer references;
 source CI or a merged configuration change alone does not prove public behavior.
+
+## Production Bot error notification owner
+
+Only `zerde-serverless-bot-prod-errors` uses `FILL(errors, 0)` over the Lambda Errors Sum metric, 300-second periods and three of three breaching periods. Operations retains the SNS OK action to record trusted recovery silently. Its existing `operations#` row owns the lease, `handled_at` event watermark and `last_sent_at` confirmed-send clock; repeated faults within one hour advance only the handled watermark. Legacy rows use `delivered_at` until the first new confirmed send. Other alarms and budget streams keep their current notification policy. No new table, scheduler or Telegram sender is introduced. Unknown send/confirmation outcomes may still retry; this is not cross-service exactly-once delivery. Deployment evidence is separate from the source policy.
