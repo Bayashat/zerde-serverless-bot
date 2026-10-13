@@ -1,3 +1,17 @@
+## 2026-10-13：三份发票原文清理已独审完成
+
+原期限08:06:04.659429 UTC保持。两份invoice ledger绑定的3个精确文件已移除；首次/末次unlink为2026-10-13T08:06:04.740853+00:00、2026-10-13T08:06:04.742064+00:00，实际晚0.081424至0.082635秒，原因UNKNOWN。独立重新核三个路径不存在、83保留文件hash、7目录身份及剩余库存，6条intent/result与公告、五项hash绑定和时间链一致，unlink_returned均严格为True。原cache模式保持。
+
+两份ledger、原失败、费用结论和UNKNOWN保留；账号摘要38.65+6.18=44.83不变，非项目独占/付款/完整FreeTier，CE差0.0074992985原因仍UNKNOWN。清理及本地核验0云/UI/模型/新原文/运行部署；CI既有OIDC/CDK只读另计。文件移除不是安全擦盘或所有云副本消失，顺序读取不是全局事务，37在线退役数不增。
+
+剩余8项UTC责任：Oct13 18:26:43.519150失败4；Oct14 20:45:55.665021公开文本128和21:48:46.021161配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167共享writer1426；Oct17 16:20:38 PITR；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。各批不合并、原期限不延长；已履行项不重删重建，用户导出/现役PITR保留。
+
+相册Z已完成PR257/PR251/S reader五工具重绑准备，仍待直接人类确认新15分钟Telegram独占窗口；未启动现场或新期限。运行PR257、配置PR251、S reader与五费用owner保持。Z10/Z17/Epic仍OPEN；20任务14OPEN/6CLOSED、自然0/50有据0/20未知、production_ready=false保持。
+
+[清理契约](INVOICE_RAW_EXPIRY.md)；[完成聚合](evidence/2026-10-13-invoice-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
+
 # Oct13早次账号发票摘要三份原文到期清理
 
 目标是履行 Z10/Z17 的既有三文件人工清理责任，原期限 2026-10-13 08:06:04.659429 UTC（1791878764.659429）不变。此目录名称是责任日期，不表示已到期或已删除；Oct12答案247和Oct13晚次失败4各自独立执行，不合并。

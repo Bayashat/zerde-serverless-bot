@@ -1,3 +1,17 @@
+## 2026-10-13：三份发票原文清理已独审完成
+
+原期限08:06:04.659429 UTC保持。两份invoice ledger绑定的3个精确文件已移除；首次/末次unlink为2026-10-13T08:06:04.740853+00:00、2026-10-13T08:06:04.742064+00:00，实际晚0.081424至0.082635秒，原因UNKNOWN。独立重新核三个路径不存在、83保留文件hash、7目录身份及剩余库存，6条intent/result与公告、五项hash绑定和时间链一致，unlink_returned均严格为True。原cache模式保持。
+
+两份ledger、原失败、费用结论和UNKNOWN保留；账号摘要38.65+6.18=44.83不变，非项目独占/付款/完整FreeTier，CE差0.0074992985原因仍UNKNOWN。清理及本地核验0云/UI/模型/新原文/运行部署；CI既有OIDC/CDK只读另计。文件移除不是安全擦盘或所有云副本消失，顺序读取不是全局事务，37在线退役数不增。
+
+剩余8项UTC责任：Oct13 18:26:43.519150失败4；Oct14 20:45:55.665021公开文本128和21:48:46.021161配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167共享writer1426；Oct17 16:20:38 PITR；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。各批不合并、原期限不延长；已履行项不重删重建，用户导出/现役PITR保留。
+
+相册Z已完成PR257/PR251/S reader五工具重绑准备，仍待直接人类确认新15分钟Telegram独占窗口；未启动现场或新期限。运行PR257、配置PR251、S reader与五费用owner保持。Z10/Z17/Epic仍OPEN；20任务14OPEN/6CLOSED、自然0/50有据0/20未知、production_ready=false保持。
+
+[清理契约](INVOICE_RAW_EXPIRY.md)；[完成聚合](evidence/2026-10-13-invoice-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-13-invoice-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删或重跑指令
+
 ## 2026-10-12：相册验收已重新绑定当前包，尚未开始现场动作
 
 新的相册批次已将有限计划、五工具和独立核验绑定 PR257 实际包、PR251 配置及 S 当前预算 reader/纯校验模块；19份发布回执与104个费用相关源文件已核对。五个媒体处理模块字节未变，保留原两张合成图片与成功标准。77项主离线控制、54项独立控制及正确性/维护PRE通过；这些是准备证据，不是媒体业务通过。
@@ -63,7 +77,7 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 | Z07 [#164](https://github.com/Bayashat/zerde-serverless-bot/issues/164) | F5真实模型合成测量语义policy PASS，原strict FAIL和4缺答保留。 | 自然使用事实正确性/来源和语言切片，未知时不编造。 |
 | Z08 [#165](https://github.com/Bayashat/zerde-serverless-bot/issues/165) | 来源支持1176/1176；原生Telegram来源点击可回源。 | 自然回答质量、费用归因与预算恢复完整周期；#134关联本工单，尚不代替整体结项。 |
 | Z09 [#166](https://github.com/Bayashat/zerde-serverless-bot/issues/166) | F6/F7/F8/F10及PR220完成权限拒绝、本人更正、source-forget闭环。 | 自然覆盖及各原验收项逐条收口；旧两个PENDING不回填。 |
-| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 | 当前九项精确UTC副本/原文责任见RETAINED_COPIES：Oct13 08:06:04.659429及18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。 |
+| Z10 [#167](https://github.com/Bayashat/zerde-serverless-bot/issues/167) | 30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 | 当前八项精确UTC副本/原文责任见RETAINED_COPIES：Oct13 18:26:43.519150、Oct14 20:45:55.665021及21:48:46.021161、Oct15 08:17:52.186798、Oct16 18:48:47.827167、Oct17 16:20:38、Nov1 11:46:02.425、Nov2 08:45:11.254。日志/DLQ其它原台账义务分别保留，用户导出/现役PITR保护；已完成USER和AV不重删。 |
 | Z11 [#168](https://github.com/Bayashat/zerde-serverless-bot/issues/168) | F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。 | Z20声明的旧残留清理前置已满足；真实使用起点未建立，0/50有据和0/20未知，至少7天及其他产品门槛仍未满足；本次不启用新群或prod记忆。 |
 | Z12 [#169](https://github.com/Bayashat/zerde-serverless-bot/issues/169) | 验证码竞争/状态恢复实现已部署。 | 测试身份真实正确解限、旧超时/重入群竞争和异常恢复。 |
 | Z13 [#170](https://github.com/Bayashat/zerde-serverless-bot/issues/170) | 反垃圾执行结果/重试及CLEAN恢复实现已部署。 | 真实删除/权限失败/计数恢复、CLEAN摄取和guest归属。 |
