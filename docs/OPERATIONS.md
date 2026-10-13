@@ -1,5 +1,15 @@
 # 运维通知、dev 按需运行与恢复（Z17）
 
+## 2026-10-13 生产 Bot 告警降噪
+
+本次用户选择“仅持续故障提醒，并合并反复通知”。仅 `zerde-serverless-bot-prod-errors` 改为 Errors Sum、每期 300 秒、连续 3/3 期达到 1；`FILL(errors, 0)` 避免空窗口由旧错误点补齐。Operations 在确认私聊送达后合并一小时内的新故障，恢复只写入处理时间水位、不发私聊，也不重置合并窗口。无定时每小时重发。其它告警和预算通知保持原策略。一次请求错误不等于整个 Bot 不可用。
+
+原 `operations#` 状态行增加 `handled_at` 和 `last_sent_at`，受同一租约保护；旧记录以 `delivered_at` 作为保守起点。静默恢复、合并故障均推进处理水位，延迟旧事件不能再次当新故障发送。发送结果未知或确认写失败仍可能重发，不声称严格一次。当前实现、部署状态与实际读回见[本次合同和证据](goals/zerdebot-memory-v2/PROD_ERROR_ALERT_NOISE.md)。
+
+以下是 Z17 最初准备及恢复手册的历史记录。其六入口、22 告警、vector 队列与未部署描述属于当时阶段；现役五入口、退役边界及最新部署以 ARCHITECTURE 和任务证据为准。历史通知通用说明受上面这一条生产告警的窄策略覆盖，不能据旧 canary 段落重发通知。
+
+## 历史准备与通用恢复手册
+
 关联 [Z17 #174](https://github.com/Bayashat/zerde-serverless-bot/issues/174)、[Epic #157](https://github.com/Bayashat/zerde-serverless-bot/issues/157)。打包基线依赖 [Z04 #183](https://github.com/Bayashat/zerde-serverless-bot/pull/183)。当前交付是本地代码、测试和操作手册；尚未部署、激活成本标签、创建 AWS Budget、发送 Telegram 或恢复真实表。状态为 **IMPLEMENTED_UNPROVEN**，生产验收不能由测试替代。
 
 ## 运行开关与计费归因
