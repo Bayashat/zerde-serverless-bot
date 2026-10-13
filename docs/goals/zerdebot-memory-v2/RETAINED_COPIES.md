@@ -1,12 +1,12 @@
 # 保留副本与到期责任（更新至2026-10-13）
 
-当前剩余九项独立UTC职责：Oct13晚次PR248失败元数据、Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM，另新增Oct20本批告警诊断/发布原文；精确时分与逐文件身份见各段台账。
+当前剩余八项独立UTC职责：Oct14早次公开文本、Oct14晚次配置发布、Oct15早次本批提及/Reply、Oct16本次共享writer发布原文、Oct17 PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM，另新增Oct20本批告警诊断/发布原文；精确时分与逐文件身份见各段台账。
 
 ## 新增告警诊断与发布原文责任
 
 本批`2026-10-13-prod-errors-diagnostic/raw-retention.safe.json`最终登记341实际CAPTURED/0NOT_CREATED，SHA `47e9cdbcc2d53e31b0f36301079d7592f659cdf921630d33dfd0b88c0fba97ba`。首次2026-10-13 14:32:29.705948UTC，七日原期限2026-10-20 14:32:29.705948UTC（epoch1792506749.705948）固定。所有实际API/配置/template/日志与含原文派生同期限、0600/0700；完整ZIP/纯源码/安全聚合保留，asset桶本次配置模板作为审计配置保留。到期另新PRE/精确公告/ledger逐文件hash身份/唯一清理/独立不存在，不能按后缀或库存槽数删除。Github收口仅保存响应hash与必要安全投影，不新增业务原文。
 
-原八项时点保持，各Oct13/14双时点不合并，已履行项不重删重建、用户导出/现役PITR保留。以下逐批旧报告中的当时剩余数量与旧reader/运行聚合均是历史，不作为当前许可。
+此句为告警发布当时历史：原八项时点保持，各Oct13/14双时点不合并，已履行项不重删重建、用户导出/现役PITR保留。以下逐批旧报告中的当时剩余数量与旧reader/运行聚合均是历史，不作为当前许可。
 
 统一跟踪工单为Z10/#167；原各批次owner和回执不改写。Z20关闭仅代表已声明源码与在线资源退役，以下副本责任没有结束。[本批实际证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)。
 
@@ -95,7 +95,21 @@ Z10/Z17/Epic继续OPEN，20任务14OPEN/6CLOSED保持，自然0/50有据、0/20�
 
 以下为本轮新增前的七项职责摘要（均继续保持）：Oct8日志原文、Oct11费用原文、Oct12Quiz原文、Oct13本次发票原文、Oct17原PITR、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM；精确时分与身份按各段/manifest。早次到期前先预检并同轮等待（单次不超过60秒），不故意拖到下轮；真实延误如实记。所有已结束采集/清理/恢复once保持冻结，文件移除不等于安全抹盘。
 
-## PR248首次dev读回失败元数据（第八项独立责任）
+## PR248首次dev读回失败元数据（已履行）
+
+## 2026-10-13晚次：四份迁移失败原文清理已独审完成
+
+原期限18:26:43.519150 UTC保持。两迁移ledger的4精确文件（3份元数据和一个空[]记录，不是4份AWS响应）已移除；首末unlink为2026-10-13T18:26:43.630886+00:00、2026-10-13T18:26:43.632391+00:00，真实晚0.111736至0.113241秒，原因UNKNOWN。独立fresh核4路径不存在、12保留hash/身份、5目录和两失败archive剩余6文件；成功轮四个同名原路径及2ZIP保持。8条intent/result、公告和五hash绑定一致，apply与journal各自unlink_returned/absent均严格True。
+
+原失败、ledger、安全聚合和费用UNKNOWN保持，未恢复原文/补采集；清理本地0云/UI/模型/新原文/运行部署。文件移除不是安全擦盘或所有云副本消失，顺序核验非事务；用户导出/现役PITR保留，37在线退役计数不增。旧准备和唯一Due20261013B、Apply20261013B、verify均已结束不可重跑。
+
+剩余8项UTC责任：Oct14 20:45:55.665021公开128；Oct14 21:48:46.021161配置1030；Oct15 08:17:52.186798 M/R85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38 PITR；Nov1 11:46:02.425 memory SYSTEM；Nov2 08:45:11.254 stats SYSTEM；Oct20 14:32:29.705948告警341。原期限/逐文件身份不变，Oct14两时点不合并，已履行项不重删重建。
+
+Bot/Memory运行PR257和PR251身份配置保持；Operations及prod告警已由PR263发布，源码f049f6856f990c8ec2d997558f1c4d482a1dbca9。dev DisableRollback true→false已按窄合同接受、prodtrue保持；Groq413具体限制UNKNOWN。旧S/Z完整聚合绑定失效，未来reader/media须另窄重绑独审，仍无Telegram独占窗口。本批无新业务/自然验收；20任务14OPEN/6CLOSED、Epic OPEN，自然0/50有据0/20未知、production_ready=false保持。
+
+[清理契约](FAILED_READBACK_RAW_EXPIRY.md)；[完成聚合](evidence/2026-10-13-failed-readback-raw-expiry/completion.safe.json)；[独立不存在](evidence/2026-10-13-failed-readback-raw-expiry/completion-independent.safe.json)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、运行绑定或重跑指令
 
 新四迁移目标准备已独审通过：12保护/5目录/两archive10库存，成功四同名路径及两ZIP保留；原期限不变，尚未apply。见[新契约](FAILED_READBACK_RAW_EXPIRY.md)。
 

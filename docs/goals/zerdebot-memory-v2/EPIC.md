@@ -1,8 +1,8 @@
-## 2026-10-13：生产Bot告警降噪已发布
+## 2026-10-13：告警降噪已发布，晚次原文清理已完成
 
-连续三个5分钟错误窗口才提醒，一小时内合并同类私聊，恢复静默。两环境Operations包及prod单告警已更新；另dev DisableRollback实际true→false按窄合同记录接受，prod显式true并读回保持。主独实包及稳定通过；原prod预览失败保全，新模板保留告警标签/两Quiz现役描述；第二次预览类型检查失败后只读接续原CS，日程目标全标签保持；空Dimensions核验续接已完成。Groq HTTP413原因仍UNKNOWN。新Oct20原文期限加原八项共九项；旧S/Z聚合绑定须重绑，媒体独占窗口仍未确认。
+prod连续三个5分钟错误窗口提醒，一小时合并私聊、恢复静默。双环境实包/稳定通过；dev DisableRollback true→false偏差已接受、prodtrue。原失败/续接保全，Groq413原因UNKNOWN。[完整告警阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/9ef3c580f1065ba2230a78813a229d933229bd33/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
-[发布证据](evidence/2026-10-13-prod-alert-noise/release.safe.json)；[副本台账](RETAINED_COPIES.md)。
+晚次4原文已删独审，12保护/5目录/8journal保持。原期限18:26:43.519150UTC，晚0.111736至0.113241秒UNKNOWN；0云/UI/模型，非安全擦盘。剩余8项含Oct20告警341见[台账](RETAINED_COPIES.md)；[完成证据](evidence/2026-10-13-failed-readback-raw-expiry/completion.safe.json)。旧S/Z须重绑，媒体窗口未确认，任务/自然状态不变。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

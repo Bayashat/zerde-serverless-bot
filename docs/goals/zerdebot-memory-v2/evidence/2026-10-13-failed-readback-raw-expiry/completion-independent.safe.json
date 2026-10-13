@@ -1,0 +1,31 @@
+{
+  "status": "ALIGNED_EXACT_4_ABSENT_PROTECTED_FILES_UNCHANGED",
+  "cloud_calls": 0,
+  "started_at": 1791916077.34874,
+  "absent": {
+    "post-main-dev-download-incomplete/responses.private.json": true,
+    "post-main-dev-download-incomplete/artifact-responses.private.json": true,
+    "post-main-dev-download-incomplete/snapshot.private.json": true,
+    "post-independent-dev-sts-timeout/metadata-responses.private.json": true
+  },
+  "protected_count": 12,
+  "apply_sha256": "b101592a4ef5a4d627ba352e93c7cd68d783ddeb03142a6aa103c44f3082962b",
+  "scope_sha256": "923f1dd3062943e284bf8e8431ab2edcc74b3d980251b60ac7903a773c66511b",
+  "apply_intent_sha256": "8fbbf75131e7f2f221841dd9eb79b276f4682d9294200809623c21f5917744a9",
+  "notice_sha256": "22db70a528a1fb9e2b6485a987e0cee2b79fd2e6432963b2f028f23c543e5b07",
+  "journal_sha256": "1f677b922266aa1e868554001acb21ee99329091a0c5ed88cb5e94ae6e348835",
+  "actual_unlink_times": [
+    1791916003.6308858,
+    1791916003.631402,
+    1791916003.63193,
+    1791916003.632391
+  ],
+  "actual_intent_delays": [
+    0.11129093170166016,
+    0.11196398735046387,
+    0.11256885528564453,
+    0.11298298835754395
+  ],
+  "not_secure_media_erasure": true,
+  "finished_at": 1791916077.395425
+}
