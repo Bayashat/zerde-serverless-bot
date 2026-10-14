@@ -1,3 +1,15 @@
+## Oct15 提及与 Reply 原文已准备，尚未删除
+
+原期限 2026-10-15 08:17:52.186798 UTC 的 85 个账本路径已完成双工具 PRE、主唯一 inspect Prep20261014A 和独立 fresh 无跟随 hash/身份/前后库存核验；103 保留、6 目录全部 0700、188 全库存固定。85 是 61 根 API + 7 UI + 17 独立 API，不用旧 29/68，也不再加入外部预算读。7 个非目标 private 历史已核来源并保留。apply、verify_absence 和 notice 均未执行；准备不等于删除。
+
+到期另新 inspect、精确公告、原 hash/身份/库存、唯一 apply 和独立不存在；公告距逐项 intent <=3600 秒，预期 170 journal，双侧 unlink_returned/absent 严格 True。未知保全 partial 另窄续接，不重 apply/重建。原 M/R 有限 PASS、UI/语言/共享计数限制、失败和 UNKNOWN 保持，旧输入不复做。
+
+今晚 Oct14 20:45:55.665021 的公开128和21:48:46.021161的配置1030仍各自准备完成尚未删；本批不运行它们的入口。其余 Oct16/17/20 和 Nov1/2 原期限保持，共八项。文件移除非安全擦盘，用户导出/现役 PITR 保留，37 在线退役数不增。本地准备 0 云/UI/模型/删除/新原文或期限，CI 既有只读另计。Operations263/Bot-Memory257/身份251不变，旧 S/Z 须重绑，无 Telegram 新独占窗口；自然0/50有据0/20未知、production_ready=false，20任务14OPEN6CLOSED及EpicOPEN保持。
+
+[本批契约](MENTION_REPLY_RAW_EXPIRY.md)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、绑定或重跑指令
+
 ## Oct14 两批原文清理已分别完成准备，尚未删除
 
 公开文本128份的原期限为2026-10-14 20:45:55.665021UTC，配置发布1030份为21:48:46.021161UTC，两时点独立。新工具正确性/维护PRE、主唯一inspect和独立fresh无跟随hash/身份核验通过：前批68保留/5目录/196库存，后批310保留/37目录/1340库存（含24个保留ZIP）。准备label Prep20261013A各自已结束；apply/verify_absence/notice均未执行，不把准备当已删。
