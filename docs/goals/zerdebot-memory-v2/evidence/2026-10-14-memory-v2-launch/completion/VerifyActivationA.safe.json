@@ -1,0 +1,22 @@
+{
+  "status": "ALIGNED_FOUR_GROUPS_ACTIVE",
+  "started_at": 1791998198.91721,
+  "cloud_writes": 0,
+  "finished_at": 1791998201.027804,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 1,
+    "dynamodb/GetItem": 4
+  },
+  "ledger_sha256": "8b0d0d01d2eb304689111a21729f0524a753fa9b3f7808772702468c7fe077dc",
+  "private_path": "raw/VerifyActivationA-465.private.json",
+  "private_sha256": "15a2b4d71b6471a18a0f627ef63e4f38ae18209c09c111d7c0b06bf7029e528f",
+  "activation_sha256": "9cd3fedfd091a5c0628431d2900cae030b121a3ddbfa28a20f1ada490c38bf96",
+  "groups": [
+    "-1002211083217",
+    "-1001244628965",
+    "-1001450935528",
+    "-1004490324695"
+  ],
+  "natural_quality": "PENDING"
+}

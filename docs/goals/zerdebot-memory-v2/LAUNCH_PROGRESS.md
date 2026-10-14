@@ -1,29 +1,39 @@
-# Memory V2 加速首发实际进度
+# Memory V2 首发已完成，进入生产观察
 
-本页记录 2026-10-14 本次实际动作；后续文档发布与 workflow 恢复以外部 docs-release/独审回执为准。
+2026-10-14 17:14:07.647307 UTC（阿拉木图22:14），四个已授权生产群逐群条件激活完成；17:16:41.027804 UTC独立新鲜读回通过。状态 **RELEASED_OBSERVING**。文档发布是否完成另以本批completion/docs-release及独审回执为准。
 
-|范围|实际状态|剩余动作|
+|范围|实际结果|后续|
 |---|---|---|
-|离线安全回归|554核心通过；全套2474通过、1旧fixture失败，同节点umask022复核通过|没有产品缺陷证据，不重复全套|
-|dev真实学习与来源回答|新来源2417；问题2418→回答2419；有效FACT、持久SENT、单回答、lease释放及可见语义通过|遗忘与删除后查询尚未发送|
-|第四群News/Quiz/周榜|AWS配置、生产环境变量与独立新鲜读回通过|按原日程正常运行，首次正常投递尚未观察|
-|四生产群Memory V2|直接用户授权，精确工具及双审准备完成|dev遗忘验证后逐群条件激活与独立读回|
-|长期质量|自然0/50有据、0/20未知；起点未建立|发布后第3天及每周观察，不作首发等待门槛|
+|核心回归|554通过；全套2474通过/1旧权限fixture失败，同节点umask022复核通过|原失败保留，无需重跑全套|
+|dev真实链路|来源2417学习；2418→2419来源回答；原生Reply2420定点遗忘；2422→2423删除后不再引用，全部PASS|已结束，不重发/重测这些输入|
+|生产Memory V2|四群ACTIVE、learning=true，初始revision1与独立epoch；主24 API含4条件事务，独立6只读|正常真实使用与异常观察|
+|第四群定时业务|News、工作日Quiz、周榜配置及独立读回通过|首次正常定时投递尚未观察|
+|完整自然质量|0/50有据、0/20未知、起点未建立|发布后第3天Oct17与每周（首次Oct21）观察|
 
-Memory目标：中文 -1002211083217，哈萨克语 -1001244628965、-1001450935528、-1004490324695。只使用原MemoryRepository初次条件激活，不重置既有epoch/预算，不恢复旧自动社交或历史导入。
+Memory范围：中文 -1002211083217；哈萨克语 -1001244628965、-1001450935528、-1004490324695。原CONTROL缺席时由唯一MemoryRepository条件创建，没有覆盖旧epoch或手写预算。运行Bot/Memory仍PR257、Operations PR263、身份配置PR251；本次无Lambda代码包更新。生产真实使用可以合法推进revision，不将初始revision1当永久值。
 
-第四群 -1004490324695 的 News 每天09:00、Quiz周一至周五13:00、周榜周五18:00，以上为阿拉木图时间（UTC+5）。原其他群目标/规则状态/日程保持，中文News保持DISABLED；未手动调用或补发。production环境NEWS_CHATS_KK与QUIZ_CHATS_KK已分别设置完整目标，repo原值不变，dev因此保持。现有workflow使用production环境变量。
+第四群 -1004490324695：News每天09:00，Quiz周一至周五13:00，周榜周五18:00（阿拉木图UTC+5）。原其他目标和规则保持，中文News仍DISABLED；未手动调用/补发。此前SchedulePrepareA严格门禁失败与唯一ExecuteB完成原样保留。
 
-首轮SchedulePrepareA上传并创建候选后，严格范围门禁发现额外IAM摘要和描述表示差异，未Execute。IAM权限语义变化未证明，原模板键顺序变化及CF/Events两条描述表示差异均保留。新B保持原键顺序、精确恢复原Events描述，changeset严格只有三个Targets变化；唯一ExecuteB成功，UPDATE_COMPLETE/EXECUTE_COMPLETE，五Lambda配置及栈保护主读回通过。新的独立8AWS+3GitHub只读再次核完整模板、三规则与目标、两production变量；没有重复下载五函数包，正常定时投递仍未观察。所有已结束入口不可重跑。
+dev来源清理于16:59:01UTC达到DONE，9行移除，原RAW/HEAD及该来源FACT缺席，OBS保留最小删除墓碑；删除后回答明确没有可支持的本人公开信息，单SENT、source_refs空、lease释放。只核当前操作者interests前缀恢复原基线，不推所有用户或所有画像域。主代理操作原生UI，独审检查保存记录及另22次fresh只读；数字消息ID来自持久记录，没有取得原生精确链接。顺序读取不是全局事务。Window A上下文STOP、Erase1/2尚DELETING、Erase3采集在B窗口内但评分已过期拒绝、C窗口续接及所有草稿失败均保留；没有重发来源、问题或遗忘。
 
-Telegram Window A在遗忘发送之前发生上下文变化，原因UNKNOWN；旧forget意图未发送，没有向其它群发测试。新窗口续接工具已双审，只能收到新的直接“现在独占”回复后登记真实起止、核账号/唯一dev群/空草稿，再fresh检查本次来源后发送一次定点遗忘及删除后查询。旧UI_STOP和原测试失败保持，不使用旧窗口或旧草稿。
+20任务仍14OPEN/6CLOSED，Epic OPEN。这些开放项包括发布后质量、媒体/频道有限缺口、独立业务恢复、费用UNKNOWN及副本职责，不再作为首发等待列表。production_ready=false仍指完整自然质量；启用与自然验收分开。不会用受控测试、空群日历或自动消息凑自然样本。
 
-运行Bot/Memory仍PR257、Operations PR263、身份配置PR251；本次三定时目标更新没有新Lambda部署。四群Memory尚未启用、完整dev首发验收尚未PASS。20任务14OPEN/6CLOSED及Epic OPEN不等于尚需14项才能发布；其中长期观察/独立业务恢复/费用/副本继续单列。
+当前聚合465CAPTURED只是阶段数量；后续发布API原文继续沿最初固定七日期限，详见[副本台账](RETAINED_COPIES.md)。九项未履行UTC期限分别为：
 
-当前账本246CAPTURED为阶段数量，后续同批原文加入同一期限2026-10-21 13:10:50.198516UTC，不延长。原八项期限和今晚两批清理保持；文件删除不是安全擦盘，用户导出/现役PITR/必要恢复保留。[台账](RETAINED_COPIES.md)。
+|期限UTC|责任|
+|---|---|
+|Oct14 20:45:55.665021|公开文本128，独立批次已准备|
+|Oct14 21:48:46.021161|身份配置1030，独立批次已准备，24ZIP保留|
+|Oct15 08:17:52.186798|提及/Reply85，已准备|
+|Oct16 18:48:47.827167|shared-quota-writer原文1426|
+|Oct17 16:20:38|旧memory PITR精确只读|
+|Oct20 14:32:29.705948|告警诊断原文341|
+|Oct21 13:10:50.198516|本次首发动态实际ledger|
+|Nov1 11:46:02.425|旧memory SYSTEM精确只读|
+|Nov2 08:45:11.254|旧stats SYSTEM精确只读|
 
-[阶段安全聚合](evidence/2026-10-14-memory-v2-launch/progress.safe.json)、[dev答案独审](evidence/2026-10-14-memory-v2-launch/dev-answer-independent.safe.json)、[AWS部署读回](evidence/2026-10-14-memory-v2-launch/SchedulePostB.safe.json)、[变量同步](evidence/2026-10-14-memory-v2-launch/ScheduleSyncA.safe.json)、[独立新鲜读回](evidence/2026-10-14-memory-v2-launch/ScheduleIndependentA.safe.json)。
+每批沿精确原ledger/hash/身份与原期限，单独新PRE/公告/到期删除/独立不存在；不能合并今晚两个时点，不能提前删除或重建旧原文。用户导出、现役PITR、必要恢复和安全聚合保留；文件移除不是安全擦盘。第3天/每周检查采取有限只读和实际自然证据；发现跨群、身份、敏感泄露、删后复活或误删，依原公开停止入口暂停对应群并保留证据。
 
-[调度最终独立链](evidence/2026-10-14-memory-v2-launch/schedule-final-independent.safe.json)已核123份原始记录；其范围限配置与变量，workflow恢复另见实际文档发布回执。
+[完整安全聚合](evidence/2026-10-14-memory-v2-launch/completion/final.safe.json)、[dev完整独审](evidence/2026-10-14-memory-v2-launch/completion/dev-independent.safe.json)、[四群实际独审](evidence/2026-10-14-memory-v2-launch/completion/production-activation-independent.safe.json)、[定时配置独审](evidence/2026-10-14-memory-v2-launch/completion/schedule-final-independent.safe.json)。
 
-首发激活窄合同明确只要求目标CONTROL不存在；现有显式ASK短期行可以保留，不扫描或清空整群分区。该澄清覆盖冻结首发计划第7条中“无旧V2工作/事实”的过宽表述，不授权覆盖既有CONTROL或数据。
+此前完整阶段与失败记录固定于[PR267发布前进度](https://github.com/Bayashat/zerde-serverless-bot/blob/cbcd8b1126d95577eeb4e6c9b2778b5c32fb27c1/docs/goals/zerdebot-memory-v2/LAUNCH_PROGRESS.md)，所有已结束once不可重跑。
