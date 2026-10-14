@@ -1,12 +1,12 @@
-## 2026-10-14：四群已发布，公开文本128份到期责任已履行
+## 2026-10-14：四群已发布，配置原文1030份到期责任已履行
 
-Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询和生产激活独审已完成，第四群News/Quiz/周榜配置已交付。PR268文档已合并及独审，运行包保持Bot/Memory257、Operations263、身份251。自然0/50有据、0/20未知、起点未建立，production_ready=false；第3天Oct17、Oct21及之后每周有限观察，正常定时投递尚待观察。此处不是新的线上复测。
+Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询与生产激活独审已完成，第四群News/Quiz/周榜配置已交付。运行包仍Bot/Memory257、Operations263，身份251。自然0/50有据、0/20未知、起点未建立、production_ready=false；Oct17、Oct21及之后每周有限观察，首次正常定时投递尚待观察。开放工单数不代表首发未启用。
 
-原公开文本128个精确路径已逐项移除，独立fresh核全部不存在；68保留文件哈希/身份、5目录与196→68库存保持，256条intent/result与公告及五hash绑定一致，apply和journal的unlink_returned/absent均严格True。原期限20:45:55.665021UTC不改；首末unlink 2026-10-14T20:45:55.783691+00:00 至 2026-10-14T20:45:55.873168+00:00，实际晚0.118670至0.208147秒，原因UNKNOWN。原mention失败、UI_STOP、offline-audit-source晚登记偏差和原ledger保留；__pycache__原0755保持。清理0云/UI/模型/新原文/运行部署，文件移除非安全擦盘；37在线退役数不增。已结束Due20261014A/Apply20261014A/独立verify不可重跑。
+配置发布原文1030个当前完整路径已逐项移除并独立fresh核不存在；其中95迁移旧失败与后来成功路径均按原ledger处理，不按旧路径或basename推断。310保留文件（含24完整ZIP）的哈希/身份、37目录及1340→310库存保持；2060条intent/result、公告和五hash一致，apply/journal两侧unlink_returned与absent严格True。原期限21:48:46.021161UTC保持；首末unlink 2026-10-14T21:48:46.697077+00:00 至 2026-10-14T21:48:50.604921+00:00，真实晚0.675916至4.583760秒，原因UNKNOWN。原失败、ledger及列明0755模式保持，pre-controls不是cache。文件移除非安全擦盘/所有云副本消失；0云/UI/模型/新原文/运行部署，37在线退役数不增。Due20261014B/Apply20261014B/独立verify均已结束不可重跑。较早公开文本128亦已履行，原回执不改。
 
-当前剩余8项UTC责任：Oct14 21:48:46.021161配置1030；Oct15 08:17:52.186798提及Reply85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38旧memory PITR；Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。今晚第二批独立到期，未执行清理，保留其310文件/37目录/24ZIP。全部原期限与身份保持，20任务14OPEN/6CLOSED、EpicOPEN不变。
+当前剩余7项精确UTC职责：Oct15 08:17:52.186798提及Reply85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38旧memory PITR；Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原身份、期限与保护保持，20任务14OPEN/6CLOSED、EpicOPEN。下次计划07:35UTC唤醒覆盖Oct15期限；未来逐批调整为距下一期限不超过60分钟，不保证设备必然准时唤醒。
 
-[本批完成证据](evidence/2026-10-14-public-text-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-14-public-text-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。本次仅清理及文档，完整前阶段保存在[PR268当前摘要](https://github.com/Bayashat/zerde-serverless-bot/blob/517cebfa800e56aabbc1e9a2b5de7bf3059c0fe9/docs/goals/zerdebot-memory-v2/PLAN.md)。
+[本批完成证据](evidence/2026-10-14-identity-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-14-identity-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。完整前阶段见[PR269摘要](https://github.com/Bayashat/zerde-serverless-bot/blob/30752b6755f3461ffb6260c4202b0c127966a5ac/docs/goals/zerdebot-memory-v2/PLAN.md)。
 
 首发最终527 CAPTURED/0NOT_CREATED，ledger SHA788460e51d786c91122bcedc516559dc4fb57913b31af44d84f2649ee1d1aa37，原Oct21期限不变；所有本批入口结束，不继续增长。
 
