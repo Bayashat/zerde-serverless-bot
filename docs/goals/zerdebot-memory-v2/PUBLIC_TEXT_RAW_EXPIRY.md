@@ -1,3 +1,15 @@
+## 2026-10-14：四群已发布，公开文本128份到期责任已履行
+
+Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询和生产激活独审已完成，第四群News/Quiz/周榜配置已交付。PR268文档已合并及独审，运行包保持Bot/Memory257、Operations263、身份251。自然0/50有据、0/20未知、起点未建立，production_ready=false；第3天Oct17、Oct21及之后每周有限观察，正常定时投递尚待观察。此处不是新的线上复测。
+
+原公开文本128个精确路径已逐项移除，独立fresh核全部不存在；68保留文件哈希/身份、5目录与196→68库存保持，256条intent/result与公告及五hash绑定一致，apply和journal的unlink_returned/absent均严格True。原期限20:45:55.665021UTC不改；首末unlink 2026-10-14T20:45:55.783691+00:00 至 2026-10-14T20:45:55.873168+00:00，实际晚0.118670至0.208147秒，原因UNKNOWN。原mention失败、UI_STOP、offline-audit-source晚登记偏差和原ledger保留；__pycache__原0755保持。清理0云/UI/模型/新原文/运行部署，文件移除非安全擦盘；37在线退役数不增。已结束Due20261014A/Apply20261014A/独立verify不可重跑。
+
+当前剩余8项UTC责任：Oct14 21:48:46.021161配置1030；Oct15 08:17:52.186798提及Reply85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38旧memory PITR；Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。今晚第二批独立到期，未执行清理，保留其310文件/37目录/24ZIP。全部原期限与身份保持，20任务14OPEN/6CLOSED、EpicOPEN不变。
+
+[本批完成证据](evidence/2026-10-14-public-text-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-14-public-text-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。本次仅清理及文档，完整前阶段保存在[PR268当前摘要](https://github.com/Bayashat/zerde-serverless-bot/blob/517cebfa800e56aabbc1e9a2b5de7bf3059c0fe9/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+## 以下为准备时冻结契约；实际完成以上方回执为准，不重跑
+
 # 128 份原文到期清理契约
 
 当前仅准备完成，apply、独立不存在核验和删除公告均未执行。主inspect唯一label Prep20261013A已经结束不可重用。原期限 **2026-10-14T20:45:55.665021+00:00**（epoch 1792010755.665021），源目录2026-10-08-z01-public-text；目录日期不改实际起点2026-10-07T20:45:55.665021+00:00。
