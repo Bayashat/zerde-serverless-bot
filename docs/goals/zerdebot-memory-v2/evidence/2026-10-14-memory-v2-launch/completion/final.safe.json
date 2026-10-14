@@ -1,0 +1,98 @@
+{
+  "status": "RELEASED_OBSERVING_FOUR_GROUPS_INDEPENDENT_PASS",
+  "completed_at": 1791998462.721567,
+  "release_state": "RELEASED_OBSERVING",
+  "groups": [
+    "-1002211083217",
+    "-1001244628965",
+    "-1001450935528",
+    "-1004490324695"
+  ],
+  "activation_started_at": 1791998043.03796,
+  "activation_finished_at": 1791998047.647307,
+  "activation_finished_utc": "2026-10-14T17:14:07.647307+00:00",
+  "production_independent_read_finished_at": 1791998201.027804,
+  "evidence_hashes": {
+    "dev-final.safe.json": "daa329c703205ffc00fd4ab9a888eaca41ef8bfe14b1ac2ae23e3e2af3c6b489",
+    "dev-independent.safe.json": "8c038ad8382d88618bddb617bceda14f93c0ce238423408e588f6b15369d1b3e",
+    "ActivateProdA.safe.json": "9cd3fedfd091a5c0628431d2900cae030b121a3ddbfa28a20f1ada490c38bf96",
+    "VerifyActivationA.safe.json": "62c049376d2ba000fbf6d44f1911bae707076fa65d56cbd56ae862acbf653bdf",
+    "production-activation-independent.safe.json": "ef890839388d84b4cadb085c93e1bdc0edba77491566f4674bb1030e3dff3e5e",
+    "schedule-final-independent.safe.json": "7932a0463be06469f9dae56acefe4e02001e702af9fa3a16d795ecef257e1371",
+    "release-binding.safe.json": "0ea6f5245b2d0b492960eebf4cedc7d2a5e74c3b60f79fef2b53672c5598ceb3",
+    "progress.safe.json": "6197b038eb72303eefdc55720a474ae24cedae3f604f54ae10ecdeb2b487c605"
+  },
+  "dev": {
+    "status": "PASS_DEV_LEARN_ANSWER_FORGET_PRESERVE",
+    "input_ids": {
+      "source": "2417",
+      "answer": "2418",
+      "forget": "2420",
+      "after": "2422"
+    },
+    "reply_record_ids": {
+      "answer": "2419",
+      "after": "2423"
+    },
+    "preservation_scope": "one current actor interest learn/source answer/native source forget/after answer; original interests prefix preserved, no all-profile claim",
+    "independent_status": "ALIGNED",
+    "independent_fresh_reads": 22
+  },
+  "production": {
+    "write_attempts": 4,
+    "confirmed_conditional_writes": 4,
+    "main_api_count": 24,
+    "independent_api_count": 6,
+    "current_control": "ACTIVE/learning=true/revision1/distinct epochs at readback",
+    "activation_once_ended": true
+  },
+  "fourth_group_schedules": {
+    "group": "-1004490324695",
+    "config": "DEPLOYED_INDEPENDENT_PASS",
+    "news_almaty": "daily 09:00",
+    "quiz_almaty": "Monday-Friday 13:00",
+    "leaderboard_almaty": "Friday 18:00",
+    "normal_delivery": "NOT_YET_OBSERVED"
+  },
+  "natural_acceptance": {
+    "status": "POST_RELEASE_OBSERVATION",
+    "started_at": null,
+    "supported": 0,
+    "unknown": 0,
+    "production_ready": false,
+    "review_dates_utc": [
+      "2026-10-17",
+      "2026-10-21"
+    ],
+    "interpretation": "release is enabled; full natural quality acceptance remains pending; no fabricated samples"
+  },
+  "tests": {
+    "core_passed": 554,
+    "full_passed": 2474,
+    "full_failed": 1,
+    "isolated_failed_node_recheck_passed": 1,
+    "failure_cause": "test mkdir0755 became0700 under umask077; original test passed under umask022; no product edit",
+    "hashes": {
+      "core-tests.xml": "928583b3598f564ce0c58cd25db7f0743334be849c6b1505709d8e0b6215b868",
+      "full-tests.xml": "80e878d8fdaff51fa85987549a66d6cc29c11e4b60047a5e8c236cf5171d200b",
+      "legacy-permission-recheck.log": "016a4093788648644b08006f7d1d171ca7639313677f5aa929f004d4a3e52465"
+    }
+  },
+  "raw_retention": {
+    "captured_as_of_this_receipt": 465,
+    "ledger_sha256": "8b0d0d01d2eb304689111a21729f0524a753fa9b3f7808772702468c7fe077dc",
+    "deadline_epoch": 1792588250.198516,
+    "deadline_utc": "2026-10-21T13:10:50.198516+00:00",
+    "count_is_final": false,
+    "remaining_numbered_duties": 9
+  },
+  "runtime_packages_changed": false,
+  "docs_publication": "PENDING_SEPARATE_RECEIPT",
+  "limitations": [
+    "Only current actor interests prefix preservation inspected; not all user profiles or domains.",
+    "Original Learn1/Window A/Erase1/Erase2/expired B assessor and draft review failures preserved.",
+    "Sequential readback is not a global transaction or continuing guarantee.",
+    "Natural quality, media/channel, independent business recovery and costs remain scoped follow-ups.",
+    "Old frozen operations must not be replayed."
+  ]
+}

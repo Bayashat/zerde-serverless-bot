@@ -1,6 +1,6 @@
-## 加速首发：定时业务已启用，Memory 待遗忘验证
+## 四群 Memory V2 已发布，进入观察
 
-第四群News/Quiz/周榜已部署并独立读回；dev学习/来源回答通过，遗忘前切群已停，四群Memory未启用。[进度](LAUNCH_PROGRESS.md)。自然验收改为发布后；原九项期限保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/aa52f8e03ec689ea589993311882850f2a141b26/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群条件启用及独立读回通过，dev学习/回答/定点遗忘/删除后查询完成；第四群News/Quiz/周榜配置已交付。[进度](LAUNCH_PROGRESS.md)。自然质量移至发布后，原九项期限保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/cbcd8b1126d95577eeb4e6c9b2778b5c32fb27c1/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
