@@ -1,3 +1,15 @@
+## 2026-10-14：四群已发布，配置原文1030份到期责任已履行
+
+Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询与生产激活独审已完成，第四群News/Quiz/周榜配置已交付。运行包仍Bot/Memory257、Operations263，身份251。自然0/50有据、0/20未知、起点未建立、production_ready=false；Oct17、Oct21及之后每周有限观察，首次正常定时投递尚待观察。开放工单数不代表首发未启用。
+
+配置发布原文1030个当前完整路径已逐项移除并独立fresh核不存在；其中95迁移旧失败与后来成功路径均按原ledger处理，不按旧路径或basename推断。310保留文件（含24完整ZIP）的哈希/身份、37目录及1340→310库存保持；2060条intent/result、公告和五hash一致，apply/journal两侧unlink_returned与absent严格True。原期限21:48:46.021161UTC保持；首末unlink 2026-10-14T21:48:46.697077+00:00 至 2026-10-14T21:48:50.604921+00:00，真实晚0.675916至4.583760秒，原因UNKNOWN。原失败、ledger及列明0755模式保持，pre-controls不是cache。文件移除非安全擦盘/所有云副本消失；0云/UI/模型/新原文/运行部署，37在线退役数不增。Due20261014B/Apply20261014B/独立verify均已结束不可重跑。较早公开文本128亦已履行，原回执不改。
+
+当前剩余7项精确UTC职责：Oct15 08:17:52.186798提及Reply85；Oct16 18:48:47.827167 writer1426；Oct17 16:20:38旧memory PITR；Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原身份、期限与保护保持，20任务14OPEN/6CLOSED、EpicOPEN。下次计划07:35UTC唤醒覆盖Oct15期限；未来逐批调整为距下一期限不超过60分钟，不保证设备必然准时唤醒。
+
+[本批完成证据](evidence/2026-10-14-identity-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-14-identity-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。完整前阶段见[PR269摘要](https://github.com/Bayashat/zerde-serverless-bot/blob/30752b6755f3461ffb6260c4202b0c127966a5ac/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+## 以下为准备时冻结契约；实际完成以上方回执为准，不重跑
+
 # 1030 份原文到期清理契约
 
 当前仅准备完成，apply、独立不存在核验和删除公告均未执行。主inspect唯一label Prep20261013A已经结束不可重用。原期限 **2026-10-14T21:48:46.021161+00:00**（epoch 1792014526.021161），源目录2026-10-08-dev-bot-identity-fix；目录日期不改实际起点2026-10-07T21:48:46.021161+00:00。
