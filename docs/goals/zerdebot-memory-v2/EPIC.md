@@ -1,6 +1,6 @@
-## 四群 Memory V2 已发布，进入观察
+## 四群Memory已发布，公开原文128到期已清理
 
-四群条件启用及独立读回通过，dev学习/回答/定点遗忘/删除后查询完成；第四群News/Quiz/周榜配置已交付。[进度](LAUNCH_PROGRESS.md)。自然质量移至发布后，原九项期限保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/cbcd8b1126d95577eeb4e6c9b2778b5c32fb27c1/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群已启用并独审，dev完整学习/回答/遗忘链通过；第四群News/Quiz/周榜已配置。[进度](LAUNCH_PROGRESS.md)。公开原文128已删独审，68文件/5目录保持，晚0.118670–0.208147秒UNKNOWN；非安全擦盘。剩余8项见[台账](RETAINED_COPIES.md)，晚次1030独立待到期。[证据](evidence/2026-10-14-public-text-raw-expiry/completion.safe.json)。自然移至发布后，状态不变。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/517cebfa800e56aabbc1e9a2b5de7bf3059c0fe9/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
