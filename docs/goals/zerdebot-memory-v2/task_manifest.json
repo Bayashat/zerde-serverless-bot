@@ -139,6 +139,22 @@
         }
       },
       "old_full_aggregate_binding_valid": false
+    },
+    "accelerated_launch": {
+      "as_of": "2026-10-14",
+      "contract": "ACCELERATED_RELEASE.md",
+      "evidence": "evidence/2026-10-14-memory-v2-launch/progress.safe.json",
+      "dev_learning_answer": "PASS",
+      "dev_forget": "NOT_SENT_UI_STOP_NEW_EXCLUSIVE_REPLY_PENDING",
+      "production_memory": "NOT_ACTIVATED",
+      "groups": [
+        "-1002211083217",
+        "-1001244628965",
+        "-1001450935528",
+        "-1004490324695"
+      ],
+      "natural_acceptance": "POST_RELEASE_OBSERVATION",
+      "natural_counts_unchanged": true
     }
   },
   {
@@ -816,6 +832,20 @@
       "original_deadline_unchanged": true,
       "apply_executed": false,
       "remaining_numbered_duties": 8
+    },
+    "memory_v2_launch_raw_retention": {
+      "owner": "Z10",
+      "status": "CAPTURING_FIXED_DEADLINE",
+      "ledger": "2026-10-14-memory-v2-launch/raw-retention.safe.json",
+      "first_capture_at": 1791983450.198516,
+      "deadline_epoch": 1792588250.198516,
+      "deadline_utc": "2026-10-21T13:10:50.198516+00:00",
+      "captured_files_as_of_registration": 11,
+      "future_raw_same_deadline": true,
+      "captured_as_of_progress": 246,
+      "ledger_sha256_as_of_progress": "350fa4f8d9c12919bb00506a12dca9937cc9f5d48c5c64a9f2f898d8321c98f4",
+      "count_is_final": false,
+      "current_stage": "SCHEDULE_DEPLOYED_DEV_PARTIAL_UI_STOP"
     }
   },
   {
@@ -878,7 +908,23 @@
     "production_ready": false,
     "activation_dependency": "Z20",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
-    "cleanup_dependency_satisfied": true
+    "cleanup_dependency_satisfied": true,
+    "accelerated_launch": {
+      "as_of": "2026-10-14",
+      "contract": "ACCELERATED_RELEASE.md",
+      "evidence": "evidence/2026-10-14-memory-v2-launch/progress.safe.json",
+      "dev_learning_answer": "PASS",
+      "dev_forget": "NOT_SENT_UI_STOP_NEW_EXCLUSIVE_REPLY_PENDING",
+      "production_memory": "NOT_ACTIVATED",
+      "groups": [
+        "-1002211083217",
+        "-1001244628965",
+        "-1001450935528",
+        "-1004490324695"
+      ],
+      "natural_acceptance": "POST_RELEASE_OBSERVATION",
+      "natural_counts_unchanged": true
+    }
   },
   {
     "id": "Z12",
@@ -989,7 +1035,15 @@
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json"
+    "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
+    "fourth_group_schedule_release": {
+      "as_of": "2026-10-14",
+      "group": "-1004490324695",
+      "status": "DEPLOYED_VARIABLES_SYNCHRONIZED_FRESH_READBACK_PASS",
+      "future_delivery": "NOT_YET_OBSERVED",
+      "evidence": "evidence/2026-10-14-memory-v2-launch/ScheduleIndependentA.safe.json",
+      "other_acceptance_pending_unchanged": true
+    }
   },
   {
     "id": "Z16",
@@ -1079,6 +1133,14 @@
       "evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-12-quiz-answer-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "fourth_group_schedule_release": {
+      "as_of": "2026-10-14",
+      "group": "-1004490324695",
+      "status": "DEPLOYED_VARIABLES_SYNCHRONIZED_FRESH_READBACK_PASS",
+      "future_delivery": "NOT_YET_OBSERVED",
+      "evidence": "evidence/2026-10-14-memory-v2-launch/ScheduleIndependentA.safe.json",
+      "other_acceptance_pending_unchanged": true
     }
   },
   {

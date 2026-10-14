@@ -1,0 +1,31 @@
+{
+  "status": "PASS_CURRENT_BINDING_AND_POINT_BUDGET",
+  "started_at": 1791984764.285246,
+  "cloud_writes": 0,
+  "finished_at": 1791984766.5903108,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 1,
+    "dynamodb/GetItem": 5
+  },
+  "ledger_sha256": "979930ceebce20f62566e313dce496a52fd06ab78aa521e0e42338552009a329",
+  "private_path": "raw/BudgetFinishA-36.private.json",
+  "private_sha256": "6dc0f23004f0ba29df8d5cab9906ffc89b7550d92ed7df7ab0959a536f60f5e9",
+  "prior_receipt_sha256": "a1c5632b8b19e4d15a6ef8820614dd19dcefdbed36c4a93b7850cf00eb27e361",
+  "production_controls_absent": true,
+  "target_union_matches_four": false,
+  "scope_confirmed_four_by_human": true,
+  "aws": {
+    "measurement_state": "ESTIMATE_VERIFIED",
+    "paused": false,
+    "observed_at": "1791983313",
+    "covered_until": "1791982200",
+    "valid_until": "1791994113",
+    "estimate_micro_usd": "3667479"
+  },
+  "model": {
+    "charged_micro_usd": "1177",
+    "settled_micro_usd": "1177",
+    "paused": null
+  }
+}

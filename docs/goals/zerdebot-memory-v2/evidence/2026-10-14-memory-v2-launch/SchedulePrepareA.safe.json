@@ -1,0 +1,30 @@
+{
+  "status": "PARTIAL_STOP_NO_REPLAY",
+  "started_at": 1791986694.632562,
+  "cloud_writes": 2,
+  "github_calls": 10,
+  "cloud_write_attempts": 2,
+  "finished_at": 1791986726.1245859,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 5,
+    "cloudformation/DescribeStacks": 1,
+    "cloudformation/GetTemplate": 1,
+    "s3/PutObject": 1,
+    "cloudformation/CreateChangeSet": 1,
+    "cloudformation/DescribeChangeSet": 5
+  },
+  "ledger_sha256": "7eec1f13dfbbee85058246e8c331c858825bb92a3cc22944ba665eac59fe7287",
+  "stage": "prepare",
+  "error_type": "AssertionError",
+  "trace": [
+    {
+      "file": "schedule_release.py",
+      "line": 136
+    },
+    {
+      "file": "schedule_release.py",
+      "line": 107
+    }
+  ]
+}

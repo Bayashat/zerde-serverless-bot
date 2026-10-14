@@ -1,0 +1,70 @@
+{
+  "status": "LOCAL_DIAGNOSTIC_AND_SDK_SHAPE_CHECKED_NOT_TOOL_PRE",
+  "observed_at": "2026-10-14T13:07:36.819083+00:00",
+  "files_sha256": {
+    "full-tests.log": "8ace9661584a87b8623dcafb0b91d2d905867b079b31c1a33fc083efa5d7fd99",
+    "tests/test_legacy_cleanup.py": "459ea803a7ecad6b14833838dd57dd06e0e2d071447a56eae1e5c39667d2f717",
+    "dev/tools/legacy_cleanup/archive.py": "7c1597fc0312d72fbfc1d2d5b32af2762fb293d3e2c7318428fb34d99808ab63",
+    "launch_read.py": "0600f5db18e716585954a812253e9154b374e0c18e6edd7be2ae5646b01ca917"
+  },
+  "test_result_preserved": {
+    "passed": 2474,
+    "failed": 1,
+    "failing_test": "tests/test_legacy_cleanup.py::test_archive_rejects_repository_public_paths_and_symlink_keys",
+    "original_log_unmodified": true
+  },
+  "umask_controls": [
+    {
+      "umask": "0077",
+      "mkdir_mode": "0755",
+      "actual_mode": "0700",
+      "secure_directory": "ACCEPTED"
+    },
+    {
+      "umask": "0077",
+      "explicit_chmod": "0755",
+      "secure_directory": "REJECTED_PERMISSIONS"
+    },
+    {
+      "umask": "0022",
+      "mkdir_mode": "0755",
+      "actual_mode": "0755",
+      "secure_directory": "REJECTED_PERMISSIONS"
+    }
+  ],
+  "conclusion": "Test fixture requests 0755 without chmod; inherited umask077 makes actual mode0700, which secure_directory correctly accepts. No product defect demonstrated.",
+  "minimal_recheck": "Run only the failing pytest node in a subshell with umask022; precreate log0600 and preserve original full-suite failure. No full-suite rerun is required to isolate this cause.",
+  "sdk_shape": {
+    "installed_sdk_local_event_emit_only": true,
+    "request_guard_observes": "plain string Key before resource AttributeValue serialization",
+    "response_capture_observes": "typed AttributeValue before resource deserialization",
+    "response_to_caller": "Python str/Decimal/bool",
+    "negative_and_positive_controls_passed": 13,
+    "controls": [
+      "plain_resource_key_accept",
+      "ConsistentRead_false_reject",
+      "ConsistentRead_1_reject",
+      "extra_parameter_reject",
+      "wrong_group_reject",
+      "wrong_table_reject",
+      "already_serialized_Key_reject",
+      "PutItem_reject",
+      "Scan_reject",
+      "Invoke_reject",
+      "GetItem10cap_reject",
+      "total31cap_reject",
+      "elapsed300s_reject"
+    ]
+  },
+  "limits": {
+    "full_pytest_not_rerun": true,
+    "no_actual_preflight_or_main": true,
+    "sdk_api_calls": 0,
+    "network_calls": 0,
+    "cloud_writes": 0,
+    "product_edits": 0,
+    "old_tool_entries": 0,
+    "temporary_synthetic_directories_only": true,
+    "not_complete_read_tool_pre": true
+  }
+}

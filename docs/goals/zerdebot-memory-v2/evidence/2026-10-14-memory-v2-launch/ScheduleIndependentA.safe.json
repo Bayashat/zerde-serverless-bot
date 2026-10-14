@@ -1,0 +1,18 @@
+{
+  "status": "PASS_FRESH_SCHEDULE_AND_VARIABLE_READBACK",
+  "started_at": 1791987675.81549,
+  "cloud_writes": 0,
+  "github_calls": 3,
+  "finished_at": 1791987681.730525,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "cloudformation/GetTemplate": 1,
+    "events/DescribeRule": 3,
+    "events/ListTargetsByRule": 3
+  },
+  "ledger_sha256": "350fa4f8d9c12919bb00506a12dca9937cc9f5d48c5c64a9f2f898d8321c98f4",
+  "post_sha256": "5b5d4378d114aa2ee449a96fbec80d39a8dfeda5a8507b760d5af5d09f9cd9c1",
+  "sync_sha256": "072fa47f26c8e2d4cfd0e067f5fffd780952727e45e831bdb928abb6b9f3b6dc",
+  "future_delivery": "NOT_YET_OBSERVED",
+  "workflow": "DISABLED_PENDING_PUBLISH"
+}

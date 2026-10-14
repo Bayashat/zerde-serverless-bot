@@ -1,8 +1,6 @@
-## 原文清理准备与原期限
+## 加速首发：定时业务已启用，Memory 待遗忘验证
 
-Oct15 08:17:52.186798UTC 的85份已双PRE/主独准备，103保留6目录；今晚Oct14的128/1030仍分别20:45:55.665021与21:48:46.021161到期，三批均未删。[85契约](MENTION_REPLY_RAW_EXPIRY.md)、[八项台账](RETAINED_COPIES.md)。到期各另公告/hash身份/唯一apply/独审。
-
-[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/249e40131dcbfcb8e97f8b0da3c846e26d1ae324/docs/goals/zerdebot-memory-v2/EPIC.md)。Ops263/Bot-Memory257/身份251保持；旧S/Z须重绑，无媒体窗口；任务/自然状态不变，本次0云/UI/模型/删除。
+第四群News/Quiz/周榜已部署并独立读回；dev学习/来源回答通过，遗忘前切群已停，四群Memory未启用。[进度](LAUNCH_PROGRESS.md)。自然验收改为发布后；原九项期限保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/aa52f8e03ec689ea589993311882850f2a141b26/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

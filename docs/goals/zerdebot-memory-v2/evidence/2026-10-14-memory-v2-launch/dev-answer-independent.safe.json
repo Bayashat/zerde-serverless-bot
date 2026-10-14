@@ -1,0 +1,66 @@
+{
+  "status": "ALIGNED_PARTIAL_DEV_SOURCE_AND_ANSWER_ONLY",
+  "reviewed_at": "2026-10-14T14:01:22.273296+00:00",
+  "source_id": "2417",
+  "ask_id": "2418",
+  "reply_record_ids": [
+    "2419"
+  ],
+  "api_count": 19,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 1,
+    "dynamodb/GetItem": 15,
+    "dynamodb/Query": 2
+  },
+  "new_api_calls": 0,
+  "ui_actions": 0,
+  "root_assessor_imported": false,
+  "raw_copies": 0,
+  "receipt_sha256": "cd9511161f56084a7a6362be2ad877101e14ab39643a613dc6f3b09559e07a5a",
+  "assessment_sha256": "8f1b99185a9ca0c841a367bafa8d6e5be63737715262eec99acc12008c12f357",
+  "learn2_receipt_sha256": "6a5a64f108eaa474f78f7d5e5f63bc6f13619be216d0b9658954171f13f27648",
+  "prior_learning_independent_sha256": "7564d93fad31c449af67c5a065a9c462b20a7058cfe19a13e61ac4b10fae6366",
+  "ui_receipt_sha256": "e80954d7bc7ac2d14d7dc6ace5d9d300ed842bba6a95a1ce608c76c49c29936d",
+  "ui_stop_sha256": "e7ef033af557999dde86c6905074c9a4d952b2a9715c9aba1666de65b11212ba",
+  "original_deadline_epoch": 1792588250.198516,
+  "raw_hashes": {
+    "raw/DevAnswer1-86.private.json": "a2698a56eb447ab053e544da229080920851c27a21ad9a902fd23b61a2b66ddb",
+    "raw/DevAnswer1-87.private.json": "e4d6dda2159e81d11094b8a73ae10e73ed7f43b514aff4776e86084e7d9f7af6",
+    "raw/DevAnswer1-88.private.json": "cf4e67ed17a8cc8fb1e1fc2fcdfc47228f12bf312029648976797c2b5bdde615",
+    "raw/DevAnswer1-89.private.json": "d6e0d69d71aa638b2ddbc4fc64dd2f6a5e3c33037529a609041c28fbd47f7d16",
+    "raw/DevAnswer1-90.private.json": "0a95ae850e0030e54af2a392d57961da4aa0ccf4c35558c130f062f5909f88bb",
+    "raw/DevAnswer1-91.private.json": "909bcaf3d6a48be9d3de3baa0cf2fd6065857929b94d619ff5dd0de14000ef24",
+    "raw/DevAnswer1-92.private.json": "37468420d639ee4dcc4992da464fc8707bdfb310d25fb663f75f4a28758a9bfe",
+    "raw/DevAnswer1-93.private.json": "2f6c7bbe08c132adc92d0353b3fa5a84ebac5bdcc5fc98d7bef7ea72a2a7166c",
+    "raw/DevAnswer1-94.private.json": "faca94bd524471075f523645384207a3fb84c3469fe28c6df7346136401bf403",
+    "raw/DevAnswer1-95.private.json": "fb21fac4a4ee550fd3b42ed734e760b2da07ace4c9964e1c42a821a82912f8ad",
+    "raw/DevAnswer1-96.private.json": "fe031ceff761749639f32ba081eedbbc2efe18b2be7d783dd5fe0307f9e34723",
+    "raw/DevAnswer1-97.private.json": "f5447f182bfc8a4a4e28d5ce0eef236cdc9bf52cee574020a243b40fd037c952",
+    "raw/DevAnswer1-98.private.json": "2515bf623a6cf5a5601c13eb7661ea1549c95b87cde1ac4c346b03fc14686f39",
+    "raw/DevAnswer1-99.private.json": "2c16e38a006043b4eefa309596a6a2413dd5304774ef4f37290d44da47142832",
+    "raw/DevAnswer1-100.private.json": "44c02d405b44712351652c78401a5c443423b54d9ef18fafc7b4867c7cfd4bd4",
+    "raw/DevAnswer1-101.private.json": "94226108dbf7fc4ffc40064fa7769c2590cbe59addf279ce0221fe690013b6d9",
+    "raw/DevAnswer1-102.private.json": "d481afa2c9cb95bcf0b22ca046030d8543bf7274d6d7d183b9a6ad315fcdea29",
+    "raw/DevAnswer1-103.private.json": "d9bcc574d1f2c85cf86cd37918b8f6ac4eb1200bc573c4fa31e211f38a3610b5",
+    "raw/DevAnswer1-104.private.json": "e59e0e933e250b8c378e555dac2c7160eefa0f2ba492bdf721c85536dda45f05",
+    "raw/DevAnswer1-105.private.json": "1f4fecfe968c340a2c25da71fa422cba7b3c0f5523b55bfd9acddaefd67bdd10",
+    "raw/DevLearn2-84.private.json": "d3f7c900c62010736a527e260cd22eb1fcb5346777441c0fcfff0a900256dd65",
+    "raw/UiAnswerA-106.private.json": "7ed7fe525e6f53f1e984c28fe7611ae3310ab5141e067197b974e7bbdf53f273"
+  },
+  "checks": {
+    "original_API_typed_rows_reconstructed": true,
+    "derived_snapshot_equal": true,
+    "strong_read_key_and_query_chain_complete": true,
+    "same_source_active_fact_and_done_work": true,
+    "request_unique_sent_step_reply_and_released_lease_exact_refs": true,
+    "registered_UI_record_contains_interest_and_source_label": true
+  },
+  "limits": {
+    "native_UI_not_independently_observed": true,
+    "database_message_ids_not_claimed_as_UI_ids": true,
+    "forget_and_after_not_sent": true,
+    "full_dev_acceptance": "INCOMPLETE_UI_STOP",
+    "production_activation_not_verified": true
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "status": "ALIGNED_PARTIAL_STOP_EVIDENCE_NOT_EXECUTION_READY",
+  "reviewed_at": 1791987070.103256,
+  "prepare_sha256": "d7a4f684693ab9695ae14eb2fa8766e92892753805c7e3d8bd4b1b72a451f817",
+  "tool_sha256": "c02a97b1dc76e73f6d40644ccee64dc9915c784ab4a2980d404148d5f8ba941c",
+  "contract_sha256": "419127596052ecdc16b59f9ac00d060aa152e3a133139625ae064de169ba1d89",
+  "baseline_sha256": "c5c700c853ffcdf712443f636d45a4e6176458241fca732ce92b81682a1a719d",
+  "variables_sha256": "260fc0fbeaadce245958334b3c1d0f6e1314616870b5ae7e00b6e09e8bf8b5ee",
+  "ledger_observed_sha256": "7eec1f13dfbbee85058246e8c331c858825bb92a3cc22944ba665eac59fe7287",
+  "evidence_hashes": {
+    "raw/SchedulePrepareA-124.private.json": "0b701e0e7ae23cf1f211230fb6826d288dc68624e17065aa26e8cc421049db4a",
+    "raw/SchedulePrepareA-125.private.json": "dbae2d83fa3877ed0e8b7c2e8047613edcb061ce0ad1639def7410bcd2da0a90",
+    "raw/SchedulePrepareA-126.private.json": "7d2c6f85f51dcb61212365db6837504c993ea728ba746981892b347d1e9020f0",
+    "raw/SchedulePrepareA-127.private.json": "3d3b2d3903242e582f62135c8aebdc36c6acc21cdbe4f4d2d518408df194808b",
+    "raw/SchedulePrepareA-128.private.json": "e95477071f71a3083d8db16b46f3399a8d6668957fe728612a7c9723a8403cf0",
+    "raw/SchedulePrepareA-129.private.json": "d5da5ab75d8600d313771675ef328cd56c10eab5517442f5854312e6214321a2",
+    "raw/SchedulePrepareA-130.private.json": "8fee580bf3bec33dcc0dc21fb4d9d9162b61a1940afb3279cea6c259c1f63def",
+    "raw/SchedulePrepareA-131.private.json": "65cb56ffc976b89f2f9b76836347ec73fd8ce1c387c227690a84bda4ae106d60",
+    "raw/SchedulePrepareA-132.private.json": "2d752da3fa5f337d8675c01ad44ad3825113186e2ede404b31037876598d8201",
+    "raw/SchedulePrepareA-133.private.json": "5b0823479bcce3d9d12581bea1031f9513a57cc15cdf8994f7b87f85c68f93e7",
+    "raw/SchedulePrepareA-134.private.json": "54e92d72d8de8ac3931f16b2a2aae0af5d09a9a9a2850d21bbdbc2f6186b8fd2",
+    "raw/SchedulePrepareA-135.private.json": "83393f957f302b35990fb379071b3b71dbbff22e720514ce0d540ec58c801cdc",
+    "raw/SchedulePrepareA-136.private.json": "6d905a9c9924b13bbe323a1b56ce0d46c058616feb5946e45c7b7b6c0beedecc",
+    "raw/SchedulePrepareA-137.private.json": "d2e2f7f4134fe9a9baec0b2fe49661dcfebde70478ef2f4bca3c3cbfa940bf40",
+    "raw/SchedulePrepareA-138.private.json": "00c4aae58f1bf654e5fedaddf720149a9f2cb9aed76a210e461034c5c6252ea6",
+    "raw/SchedulePrepareA-139.private.json": "c1184b46485ef76f0b244bef25b624826954bf8837bff949698eae5149be2d59",
+    "raw/SchedulePrepareA-140.private.json": "12b1d10ea707fa3509acfff825759d27d1e1d9eda8bee428d0e56eb77c5e1e71",
+    "raw/SchedulePrepareA-141.private.json": "520c4bfc7859741dd133515062a1bcdd9390b16e5c6c2a6dee5b3fea78d2b14b",
+    "raw/SchedulePrepareA-142.private.json": "2469093d8e0ae3d5db5d1d641fdb1bf892af71307b312a6109f4838e841176cd",
+    "raw/SchedulePrepareA-143.private.json": "fb0ee4fb9c0bc7b88c21e12d99b0195068fd3045ca3aee937c0ecbc2734101b5",
+    "raw/SchedulePrepareA-144.private.json": "dfe03f1ac155223d70f10b0a8e8112da576c86b8581371b7d484fb2136e5a6c9",
+    "raw/SchedulePrepareA-145.private.json": "050049a8a58d8fe405fdf6235dada5578f7ccf8bf9bce4f6a1f5f409ee0d1b01",
+    "raw/SchedulePrepareA-146.private.json": "4d4b45f19f43663c9b4a84c520f474744517e9eeb6d143329e15c24be4a72aa0",
+    "raw/SchedulePrepareA-147.private.json": "d6bfbcfac8d5c796a553baa05ac3d8e436c9c58df3bc4880c4d295e2d1a1dd83",
+    "raw/SchedulePrepareA-148.private.json": "93cd9e59fb3a4bb414a3e6e54637ce00a81d87128b98bb81d91793e4615233cf",
+    "raw/SchedulePrepareA-149.private.json": "67fb447bd2501e4a19a9faea59c77beef7a232fd8aacbafff3917dbfa7364b24",
+    "raw/SchedulePrepareA-150.private.json": "15afec9b0c21720c8ce5af1216a7f59c4d76afd0c5d46486e6a93c982e8bc8f5",
+    "raw/SchedulePrepareA-151.private.json": "ca816d822cd86bd9b9d6707b05a135b90df3f8d321fd6dbd1c9d2dd684dd4aef",
+    "raw/SchedulePrepareA-152.private.json": "d952e52a127a4ee06c05bbf57427d3c3526082d7f8d3218dbf9e56030bb21c4a"
+  },
+  "stage_raw_count": 29,
+  "aws_calls": 15,
+  "aws_confirmed_writes": 2,
+  "github_calls": 10,
+  "github_confirmed_mutation": "workflow disable command succeeded and disabled_manually subsequently read",
+  "execute_calls": 0,
+  "candidate_changed_resources": [
+    "ZerdeServerlessNewsZerdeServerlessNewsRuleKK04007FC8215E",
+    "ZerdeServerlessQuizZerdeServerlessQuizRuleKK08009B193E67",
+    "ZerdeServerlessQuizZerdeServerlessLeaderboardRuleKK1300595DB4AF"
+  ],
+  "actual_change_set_resources": [
+    "ZerdeServerlessBotZerdeServerlessBotLambdaServiceRoleDefaultPolicyDF029EC2",
+    "ZerdeServerlessNewsZerdeServerlessNewsRuleKK04007FC8215E",
+    "ZerdeServerlessQuizZerdeServerlessLeaderboardRuleKK1300595DB4AF",
+    "ZerdeServerlessQuizZerdeServerlessQuizRuleKK08009B193E67",
+    "ZerdeServerlessQuizZerdeServerlessQuizRuleZH08022DF8CE21"
+  ],
+  "checks": [
+    "All 29 stage raw hashes and CAPTURED statuses verified directly.",
+    "Five production Lambda full configuration projections match original baseline; protected stack fields and full template match.",
+    "Candidate only appends the authorized group to three target chat arrays, preserving all other content; uploaded body hash matches durable intent.",
+    "One PutObject and one CreateChangeSet HTTP200; no Execute; final changeset remains AVAILABLE with five resources and no next page.",
+    "Ten GitHub responses successful, variables equal corrected baseline, workflow disable read back."
+  ],
+  "findings": [
+    {
+      "id": "ACTUAL-CS-1",
+      "status": "BLOCKS_ORIGINAL_EXECUTE",
+      "detail": "Actual five-resource changeset exceeds the three-rule Targets-only contract. IAM PolicyDocument is represented by unequal truncated signatures; do not infer a semantic permission change from signatures."
+    },
+    {
+      "id": "ACTUAL-CS-2",
+      "detail": "Quiz KK details include Description although contexts differ only in Targets; Quiz ZH Description row has identical complete contexts. These are not silently accepted under the old contract."
+    }
+  ],
+  "ordering_evidence": {
+    "pr263_template_sha256": "972842f0db11d8ed95a47964ecf5f8fcbcbf4993a4063281d56f45d9b13f8087",
+    "policy_deep_equal_all_four": true,
+    "pr263_current_candidate_order_equal": true,
+    "uploaded_policy_order_differs": true,
+    "changed_key_order_path": "/Statement/1/Condition/StringEquals",
+    "causality": "Serialization ordering is a supported explanation candidate, not direct proof of CloudFormation signature implementation or live IAM equality."
+  },
+  "reviewer_local_error": {
+    "type": "TypeError",
+    "cause": "First exploratory decoder treated opaque PolicyDocument string as dict; subsequent type-aware inspection corrected the interpretation.",
+    "cloud_actions": 0
+  },
+  "next_boundary": "Only a new bounded read-only physical-role/policy verification and explicit narrow continuation contract can make the existing changeset eligible. No new Create/Execute has been authorized by this report.",
+  "limits": [
+    "Independent offline original-evidence review only; no API/UI/model call or old entry rerun.",
+    "Current ledger hash is a sequential local observation, not a transaction over other ongoing work.",
+    "No original raw copied into this report; only safe hashes, counts and policy-structure observations retained."
+  ]
+}
