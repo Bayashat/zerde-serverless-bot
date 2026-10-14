@@ -1,0 +1,31 @@
+{
+  "status": "PREPARED_THREE_RULES_ONLY",
+  "started_at": 1791987257.867588,
+  "cloud_writes": 2,
+  "github_calls": 8,
+  "cloud_write_attempts": 2,
+  "finished_at": 1791987284.49981,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 5,
+    "events/DescribeRule": 2,
+    "cloudformation/DescribeStacks": 1,
+    "cloudformation/GetTemplate": 1,
+    "s3/PutObject": 1,
+    "cloudformation/CreateChangeSet": 1,
+    "cloudformation/DescribeChangeSet": 4
+  },
+  "ledger_sha256": "ef5392330d35349638d90f3e5fcb8abcfb8bababbd8f82cbde7e02f3e1e7e3d8",
+  "old_prepare_stop_sha256": "d7a4f684693ab9695ae14eb2fa8766e92892753805c7e3d8bd4b1b72a451f817",
+  "change_set_arn": "arn:aws:cloudformation:eu-central-1:469511944682:changeSet/zerde-fourth-chat-schedules-20261014b/f18c503d-278b-491f-8078-fbcd9a6a758f",
+  "changed_resources": {
+    "news-kk-0400": "ZerdeServerlessNewsZerdeServerlessNewsRuleKK04007FC8215E",
+    "quiz-kk-0800": "ZerdeServerlessQuizZerdeServerlessQuizRuleKK08009B193E67",
+    "leaderboard-kk-1300": "ZerdeServerlessQuizZerdeServerlessLeaderboardRuleKK1300595DB4AF"
+  },
+  "template_key": "zerde-launch/20261014/schedules-b/386660aad62d0e2bba4fe84de42e5b6e17a836ddcbbd625b9311446e768000d0.template.json",
+  "candidate_path": "raw/SchedulePrepareB-171.private.json",
+  "candidate_sha256": "555d70d36f44151ef178fb684f16771a59b43e02045b27cbb5fd0eebcb2904e2",
+  "baseline_sha256": "c5c700c853ffcdf712443f636d45a4e6176458241fca732ce92b81682a1a719d",
+  "variables_sha256": "260fc0fbeaadce245958334b3c1d0f6e1314616870b5ae7e00b6e09e8bf8b5ee"
+}

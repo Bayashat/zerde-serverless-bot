@@ -1,3 +1,13 @@
+## 2026-10-14 加速首发：第四群定时业务已启用，Memory 待最后遗忘验证
+
+用户明确授权现有四群 Memory V2；七天/50有据/20未知自然验收移至发布后观察，不再等待全部可靠性、费用和副本任务才首发。[首发契约](ACCELERATED_RELEASE.md)及[实际进度](LAUNCH_PROGRESS.md)优先于下方旧执行顺序。
+
+第四群 -1004490324695 已加入 News、工作日 Quiz 和现有周榜；AWS 唯一 Execute 后主读回、生产环境变量同步、独立新鲜读回均通过。中文 News 仍 DISABLED，其他目标/日程保持，正常定时 Telegram 投递尚未观察。dev 新来源2417学习与问题2418→回答2419的来源/SENT/lease和可见语义已通过；遗忘发送前 UI 切群，原因 UNKNOWN，未向其它群发送。等待直接新独占回复后只续接本次来源遗忘，不重发来源/问题。四生产群 Memory **尚未激活**。
+
+554项核心测试通过；完整2475项中2474通过，唯一旧权限fixture受umask影响，原失败保留，同一节点在umask022下通过。当前20任务仍14OPEN/6CLOSED，Epic OPEN；自然0/50与0/20、起点未建立、production_ready=false。当前新账本246实际文件是阶段数量，统一期限Oct21 13:10:50.198516UTC，和原八项共九项。[安全聚合](evidence/2026-10-14-memory-v2-launch/progress.safe.json)。
+
+## 以下为此前冻结阶段，不作当前首发顺序、现场许可或重跑指令
+
 > 2026-09-28最终在线退役：[证据](evidence/2026-09-28-legacy-stats-final/final.safe.json)；[执行与边界](LEGACY_STATS_FINAL_EXECUTION.md)；[副本台账](RETAINED_COPIES.md)。旧清理once全部结束，不重跑；运行源仍为`01bdc1da2c5d995759eda0dfef99f7b427301d60`。
 
 # Goal: ZerdeBot Memory V2 与可靠性收尾

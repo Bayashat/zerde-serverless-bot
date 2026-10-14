@@ -1,0 +1,27 @@
+{
+  "status": "PASS_THREE_SCHEDULES_DEPLOYED",
+  "started_at": 1791987444.681105,
+  "cloud_writes": 0,
+  "finished_at": 1791987481.1549308,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 10,
+    "events/DescribeRule": 5,
+    "cloudformation/DescribeStacks": 7,
+    "cloudformation/GetTemplate": 1,
+    "cloudformation/DescribeChangeSet": 1,
+    "events/ListTargetsByRule": 3
+  },
+  "ledger_sha256": "4d301bc527880794407effec3b46ab1a600a5b7d4ce454868ba11a8d39aa3474",
+  "group": "-1004490324695",
+  "rule_names": [
+    "news-kk-0400",
+    "quiz-kk-0800",
+    "leaderboard-kk-1300"
+  ],
+  "change_set_arn": "arn:aws:cloudformation:eu-central-1:469511944682:changeSet/zerde-fourth-chat-schedules-20261014b/f18c503d-278b-491f-8078-fbcd9a6a758f",
+  "lambda_code_config_unchanged": true,
+  "variables_synchronization": "PENDING",
+  "future_delivery": "NOT_YET_OBSERVED",
+  "workflow": "DISABLED_PENDING_PUBLISH"
+}

@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "status": "ALIGNED",
+  "review_kind": "LIMITED_PLAN_MAINTENANCE_PRE",
+  "created_at": "2026-10-14T12:59:25.872778+00:00",
+  "plan_sha256": "c17171d6f6e1bd895dd1725f23325b6ebb53efcab124dc6f5dccf17cd3c77755",
+  "reviewed_head": "aa52f8e03ec689ea589993311882850f2a141b26",
+  "prior_review_sha256": "2644da7f01f3c0269827a6dfbf96672bbed0a5a71b3fe65afcccc52c9556552a",
+  "resolved_findings": [
+    {
+      "id": "LAUNCH-M1",
+      "resolution": "计划14及34行已区分learning off与安全STOPPING fence，保留epoch/资料，禁止group PURGE及自动恢复；与当前owner一致。"
+    }
+  ],
+  "open_findings": [],
+  "coverage": {
+    "identity_chat_isolation": {
+      "code": [
+        "src/bot/services/memory_v2/identity.py",
+        "src/bot/services/memory_v2/repository.py"
+      ],
+      "tests": [
+        "tests/test_memory_v2_identity.py",
+        "tests/test_memory_v2_contract.py"
+      ],
+      "covered": [
+        "同名不同ID及跨群分区",
+        "用户名转让必须当前Telegram成员核验",
+        "未解析身份不转嫁给请求者"
+      ]
+    },
+    "source_update_correction_forget_optout": {
+      "code": [
+        "src/bot/services/memory_v2/repository.py",
+        "src/bot/services/memory_v2/commands.py",
+        "src/bot/services/memory_v2/lifecycle.py"
+      ],
+      "tests": [
+        "tests/test_memory_v2_contract.py",
+        "tests/test_memory_v2_commands.py",
+        "tests/test_memory_v2_lifecycle.py",
+        "tests/test_memory_purge_recovery.py"
+      ],
+      "covered": [
+        "编辑即时失效与版本CAS",
+        "自有事实更正/他人拒绝/管理员群事实",
+        "遗忘tombstone与optout持续",
+        "派生清理失败不确认完成"
+      ]
+    },
+    "delayed_task_resurrection": {
+      "code": [
+        "src/bot/services/memory_v2/worker.py",
+        "src/bot/services/memory_v2/writer.py",
+        "src/bot/services/memory_v2/explicit_request_gate.py"
+      ],
+      "tests": [
+        "tests/test_memory_v2_ingestion.py",
+        "tests/test_memory_v2_source_retry.py",
+        "tests/test_memory_v2_contract.py",
+        "tests/test_explicit_request_gate.py",
+        "tests/test_memory_cutover.py"
+      ],
+      "covered": [
+        "worker调用前及落库前重读source",
+        "epoch/generation/version/lease及原日期校验",
+        "遗忘后延迟CLEAN不得复活",
+        "旧payload不恢复退休路径"
+      ]
+    },
+    "budget_unknown": {
+      "code": [
+        "src/bot/services/memory_budget.py",
+        "src/bot/services/memory_v2/answer_selector.py",
+        "src/bot/services/repositories/rate_limit.py"
+      ],
+      "tests": [
+        "tests/test_memory_budget.py",
+        "tests/test_memory_answer_budget.py",
+        "tests/test_memory_v2_extraction_budget.py",
+        "tests/test_memory_budget_policy.py",
+        "tests/test_explicit_quota_guard.py",
+        "tests/test_shared_quota_writer.py"
+      ],
+      "covered": [
+        "过期/不完整AWS估算拒绝permit",
+        "预算事务与模型配额强读CAS",
+        "UNKNOWN完整预留不退款",
+        "额度异常暂停/计量重试不重发HTTP",
+        "坏计数不写/不授权/不fallback"
+      ]
+    },
+    "durable_explicit_delivery": {
+      "code": [
+        "src/bot/services/memory_v2/answers.py",
+        "src/bot/services/memory_v2/explicit_delivery.py",
+        "src/bot/services/memory_v2/telegram_api.py"
+      ],
+      "tests": [
+        "tests/test_memory_v2_answers.py",
+        "tests/test_explicit_delivery.py",
+        "tests/test_explicit_provider_fences.py",
+        "tests/test_memory_answer_actor_fence.py",
+        "tests/test_memory_extra_source_leases.py",
+        "tests/test_memory_runtime_flow.py"
+      ],
+      "covered": [
+        "ANSWER_REQUEST持久SENDING先于HTTP",
+        "发送前来源/租约/当前成员重验",
+        "成功ANSWER_REPLY及SENT关联",
+        "UNKNOWN不自动重发",
+        "plain与memory共享去重owner"
+      ]
+    }
+  },
+  "conclusion": "当前有限源码审查未确认新的首发必须修复代码缺口。计划可进入有限operator PRE；此结论不是云配置、预算许可、现场成功或四群已启用证明。",
+  "actual_test_evidence": {
+    "core_xml_sha256": "928583b3598f564ce0c58cd25db7f0743334be849c6b1505709d8e0b6215b868",
+    "tests": 554,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "executed_by_this_reviewer": false,
+    "full_suite": "运行中结果由主代理最终核对；不能预先声称全通过。"
+  },
+  "minimum_remaining_pre_release": [
+    "处理本轮完整套件实际失败，按Memory安全相关性判定；已完成核心554不重跑。",
+    "当前混合运行包与identity配置/四群配置/共享预算的新鲜有限只读绑定。",
+    "新dev原生自述→持久有效fact→有来源回答及SENT/reply→仅该来源显式forget→新鲜不可用/派生清理证据。",
+    "既有四群逐个缺CONTROL/revision0/无旧V2工作事实条件核对，唯一CAS激活和主独强读；未知写只核对不盲重试。"
+  ],
+  "explicit_non_blockers": [
+    "七天和50/20自然样本及长期分布改发布后观察",
+    "完整费用结算与原八项retention仍保留责任但不挟持首发",
+    "captcha/news/Quiz独立异常矩阵不是首发依赖，影响实际摄取安全者例外",
+    "媒体相册可明确待验证，不冒充通过且不阻塞文本Memory首发"
+  ],
+  "known_limits": [
+    "普通Telegram删消息不保证可观察，使用显式forget接口。",
+    "Telegram与DDB非原子exactly-once；UNKNOWN发送结果保守不重发。",
+    "静态/Moto覆盖不替代当前AWS权限/包配置/实际发送和模型输出。",
+    "历史来源与deployment证据按原时点复用，旧S/Z许可不继承。"
+  ],
+  "authorization_note": "主代理已传达用户明确四群和多个15分钟段授权；authorization.safe.json现有PENDING字段属于较早快照，未来operator intent应引用新原回复，不需重问用户。",
+  "operations": {
+    "network_calls": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "live_entrypoints": 0,
+    "product_edits": 0,
+    "tests_executed": 0
+  }
+}

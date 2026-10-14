@@ -1,0 +1,14 @@
+{
+  "status": "UI_STOP_CONTEXT_CHANGED_BEFORE_FORGET",
+  "observed_at": 1791985987.500046,
+  "cause": "UNKNOWN",
+  "source_sent_once": true,
+  "answer_sent_once": true,
+  "forget_sent": false,
+  "after_sent": false,
+  "draft_at_stop_empty": true,
+  "click_result": "cannotClickOffscreenElement",
+  "fresh_window_not_expected": true,
+  "no_message_sent_in_other_context": true,
+  "next": "direct exclusive reply and fresh window/onsite plus reviewed narrow continuation, no old draft"
+}

@@ -1,0 +1,84 @@
+{
+  "status": "SCHEDULE_DEPLOYED_MEMORY_ACTIVATION_PENDING_DEV_FORGET",
+  "recorded_at": "2026-10-14T14:27:38.367577+00:00",
+  "base": "aa52f8e03ec689ea589993311882850f2a141b26",
+  "production_memory_groups": [
+    "-1002211083217",
+    "-1001244628965",
+    "-1001450935528",
+    "-1004490324695"
+  ],
+  "memory_activated": false,
+  "dev": {
+    "source": 2417,
+    "question": 2418,
+    "answer": "PASS",
+    "learning": "PASS",
+    "forget": "NOT_SENT_UI_STOP",
+    "after": "NOT_SENT",
+    "full_acceptance": "PARTIAL",
+    "new_exclusive_reply": "PENDING"
+  },
+  "schedules": {
+    "group": "-1004490324695",
+    "news": "daily 04:00 UTC / 09:00 Asia/Almaty",
+    "quiz": "Monday-Friday 08:00 UTC / 13:00 Asia/Almaty",
+    "leaderboard": "Friday 13:00 UTC / 18:00 Asia/Almaty",
+    "deployment": "PASS",
+    "production_environment_variables": "PASS",
+    "fresh_independent_readback": "PASS",
+    "future_telegram_delivery": "NOT_YET_OBSERVED",
+    "chinese_news": "DISABLED_UNCHANGED",
+    "workflow": "DISABLED_PENDING_PUBLICATION"
+  },
+  "tests": {
+    "core_passed": 554,
+    "full_passed": 2474,
+    "full_failed": 1,
+    "isolated_failed_node_recheck_passed": 1,
+    "failure_cause": "test mkdir0755 became0700 under umask077; original test passed under umask022; no product edit",
+    "hashes": {
+      "core-tests.xml": "928583b3598f564ce0c58cd25db7f0743334be849c6b1505709d8e0b6215b868",
+      "full-tests.xml": "80e878d8fdaff51fa85987549a66d6cc29c11e4b60047a5e8c236cf5171d200b",
+      "legacy-permission-recheck.log": "016a4093788648644b08006f7d1d171ca7639313677f5aa929f004d4a3e52465"
+    }
+  },
+  "natural": {
+    "supported": 0,
+    "unknown": 0,
+    "started_at": null,
+    "production_ready": false,
+    "gate": "POST_RELEASE_OBSERVATION"
+  },
+  "raw_retention": {
+    "captured_as_of_this_receipt": 246,
+    "ledger_sha256": "350fa4f8d9c12919bb00506a12dca9937cc9f5d48c5c64a9f2f898d8321c98f4",
+    "deadline": "2026-10-21T13:10:50.198516+00:00",
+    "deadline_epoch": 1792588250.198516,
+    "count_is_final": false
+  },
+  "evidence_sha256": {
+    "BudgetFinishA.safe.json": "232ad84189f02f37f4fe87dac48652c952043902a497b62c1f693b8e854e60f4",
+    "Before.assessment.safe.json": "ae30bf024197eee22d6b803dd2ca141b3a7db9062cd43381c6620b28311e7566",
+    "Learn2.assessment.safe.json": "6ff0691c7842a394aaa1cbecb1bbb915d3a00c41ad0c814266b4ab7587643a2a",
+    "Answer1.assessment.safe.json": "8f1b99185a9ca0c841a367bafa8d6e5be63737715262eec99acc12008c12f357",
+    "dev-learning-independent.safe.json": "7564d93fad31c449af67c5a065a9c462b20a7058cfe19a13e61ac4b10fae6366",
+    "dev-answer-independent.safe.json": "67fcc213fc0e752058b08b747929f8bae516cee4c1c9ee9f537fafc5c2675327",
+    "window-A-STOP.safe.json": "e7ef033af557999dde86c6905074c9a4d952b2a9715c9aba1666de65b11212ba",
+    "SchedulePrepareA.safe.json": "d7a4f684693ab9695ae14eb2fa8766e92892753805c7e3d8bd4b1b72a451f817",
+    "schedule-prepare-failure-independent.safe.json": "404d3ff87a8c3573ef7892e306dfa261e4041b20dfcf4b36b78d0c42e605c768",
+    "SchedulePrepareB.safe.json": "0c12097baba6917126bb790a8582a0c8fee9ef1d89ee9288f1136248ea783229",
+    "schedule-prepare-b-independent.safe.json": "ba7283eaea1eae4ef36a7ec3c093c6ff12eb9de4fc9748d8de40add37727b7af",
+    "ScheduleExecuteB.safe.json": "5e88f87c9d9c329a8c6d41576acbb763997635ab4e7face7f8ca7b525bc36cbf",
+    "SchedulePostB.safe.json": "5b5d4378d114aa2ee449a96fbec80d39a8dfeda5a8507b760d5af5d09f9cd9c1",
+    "ScheduleSyncA.safe.json": "072fa47f26c8e2d4cfd0e067f5fffd780952727e45e831bdb928abb6b9f3b6dc",
+    "ScheduleIndependentA.safe.json": "41b99428970c812fdc8b58c723a378f05ed0d1b86f918f13e133fe52368ea84b",
+    "test-sdk-shape-review.safe.json": "c975e6980eccc6b6a8f4f9521232204a36b2b1393006edca33cb8c2995329811"
+  },
+  "runtime": {
+    "bot_memory_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
+    "operations_source": "f049f6856f990c8ec2d997558f1c4d482a1dbca9",
+    "identity_config_source": "59674f58cfa7e5f92170b88fa5e0bad5bdf81dff",
+    "new_lambda_deployment": false
+  }
+}

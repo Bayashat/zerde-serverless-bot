@@ -1,0 +1,49 @@
+{
+  "status": "ALIGNED",
+  "mode": "PRE",
+  "plan_sha256": "c17171d6f6e1bd895dd1725f23325b6ebb53efcab124dc6f5dccf17cd3c77755",
+  "reviewed_at_epoch": 1791982763.156855,
+  "prior_review_sha256": "9d3056efcf084646270d9dead26780693ec0a768c4ea3ebc78eb6dc318f347f0",
+  "prior_plan_sha256": "80183ca31352921b68b498269e0746d7808041e2810b4a7df15c7cd3c392f509",
+  "delta_verified": "Only Kill Criteria and prelaunch step 8; exact old bytes reconstructed in memory match preserved V1 plan hash",
+  "resolved_findings": [
+    "ACTIVATION-KILL-1"
+  ],
+  "source_hashes": {
+    "src/bot/services/memory_v2/repository.py": "ea0583a790d10649de6570df805db0e61639e5c4d80ea50ec37c71bffe691f13",
+    "src/bot/services/memory_v2/public_commands.py": "37a2f10dc39e5381bccfd37df829aa3a634af90d075ab1e2e2cb93437bb53a5c",
+    "src/bot/services/memory_v2/public_answers.py": "0159c336134f017ad7f2171a493b23a461cf38adf488fb973fba953093e185f3",
+    "src/bot/services/memory_v2/lifecycle.py": "bcaa464a075eedfb01c66e66aa01239e4248e30f25e76a90d70b55bae0b03e67",
+    "src/bot/services/memory_v2/leases.py": "abd6ad49f094be4ee4d53ac1b12c0397887ea0e6f19cab1de648420a2f87d0e9",
+    "tests/test_memory_public_runtime.py": "12888ee486f9ae45d135a6c368a90fd97e7628b21a905f53c43a4c629a21c74e",
+    "tests/test_memory_v2_contract.py": "04a827541cdb23d62f3fc58f3cf3e3c3635fed7741df630bbc784b4eb04080ae"
+  },
+  "checks": {
+    "outcome_and_new_user_scope": true,
+    "four_existing_groups_resolved_fresh_not_guessed": true,
+    "single_repository_activation_owner_and_revision_cas": true,
+    "missing_control_default_is_not_activation": true,
+    "dev_epoch_and_old_frozen_scenarios_preserved": true,
+    "new_combined_release_and_original_budget_owner_binding_required": true,
+    "bounded_dev_source_answer_source_forget_and_independent_evidence": true,
+    "critical_stop_is_nondestructive_STOPPING_not_learning_off_or_PURGE": true,
+    "no_automatic_reactivation_or_new_epoch_after_stop": true,
+    "natural_quality_billing_and_copy_waits_postrelease_without_fabricated_pass": true,
+    "scoped_core_source_and_tests_unchanged_since_PR257": true
+  },
+  "findings": [],
+  "limitations": [
+    "This is a plan PRE only; exact four group identities, actual cloud configuration, budget allowance and deployed artifacts require new bounded tools and fresh evidence.",
+    "Public /memory on cannot first-activate a missing CONTROL. The new operator must call the existing deployed MemoryRepository.activate_group once with exact expected revision.",
+    "STOPPING also fences new plain explicit leases until a separately reviewed recovery; it is not a promise of immediate uninterrupted fallback answers. Already-authorized in-flight sends require the stated lease-drain evidence.",
+    "No cloud/UI/model/control operations or tests executed by this reviewer. Existing complete tests were not rerun."
+  ],
+  "next_gate": "Implement current-release binding, bounded preflight/activation/kill and native-dev evidence tools serially; independent tool PRE before live actions.",
+  "execution_performed": {
+    "cloud": 0,
+    "ui": 0,
+    "models": 0,
+    "control_writes": 0,
+    "tests": 0
+  }
+}
