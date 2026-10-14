@@ -1,0 +1,77 @@
+{
+  "status": "ALIGNED_PREPARATION_NOT_DELETED",
+  "started_at": 1791965282.7093801,
+  "started_at_utc": "2026-10-14T08:08:02.709380+00:00",
+  "scope_sha256": "7a20a1a03bfe801b3819106b5ebe0b45f6df2e2a5af22853b20c8b874ad435aa",
+  "preparation_sha256": "c2974c1cb73e28b17caf6d6d38a8cce1e96f4bdd51ab483b34caaabe8a264e5a",
+  "tool_sha256": "9587f179dfba01a6de660b0231a50bc928a6b594570b10fb46782b9fd1941abb",
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "deleted": 0,
+  "new_raw_copies": 0,
+  "new_raw_retention_duties": 0,
+  "old_entry_calls": 0,
+  "target_hashes_checked": 85,
+  "protected_hashes_checked": 103,
+  "target_count": 85,
+  "protected_count": 103,
+  "directory_count": 6,
+  "inventory_count": 188,
+  "inventory_before": {
+    "files": 188,
+    "directories": 6,
+    "paths_sha256": "8014d7be4c5f1c5e9aad3e58410da382f6d62c19fd6777c3f008f8fcb7d3095f"
+  },
+  "inventory_after": {
+    "files": 188,
+    "directories": 6,
+    "paths_sha256": "8014d7be4c5f1c5e9aad3e58410da382f6d62c19fd6777c3f008f8fcb7d3095f"
+  },
+  "target_files_present": true,
+  "all_hashes_identities_modes_nlinks_sizes_match_scope": true,
+  "no_follow_fd_and_before_after_stat_checks": true,
+  "streamed_hash_bytes": 896719,
+  "ledger_sha256": "d97fbbfd13d90169dacfcdc7cbe486c7277a6cda949f16c4c672913a84b3f0ed",
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-08-z01-mention-reply",
+  "started_retention_at_utc": "2026-10-08T08:17:52.186798+00:00",
+  "deadline_utc": "2026-10-15T08:17:52.186798+00:00",
+  "deadline_epoch": 1792052272.186798,
+  "duration_seconds": 604800,
+  "evidence_sha256": {
+    "verify_absence.py": "d39872d775e46921084fb57e7b4debf60e152794c0f5583e1d40d779821f1492",
+    "expire_raw.py": "5f4129203127ad88588f5fd5e972cd42fe00ba526e74feb392658a2037ec2924",
+    "inspect-Prep20261014A.intent.safe.json": "810bb0ea8b79c0c7b73bac8ec34910f7fa77b192a9ba7444f852aae4f8e82549",
+    "PLAN.md": "5988af0c74bd9280fe28ad9d9d5b5f5eee495c058cf6d20bda7fdff62a1b0777",
+    "plan-pre.safe.json": "4dcadaab282f4e933e5c326385a9447782dabf5f4b033c8a0ef3d17e96cd2960",
+    "maintenance-pre.safe.json": "f06395dfe277e37abcf3e92704376f1716c06392b0ff343d69385632cf592143",
+    "tool-pre.safe.json": "9782af3e3d4f304e7e02d2ad20895970966e7142d771294bcb474f70311349b2",
+    "inspect-Prep20261014A.safe.json": "502ba6b9896a870e22c051ed5c581d3e8328685fec154012270d9bfa65b82823",
+    "scope.safe.json": "7a20a1a03bfe801b3819106b5ebe0b45f6df2e2a5af22853b20c8b874ad435aa"
+  },
+  "historical_hash_sources": {
+    "final.safe.json": "9c2f2906b75fb7eeb172b61cbb7349102667ae1e131296b9bdf7399bdfe3cdef",
+    "independent-post.safe.json": "dbc2c408e7baf62fb386bf42f610b2aaf1d4e9eac1a960c249953079e296a165",
+    "correctness-post.safe.json": "fd17d5e5a08a59abfd7ec50320729ce3159be68f5c315794a6b031480954afa3",
+    "retention-anchor.safe.json": "0f8cbde1ff5f91f2063bc61de1c8325f558f05e8aea9778f44fe1c3f1d60bfaa"
+  },
+  "permission_exceptions": [],
+  "protected_zip_count": 0,
+  "ledger_partition": {
+    "root_api": 61,
+    "ui": 7,
+    "independent_api": 17
+  },
+  "retention_anchor_sha256": "0f8cbde1ff5f91f2063bc61de1c8325f558f05e8aea9778f44fe1c3f1d60bfaa",
+  "no_apply_notice_or_absence_entry": true,
+  "actual_apply_executed": false,
+  "actual_verify_absence_executed": false,
+  "root_preparation_report_unchanged": true,
+  "limitations": [
+    "Read-only preparation evidence, not expiry execution or deletion permission.",
+    "All files were read serially with lstat/O_NOFOLLOW/fstat and stable pre/post metadata; this is not an atomic filesystem snapshot.",
+    "No target or protected file bytes were copied into outputs; only hashes, counts and identity metadata are retained."
+  ],
+  "finished_at": 1791965282.740004,
+  "finished_at_utc": "2026-10-14T08:08:02.740004+00:00"
+}

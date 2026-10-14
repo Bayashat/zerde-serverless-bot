@@ -1,8 +1,8 @@
-## Oct14 两批原文仅准备完成
+## 原文清理准备与原期限
 
-128份原期限20:45:55.665021UTC；1030份21:48:46.021161UTC，分别双PRE/主inspect/独立fresh通过，68保留5目录与310保留37目录不变，尚未删除。G1030含95迁移失败和后续成功路径，只认当前完整ledger。两批到期另公告/原hash身份/唯一apply/独审。[契约](PUBLIC_TEXT_RAW_EXPIRY.md)、[配置契约](IDENTITY_RAW_EXPIRY.md)、[八项台账](RETAINED_COPIES.md)。
+Oct15 08:17:52.186798UTC 的85份已双PRE/主独准备，103保留6目录；今晚Oct14的128/1030仍分别20:45:55.665021与21:48:46.021161到期，三批均未删。[85契约](MENTION_REPLY_RAW_EXPIRY.md)、[八项台账](RETAINED_COPIES.md)。到期各另公告/hash身份/唯一apply/独审。
 
-告警PR263和Oct13早晚清理已交付，[完整此前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/c509925fd9271963eb26004cd773349455d95b9e/docs/goals/zerdebot-memory-v2/EPIC.md)。Operations263/Bot-Memory257/身份251保持，旧S/Z须重绑，无媒体窗口；原任务/自然状态不变，本次0云/UI/模型/删除。
+[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/249e40131dcbfcb8e97f8b0da3c846e26d1ae324/docs/goals/zerdebot-memory-v2/EPIC.md)。Ops263/Bot-Memory257/身份251保持；旧S/Z须重绑，无媒体窗口；任务/自然状态不变，本次0云/UI/模型/删除。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
