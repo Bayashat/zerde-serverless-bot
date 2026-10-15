@@ -904,6 +904,26 @@
       "evidence": "evidence/2026-10-15-mention-reply-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-15-mention-reply-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
+    },
+    "oct16_writer_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED",
+      "batch": "2026-10-16-writer-raw-expiry",
+      "target_count": 1426,
+      "protected_count": 95425,
+      "directory_count": 27812,
+      "inventory_count": 96851,
+      "protected_zip_count": 45,
+      "deadline_utc": "2026-10-16T18:48:47.827167+00:00",
+      "deadline_epoch": 1792176527.827167,
+      "scope_sha256": "9066fbf3ca1ba7e00403478801a7e6927c81f4d648ce1e26cf3a7890a2c8c48c",
+      "preparation_sha256": "f1d6d04bc5a7b3678f9101a99a995cff1abd513e1b14e4300cdd12579e5903ec",
+      "independent_sha256": "5cd319ebc7ecefa7f92649f16bdbbea3bbdb456e0eaf5756024461e0492c9534",
+      "contract": "WRITER_RAW_EXPIRY.md",
+      "evidence": "evidence/2026-10-16-writer-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-16-writer-raw-expiry/independent.safe.json",
+      "original_deadline_unchanged": true,
+      "apply_executed": false,
+      "remaining_numbered_duties": 6
     }
   },
   {

@@ -22,7 +22,7 @@ dev来源清理于16:59:01UTC达到DONE，9行移除，原RAW/HEAD及该来源FA
 
 |期限UTC|责任|
 |---|---|
-|Oct16 18:48:47.827167|shared-quota-writer原文1426|
+|Oct16 18:48:47.827167|shared-quota-writer原文1426，主独准备完成尚未删|
 |Oct17 16:20:38|旧memory PITR精确只读|
 |Oct20 14:32:29.705948|告警诊断原文341|
 |Oct21 13:10:50.198516|本次首发最终527实际ledger|
@@ -34,3 +34,5 @@ dev来源清理于16:59:01UTC达到DONE，9行移除，原RAW/HEAD及该来源FA
 [完整安全聚合](evidence/2026-10-14-memory-v2-launch/completion/final.safe.json)、[dev完整独审](evidence/2026-10-14-memory-v2-launch/completion/dev-independent.safe.json)、[四群实际独审](evidence/2026-10-14-memory-v2-launch/completion/production-activation-independent.safe.json)、[定时配置独审](evidence/2026-10-14-memory-v2-launch/completion/schedule-final-independent.safe.json)。
 
 此前完整阶段与失败记录固定于[PR267发布前进度](https://github.com/Bayashat/zerde-serverless-bot/blob/cbcd8b1126d95577eeb4e6c9b2778b5c32fb27c1/docs/goals/zerdebot-memory-v2/LAUNCH_PROGRESS.md)，所有已结束once不可重跑。
+
+Oct16清理新准备：1426目标、95425保留（45ZIP）、27812目录；原权限及六项期限保持。[契约](WRITER_RAW_EXPIRY.md)。本地准备不是运行发布或自然验收。
