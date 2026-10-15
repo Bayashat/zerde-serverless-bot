@@ -1,3 +1,15 @@
+## Oct16 shared writer 原文清理已准备，尚未删除
+
+原期限 **2026-10-16 18:48:47.827167 UTC** 的1426份账本目标已完成新工具双PRE、主唯一inspect Prep20261015A及独立fresh无跟随流式hash/身份/前后完整库存核验。95,425个保留文件（含45个ZIP）、27,812个目录保持，完整库存96,851文件；原目录权限逐路径保留，0755及12个0777资产根不改称全部cache。64,429个保护项另与已证历史hash一致，其余30,996个建立本次fresh基线；candidate不套canonical旧hash。范围SHA `9066fbf3ca1ba7e00403478801a7e6927c81f4d648ce1e26cf3a7890a2c8c48c`。
+
+apply、公告及独立不存在核验均未执行。到期当轮另新inspect/精确公告，原hash/身份/全库存保持才唯一apply；预期2852条intent/result，双侧unlink_returned/absent严格True，逐项intent距公告<=3600秒，再独立fresh不存在。未知保全partial另窄续接，不重apply或复制/重建/延长原snapshot。文件移除非安全擦盘。
+
+六项原UTC责任仍是Oct16 18:48:47.827167、Oct17 16:20:38、Oct20 14:32:29.705948、Oct21 13:10:50.198516、Nov1 11:46:02.425、Nov2 08:45:11.254。此前85/128/1030等已履行不重做。四群Memory仍RELEASED_OBSERVING，Oct17/21发布后观察；自然0/50有据、0/20未知和20任务14OPEN6CLOSED保持。运行包/定时配置/Groq413与费用UNKNOWN不变；本批0云/UI/模型/删除/新原文/新期限或运行部署，CI既有只读另计。
+
+[本批契约](WRITER_RAW_EXPIRY.md)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、绑定或重跑指令
+
 ## 2026-10-15：四群已发布，提及与Reply原文85份到期责任已履行
 
 Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询与生产激活独审已完成，第四群News/Quiz/周榜配置已交付。运行包仍Bot/Memory257、Operations263，身份251。自然0/50有据、0/20未知、起点未建立、production_ready=false；Oct17、Oct21及之后每周有限观察，首次正常定时投递尚待观察。开放工单数不代表首发未启用。

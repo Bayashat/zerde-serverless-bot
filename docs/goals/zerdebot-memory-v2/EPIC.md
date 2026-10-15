@@ -1,6 +1,6 @@
-## 四群Memory已发布，85份提及Reply原文已清理
+## 四群已发布，Oct16原文清理已准备
 
-四群已启用并独审，dev学习/回答/遗忘通过；第四群News/Quiz/周榜已配置。[进度](LAUNCH_PROGRESS.md)。提及Reply85已删独审，103保留/6目录保持，晚0.122957–0.173711秒UNKNOWN；非安全擦盘。剩余6项见[台账](RETAINED_COPIES.md)。[证据](evidence/2026-10-15-mention-reply-raw-expiry/completion.safe.json)。自然发布后观察，状态保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/18c99dd54373ca8e3436bf781410b0eb348151df/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群Memory已启用；自然观察Oct17/21。[进度](LAUNCH_PROGRESS.md)。1426原文已主独准备，95425保留/27812目录/45ZIP，尚未删；原期限Oct16 18:48:47.827167UTC。[契约](WRITER_RAW_EXPIRY.md)、[六项台账](RETAINED_COPIES.md)。状态保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/09120ac8657130be5c6e4dd15a657850bdcc3a93/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
