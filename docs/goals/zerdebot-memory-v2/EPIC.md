@@ -1,6 +1,6 @@
-## 四群Memory已发布，1030配置原文到期已清理
+## 四群Memory已发布，85份提及Reply原文已清理
 
-四群已启用并独审，dev学习/回答/遗忘通过；第四群News/Quiz/周榜已配置。[进度](LAUNCH_PROGRESS.md)。配置原文1030已删独审，310保留含24ZIP/37目录保持，晚0.675916–4.583760秒UNKNOWN；非安全擦盘。较早公开128已履行，剩余7项见[台账](RETAINED_COPIES.md)。[证据](evidence/2026-10-14-identity-raw-expiry/completion.safe.json)。自然发布后观察，状态保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/30752b6755f3461ffb6260c4202b0c127966a5ac/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群已启用并独审，dev学习/回答/遗忘通过；第四群News/Quiz/周榜已配置。[进度](LAUNCH_PROGRESS.md)。提及Reply85已删独审，103保留/6目录保持，晚0.122957–0.173711秒UNKNOWN；非安全擦盘。剩余6项见[台账](RETAINED_COPIES.md)。[证据](evidence/2026-10-15-mention-reply-raw-expiry/completion.safe.json)。自然发布后观察，状态保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/18c99dd54373ca8e3436bf781410b0eb348151df/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

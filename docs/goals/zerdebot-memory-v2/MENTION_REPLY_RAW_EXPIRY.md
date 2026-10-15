@@ -1,3 +1,15 @@
+## 2026-10-15：四群已发布，提及与Reply原文85份到期责任已履行
+
+Memory V2四个生产群保持 **RELEASED_OBSERVING**；dev学习/回答/定点遗忘/删除后查询与生产激活独审已完成，第四群News/Quiz/周榜配置已交付。运行包仍Bot/Memory257、Operations263，身份251。自然0/50有据、0/20未知、起点未建立、production_ready=false；Oct17、Oct21及之后每周有限观察，首次正常定时投递尚待观察。开放工单数不代表首发未启用。
+
+提及与Reply原文85个原ledger完整路径已逐项移除并独立fresh核不存在；103保留文件哈希/身份、6目录原0700及188→103库存保持。170条intent/result、公告和五hash一致，apply/journal两侧unlink_returned与absent严格True。原期限08:17:52.186798UTC保持；首末unlink 2026-10-15T08:17:52.309755+00:00 至 2026-10-15T08:17:52.360509+00:00，真实晚0.122957至0.173711秒，原因UNKNOWN。原M/R有限PASS、俄文问题中文答案、UI证据限制及共享计数UNKNOWN保留，7份非目标private历史按scope保护。文件移除非安全擦盘/所有云副本消失；0云/UI/模型/新原文/运行部署，37在线退役数不增。Due20261015A/Apply20261015A/独立verify均已结束不可重跑。较早公开128和配置1030亦已履行。
+
+当前剩余6项精确UTC职责：Oct16 18:48:47.827167 writer1426；Oct17 16:20:38旧memory PITR；Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原身份、期限与保护保持，20任务14OPEN/6CLOSED、EpicOPEN。计划将原heartbeat调整为每日23:35Almaty=18:35UTC，覆盖最近Oct16期限提前827.827167秒；实际设置以automation回执为准。未来逐批调整下一期限前不超过60分钟唤醒，不保证设备必然准时。
+
+[本批完成证据](evidence/2026-10-15-mention-reply-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-15-mention-reply-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。完整前阶段见[PR270摘要](https://github.com/Bayashat/zerde-serverless-bot/blob/18c99dd54373ca8e3436bf781410b0eb348151df/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+## 以下为准备时冻结契约；实际完成以上方回执为准，不重跑
+
 # 85 份提及与 Reply 原文到期清理契约
 
 当前仅准备完成，apply、独立不存在核验及删除公告均未执行。主唯一 inspect `Prep20261014A` 已结束不可重用。原起点 2026-10-08T08:17:52.186798+00:00；原七日期限 **2026-10-15T08:17:52.186798+00:00**（epoch 1792052272.186798），不因准备或发布延长。
