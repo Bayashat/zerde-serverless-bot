@@ -1,3 +1,15 @@
+## 2026-10-16：四群已发布，writer 原文 1426 份到期责任已履行
+
+Memory V2 四个生产群保持 RELEASED_OBSERVING；dev 学习/回答/定点遗忘/删除后查询及生产激活独审已完成，第四群 News/Quiz/周榜配置已交付。自然 0/50 有据、0/20 未知、起点未建立、production_ready=false；Oct17、Oct21 及之后每周有限观察，首次正常定时投递仍待观察。运行包仍 Bot/Memory PR257、Operations PR263，身份 PR251。开放工单数不表示首发未启用。
+
+原 ledger 的 1426 个完整路径已逐项移除并独立 fresh 核不存在；95425 保留文件（含 45 完整 ZIP）hash/身份、27812 目录原身份/模式及 96851→95425 库存保持。2852 条 intent/result、公告和五 hash 一致，apply/journal 两侧 unlink_returned/absent 严格 True。原期限 2026-10-16 18:48:47.827167UTC 不变；实际首末 unlink 2026-10-16T18:49:13.441939+00:00 / 2026-10-16T18:49:13.995025+00:00，真实晚 25.614772 至 26.167858 秒，原因 UNKNOWN。原 0700/0755/0777 目录分别 13780/14020/12，非全部 cache；25 非目标 private 行政历史按 scope 保留。原失败、UNKNOWN、ledger 和历史报告不改。文件移除非安全擦盘或所有云副本消失；本地清理 0 云/UI/模型/新原文/运行部署，37 在线退役数不增。Due20261016A、Apply20261016A、独立 verify 均结束不可重跑；原 snapshot 不复制、延长或重建。
+
+剩余 5 项原精确 UTC 责任：Oct17 16:20:38 旧 memory PITR；Oct20 14:32:29.705948 告警 341；Oct21 13:10:50.198516 首发最终 527；Nov1 11:46:02.425 旧 memory SYSTEM；Nov2 08:45:11.254 旧 stats SYSTEM。原身份、期限及用户导出/现役 PITR/必要恢复保护保持。20 任务 14 OPEN/6 CLOSED、Epic OPEN。计划将原 heartbeat 调整为每日 Almaty 21:05=16:05UTC，覆盖 Oct17 PITR 前 938 秒；实际设置以 automation 回执为准。逐批再安排下一期限前不超过 60 分钟唤醒，不保证设备准时执行。
+
+[完成证据](evidence/2026-10-16-writer-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-16-writer-raw-expiry/completion-independent.safe.json)、[副本台账](RETAINED_COPIES.md)、[首发进度](LAUNCH_PROGRESS.md)。完整前阶段见[PR272 固定基线](https://github.com/Bayashat/zerde-serverless-bot/blob/0589e61732c6d131b64ee92a67efae1c4cd12646/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+## 以下为此前冻结阶段，不作当前首发顺序、现场许可或重跑指令
+
 ## Oct16 shared writer 原文清理已准备，尚未删除
 
 原期限 **2026-10-16 18:48:47.827167 UTC** 的1426份账本目标已完成新工具双PRE、主唯一inspect Prep20261015A及独立fresh无跟随流式hash/身份/前后完整库存核验。95,425个保留文件（含45个ZIP）、27,812个目录保持，完整库存96,851文件；原目录权限逐路径保留，0755及12个0777资产根不改称全部cache。64,429个保护项另与已证历史hash一致，其余30,996个建立本次fresh基线；candidate不套canonical旧hash。范围SHA `9066fbf3ca1ba7e00403478801a7e6927c81f4d648ce1e26cf3a7890a2c8c48c`。
