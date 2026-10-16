@@ -547,13 +547,13 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-15",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。",
-    "remaining": "当前六项独立精确UTC责任见RETAINED_COPIES：Oct16 18:48:47.827167 writer1426、Oct17 16:20:38旧memory PITR、Oct20 14:32:29.705948告警341、Oct21 13:10:50.198516首发527、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM。日志/DLQ其它原台账义务保留；用户导出/现役PITR保护，已履行项不重删。",
+    "status_as_of": "2026-10-16",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。",
+    "remaining": "当前五项独立精确UTC责任见RETAINED_COPIES：Oct17 16:20:38旧memory PITR、Oct20 14:32:29.705948告警341、Oct21 13:10:50.198516首发527、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM。日志/DLQ其它原台账义务保留；用户导出/现役PITR保护，已履行项不重删。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-15-mention-reply-raw-expiry/completion.safe.json",
+    "status_evidence": "evidence/2026-10-16-writer-raw-expiry/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
@@ -650,7 +650,7 @@
       "historical_preparation_only": true
     },
     "shared_quota_writer_raw_retention": {
-      "status": "RETAINED_UNTIL_DEADLINE",
+      "status": "EXACT_EXPIRY_COMPLETED_INDEPENDENT_PASS",
       "deadline_utc": "2026-10-16T18:48:47.827167+00:00",
       "private_ledger": "2026-10-09-shared-quota-writer/release-raw-retention.safe.json",
       "ledger_sha256": "1fbda1fcba166f9ed270e2c658460d86c972bb99b344f45fc024cf64a527ac49",
@@ -923,7 +923,25 @@
       "independent_evidence": "evidence/2026-10-16-writer-raw-expiry/independent.safe.json",
       "original_deadline_unchanged": true,
       "apply_executed": false,
-      "remaining_numbered_duties": 6
+      "remaining_numbered_duties": 6,
+      "historical_preparation_only": true
+    },
+    "shared_quota_writer_raw_expiry_completion": {
+      "status": "EXACT_1426_WRITER_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-16T18:48:47.827167+00:00",
+      "deleted_files": 1426,
+      "protected_files": 95425,
+      "protected_zip_count": 45,
+      "preserved_directories": 27812,
+      "journal_records": 2852,
+      "first_unlink_utc": "2026-10-16T18:49:13.441939+00:00",
+      "last_unlink_utc": "2026-10-16T18:49:13.995025+00:00",
+      "first_lateness_seconds": 25.614771842956543,
+      "last_lateness_seconds": 26.167857885360718,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-16-writer-raw-expiry/completion.safe.json",
+      "independent_evidence": "evidence/2026-10-16-writer-raw-expiry/completion-independent.safe.json",
+      "not_secure_media_erasure": true
     }
   },
   {

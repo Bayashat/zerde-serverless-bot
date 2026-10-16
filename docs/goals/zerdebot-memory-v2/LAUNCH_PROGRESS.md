@@ -18,21 +18,20 @@ dev来源清理于16:59:01UTC达到DONE，9行移除，原RAW/HEAD及该来源FA
 
 20任务仍14OPEN/6CLOSED，Epic OPEN。这些开放项包括发布后质量、媒体/频道有限缺口、独立业务恢复、费用UNKNOWN及副本职责，不再作为首发等待列表。production_ready=false仍指完整自然质量；启用与自然验收分开。不会用受控测试、空群日历或自动消息凑自然样本。
 
-首发最终527CAPTURED/0NOT_CREATED，原Oct21 13:10:50.198516UTC期限固定。公开文本128、配置1030及提及Reply85已分别删除并独审；本批85删除/103保留/6目录保持。详见[副本台账](RETAINED_COPIES.md)。剩余六项未履行UTC期限分别为：
+首发最终527CAPTURED/0NOT_CREATED，原Oct21 13:10:50.198516UTC期限固定。公开文本128、配置1030、提及Reply85及writer1426已分别删除并独审；本批95425保留（含45ZIP）/27812目录保持。详见[副本台账](RETAINED_COPIES.md)。剩余五项未履行UTC期限分别为：
 
 |期限UTC|责任|
 |---|---|
-|Oct16 18:48:47.827167|shared-quota-writer原文1426，主独准备完成尚未删|
 |Oct17 16:20:38|旧memory PITR精确只读|
 |Oct20 14:32:29.705948|告警诊断原文341|
 |Oct21 13:10:50.198516|本次首发最终527实际ledger|
 |Nov1 11:46:02.425|旧memory SYSTEM精确只读|
 |Nov2 08:45:11.254|旧stats SYSTEM精确只读|
 
-每批沿精确原ledger/hash/身份与原期限，单独新PRE/公告/到期删除/独立不存在；已履行的公开128、配置1030和提及Reply85均不可重删，不能提前删除或重建旧原文。用户导出、现役PITR、必要恢复和安全聚合保留；文件移除不是安全擦盘。第3天/每周检查采取有限只读和实际自然证据；发现跨群、身份、敏感泄露、删后复活或误删，依原公开停止入口暂停对应群并保留证据。
+每批沿精确原ledger/hash/身份与原期限，单独新PRE/公告/到期删除/独立不存在；已履行的公开128、配置1030、提及Reply85和writer1426均不可重删，不能提前删除或重建旧原文。用户导出、现役PITR、必要恢复和安全聚合保留；文件移除不是安全擦盘。第3天/每周检查采取有限只读和实际自然证据；发现跨群、身份、敏感泄露、删后复活或误删，依原公开停止入口暂停对应群并保留证据。
 
 [完整安全聚合](evidence/2026-10-14-memory-v2-launch/completion/final.safe.json)、[dev完整独审](evidence/2026-10-14-memory-v2-launch/completion/dev-independent.safe.json)、[四群实际独审](evidence/2026-10-14-memory-v2-launch/completion/production-activation-independent.safe.json)、[定时配置独审](evidence/2026-10-14-memory-v2-launch/completion/schedule-final-independent.safe.json)。
 
 此前完整阶段与失败记录固定于[PR267发布前进度](https://github.com/Bayashat/zerde-serverless-bot/blob/cbcd8b1126d95577eeb4e6c9b2778b5c32fb27c1/docs/goals/zerdebot-memory-v2/LAUNCH_PROGRESS.md)，所有已结束once不可重跑。
 
-Oct16清理新准备：1426目标、95425保留（45ZIP）、27812目录；原权限及六项期限保持。[契约](WRITER_RAW_EXPIRY.md)。本地准备不是运行发布或自然验收。
+Oct16清理已完成：1426目标已移除并独审，95425保留（45ZIP）/27812目录原身份和权限保持；剩余五项期限不变。[契约及完成证据](WRITER_RAW_EXPIRY.md)。此次清理没有运行发布或新增自然验收。
