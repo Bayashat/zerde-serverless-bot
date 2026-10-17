@@ -1,3 +1,13 @@
+## 2026-10-17：四群首发后观察和旧 PITR 到期复核已完成
+
+四群 Memory V2 均 ACTIVE、learning=true、首发 epoch 保持；第四群 News Oct15–17 每天4个已保存步骤有 SENT 回执，Quiz Oct15–16 为 DONE 并有发送回执。独立 fresh 覆盖四 CONTROL 和 Oct15 News/Quiz；其他页为主读取后独立离线核验。未看原生 Telegram、完整答案语义、完整 News 清单或 Quiz 三行一致性；周榜未覆盖。自然仍 0/50 有据、0/20 未知，起点未建立、production_ready=false，RELEASED_OBSERVING 不变。
+
+旧 memory 原 PITR 期限 Oct17 16:20:38UTC 已在到期后按原身份主独复核：旧表及 PITR 入口不存在，窗口字段不可取得；SYSTEM 备份仍 AVAILABLE，Nov1 原期限不变。主首次 API 意图晚0.287728秒，原因 UNKNOWN；不是所有副本消失或物理擦除。H 主5+独5读，O 原失败26+窄续接15+独10读，共61 AWS只读，0云写/UI/模型/部署。原空 epoch 门禁失败冻结，25条首发前旧答案归UNKNOWN，不算当前答案或自然样本。8个返回页中3页有续页，不能推全量积压。
+
+当前剩余6项副本责任，包含本次 H10/O51 两个独立新七日期限。下一观察 Oct21，之后每周；完整边界与证据见[Oct17回执](OCT17_READBACK.md)，精确期限见[副本台账](RETAINED_COPIES.md)。20任务14OPEN/6CLOSED、Epic OPEN；独立业务/费用缺口保持，所有已结束入口不重跑。
+
+## 以下为此前阶段记录，不作当前待办、数量、现场许可或重跑指令
+
 # Memory V2 首发已完成，进入生产观察
 
 2026-10-14 17:14:07.647307 UTC（阿拉木图22:14），四个已授权生产群逐群条件激活完成；17:16:41.027804 UTC独立新鲜读回通过。状态 **RELEASED_OBSERVING**。PR268文档已合并，CI三job与独立核验通过；merge517cebfa800e56aabbc1e9a2b5de7bf3059c0fe9，无额外部署。

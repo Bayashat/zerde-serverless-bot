@@ -547,13 +547,13 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-16",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。",
-    "remaining": "当前五项独立精确UTC责任见RETAINED_COPIES：Oct17 16:20:38旧memory PITR、Oct20 14:32:29.705948告警341、Oct21 13:10:50.198516首发527、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM。日志/DLQ其它原台账义务保留；用户导出/现役PITR保护，已履行项不重删。",
+    "status_as_of": "2026-10-17",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。",
+    "remaining": "剩余6项精确UTC责任：Oct20 14:32:29.705948告警341、Oct21 13:10:50.198516首发527、Oct24 16:20:38.287378本次PITR10、Oct24 16:29:48.470834本次观察51、Nov1 11:46:02.425旧memory SYSTEM、Nov2 08:45:11.254旧stats SYSTEM。各按原身份/ledger/期限；SYSTEM只读，原文另新scope/PRE/公告/到期删除/独审，不重建已删snapshot。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-16-writer-raw-expiry/completion.safe.json",
+    "status_evidence": "evidence/2026-10-17-readback/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
@@ -942,7 +942,35 @@
       "evidence": "evidence/2026-10-16-writer-raw-expiry/completion.safe.json",
       "independent_evidence": "evidence/2026-10-16-writer-raw-expiry/completion-independent.safe.json",
       "not_secure_media_erasure": true
-    }
+    },
+    "pitr_due_readback_completion": {
+      "status": "PITR_DUE_READBACK_COMPLETE_INDEPENDENT_PASS",
+      "original_deadline_utc": "2026-10-17T16:20:38+00:00",
+      "old_table_absent": true,
+      "pitr_endpoint_unavailable": true,
+      "system_still_available": true,
+      "all_copies_erased": false,
+      "evidence": "evidence/2026-10-17-readback/pitr.safe.json",
+      "independent_evidence": "evidence/2026-10-17-readback/pitr-independent.safe.json"
+    },
+    "oct17_raw_retention": [
+      {
+        "name": "pitr-readback-raw",
+        "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+        "deadline_epoch": 1792858838.2873778,
+        "count": 10,
+        "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/raw-retention.safe.json",
+        "sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8"
+      },
+      {
+        "name": "day3-observation-raw",
+        "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+        "deadline_epoch": 1792859388.470834,
+        "count": 51,
+        "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/raw-retention.safe.json",
+        "sha256": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892"
+      }
+    ]
   },
   {
     "id": "Z11",
@@ -991,13 +1019,13 @@
       }
     },
     "status": "released_observing_natural_acceptance_pending",
-    "status_as_of": "2026-10-14",
-    "completed": "F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。 10月14日dev学习/回答/定点遗忘/删除后回答通过，四个明确生产群Memory V2已条件启用并独立读回。",
-    "remaining": "首发已交付，按用户选择将七天/50有据/20未知自然验收移至发布后观察；真实使用起点未建立，自然0/50和0/20保持，第3天及每周复查。production_ready=false表示完整自然质量未验收，不表示功能未启用。",
+    "status_as_of": "2026-10-17",
+    "completed": "F5模型及F6/F7/F8/F10原生Telegram合成功能验收完成。 10月14日dev学习/回答/定点遗忘/删除后回答通过，四个明确生产群Memory V2已条件启用并独立读回。 四群 fresh CONTROL 均ACTIVE、learning=true且首发epoch保持。返回页有4条首发epoch SENT（中文0、三哈群2/1/1）；另25条空旧epoch均首发前，原因UNKNOWN。3个WORK页有续页，不推全量。没有完整来源/答案语义或原生Telegram观察，因此自然0/50、0/20、起点null、production_ready=false保持；首发已启用，后续Oct21及每周观察。",
+    "remaining": "完整自然来源/身份/语义/答案质量按用户选择在发布后验收；0/50有据、0/20未知、起点未建立、production_ready=false保持。Oct17有限元数据观察已完成，下一Oct21首周及之后每周；不造聊天或把持久SENT当自然质量。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "status_evidence": "evidence/2026-10-17-readback/completion.safe.json",
     "natural_started_at": null,
     "natural_supported_answers": 0,
     "natural_unknown_answers": 0,
@@ -1023,6 +1051,15 @@
       "dev_after_forget": "PASS",
       "activation_finished_at": 1791998047.647307,
       "independent_evidence": "evidence/2026-10-14-memory-v2-launch/completion/production-activation-independent.safe.json"
+    },
+    "day3_metadata_observation": {
+      "status": "BOUNDED_METADATA_COMPLETE_INDEPENDENT_PASS",
+      "four_groups_active": true,
+      "current_epoch_sent_returned": 4,
+      "unknown_old_epoch_returned": 25,
+      "partial_pages": 3,
+      "natural_samples_added": 0,
+      "evidence": "evidence/2026-10-17-readback/observation.safe.json"
     }
   },
   {
@@ -1127,13 +1164,13 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "deployed_real_business_acceptance_pending",
-    "status_as_of": "2026-09-26",
-    "completed": "新闻总时限和分群交付恢复实现已部署。",
+    "status_as_of": "2026-10-17",
+    "completed": "新闻总时限和分群交付恢复实现已部署。 第四群News Oct15、16、17每天4个已保存步骤均SENT且有有效发送回执；Oct15由独立fresh复核，另两天为主读取与独立离线核验。未读完整News manifest、未看原生Telegram，不称完整新闻内容或全部清单验收。成功群不重复/失败群恢复/UNKNOWN处理等原缺口仍保持OPEN。",
     "remaining": "成功群不重复、失败群恢复、结果不明处理的实际证据。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
+    "status_evidence": "evidence/2026-10-17-readback/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "fourth_group_schedule_release": {
       "as_of": "2026-10-14",
@@ -1141,7 +1178,27 @@
       "status": "DEPLOYED_VARIABLES_SYNCHRONIZED_FRESH_READBACK_PASS",
       "future_delivery": "NOT_YET_OBSERVED",
       "evidence": "evidence/2026-10-14-memory-v2-launch/ScheduleIndependentA.safe.json",
-      "other_acceptance_pending_unchanged": true
+      "other_acceptance_pending_unchanged": true,
+      "historical_release_stage": true
+    },
+    "postlaunch_delivery_observation": {
+      "as_of": "2026-10-17",
+      "group": "-1004490324695",
+      "dates": [
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-17"
+      ],
+      "status": "SAVED_STEPS_SENT_WITH_RECEIPTS",
+      "independent_fresh_dates": [
+        "2026-10-15"
+      ],
+      "other_dates": "MAIN_CAPTURE_INDEPENDENT_OFFLINE_REVIEW",
+      "native_telegram_visible": false,
+      "complete_manifest_or_three_row_consistency": false,
+      "leaderboard": "NOT_COVERED",
+      "original_recovery_gaps_unchanged": true,
+      "evidence": "evidence/2026-10-17-readback/observation.safe.json"
     }
   },
   {
@@ -1162,13 +1219,13 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "deployed_answer_redelivery_partial_unconfirmed_native_vote",
-    "status_as_of": "2026-10-05",
-    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。 一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。 PR235已合并并部署dev/prod：原请求确认保留后提示后台继续尝试且无需重发；处理中、待核对、过期和无效请求分别说明；提示发送或诊断失败不再重试整次出题。实际sendMessage异常日志仅记录类型。原publication/outbox/准入与计分所有者不变。 新版真实提示已在专用dev群出现：请求已保存、后台重试、无需重发；原生Reply点击可跳回本轮命令。同请求在受控准入失败后自动恢复DONE，创建至完成176秒；两个后续观察的题目/poll不变、outbox缺席，恢复cursor继续推进。临时权限限制已提前撤销，截止时间后再核原策略恢复；独立30次只读核验确认同请求完成、原权限/配置/控制保持。 10月5日晚仅完成一条新公开Quiz发题、一次未确认提交成功的原生点击及临时权限撤销；到期后看护确认恢复。最后主读取答案缺席、分数未变，有界日志未观察到poll_answer；这些结果不证明请求未到达，也不证明重送或一次计分通过。 独立37次只读确认原权限与dev保护恢复；业务结论仍PARTIAL。",
+    "status_as_of": "2026-10-17",
+    "completed": "Quiz发布/计分/答案恢复实现已部署；9月28日dev专用群单次原生命令、真实poll与实际答题正常链路通过：发布DONE、答案SCORED，总分0→1、周分0，两条对应outbox缺席。 9月29日管理员对已DONE原题执行一次公开原生Reply对账成功；八个精确记录前后及独立强读完全相同，总分仍1，无新增poll或重复计分。 PR232已合并并部署到dev/prod：原Quiz计数强读与条件CAS、每次Gemini应用重试准入、计数错误穿透生成/翻译并保留原GENERATING/outbox恢复，安全attempt/usage观察及四语言帮助/对账提示已交付。2306测试、两项CI、两环境五handler ARM及实际五函数/共享层主检和独审通过；实际更新Bot、Memory Worker、Quiz三份函数代码，News/Operations/层沿用已核实际包。 一次真实dev公开发题在受控准入失败后保留原GENERATING/outbox；撤销临时限制后，同request/generation自动成为DONE并出现一个真实poll。执行记录创建至完成289秒，后续正常恢复cursor再次推进且题目/poll不变、outbox缺席；主检与独立读回通过。原角色策略、函数配置和Memory控制保持，临时policy已提前撤销并在固定窗口结束后再次确认不存在。 PR235已合并并部署dev/prod：原请求确认保留后提示后台继续尝试且无需重发；处理中、待核对、过期和无效请求分别说明；提示发送或诊断失败不再重试整次出题。实际sendMessage异常日志仅记录类型。原publication/outbox/准入与计分所有者不变。 新版真实提示已在专用dev群出现：请求已保存、后台重试、无需重发；原生Reply点击可跳回本轮命令。同请求在受控准入失败后自动恢复DONE，创建至完成176秒；两个后续观察的题目/poll不变、outbox缺席，恢复cursor继续推进。临时权限限制已提前撤销，截止时间后再核原策略恢复；独立30次只读核验确认同请求完成、原权限/配置/控制保持。 10月5日晚仅完成一条新公开Quiz发题、一次未确认提交成功的原生点击及临时权限撤销；到期后看护确认恢复。最后主读取答案缺席、分数未变，有界日志未观察到poll_answer；这些结果不证明请求未到达，也不证明重送或一次计分通过。 独立37次只读确认原权限与dev保护恢复；业务结论仍PARTIAL。 第四群Quiz Oct15、16每日owner均DONE且有有效poll/message发送回执；Oct15独立fresh复核，Oct16为主读取与独立离线核验。未看原生Telegram、未核三行一致性，周榜未覆盖；原答案重送/daily并发/UNKNOWN/GSI迟到等缺口及冻结失败保持OPEN，不重跑旧题。",
     "remaining": "答案重送验收仍未完成：本轮没有确认投票提交、同update_id的失败/成功完整Lambda请求链。原9月30日反馈ID/精确Reply链接仍缺；daily并发、发送UNKNOWN、答案先到/GSI迟到及其他失败重投待证。不重跑冻结题或改变门槛。Z16保持OPEN，production_ready=false。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-05-quiz-answer-redelivery/result.safe.json",
+    "status_evidence": "evidence/2026-10-17-readback/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "followup_prs_merged": [
       232,
@@ -1239,7 +1296,26 @@
       "status": "DEPLOYED_VARIABLES_SYNCHRONIZED_FRESH_READBACK_PASS",
       "future_delivery": "NOT_YET_OBSERVED",
       "evidence": "evidence/2026-10-14-memory-v2-launch/ScheduleIndependentA.safe.json",
-      "other_acceptance_pending_unchanged": true
+      "other_acceptance_pending_unchanged": true,
+      "historical_release_stage": true
+    },
+    "postlaunch_delivery_observation": {
+      "as_of": "2026-10-17",
+      "group": "-1004490324695",
+      "dates": [
+        "2026-10-15",
+        "2026-10-16"
+      ],
+      "status": "DAILY_OWNER_DONE_WITH_SEND_RECEIPTS",
+      "independent_fresh_dates": [
+        "2026-10-15"
+      ],
+      "other_dates": "MAIN_CAPTURE_INDEPENDENT_OFFLINE_REVIEW",
+      "native_telegram_visible": false,
+      "complete_manifest_or_three_row_consistency": false,
+      "leaderboard": "NOT_COVERED",
+      "original_recovery_gaps_unchanged": true,
+      "evidence": "evidence/2026-10-17-readback/observation.safe.json"
     }
   },
   {

@@ -1,6 +1,6 @@
-## 四群已发布，writer 1426 原文已清理
+## 四群已发布，Oct17观察完成
 
-1426 已删并独审；95425 保留含 45 ZIP、27812 目录保持，晚 25.614772–26.167858 秒 UNKNOWN；非安全擦盘。[证据](evidence/2026-10-16-writer-raw-expiry/completion.safe.json)。剩余 5 项见[台账](RETAINED_COPIES.md)，[首发进度](LAUNCH_PROGRESS.md)保持。自然验收在发布后。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/0589e61732c6d131b64ee92a67efae1c4cd12646/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群学习开启；第四群News/Quiz有持久发送回执，自然质量未验收。旧PITR到期复核完成，SYSTEM保留。剩余6项副本责任见[回执](OCT17_READBACK.md)。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/87c749b44300c4c57bf2e9db3a0036ddff228304/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
