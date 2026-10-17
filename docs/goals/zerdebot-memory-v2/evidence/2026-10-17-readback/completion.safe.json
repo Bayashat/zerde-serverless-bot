@@ -1,0 +1,826 @@
+{
+  "status": "PITR_AND_DAY3_METADATA_COMPLETE_INDEPENDENT_PASS",
+  "at": 1792255560.606227,
+  "local_evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/ReadPitr20261017A.safe.json": "7610aa96d0b780ebca3117a60a8728842edd0a773350ccfdc459135fe923e0e9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/ReadPitr20261017A.intent.safe.json": "d91bebc55944acf4639649c19fb2d7cc868d2a6a4bc542b5e0204b8d28e5954b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/ReadPitrIndependent20261017A.safe.json": "1004e248087fa183270a2b0604a4fa3e8320288c4926b4e330a6092d68812149",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/ReadPitrIndependent20261017A.intent.safe.json": "bdba87990e43c241c5833ce10f05711dc5a14d9aadae9aeaaaf724123cce4ad7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/PLAN.md": "b924157852d1be09b2164c16f979f28969fddf121e00ed187ff054d37a40ff49",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/scope.safe.json": "281937b02d36ecd6d2db6a683637eb22805f2e7150c60dba78030e227b66c041",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/read_pitr.py": "f458395d872351dc425e3245443b29485063d801353497d4bf3a364ae133814f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/tool-pre.safe.json": "9709656664758b0468fdbc57f08f8ae204c19a59645854402f6716964dadaf48",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/maintenance-pre.safe.json": "0c29e97c6c9e5d4729f02d9b2473159cf1d46d267d488038b1cf3d479796173c",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/raw-anchor.safe.json": "cdb40593f7918ca91b0a8987e898d2f1e2ec2819ec29de0db043ed6832bbaae9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/raw-retention.safe.json": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/independent-post.safe.json": "c2be96a42773e69f269fb01b40bbb72186db30fa122b254c266cbd8674bd9016",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/final.safe.json": "48bf44bf09c44644a30a670f7c5f7386655ab6b9ce1f48b34ad41f65d7752159",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/PLAN.md": "c1dddccd316f1fa067c2350d0f9f8428c0f18f2032d9e2c87e31e91aa5379a31",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/scope.safe.json": "6247ccfeea816dfde043a042e048445eef8a1637acd246da626be45c5dd1b3c7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/observe.py": "2101a41d01fddbfd5d26acd1a4a2febe6df5641ff838c842cd32dc9bed566ea1",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/tool-pre.safe.json": "b5a4750c79debadd6ce70a949ebc555ff68ac4fbe30868cf5fd44717588fc557",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/maintenance-pre.safe.json": "500101429abdaa5767a888f73b328d982f8d03d49eff978d103b36d1759a663e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/CONTINUATION_PLAN.md": "03c4d93633391c20296848234f4a6c1228f01ca657308c2ac3aaf928fa8cb863",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/continuation-scope.safe.json": "e192900f09cc5075419591c5b270240a02ae1d03177a0ef4a3fe2710af6c8a82",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/observe_continue.py": "f70e14e58bb85f2f01e3635c1cee5ed9471b2e586b7b8e9d02a8f57db5a4758e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/continuation-tool-pre.safe.json": "8f5626caead8d925bb0d71413953c8683c039974e0383d9ef6144441f4c1bef2",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/continuation-maintenance-pre.safe.json": "7ed7b8f8ad5ce1b45aba4892bfa1e7879339eb672cf9363e5c2663d69fb15a44",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/raw-anchor.safe.json": "c9684e3df459bb8298835fa6b8d7c7e8d7c21c663bdb0c3225654085f11afba9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/raw-retention.safe.json": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/Observe20261017A.intent.safe.json": "526a9adbeb17b514bfd48a15799698f73d2be3c40a987c09ba7ee2b4a4f859ed",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/Observe20261017A.safe.json": "15b23549af5c3fdda5a2350cc9597ab20496695c4d7a9cf58069855c5fde61a3",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/ObserveRemainder20261017A.intent.safe.json": "850eab6c0047ef83d4c882af1a380ab26619935df6613edc76ac1a0c870b83a0",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/ObserveRemainder20261017A.safe.json": "f7fbc99db90c2cb8cc16a31f4d170d7496f3db3d14b80bfa1631d4ca3f21ca50",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/ObserveIndependentRemainder20261017A.intent.safe.json": "0326243455a5cae47363652c0e84012fc567044102c8e6dbb6e7f5c0161d1ec1",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/ObserveIndependentRemainder20261017A.safe.json": "42e854310ed963cabaf778057f696a3afecddd7aac8db708bb3d08f010cce522",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/independent-post.safe.json": "64f200699ad91b142c36b87b779426643b4b92620be30931f3c6bacfd2e4e043",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/final.safe.json": "95365764eaf4af3160181e04c65681bdc7352af459a1b4f0897ff0163ad549c3"
+  },
+  "pitr": {
+    "status": "PITR_DUE_READBACK_COMPLETE_INDEPENDENT_PASS",
+    "completed_at": 1792254413.753782,
+    "original_deadline_epoch": 1792254038,
+    "original_deadline_utc": "2026-10-17T16:20:38+00:00",
+    "readers": {
+      "main": {
+        "label": "ReadPitr20261017A",
+        "api_calls": 5,
+        "started_at": 1792254038.065894,
+        "finished_at": 1792254039.67385,
+        "first_api_after_original_deadline_seconds": 0.28772807121276855,
+        "reader_seconds": 1.6079561710357666,
+        "projection": {
+          "type": "SYSTEM",
+          "status": "AVAILABLE",
+          "source_identity_equal": true,
+          "creation_epoch": 1790509562.425,
+          "expiry_epoch": 1793533562.425
+        }
+      },
+      "independent": {
+        "label": "ReadPitrIndependent20261017A",
+        "api_calls": 5,
+        "started_at": 1792254063.605495,
+        "finished_at": 1792254064.946444,
+        "first_api_after_original_deadline_seconds": 25.758354902267456,
+        "reader_seconds": 1.3409490585327148,
+        "projection": {
+          "type": "SYSTEM",
+          "status": "AVAILABLE",
+          "source_identity_equal": true,
+          "creation_epoch": 1790509562.425,
+          "expiry_epoch": 1793533562.425
+        }
+      }
+    },
+    "old_table_absent": true,
+    "pitr_endpoint_unavailable": true,
+    "pitr_window_fields_unavailable": true,
+    "system_backup_count": 1,
+    "system_backup_status": "AVAILABLE",
+    "system_backup_expiry_epoch": 1793533562.425,
+    "system_backup_expiry_utc": "2026-11-01T11:46:02.425000+00:00",
+    "system_duty_open": true,
+    "original_pitr_duty_complete": true,
+    "all_copies_erased": false,
+    "physical_erasure_verified": false,
+    "main_api_calls": 5,
+    "independent_api_calls": 5,
+    "cloud_writes": 0,
+    "models": 0,
+    "ui": 0,
+    "raw_count": 10,
+    "raw_deadline_epoch": 1792858838.2873778,
+    "raw_deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+    "raw_ledger_sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8",
+    "independent_post_sha256": "c2be96a42773e69f269fb01b40bbb72186db30fa122b254c266cbd8674bd9016",
+    "evidence_hashes": {
+      "ReadPitr20261017A.safe.json": "7610aa96d0b780ebca3117a60a8728842edd0a773350ccfdc459135fe923e0e9",
+      "ReadPitr20261017A.intent.safe.json": "d91bebc55944acf4639649c19fb2d7cc868d2a6a4bc542b5e0204b8d28e5954b",
+      "ReadPitrIndependent20261017A.safe.json": "1004e248087fa183270a2b0604a4fa3e8320288c4926b4e330a6092d68812149",
+      "ReadPitrIndependent20261017A.intent.safe.json": "bdba87990e43c241c5833ce10f05711dc5a14d9aadae9aeaaaf724123cce4ad7",
+      "PLAN.md": "b924157852d1be09b2164c16f979f28969fddf121e00ed187ff054d37a40ff49",
+      "scope.safe.json": "281937b02d36ecd6d2db6a683637eb22805f2e7150c60dba78030e227b66c041",
+      "read_pitr.py": "f458395d872351dc425e3245443b29485063d801353497d4bf3a364ae133814f",
+      "tool-pre.safe.json": "9709656664758b0468fdbc57f08f8ae204c19a59645854402f6716964dadaf48",
+      "maintenance-pre.safe.json": "0c29e97c6c9e5d4729f02d9b2473159cf1d46d267d488038b1cf3d479796173c",
+      "raw-anchor.safe.json": "cdb40593f7918ca91b0a8987e898d2f1e2ec2819ec29de0db043ed6832bbaae9",
+      "raw-retention.safe.json": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8"
+    },
+    "limitations": [
+      "Sequential readbacks are not a global transaction.",
+      "Table-bound DynamoDB backup inventory does not cover AWS Backup vaults.",
+      "No restore test or physical erasure proof.",
+      "Original SYSTEM and local raw retention duties remain."
+    ],
+    "documentation_publication": "PENDING_AT_THIS_STAGE"
+  },
+  "day3": {
+    "status": "DAY3_BOUNDED_METADATA_COMPLETE_INDEPENDENT_PASS",
+    "at": 1792255560.599982,
+    "independent_post_sha256": "64f200699ad91b142c36b87b779426643b4b92620be30931f3c6bacfd2e4e043",
+    "evidence_hashes": {
+      "PLAN.md": "c1dddccd316f1fa067c2350d0f9f8428c0f18f2032d9e2c87e31e91aa5379a31",
+      "scope.safe.json": "6247ccfeea816dfde043a042e048445eef8a1637acd246da626be45c5dd1b3c7",
+      "observe.py": "2101a41d01fddbfd5d26acd1a4a2febe6df5641ff838c842cd32dc9bed566ea1",
+      "tool-pre.safe.json": "b5a4750c79debadd6ce70a949ebc555ff68ac4fbe30868cf5fd44717588fc557",
+      "maintenance-pre.safe.json": "500101429abdaa5767a888f73b328d982f8d03d49eff978d103b36d1759a663e",
+      "CONTINUATION_PLAN.md": "03c4d93633391c20296848234f4a6c1228f01ca657308c2ac3aaf928fa8cb863",
+      "continuation-scope.safe.json": "e192900f09cc5075419591c5b270240a02ae1d03177a0ef4a3fe2710af6c8a82",
+      "observe_continue.py": "f70e14e58bb85f2f01e3635c1cee5ed9471b2e586b7b8e9d02a8f57db5a4758e",
+      "continuation-tool-pre.safe.json": "8f5626caead8d925bb0d71413953c8683c039974e0383d9ef6144441f4c1bef2",
+      "continuation-maintenance-pre.safe.json": "7ed7b8f8ad5ce1b45aba4892bfa1e7879339eb672cf9363e5c2663d69fb15a44",
+      "raw-anchor.safe.json": "c9684e3df459bb8298835fa6b8d7c7e8d7c21c663bdb0c3225654085f11afba9",
+      "raw-retention.safe.json": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892",
+      "Observe20261017A.intent.safe.json": "526a9adbeb17b514bfd48a15799698f73d2be3c40a987c09ba7ee2b4a4f859ed",
+      "Observe20261017A.safe.json": "15b23549af5c3fdda5a2350cc9597ab20496695c4d7a9cf58069855c5fde61a3",
+      "ObserveRemainder20261017A.intent.safe.json": "850eab6c0047ef83d4c882af1a380ab26619935df6613edc76ac1a0c870b83a0",
+      "ObserveRemainder20261017A.safe.json": "f7fbc99db90c2cb8cc16a31f4d170d7496f3db3d14b80bfa1631d4ca3f21ca50",
+      "ObserveIndependentRemainder20261017A.intent.safe.json": "0326243455a5cae47363652c0e84012fc567044102c8e6dbb6e7f5c0161d1ec1",
+      "ObserveIndependentRemainder20261017A.safe.json": "42e854310ed963cabaf778057f696a3afecddd7aac8db708bb3d08f010cce522"
+    },
+    "api_accounting": {
+      "original_failed_main": 26,
+      "successful_continuation_main": 15,
+      "fresh_independent": 10,
+      "total_actual": 51,
+      "post_new_cloud_reads": 0,
+      "cloud_mutations": 0,
+      "ui_actions": 0,
+      "model_calls": 0
+    },
+    "raw_retention": {
+      "first_capture_epoch": 1792254588.470834,
+      "deadline_epoch": 1792859388.470834,
+      "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+      "captured": 51,
+      "intent_unknown": 0,
+      "all_original_identity_and_hash_equal": true,
+      "all_deadline_before_after_reads": true,
+      "private_raw_copies_created": 0
+    },
+    "frozen_original_failure": {
+      "status": "PARTIAL_UNKNOWN",
+      "failure_code": "row_epoch",
+      "unknown_empty_epoch_cause": "UNKNOWN",
+      "original_four_empty_epoch_answer_rows_prelaunch": true,
+      "rerun": false
+    },
+    "four_control_fresh": [
+      {
+        "request_index": 4,
+        "kind": "control",
+        "chat": "-1002211083217",
+        "date": null,
+        "observed_at": 1792255256.940115,
+        "status": "PRESENT",
+        "state": "ACTIVE",
+        "learning_enabled": true,
+        "revision": 1,
+        "epoch_sha256": "ccf914380cab23e9c3534bdb17447f925b7d05b0a182200b611a82501e99d8a5",
+        "activation_epoch_equal": true,
+        "learning_started_at": 1791998046
+      },
+      {
+        "request_index": 5,
+        "kind": "control",
+        "chat": "-1001244628965",
+        "date": null,
+        "observed_at": 1792255257.0516942,
+        "status": "PRESENT",
+        "state": "ACTIVE",
+        "learning_enabled": true,
+        "revision": 1,
+        "epoch_sha256": "a61f2ee4e60c8cca890bdd287f18b266a37d62120e4ae50dc4f5967a949ecaa5",
+        "activation_epoch_equal": true,
+        "learning_started_at": 1791998046
+      },
+      {
+        "request_index": 6,
+        "kind": "control",
+        "chat": "-1001450935528",
+        "date": null,
+        "observed_at": 1792255257.1651032,
+        "status": "PRESENT",
+        "state": "ACTIVE",
+        "learning_enabled": true,
+        "revision": 1,
+        "epoch_sha256": "a1433aa12ceb51ce27621bb486e8d6bd675450bdf616f3f278ec066ca0d7e890",
+        "activation_epoch_equal": true,
+        "learning_started_at": 1791998046
+      },
+      {
+        "request_index": 7,
+        "kind": "control",
+        "chat": "-1004490324695",
+        "date": null,
+        "observed_at": 1792255257.27741,
+        "status": "PRESENT",
+        "state": "ACTIVE",
+        "learning_enabled": true,
+        "revision": 1,
+        "epoch_sha256": "37edbadc7c80ee8f0cb72f03d29da61eeae6b42f6d68bd6bbe75d994eba5a7dd",
+        "activation_epoch_equal": true,
+        "learning_started_at": 1791998047
+      }
+    ],
+    "fresh_vs_main_item_comparison": [
+      {
+        "request_index": 4,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792254589.6300402,
+        "independent_observed_at": 1792255256.940115
+      },
+      {
+        "request_index": 5,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792254589.739906,
+        "independent_observed_at": 1792255257.0516942
+      },
+      {
+        "request_index": 6,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792254589.8505359,
+        "independent_observed_at": 1792255257.1651032
+      },
+      {
+        "request_index": 7,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792254589.960547,
+        "independent_observed_at": 1792255257.27741
+      },
+      {
+        "request_index": 32,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792255205.849728,
+        "independent_observed_at": 1792255257.393502
+      },
+      {
+        "request_index": 35,
+        "main_vs_independent_projected_item_equal": true,
+        "main_observed_at": 1792255206.163369,
+        "independent_observed_at": 1792255257.5102358
+      }
+    ],
+    "memory_pages_main_only": [
+      {
+        "request_index": 24,
+        "kind": "work",
+        "chat": "-1002211083217",
+        "date": null,
+        "observed_at": 1792254591.8247192,
+        "status": "PAGE_COMPLETE",
+        "returned_count": 6,
+        "scanned_count": 6,
+        "has_more": false,
+        "states": {
+          "DONE": 6
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "DONE": 6
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 0,
+        "prelaunch_created_count": 0,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 25,
+        "kind": "answer",
+        "chat": "-1002211083217",
+        "date": null,
+        "observed_at": 1792254591.93561,
+        "status": "PAGE_COMPLETE",
+        "returned_count": 4,
+        "scanned_count": 4,
+        "has_more": false,
+        "states": {
+          "SENT": 4
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {},
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 4,
+        "prelaunch_created_count": 4,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 26,
+        "kind": "work",
+        "chat": "-1001244628965",
+        "date": null,
+        "observed_at": 1792255205.108793,
+        "status": "PAGE_PARTIAL",
+        "returned_count": 25,
+        "scanned_count": 25,
+        "has_more": true,
+        "states": {
+          "DONE": 24,
+          "EXPIRED": 1
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "DONE": 24,
+          "EXPIRED": 1
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 0,
+        "prelaunch_created_count": 0,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 27,
+        "kind": "answer",
+        "chat": "-1001244628965",
+        "date": null,
+        "observed_at": 1792255205.2161431,
+        "status": "PAGE_COMPLETE",
+        "returned_count": 6,
+        "scanned_count": 6,
+        "has_more": false,
+        "states": {
+          "SENT": 6
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "SENT": 2
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 4,
+        "prelaunch_created_count": 4,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 28,
+        "kind": "work",
+        "chat": "-1001450935528",
+        "date": null,
+        "observed_at": 1792255205.328563,
+        "status": "PAGE_PARTIAL",
+        "returned_count": 25,
+        "scanned_count": 25,
+        "has_more": true,
+        "states": {
+          "DONE": 24,
+          "EXPIRED": 1
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "DONE": 24,
+          "EXPIRED": 1
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 0,
+        "prelaunch_created_count": 0,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 29,
+        "kind": "answer",
+        "chat": "-1001450935528",
+        "date": null,
+        "observed_at": 1792255205.434079,
+        "status": "PAGE_COMPLETE",
+        "returned_count": 9,
+        "scanned_count": 9,
+        "has_more": false,
+        "states": {
+          "SENT": 9
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "SENT": 1
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 8,
+        "prelaunch_created_count": 8,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 30,
+        "kind": "work",
+        "chat": "-1004490324695",
+        "date": null,
+        "observed_at": 1792255205.638269,
+        "status": "PAGE_PARTIAL",
+        "returned_count": 25,
+        "scanned_count": 25,
+        "has_more": true,
+        "states": {
+          "DONE": 25
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "DONE": 25
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 0,
+        "prelaunch_created_count": 0,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      },
+      {
+        "request_index": 31,
+        "kind": "answer",
+        "chat": "-1004490324695",
+        "date": null,
+        "observed_at": 1792255205.745124,
+        "status": "PAGE_COMPLETE",
+        "returned_count": 10,
+        "scanned_count": 10,
+        "has_more": false,
+        "states": {
+          "SENT": 10
+        },
+        "unexpired_activation_epoch_before_cutoff_states": {
+          "SENT": 1
+        },
+        "logically_expired_count": 0,
+        "different_activation_epoch_count": 0,
+        "unknown_epoch_count": 9,
+        "prelaunch_created_count": 9,
+        "after_cutoff_count": 0,
+        "not_latest_order": true
+      }
+    ],
+    "coverage_main_only": [
+      {
+        "request_index": 8,
+        "kind": "coverage",
+        "chat": "-1002211083217",
+        "date": "2026-10-14",
+        "observed_at": 1792254590.070671,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 9,
+        "kind": "coverage",
+        "chat": "-1002211083217",
+        "date": "2026-10-15",
+        "observed_at": 1792254590.180416,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 10,
+        "kind": "coverage",
+        "chat": "-1002211083217",
+        "date": "2026-10-16",
+        "observed_at": 1792254590.288768,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 6,
+          "work_done": 6
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 11,
+        "kind": "coverage",
+        "chat": "-1002211083217",
+        "date": "2026-10-17",
+        "observed_at": 1792254590.397575,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 12,
+        "kind": "coverage",
+        "chat": "-1001244628965",
+        "date": "2026-10-14",
+        "observed_at": 1792254590.508034,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 14,
+          "work_done": 13,
+          "work_expired": 1
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 13,
+        "kind": "coverage",
+        "chat": "-1001244628965",
+        "date": "2026-10-15",
+        "observed_at": 1792254590.6159081,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 7,
+          "candidate_expired": 1,
+          "work_done": 7
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 14,
+        "kind": "coverage",
+        "chat": "-1001244628965",
+        "date": "2026-10-16",
+        "observed_at": 1792254590.724585,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 27,
+          "work_done": 23
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 15,
+        "kind": "coverage",
+        "chat": "-1001244628965",
+        "date": "2026-10-17",
+        "observed_at": 1792254590.832999,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 24,
+          "work_done": 13,
+          "work_expired": 1
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 16,
+        "kind": "coverage",
+        "chat": "-1001450935528",
+        "date": "2026-10-14",
+        "observed_at": 1792254590.941511,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 13,
+          "work_done": 12,
+          "work_expired": 1
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 17,
+        "kind": "coverage",
+        "chat": "-1001450935528",
+        "date": "2026-10-15",
+        "observed_at": 1792254591.049825,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 11,
+          "work_done": 11
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 18,
+        "kind": "coverage",
+        "chat": "-1001450935528",
+        "date": "2026-10-16",
+        "observed_at": 1792254591.1590028,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 2,
+          "work_done": 2
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 19,
+        "kind": "coverage",
+        "chat": "-1001450935528",
+        "date": "2026-10-17",
+        "observed_at": 1792254591.267675,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 20,
+        "kind": "coverage",
+        "chat": "-1004490324695",
+        "date": "2026-10-14",
+        "observed_at": 1792254591.3797948,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 21,
+        "kind": "coverage",
+        "chat": "-1004490324695",
+        "date": "2026-10-15",
+        "observed_at": 1792254591.4911842,
+        "status": "ABSENT"
+      },
+      {
+        "request_index": 22,
+        "kind": "coverage",
+        "chat": "-1004490324695",
+        "date": "2026-10-16",
+        "observed_at": 1792254591.6003041,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 136,
+          "work_done": 132,
+          "work_expired": 1
+        },
+        "utc_day_not_epoch_bound": true
+      },
+      {
+        "request_index": 23,
+        "kind": "coverage",
+        "chat": "-1004490324695",
+        "date": "2026-10-17",
+        "observed_at": 1792254591.7098129,
+        "status": "PRESENT",
+        "counts": {
+          "accepted": 2,
+          "work_expired": 1
+        },
+        "utc_day_not_epoch_bound": true
+      }
+    ],
+    "news_main_only": [
+      {
+        "request_index": 32,
+        "kind": "news",
+        "chat": null,
+        "date": "2026-10-15",
+        "observed_at": 1792255205.849728,
+        "status": "PRESENT",
+        "step_count": 4,
+        "states": {
+          "SENT": 4
+        },
+        "confirmed_steps": 4,
+        "all_saved_steps_confirmed": true,
+        "native_telegram_observed": false,
+        "manifest_completeness_verified": false
+      },
+      {
+        "request_index": 33,
+        "kind": "news",
+        "chat": null,
+        "date": "2026-10-16",
+        "observed_at": 1792255205.949077,
+        "status": "PRESENT",
+        "step_count": 4,
+        "states": {
+          "SENT": 4
+        },
+        "confirmed_steps": 4,
+        "all_saved_steps_confirmed": true,
+        "native_telegram_observed": false,
+        "manifest_completeness_verified": false
+      },
+      {
+        "request_index": 34,
+        "kind": "news",
+        "chat": null,
+        "date": "2026-10-17",
+        "observed_at": 1792255206.054037,
+        "status": "PRESENT",
+        "step_count": 4,
+        "states": {
+          "SENT": 4
+        },
+        "confirmed_steps": 4,
+        "all_saved_steps_confirmed": true,
+        "native_telegram_observed": false,
+        "manifest_completeness_verified": false
+      }
+    ],
+    "quiz_main_only": [
+      {
+        "request_index": 35,
+        "kind": "quiz",
+        "chat": null,
+        "date": "2026-10-15",
+        "observed_at": 1792255206.163369,
+        "status": "PRESENT",
+        "state": "DONE",
+        "has_send_receipt": true,
+        "owner_completed": true,
+        "native_telegram_observed": false,
+        "three_row_consistency_verified": false
+      },
+      {
+        "request_index": 36,
+        "kind": "quiz",
+        "chat": null,
+        "date": "2026-10-16",
+        "observed_at": 1792255206.2721732,
+        "status": "PRESENT",
+        "state": "DONE",
+        "has_send_receipt": true,
+        "owner_completed": true,
+        "native_telegram_observed": false,
+        "three_row_consistency_verified": false
+      }
+    ],
+    "news_quiz_independent_fresh": [
+      {
+        "request_index": 32,
+        "kind": "news",
+        "chat": null,
+        "date": "2026-10-15",
+        "observed_at": 1792255257.393502,
+        "status": "PRESENT",
+        "step_count": 4,
+        "states": {
+          "SENT": 4
+        },
+        "confirmed_steps": 4,
+        "all_saved_steps_confirmed": true,
+        "native_telegram_observed": false,
+        "manifest_completeness_verified": false
+      },
+      {
+        "request_index": 35,
+        "kind": "quiz",
+        "chat": null,
+        "date": "2026-10-15",
+        "observed_at": 1792255257.5102358,
+        "status": "PRESENT",
+        "state": "DONE",
+        "has_send_receipt": true,
+        "owner_completed": true,
+        "native_telegram_observed": false,
+        "three_row_consistency_verified": false
+      }
+    ],
+    "quality_boundary": {
+      "release_state": "RELEASED_OBSERVING",
+      "production_ready": false,
+      "natural_supported": 0,
+      "natural_unknown": 0,
+      "natural_target_supported": 50,
+      "natural_target_unknown": 20,
+      "natural_start": null,
+      "natural_sample_increment": 0,
+      "native_telegram_visibility_observed": false,
+      "full_answer_semantics_reviewed": false,
+      "lease_release_verified": false,
+      "leaderboard": "NOT_COVERED"
+    },
+    "interpretation": [
+      "Original26 re-projection is offline review of earlier captures; it is not fresh cloud read.",
+      "Fresh independent ten cover three table identities and STS, four CONTROL, Oct15 News and Oct15 Quiz only.",
+      "All other metadata is main capture with direct local independent post-review; reads at different times are not a global transaction.",
+      "Single lexical pages with continuation are PAGE_PARTIAL; no follow-up or complete/latest-backlog claim.",
+      "Coverage is UTC full-day, not epoch-bound; missing entries are ABSENT, never fabricated zero or proof of no use.",
+      "UNKNOWN_EPOCH and prelaunch-created records are separate; empty-epoch records do not count as activation-epoch answers.",
+      "News confirmation is saved row steps only; Quiz DONE is owner-level confirmation. Neither proves native Telegram visibility, complete manifest, three-row consistency or natural quality."
+    ],
+    "documentation_publication": "PENDING_AT_THIS_STAGE"
+  },
+  "remaining_retention": [
+    {
+      "name": "prod-errors-raw",
+      "deadline_utc": "2026-10-20T14:32:29.705948+00:00",
+      "deadline_epoch": 1792506749.705948,
+      "count": 341,
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-13-prod-errors-diagnostic/raw-retention.safe.json",
+      "sha256": "47e9cdbcc2d53e31b0f36301079d7592f659cdf921630d33dfd0b88c0fba97ba"
+    },
+    {
+      "name": "launch-raw",
+      "deadline_utc": "2026-10-21T13:10:50.198516+00:00",
+      "deadline_epoch": 1792588250.198516,
+      "count": 527,
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-14-memory-v2-launch/raw-retention.safe.json",
+      "sha256": "788460e51d786c91122bcedc516559dc4fb57913b31af44d84f2649ee1d1aa37"
+    },
+    {
+      "name": "pitr-readback-raw",
+      "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+      "deadline_epoch": 1792858838.2873778,
+      "count": 10,
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback/raw-retention.safe.json",
+      "sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8"
+    },
+    {
+      "name": "day3-observation-raw",
+      "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+      "deadline_epoch": 1792859388.470834,
+      "count": 51,
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/raw-retention.safe.json",
+      "sha256": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892"
+    },
+    {
+      "name": "old-memory-SYSTEM",
+      "deadline_utc": "2026-11-01T11:46:02.425000+00:00",
+      "action": "EXACT_IDENTITY_READ_ONLY"
+    },
+    {
+      "name": "old-stats-SYSTEM",
+      "deadline_utc": "2026-11-02T08:45:11.254000+00:00",
+      "action": "EXACT_IDENTITY_READ_ONLY"
+    }
+  ],
+  "aws_reads": 61,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "production_ready": false,
+  "natural_supported": 0,
+  "natural_unknown": 0,
+  "natural_start": null,
+  "documentation_publication": "PENDING_AT_THIS_STAGE"
+}

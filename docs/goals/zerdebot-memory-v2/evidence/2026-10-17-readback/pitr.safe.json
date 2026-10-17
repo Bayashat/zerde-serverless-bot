@@ -1,0 +1,79 @@
+{
+  "status": "PITR_DUE_READBACK_COMPLETE_INDEPENDENT_PASS",
+  "completed_at": 1792254413.753782,
+  "original_deadline_epoch": 1792254038,
+  "original_deadline_utc": "2026-10-17T16:20:38+00:00",
+  "readers": {
+    "main": {
+      "label": "ReadPitr20261017A",
+      "api_calls": 5,
+      "started_at": 1792254038.065894,
+      "finished_at": 1792254039.67385,
+      "first_api_after_original_deadline_seconds": 0.28772807121276855,
+      "reader_seconds": 1.6079561710357666,
+      "projection": {
+        "type": "SYSTEM",
+        "status": "AVAILABLE",
+        "source_identity_equal": true,
+        "creation_epoch": 1790509562.425,
+        "expiry_epoch": 1793533562.425
+      }
+    },
+    "independent": {
+      "label": "ReadPitrIndependent20261017A",
+      "api_calls": 5,
+      "started_at": 1792254063.605495,
+      "finished_at": 1792254064.946444,
+      "first_api_after_original_deadline_seconds": 25.758354902267456,
+      "reader_seconds": 1.3409490585327148,
+      "projection": {
+        "type": "SYSTEM",
+        "status": "AVAILABLE",
+        "source_identity_equal": true,
+        "creation_epoch": 1790509562.425,
+        "expiry_epoch": 1793533562.425
+      }
+    }
+  },
+  "old_table_absent": true,
+  "pitr_endpoint_unavailable": true,
+  "pitr_window_fields_unavailable": true,
+  "system_backup_count": 1,
+  "system_backup_status": "AVAILABLE",
+  "system_backup_expiry_epoch": 1793533562.425,
+  "system_backup_expiry_utc": "2026-11-01T11:46:02.425000+00:00",
+  "system_duty_open": true,
+  "original_pitr_duty_complete": true,
+  "all_copies_erased": false,
+  "physical_erasure_verified": false,
+  "main_api_calls": 5,
+  "independent_api_calls": 5,
+  "cloud_writes": 0,
+  "models": 0,
+  "ui": 0,
+  "raw_count": 10,
+  "raw_deadline_epoch": 1792858838.2873778,
+  "raw_deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+  "raw_ledger_sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8",
+  "independent_post_sha256": "c2be96a42773e69f269fb01b40bbb72186db30fa122b254c266cbd8674bd9016",
+  "evidence_hashes": {
+    "ReadPitr20261017A.safe.json": "7610aa96d0b780ebca3117a60a8728842edd0a773350ccfdc459135fe923e0e9",
+    "ReadPitr20261017A.intent.safe.json": "d91bebc55944acf4639649c19fb2d7cc868d2a6a4bc542b5e0204b8d28e5954b",
+    "ReadPitrIndependent20261017A.safe.json": "1004e248087fa183270a2b0604a4fa3e8320288c4926b4e330a6092d68812149",
+    "ReadPitrIndependent20261017A.intent.safe.json": "bdba87990e43c241c5833ce10f05711dc5a14d9aadae9aeaaaf724123cce4ad7",
+    "PLAN.md": "b924157852d1be09b2164c16f979f28969fddf121e00ed187ff054d37a40ff49",
+    "scope.safe.json": "281937b02d36ecd6d2db6a683637eb22805f2e7150c60dba78030e227b66c041",
+    "read_pitr.py": "f458395d872351dc425e3245443b29485063d801353497d4bf3a364ae133814f",
+    "tool-pre.safe.json": "9709656664758b0468fdbc57f08f8ae204c19a59645854402f6716964dadaf48",
+    "maintenance-pre.safe.json": "0c29e97c6c9e5d4729f02d9b2473159cf1d46d267d488038b1cf3d479796173c",
+    "raw-anchor.safe.json": "cdb40593f7918ca91b0a8987e898d2f1e2ec2819ec29de0db043ed6832bbaae9",
+    "raw-retention.safe.json": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8"
+  },
+  "limitations": [
+    "Sequential readbacks are not a global transaction.",
+    "Table-bound DynamoDB backup inventory does not cover AWS Backup vaults.",
+    "No restore test or physical erasure proof.",
+    "Original SYSTEM and local raw retention duties remain."
+  ],
+  "documentation_publication": "PENDING_AT_THIS_STAGE"
+}

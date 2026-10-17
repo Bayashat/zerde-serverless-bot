@@ -1,0 +1,119 @@
+{
+  "status": "ALIGNED",
+  "kind": "INDEPENDENT_ACTUAL_METADATA_READBACK_POST",
+  "recorded_at": 1792254161.0215008,
+  "evidence_hashes": {
+    "ReadPitr20261017A.safe.json": "7610aa96d0b780ebca3117a60a8728842edd0a773350ccfdc459135fe923e0e9",
+    "ReadPitr20261017A.intent.safe.json": "d91bebc55944acf4639649c19fb2d7cc868d2a6a4bc542b5e0204b8d28e5954b",
+    "ReadPitrIndependent20261017A.safe.json": "1004e248087fa183270a2b0604a4fa3e8320288c4926b4e330a6092d68812149",
+    "ReadPitrIndependent20261017A.intent.safe.json": "bdba87990e43c241c5833ce10f05711dc5a14d9aadae9aeaaaf724123cce4ad7",
+    "PLAN.md": "b924157852d1be09b2164c16f979f28969fddf121e00ed187ff054d37a40ff49",
+    "scope.safe.json": "281937b02d36ecd6d2db6a683637eb22805f2e7150c60dba78030e227b66c041",
+    "read_pitr.py": "f458395d872351dc425e3245443b29485063d801353497d4bf3a364ae133814f",
+    "tool-pre.safe.json": "9709656664758b0468fdbc57f08f8ae204c19a59645854402f6716964dadaf48",
+    "maintenance-pre.safe.json": "0c29e97c6c9e5d4729f02d9b2473159cf1d46d267d488038b1cf3d479796173c",
+    "raw-anchor.safe.json": "cdb40593f7918ca91b0a8987e898d2f1e2ec2819ec29de0db043ed6832bbaae9",
+    "raw-retention.safe.json": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8"
+  },
+  "response_hashes": {
+    "ReadPitr20261017A-01.private.json": "641c97067ff4e993ced51c7d1520fbbe0509b96dcf41df7293e648c3be37a738",
+    "ReadPitr20261017A-02.private.json": "cf492fe3d117fd419b44882216a2680691fe5ead1152aa1873142053198c3632",
+    "ReadPitr20261017A-03.private.json": "e8cf494ffcba453043a4a628b20dc4aac95bf7e62532934ab369e2c38cbefcbc",
+    "ReadPitr20261017A-04.private.json": "09c108ef0fef5efd9f83f812c03213e221e3bbc76d39c3142b163ada0650e16f",
+    "ReadPitr20261017A-05.private.json": "8f8d2c0b58a3e1d0045397591bade72ffb2356730860f57ba164c7d7f4e6c268",
+    "ReadPitrIndependent20261017A-01.private.json": "d00035b8ed00dd5d4f88c0cc5b86e5ee23e2cb01c548ac662f4400a04372c543",
+    "ReadPitrIndependent20261017A-02.private.json": "713d7580cdaee45d92a7d9bfefe5a90f9a44ca7d89ad4ce12f4297bfa4eb7e11",
+    "ReadPitrIndependent20261017A-03.private.json": "c93e90c7cfcdf64c57cc32726f905d1b9451dd142fdba9e758a8b10ab5c0009a",
+    "ReadPitrIndependent20261017A-04.private.json": "d5bf6db1f02c9244286d45979240f209af88230e57060f11ec6180a13a0974ab",
+    "ReadPitrIndependent20261017A-05.private.json": "37c3b75e8f22a3ebb891bb0ff3a016c1a6ba47e83b1760f0c4454339a21ab633"
+  },
+  "source_files": {
+    "/Users/bayashat/.local/share/zerde-memory-reset/2026-09-11-prod-retention.json": "0260c600761d962c6b2213d3af6ef4ee128a5eb695f5ba9af5699d3dbc7cffa4",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-19-backup-expiry/post-expiry-independent.safe.json": "3fd918186805a90ab2385148a29b1e7a9aef110d4eff717b69d556224d169b16",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-resource-retirement/retained-post-readonly-v1/bindings.safe.json": "79091579a1a5915d665ad77a8d6c2ad82fedf2f9df9a3646522113c956cb7174",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-resource-retirement/retained-post-readonly-v1/post-retained-RetainedProd20260927A.safe.json": "2a97d1913d558a9d5cafda5c25b470e31145f5ed68fbabb20109b0706c5cc789",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-resource-retirement/retained-post-readonly-v1/post-retained-RetainedProd20260927A.private.json": "37967186017f1430fd729f04b27fa82ae11c8bd1855f18925deefa55185b41ec",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-09-27-legacy-resource-retirement/deletion-contract-20260927T083919Z/exact28-physical-identities.private.json": "e5c89095498ac750a54880a994ea7827b520604adbb4fcc975b7c3ae0d179b00"
+  },
+  "readers": {
+    "main": {
+      "label": "ReadPitr20261017A",
+      "api_calls": 5,
+      "started_at": 1792254038.065894,
+      "finished_at": 1792254039.67385,
+      "first_api_after_original_deadline_seconds": 0.28772807121276855,
+      "reader_seconds": 1.6079561710357666,
+      "projection": {
+        "type": "SYSTEM",
+        "status": "AVAILABLE",
+        "source_identity_equal": true,
+        "creation_epoch": 1790509562.425,
+        "expiry_epoch": 1793533562.425
+      }
+    },
+    "independent": {
+      "label": "ReadPitrIndependent20261017A",
+      "api_calls": 5,
+      "started_at": 1792254063.605495,
+      "finished_at": 1792254064.946444,
+      "first_api_after_original_deadline_seconds": 25.758354902267456,
+      "reader_seconds": 1.3409490585327148,
+      "projection": {
+        "type": "SYSTEM",
+        "status": "AVAILABLE",
+        "source_identity_equal": true,
+        "creation_epoch": 1790509562.425,
+        "expiry_epoch": 1793533562.425
+      }
+    }
+  },
+  "main_api_calls": 5,
+  "independent_api_calls": 5,
+  "total_api_calls": 10,
+  "raw_entries": 10,
+  "captured": 10,
+  "not_created": 0,
+  "pending_intent": 0,
+  "raw_anchor_sha256": "cdb40593f7918ca91b0a8987e898d2f1e2ec2819ec29de0db043ed6832bbaae9",
+  "raw_ledger_sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8",
+  "first_capture_epoch": 1792254038.2873778,
+  "first_capture_utc": "2026-10-17T16:20:38.287378+00:00",
+  "deadline_epoch": 1792858838.2873778,
+  "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+  "raw_retention_seconds": 604800,
+  "original_pitr_not_before_epoch": 1792254038,
+  "original_pitr_readback_obligation_complete": true,
+  "old_table_absent": true,
+  "pitr_endpoint_unavailable": true,
+  "pitr_window_fields_unavailable": true,
+  "table_bound_inventory_complete": true,
+  "system_backup_count": 1,
+  "system_backup_state": "AVAILABLE",
+  "system_backup_identity_equal": true,
+  "system_obligation_remains_open": true,
+  "system_expiry_epoch": 1793533562.425,
+  "system_expiry_utc": "2026-11-01T11:46:02.425000+00:00",
+  "physical_erasure_verified": false,
+  "all_copies_erased": false,
+  "checks": {
+    "strict_metadata_retry_http": true,
+    "exact_notfound_codes": true,
+    "original_table_generation_and_backup_times": true,
+    "raw_hash_identity_mode": true,
+    "main_ledger_prefix_hash_and_independent_full_hash": true,
+    "serial_readers": true,
+    "same_original_seven_day_deadline": true,
+    "actual_all_api_intents_after_original_due": true,
+    "no_startup_failures": true,
+    "raw_ledger_complete": true
+  },
+  "post_review_cloud_calls": 0,
+  "cloud_mutations": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "limitations": [
+    "Only exact-table DynamoDB USER/SYSTEM backup scope; AWS Backup vaults were not queried.",
+    "No restore test and no physical or all-copy erasure claim.",
+    "Observed time differences retain UNKNOWN cause."
+  ]
+}
