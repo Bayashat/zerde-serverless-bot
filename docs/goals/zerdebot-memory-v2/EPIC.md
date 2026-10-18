@@ -1,6 +1,6 @@
-## 四群已发布，Oct17观察完成
+## 四群已发布，Oct20原文清理已准备
 
-四群学习开启；第四群News/Quiz有持久发送回执，自然质量未验收。旧PITR到期复核完成，SYSTEM保留。剩余6项副本责任见[回执](OCT17_READBACK.md)。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/87c749b44300c4c57bf2e9db3a0036ddff228304/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群Memory已启用，Oct17有限观察完成，Oct21首周继续。[进度](LAUNCH_PROGRESS.md)。341目标已主独准备未删；30980常规文件/1链接/8938目录保留（39ZIP），原期限Oct20 14:32:29.705948UTC。[契约](ALERT_RAW_EXPIRY.md)、[六项台账](RETAINED_COPIES.md)。状态保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/10cacc77809ca77ae83c1f7add69c8ba07bc121d/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

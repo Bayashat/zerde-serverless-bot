@@ -1,3 +1,15 @@
+## Oct20 告警诊断原文清理已准备，尚未删除
+
+原期限 **2026-10-20 14:32:29.705948 UTC** 的341个原ledger完整路径已完成新工具双审、主唯一inspect Prep20261018A及独立fresh无跟随hash/身份/前后库存准备。保护30980个常规文件（含39 ZIP）、1个精确链接及8938目录；共31322文件系统条目，其中31321为常规文件。39 ZIP另与原safe回执历史hash一致，其余30941保留常规文件仅本次fresh基线。原44个0700/8894个0755目录身份保持，不擅自chmod或称全部cache。
+
+唯一链接diff-v2-dev/assembly/stack.template.json指向本次candidate-dev/template.private.json目标，保留link本体lstat/readlink，绝不跟随；到期删除目标后将悬空。alarm-summary.safe.json虽然safe后缀仍是登记原文目标。原automation-before.private.toml有创建调用/exit0行政来源，保留不等于无敏感内容。
+
+本轮没有notice/apply/verify_absence或删除。到期另new inspect/原序公告、原hash身份完整库存保持才唯一apply，682条intent/result、双侧strictTrue与独立fresh不存在。全部原截止时间不变：Oct20告警341、Oct21首发527、Oct24 16:20:38.287378UTC H10、Oct24 16:29:48.470834UTC O51、Nov1旧memory SYSTEM、Nov2旧stats SYSTEM。旧S snapshot及所有已履行批次不重建/重跑。
+
+四群仍RELEASED_OBSERVING，Oct17有限观察已交付，Oct21首周继续；自然0/50有据、0/20未知、起点null和production_ready=false保持。20任务14OPEN6CLOSED+EpicOPEN，运行包/告警策略/Groq413与费用UNKNOWN不变。本地准备0云/UI/模型/预算/新原文/新期限/运行部署，CI既有OIDC/CDK只读另计。[契约](ALERT_RAW_EXPIRY.md)；[副本台账](RETAINED_COPIES.md)。
+
+## 以下为此前冻结阶段，不作当前待删、绑定或重跑指令
+
 ## 2026-10-16：四群已发布，writer 原文 1426 份到期责任已履行
 
 Memory V2 四个生产群保持 RELEASED_OBSERVING；dev 学习/回答/定点遗忘/删除后查询及生产激活独审已完成，第四群 News/Quiz/周榜配置已交付。自然 0/50 有据、0/20 未知、起点未建立、production_ready=false；Oct17、Oct21 及之后每周有限观察，首次正常定时投递仍待观察。运行包仍 Bot/Memory PR257、Operations PR263，身份 PR251。开放工单数不表示首发未启用。
