@@ -970,7 +970,29 @@
         "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/raw-retention.safe.json",
         "sha256": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892"
       }
-    ]
+    ],
+    "oct20_alert_raw_expiry_preparation": {
+      "status": "PREPARED_NOT_DELETED",
+      "batch": "2026-10-20-alert-raw-expiry",
+      "target_count": 341,
+      "protected_count": 30980,
+      "protected_symlink_count": 1,
+      "directory_count": 8938,
+      "inventory_count": 31322,
+      "regular_file_count": 31321,
+      "protected_zip_count": 39,
+      "deadline_utc": "2026-10-20T14:32:29.705948+00:00",
+      "deadline_epoch": 1792506749.705948,
+      "scope_sha256": "23d2432b9439197cbc3f855a74dd9bec1b4403d7cf03fc3fb56334a8f2b831ea",
+      "preparation_sha256": "0affa4e2811db1a8e68362a3ffa9df1b7fc362757330495a9f79e6a9e8bb1c89",
+      "independent_sha256": "d1e00206b15c6d8a876b1f5f20eb9a2cbf75f8f2e44a604def6e0b30f4c867dd",
+      "contract": "ALERT_RAW_EXPIRY.md",
+      "evidence": "evidence/2026-10-20-alert-raw-expiry/preparation.safe.json",
+      "independent_evidence": "evidence/2026-10-20-alert-raw-expiry/independent.safe.json",
+      "original_deadline_unchanged": true,
+      "apply_executed": false,
+      "remaining_numbered_duties": 6
+    }
   },
   {
     "id": "Z11",
