@@ -27,7 +27,7 @@
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-20",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。",
-    "remaining": "普通文本、ask及修复后新mention/清晰Reply已有有限真实证据；频道/媒体等原有限缺口和最终整体回归仍待。原失败/UI_STOP与18旧schema回放冻结，不重跑。 新Bot/Memory完整包已变，原R及旧S/Z完整媒体/模型许可不能复用；需有限重绑独审和新的真实UI窗口，旧S snapshot不得重建。",
+    "remaining": "普通文本、ask、修复后mention/清晰Reply及首发学习/遗忘已有原有限证据；当前相册工具已重绑PR277并双审，仅待新的实际独占窗口与完整现场验收。频道/其他原有限缺口及最终整体回归仍按原合同开放；旧失败/UI_STOP与冻结回放不重跑，旧S snapshot不重建。",
     "issue_state": "OPEN",
     "runtime_baseline": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
     "deployed_build_source": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
@@ -190,7 +190,21 @@
         "actual_rules_and_targets_preserved": true
       }
     },
-    "old_full_aggregate_binding_valid": false
+    "old_full_aggregate_binding_valid": false,
+    "media_current_preparation": {
+      "status": "CURRENT_MEDIA_PREPARED_INDEPENDENT_PASS_LIVE_NOT_EXECUTED",
+      "as_of": "2026-10-20",
+      "contract": "Z01_MEDIA_CURRENT_ACCEPTANCE.md",
+      "evidence": "evidence/2026-10-20-z01-media-current/preparation.safe.json",
+      "runtime_source": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
+      "runtime_merge": "393e656960c39f7bbbfd593272f2ff3c91150448",
+      "owner_files": 104,
+      "complete_actual_zips": 12,
+      "live_started": false,
+      "new_retention_duties": 0,
+      "natural_sample_increment": 0,
+      "remaining": "工具已按当前包有限重绑并通过双PRE，等待新的真实独占窗口，随后按原完整三输入/两图/静默/Reply/模型链/独立POST合同验收。"
+    }
   },
   {
     "id": "Z02",

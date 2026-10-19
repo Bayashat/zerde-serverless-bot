@@ -1,0 +1,8 @@
+{
+  "status": "PASS_PREFLIGHT_WINDOW_PER_CALL_DELTA",
+  "count": 2,
+  "collector_sha256": "96db942d847f83871f4ec4d8cd891a825582b0e7b98c320a01ce675fd2868335",
+  "base_controls_sha256": "be4eb5719eacd906e47855cf78e89cf6132b7aae2151cabbfd3f67873470817a",
+  "cloud_calls": 0,
+  "actual_private_reads": 0
+}
