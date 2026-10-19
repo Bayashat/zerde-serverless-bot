@@ -2,11 +2,12 @@
 
 import asyncio
 import json
+from unittest.mock import Mock
 
 import httpx
 import pytest
 from services.spam import groq_detector as module
-from services.spam.groq_detector import GroqSpamDetector
+from services.spam.groq_detector import GroqSpamDetector, GroqSpamHTTP413Error
 from zerde_common.ai_errors import ProviderRateLimitError, ProviderResponseError, ProviderTransportError
 
 
@@ -53,6 +54,32 @@ def test_valid_primary_result_does_not_invoke_recovery(monkeypatch):
     assert payload["max_completion_tokens"] == 256
     assert payload["reasoning_effort"] == "low" and payload["reasoning_format"] == "hidden"
     assert "max_tokens" not in payload
+
+
+@pytest.mark.parametrize("recover_first", [False, True])
+def test_explicit_413_stops_classification_without_body_leak_or_another_model(monkeypatch, caplog, recover_first):
+    canary = "SYNTHETIC-413-PRIVATE-CONTENT"
+    responses = [httpx.Response(413, json={"error": {"code": "json_validate_failed", "message": canary}})]
+    if recover_first:
+        responses.insert(0, response("invalid JSON"))
+    detector, requests, clients = setup_wire(monkeypatch, responses)
+    with pytest.raises(GroqSpamHTTP413Error, match="status 413") as error:
+        detector.classify(canary)
+    assert len(requests) == (2 if recover_first else 1) and clients[0].is_closed
+    assert canary not in str(error.value) + str(error.value.__cause__) + caplog.text
+    assert all(canary not in repr(record.__dict__) for record in caplog.records)
+
+
+@pytest.mark.parametrize("recover_first", [False, True])
+def test_413_is_recognized_before_any_error_body_parser(monkeypatch, recover_first):
+    failure = httpx.Response(413, content=b"[" * 30000 + b"0" + b"]" * 30000)
+    failure.json = Mock(side_effect=RecursionError("untrusted error body"))
+    responses = [response("invalid JSON"), failure] if recover_first else [failure]
+    detector, requests, clients = setup_wire(monkeypatch, responses)
+    with pytest.raises(GroqSpamHTTP413Error, match="status 413"):
+        detector.classify("synthetic input")
+    failure.json.assert_not_called()
+    assert len(requests) == (2 if recover_first else 1) and clients[0].is_closed
 
 
 def test_exact_json_error_recovers_once_using_original_context_and_strict_schema(monkeypatch):

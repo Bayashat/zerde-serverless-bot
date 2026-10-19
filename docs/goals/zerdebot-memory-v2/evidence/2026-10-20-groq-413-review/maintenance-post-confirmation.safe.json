@@ -1,0 +1,41 @@
+{
+  "status": "ALIGNED",
+  "at": 1792440714.598227,
+  "reviewer": "purge_wait_maintenance",
+  "phase": "FINAL_TEXT_AND_PLAN_CONFIRMATION_ONLY",
+  "plan_sha256": "d9456fe6a6d810a920d618986bd3e9840e137b37f7ed4fc10b2478dca58f4ac9",
+  "files": {
+    "src/bot/core/translations.py": "01738fcb2507d223c896a25923c74c7b22658f68ef7912553c7c37ed2dc549b2",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "6242f3fd2a7b0b4469cc365f9610ed83bcb8017bbd2086de5a7ce4df2d2f2c5a",
+    "src/bot/services/spam/processor.py": "272c0cc40217f0eabc21e6d52d49e3128e3b9d2dd1b42fe12a076c18c713b99d",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "1f5d5a304ee84f56520b5ef41a2162371edc4c917c899193d97b61a9f47b1d21",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "bfcacd86399965e86afd0852b582062d6f768751a8fe73a2d5cf4fd8e5fe30a0"
+  },
+  "prior_post_sha256": "42358850ff3be5227679dad2c73acf97916f708000e0659fd2d25ab603e61982",
+  "harness_revision_sha256": "e53f263b10fa629072c53d4249abb2fa851ef2d3d0499df4201590f67b98d084",
+  "findings": [],
+  "checks": [
+    "Seven other product/test file hashes remain identical to the previous ALIGNED maintenance POST.",
+    "Reversing exactly four permanent-ban sentences, including the Russian grammatical case change, reconstructs the prior translations hash; removing exactly the new four-language assertion reconstructs the prior test hash.",
+    "All four guest notices explicitly identify permanent caller ban, retain BOT/TARGET mentions and state invocation alone does not establish malicious intent.",
+    "Plan marks old behavior as historical BASE and distinguishes prior full-suite bytes from final text changes/CI. Owner, interfaces/defaults, UNKNOWN, callback target and no-scan boundaries are unchanged."
+  ],
+  "full_suite_receipt_sha256": "60fdb72d60c212618f658cf03f3caa710ddba7b9215674281a44f19007aabf33",
+  "full_suite_scope": "Actual exit0 and external_attempts0 receipt binds the prior POST9file snapshot; final wording/test two files differ. Final CI is separate. Reviewer did not rerun full suite or12controls.",
+  "activities": {
+    "tests_rerun": 0,
+    "network_calls": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "product_source_mutations": 0
+  },
+  "limitations": [
+    "Not runtime/deployment/live413 acceptance.",
+    "Existing non413 repeated notifications and cross-service unknown outcomes remain outside this fix."
+  ]
+}

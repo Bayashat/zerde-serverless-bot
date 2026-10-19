@@ -1,0 +1,62 @@
+{
+  "status": "LOCAL_CODE_TESTED_INDEPENDENT_POST_COMPLETE_CI_DEPLOY_PENDING",
+  "recorded_at": 1792440634.226563,
+  "base": "6f0b48e9b896d3f6cd71358704363aaf4496ca70",
+  "product_files": [
+    "src/bot/core/translations.py",
+    "src/bot/services/handlers/spam_review.py",
+    "src/bot/services/repositories/spam.py",
+    "src/bot/services/spam/groq_detector.py",
+    "src/bot/services/spam/processor.py",
+    "src/bot/services/telegram.py"
+  ],
+  "source_hashes": {
+    "src/bot/core/translations.py": "01738fcb2507d223c896a25923c74c7b22658f68ef7912553c7c37ed2dc549b2",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "6242f3fd2a7b0b4469cc365f9610ed83bcb8017bbd2086de5a7ce4df2d2f2c5a",
+    "src/bot/services/spam/processor.py": "272c0cc40217f0eabc21e6d52d49e3128e3b9d2dd1b42fe12a076c18c713b99d",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "1f5d5a304ee84f56520b5ef41a2162371edc4c917c899193d97b61a9f47b1d21",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "bfcacd86399965e86afd0852b582062d6f768751a8fe73a2d5cf4fd8e5fe30a0"
+  },
+  "targeted_tests": {
+    "passed": 83,
+    "exit_code": 0,
+    "final_wording_covered": true,
+    "receipt_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/targeted-final.safe.json",
+    "receipt_sha256": "291051a96fccb9bdbcbb11ea96b61566201fca741ab120471727d5aab2b640ab",
+    "log_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/targeted-final.safe.log"
+  },
+  "full_tests": {
+    "passed": 2519,
+    "failed": 0,
+    "external_socket_attempts": 0,
+    "loopback_socket_attempts": 2,
+    "receipt_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/full-tests-v2.safe.json",
+    "receipt_sha256": "60fdb72d60c212618f658cf03f3caa710ddba7b9215674281a44f19007aabf33",
+    "final_delta_files": [
+      "src/bot/core/translations.py",
+      "tests/test_spam_413_review.py"
+    ],
+    "final_delta_scope": "Four guest notification strings clarify permanent ban and matching assertion; final CI pending"
+  },
+  "preserved_failures": [
+    "initial PRE maintenance wording gaps",
+    "correctness POST v1 actual deep JSON 413 and guest target disclosure counterexamples",
+    "full-tests-v1 2511 passed, 2 loopback tests blocked by test harness network guard",
+    "initial hooks formatting/F811 fixture import failures"
+  ],
+  "live_cloud_calls": 0,
+  "live_ui_calls": 0,
+  "live_model_calls": 0,
+  "deployed": false,
+  "provider_numeric_limit": "UNKNOWN",
+  "evidence_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review",
+  "reviewed_plan_before_status_update": {
+    "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/CODE_PLAN-post-reviewed.md",
+    "sha256": "d9456fe6a6d810a920d618986bd3e9840e137b37f7ed4fc10b2478dca58f4ac9",
+    "only_change": "Final POST stage label updated after actual two reports"
+  }
+}

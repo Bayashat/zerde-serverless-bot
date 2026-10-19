@@ -1159,7 +1159,17 @@
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
     "status_evidence": "evidence/2026-09-26-retirement/status.safe.json",
-    "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json"
+    "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
+    "groq_413_review_followup": {
+      "status": "LOCAL_CODE_TESTED_INDEPENDENT_POST_COMPLETE_CI_DEPLOY_PENDING",
+      "as_of": "2026-10-20",
+      "contract": "GROQ_413_REVIEW.md",
+      "evidence": "evidence/2026-10-20-groq-413-review/local.safe.json",
+      "targeted_passed": 83,
+      "full_passed_before_notice_wording": 2519,
+      "deployed": false,
+      "provider_numeric_limit": "UNKNOWN"
+    }
   },
   {
     "id": "Z14",
@@ -1552,6 +1562,16 @@
         }
       },
       "old_full_aggregate_binding_valid": false
+    },
+    "groq_413_review_followup": {
+      "status": "LOCAL_CODE_TESTED_INDEPENDENT_POST_COMPLETE_CI_DEPLOY_PENDING",
+      "as_of": "2026-10-20",
+      "contract": "GROQ_413_REVIEW.md",
+      "evidence": "evidence/2026-10-20-groq-413-review/local.safe.json",
+      "targeted_passed": 83,
+      "full_passed_before_notice_wording": 2519,
+      "deployed": false,
+      "provider_numeric_limit": "UNKNOWN"
     }
   },
   {

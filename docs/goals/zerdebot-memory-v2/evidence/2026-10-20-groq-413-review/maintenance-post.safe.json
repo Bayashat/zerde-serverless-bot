@@ -1,0 +1,83 @@
+{
+  "status": "ALIGNED",
+  "at": 1792440282.301433,
+  "reviewer": "purge_wait_maintenance",
+  "phase": "IMPLEMENTATION_POST_AFTER_NARROW_REVISION",
+  "base": "6f0b48e9b896d3f6cd71358704363aaf4496ca70",
+  "plan_sha256": "d03245d2dbd627700629dbc7824a53662cce4a549462421f132af51cbe1d4c01",
+  "files": {
+    "src/bot/core/translations.py": "cf39e0fa598fcce06ed12f94c2e59bfc083da1ce9d5303e85ddf6581a9182e63",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "6242f3fd2a7b0b4469cc365f9610ed83bcb8017bbd2086de5a7ce4df2d2f2c5a",
+    "src/bot/services/spam/processor.py": "272c0cc40217f0eabc21e6d52d49e3128e3b9d2dd1b42fe12a076c18c713b99d",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "1f5d5a304ee84f56520b5ef41a2162371edc4c917c899193d97b61a9f47b1d21",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "335ddd830a80326076fd3edccafbb7f1ac46a158b1a2597720e2ca0df624ffbf"
+  },
+  "prior_review_sha256": "9e69547ce170ad30c5c3b94720a6f1da2a069e2c6c4ac3248847daadf035e38c",
+  "prior_source_snapshot_manifest_sha256": "eb41dd66a6996d76f6c8b48d0a3e51a5e41ec38907b2b8bbc4715b09e69e772c",
+  "prior_controls_receipt_sha256": "d5221adae65dd4236040f18b4b673f1b8960f82f01fa2cb354949d073ce04a67",
+  "delta_controls_receipt_sha256": "3a51ccfef48dd5ba1d1335941acac17f151632d4b89a52ac137cbf15a0db3e18",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "MPOST1",
+      "resolution": "Explicit status413 is handled before JSON/body access; primary and recovery poisoned-body controls pass, retaining dedicated failure type without additional classifier requests."
+    },
+    {
+      "id": "MPOST2",
+      "resolution": "Four guest-specific neutral texts show escaped BOT and TARGET, expressly assign the ban button to caller and state that invocation is not proof of malicious intent. Existing mention helper is reused; failure falls back to exact ID mentions. Missing caller remains non-actionable."
+    }
+  ],
+  "delta_review": {
+    "plan": "Exactly two specified replacements; no unrelated contract changes.",
+    "unchanged_files": [
+      "src/bot/services/handlers/spam_review.py",
+      "src/bot/services/repositories/spam.py",
+      "src/bot/services/telegram.py",
+      "tests/test_telegram_client.py"
+    ],
+    "changed_files": [
+      "src/bot/core/translations.py",
+      "src/bot/services/spam/groq_detector.py",
+      "src/bot/services/spam/processor.py",
+      "tests/test_spam_groq_detector.py",
+      "tests/test_spam_413_review.py"
+    ],
+    "new_helper_behavior": "Known guest may use the existing member lookup helper for BOT/TARGET before ATTEMPTED; failed name lookup preserves exact IDs, and replay does not repeat the notice or name lookups."
+  },
+  "independent_validation": {
+    "v1_controls_passed": 17,
+    "v1_controls_scope": "Original9file snapshot only; preserved, not claimed as current rerun.",
+    "current_delta_checks_passed": 12,
+    "current_delta_scope": "4 independent lookup-fallback/replay controls, 2 primary/recovery parser guards, 4 guest identity/HTML escaping regressions, 2 actual moto Decimal ban target/counter regressions.",
+    "full_suite_rerun": false,
+    "files_unchanged_during_current_controls": true,
+    "blocked_network_attempts": 0
+  },
+  "maintainability_assessment": [
+    "SpamRepository decision/lease/input_hash/source_ref remains sole owner; no extra table, queue, scanner, retry owner or independent moderation state system.",
+    "413 produces review failure metadata only; no invented label/confidence, automatic enforcement, CLEAN or outbox creation.",
+    "ATTEMPTED is persisted before notification. Ambiguous sends or state writes remain ATTEMPTED/UNKNOWN and suppress automatic resends, including after membership changes.",
+    "send_message defaults remain None retries and False confirmation; only new413 path opts into retries=False/strict full-envelope acknowledgement.",
+    "Persisted target validation accepts finite integral Decimal and true positive int, rejecting missing/self/mismatch/malformed targets before action selection/effects.",
+    "Existing admin/cross-chat/lease/selected_action/enforcement counter and ordinary reviewed CLEAN/source_ref versus guest ignored remain intact."
+  ],
+  "limits": {
+    "network_calls": 0,
+    "real_aws_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "private_raw_or_secret_reads": 0,
+    "product_source_mutations": 0,
+    "runtime_release_verified": false
+  },
+  "unresolved_out_of_scope": [
+    "Existing non413 review notifications may still retry on ambiguous delivery; their protocol was not changed.",
+    "No cross-service exactly-once guarantee between provider, DynamoDB and Telegram. ATTEMPTED/UNKNOWN does not guarantee administrator visibility or eventual manual resolution; original30day TTL and no scanning/resend remain.",
+    "Actual provider account limit remains UNKNOWN; this source change does not repair the provider limit or establish live413 outcomes.",
+    "Full-suite, CI, ARM and dev/prod deployment/readback are separate parent-owned evidence gates; no claim of their completion here."
+  ]
+}

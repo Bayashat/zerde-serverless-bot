@@ -86,6 +86,39 @@ def test_send_message_logs_status_and_response_size_only(monkeypatch):
     assert "private-outbound-text" not in str(logger.mock_calls)
 
 
+@pytest.mark.parametrize(
+    "envelope",
+    [
+        None,
+        [],
+        {},
+        {"ok": False, "result": {"message_id": 1}},
+        {"ok": 1, "result": {"message_id": 1}},
+        {"ok": True, "result": []},
+        {"ok": True, "result": {"message_id": True}},
+        {"ok": True, "result": {"message_id": 0}},
+        {"ok": True, "result": {"message_id": "1"}},
+    ],
+)
+def test_confirmed_send_rejects_unconfirmed_envelope_and_disables_hidden_retries(monkeypatch, envelope):
+    fake_http = _FakeHttp([_Response(status=200, data=json.dumps(envelope).encode())])
+    monkeypatch.setattr(telegram, "http", fake_http)
+    with pytest.raises(RuntimeError, match="success was not confirmed"):
+        TelegramClient().send_message(-1001, "synthetic", retries=False, require_confirmation=True)
+    assert len(fake_http.requests) == 1 and fake_http.requests[0]["retries"] is False
+
+
+def test_confirmed_send_returns_message_and_old_defaults_are_unchanged(monkeypatch):
+    valid = _Response(status=200, data=b'{"ok":true,"result":{"message_id":19}}')
+    fake_http = _FakeHttp([valid, valid])
+    monkeypatch.setattr(telegram, "http", fake_http)
+    client = TelegramClient()
+    assert client.send_message(-1001, "synthetic", retries=False, require_confirmation=True) == {"message_id": 19}
+    assert client.send_message(-1001, "synthetic") == {"message_id": 19}
+    assert fake_http.requests[0]["retries"] is False
+    assert "retries" not in fake_http.requests[1]
+
+
 @pytest.mark.parametrize("download", [False, True])
 def test_telegram_network_failures_are_redacted_at_actual_log_output(monkeypatch, download):
     from unittest.mock import MagicMock

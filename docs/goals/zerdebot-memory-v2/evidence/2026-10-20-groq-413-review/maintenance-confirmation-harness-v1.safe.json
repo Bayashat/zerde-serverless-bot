@@ -1,0 +1,8 @@
+{
+  "status": "HARNESS_REVISION",
+  "at": 1792440678.643533,
+  "reason": "Initial reverse-wording hash check replaced only part of the Russian permanent-ban sentence and omitted the accompanying grammatical case change. It stopped before any final report write. Correcting the reviewer-only reverse transform to the complete sentence reconstructs the prior translation hash. Product source unchanged.",
+  "product_defect": false,
+  "final_reports_written_by_failed_attempt": 0,
+  "network_calls": 0
+}

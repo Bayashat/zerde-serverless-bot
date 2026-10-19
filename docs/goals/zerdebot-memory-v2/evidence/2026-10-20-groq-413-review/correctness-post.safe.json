@@ -1,0 +1,101 @@
+{
+  "status": "ALIGNED",
+  "role": "independent_correctness_post",
+  "reviewer": "dev_release_review",
+  "at": 1792440595.2822201,
+  "base": "6f0b48e9b896d3f6cd71358704363aaf4496ca70",
+  "plan_sha256": "d9456fe6a6d810a920d618986bd3e9840e137b37f7ed4fc10b2478dca58f4ac9",
+  "files": {
+    "src/bot/core/translations.py": "01738fcb2507d223c896a25923c74c7b22658f68ef7912553c7c37ed2dc549b2",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "6242f3fd2a7b0b4469cc365f9610ed83bcb8017bbd2086de5a7ce4df2d2f2c5a",
+    "src/bot/services/spam/processor.py": "272c0cc40217f0eabc21e6d52d49e3128e3b9d2dd1b42fe12a076c18c713b99d",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "1f5d5a304ee84f56520b5ef41a2162371edc4c917c899193d97b61a9f47b1d21",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "bfcacd86399965e86afd0852b582062d6f768751a8fe73a2d5cf4fd8e5fe30a0"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "C1",
+      "resolution": "Actual primary/recovery status 413 is recognized before any body parsing. Both 30000-depth JSON and deliberately throwing response.json controls now yield the fixed GroqSpamHTTP413Error with no body decode and closed client."
+    },
+    {
+      "id": "C2",
+      "resolution": "Guest review separately resolves BOT and TARGET with the existing escaped mention helper. All four languages identify the distinct caller, explicitly disclose permanent ban and state invocation alone does not establish malicious intent. No valid caller keeps no buttons and server-side refusal before selected_action or penalty."
+    }
+  ],
+  "independent_controls": {
+    "executed": 11,
+    "passed": 11,
+    "failed": 0,
+    "source_sha256": "765acd8c06211ae40afb9442497df2f0b739ca9596ee46b8560f6a82f338dc19",
+    "output_sha256": "3b5db4094cf6c541dfd8b79e99c9216b1b2fcbbfe9c29f8594562e1166f1edc3",
+    "cases": [
+      "deep_json_primary_413_exact_type",
+      "deep_json_recovery_413_exact_type",
+      "guest_notice_visible_target_vs_actual_callback_target",
+      "attempted_write_committed_then_error",
+      "unknown_state_write_failure",
+      "changed_input_and_epoch_isolation",
+      "primary_413_never_decodes_body",
+      "recovery_413_never_decodes_body",
+      "guest_attribution_four_languages",
+      "actual_moto_decimal_ordinary_ban_and_replay",
+      "actual_moto_decimal_guest_ban_and_replay"
+    ],
+    "runtime": "HTTP MockTransport, stateful fake and actual moto DynamoDB serializer/callback integration; socket connect/connect_ex/create_connection denied; no real endpoints"
+  },
+  "final_translation_delta": {
+    "checks": 5,
+    "passed": 5,
+    "failed": 0,
+    "report_sha256": "19969633e0aef91be26ccb56ed6c5bcdf54a799c43afccab0743d2e0b84d40cc",
+    "details": "Four permanent-ban disclosures and separate identity placeholders checked; all preexisting translation entries equal base. Previous 11 controls preserved and not rerun after text/assertion-only delta."
+  },
+  "review_checks": [
+    "Original SpamRepository case identity/input hash/source_ref/lease remain sole owner. Failure resume precedes administrator finish_clean after original terminal/selected_action guards.",
+    "No classification labels/confidence or automatic punishment/CLEAN/outbox are generated for typed413. Main and recovery handling do not alter non413 mapping, model, prompt, thresholds or shared provider configuration.",
+    "ATTEMPTED is persisted before send. Confirmed positive genuine integer message_id plus strict Telegram ok/result envelope required for SENT. ATTEMPTED/UNKNOWN/SENT replay suppresses notification and model calls.",
+    "Independent ambiguous-write controls confirmed committed ATTEMPTED before raised write error and failure to write UNKNOWN still suppress repeat sends/classification.",
+    "Actual moto returns Decimal IDs. Ordinary and distinct guest caller manual permanent-ban callbacks each invoked one ban, one counter transaction and no clean outbox across repeat callback and SQS-case replay.",
+    "Existing callback administrator, cross-chat, TTL, lease, selected_action and confirmed-ban guards retained by direct diff inspection. Submitted no-target callback tests reject both ban and ignore; ordinary manual ignore remains reviewed CLEAN, guest ignore remains ignored.",
+    "Default Telegram send behavior retained; retries=False and require_confirmation=True are used only by new413 notification.",
+    "Source/test diff limited to six product and three test files. Current contract distinguishes local implementation from unmerged, undeployed and unverified live behavior."
+  ],
+  "history": {
+    "v1_review_sha256": "9d4aa2c40e8e5a6d7e3260f28778e78001be8c74acebda3f707fe617bf659372",
+    "v1_controls_sha256": "3e87592db89552f893c047f3e0de6847bdc65adf10205a958b848820ee68d4dc",
+    "v1_failed_controls": 3,
+    "v1_findings": 2,
+    "initial_harness_note": "2200-depth JSON did not reproduce under Python3.14; separate preserved30000-depth controls reproduced both paths. No prior evidence or product source was changed by reviewer."
+  },
+  "parent_full_regression_readback": {
+    "receipt_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/full-tests-v2.safe.json",
+    "receipt_sha256": "60fdb72d60c212618f658cf03f3caa710ddba7b9215674281a44f19007aabf33",
+    "log_sha256": "3c412ba35b85d0342a03063c122f6418d944b6f4c56e0b65dd65f1a76df815f8",
+    "exit_code": 0,
+    "external_attempts": 0,
+    "final_files_differing_from_that_run": [
+      "src/bot/core/translations.py",
+      "tests/test_spam_413_review.py"
+    ],
+    "scope": "Parent-run evidence inspected, not independently rerun. Final changes are four permanent-ban strings and associated assertions; final CI remains separate."
+  },
+  "limits": {
+    "cloud_calls": 0,
+    "provider_calls": 0,
+    "ui_calls": 0,
+    "real_network_calls": 0,
+    "private_raw_reads": 0,
+    "production_source_edits": 0,
+    "full_suite_executed_by_reviewer": false,
+    "live_or_deployment_pass": false,
+    "provider_limit_resolved": false,
+    "notice_visibility_guaranteed": false,
+    "exactly_once_before_durable_failure_guaranteed": false
+  },
+  "conclusion": "Implementation POST only. Both actual findings closed by narrow repairs; approved for subsequent existing CI and separately reviewed runtime-release stages. UNKNOWN notification visibility and pre-durable-write retry liability remain explicit."
+}

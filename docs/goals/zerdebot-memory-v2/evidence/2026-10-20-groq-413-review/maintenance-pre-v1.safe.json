@@ -1,0 +1,49 @@
+{
+  "status": "NEEDS_REVISION",
+  "at": 1792439484.016426,
+  "reviewer": "purge_wait_maintenance",
+  "plan_path": "docs/goals/zerdebot-memory-v2/GROQ_413_REVIEW.md",
+  "plan_sha256": "53b34242680dd9ee745a578e3bd91b2b12c29bd5f25c92314e511d24ff9f833b",
+  "reviewed_sources": {
+    "src/bot/services/spam/processor.py": "ab398831bd1c8d01b06b87391b860344c484bb5a1b52101cd7a1a3154ce35675",
+    "src/bot/services/spam/groq_detector.py": "39c02ab860004e13eaac3f2f34132638d8d72ba65f39ffe8540db523911653f6",
+    "src/bot/services/repositories/spam.py": "881130d488b3709ef5dc7c275d65000aac9882ca1921fc6f2f50105fe9502c78",
+    "src/bot/services/handlers/spam_review.py": "3c421e5202f787b403399cf97021fb7607b6f26ffc4f3c85ecc8699a1d00ab3d",
+    "src/bot/services/telegram.py": "5a601b6fd1a220575d08f9a2498270d033f3dab6ea96b674e66a8c975090a009",
+    "tests/test_spam_outcomes.py": "197eb873327858bf6064a0007b51336a39a3eb5ef8cb13cb2cb90d1481c1ab2e",
+    "tests/test_spam_guest.py": "72f11e3eaa7f1d746c293961ec265550910894b3f68f9b09dfc977431e0c90fd",
+    "tests/test_spam_review.py": "3ef087c67e1b8b8acb6879d27aa4450ed132890baeabf3c6a74bb53fbcd4233c",
+    "tests/test_spam_repository_moto.py": "e0c4bed92889eee54f876d831268f89830b11221b478067dbe04d62257f14269",
+    "tests/spam_fakes.py": "e90f5a1e5e65c861e0675d11d502b0b7908bd5274708af9ba85f735ae48e0963"
+  },
+  "findings": [
+    {
+      "id": "M1",
+      "priority": "P1",
+      "plan_lines": [
+        22,
+        24
+      ],
+      "problem": "ATTEMPTED/UNKNOWN suppresses resend but the existing callback requires an actually received alert; an undelivered alert has no discoverable/resend UI in this patch.",
+      "minimum_revision": "Explicitly distinguish actually delivered buttons from guaranteed human visibility/recovery, retain original TTL/review and no automatic CLEAN, add original-message reply reference, and do not add a second owner or scan/retry system."
+    },
+    {
+      "id": "M2",
+      "priority": "P1",
+      "plan_lines": [
+        22,
+        24,
+        29
+      ],
+      "problem": "Real DynamoDB resource callback readback uses numeric Decimal values while the in-memory fake preserves int; exact-int-only checks reject valid IDs and broad int conversion truncates bad fractions.",
+      "minimum_revision": "Separate input true-int caller from persisted finite integral Decimal/int, reject bool/fraction/nonfinite/string/nonpositive/self, reject invalid target before selected_action or Telegram effects, and cover real moto readback-to-callback."
+    }
+  ],
+  "preservation_note": "This report binds the original plan bytes observed before the two revision paragraphs were added. A pre-save stale-hash assertion detected the parent revision and stopped before any file write; this report deliberately records the earlier reviewed hash rather than the current plan.",
+  "limits": {
+    "formal_entries": 0,
+    "tests_executed": 0,
+    "network_calls": 0,
+    "production_source_mutations": 0
+  }
+}

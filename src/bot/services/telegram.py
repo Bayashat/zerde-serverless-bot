@@ -78,6 +78,9 @@ class TelegramClient:
         reply_markup: dict[str, Any] | None = None,
         reply_to_message_id: int | None = None,
         link_preview_disable: bool | None = None,
+        *,
+        retries: bool | None = None,
+        require_confirmation: bool = False,
     ) -> dict[str, Any]:
         """Send message to Telegram. Returns the sent Message object."""
         payload: dict[str, Any] = {
@@ -97,7 +100,17 @@ class TelegramClient:
             payload["link_preview_options"] = {"is_disabled": True}
 
         try:
-            result = self._post("sendMessage", payload)
+            result = self._post("sendMessage", payload, **({"retries": retries} if retries is not None else {}))
+            if require_confirmation:
+                message = result.get("result") if isinstance(result, dict) else None
+                if (
+                    not isinstance(result, dict)
+                    or result.get("ok") is not True
+                    or not isinstance(message, dict)
+                    or type(message.get("message_id")) is not int
+                    or message["message_id"] <= 0
+                ):
+                    raise RuntimeError("Telegram message success was not confirmed")
             return result.get("result", {})
         except TelegramAPIError as e:
             logger.error(

@@ -15,7 +15,7 @@ from core.config import (
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
 from services.repositories.captcha import CaptchaRepository
-from services.repositories.spam import SpamRepository
+from services.repositories.spam import GROQ_HTTP_413, SpamRepository, classifier_failure_review_target
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import (
     SpamEnforcer,
@@ -23,7 +23,7 @@ from services.spam.enforcer import (
     resolve_spam_target_mention,
     translate_spam_reason,
 )
-from services.spam.groq_detector import GroqSpamDetector, SpamCheckResult
+from services.spam.groq_detector import GroqSpamDetector, GroqSpamHTTP413Error, SpamCheckResult
 from services.spam.message_text import format_spam_ai_context
 from services.spam.rule_filter import RuleBasedSpamFilter
 from services.telegram import TelegramClient
@@ -104,6 +104,8 @@ def process_spam_check_task(
     try:
         if case["state"] in {"clean", "blocked", "ignored"} or case.get("alert_sent") or case.get("selected_action"):
             return case["state"]
+        if case.get("classifier_failure") == GROQ_HTTP_413:
+            return _resume_classifier_failure_review(moderation_repo, case, owner, bot)
         if administrator_exempt:
             moderation_repo.update(case["case_id"], owner, {"reason": "administrator_exempt"})
             moderation_repo.finish_clean(case, owner)
@@ -126,7 +128,17 @@ def process_spam_check_task(
         elif guest and "repeated_obfuscated_url" in current_rules:
             result = SpamCheckResult("SPAM", 1.0, "referral_promo")
         else:
-            result = _get_detector().classify(classifier_input)
+            try:
+                result = _get_detector().classify(classifier_input)
+            except GroqSpamHTTP413Error:
+                fields = {"state": "review", "classifier_failure": GROQ_HTTP_413}
+                caller = message_context.get("guest_caller_user_id") if guest else user_id
+                if type(caller) is int and 0 < caller < 2**63 and (not guest or caller != user_id):
+                    fields["review_target_user_id"] = caller
+                # A confirmed write is required before any notice. Failure here
+                # does not provide cross-service exactly-once classification.
+                moderation_repo.update(case["case_id"], owner, fields)
+                return _resume_classifier_failure_review(moderation_repo, {**case, **fields}, owner, bot)
         strong_signal = _has_strong_auto_enforce_signal(triggered_rules)
         auto_enforce = result.label == "SPAM" and result.confidence >= SPAM_AI_CONFIDENCE_THRESHOLD and strong_signal
 
@@ -231,6 +243,56 @@ def _has_pending_captcha(captcha_repo: CaptchaRepository | None, chat_id: int, u
         return False
     # Unknown verification state must not become permission to classify or learn.
     return captcha_repo.get_pending(chat_id, user_id) is not None
+
+
+def _resume_classifier_failure_review(repo, case, owner, bot) -> str:
+    """Keep unclassified input quarantined and attempt one neutral review notice."""
+    if case["state"] != "review":
+        raise ProviderResponseError("Classifier failure has an invalid review state")
+    notice_state = case.get("provider_review_notice_state")
+    if notice_state in {"ATTEMPTED", "UNKNOWN", "SENT"}:
+        # An interrupted or unconfirmed send might already be visible. It must
+        # not become another send, a classification result or a CLEAN receipt.
+        return "review"
+    if notice_state is not None:
+        raise ProviderResponseError("Classifier review has an invalid notice state")
+    chat_id = int(case["chat_id"])
+    lang = get_chat_lang(chat_id)
+    target = classifier_failure_review_target(case)
+    if case.get("guest_bot") is True and target:
+        notice = get_translated_text(
+            "spam_guest_classifier_unavailable_notice",
+            lang,
+            BOT=resolve_spam_target_mention(bot, chat_id, int(case["user_id"])),
+            TARGET=resolve_spam_target_mention(bot, chat_id, target),
+        )
+    else:
+        notice = get_translated_text("spam_classifier_unavailable_notice", lang)
+    admin_mentions = _format_admin_mentions(chat_id)
+    if admin_mentions:
+        notice = f"{admin_mentions}\n{notice}"
+    keyboard = _spam_review_keyboard(target, int(case["message_id"]), lang, case_id=case["case_id"]) if target else None
+    repo.update(case["case_id"], owner, {"provider_review_notice_state": "ATTEMPTED"})
+    try:
+        sent = bot.send_message(
+            chat_id,
+            notice,
+            reply_markup=keyboard,
+            reply_to_message_id=int(case["message_id"]),
+            retries=False,
+            require_confirmation=True,
+        )
+        if not isinstance(sent, dict) or type(sent.get("message_id")) is not int or sent["message_id"] <= 0:
+            raise ProviderResponseError("Classifier review notice success was not confirmed")
+    except Exception:
+        repo.update(case["case_id"], owner, {"provider_review_notice_state": "UNKNOWN"})
+        raise ProviderResponseError("Classifier review notice delivery is unknown") from None
+    repo.update(
+        case["case_id"],
+        owner,
+        {"provider_review_notice_state": "SENT", "provider_review_message_id": sent["message_id"], "alert_sent": True},
+    )
+    return "review"
 
 
 def _request_review(repo, case, owner, bot, target_user_id, reason, confidence, *, guest_bot_id=None):
