@@ -7,7 +7,7 @@ from core.config import SPAM_REVIEW_BAN_PREFIX, SPAM_REVIEW_IGNORE_PREFIX
 from core.dispatcher import Context
 from core.logger import LoggerAdapter, get_logger
 from core.translations import get_translated_text
-from services.repositories.spam import SpamRepository
+from services.repositories.spam import GROQ_HTTP_413, SpamRepository, classifier_failure_review_target
 from services.spam.chat_member import is_chat_admin_or_creator
 from services.spam.enforcer import SpamEnforcer
 
@@ -39,6 +39,11 @@ def handle_spam_review_callback(ctx: Context) -> None:
     try:
         owner, case = repo.claim(case["case_id"])
         if case["state"] not in {"clean", "blocked", "ignored"}:
+            if case.get("classifier_failure") == GROQ_HTTP_413 and classifier_failure_review_target(case) is None:
+                # Missing guest attribution must never fall back to banning the
+                # guest bot, even if a callback is forged instead of displayed.
+                _answer_failure(ctx)
+                return
             # A lease is temporary; the administrator's selected action must survive
             # a crash between Telegram success and the decision's terminal write.
             if case.get("selected_action") and case["selected_action"] != action:

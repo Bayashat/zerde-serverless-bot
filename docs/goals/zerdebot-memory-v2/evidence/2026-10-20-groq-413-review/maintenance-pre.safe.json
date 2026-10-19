@@ -1,0 +1,57 @@
+{
+  "status": "ALIGNED",
+  "at": 1792439484.019246,
+  "reviewer": "purge_wait_maintenance",
+  "phase": "PLAN_PRE_ONLY",
+  "plan_path": "docs/goals/zerdebot-memory-v2/GROQ_413_REVIEW.md",
+  "plan_sha256": "951b4be0280923e49a3d7d525a3012ab4ba57e4f8c2cb2a02b600bd198ed6c3e",
+  "prior_needs_revision_sha256": "9dc2f31fc27b4fb2a85ff2f164063a00f4b5f0931368d87a3af6d10f91009308",
+  "reviewed_sources": {
+    "src/bot/services/spam/processor.py": "ab398831bd1c8d01b06b87391b860344c484bb5a1b52101cd7a1a3154ce35675",
+    "src/bot/services/spam/groq_detector.py": "39c02ab860004e13eaac3f2f34132638d8d72ba65f39ffe8540db523911653f6",
+    "src/bot/services/repositories/spam.py": "881130d488b3709ef5dc7c275d65000aac9882ca1921fc6f2f50105fe9502c78",
+    "src/bot/services/handlers/spam_review.py": "3c421e5202f787b403399cf97021fb7607b6f26ffc4f3c85ecc8699a1d00ab3d",
+    "src/bot/services/telegram.py": "5a601b6fd1a220575d08f9a2498270d033f3dab6ea96b674e66a8c975090a009",
+    "tests/test_spam_outcomes.py": "197eb873327858bf6064a0007b51336a39a3eb5ef8cb13cb2cb90d1481c1ab2e",
+    "tests/test_spam_guest.py": "72f11e3eaa7f1d746c293961ec265550910894b3f68f9b09dfc977431e0c90fd",
+    "tests/test_spam_review.py": "3ef087c67e1b8b8acb6879d27aa4450ed132890baeabf3c6a74bb53fbcd4233c",
+    "tests/test_spam_repository_moto.py": "e0c4bed92889eee54f876d831268f89830b11221b478067dbe04d62257f14269",
+    "tests/spam_fakes.py": "e90f5a1e5e65c861e0675d11d502b0b7908bd5274708af9ba85f735ae48e0963"
+  },
+  "resolved_findings": [
+    {
+      "id": "M1",
+      "resolution": "New first paragraph binds original chat/message, conditional received-button recovery, ATTEMPTED/UNKNOWN visibility limits, original 30-day TTL, no automatic CLEAN and no new scanner/resend owner."
+    },
+    {
+      "id": "M2",
+      "resolution": "New second paragraph separates input int and durable integral finite Decimal; rejects malformed IDs/self and guards before selected_action and punishment; adds real moto callback coverage."
+    }
+  ],
+  "delta_check": "Removing exactly the two added paragraphs recreates original reviewed plan SHA256 53b34242680dd9ee745a578e3bd91b2b12c29bd5f25c92314e511d24ff9f833b.",
+  "findings": [],
+  "aligned_contract": [
+    "Existing SpamRepository decision/lease/input_hash/source_ref remains sole owner; provider notice state is a receipt within the same case, not a second moderation decision.",
+    "Only actual HTTP413 gets the dedicated ProviderResponseError subtype; no synthetic CLEAN/SPAM classification, auto enforcement or learning permit.",
+    "Persisted413 resumes before administrator CLEAN exemption; existing terminal/selected_action protection remains authoritative.",
+    "New send_message optional retries retains default None semantics; only new413 sends set False through existing _post, without changing shared PoolManager or other send paths.",
+    "Guest caller/target safety and ordinary ignore source_ref outbox remain separated; missing caller rejects both actions before durable selection/Telegram effects.",
+    "Implementation, offline tests, release tools/PRE, CI, ARM and dev/prod deployment/readback remain future independent gates."
+  ],
+  "implementation_review_focus": [
+    "Assert real HTTP MockTransport primary/recovery413 and non413 paths preserve exact exception/leak boundaries.",
+    "Exercise ATTEMPTED-before-send, malformed/unknown ACK, confirmation-write failure and resend suppression without claiming alert visibility.",
+    "Exercise actual moto Decimal callback, invalid/self/missing targets, cross-chat/admin/lease and selected_action protection.",
+    "Verify original send_message callers retain original default and only new413 passes retries=False."
+  ],
+  "limits": {
+    "implementation_reviewed": false,
+    "tests_executed": 0,
+    "network_calls": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "private_raw_or_secret_reads": 0,
+    "production_source_mutations": 0
+  }
+}

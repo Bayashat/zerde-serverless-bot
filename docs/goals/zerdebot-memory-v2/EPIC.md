@@ -1,6 +1,6 @@
-## 四群已发布，Oct20/21原文准备完成
+## 四群已发布，413审核失败保护已部署
 
-四群Memory已启用，Oct17有限观察完成；[进度](LAUNCH_PROGRESS.md)。Oct21首发527目标主独准备未删，383文件/7目录保留，期限13:10:50.198516UTC。[契约](LAUNCH_RAW_EXPIRY.md)、[六项台账](RETAINED_COPIES.md)。状态保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/25275bc4cb8bb0f5af4f21715a1607766deefcf5/docs/goals/zerdebot-memory-v2/EPIC.md)。
+Bot/Memory两环境唯一发布、主独完整包和稳定核验通过；两个模板说明读回差异有限接受，实际日程保持。[契约](GROQ_413_REVIEW.md)。四群仍发布后观察，状态不变；副本现[七项职责](RETAINED_COPIES.md)。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/341d2e3d7020b4cd1d6730e65456194bf246a0b7/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

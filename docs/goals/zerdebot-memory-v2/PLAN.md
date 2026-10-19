@@ -1,3 +1,43 @@
+## Oct20：Groq 413 未分类审核保护已部署 dev/prod
+
+运行构建源 `341d2e3d7020b4cd1d6730e65456194bf246a0b7`（PR277），Bot/Memory 两环境实际完整ZIP均为 `5a0227ab654c462c53c83c187a676d8c623686046d27a483573dcf99496890d2`。每环境唯一 Execute 已完成，主、独分别下载核对五函数和共享层，且原 Execute 后均至少300秒完成配置/保护稳定读回；dev 570.415229秒、prod 1084.167275秒。News、Quiz、Operations和共享层原包、身份配置、四群CONTROL稳定字段/合法revision及8项prod日程保持。本文的运行SOURCE与后续文档HEAD/merge分别记录，文档合并不会另触发部署。
+
+明确收到413后，在原owner/lease内持久保留“未分类、待人工审核”；持久化后的重投不再请求模型，不自动CLEAN、学习、删除或封禁。通知ATTEMPTED/UNKNOWN不自动重发，只有明确确认才SENT。普通用户/有效guest caller沿原管理员审核，guest文案区分机器人和调用者；无有效个人caller不提供处罚按钮，服务端也拒绝伪造action。初次413到持久化之间仍有失败间隙，不宣称严格一次；原30日case TTL、模型/prompt/共享SDK、五Memory计费owner及epoch/DAY/UNKNOWN不变。
+
+83项最终定向测试、2519项全测（其后仅四语言处罚提示与对应断言调整）及源码CI三job通过，两环境实际ARM五入口/8项合成探针通过；不算真实413或Telegram人工审核验收。供应商具体数值限制仍UNKNOWN。原candidate ZIP元数据失败/独审误停保全；prod首次post仅31metadata/layer读后0ZIP/0snapshot断言停，原无栈原因UNKNOWN。新只读V5仅接受两个既有QuizRule模板Description的精确Mon–Fri/Mon?Fri读回差异，实际规则/target保持，原失败不重跑、无第二Execute。工具时钟/路径/原文门禁与harness修订全部保全，不宣称首次无问题。
+
+本批操作器实际AWS 374次（含原失败31读），其中云写8次=4 PutObject+2 CreateChangeSet+2 ExecuteChangeSet；运行阶段GitHub GET32次，后续文档发布/CI读取另计。0主动模型/UI/自然样本；生产正常业务的调用不归入该操作器计数。四群仍RELEASED_OBSERVING，自然0/50有据、0/20未知、起点null、production_ready=false；20工单14OPEN/6CLOSED和EpicOPEN保持；其余16个manifest对象保持原阶段记录，不代表本轮重验或当前包来源。新整体Bot/Memory包使此前R及旧S/Z完整聚合许可不能继续复用；后续模型/媒体须按当前包和原owner/期限重新有限绑定独审，旧S snapshot不重建。
+
+[运行证据](evidence/2026-10-20-groq-413-review/release.safe.json)、[独立证据](evidence/2026-10-20-groq-413-review/release-independent.safe.json)、[有限契约](GROQ_413_REVIEW.md)。
+
+## Oct20：新增 Groq 413 发布原文责任，现共七项
+
+本批首次真实API意图起点2026-10-19 20:29:05.508343UTC，固定七日期限 **2026-10-26 20:29:05.508343UTC**（epoch1793046545.508343）。最终实际 **418 CAPTURED/0 NOT_CREATED**，原ledger SHA `eccbecaac4db0bbdc7b9513dbe411f669410c74b75529c2aa936bce9af038318`；原文和含原文派生同一期限，0600/目录0700，完整ZIP/纯源码/安全聚合保留。原prod失败31份也已登记，不按成功汇总遗漏或延长。逐文件新scope/PRE/公告、到期唯一删除及独审另行执行；本次不删原文。
+
+| UTC原期限 | 职责 |
+| --- | --- |
+| Oct20 14:32:29.705948 | 告警341，独立准备已完成未删 |
+| Oct21 13:10:50.198516 | 首发527，独立准备已完成未删 |
+| Oct24 16:20:38.287378 | PITR核验原文10 |
+| Oct24 16:29:48.470834 | 首发观察原文51，与前项不合并 |
+| Oct26 20:29:05.508343 | 本批Groq 413发布418，按最终ledger完整路径 |
+| Nov1 11:46:02.425 | 旧memory SYSTEM原身份到期只读 |
+| Nov2 08:45:11.254 | 旧stats SYSTEM原身份到期只读 |
+
+前六项原路径/hash/身份/期限完整保持。原zerde每日阿拉木图19:05先覆盖Oct20，履行后重排下一期限前60分钟内；每次真实延误如实记UNKNOWN，不改期限。已履行旧清理不重跑，普通unlink非安全擦盘；用户导出/现役PITR/必要恢复保留。45ZIP此前明确保留不等于永久不可删，用户询问用途未扩大删除授权。[运行证据](evidence/2026-10-20-groq-413-review/release.safe.json)。
+
+## 以下为此前冻结阶段；其未部署、数量和绑定描述不作当前状态或重跑指令
+
+## Oct20：Groq 413 审核失败处理已完成本地修复，待CI及运行发布
+
+已明确收到HTTP413的反垃圾case持久保留为未分类审核，重投不再次调用模型、不自动CLEAN/学习或处罚；通知发送未知不自动重发，已送达通知可沿原管理员按钮处理。guest明确显示机器人和调用者，并说明永久封禁目标；无有效个人caller不提供处罚按钮，服务端也拒绝伪造action。模型、阈值、共享计费owner和供应商具体限制UNKNOWN保持。
+
+83项最终定向测试通过；2519项全测通过后仅补四语言永久处罚提示与对应断言，最终CI仍待。原独审发现的两处真实缺口已修、失败和测试隔离误停保全。当前无新AWS/UI/模型调用、未合并/未部署，不代替真实业务或自然验收。四群已发布状态、长期观察、六项到期责任及20任务14OPEN/6CLOSED保持。
+
+[有限契约](GROQ_413_REVIEW.md)；[本地证据](evidence/2026-10-20-groq-413-review/local.safe.json)。
+
+## 以下为此前冻结阶段；其历史状态不作本轮重跑指令
+
 ## Oct21 首发527原文清理已准备，尚未删除
 
 原期限 **2026-10-21 13:10:50.198516 UTC** 的最终527项原ledger相对完整路径已完成新工具双审、主唯一inspect Prep20261019A及独立fresh无跟随hash/身份/前后库存核验。全库存910常规文件，383保留、7目录（3个0700、4个0755），没有链接或ZIP。41个保护文件另有精确历史hash，342个仅本次fresh基线；原目录模式保持，目标全部祖先0700。

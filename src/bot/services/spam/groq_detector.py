@@ -50,6 +50,10 @@ class _ClassificationFormatError(ProviderResponseError):
     """Only this failure permits one structured-output recovery attempt."""
 
 
+class GroqSpamHTTP413Error(ProviderResponseError):
+    """The provider explicitly rejected this request's size; no classification exists."""
+
+
 def _unique_object(pairs):
     result = {}
     for key, value in pairs:
@@ -262,6 +266,11 @@ class GroqSpamDetector:
             json=payload,
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"},
         )
+        if resp.status_code == 413:
+            # The status is sufficient. An untrusted or malformed error body
+            # must not turn a known terminal classification failure into retry.
+            logger.error("Groq spam API error", extra={"status": 413})
+            raise GroqSpamHTTP413Error("Groq spam API status 413")
         if resp.status_code >= 300:
             # Provider bodies can echo conversation text or credentials. Only a
             # closed error category may escape this boundary into worker logs.

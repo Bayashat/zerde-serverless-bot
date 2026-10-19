@@ -1,0 +1,62 @@
+{
+  "status": "NEEDS_REVISION",
+  "reviewer": "dev_release_review",
+  "at": 1792439943.240336,
+  "plan_sha256": "4521b1a2f4a7220e2da4cfdbbc3460afe99a870aac38bf6d12a270cb7530f929",
+  "files": {
+    "src/bot/core/translations.py": "02b5628647fc30cfca7808764b8f681f62a8245ba926ed2ef7fa37802f75d027",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "14400ee46c78ef9bf3ec9186f8371dfe3708e0debc872c7570439e3fd0b52afc",
+    "src/bot/services/spam/processor.py": "b6e3df5e843869fecfaefb1c21eec0c1851c6eb720e0ce84d4a0eebedfacba3f",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "0e9a5ce1b813c1abfa296d8c3fa0cfbbc473c429a34d25b1a76296ad544ef7db",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "135b7fbe71efc32b934801cde15e9c426fc5e0d6d750132bcdf4c053921aa04e"
+  },
+  "independent_controls_sha256": "3e87592db89552f893c047f3e0de6847bdc65adf10205a958b848820ee68d4dc",
+  "independent_control_source_sha256": "af12cf8c032e4789a47249d49c79273e50112180e569c3958c8bcf78eafab63d",
+  "independent_controls_passed": 3,
+  "independent_controls_failed": 3,
+  "findings": [
+    {
+      "id": "C1",
+      "priority": "P2",
+      "file": "src/bot/services/spam/groq_detector.py",
+      "line": 273,
+      "title": "Classify explicit HTTP 413 before parsing its untrusted body",
+      "detail": "The 413 branch follows resp.json(). A synthetic HTTP 413 body with 30000 nested arrays raises RecursionError outside the local ValueError/TypeError handler. Primary and format-recovery requests both then escape as generic ProviderResponseError, bypassing the processor typed-413 persistence branch and allowing another classification after SQS replay.",
+      "fix": "Move the exact 413 fixed safe exception before any body decode; primary and recovery must reject body access entirely for status 413."
+    },
+    {
+      "id": "C2",
+      "priority": "P1",
+      "file": "src/bot/services/spam/processor.py",
+      "line": 261,
+      "title": "Show the distinct guest caller before offering a permanent-ban action",
+      "detail": "For synthetic guest actor42/caller700123, the generic neutral reply names neither caller nor guest while displaying Ban. Executing that real callback path permanently targets700123. The existing guest review explicitly identifies both identities and warns that invocation does not prove intent; the new branch removes those safeguards from the administrator decision.",
+      "fix": "Use neutral guest-specific translated text containing separately resolved BOT and TARGET, explain that the Ban action permanently affects the identified personal caller and invocation alone proves no intent. Preserve no-caller no-button/server-side refusal."
+    }
+  ],
+  "confirmed_boundaries": [
+    "Typed error only for actual status and legacy non413 mapping otherwise preserved in inspected diff.",
+    "Original case/lease owner and no new queue/table/scan.",
+    "Durable classifier_failure resume occurs before administrator exemption.",
+    "ATTEMPTED committed then write error suppresses subsequent sends even when zero messages were sent, as explicitly allowed by contract visibility limits.",
+    "UNKNOWN write failure leaves ATTEMPTED and replay performs no send/classification.",
+    "Changed input hash or epoch creates a new case while same-case replay stays stable.",
+    "Guest no-target callback guard precedes selected_action and punishment.",
+    "Strict Telegram confirmation and retries are opt-in; old defaults remain unchanged in inspected diff."
+  ],
+  "harness_history": "First 2200-nesting input decoded on this Python 3.14 interpreter and did not reproduce C1; preserved preliminary result and script. A separately preserved 30000-nesting input reproduced C1 on both paths. No product source was edited.",
+  "limits": {
+    "tests_executed": "six independent synthetic controls; existing submitted tests inspected, parent-reported77 not counted as independently run",
+    "cloud_calls": 0,
+    "network_calls": 0,
+    "ui_calls": 0,
+    "provider_calls": 0,
+    "private_raw_reads": 0,
+    "production_code_edits": 0,
+    "live_or_deployment_pass": false
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "status": "ALIGNED",
+  "role": "independent_plan_reviewer",
+  "at": "2026-10-19T19:53:13.290820+00:00",
+  "base": "6f0b48e9b896d3f6cd71358704363aaf4496ca70",
+  "branch": "fix/zerde-spam-413-review",
+  "plan_sha256": "4521b1a2f4a7220e2da4cfdbbc3460afe99a870aac38bf6d12a270cb7530f929",
+  "files": {
+    "docs/goals/zerdebot-memory-v2/GROQ_413_REVIEW.md": "4521b1a2f4a7220e2da4cfdbbc3460afe99a870aac38bf6d12a270cb7530f929",
+    ".codex/AGENTS.md": "7521b491fa44dabd10df6e112df63e11dfb3a2fffdee741ab30fdb1bb4b184a5",
+    "docs/ARCHITECTURE.md": "9610fcfbea25445db2345bb0d4f7f6207429e2ea24940b39026192ea255850e8",
+    "docs/MEMORY_V2_RUNTIME.md": "f09af2439bf0f7b0c141cbe60f0f5bf13575a613e25da921d2398f36f1e938c3",
+    "src/bot/services/spam/groq_detector.py": "39c02ab860004e13eaac3f2f34132638d8d72ba65f39ffe8540db523911653f6",
+    "src/bot/services/spam/processor.py": "ab398831bd1c8d01b06b87391b860344c484bb5a1b52101cd7a1a3154ce35675",
+    "src/bot/services/repositories/spam.py": "881130d488b3709ef5dc7c275d65000aac9882ca1921fc6f2f50105fe9502c78",
+    "src/bot/services/sqs_task_router.py": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+    "src/bot/services/handlers/spam_review.py": "3c421e5202f787b403399cf97021fb7607b6f26ffc4f3c85ecc8699a1d00ab3d",
+    "src/bot/services/spam/message_text.py": "d36ef08cecbcff345056199a2042dd560c1469a8685778b3de6854af5aa77949",
+    "src/bot/services/telegram.py": "5a601b6fd1a220575d08f9a2498270d033f3dab6ea96b674e66a8c975090a009",
+    "src/shared/python/zerde_common/ai_errors.py": "2ae4793b739c9f4df37c6465e78ec16f6b5fc82ae1ad17c9c891fae34dde5161",
+    "src/shared/python/zerde_common/groq_chat.py": "d0eeb2ef4e40480fec1fe0fa3802ebce476bdcb3b39fa4a41bde568f36f641f3",
+    "tests/test_spam_groq_detector.py": "e576cf6f3aa0d93fa1ca230cb7a6b825b6398c264d57c2e2fb8089fe68bf0c7b",
+    "tests/test_spam_outcomes.py": "197eb873327858bf6064a0007b51336a39a3eb5ef8cb13cb2cb90d1481c1ab2e",
+    "tests/test_spam_review.py": "3ef087c67e1b8b8acb6879d27aa4450ed132890baeabf3c6a74bb53fbcd4233c",
+    "tests/test_spam_guest.py": "72f11e3eaa7f1d746c293961ec265550910894b3f68f9b09dfc977431e0c90fd",
+    "tests/spam_fakes.py": "e90f5a1e5e65c861e0675d11d502b0b7908bd5274708af9ba85f735ae48e0963",
+    "tests/test_spam_repository_moto.py": "e0c4bed92889eee54f876d831268f89830b11221b478067dbe04d62257f14269"
+  },
+  "scope": "Current local plan/source/tests review only; no implementation, test execution, cloud/provider/UI calls, secret access or historical private raw reads.",
+  "findings": [],
+  "checks": [
+    {
+      "check": "single_owner",
+      "result": "PASS",
+      "detail": "Existing spam_case identity, input_hash/source_ref and lease remain sole owner; no new storage, queue or replay scan."
+    },
+    {
+      "check": "exact_413",
+      "result": "PASS",
+      "detail": "Detector-local ProviderResponseError subtype only for actual HTTP 413, including strict-format recovery. Other status/format/timeout behavior and shared provider mapping unchanged."
+    },
+    {
+      "check": "fail_closed_and_replay",
+      "result": "PASS",
+      "detail": "Persist review/failure under original lease without classification fields. Durable failure follows terminal/selected_action guards and precedes admin exemption. No CLEAN/outbox/model re-entry."
+    },
+    {
+      "check": "notification_once_boundary",
+      "result": "PASS",
+      "detail": "Durable ATTEMPTED precedes send; explicit retries=False blocks hidden HTTP retry. Only ok is True plus dict result plus genuine positive integer message_id allows SENT. Unknown send/response/confirmation-write is not retried or called delivered."
+    },
+    {
+      "check": "confirmation_compatibility",
+      "result": "PASS",
+      "detail": "New require_confirmation keyword defaults False; only new 413 notice enables strict confirmation. Confirmation and transport retry settings independent."
+    },
+    {
+      "check": "guest_and_callback_target",
+      "result": "PASS",
+      "detail": "Input genuine int differs from valid finite integral boto3 Decimal readback. Ordinary target equals source user; guest requires distinct personal caller. No-target validation precedes selected_action and punishment for both actions; no bot fallback."
+    },
+    {
+      "check": "manual_review_semantics",
+      "result": "PASS",
+      "detail": "Administrator/chat/lease/selected_action guards retained. Manual ordinary ignore retains reviewed CLEAN/source_ref outbox; guest ignore remains ignored without Memory promotion."
+    },
+    {
+      "check": "notification_visibility_and_privacy",
+      "result": "PASS",
+      "detail": "Neutral four-language reply points to original message without copying original/provider body. Existing admin mentions reused; ATTEMPTED/UNKNOWN visibility explicitly unproven and original 30-day TTL retained, with no scan/resend owner."
+    },
+    {
+      "check": "finite_validation_and_release",
+      "result": "PASS",
+      "detail": "Requires HTTP MockTransport, stateful repository and actual moto callback readback; targeted/full offline tests; independent POST; separate runtime release contract with five-function ZIP/layer/config/ARM/stability evidence."
+    },
+    {
+      "check": "frozen_scope_and_retention",
+      "result": "PASS",
+      "detail": "No old collectors/model evaluations/queue replay/provider-limit assertions/task auto-closure. Existing retention deadlines and serialized delete/release/UI boundaries retained."
+    }
+  ],
+  "implementation_verification_points": [
+    "Verify failure/callback validation ordering in actual diff.",
+    "Exercise primary and recovery 413 plus non-413 counterexamples.",
+    "Exercise durable ATTEMPTED before-send, send-unknown and confirmation-write failure replay paths without duplicate notices.",
+    "Exercise strict Telegram confirmation and actual boto3 Decimal callback targets; reject bool/string/fraction/nonfinite and invalid guest targets.",
+    "Preserve default Telegram send behavior and old non-413 behavior in existing tests."
+  ],
+  "historical_fact_boundary": "Historical five 413 events and account-limit UNKNOWN are existing plan evidence, not newly reread private responses or fresh provider observation.",
+  "review_harness_note": "First receipt-construction assertion expected literal require_confirmation=False; contract expressed require_confirmation=True with default False in prose. Assertion failed before any write; actual clause was reread and equivalent wording validated. No operational entry was run or retried.",
+  "activities": {
+    "tests_executed": 0,
+    "cloud_calls": 0,
+    "provider_calls": 0,
+    "ui_calls": 0,
+    "historical_private_raw_reads": 0,
+    "production_source_edits": 0
+  },
+  "conclusion": "Plan PRE only. No claim of implemented fix, test pass, deployed runtime, provider limit removal or visible administrator delivery."
+}

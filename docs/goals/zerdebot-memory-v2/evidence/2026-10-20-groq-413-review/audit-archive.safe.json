@@ -1,0 +1,71 @@
+{
+  "status": "FROZEN_LOCAL_TEST_EVIDENCE_RELOCATED_UNCHANGED",
+  "records": [
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent-controls-v1.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent-controls-v1.safe.json",
+      "sha256": "1f8cd6591aeddca74aa9146dabfd49d6e138ac10c6f34a24edb6c5dfdf09f508"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent-controls-v2.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent-controls-v2.safe.json",
+      "sha256": "3e87592db89552f893c047f3e0de6847bdc65adf10205a958b848820ee68d4dc"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent-controls-v3.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent-controls-v3.safe.json",
+      "sha256": "3b5db4094cf6c541dfd8b79e99c9216b1b2fcbbfe9c29f8594562e1166f1edc3"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent_controls_v1.py",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent_controls_v1.py",
+      "sha256": "94db7b1d832f304025c47f69291214a024c72e3a78b93129ecc4c9f485ebd854"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent_controls_v2.py",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent_controls_v2.py",
+      "sha256": "af12cf8c032e4789a47249d49c79273e50112180e569c3958c8bcf78eafab63d"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/independent_controls_v3.py",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/independent_controls_v3.py",
+      "sha256": "765acd8c06211ae40afb9442497df2f0b739ca9596ee46b8560f6a82f338dc19"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance-post-controls-output.safe.txt",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance-post-controls-output.safe.txt",
+      "sha256": "4297723993af6e0cdfdca3064f22d89af8a5508c1174c4996200a30877383220"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance-post-controls.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance-post-controls.safe.json",
+      "sha256": "d5221adae65dd4236040f18b4b673f1b8960f82f01fa2cb354949d073ce04a67"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance-post-delta-controls-output.safe.txt",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance-post-delta-controls-output.safe.txt",
+      "sha256": "52b24c598c5e3a7fc8cfa80151b93345c253110d41273f844e75d56c8d0f326d"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance-post-delta-controls.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance-post-delta-controls.safe.json",
+      "sha256": "3a51ccfef48dd5ba1d1335941acac17f151632d4b89a52ac137cbf15a0db3e18"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance_post_controls.py",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance_post_controls.py",
+      "sha256": "550391335dbc6403136f5c5afed4d792b49b38a6951eb922de4e598fe2b31ce8"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/maintenance_post_delta_controls.py",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/maintenance_post_delta_controls.py",
+      "sha256": "3d7e63379c5a65eb65560b49aa2b875eea6125b40e20fb433663f65923da6f94"
+    },
+    {
+      "previous_repository_path": "docs/goals/zerdebot-memory-v2/evidence/2026-10-20-groq-413-review/permanent-notice-delta.safe.json",
+      "preserved_path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/independent-preserved/permanent-notice-delta.safe.json",
+      "sha256": "19969633e0aef91be26ccb56ed6c5bcdf54a799c43afccab0743d2e0b84d40cc"
+    }
+  ],
+  "reason": "Preserve executed synthetic harness bytes outside product formatting hooks; no business raw or retention target"
+}

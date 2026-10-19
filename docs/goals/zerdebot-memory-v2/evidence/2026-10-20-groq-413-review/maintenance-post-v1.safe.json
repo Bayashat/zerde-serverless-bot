@@ -1,0 +1,61 @@
+{
+  "status": "NEEDS_REVISION",
+  "at": 1792439926.3398762,
+  "reviewer": "purge_wait_maintenance",
+  "phase": "IMPLEMENTATION_POST_V1",
+  "plan_sha256": "4521b1a2f4a7220e2da4cfdbbc3460afe99a870aac38bf6d12a270cb7530f929",
+  "files": {
+    "src/bot/core/translations.py": "02b5628647fc30cfca7808764b8f681f62a8245ba926ed2ef7fa37802f75d027",
+    "src/bot/services/handlers/spam_review.py": "ee93180123c2ae92f128fdb8484125a4bb3217386d4c5852c50f7de103e9088c",
+    "src/bot/services/repositories/spam.py": "060d651de30e5891b0aa667705f08ddf9f42b2c6ad7dca0e51bb5ad41aa4fded",
+    "src/bot/services/spam/groq_detector.py": "14400ee46c78ef9bf3ec9186f8371dfe3708e0debc872c7570439e3fd0b52afc",
+    "src/bot/services/spam/processor.py": "b6e3df5e843869fecfaefb1c21eec0c1851c6eb720e0ce84d4a0eebedfacba3f",
+    "src/bot/services/telegram.py": "a099a2a4b0b1ab1a29edf6d28f8731d6fc3a53daeafd9eae3d2c6fc030bfc18d",
+    "tests/test_spam_groq_detector.py": "0e9a5ce1b813c1abfa296d8c3fa0cfbbc473c429a34d25b1a76296ad544ef7db",
+    "tests/test_telegram_client.py": "3c0b8d1cf2ffb1e1d3b0764f6efab569aec1a2d370b6f0332b2ac5cfd4351bcc",
+    "tests/test_spam_413_review.py": "135b7fbe71efc32b934801cde15e9c426fc5e0d6d750132bcdf4c053921aa04e"
+  },
+  "controls_sha256": "d5221adae65dd4236040f18b4b673f1b8960f82f01fa2cb354949d073ce04a67",
+  "independent_controls": {
+    "passed": 17,
+    "failed": 0,
+    "blocked_network_attempts": 0,
+    "scope": "Synthetic HTTP, durable write-ack uncertainty and actual moto Decimal callback enforcement; no live service."
+  },
+  "findings": [
+    {
+      "id": "MPOST1",
+      "priority": 1,
+      "path": "src/bot/services/spam/groq_detector.py",
+      "finding": "Corroborated correctness review: response JSON parsing precedes the exact HTTP413 branch. A JSON decoder RecursionError bypasses the limited ValueError/TypeError handling and classify converts it to generic ProviderResponseError, losing the durable413 review route.",
+      "required_change": "Branch on explicit HTTP413 before parsing its response body; preserve a no-body-parse synthetic negative control."
+    },
+    {
+      "id": "MPOST2",
+      "priority": 2,
+      "path": "src/bot/services/spam/processor.py",
+      "finding": "Corroborated correctness review: known guest caller gets actionable buttons but the neutral notice does not identify the guest bot and person those actions affect. Replying to the original bot message alone can obscure the actual ban target.",
+      "required_change": "Use existing escaped BOT/TARGET mention helper with neutral guest-specific wording and the caveat that invoking a bot does not prove malicious intent; missing caller still has no actions."
+    }
+  ],
+  "reviewed_boundaries": [
+    "Single existing SpamRepository case/lease remains sole owner; no new scanner, queue or moderation state owner.",
+    "No413 fake label/confidence, automatic enforcement, CLEAN/outbox or model replay after confirmed durable failure.",
+    "New send keyword defaults retain legacy behavior; only413 opts into strict envelope and retries=False.",
+    "Missing/self/malformed callback targets reject before selected_action or Telegram effects; actual moto Decimal ordinary/guest ban targets and once count verified.",
+    "ATTEMPTED/UNKNOWN survive ambiguous writes and suppress replay sends; no guarantee of administrator visibility or cross-service exactly once."
+  ],
+  "remaining_out_of_scope": [
+    "Existing non413 notification retries and cross-service unknown sends remain unchanged.",
+    "Provider account limit root cause is UNKNOWN; no provider-side limit repair or live413 acceptance claimed.",
+    "CI, full suite, actual ARM packages and dev/prod deployment/readback remain separate parent-owned gates."
+  ],
+  "limits": {
+    "product_source_mutations": 0,
+    "network_calls": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "private_raw_or_secret_reads": 0
+  }
+}

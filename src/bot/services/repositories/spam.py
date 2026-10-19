@@ -8,6 +8,7 @@ import hashlib
 import json
 import time
 import uuid
+from decimal import Decimal
 from typing import Any
 
 from boto3.dynamodb.conditions import Attr
@@ -19,6 +20,31 @@ from services.repositories.stats import _almaty_now_str
 _PREFIX = "spam_case#"
 _RETENTION_SECONDS = 30 * 86400
 _LEASE_SECONDS = 330
+GROQ_HTTP_413 = "groq_http_413"
+
+
+def classifier_failure_review_target(case: dict[str, Any]) -> int | None:
+    """Resolve only the persisted 413 review target, including DynamoDB numbers."""
+
+    def positive_id(value: Any) -> int | None:
+        if type(value) is int:
+            return value if 0 < value < 2**63 else None
+        if (
+            isinstance(value, Decimal)
+            and value.is_finite()
+            and 0 < value < 2**63
+            and value == value.to_integral_value()
+        ):
+            return int(value)
+        return None
+
+    actor = positive_id(case.get("user_id"))
+    target = positive_id(case.get("review_target_user_id"))
+    if actor is None or target is None:
+        return None
+    if case.get("guest_bot") is True:
+        return target if target != actor else None
+    return target if target == actor else None
 
 
 class SpamLeaseBusyError(RuntimeError):

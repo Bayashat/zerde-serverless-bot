@@ -158,6 +158,8 @@ TRANSLATIONS = {
         "genquiz_failed": "❌ Failed to generate quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Spam detected: {REASON}. {TARGET} was removed.",
+        "spam_classifier_unavailable_notice": "⚠️ The automatic check could not finish. Admins: please review the original message this notice replies to. No spam decision or automatic penalty was made.",  # noqa: E501
+        "spam_guest_classifier_unavailable_notice": "⚠️ The automatic check could not finish for a message from guest bot {BOT}, called by {TARGET}. Admins: review the original message. The ban button permanently bans caller {TARGET}, not the bot. Calling a bot alone does not establish malicious intent. No spam decision or automatic penalty was made.",  # noqa: E501
         "spam_guest_review_notice": "⚠️ Guest bot {BOT} returned suspected spam: {REASON} ({CONFIDENCE}%). Caller: {TARGET}. Calling a bot alone does not prove intent. Admins: confirm abuse before permanently banning the caller.",  # noqa: E501
         "spam_uncertain_notice": (
             "⚠️ Suspicious message from {TARGET}: {REASON} ({CONFIDENCE}% confidence). Admins please check."
@@ -356,6 +358,8 @@ TRANSLATIONS = {
         "genquiz_failed": "❌ Quiz жасау мүмкін болмады: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Спам анықталды: {REASON}. {TARGET} топтан шығарылды.",
+        "spam_classifier_unavailable_notice": "⚠️ Автоматты тексеру аяқталмады. Әкімшілер, осы ескерту жауап ретінде жіберілген бастапқы хабарламаны тексеріңіздер. Спам туралы шешім қабылданған жоқ, автоматты жаза қолданылған жоқ.",  # noqa: E501
+        "spam_guest_classifier_unavailable_notice": "⚠️ {TARGET} шақырған қонақ бот {BOT} хабарламасын автоматты тексеру аяқталмады. Әкімшілер, бастапқы хабарламаны тексеріңіздер. Бұғаттау батырмасы ботты емес, оны шақырған {TARGET} пайдаланушысын біржола бұғаттайды. Ботты шақырудың өзі зиянды ниетті дәлелдемейді. Спам туралы шешім қабылданған жоқ, автоматты жаза қолданылған жоқ.",  # noqa: E501
         "spam_guest_review_notice": "⚠️ Қонақ бот {BOT} күдікті спам жіберді: {REASON} ({CONFIDENCE}%). Шақырған: {TARGET}. Ботты шақыру қасақана әрекетті дәлелдемейді. Мәңгі бұғаттамас бұрын админ тексерсін.",  # noqa: E501
         "spam_uncertain_notice": (
             "⚠️ {TARGET} пайдаланушыдан күдікті хабарлама: {REASON} ({CONFIDENCE}% сенімділік). Админдер тексерсін."  # noqa: E501
@@ -527,6 +531,8 @@ TRANSLATIONS = {
         "genquiz_failed": "❌ 生成 Quiz 失败：{reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD：{remaining}/{total}",
         "spam_enforced_notice": "🚫 检测到垃圾信息：{REASON}。{TARGET} 已被移出群组。",
+        "spam_classifier_unavailable_notice": "⚠️ 自动检查未能完成，请管理员核查本通知所回复的原消息。尚未作出垃圾信息判断，也未自动处罚。",
+        "spam_guest_classifier_unavailable_notice": "⚠️ 自动检查未能完成：消息来自访客机器人 {BOT}，调用者为 {TARGET}。请管理员核查原消息。封禁按钮将永久封禁调用者 {TARGET}，机器人不会因此被封禁。调用机器人本身不代表恶意；尚未作出垃圾信息判断，也未自动处罚。",  # noqa: E501
         "spam_guest_review_notice": "⚠️ 访客机器人 {BOT} 返回疑似垃圾内容：{REASON}（{CONFIDENCE}%）。调用者：{TARGET}。调用本身不代表恶意；请管理员核查后决定是否永久封禁调用者。",  # noqa: E501
         "spam_uncertain_notice": "⚠️ 检测到来自 {TARGET} 的可疑消息：{REASON}（置信度 {CONFIDENCE}%）。请管理员核查。",
         "spam_reason_job_offer": "工作/收入邀约",
@@ -719,6 +725,8 @@ TRANSLATIONS = {
         "genquiz_failed": "❌ Не удалось сгенерировать Quiz: {reason}",
         "genquiz_rpd_footer": "📊 Quiz Gemini RPD: {remaining}/{total}",
         "spam_enforced_notice": "🚫 Обнаружен спам: {REASON}. Пользователь {TARGET} удален из группы.",
+        "spam_classifier_unavailable_notice": "⚠️ Автоматическая проверка не завершена. Администраторы, проверьте исходное сообщение, на которое отвечает это уведомление. Решение о спаме не принято, автоматическое наказание не применялось.",  # noqa: E501
+        "spam_guest_classifier_unavailable_notice": "⚠️ Автоматическая проверка сообщения гостевого бота {BOT}, вызванного пользователем {TARGET}, не завершена. Администраторы, проверьте исходное сообщение. Кнопка блокировки бессрочно блокирует вызвавшего пользователя {TARGET}, а не бота. Сам вызов бота не доказывает злой умысел. Решение о спаме не принято, автоматическое наказание не применялось.",  # noqa: E501
         "spam_guest_review_notice": "⚠️ Гостевой бот {BOT} прислал подозрительный спам: {REASON} ({CONFIDENCE}%). Вызвал: {TARGET}. Сам вызов не доказывает умысел. Перед вечной блокировкой вызывавшего нужна проверка администратора.",  # noqa: E501
         "spam_uncertain_notice": (
             "⚠️ Подозрительное сообщение от {TARGET}: {REASON} ({CONFIDENCE}% уверенности). Проверьте вручную."
