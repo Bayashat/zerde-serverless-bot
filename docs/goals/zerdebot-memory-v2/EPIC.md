@@ -1,6 +1,6 @@
-## 四群已发布，Oct20原文清理已准备
+## 四群已发布，Oct20/21原文准备完成
 
-四群Memory已启用，Oct17有限观察完成，Oct21首周继续。[进度](LAUNCH_PROGRESS.md)。341目标已主独准备未删；30980常规文件/1链接/8938目录保留（39ZIP），原期限Oct20 14:32:29.705948UTC。[契约](ALERT_RAW_EXPIRY.md)、[六项台账](RETAINED_COPIES.md)。状态保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/10cacc77809ca77ae83c1f7add69c8ba07bc121d/docs/goals/zerdebot-memory-v2/EPIC.md)。
+四群Memory已启用，Oct17有限观察完成；[进度](LAUNCH_PROGRESS.md)。Oct21首发527目标主独准备未删，383文件/7目录保留，期限13:10:50.198516UTC。[契约](LAUNCH_RAW_EXPIRY.md)、[六项台账](RETAINED_COPIES.md)。状态保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/25275bc4cb8bb0f5af4f21715a1607766deefcf5/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
