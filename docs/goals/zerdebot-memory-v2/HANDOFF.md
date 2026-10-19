@@ -1,3 +1,15 @@
+## Oct20：当前运行包的相册验收准备完成，等待新独占窗口
+
+已将两图相册/caption/原生Reply验收工具绑定PR277当前Bot/Memory、PR263 Operations与PR251身份配置。主独12个完整ZIP与104个源码文件一致；其中98项保持、6项为已发布的反垃圾修复，五个Memory计费owner不变。原五个媒体模块字节保持，原业务验收标准不降低。
+
+新七工具通过计划、正确性与维护独审；78主离线控制（76+2差异）、34独立差异控制和87维护有限控制通过。已修窗口过期/读取与写入前期限/表声明配置及一次入口留证缺口，旧草稿、失败与修订保全；-O、非法label和首次claim失败属于零动作入口拒绝，不保证创建内部回执。只有合法新label成功claim后的PRE/绑定/操作异常纳入内部once留证。
+
+现场 **NOT_EXECUTED**：尚无新的直接人类独占确认，未打开Telegram、读取实际私有快照、执行云preflight/预算时点读取、上传发送或调用模型，无新原文期限/自然样本。唯一候选为dev Test bots中两张合成图，双ready后360秒静默，再原生Reply caption父图提问；必须取得完整两图Gemini链、可见语义、单SENT回答/RELEASED lease与独立POST。旧S快照已删除，不重建；新B依赖仍受原Oct26期限限制。
+
+[有限契约](Z01_MEDIA_CURRENT_ACCEPTANCE.md)、[准备聚合](evidence/2026-10-20-z01-media-current/preparation.safe.json)。Z01/Epic保持OPEN，其他19任务对象与全部状态、四群RELEASED_OBSERVING、自然0/50有据0/20未知及七项副本职责均保持。源码/文档发布不代替现场媒体通过，不产生新运行构建。
+
+## 以下为此前完整冻结阶段；旧绑定与未完成表述不作当前许可或重跑指令
+
 ## Oct20：Groq 413 未分类审核保护已部署 dev/prod
 
 运行构建源 `341d2e3d7020b4cd1d6730e65456194bf246a0b7`（PR277），Bot/Memory 两环境实际完整ZIP均为 `5a0227ab654c462c53c83c187a676d8c623686046d27a483573dcf99496890d2`。每环境唯一 Execute 已完成，主、独分别下载核对五函数和共享层，且原 Execute 后均至少300秒完成配置/保护稳定读回；dev 570.415229秒、prod 1084.167275秒。News、Quiz、Operations和共享层原包、身份配置、四群CONTROL稳定字段/合法revision及8项prod日程保持。本文的运行SOURCE与后续文档HEAD/merge分别记录，文档合并不会另触发部署。

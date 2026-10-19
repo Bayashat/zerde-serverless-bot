@@ -1,0 +1,326 @@
+{
+  "status": "PASS_OFFLINE_MEDIA_AND_CURRENT_BINDING_CONTROLS",
+  "count": 76,
+  "controls": [
+    {
+      "name": "valid_album",
+      "pass": true
+    },
+    {
+      "name": "reject_pk",
+      "pass": true
+    },
+    {
+      "name": "reject_actor_user_id",
+      "pass": true
+    },
+    {
+      "name": "reject_epoch",
+      "pass": true
+    },
+    {
+      "name": "reject_sk",
+      "pass": true
+    },
+    {
+      "name": "reject_subject_generation",
+      "pass": true
+    },
+    {
+      "name": "reject_ttl",
+      "pass": true
+    },
+    {
+      "name": "reject_album_body",
+      "pass": true
+    },
+    {
+      "name": "two_image_chain",
+      "pass": true
+    },
+    {
+      "name": "one_part",
+      "pass": true
+    },
+    {
+      "name": "one_prepared",
+      "pass": true
+    },
+    {
+      "name": "skipped",
+      "pass": true
+    },
+    {
+      "name": "text_only",
+      "pass": true
+    },
+    {
+      "name": "wrong_source",
+      "pass": true
+    },
+    {
+      "name": "wrong_album",
+      "pass": true
+    },
+    {
+      "name": "model_one_part",
+      "pass": true
+    },
+    {
+      "name": "not_200",
+      "pass": true
+    },
+    {
+      "name": "fallback_provider",
+      "pass": true
+    },
+    {
+      "name": "wrong_ask",
+      "pass": true
+    },
+    {
+      "name": "wrong_chat",
+      "pass": true
+    },
+    {
+      "name": "ambiguous_two_model_sequences",
+      "pass": true
+    },
+    {
+      "name": "http200_without_generated",
+      "pass": true
+    },
+    {
+      "name": "wrong_native_parent_order",
+      "pass": true
+    },
+    {
+      "name": "ddb_write",
+      "pass": true
+    },
+    {
+      "name": "mixed_receive",
+      "pass": true
+    },
+    {
+      "name": "invoke",
+      "pass": true
+    },
+    {
+      "name": "secret",
+      "pass": true
+    },
+    {
+      "name": "other_partition",
+      "pass": true
+    },
+    {
+      "name": "observation_time_valid",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_original_sent_at1792451326",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_original_sent_at1792451311",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_subject_generation2",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_revisionTrue",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_revision1.5",
+      "pass": true
+    },
+    {
+      "name": "observation_reject_actor_user_idother",
+      "pass": true
+    },
+    {
+      "name": "filter_cycle",
+      "pass": true
+    },
+    {
+      "name": "get_missing",
+      "pass": true
+    },
+    {
+      "name": "escaped_question",
+      "pass": true
+    },
+    {
+      "name": "gemini_key",
+      "pass": true
+    },
+    {
+      "name": "caption",
+      "pass": true
+    },
+    {
+      "name": "total_batch_deadline",
+      "pass": true
+    },
+    {
+      "name": "duplicate_end_rejected",
+      "pass": true
+    },
+    {
+      "name": "duplicate_rid_first_target_rejected",
+      "pass": true
+    },
+    {
+      "name": "current_safe_104_actual_zip_no_private",
+      "pass": true
+    },
+    {
+      "name": "reject_binding_runtime_source",
+      "pass": true
+    },
+    {
+      "name": "reject_binding_runtime_merge",
+      "pass": true
+    },
+    {
+      "name": "reject_binding_config_source",
+      "pass": true
+    },
+    {
+      "name": "reject_binding_owner_manifest_sha256",
+      "pass": true
+    },
+    {
+      "name": "exact_original_deadline_safe",
+      "pass": true
+    },
+    {
+      "name": "exact_original_deadline_independent",
+      "pass": true
+    },
+    {
+      "name": "changed_actual_zip_rejected",
+      "pass": true
+    },
+    {
+      "name": "queue_arn_from_physical_url",
+      "pass": true
+    },
+    {
+      "name": "join_known_refs",
+      "pass": true
+    },
+    {
+      "name": "unknown_ref",
+      "pass": true
+    },
+    {
+      "name": "unsupported_intrinsic",
+      "pass": true
+    },
+    {
+      "name": "unsupported_attr",
+      "pass": true
+    },
+    {
+      "name": "mixed_intrinsic",
+      "pass": true
+    },
+    {
+      "name": "wrong_queue_account",
+      "pass": true
+    },
+    {
+      "name": "new_direct_window",
+      "pass": true
+    },
+    {
+      "name": "window_reject_confirmed_by_user1",
+      "pass": true
+    },
+    {
+      "name": "window_reject_expires_at_epoch1792451320.7630908",
+      "pass": true
+    },
+    {
+      "name": "window_reject_confirmed_at_epochTrue",
+      "pass": true
+    },
+    {
+      "name": "window_reject_confirmed_at_epochnan",
+      "pass": true
+    },
+    {
+      "name": "window_reject_expires_at_epochinf",
+      "pass": true
+    },
+    {
+      "name": "window_reject_sourceold_window",
+      "pass": true
+    },
+    {
+      "name": "window_reject_chat_idother",
+      "pass": true
+    },
+    {
+      "name": "expired_window_before_private_preflight",
+      "pass": true
+    },
+    {
+      "name": "expired_window_before_private_ui",
+      "pass": true
+    },
+    {
+      "name": "expired_window_before_private_budget",
+      "pass": true
+    },
+    {
+      "name": "budget_secret_denied",
+      "pass": true
+    },
+    {
+      "name": "full_five_function_config_preserved",
+      "pass": true
+    },
+    {
+      "name": "binding_expired_before_snapshot",
+      "pass": true
+    },
+    {
+      "name": "no_started_input_collector",
+      "pass": true
+    },
+    {
+      "name": "no_started_input_independent_verify",
+      "pass": true
+    },
+    {
+      "name": "entry_failed_pre_preserved",
+      "pass": true
+    },
+    {
+      "name": "entry_duplicate_refused",
+      "pass": true
+    }
+  ],
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "new_business_raw": 0,
+  "actual_private_reads": 0,
+  "new_retention_duties": 0,
+  "plan_sha256": "783d62063838cafc39c7ed519ce89a5d764a68f53f00856788f38f19926736bf",
+  "release_binding_sha256": "c775f93655efe1754be36b627233490435c67e95dd7275f32d63e70b65158ee5",
+  "tools": {
+    "collector.py": "b80853c7ed511af512b77b6679a724797dd5d87706ef3d9528d1acdd780a17cc",
+    "log_collector.py": "00de2e063b2f20b5290c3e8831ec6e60a48ca8f0924136781166daf82812bb04",
+    "ui_record.py": "59361ccf64f4d0cf3d8ae85abab4477602c7046a8c78c98e485d54f7b84d5e00",
+    "assess_logs.py": "2f2833ae9cab5ea0103b24618e23e1b9ab2542fa8ae19460db55ab8ba9632360",
+    "independent_verify.py": "8757b3078f4e84af1088a81b0d37c7e0c72b8b8163b2df34e8ecf451202fd6c7",
+    "release_gate.py": "b5f3e83729f13cbe20e6f561e9e2270618b4a329e86ff610d6327e1183af7872",
+    "read_budget.py": "70c484bd22ed2afbe13c6c7b72987c7cd287b6e790431f429f74ce8dde9858dd"
+  }
+}

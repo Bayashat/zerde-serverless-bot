@@ -1,0 +1,55 @@
+{
+  "status": "ALIGNED",
+  "mode": "PRE",
+  "at": 1792450963.794327,
+  "plan_sha256": "783d62063838cafc39c7ed519ce89a5d764a68f53f00856788f38f19926736bf",
+  "release_binding_sha256": "c775f93655efe1754be36b627233490435c67e95dd7275f32d63e70b65158ee5",
+  "fixtures_sha256": "46207f43e671e44b6c3c5b153943f706f4c4ef91c9950f8a47d001738fd8c197",
+  "original_contract_sha256": "b9af098b71c7aa5046b4dfe920ce2e43be13dbc52f6dcd5a2edd690634e34f5d",
+  "preliminary_sha256": "7d083c7a5461d26ded2bdf3fe961c6b9875d910f5739009edb5fa13f6efc2af7",
+  "runtime_source": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
+  "runtime_merge": "393e656960c39f7bbbfd593272f2ff3c91150448",
+  "binding_file_count": 46,
+  "full_zip_files_hashed": 12,
+  "current_owner_manifest_sha256": "b8e4c8a0c703a0c8f0bf366ebc522c660d9d271ea45f8ee2ef03b894e782568e",
+  "owner_count": 104,
+  "owner_unchanged_count": 98,
+  "changed_owner_paths": [
+    "src/bot/core/translations.py",
+    "src/bot/services/handlers/spam_review.py",
+    "src/bot/services/repositories/spam.py",
+    "src/bot/services/spam/groq_detector.py",
+    "src/bot/services/spam/processor.py",
+    "src/bot/services/telegram.py"
+  ],
+  "current_git_and_local_owner_tree_exact": true,
+  "artifact_owner_member_checks": {
+    "post-main-dev/bot.zip": 96,
+    "post-main-dev/memory-v2-worker.zip": 96,
+    "post-main-dev/shared-layer.zip": 8,
+    "post-independent-dev/bot.zip": 96,
+    "post-independent-dev/memory-v2-worker.zip": 96,
+    "post-independent-dev/shared-layer.zip": 8
+  },
+  "historical_receipts": {
+    "safe_file_count": 19,
+    "container_binding_additional": 1,
+    "provenance_only": true
+  },
+  "snapshot": {
+    "verification": "Original safe ledger/anchor and declaration only; no snapshot read or hash performed.",
+    "original_deadline_epoch": 1793046545.508343,
+    "copied": false
+  },
+  "findings": [],
+  "next_gate": "Exact new tools, new owner closure and adapter binding require correctness/maintenance tool PRE before live; fresh direct-human window remains required. This plan PRE is not tool or live permission.",
+  "network_calls": 0,
+  "aws_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "business_raw_reads": 0,
+  "package_reads": "12 complete hashes plus required owner members in 6 current main/independent ZIPs; no extraction/raw copies.",
+  "old_operator_entry_calls": 0,
+  "repository_mutations": 0,
+  "new_retention_deadline": null
+}

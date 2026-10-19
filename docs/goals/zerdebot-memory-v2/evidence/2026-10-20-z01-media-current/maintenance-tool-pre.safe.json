@@ -1,0 +1,61 @@
+{
+  "status": "ALIGNED",
+  "mode": "PRE",
+  "reviewer": "independent maintenance reviewer purge_wait_maintenance",
+  "at": 1792451474.832074,
+  "plan_sha256": "783d62063838cafc39c7ed519ce89a5d764a68f53f00856788f38f19926736bf",
+  "release_binding_sha256": "c775f93655efe1754be36b627233490435c67e95dd7275f32d63e70b65158ee5",
+  "tools": {
+    "collector.py": "96db942d847f83871f4ec4d8cd891a825582b0e7b98c320a01ce675fd2868335",
+    "log_collector.py": "00de2e063b2f20b5290c3e8831ec6e60a48ca8f0924136781166daf82812bb04",
+    "ui_record.py": "59361ccf64f4d0cf3d8ae85abab4477602c7046a8c78c98e485d54f7b84d5e00",
+    "assess_logs.py": "2f2833ae9cab5ea0103b24618e23e1b9ab2542fa8ae19460db55ab8ba9632360",
+    "independent_verify.py": "8757b3078f4e84af1088a81b0d37c7e0c72b8b8163b2df34e8ecf451202fd6c7",
+    "release_gate.py": "b5f3e83729f13cbe20e6f561e9e2270618b4a329e86ff610d6327e1183af7872",
+    "read_budget.py": "70c484bd22ed2afbe13c6c7b72987c7cd287b6e790431f429f74ce8dde9858dd"
+  },
+  "review_scope": "New current-package media preparation and bounded tool maintenance; not live business or natural-quality acceptance. Only source/safe evidence/actual preserved ZIPs and synthetic fixtures were read.",
+  "findings": [],
+  "closed_findings": {
+    "M1": "Dependency snapshot access_guard runs after long safe/ZIP validation immediately before open and around parse. Root recorded-input safe registrations bind original window, exact UI tool/intent and <=3600 seconds; preflight checks valid window per API; independent implements same post-window bound without importing root collector. UI send intent rechecks window after budget/quiet work.",
+    "M2": "All seven exact tools reject optimized Python explicitly before assert-based gates.",
+    "M3": "Fixed exclusive entry once records precede startup/preparation/private read; failures retained and retry blocked, including budget startup and independent parser/PRE errors. Root callers use wrapper without duplicate global locks.",
+    "M4": "Three-table AttributeDefinitions and DeletionProtectionEnabled restored from exact current template; V2 original TableId retained; Stats/Quiz fresh identity explicitly remains fresh."
+  },
+  "checks": {
+    "current_owner_closure": "104 current runtime Git blobs, exact six reviewed PR277 changes, other98 unchanged; complete main/independent12ZIP hashes and all owner members checked. Safe validator AST unchanged from this actual evidence pass.",
+    "adapter_scope": "Exact stack inventory <=5 pages; 3tables/6queue-count-only/3rules+targets/2mapping inventories; unsupported intrinsics, missing/extra identities and wrong-account mappings fail closed. Root preflight65/root400/independent30 limits retained.",
+    "budget": "New separate7reads/300sec, pinned dev config/current104owner closure and original5strong owner reads; default SDK one attempt/endpoint checks; no reservation/write/model. Point is <=900sec and not ongoing permission.",
+    "raw": "Earliest new real capture creates7day anchor before UI/API. API/UI/raw derivatives0600/dirs0700, reserve-before-create, PENDING preserved. B snapshot keeps original Oct26 deadline and is neither copied nor extended. No original S snapshot reconstruction.",
+    "semantic": "Original frames/authenticated/analyze, quiet gate and observation/album validators compared AST-identical. Two native photos/same album,360sec quiet, caption parent, complete two-image Gemini and visible answer plus SENT/one reply/RELEASED and independent review remain required.",
+    "publication_scope": "Preparation only; old Z/S once and UI_STOP remain frozen, seven existing duties unchanged, no production code/config or sample claims."
+  },
+  "controls": {
+    "adapter_and_window_initial": 32,
+    "M1_M4_delta_and_unchanged_semantics": 49,
+    "adapter_final_delta": 6,
+    "total_finite_controls": 87,
+    "not_business_samples": true
+  },
+  "evidence_sha256": {
+    "maintenance-tool-pre-v1.safe.json": "253ceb9d5244d23d765270ff070698d45de6c5ef417cf49c33c1b804ce66e9f0",
+    "maintenance-table-projection-v1.safe.json": "ccd00a3e71a1dab07b4ed401606d0b51213f0bd9b2af1dc4f08f18b92b21c42e",
+    "maintenance-owner-bindings.safe.json": "6fc0fb52994fc67f9c6dd2405992fc48ec659b8c7a50ae26de17d31c0173591f",
+    "maintenance-adapter-controls.safe.json": "5c7454943c158e4ef497fb438fb7414fbc670d5d5ba0f1e910c53eefb56af14b",
+    "maintenance-delta-controls.safe.json": "ee2964d2febfa59a83e3182bf9969600d38c452a0fdc5117f14123fb12db4e24",
+    "maintenance-adapter-delta.safe.json": "e64b2e131cc75460ca6cfb97729b913580f37b3d9480e7370d7f92c56f6a4085",
+    "plan-pre.safe.json": "346930532bd742292b747f2b378cc290a2219005b70b77d48d6c69de0672872c",
+    "plan-preliminary.safe.json": "7d083c7a5461d26ded2bdf3fe961c6b9875d910f5739009edb5fa13f6efc2af7"
+  },
+  "network_calls": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "business_raw_reads": 0,
+  "actual_complete_zip_files_checked": 12,
+  "formal_operator_entries": 0,
+  "repository_mutations": 0,
+  "new_raw_deadline": null,
+  "live_state": "NOT_EXECUTED",
+  "next_gate": "Main preparation aggregate then fresh direct-human current exclusive window and exact live preflight. This receipt alone does not authorize UI/model send."
+}

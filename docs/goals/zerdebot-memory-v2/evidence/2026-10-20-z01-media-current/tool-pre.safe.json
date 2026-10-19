@@ -1,0 +1,85 @@
+{
+  "status": "ALIGNED",
+  "reviewed_at": "2026-10-19T23:13:23.328947+00:00",
+  "plan_sha256": "783d62063838cafc39c7ed519ce89a5d764a68f53f00856788f38f19926736bf",
+  "release_binding_sha256": "c775f93655efe1754be36b627233490435c67e95dd7275f32d63e70b65158ee5",
+  "tools": {
+    "collector.py": "96db942d847f83871f4ec4d8cd891a825582b0e7b98c320a01ce675fd2868335",
+    "log_collector.py": "00de2e063b2f20b5290c3e8831ec6e60a48ca8f0924136781166daf82812bb04",
+    "ui_record.py": "59361ccf64f4d0cf3d8ae85abab4477602c7046a8c78c98e485d54f7b84d5e00",
+    "assess_logs.py": "2f2833ae9cab5ea0103b24618e23e1b9ab2542fa8ae19460db55ab8ba9632360",
+    "independent_verify.py": "8757b3078f4e84af1088a81b0d37c7e0c72b8b8163b2df34e8ecf451202fd6c7",
+    "release_gate.py": "b5f3e83729f13cbe20e6f561e9e2270618b4a329e86ff610d6327e1183af7872",
+    "read_budget.py": "70c484bd22ed2afbe13c6c7b72987c7cd287b6e790431f429f74ce8dde9858dd"
+  },
+  "review_method": "Independent finite AST-only synthetic controls plus actual safe/retained-ZIP binding validation; no formal entrypoint or actual private snapshot access.",
+  "controls": {
+    "script_sha256": "ff1896c645e9c120b23eaeef210cebd8645d2f674f3f35fdb1fdf45de8a87cd3",
+    "report_sha256": "24151adef01134cac9d0410f7afa694c200cb5ecf60322f5ae542e4448bfef95",
+    "passed": 34,
+    "failed": 0,
+    "original_v1_findings_sha256": "c2ee6967c981ac73f4b1b6f0ef59fc4d85696b074af024676f9db38e6fcd993a",
+    "original_v1_harness_failure_preserved": true
+  },
+  "actual_safe_facts": {
+    "runtime_source": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
+    "runtime_merge": "393e656960c39f7bbbfd593272f2ff3c91150448",
+    "safe_and_artifact_bindings": 46,
+    "owner_paths": 104,
+    "changed_owner_paths": 6,
+    "unchanged_owner_paths": 98,
+    "owner_manifest_sha256": "b8e4c8a0c703a0c8f0bf366ebc522c660d9d271ea45f8ee2ef03b894e782568e",
+    "complete_ZIP_files_verified": 12,
+    "original_dependency_deadline_epoch": 1793046545.508343,
+    "snapshot_actual_content_read": false
+  },
+  "findings_resolution": {
+    "F1": "Exact two Lambda name/ARN normalization; foreign mapping rejected.",
+    "F2": "Batch/dependency/stage deadline before budget private capture; actual raw file save deadline gate.",
+    "F3": "Scorer exact PRE and started-input registration/full raw ledger integrity checks before and after unchanged scoring.",
+    "F4": "All seven modules explicitly reject optimized Python before private/SDK work; preclaim receipt limitation below.",
+    "F5": "Exact region/service endpoints on STS/Lambda/Dynamo resource.",
+    "F6": "Successful legal once claim precedes PRE/parser/operation errors and preserves safe failure. Preclaim refusal limitation below.",
+    "V3": "Preflight validates original window on every batch deadline/API path, including after a call."
+  },
+  "unchanged_business_functions": {
+    "collector.py": [
+      "validate_observation",
+      "validate_album_row",
+      "Reader.observe"
+    ],
+    "ui_record.py": [
+      "validate_quiet"
+    ],
+    "assess_logs.py": [
+      "frames",
+      "authenticated",
+      "original_album_file",
+      "analyze"
+    ],
+    "independent_verify.py": [
+      "Review.inspect_case",
+      "Review.run"
+    ],
+    "log_collector.py": [
+      "Logs.collect_group",
+      "Logs.run"
+    ]
+  },
+  "startup_rejection_boundary_sha256": "66d174d8cd9deb04f5112f1767723ca6b9d9b027acb331f55f400408d16cde73",
+  "limitations": [
+    "Optimization rejection, invalid label, and initial exclusive-claim failure do not create a new internal receipt. Existing files are not overwritten; preserve external CLI result. These are pre-private/pre-SDK refusals, not a live attempted success.",
+    "Only valid new labels that successfully claim once have internal PRE/binding/operation failure receipts.",
+    "All synthetic controls remain offline preparation; real native two-photo album, 360-second quiet, caption-parent Reply, complete model/SENT/lease and independent POST remain unexecuted obligations.",
+    "Historical 19 safe receipts are historical ownership closure, not current model permission. Current 104 owner sources match actual current ZIPs; six PR277 changes are explicit, not forced equal to obsolete hashes."
+  ],
+  "actions": {
+    "cloud": 0,
+    "UI": 0,
+    "model": 0,
+    "actual_private_reads": 0,
+    "formal_entrypoints": 0,
+    "source_edits": 0,
+    "raw_copies": 0
+  }
+}

@@ -1,6 +1,6 @@
-## 四群已发布，413审核失败保护已部署
+## 四群已发布；相册验收准备完成，等待新窗口
 
-Bot/Memory两环境唯一发布、主独完整包和稳定核验通过；两个模板说明读回差异有限接受，实际日程保持。[契约](GROQ_413_REVIEW.md)。四群仍发布后观察，状态不变；副本现[七项职责](RETAINED_COPIES.md)。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/341d2e3d7020b4cd1d6730e65456194bf246a0b7/docs/goals/zerdebot-memory-v2/EPIC.md)。
+[当前媒体准备](Z01_MEDIA_CURRENT_ACCEPTANCE.md)已绑定PR277实际包与104源码，现场尚未执行。413审核保护已部署；自然验收继续发布后观察，[七项副本职责](RETAINED_COPIES.md)保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/393e656960c39f7bbbfd593272f2ff3c91150448/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
