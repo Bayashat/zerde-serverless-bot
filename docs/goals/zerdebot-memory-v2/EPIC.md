@@ -1,6 +1,6 @@
-## 四群已发布；媒体有限结果及告警到期收口
+## 四群已发布；普通ask分流修复
 
-新两图引用/静默证据通过本地复核，提问未发且fresh版本差异仍INCOMPLETE。告警341已到期移除并独审。[当前事实](MEDIA_PROOF_LIVE_AND_ALERT_EXPIRY.md)、[十五项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/03dec59aa323fefdd2df818dda4f60304603696e/docs/goals/zerdebot-memory-v2/EPIC.md)。
+PR286已两环境发布并独审，真实语义另验收；旧媒体/告警收口历史保持。[当前事实](ASK_INTENT_REPAIR.md)、[十六项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/23df3413d2a0668ac766b9fc736c494c557e3ce8/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
