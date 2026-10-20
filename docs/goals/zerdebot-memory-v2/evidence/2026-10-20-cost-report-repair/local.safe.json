@@ -1,0 +1,39 @@
+{
+  "status": "LOCAL_REPAIR_TESTED_INDEPENDENT_PASS_RELEASE_PENDING",
+  "at": 1792462694.226516,
+  "parser_sha256": "b1233af7a908fc0dd4c983a573d476d9d70ddb9fc79525c933ea672665debde1",
+  "tests_sha256": "dd6cde0a130f299efbabcf1d60a69d2c9799d5dc3657dbf1ec4d753c17263618",
+  "targeted_passed": 137,
+  "new_regression_cases": 28,
+  "full_passed": 2547,
+  "full_seconds": 176.64,
+  "full_warning": "Existing google.genai DeprecationWarning for _UnionGenericAlias on local Python3.14",
+  "captured_worker_replay": {
+    "event_rows": 1512,
+    "complete_attempts": 378,
+    "core_dev": 144,
+    "core_prod": 216,
+    "excluded_halo": 18,
+    "metrics_match": true,
+    "all_core_cost_fields_independently_match": true
+  },
+  "observed_terminal_offsets_ms": [
+    19,
+    7
+  ],
+  "historical_2308_cause": "UNKNOWN",
+  "timestamp_order_cause": "UNKNOWN",
+  "deployed": false,
+  "current_budget_permit_restored": false,
+  "shared_bot_replay_verified": false,
+  "network_calls_for_replay": 0,
+  "evidence_hashes": {
+    "REPAIR_PLAN.md": "02f085c8ca4d0d69de48617a8d4d18bbd32e61fa0f42b8e9170dff35a46a043a",
+    "repair-plan-pre.safe.json": "20e5841a4ac7775326cfcc110004884332dd514c48f7e04b7f178e79de9afde7",
+    "repair-maintenance-plan-pre.safe.json": "e4697f386e447b7e9c96380d0039426dfd7cc5923a62b8f5bf32ec1850a98d05",
+    "repair-correctness.safe.json": "188c73d32cc7e91967985f93a5d73f03d9cdbac24d15e95baed14b5b4184594f",
+    "repair-maintenance.safe.json": "6ae5a20e56b0cd2fdee72583cd88b6bb9fc51f3fc5041c13fd7f64fef180fe68",
+    "repair-replay.safe.json": "b582d28de2783668b361362ca1cb4d5d6b827a39c648126590e3317f0b68e28c",
+    "repair-replay-independent.safe.json": "ce074184dd90d5924c26ccdedf8bc70ee9608c7ad58203e95ff5a88f67ac63ce"
+  }
+}

@@ -1,6 +1,6 @@
-## 四群已发布；媒体发送前被共享成本门暂停
+## 四群已发布；计费顺序修复已部署
 
-[实际停止/诊断](MEDIA_BUDGET_STOP.md)：资源门通过，Oct17起成本覆盖缺口；未发图或提问，具体上游原因仍UNKNOWN。自然观察继续，[九项副本职责](RETAINED_COPIES.md)保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/44ff96a6edeb453bdc94dd9ed98c705845430f4e/docs/goals/zerdebot-memory-v2/EPIC.md)。
+PR280两环境主独实包/稳定通过；费用覆盖与媒体许可仍分别核验。[当前契约](COST_REPORT_ORDER_REPAIR.md)；[十二项副本职责](RETAINED_COPIES.md)。任务状态不变。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/fd53b30b2d07704f091e0a407375d254e5705819/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

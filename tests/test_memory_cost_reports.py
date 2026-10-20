@@ -167,6 +167,76 @@ def test_same_millisecond_within_one_attempt_has_unambiguous_event_roles():
     assert parsed(list(reversed(rows)))[GROUP]["reports"] == 1
 
 
+@pytest.mark.parametrize("shared", [False, True])
+@pytest.mark.parametrize("terminal_gap_ms", [-19, 0, 7, 19])
+def test_terminal_timestamp_order_preserves_each_metered_amount(shared, terminal_gap_ms):
+    rows = invocation(billed_ms=1704)
+    rows[1]["event_ms"] += 3
+    rows[3]["event_ms"] = rows[0]["event_ms"] + 791
+    rows[2]["event_ms"] = rows[3]["event_ms"] + terminal_gap_ms
+    values = parsed(list(reversed(rows)), shared=shared)[GROUP]
+    assert values["reports"] == values["starts"] == values["finals"] == 1
+    assert values["gb_seconds"] == Decimal("0.213")
+    assert (values["rru"], values["wru"], values["sqs"], values["elapsed_ms"]) == (10, 20, 3, 50)
+
+
+@pytest.mark.parametrize("shared", [False, True])
+@pytest.mark.parametrize("fault", ["missing", "duplicate", "rid", "stream", "group", "incomplete"])
+def test_delayed_final_still_requires_complete_same_attempt_evidence(shared, fault):
+    rows = invocation(billed_ms=2000)
+    rows[2]["event_ms"] = rows[3]["event_ms"] + 19
+    if fault == "missing":
+        rows.pop(2)
+    elif fault == "duplicate":
+        duplicate = deepcopy(rows[2])
+        duplicate["event_ms"] += 1
+        rows.append(duplicate)
+    elif fault == "rid":
+        rows[2]["rid"] = rows[2]["cost_rid"] = "other-request"
+    elif fault == "stream":
+        rows[2]["log_stream"] += "-other"
+    elif fault == "group":
+        rows[2]["log_group"] = GROUP.replace("-prod", "-dev")
+    else:
+        rows[2]["complete"] = 0
+    with pytest.raises(UnverifiedCost):
+        parsed(rows, shared=shared, groups=(GROUP, GROUP.replace("-prod", "-dev")))
+
+
+@pytest.mark.parametrize("next_rid", ["synthetic-request", "different-request"])
+@pytest.mark.parametrize("gap_ms", [0, 1])
+def test_pending_final_cannot_cross_a_new_start_or_same_request_retry(next_rid, gap_ms):
+    first = invocation(billed_ms=2000)
+    first[2]["event_ms"] = first[3]["event_ms"] + 19
+    second = invocation(next_rid, start_ms=first[3]["event_ms"] + gap_ms)
+    with pytest.raises(UnverifiedCost):
+        parsed(first + second)
+
+
+@pytest.mark.parametrize("billed_ms,span_ms", [(1000, 2001), (400000, 301001)])
+def test_delayed_final_retains_both_original_duration_bounds(billed_ms, span_ms):
+    rows = invocation(billed_ms=billed_ms)
+    rows[2]["event_ms"] = rows[0]["event_ms"] + span_ms
+    with pytest.raises(UnverifiedCost, match="timing"):
+        parsed(rows)
+
+
+def test_delayed_final_at_existing_duration_limit_is_not_double_billed_across_windows():
+    boundary = START + 120
+    rows = invocation(start_ms=(boundary - 1) * 1000, billed_ms=2000)
+    rows[2]["event_ms"] = rows[0]["event_ms"] + 3000
+    assert parsed(rows, end=boundary)[GROUP]["reports"] == 1
+    assert parsed(rows, start=boundary) == {}
+
+
+def test_late_cost_start_cannot_be_reordered_into_a_complete_attempt():
+    rows = invocation(billed_ms=2000)
+    rows[1]["event_ms"] = rows[3]["event_ms"] + 1
+    rows[2]["event_ms"] = rows[3]["event_ms"] + 19
+    with pytest.raises(UnverifiedCost):
+        parsed(rows)
+
+
 def test_same_millisecond_previous_report_and_next_start_is_ambiguous():
     first = invocation()
     second = invocation(start_ms=first[3]["event_ms"])
