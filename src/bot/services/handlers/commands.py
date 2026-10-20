@@ -24,6 +24,7 @@ from services.telegram_media import (
     has_any_media,
     media_reference_log_extra,
     media_references_log_extra,
+    media_references_proof_log_extra,
     media_references_retrieval_query,
     prepare_media_collection_for_gemini,
 )
@@ -240,6 +241,7 @@ def handle_ask(ctx: Context) -> None:
                     else "current_message" if media_refs[0].source_message_id == ctx.message_id else "reply_to_message"
                 ),
                 **media_log,
+                **media_references_proof_log_extra(ctx.chat_id, media_refs),
             },
         )
     if not media_refs and has_any_media(ask_message):
@@ -362,6 +364,8 @@ def _process_group_ask_task(
                     "chat_id": chat_id,
                     "reply_to_message_id": reply_to_message_id,
                     **media_log,
+                    **media_references_proof_log_extra(chat_id, prepared_media.prepared_refs),
+                    "media_requested_count": prepared_media.requested_count,
                     "downloaded_bytes": prepared_media.downloaded_bytes,
                     "content_modes": prepared_media.content_modes,
                     "media_part_count": len(media_parts or []),

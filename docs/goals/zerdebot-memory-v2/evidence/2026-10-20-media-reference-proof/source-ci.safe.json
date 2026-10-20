@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "at": 1792493141.417551,
+  "source": "89f4aaeff25a8c666c679fbdd4f961647a1aa56a",
+  "run_id": 39408871644,
+  "jobs": {
+    "Code Quality Checks": "success",
+    "Development Bot Identity": "success",
+    "Infrastructure Changes Preview": "success"
+  },
+  "conclusion": "success",
+  "workflow_name": "PR Check",
+  "run_url": "https://github.com/Bayashat/zerde-serverless-bot/actions/runs/39408871644"
+}

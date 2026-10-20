@@ -1,3 +1,23 @@
+## Oct20：媒体引用摘要已部署两环境，真实多图问答另行验收
+
+PR284运行SOURCE `89f4aaeff25a8c666c679fbdd4f961647a1aa56a`；dev/prod Bot/Memory共同完整ZIP `4ecda06e8cacc244243c99b5b21d5931e9d0cc362a8314019baaba24120f98c3`。每环境唯一Execute、主独五函数与共享层完整ZIP/配置保护及至少300秒稳定已完成（dev 429.225724秒，prod 424.238718秒）。只改 `services/telegram_media.py` 和 `services/handlers/commands.py`；News/Quiz/Operations/共享层原包、身份、18告警、实际规则/目标及CONTROL的原epoch和合法revision保持。文档HEAD与merge不当运行构建，不额外部署。
+
+存储、检测和实际成功准备三个原日志边界增加版本1引用摘要。原日志脱敏不改，不输出原媒体标识或正文；转换前严格身份sidecar不入SQS/持久行/模型。摘要是可关联元数据，不能证明图片字节或Gemini理解。预算五owner、下载/模型请求/lease/发送策略不变。181相关/2606全测、源码CI三job及两环境各5个ARM入口与12项包内合成检查通过，这些不是自然或媒体业务验收。
+
+原dev基线第10次DescribeAlarms发生ProxyConnectionError，原9成功和6完整ZIP保留；新6次只读补未完成保护，独立复核17份原文和6ZIP后确认组合基线。原失败仍失败，不是同一时点快照；后续prepare另fresh全保护。prod原prepare的37次AWS响应成功（含3写），但变更单额外包含两QuizRule描述表示差异而停于Execute前。原失败和未执行变更单保持；新V2仅把模板两Description恢复fresh实际规则en-dash，原ZIP不变，新变更单严格仅两Code后才唯一Execute。问号/en-dash表示差异原因UNKNOWN，其它配置和直接规则比较不放宽。操作器本批AWS 382次尝试=381成功+1原失败，其中10写=5PutObject+3CreateChangeSet+2Execute；运行GitHub40GET，启动8GET及CI/文档发布另计。0操作器UI/模型/自然样本；正常业务不计入该操作器数。原失败、工具草稿及审查harness修订均保全，不宣称首次无问题。
+
+原T2424/2425、提问前STOP及旧评分结果永久冻结，不用新摘要回填。后续新媒体工具须绑定本次实际包、主独snapshot与原期限，再经独审、原完整7API五owner时点检查和新的直接人类15分钟Telegram独占窗口；仍须同两图完整Gemini链、语义43、单SENT、lease及原生Reply精确父目标。四群仍RELEASED_OBSERVING，自然0/50有据、0/20未知、起点null；production_ready=false仅指自然质量未验收。
+
+[运行回执](evidence/2026-10-20-media-reference-proof/release.safe.json)、[独立回执](evidence/2026-10-20-media-reference-proof/release-independent.safe.json)。顺序读取非跨服务事务，不当模型许可；具体后续见本契约及保留职责。
+
+## 以下为此前冻结阶段；其未部署、旧绑定或待核描述仅属当时，不作重跑指令
+
+## Oct20：媒体引用核验窄修已完成源码验证，运行部署待执行
+
+存储、选图和实际成功准备三个环节新增版本化引用摘要，保留原日志脱敏；非法或被转换改变的身份不可证明，跳过图片不计入成功集合。原下载/预算/模型/lease/发送策略保持。181相关测试、2606全套回归及独立源码双审通过；这些是本地证据，运行包尚未部署，完整多图问答仍待新工具与新独占窗口。原T停止及十四项副本责任不变，0新增自然样本。[窄修契约](MEDIA_REFERENCE_PROOF.md)。
+
+## 以下为此前冻结阶段，不作当前状态或重跑指令
+
 ## Oct20：两图已分组发送，完整媒体验收停在提问前
 
 本次新独占窗口内，当前包preflight31读及原完整七API五owner预算检查通过。两张合成图仅一次同组发送；持久记录识别2424/2425，双ready后观察370.050019秒，主原生UI未见自动回复或反应。随后固定窗日志完整采集，但两条存图事件的相册ID和文件ID均被既有规则脱敏，冻结评分停于`photo_bridge_count / INCOMPLETE_LOG_EVIDENCE`。没有发送提问，未执行完整两图Gemini链、43答案、单SENT/lease和完整独立业务POST；本批为`PARTIAL_STOP_BEFORE_ASK`，不判为业务失败，也不称通过。

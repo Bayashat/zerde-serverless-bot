@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import json
 import os
-from dataclasses import asdict, dataclass
+import re
+import unicodedata
+from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Mapping, Sequence
 
 from core.config import (
@@ -90,6 +94,64 @@ SUPPORTED_MEDIA_TYPES = {
 }
 TEXT_MEDIA_TYPES = {"text_file", "code_file"}
 MAX_MEDIA_REFS_PER_REQUEST = 4
+_REFERENCE_PROOF_DOMAIN = b"zerde.media-reference.v1\x00"
+
+
+def _proof_id(value: Any, *, positive: bool = True) -> str | None:
+    """Canonical identity for diagnostics only; never coerce ambiguous values."""
+    if type(value) is int:
+        if not -(10**20) < value < 10**20:
+            return None
+        text = str(value)
+    elif type(value) is str:
+        text = value
+    else:
+        return None
+    pattern = r"[1-9][0-9]{0,19}" if positive else r"-?[1-9][0-9]{0,19}"
+    return text if re.fullmatch(pattern, text) else None
+
+
+def _proof_text(value: Any) -> bool:
+    return (
+        type(value) is str
+        and 0 < len(value) <= 512
+        and value == value.strip()
+        and not any(unicodedata.category(char) in {"Cc", "Cf", "Cs"} for char in value)
+    )
+
+
+def _reference_identity(value: Mapping[str, Any] | MediaReference) -> tuple[str, ...]:
+    """Empty tuple means unavailable, including valid data changed by coercion."""
+    if not isinstance(value, (Mapping, MediaReference)):
+        return ()
+    get = (lambda key: getattr(value, key)) if isinstance(value, MediaReference) else value.get
+    message = _proof_id(get("source_message_id"))
+    actor = _proof_id(get("source_user_id"))
+    kind, group, unique = get("media_type"), get("media_group_id"), get("file_unique_id")
+    if (
+        message is None
+        or actor is None
+        or type(kind) is not str
+        or kind not in SUPPORTED_MEDIA_TYPES
+        or not _proof_text(group)
+        or not _proof_text(unique)
+    ):
+        return ()
+    return message, actor, kind, group, unique
+
+
+def _message_reference_identity(
+    message: Mapping[str, Any], media: Mapping[str, Any], media_type: str
+) -> tuple[str, ...]:
+    return _reference_identity(
+        {
+            "source_message_id": message.get("message_id"),
+            "source_user_id": message_actor(message).get("id"),
+            "media_type": media_type,
+            "media_group_id": message.get("media_group_id"),
+            "file_unique_id": media.get("file_unique_id"),
+        }
+    )
 
 
 class MediaError(Exception):
@@ -137,10 +199,15 @@ class MediaReference:
     source_display_name: str | None = None
     source_sender_type: str | None = None
     ephemeral_source_ref: dict[str, Any] | None = None
+    # Local diagnostic provenance only. Never serialize into SQS, storage or prompts.
+    # None is a directly constructed reference; () records invalid original input.
+    _proof_identity: tuple[str, ...] | None = field(default=None, compare=False, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a compact JSON-serializable representation."""
-        return {key: value for key, value in asdict(self).items() if value not in (None, "")}
+        return {
+            key: value for key, value in asdict(self).items() if key != "_proof_identity" and value not in (None, "")
+        }
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> "MediaReference":
@@ -161,6 +228,7 @@ class MediaReference:
             source_display_name=_optional_str(value.get("source_display_name")),
             source_sender_type=_optional_str(value.get("source_sender_type")),
             ephemeral_source_ref=value.get("ephemeral_source_ref"),
+            _proof_identity=_reference_identity(value),
         )
 
 
@@ -188,6 +256,7 @@ class PreparedMediaCollection:
     skipped_count: int
     skipped_reasons: dict[str, int]
     content_modes: list[str]
+    prepared_refs: tuple[MediaReference, ...] = ()
 
 
 def _optional_str(value: Any, *, limit: int | None = None) -> str | None:
@@ -261,6 +330,7 @@ def _media_ref_from_message(message: Mapping[str, Any]) -> MediaReference | None
                 file_size=_optional_int(largest.get("file_size")),
                 mime_type="image/jpeg",
                 caption=_caption(message),
+                _proof_identity=_message_reference_identity(message, largest, "photo"),
                 **_source_fields(message),
             )
 
@@ -278,6 +348,7 @@ def _media_ref_from_message(message: Mapping[str, Any]) -> MediaReference | None
                 file_name=file_name,
                 caption=_caption(message),
                 duration_seconds=_optional_int(video.get("duration")),
+                _proof_identity=_message_reference_identity(message, video, "video"),
                 **_source_fields(message),
             )
 
@@ -292,6 +363,7 @@ def _media_ref_from_message(message: Mapping[str, Any]) -> MediaReference | None
                 file_size=_optional_int(voice.get("file_size")),
                 mime_type=mime_type,
                 caption=_caption(message),
+                _proof_identity=_message_reference_identity(message, voice, "voice"),
                 **_source_fields(message),
             )
 
@@ -308,6 +380,7 @@ def _media_ref_from_message(message: Mapping[str, Any]) -> MediaReference | None
                 mime_type=mime_type or _audio_mime_from_extension(file_name),
                 file_name=file_name,
                 caption=_caption(message),
+                _proof_identity=_message_reference_identity(message, audio, "audio"),
                 **_source_fields(message),
             )
 
@@ -339,6 +412,7 @@ def _media_ref_from_message(message: Mapping[str, Any]) -> MediaReference | None
                 mime_type=mime_type,
                 file_name=file_name,
                 caption=_caption(message),
+                _proof_identity=_message_reference_identity(message, document, media_type),
                 **_source_fields(message),
             )
 
@@ -490,6 +564,7 @@ def observe_media_group(repo: Any, update: Mapping[str, Any]) -> None:
                 "chat_id": chat_id,
                 "media_group_id": group_id,
                 **media_reference_log_extra(ref),
+                **media_reference_proof_log_extra(chat_id, ref),
             },
         )
     except Exception as exc:
@@ -617,6 +692,43 @@ def media_references_log_extra(refs: Sequence[Mapping[str, Any] | MediaReference
         "media_types": list(dict.fromkeys(ref.media_type for ref in media)),
         "media_group_id": group_ids[0] if group_ids else None,
         "media_source_message_ids": [ref.source_message_id for ref in media if ref.source_message_id is not None],
+    }
+
+
+def _reference_digest(chat_id: Any, ref: Mapping[str, Any] | MediaReference) -> str | None:
+    chat = _proof_id(chat_id, positive=False)
+    identity = _reference_identity(ref)
+    if chat is None or not identity:
+        return None
+    if isinstance(ref, MediaReference) and ref._proof_identity is not None and ref._proof_identity != identity:
+        return None
+    canonical = json.dumps([chat, *identity], ensure_ascii=True, separators=(",", ":")).encode()
+    return hashlib.sha256(_REFERENCE_PROOF_DOMAIN + canonical).hexdigest()
+
+
+def media_reference_proof_log_extra(chat_id: Any, ref: Mapping[str, Any] | MediaReference) -> dict[str, Any]:
+    """Linkable reference metadata, not a content hash or proof of model analysis."""
+    digest = _reference_digest(chat_id, ref)
+    return {
+        "media_reference_proof_version": 1,
+        "media_reference_proof_status": "AVAILABLE" if digest else "UNAVAILABLE",
+        "media_reference_proof_digest": digest,
+    }
+
+
+def media_references_proof_log_extra(
+    chat_id: Any, refs: Sequence[Mapping[str, Any] | MediaReference]
+) -> dict[str, Any]:
+    """Keep order and missing entries; duplicates cannot claim complete proof."""
+    digests = [_reference_digest(chat_id, ref) for ref in refs]
+    proven = sum(digest is not None for digest in digests)
+    available = 0 < len(refs) <= MAX_MEDIA_REFS_PER_REQUEST and proven == len(refs) and len(set(digests)) == len(refs)
+    return {
+        "media_reference_proof_version": 1,
+        "media_reference_proof_status": "AVAILABLE" if available else "UNAVAILABLE",
+        "media_reference_proof_digests": digests,
+        "media_reference_proof_requested_count": len(refs),
+        "media_reference_proof_proven_count": proven,
     }
 
 
@@ -880,4 +992,5 @@ def prepare_media_collection_for_gemini(
         skipped_count=sum(skipped_reasons.values()),
         skipped_reasons=skipped_reasons,
         content_modes=content_modes,
+        prepared_refs=tuple(prepared_refs),
     )
