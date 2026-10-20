@@ -1098,6 +1098,33 @@
       "deadline_epoch": 1793059810.8078651,
       "ledger_sha256": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912",
       "status": "PENDING_EXPIRY"
+    },
+    "cost_report_readback_raw_retention": {
+      "status": "RETAINED_PENDING_ORIGINAL_EXPIRY",
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-readback/raw-retention.safe.json",
+      "ledger_sha256": "a7a82e5bddc6b66605b7e62708c8927bc2845de0683213ecc4531652bcf07bfb",
+      "captured": 2,
+      "anchor_epoch": 1792461205.8931148,
+      "deadline_epoch": 1793066005.8931148,
+      "deadline_utc": "2026-10-27T01:53:25.893115+00:00",
+      "ordinary_unlink_not_secure_erasure": true
+    },
+    "cost_metrics_diagnostic_raw_retention": {
+      "status": "RETAINED_PENDING_ORIGINAL_EXPIRY",
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-metrics-diagnostic/raw-retention.safe.json",
+      "ledger_sha256": "0a98c397304afbd854641c70edf9721645b850743b6cb30b1ccfc14dce456a66",
+      "captured": 5,
+      "anchor_epoch": 1792461445.452039,
+      "deadline_epoch": 1793066245.452039,
+      "deadline_utc": "2026-10-27T01:57:25.452039+00:00",
+      "ordinary_unlink_not_secure_erasure": true,
+      "original_ledger_captured": 3,
+      "continuation_ledger": {
+        "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-metrics-diagnostic/query-continuation/raw-retention.safe.json",
+        "sha256": "89f700a8ae3156a4601b474c335a2ade292fc3e6a2e544022b524bc8cee1aec9",
+        "captured": 2,
+        "inherits_original_anchor_and_deadline": true
+      }
     }
   },
   {
@@ -1719,6 +1746,16 @@
       "historical_exception_cause": "UNKNOWN",
       "model_permit": false,
       "evidence": "evidence/2026-10-20-media-budget-stop/diagnostic.safe.json"
+    },
+    "cost_terminal_order_repair": {
+      "status": "LOCAL_REPAIR_TESTED_INDEPENDENT_PASS_RELEASE_PENDING",
+      "contract": "COST_REPORT_ORDER_REPAIR.md",
+      "evidence": "evidence/2026-10-20-cost-report-repair/local.safe.json",
+      "targeted_passed": 137,
+      "full_passed": 2547,
+      "deployed": false,
+      "current_budget_permit_restored": false,
+      "original_cost_owners_and_limits_unchanged": true
     }
   },
   {

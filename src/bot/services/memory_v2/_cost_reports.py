@@ -1,7 +1,8 @@
 """Pair bounded, body-free Lambda events into execution attempts, including retries.
 
 AWS reuses RequestId on retries, including in the same log stream. It is not an
-invocation identity. A platform START and its following REPORT delimit an attempt.
+invocation identity. Pair a platform START with both terminal cost and REPORT
+events before accounting an attempt; their log timestamps can be reversed.
 """
 
 import re
@@ -12,6 +13,7 @@ from ._cost_catalog import BLOCK_SECONDS, HALO_SECONDS, UnverifiedCost, number
 
 REPORT_EVENT_LIMIT = 10_000
 _KINDS = ("START", "MemoryV2CostStart", "MemoryV2Cost", "REPORT")
+_FINAL_AFTER_REPORT = ("START", "MemoryV2CostStart", "REPORT", "MemoryV2Cost")
 _COMMON = {"log_group", "log_stream", "event_ms", "event_kind", "rid"}
 _IDENTITY = {"platform_rid", "cost_rid"}
 _NUMERIC = {
@@ -175,15 +177,17 @@ def parse_reports(result, groups, *, start, end, shared):
         began = events[0]["event_kind"] == "START"
         core = began and start_ms <= events[0]["event_ms"] < end_ms
         touches_core = any(start_ms <= row["event_ms"] < end_ms + 301_000 for row in events)
-        if tuple(kinds) != _KINDS:
+        if tuple(kinds) not in (_KINDS, _FINAL_AFTER_REPORT):
             if core or touches_core:
                 raise UnverifiedCost("START, FINAL or REPORT attempt coverage is incomplete")
             return
-        span = events[-1]["event_ms"] - events[0]["event_ms"]
+        # Canonical roles are safe only after validating the original sequence.
+        first, marker, final, report = (events[kinds.index(kind)] for kind in _KINDS)
+        span = max(final["event_ms"], report["event_ms"]) - first["event_ms"]
         # Refuse an old START borrowed by a later retry with a missing START.
         # The 1s tolerance accommodates platform log overhead; it is never
         # billed or used to fill missing records. The runtime cap is 300s.
-        if span > 301_000 or span > number(events[-1]["billed_ms"]) + 1000:
+        if span > 301_000 or span > number(report["billed_ms"]) + 1000:
             raise UnverifiedCost("REPORT attempt timing is inconsistent")
         if not core:
             return
@@ -192,15 +196,14 @@ def parse_reports(result, groups, *, start, end, shared):
                 if row[key] != "":
                     row[key] = number(row[key])
         if (
-            events[1]["cost_schema"] != 1
-            or events[2]["cost_schema"] != 1
-            or events[1]["memory_request"] != 1
-            or events[2]["complete"] != 1
+            marker["cost_schema"] != 1
+            or final["cost_schema"] != 1
+            or marker["memory_request"] != 1
+            or final["complete"] != 1
         ):
             raise UnverifiedCost("Cost attempt accounting is incomplete")
-        if events[3]["memory_bytes"] <= 0:
+        if report["memory_bytes"] <= 0:
             raise UnverifiedCost("REPORT memory size is invalid")
-        first, _, final, report = events
         group = first["log_group"]
         values = parsed.setdefault(group, _totals())
         for key in (
@@ -265,7 +268,12 @@ def parse_reports(result, groups, *, start, end, shared):
                     active = []
                 for event in sorted(tied, key=lambda row: _KINDS.index(row["event_kind"])):
                     active.append(event)
-                    if event["event_kind"] == "REPORT":
+                    active_kinds = tuple(row["event_kind"] for row in active)
+                    if event["event_kind"] == "REPORT" and active_kinds == _FINAL_AFTER_REPORT[:3]:
+                        # Await the same attempt's FINAL. A new START or another
+                        # request still hits the existing unclosed-attempt guard.
+                        continue
+                    if event["event_kind"] == "REPORT" or active_kinds == _FINAL_AFTER_REPORT:
                         finish(active)
                         active = []
         if active:
