@@ -1,6 +1,6 @@
-## 四群已发布；PR280媒体绑定已准备
+## 四群已发布；媒体现场停于证据缺口
 
-费用历史缺块已补齐。新媒体工具绑定实际包及104源码，仍待新独占窗口和完整预算检查；未发图。[本批契约](Z01_MEDIA_COST_REBIND.md)；[十三项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/1aebd482a84e9ae05194cdcf2270035acf97ea6f/docs/goals/zerdebot-memory-v2/EPIC.md)。
+两图分组及六分钟静默有据；相册/文件ID日志脱敏使既定证据链不完整，未提问，不称完整通过。窗口已释放。[现场结果](Z01_MEDIA_COST_REBIND_LIVE.md)；[十四项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/e1eab17b26f015fc95bf5ca4577112d831bbc6e2/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
