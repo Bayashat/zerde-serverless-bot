@@ -1,0 +1,56 @@
+{
+  "status": "ALIGNED",
+  "mode": "PRE",
+  "reviewer": "independent maintenance reviewer purge_wait_maintenance",
+  "at": 1792485555.495299,
+  "plan_sha256": "451605e0d69197801fd7503720efdfc548ac046b2f1ea1cbacaad83d5734c06e",
+  "release_binding_sha256": "1418dcd4780dba61c8a03377fdfbde933bf3542862b69f18d6fca40873642cc3",
+  "tools": {
+    "collector.py": "66991cf755adcae8b0d2c2c2d8eaff6dffb4ac9f13777bde49384e97bd9ee482",
+    "read_budget.py": "6b61b4736bd993749aa53ccdcbcef7dd63b5e7112d70057c4627694b041b416d",
+    "release_gate.py": "0236ec0b04c1a8a3639ec82e91fe6a90ef3723cc95104ae7044f8f6861ea1549",
+    "independent_verify.py": "f61c7aa7cae51b81bb7c6f195bd288703fa2a06cd49cc164a8ef90ffc48c2037",
+    "ui_record.py": "59361ccf64f4d0cf3d8ae85abab4477602c7046a8c78c98e485d54f7b84d5e00",
+    "log_collector.py": "00de2e063b2f20b5290c3e8831ec6e60a48ca8f0924136781166daf82812bb04",
+    "assess_logs.py": "2f2833ae9cab5ea0103b24618e23e1b9ab2542fa8ae19460db55ab8ba9632360"
+  },
+  "findings": [],
+  "scope": "Finite current PR280 media rebind delta, safe evidence/source/12 full actual ZIPs and memory-only synthetic fixtures; no live permission or business acceptance.",
+  "checks": {
+    "minimal_change": "Three semantic tools retain exact N bytes; complete collector differs only approved release/plan/final/deadline literals; complete budget reader only dependency expiry. Root snapshot loader and CF adapter AST unchanged.",
+    "current_owners": "104-source closure matches current source files and actual Bot/Memory/layer members across 12 complete main/independent dev ZIPs. N→Q only _cost_reports.py changes, 103 preserved; S→Q seven named changes, 97 preserved. All pinned safe evidence hashes match.",
+    "snapshots": "Root and independent Q snapshot safe descriptors are separately bound to corresponding original receipt/ledger identities, retain Oct27 02:26:52.661740 UTC, copied=false. Independent loader selects independent_snapshot. Synthetic positive load and deadline/window/identity/hash negatives pass; no actual private snapshot opened.",
+    "stat_fix": "Original 42 author controls lacked successful synthetic independent snapshot load and original missing local stat import is preserved. Final f61c7a… import fix was exercised by our successful memory-only loader; no production or live failure inferred.",
+    "window_and_once": "Unchanged window/started-input gates retain direct human confirmation, <=900 seconds UI and original <=3600 seconds recorded-input read-only exception. Original claim-before-PRE and STOPPED_PRESERVE_ONCE behavior checked with memory-only writes; retry rejected.",
+    "startup_limit": "Explicit -O rejection, invalid labels and failed first exclusive claim can refuse before private/SDK without internal receipt. Only valid claimed entries guarantee attempted safe failure recording; no promise for unrecoverable disk errors.",
+    "module_boundary": "Runtime owner modules are imported only in the standalone budget process after current closure/ZIP validation and ambient services/core/zerde_common rejection. Four ambient-module negative controls passed. Reader does not promise cleanup for in-process reuse; its reviewed entry is a single separate process.",
+    "budget_and_semantics": "Original seven-read/300-second no-reservation/no-model owner check retained, point is not continuing permission. Original album/quiet/caption/native parent/provider/answer/SENT/lease gates retained.",
+    "responsibilities": "Preparation creates no new business raw or deadline; existing thirteen duties and all old once/UI_STOP facts remain unchanged. New real capture must create and register its own earliest seven-day anchor before UI/API. Alert341 Oct20 deadline priority preserved."
+  },
+  "controls": {
+    "new_finite_maintenance_controls": 44,
+    "report": "maintenance-binding-delta.safe.json",
+    "not_business_samples": true,
+    "old_suite_not_rerun": true
+  },
+  "evidence_sha256": {
+    "maintenance_binding_delta.py": "40a2b455cc25a18913f9afcfa2f9132f32c23b51e33a74a65e06e41c26f3afa1",
+    "maintenance-binding-delta.safe.json": "fadba24578060fd7f50d2146fc52dd9102c0bc9c0efeaa4ae18e872b802163c7",
+    "plan-maintenance-pre.safe.json": "f39f9c809114103675af43418f288644127e7013391fda7cf4de422dbd13c0e1",
+    "binding-controls.safe.json": "85305c487e1c61e221d2eb687fdb7a5fa9da33833ce5aa074d9848f8194ec95e",
+    "independent-snapshot-import-fix.safe.json": "4378ac83e8e25adde863ed2911023d4e2306e338d0f3c3862013f14c5539129b",
+    "prior_N_maintenance-tool-pre.safe.json": "60a5fcb346a2b65a24b8a477f7edf5fc056ebf6bb484845de0ea6b05ff0dea0b"
+  },
+  "actual_complete_zip_files_checked": 12,
+  "actual_private_reads": 0,
+  "formal_operator_entries": 0,
+  "cloud_calls": 0,
+  "network_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw": 0,
+  "repository_mutations": 0,
+  "new_raw_deadline": null,
+  "live_state": "NOT_EXECUTED",
+  "next_gate": "Main safe preparation, then new direct-human current exclusive window and current live preflight/budget gates. This PRE does not permit any send by itself."
+}

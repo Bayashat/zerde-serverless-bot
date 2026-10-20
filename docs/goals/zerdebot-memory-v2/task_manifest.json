@@ -313,6 +313,23 @@
       "evidence": "evidence/2026-10-20-cost-recovery-followup/final.safe.json",
       "evidence_sha256": "bda5c2fe1d063c089aa8130479cc4645eabb70817303ebe7c87bf40cfe185d88",
       "contract": "COST_RECOVERY_FOLLOWUP.md"
+    },
+    "media_cost_rebind_preparation": {
+      "status": "CURRENT_MEDIA_PREPARED_INDEPENDENT_PASS_LIVE_NOT_EXECUTED",
+      "as_of": "2026-10-20",
+      "contract": "Z01_MEDIA_COST_REBIND.md",
+      "evidence": "evidence/2026-10-20-z01-media-cost-rebind/preparation.safe.json",
+      "evidence_sha256": "5ce0d590b8f32fae3fa7cf983020c53fbe4de6b5f5054168cf4f3e98e539fa54",
+      "runtime_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+      "runtime_merge": "b82a3a9c6ab05fa86d37666e2732b43c820dcc54",
+      "owner_files": 104,
+      "changed_relative_N": 1,
+      "unchanged_relative_N": 103,
+      "complete_actual_zips": 12,
+      "live_started": false,
+      "new_retention_duties": 0,
+      "natural_sample_increment": 0,
+      "remaining": "准备已绑定PR280；须新的直接人类15分钟窗口及原完整7API五owner检查通过后才开始两图同相册/原生Reply有限验收。旧N STOP不续跑。"
     }
   },
   {
