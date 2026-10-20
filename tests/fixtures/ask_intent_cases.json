@@ -1,0 +1,18 @@
+[
+  {"id": "bare-product", "lang": "zh", "question": "RTX SPARK", "mode": "general"},
+  {"id": "zh-product", "lang": "zh", "question": "RTX SPARK是什么？", "mode": "general"},
+  {"id": "ru-product", "lang": "ru", "question": "Расскажи про RTX SPARK", "mode": "general"},
+  {"id": "kk-product", "lang": "kk", "question": "RTX SPARK деген не?", "mode": "general"},
+  {"id": "en-courtesy", "lang": "en", "question": "I want to understand RTX SPARK", "mode": "general"},
+  {"id": "zh-courtesy", "lang": "zh", "question": "我想知道量子计算的原理", "mode": "general"},
+  {"id": "ru-translate", "lang": "ru", "question": "Переведи на английский: «Где я живу?»", "mode": "general"},
+  {"id": "kk-advice", "lang": "kk", "question": "Python үйренуді неден бастауға болады?", "mode": "general"},
+  {"id": "public-person", "lang": "en", "question": "Who was Ada Lovelace?", "mode": "general"},
+  {"id": "unfamiliar-topic", "lang": "en", "question": "Explain the term ZORP-9000", "mode": "general"},
+  {"id": "zh-personal", "lang": "zh", "question": "我用的是RTX SPARK吗？", "mode": "unknown"},
+  {"id": "ru-personal", "lang": "ru", "question": "Каким компьютером я пользуюсь?", "mode": "unknown"},
+  {"id": "kk-personal", "lang": "kk", "question": "Мен қандай компьютер қолданамын?", "mode": "unknown"},
+  {"id": "en-personal", "lang": "en", "question": "Which computer do I use?", "mode": "unknown"},
+  {"id": "group-history", "lang": "en", "question": "Who in this group owns RTX SPARK?", "mode": "unknown"},
+  {"id": "mixed-personal", "lang": "zh", "question": "我用什么电脑？顺便解释SQL。", "mode": "unknown"}
+]
