@@ -1,0 +1,43 @@
+{
+  "status": "STOPPED_BEFORE_SEND_BUDGET_UNVERIFIED",
+  "preflight_status": "PREFLIGHT_PASS_NOT_SEND_PERMIT",
+  "preflight_api_reads": 31,
+  "budget_status": "INCOMPLETE_NO_MODEL_TEST_ALLOWED",
+  "budget_api_reads": 4,
+  "aws_calls": 35,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "budget_reservations": 0,
+  "album_inputs_sent": 0,
+  "ask_inputs_sent": 0,
+  "ui_observer": "primary_not_independent",
+  "private_dependency_read": "current_B_snapshot_under_window_original_expiry_preserved",
+  "initial_space_draft_cleared_after_direct_user_reply": true,
+  "budget_reason": {
+    "scope": "dev_only_observed",
+    "model_control_row": "ABSENT",
+    "aws_paused": false,
+    "measurement_state": "UNVERIFIED",
+    "reason": "UnverifiedCost",
+    "estimate_micro_usd": 4394416,
+    "stop_micro_usd": 27000000,
+    "covered_until": 0,
+    "valid_until": 1792451308,
+    "not_model_quota_exhaustion": true,
+    "no_production_state_inference": true
+  },
+  "raw_count": 36,
+  "raw_ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+  "raw_deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+  "raw_deadline_epoch": 1793058762.922982,
+  "evidence": {
+    "onsite-window.safe.json": "effb291018f13ec5941ace659cb9fe7ce48087f1d292d27995aebe341906eb31",
+    "retention-anchor.safe.json": "2e257f99ebb97ea7f9a49e3a1f5f11d5bf02bb94b2e9ae5d92c855a4d4e534a3",
+    "ui-onsite.private.json": "a0137fcc35604a66dfc5507971fbcadc5c34f760bb7004d83f8dbdabc171b34d",
+    "preflight.safe.json": "d3472f91ca3de78c7214c18bdaec5dc4c5f5bba8f5d3842488f3c264dc525d9b",
+    "budget.safe.json": "f0e6c958cfc41c1b0f0b75f4e9f2c48f29f0e7fce15abc1aea779c3c47b3d7c4",
+    "retention-duty.safe.json": "a1750715cf06d2697f2c8dfb391ae92972db86574b0280aca266e66822d56c56"
+  },
+  "independent_review": "PENDING_SEPARATE_RECEIPT",
+  "at": 1792454241.917939
+}

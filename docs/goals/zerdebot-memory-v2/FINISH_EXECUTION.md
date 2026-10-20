@@ -1,3 +1,17 @@
+## Oct20：媒体验收发送前停止；共享成本门缺覆盖，继续有限诊断
+
+用户本次给出新的15分钟Telegram独占，并单独授权清掉Test bots输入框的一个空格；主现场核了账号、唯一dev群与@zerde_dev_bot，清理后输入框为空。原生UI为主观察，数字身份来自原绑定，不称独立UI或原生取得消息ID。现场preflight31只读通过，但预算reader第4读按原owner抛MemoryBudgetPaused；未上传图片、未发送相册或提问、无模型调用/预算预留，窗口已提前释放，不借余下时间或旧STOP续跑。所有本批once冻结，媒体业务验收仍未完成。
+
+该dev入口读取的是共享prod Memory V2表中的项目预算，并非dev独立钱包。实际AWS成本行UNVERIFIED/UnverifiedCost、covered_until=0、valid_until已失效；paused=false、估算低于停止阈值，所以不是额度耗尽。原冻结stop回执的dev_only_observed只指业务入口，不代表独立dev预算；未fresh核生产群状态或断言整个Bot停用。
+
+新有限诊断严格22AWS只读：STS1、原成本owner资源元数据20、共享预算表当月DAY精确强一致单页1。当前全部资源门通过；33行无续页，按原12小时/900秒settled窗口复算为32块完整、5块缺席、1块覆盖不足、0错inventory，最早缺口2026-10-17 00:00UTC。当前缺口能解释许可不足，**原23:08监控UnverifiedCost的具体抛错分支仍UNKNOWN**；当前资源通过不能倒推历史通过，也不能用缺口直接认定原异常原因。没有日志扫描、手动Invoke、模型、预算写入或阈值/epoch改动；下一步仅围绕缺口的失败计量证据作新有限诊断，不重跑旧reader或手工补许可。
+
+两批合计57操作器AWS只读、0云写/模型/预留/运行发布；58原文=现场N36（1UI+31+4API）和诊断D22。两个独立七日期限分别Oct26 23:52:42.922982UTC、Oct27 00:10:10.807865UTC，原其它七项期限保持，共九项。四群RELEASED_OBSERVING发布事实、自然0/50有据0/20未知/起点null和20任务14OPEN6CLOSED/EpicOPEN保持；本轮未重新证明生产业务或自然质量。
+
+[本次停止及诊断契约](MEDIA_BUDGET_STOP.md)、[实际停止](evidence/2026-10-20-media-budget-stop/media-stop.safe.json)、[停止独审](evidence/2026-10-20-media-budget-stop/media-independent.safe.json)、[诊断结果](evidence/2026-10-20-media-budget-stop/diagnostic.safe.json)、[精确副本职责](RETAINED_COPIES.md)。
+
+## 以下为此前完整阶段，仅历史；旧窗口、待执行和绑定状态不作重跑指令
+
 ## Oct21 首发527原文清理已准备，尚未删除
 
 原期限 **2026-10-21 13:10:50.198516 UTC** 的最终527项原ledger相对完整路径已完成新工具双审、主唯一inspect Prep20261019A及独立fresh无跟随hash/身份/前后库存核验。全库存910常规文件，383保留、7目录（3个0700、4个0755），没有链接或ZIP。41个保护文件另有精确历史hash，342个仅本次fresh基线；原目录模式保持，目标全部祖先0700。

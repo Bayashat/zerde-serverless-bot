@@ -1,0 +1,146 @@
+{
+  "status": "ALIGNED_CURRENT_METADATA_PASS_COVERAGE_GAP_CONFIRMED",
+  "recorded_at": 1792455155.944576,
+  "started_at": 1792455155.918159,
+  "reviewer": "independent /root/dev_release_review",
+  "result_sha256": "d64b4a63763f16389c736d715022c7f94bbee04e90f4da7168fa6b412f7a0d5e",
+  "evidence_sha256": {
+    "PLAN.md": "f75f72c21c6ba8c2f644438905c5e24fa9f50fedd4ebff819613721480cbb545",
+    "diagnose.py": "5ecb9f8eb4ce31f8a31d24530b7512b02655626e48f7fb53dcc4da53091cf7aa",
+    "intent.safe.json": "ae3589406aeba77064ce5b6c4a25e05941dceb1d18df62d10412c5d42482f8a5",
+    "result.safe.json": "d64b4a63763f16389c736d715022c7f94bbee04e90f4da7168fa6b412f7a0d5e",
+    "raw-anchor.safe.json": "6cdd28a66bf63ac16d6fd0db51aef5314bb89b15b87aad25ef21702bace55d4b",
+    "raw-retention.safe.json": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912",
+    "tool-pre.safe.json": "ae405b4c3ccfd1a2e18249081254a5ba2ff56ce3d921256eaf2fa3efb1393630",
+    "maintenance-pre.safe.json": "9b6ebf9ceca051f0343f1fbf54f54ea7c2738a6cc12823557a65108573a59963",
+    "raw/001.private.json": "352949c7461679cb57196112e61902ffda8c8d8933e3d44abf942278a2c05c91",
+    "raw/002.private.json": "602d1deee768f819f8dfc2e4c0cf2f6cbffae0ad639e0add23daab72aa2fa52b",
+    "raw/003.private.json": "c80f03a504e772c2fc8aff1052ac787179755e1608c982079edbf4da71f07764",
+    "raw/004.private.json": "ddbfd4cd3561c42df982a2f93883355e936fbc860d4be8ac25551c3ee8d0518d",
+    "raw/005.private.json": "777b023b509ea218cab7e44811e99200caa6431ccba520e7f3148bbcd6afcf7f",
+    "raw/006.private.json": "7253291877d579693b7b6333a56f955821e99bbdb9220eda6b0c6c9ffa827b22",
+    "raw/007.private.json": "7a7cf380f01e4c7144389a49f5b5500bb5e30cfd533ca8c7fe55acf426ab3a99",
+    "raw/008.private.json": "8101d0fde36a8843afb35fd019bb277cc775aab610eb78d2bb6883957a2d9f07",
+    "raw/009.private.json": "c40104075a22961aae2278877c8bb0e86fde0a030ab70ea65a156a3984f7320f",
+    "raw/010.private.json": "fbcfa59b4468bf09d15941aae88f3bc4040fff4080fc9c4ef313f16ad5bd990a",
+    "raw/011.private.json": "22cf65c11d1c8b67c91410be40987b7459bbc1e20bd7d20472a9220d10423e6b",
+    "raw/012.private.json": "dbc697018049996614ec54985c0c2963d132591fa37fb31cc253c120706e83e3",
+    "raw/013.private.json": "53f5e65e38ef954bd05719c12af4b664dcf9c21e56b6d11b29eb5b7099167491",
+    "raw/014.private.json": "1738f7a0a8c3238587ea9c61abb0e42b5f605f0de83528ee05a7f4482b91d82e",
+    "raw/015.private.json": "d543f946e98707dc71f75c8f323bf638a416c81622b6bbee2590a200d4a1ad28",
+    "raw/016.private.json": "befa5a07684b4fd4cb9e2ec82298b69d1d8c4320d5278b86a5562537df528840",
+    "raw/017.private.json": "4e9ff196127022950edbcad26718837d1b20e0af8bbc387e3d16bd47903e9fc6",
+    "raw/018.private.json": "a005d4a83b2137ead68a8d6400dc0f37dc8b053d015edafbe10e6fb11495ab40",
+    "raw/019.private.json": "6131bd0db4b046bcbf0c56a6a00cc924285fd92e8a2d4143af8ba4999b267598",
+    "raw/020.private.json": "cf902169c97c517b01ed7148d3385237cf1eb3095869a4aaf565c501c68ba497",
+    "raw/021.private.json": "501c85ddef2168b6e4e2fcf5e2d6ce9878911c14affed8eaafe9432a47206ef4",
+    "raw/022.private.json": "24da8c81c91e3f8a71218476c560d791b659fa9036571a6e938ddaa9637e7087"
+  },
+  "owner_manifest_sha256": "b8e4c8a0c703a0c8f0bf366ebc522c660d9d271ea45f8ee2ef03b894e782568e",
+  "owner_source_files_verified": 104,
+  "source_replay": "Original SDKCostTelemetry.resources AST, original CostInventory, original MemoryCostMonitor._blocks. Metadata only. Serialized table CreationDateTime restored to datetime for SDK-shaped replay.",
+  "raw_files_verified": 22,
+  "raw_bytes_verified": 59221,
+  "raw_permissions": "0600; root/raw0700; dirfd nofollow with before/open/after identity and original ledger dev/ino/hash/size",
+  "api_calls_primary": 22,
+  "new_independent_api_calls": 0,
+  "cloud_writes": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "raw_copies_created": 0,
+  "exact_api_order": true,
+  "strict_http200_retry0": true,
+  "metadata_replay_calls": 20,
+  "metadata_replay_passed": true,
+  "day_query": {
+    "complete_single_page": true,
+    "consistent_read": true,
+    "limit": 64,
+    "count": 33,
+    "additional_pages": 0,
+    "inventory_version": "7c3ea3318fa278168612787368aa352fd7ca3037429199f90b83d16cca94f856",
+    "expected_blocks": 38,
+    "coverage_counts": {
+      "covered": 32,
+      "absent_from_page": 5,
+      "short": 1,
+      "wrong_inventory": 0
+    },
+    "first_gap_utc": "2026-10-17T00:00:00+00:00",
+    "gaps": [
+      {
+        "start_utc": "2026-10-17T00:00:00+00:00",
+        "end_utc": "2026-10-17T12:00:00+00:00",
+        "state": "short"
+      },
+      {
+        "start_utc": "2026-10-17T12:00:00+00:00",
+        "end_utc": "2026-10-18T00:00:00+00:00",
+        "state": "absent_from_page"
+      },
+      {
+        "start_utc": "2026-10-18T00:00:00+00:00",
+        "end_utc": "2026-10-18T12:00:00+00:00",
+        "state": "absent_from_page"
+      },
+      {
+        "start_utc": "2026-10-18T12:00:00+00:00",
+        "end_utc": "2026-10-19T00:00:00+00:00",
+        "state": "absent_from_page"
+      },
+      {
+        "start_utc": "2026-10-19T00:00:00+00:00",
+        "end_utc": "2026-10-19T12:00:00+00:00",
+        "state": "absent_from_page"
+      },
+      {
+        "start_utc": "2026-10-19T12:00:00+00:00",
+        "end_utc": "2026-10-19T23:55:00+00:00",
+        "state": "absent_from_page"
+      }
+    ],
+    "not_a_budget_permit": true
+  },
+  "reports_static_preconditions": {
+    "as_of_epoch": 1792455015,
+    "first_pending_block_utc": "2026-10-17T00:00:00+00:00",
+    "scan_ceiling_bytes": 67108864,
+    "groups": [
+      {
+        "kind": "worker",
+        "group_count": 2,
+        "stored_bytes_sum": "3229761",
+        "stored_bytes_above_64MiB": false,
+        "retention_days": [
+          7,
+          7
+        ],
+        "earliest_pending_block_is_older_than_retention": false,
+        "earliest_expected_month_block_is_older_than_retention": true
+      },
+      {
+        "kind": "shared_bot",
+        "group_count": 2,
+        "stored_bytes_sum": "5019076",
+        "stored_bytes_above_64MiB": false,
+        "retention_days": [
+          7,
+          7
+        ],
+        "earliest_pending_block_is_older_than_retention": false,
+        "earliest_expected_month_block_is_older_than_retention": true
+      }
+    ],
+    "report_method_executed": false,
+    "limits": "Current storedBytes and retention only: cannot prove historical values, actual bytesScanned, query timing/results, REPORT completeness or prior exception branch."
+  },
+  "retention": {
+    "anchor_epoch": 1792455010.8078651,
+    "deadline_epoch": 1793059810.8078651,
+    "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+    "seconds": 604800,
+    "captured": 22
+  },
+  "conclusion": "Current fixed resources pass and the completed DAY page has five missing expected blocks plus one incomplete block. This is current coverage evidence, not a reproduced cause of the earlier 23:08:28 UnverifiedCost or permission to bypass the budget gate.",
+  "historical_cause": "UNKNOWN"
+}

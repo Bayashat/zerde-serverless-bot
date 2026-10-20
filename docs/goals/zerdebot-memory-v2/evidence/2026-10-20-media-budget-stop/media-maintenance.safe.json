@@ -1,0 +1,437 @@
+{
+  "status": "ALIGNED_STOPPED_BEFORE_SEND",
+  "at": 1792454353.265397,
+  "budget_stop_sha256": "444642ecea872cfde1bc43a5a59bdd0688061f34aa35f17e38108d8bd02a17d2",
+  "ui_stop_sha256": "f914c2d016f6463f23d3e911cfe884a8d1fc90fedaf654c240249119b659643c",
+  "raw_ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+  "retention_anchor_sha256": "2e257f99ebb97ea7f9a49e3a1f5f11d5bf02bb94b2e9ae5d92c855a4d4e534a3",
+  "raw_count": 36,
+  "raw_status_counts": {
+    "CAPTURED": 36,
+    "PENDING": 0
+  },
+  "deadline_epoch": 1793058762.922982,
+  "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+  "started_at_utc": "2026-10-19T23:52:42.922982+00:00",
+  "file_checks": [
+    {
+      "path": "ui-onsite.private.json",
+      "sha256": "a0137fcc35604a66dfc5507971fbcadc5c34f760bb7004d83f8dbdabc171b34d",
+      "size": 785,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082218,
+      "mtime_ns": 1792454105898693075
+    },
+    {
+      "path": "raw/0002.private.json",
+      "sha256": "d71ed6414f007a2dd4cefea2b5c07c03a19fe0894d70ba9919226c95feef8f70",
+      "size": 778,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082233,
+      "mtime_ns": 1792454110241203367
+    },
+    {
+      "path": "raw/0003.private.json",
+      "sha256": "cc52723b9867aea9502b1e8f71efe6aa572ca0680b3bfec8cc6778105f33126d",
+      "size": 34430,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082236,
+      "mtime_ns": 1792454111156231860
+    },
+    {
+      "path": "raw/0004.private.json",
+      "sha256": "4294890aebe14311f7a1e31c14e0ba73e5d6ac92a4330e4d9ea305af546f93ce",
+      "size": 4474,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082239,
+      "mtime_ns": 1792454111868379551
+    },
+    {
+      "path": "raw/0005.private.json",
+      "sha256": "622e1da685fa5711759c72e4094241e6d7c2ab9af4e88d1316d3bba647047be6",
+      "size": 2514,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082243,
+      "mtime_ns": 1792454112102658508
+    },
+    {
+      "path": "raw/0006.private.json",
+      "sha256": "b01133058ea45be403b7982a3214eb7d473e305b4052a05b7966e6494f7515b4",
+      "size": 2698,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082246,
+      "mtime_ns": 1792454112284807723
+    },
+    {
+      "path": "raw/0007.private.json",
+      "sha256": "086283f4e9c4cc96e8c91168cca499ba3b8bc0a21be3a68db5e9b6ae7c1fd061",
+      "size": 3584,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082249,
+      "mtime_ns": 1792454112466137971
+    },
+    {
+      "path": "raw/0008.private.json",
+      "sha256": "0bf9d29c521873682987ea7a78b33f1ddea1d2dc01f442b36fe9bcaa531de720",
+      "size": 3514,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082252,
+      "mtime_ns": 1792454112700221070
+    },
+    {
+      "path": "raw/0009.private.json",
+      "sha256": "74628be34c307ad02d6b99fe04e8500cb7ec80c59eb0712d1cb454a2b1d233b8",
+      "size": 1863,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082255,
+      "mtime_ns": 1792454113154448760
+    },
+    {
+      "path": "raw/0010.private.json",
+      "sha256": "7b2fe77eb0c1ba0e06530d6781e805d834ff414cab39f6f6e165afc91f65af9b",
+      "size": 3163,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082258,
+      "mtime_ns": 1792454113264327209
+    },
+    {
+      "path": "raw/0011.private.json",
+      "sha256": "c85b4878c8fc57ee00cd88bf535e942f93f13d9e35f9419f7313185e5df25e20",
+      "size": 2949,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082261,
+      "mtime_ns": 1792454113378665840
+    },
+    {
+      "path": "raw/0012.private.json",
+      "sha256": "565e6a6537dce41e5d066709a75c5cc3836c334d397b7a204f4b2d95d8791c6f",
+      "size": 1320,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082264,
+      "mtime_ns": 1792454113500411142
+    },
+    {
+      "path": "raw/0013.private.json",
+      "sha256": "da646a380c17e4487d264ec0b24184f5b615a74826b72413043b7f256b1f8138",
+      "size": 1389,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082268,
+      "mtime_ns": 1792454113673020539
+    },
+    {
+      "path": "raw/0014.private.json",
+      "sha256": "ddf15a8d080c5984fb28da88f6c89dd4fa1c582a7cfa2bfdd26cf9c046fb7679",
+      "size": 884,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082271,
+      "mtime_ns": 1792454113786824543
+    },
+    {
+      "path": "raw/0015.private.json",
+      "sha256": "0fcd813a862927e88cc2882d74d2c046c2c76155b8b28cf99eb115cb2e2b654a",
+      "size": 1162,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082275,
+      "mtime_ns": 1792454114430392808
+    },
+    {
+      "path": "raw/0016.private.json",
+      "sha256": "2d5cf66a0a21ceb5d1668afa583178c459677f0d43040158f12180a60a0cf3d6",
+      "size": 1168,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082278,
+      "mtime_ns": 1792454114557269396
+    },
+    {
+      "path": "raw/0017.private.json",
+      "sha256": "0eff3d502d8afaf808a1f75b69ea8c988bb0558caa9f0d96809099fb3d6d4437",
+      "size": 1175,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082281,
+      "mtime_ns": 1792454114723304714
+    },
+    {
+      "path": "raw/0018.private.json",
+      "sha256": "7ea59c744f931300b611e09a3967c47624c1a12ee890ea6be7d72b07606b850c",
+      "size": 1177,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082284,
+      "mtime_ns": 1792454114837374522
+    },
+    {
+      "path": "raw/0019.private.json",
+      "sha256": "b5b288b4c6ae6cebb27ad50ac1d815af273fb93f0fcc11f3bc1f878ae7ef65b1",
+      "size": 1156,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082287,
+      "mtime_ns": 1792454114952323800
+    },
+    {
+      "path": "raw/0020.private.json",
+      "sha256": "66942353d151cfa0615629dbc03fb26bb7ac962844de2b3d6fcd0a8d13e354c8",
+      "size": 1160,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082290,
+      "mtime_ns": 1792454115060342227
+    },
+    {
+      "path": "raw/0021.private.json",
+      "sha256": "75edeb38d2db0f79000c4960f88b052a140a7c540817f76d341650b70b35b5b1",
+      "size": 937,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082293,
+      "mtime_ns": 1792454115645913840
+    },
+    {
+      "path": "raw/0022.private.json",
+      "sha256": "7d5c7589f3fa226b6c15d0b2f6f0123398d1d3c1953408a1aef38af54c6b075e",
+      "size": 1107,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082296,
+      "mtime_ns": 1792454115772539843
+    },
+    {
+      "path": "raw/0023.private.json",
+      "sha256": "532763b958228d4924295dfe1ca0776ad030bb448ddbb9a277308509deb5b61f",
+      "size": 921,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082299,
+      "mtime_ns": 1792454115888140191
+    },
+    {
+      "path": "raw/0024.private.json",
+      "sha256": "b300dea6a7a5e109de672aff1a735c6d22315f1057d368ec5d4325494c54b3f7",
+      "size": 1128,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082302,
+      "mtime_ns": 1792454115999927075
+    },
+    {
+      "path": "raw/0025.private.json",
+      "sha256": "74c1e4a64e41a21214550364a57c78eeb36fbb8e7edfa160854fe1d0fe137a8a",
+      "size": 916,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082305,
+      "mtime_ns": 1792454116110615159
+    },
+    {
+      "path": "raw/0026.private.json",
+      "sha256": "e9d60496a714fe6d10f73341032567517b9de28fe7d4e203ce157db0bf37ee95",
+      "size": 1122,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082308,
+      "mtime_ns": 1792454116296553570
+    },
+    {
+      "path": "raw/0027.private.json",
+      "sha256": "6b12d7fce96f921ecdf339a039096f52cfc5cc182f41927674de9c16d760082b",
+      "size": 1426,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082311,
+      "mtime_ns": 1792454116441322976
+    },
+    {
+      "path": "raw/0028.private.json",
+      "sha256": "c103e1a4adb1c3829b95c753d00aa74b4d00216fc3532add30a6677f64fc1a30",
+      "size": 1495,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082314,
+      "mtime_ns": 1792454116581151901
+    },
+    {
+      "path": "raw/0029.private.json",
+      "sha256": "cc97d01fd68ea2fe258a6030900de25cf7f8455aaf260f31747f64c1accbd7e5",
+      "size": 23487,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082318,
+      "mtime_ns": 1792454116693007642
+    },
+    {
+      "path": "raw/0030.private.json",
+      "sha256": "8b3cf1580a1b58d611aa97fb1752fd97538b9fae23739a34958336c707040f82",
+      "size": 7519,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082321,
+      "mtime_ns": 1792454116822221335
+    },
+    {
+      "path": "raw/0031.private.json",
+      "sha256": "a0866f9c9bc7b75357276f49a3cee9e5b1552e8d7f03ac30fd4b35623ddabf4c",
+      "size": 1070,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082324,
+      "mtime_ns": 1792454116926302135
+    },
+    {
+      "path": "raw/0032.private.json",
+      "sha256": "06f96c3573665a7bea84b81d3d7af2a74997f3ddb64a3b772838a378ac7c60d3",
+      "size": 873,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082327,
+      "mtime_ns": 1792454117034724434
+    },
+    {
+      "path": "raw/budget-01.private.json",
+      "sha256": "f5f2969cacdcd86a5c2f996c719eeef402e2176526190fc061218a28c7d31d09",
+      "size": 755,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082338,
+      "mtime_ns": 1792454124973976607
+    },
+    {
+      "path": "raw/budget-02.private.json",
+      "sha256": "eaa6663b498d032ffa378fbaf6348f61c8fda0ec6b558b80bb3455907e47d239",
+      "size": 4450,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082341,
+      "mtime_ns": 1792454125393113215
+    },
+    {
+      "path": "raw/budget-03.private.json",
+      "sha256": "006b70f7c82071087253ba6ff7621d6239b8afc79703ca29b87dcd7ccc20ff67",
+      "size": 832,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082344,
+      "mtime_ns": 1792454125850210798
+    },
+    {
+      "path": "raw/budget-04.private.json",
+      "sha256": "2e8173ac1339d8baf4b7569f43af825002ea002c293adeb48d67b32f3060cf77",
+      "size": 1917,
+      "mode": "0o600",
+      "device": 16777232,
+      "inode": 127082347,
+      "mtime_ns": 1792454125957853774
+    }
+  ],
+  "directory_checks": [
+    {
+      "path": ".",
+      "mode": "0o700",
+      "device": 16777232,
+      "inode": 127043780
+    },
+    {
+      "path": "raw",
+      "mode": "0o700",
+      "device": 16777232,
+      "inode": 127082230
+    }
+  ],
+  "api_counts": {
+    "sts/GetCallerIdentity": 2,
+    "cloudformation/ListStackResources": 1,
+    "lambda/GetFunctionConfiguration": 6,
+    "dynamodb/DescribeTable": 3,
+    "dynamodb/GetItem": 6,
+    "sqs/GetQueueAttributes": 6,
+    "events/DescribeRule": 3,
+    "events/ListTargetsByRule": 3,
+    "lambda/ListEventSourceMappings": 2,
+    "dynamodb/Query": 3
+  },
+  "actual_aws_calls": 35,
+  "actual_cloud_writes": 0,
+  "actual_model_calls": 0,
+  "actual_budget_reservations": 0,
+  "budget_error_type": "MemoryBudgetPaused",
+  "safe_budget_projection": {
+    "paused": false,
+    "measurement_state": "UNVERIFIED",
+    "reason": "UnverifiedCost",
+    "estimate_micro_usd": 4394416,
+    "stop_micro_usd": 27000000,
+    "covered_until": 0,
+    "valid_until": 1792451308
+  },
+  "no_send_evidence_absent_paths": [
+    "ui-draft.private.json",
+    "B.ui-intent.private.json",
+    "Q.ui-intent.private.json",
+    "B.send-registration.safe.json",
+    "Q.send-registration.safe.json",
+    "B.ui-after.private.json",
+    "Q.ui-after.private.json",
+    "B.identity.safe.json",
+    "Q.identity.safe.json",
+    "independent-post"
+  ],
+  "findings": [
+    "All 36 registered actual files independently opened O_NOFOLLOW with directory descriptors, streamed hashes/size/0600 verified, lstat/fstat identities unchanged before/after; exact local private JSON inventory matches ledger.",
+    "Ledger has no original dev/inode fields: this review records fresh identities, not a claim of prior ledger identity equality. No raw copies or new private derivatives written.",
+    "All 35 actual responses are allowlisted read APIs, HTTP 200 and SDK RetryAttempts integer 0; preflight 31 / budget 4 match immutable reports.",
+    "Budget stopped in check_available after model-control absence and AWS cost row; AWS observation is UNVERIFIED/UnverifiedCost, no coverage, expired valid_until, paused false and estimate below stop. Model monthly headroom was not reached; no model-quota exhaustion or production-state conclusion.",
+    "B/Q intents, registrations, after-send and identities absent, ledger contains only onsite + preflight + budget records; reviewed send tool requires successful budget point before send intent. This corroborates no batch send under the reviewed protocol.",
+    "Native UI observation and early window release are primary-operator evidence; reviewer did not operate or independently inspect Telegram. UI_STOP forbids reuse of remaining window, old budget/preflight/onsite entries stay frozen.",
+    "Original seven duties preserved by scope; this batch adds eighth original seven-day deadline without extending B dependency. Actual automation metadata was not independently read in this narrow review."
+  ],
+  "minimal_docs_scope": {
+    "manifest_objects": [
+      "Z01",
+      "Z10"
+    ],
+    "canonical_issues": [
+      157,
+      158,
+      167
+    ],
+    "existing_docs": [
+      "EPIC.md",
+      "PLAN.md",
+      "TASKS.md",
+      "HANDOFF.md",
+      "EVIDENCE.md",
+      "RETAINED_COPIES.md",
+      "issues/Z01.md",
+      "issues/Z10.md",
+      "task_manifest.json"
+    ],
+    "new_contract": "Z01_MEDIA_BUDGET_STOP.md",
+    "safe_evidence": [
+      "budget-stop.safe.json",
+      "live-stop-maintenance.safe.json",
+      "raw-retention.safe.json",
+      "retention-duty.safe.json"
+    ],
+    "preserve": "Prepend current stop/add original deadline, retain all previous full bodies/Epic frozen tail; other 18 manifest objects and every state unchanged. No additional blocker to already released four groups, no full media/natural PASS, no budget reset."
+  },
+  "reviewer_cloud_calls": 0,
+  "reviewer_ui_actions": 0,
+  "formal_success_verifier_executed": false,
+  "private_derivative_files_created": 0
+}

@@ -1,0 +1,27 @@
+{
+  "status": "METADATA_PASS_DAY_PAGE_COMPLETE",
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "historical_cause": "UNKNOWN",
+  "inventory_version": "7c3ea3318fa278168612787368aa352fd7ca3037429199f90b83d16cca94f856",
+  "day_count": 33,
+  "has_next_page": false,
+  "coverage_counts": {
+    "covered": 32,
+    "absent_from_page": 5,
+    "short": 1,
+    "wrong_inventory": 0
+  },
+  "first_gap_utc": "2026-10-17T00:00:00+00:00",
+  "day_observed_at": 1792455015,
+  "not_a_budget_permit": true,
+  "finished_at": 1792455015.5140622,
+  "api_calls": 22,
+  "last_api": {
+    "service": "dynamodb",
+    "method": "query",
+    "intent_at": 1792455015.3887098
+  },
+  "raw_ledger_sha256": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912"
+}

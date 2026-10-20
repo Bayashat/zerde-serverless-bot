@@ -1,0 +1,103 @@
+{
+  "status": "MEDIA_STOP_AND_COST_DIAGNOSIS_INDEPENDENTLY_RECORDED",
+  "at": 1792455448.3124568,
+  "media_status": "STOPPED_BEFORE_UPLOAD_OR_SEND_NOT_ACCEPTED",
+  "telegram_window": "RELEASED_EARLY_DO_NOT_REUSE",
+  "human_space_clear_authorized": true,
+  "ui_observer": "PRIMARY_ONLY_NOT_INDEPENDENT_UI",
+  "aws_read_calls": 57,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "budget_reservations": 0,
+  "media_inputs_sent": 0,
+  "runtime_deployments": 0,
+  "raw_count": 58,
+  "media": {
+    "preflight_reads": 31,
+    "budget_reads": 4,
+    "raw_count": 36,
+    "error_type": "MemoryBudgetPaused",
+    "budget_owner": "SHARED_PROJECT_PROD_MEMORY_V2_TABLE",
+    "measurement_state": "UNVERIFIED",
+    "reason": "UnverifiedCost",
+    "covered_until": 0,
+    "valid_until": 1792451308,
+    "estimate_micro_usd": 4394416,
+    "stop_micro_usd": 27000000,
+    "quota_exhausted": false,
+    "model_headroom": "UNKNOWN_NOT_REACHED",
+    "fresh_prod_group_state": "NOT_OBSERVED"
+  },
+  "diagnostic": {
+    "aws_read_calls": 22,
+    "raw_count": 22,
+    "status": "METADATA_PASS_DAY_PAGE_COMPLETE",
+    "day_count": 33,
+    "has_next_page": false,
+    "coverage_counts": {
+      "covered": 32,
+      "absent_from_page": 5,
+      "short": 1,
+      "wrong_inventory": 0
+    },
+    "first_gap_utc": "2026-10-17T00:00:00+00:00",
+    "historical_cause": "UNKNOWN",
+    "metrics_or_report_scan_executed": false,
+    "not_a_budget_permit": true
+  },
+  "retention": [
+    {
+      "owner": "Z10",
+      "batch": "N",
+      "captured": 36,
+      "deadline_epoch": 1793058762.922982,
+      "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+      "ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0"
+    },
+    {
+      "owner": "Z10",
+      "batch": "D",
+      "captured": 22,
+      "deadline_epoch": 1793059810.8078651,
+      "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+      "ledger_sha256": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912"
+    }
+  ],
+  "original_other_seven_duties_unchanged": true,
+  "total_duties": 9,
+  "task_states": {
+    "open": 14,
+    "closed": 6,
+    "epic": "OPEN"
+  },
+  "four_groups_release": "RELEASED_OBSERVING_PREVIOUSLY_VERIFIED_NOT_FRESH_THIS_TURN",
+  "natural": {
+    "supported": 0,
+    "unknown": 0,
+    "start": null,
+    "production_ready": false
+  },
+  "next_action": "NEW_NARROW_ORIGINAL_METRICS_REPORT_FAILURE_DIAGNOSTIC_NO_MANUAL_PERMIT",
+  "evidence": {
+    "N/budget-stop.safe.json": "444642ecea872cfde1bc43a5a59bdd0688061f34aa35f17e38108d8bd02a17d2",
+    "N/budget-stop-independent.safe.json": "87275e99c4f09a4885a304b00f3763196fe78241e725b62ae34203c317689e0b",
+    "N/live-stop-maintenance.safe.json": "944973a96e25cb802a708757b9f279af2765a8a03fffb2ba243fe2835a5c51d8",
+    "N/budget-preflight-config-independent.safe.json": "94472b4277674ed7faacbe36e3bda324ff3d7c6ef82a972669f69a0d886cae91",
+    "N/preflight.safe.json": "d3472f91ca3de78c7214c18bdaec5dc4c5f5bba8f5d3842488f3c264dc525d9b",
+    "N/budget.safe.json": "f0e6c958cfc41c1b0f0b75f4e9f2c48f29f0e7fce15abc1aea779c3c47b3d7c4",
+    "N/raw-retention.safe.json": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+    "N/retention-anchor.safe.json": "2e257f99ebb97ea7f9a49e3a1f5f11d5bf02bb94b2e9ae5d92c855a4d4e534a3",
+    "N/UI_STOP.safe.md": "f914c2d016f6463f23d3e911cfe884a8d1fc90fedaf654c240249119b659643c",
+    "N/retention-duty.safe.json": "a1750715cf06d2697f2c8dfb391ae92972db86574b0280aca266e66822d56c56",
+    "D/PLAN.md": "f75f72c21c6ba8c2f644438905c5e24fa9f50fedd4ebff819613721480cbb545",
+    "D/diagnose.py": "5ecb9f8eb4ce31f8a31d24530b7512b02655626e48f7fb53dcc4da53091cf7aa",
+    "D/tool-pre.safe.json": "ae405b4c3ccfd1a2e18249081254a5ba2ff56ce3d921256eaf2fa3efb1393630",
+    "D/maintenance-pre.safe.json": "9b6ebf9ceca051f0343f1fbf54f54ea7c2738a6cc12823557a65108573a59963",
+    "D/result.safe.json": "d64b4a63763f16389c736d715022c7f94bbee04e90f4da7168fa6b412f7a0d5e",
+    "D/independent-post.safe.json": "9bce0f30fc4ea19853f082b31439173ac8bb5633b1ac1fd5cbd33a0fc89c09bf",
+    "D/maintenance-post.safe.json": "dfeea70a8e793ca22e0c21975e4dc068d8c62a797433ffc253acbc5c8f6ff44c",
+    "D/raw-retention.safe.json": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912",
+    "D/raw-anchor.safe.json": "6cdd28a66bf63ac16d6fd0db51aef5314bb89b15b87aad25ef21702bace55d4b",
+    "D/retention-duty.safe.json": "222143c1116bf04cabfccc7964a922fdfeb45d2b9a5f1df8373ac8b253e45dc3"
+  }
+}

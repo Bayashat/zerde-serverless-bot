@@ -1,0 +1,299 @@
+{
+  "status": "ALIGNED_METADATA_PASS_COVERAGE_GAPS_PRESENT",
+  "at": 1792455240.848553,
+  "tool_sha256": "5ecb9f8eb4ce31f8a31d24530b7512b02655626e48f7fb53dcc4da53091cf7aa",
+  "plan_sha256": "f75f72c21c6ba8c2f644438905c5e24fa9f50fedd4ebff819613721480cbb545",
+  "result_sha256": "d64b4a63763f16389c736d715022c7f94bbee04e90f4da7168fa6b412f7a0d5e",
+  "intent_sha256": "ae3589406aeba77064ce5b6c4a25e05941dceb1d18df62d10412c5d42482f8a5",
+  "raw_anchor_sha256": "6cdd28a66bf63ac16d6fd0db51aef5314bb89b15b87aad25ef21702bace55d4b",
+  "raw_ledger_sha256": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912",
+  "raw_count": 22,
+  "raw_state_counts": {
+    "CAPTURED": 22,
+    "NOT_CREATED": 0
+  },
+  "anchor_epoch": 1792455010.8078651,
+  "deadline_epoch": 1793059810.8078651,
+  "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+  "file_checks": [
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/001.private.json",
+      "state": "CAPTURED",
+      "sha256": "352949c7461679cb57196112e61902ffda8c8d8933e3d44abf942278a2c05c91",
+      "size": 752,
+      "dev": 16777232,
+      "ino": 127090177,
+      "mode": 384,
+      "verified_mtime_ns": 1792455011258427676
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/002.private.json",
+      "state": "CAPTURED",
+      "sha256": "602d1deee768f819f8dfc2e4c0cf2f6cbffae0ad639e0add23daab72aa2fa52b",
+      "size": 3133,
+      "dev": 16777232,
+      "ino": 127090191,
+      "mode": 384,
+      "verified_mtime_ns": 1792455011781796016
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/003.private.json",
+      "state": "CAPTURED",
+      "sha256": "c80f03a504e772c2fc8aff1052ac787179755e1608c982079edbf4da71f07764",
+      "size": 931,
+      "dev": 16777232,
+      "ino": 127090194,
+      "mode": 384,
+      "verified_mtime_ns": 1792455011900020197
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/004.private.json",
+      "state": "CAPTURED",
+      "sha256": "ddbfd4cd3561c42df982a2f93883355e936fbc860d4be8ac25551c3ee8d0518d",
+      "size": 3145,
+      "dev": 16777232,
+      "ino": 127090197,
+      "mode": 384,
+      "verified_mtime_ns": 1792455012012478574
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/005.private.json",
+      "state": "CAPTURED",
+      "sha256": "777b023b509ea218cab7e44811e99200caa6431ccba520e7f3148bbcd6afcf7f",
+      "size": 1112,
+      "dev": 16777232,
+      "ino": 127090205,
+      "mode": 384,
+      "verified_mtime_ns": 1792455012126291579
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/006.private.json",
+      "state": "CAPTURED",
+      "sha256": "7253291877d579693b7b6333a56f955821e99bbdb9220eda6b0c6c9ffa827b22",
+      "size": 3489,
+      "dev": 16777232,
+      "ino": 127090209,
+      "mode": 384,
+      "verified_mtime_ns": 1792455012829754405
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/007.private.json",
+      "state": "CAPTURED",
+      "sha256": "7a7cf380f01e4c7144389a49f5b5500bb5e30cfd533ca8c7fe55acf426ab3a99",
+      "size": 714,
+      "dev": 16777232,
+      "ino": 127090212,
+      "mode": 384,
+      "verified_mtime_ns": 1792455012956944315
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/008.private.json",
+      "state": "CAPTURED",
+      "sha256": "8101d0fde36a8843afb35fd019bb277cc775aab610eb78d2bb6883957a2d9f07",
+      "size": 1204,
+      "dev": 16777232,
+      "ino": 127090216,
+      "mode": 384,
+      "verified_mtime_ns": 1792455013354232205
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/009.private.json",
+      "state": "CAPTURED",
+      "sha256": "c40104075a22961aae2278877c8bb0e86fde0a030ab70ea65a156a3984f7320f",
+      "size": 4449,
+      "dev": 16777232,
+      "ino": 127090224,
+      "mode": 384,
+      "verified_mtime_ns": 1792455013540662748
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/010.private.json",
+      "state": "CAPTURED",
+      "sha256": "fbcfa59b4468bf09d15941aae88f3bc4040fff4080fc9c4ef313f16ad5bd990a",
+      "size": 700,
+      "dev": 16777232,
+      "ino": 127090228,
+      "mode": 384,
+      "verified_mtime_ns": 1792455013659389597
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/011.private.json",
+      "state": "CAPTURED",
+      "sha256": "22cf65c11d1c8b67c91410be40987b7459bbc1e20bd7d20472a9220d10423e6b",
+      "size": 1151,
+      "dev": 16777232,
+      "ino": 127090231,
+      "mode": 384,
+      "verified_mtime_ns": 1792455013763884748
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/012.private.json",
+      "state": "CAPTURED",
+      "sha256": "dbc697018049996614ec54985c0c2963d132591fa37fb31cc253c120706e83e3",
+      "size": 3585,
+      "dev": 16777232,
+      "ino": 127090235,
+      "mode": 384,
+      "verified_mtime_ns": 1792455013952048253
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/013.private.json",
+      "state": "CAPTURED",
+      "sha256": "53f5e65e38ef954bd05719c12af4b664dcf9c21e56b6d11b29eb5b7099167491",
+      "size": 715,
+      "dev": 16777232,
+      "ino": 127090238,
+      "mode": 384,
+      "verified_mtime_ns": 1792455014076223031
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/014.private.json",
+      "state": "CAPTURED",
+      "sha256": "1738f7a0a8c3238587ea9c61abb0e42b5f605f0de83528ee05a7f4482b91d82e",
+      "size": 1208,
+      "dev": 16777232,
+      "ino": 127090241,
+      "mode": 384,
+      "verified_mtime_ns": 1792455014181503059
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/015.private.json",
+      "state": "CAPTURED",
+      "sha256": "d543f946e98707dc71f75c8f323bf638a416c81622b6bbee2590a200d4a1ad28",
+      "size": 4531,
+      "dev": 16777232,
+      "ino": 127090245,
+      "mode": 384,
+      "verified_mtime_ns": 1792455014339871936
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/016.private.json",
+      "state": "CAPTURED",
+      "sha256": "befa5a07684b4fd4cb9e2ec82298b69d1d8c4320d5278b86a5562537df528840",
+      "size": 701,
+      "dev": 16777232,
+      "ino": 127090249,
+      "mode": 384,
+      "verified_mtime_ns": 1792455014461242333
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/017.private.json",
+      "state": "CAPTURED",
+      "sha256": "4e9ff196127022950edbcad26718837d1b20e0af8bbc387e3d16bd47903e9fc6",
+      "size": 1154,
+      "dev": 16777232,
+      "ino": 127090252,
+      "mode": 384,
+      "verified_mtime_ns": 1792455014566767027
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/018.private.json",
+      "state": "CAPTURED",
+      "sha256": "a005d4a83b2137ead68a8d6400dc0f37dc8b053d015edafbe10e6fb11495ab40",
+      "size": 1019,
+      "dev": 16777232,
+      "ino": 127090257,
+      "mode": 384,
+      "verified_mtime_ns": 1792455015071207241
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/019.private.json",
+      "state": "CAPTURED",
+      "sha256": "6131bd0db4b046bcbf0c56a6a00cc924285fd92e8a2d4143af8ba4999b267598",
+      "size": 1016,
+      "dev": 16777232,
+      "ino": 127090260,
+      "mode": 384,
+      "verified_mtime_ns": 1792455015175153932
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/020.private.json",
+      "state": "CAPTURED",
+      "sha256": "cf902169c97c517b01ed7148d3385237cf1eb3095869a4aaf565c501c68ba497",
+      "size": 1022,
+      "dev": 16777232,
+      "ino": 127090263,
+      "mode": 384,
+      "verified_mtime_ns": 1792455015277170995
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/021.private.json",
+      "state": "CAPTURED",
+      "sha256": "501c85ddef2168b6e4e2fcf5e2d6ce9878911c14affed8eaafe9432a47206ef4",
+      "size": 1016,
+      "dev": 16777232,
+      "ino": 127090266,
+      "mode": 384,
+      "verified_mtime_ns": 1792455015386881058
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-gate-diagnostic/raw/022.private.json",
+      "state": "CAPTURED",
+      "sha256": "24da8c81c91e3f8a71218476c560d791b659fa9036571a6e938ddaa9637e7087",
+      "size": 22474,
+      "dev": 16777232,
+      "ino": 127090269,
+      "mode": 384,
+      "verified_mtime_ns": 1792455015509116505
+    }
+  ],
+  "directory_modes": {
+    ".": "0o700",
+    "raw": "0o700"
+  },
+  "api_sequence_count": 22,
+  "api_counts": {
+    "sts/get_caller_identity": 1,
+    "dynamodb/describe_table": 2,
+    "dynamodb/describe_continuous_backups": 2,
+    "lambda/get_function_configuration": 4,
+    "lambda/list_provisioned_concurrency_configs": 4,
+    "logs/describe_log_groups": 4,
+    "sqs/get_queue_attributes": 4,
+    "dynamodb/query": 1
+  },
+  "resources_replay": {
+    "tables": 2,
+    "functions": 4,
+    "logs": 4,
+    "queues": 4,
+    "status": "PASS_FROM_ORIGINAL_RESPONSES_NO_NETWORK"
+  },
+  "day_projection": {
+    "row_count": 33,
+    "pagination_complete": true,
+    "coverage_counts": {
+      "covered": 32,
+      "absent_from_page": 5,
+      "short": 1,
+      "wrong_inventory": 0
+    },
+    "first_gap_utc": "2026-10-17T00:00:00+00:00"
+  },
+  "safe_outputs_do_not_copy_environment_or_full_day_rows": true,
+  "harness_failure_preserved_sha256": "7b3446ac00fdff905dcc8fe444d9e21aa5d733e331878871434d4644f164d256",
+  "findings": [
+    "All 22 actual raw files match original ledger hash/size/dev/ino/0600; O_NOFOLLOW directory/file descriptors and before/after identities stable. Physical private JSON inventory exactly equals ledger.",
+    "Exact STS+20 original resource operations+one strong projected DAY query; sequence/times/HTTP200/RetryAttempts0 and original seven-day anchor checked.",
+    "Unchanged resources() replay uses captured responses only. DAY arithmetic matches 32 covered / 5 absent / 1 short / 0 wrong inventory across 38 expected blocks.",
+    "No model calls, budget mutations or extra collection. Current metadata PASS is not historical cause proof, restored coverage or model permission; original N stopped budget stays frozen.",
+    "Current safe JSON outputs contain no copied Environment/Variables/full DAY or metadata rows. Only registered API responses retain raw data.",
+    "N+D total 57 AWS reads and 58 raw files (N has one primary UI record); distinct original deadlines preserved. Original seven duties plus these two are nine; actual automation metadata not independently read here.",
+    "Initial reviewer AST wrapper lacked locations; original failure preserved, then corrected in-memory AST replay. No diagnostic entry rerun."
+  ],
+  "combined_with_N": {
+    "aws_reads": 57,
+    "raw_files": 58,
+    "cloud_writes": 0,
+    "model_calls": 0,
+    "N_raw_count": 36,
+    "D_raw_count": 22,
+    "N_deadline_epoch": 1793058762.922982,
+    "D_deadline_epoch": 1793059810.8078651,
+    "N_review_sha256": "944973a96e25cb802a708757b9f279af2765a8a03fffb2ba243fe2835a5c51d8"
+  },
+  "reviewer_new_cloud_calls": 0,
+  "reviewer_ui_actions": 0,
+  "private_derivative_files_created": 0,
+  "formal_diagnostic_reexecuted": false
+}
