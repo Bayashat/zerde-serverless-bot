@@ -1,6 +1,6 @@
-## 四群已发布；计费顺序修复已部署
+## 四群已发布；费用历史缺块已补齐
 
-PR280两环境主独实包/稳定通过；费用覆盖与媒体许可仍分别核验。[当前契约](COST_REPORT_ORDER_REPAIR.md)；[十二项副本职责](RETAINED_COPIES.md)。任务状态不变。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/fd53b30b2d07704f091e0a407375d254e5705819/docs/goals/zerdebot-memory-v2/EPIC.md)。
+新主独12读确认6缺块→0、AWS估算已核验；严格当前水位仍差900秒，非完整媒体许可。[本批契约](COST_RECOVERY_FOLLOWUP.md)；[十三项副本职责](RETAINED_COPIES.md)。状态不变。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/b82a3a9c6ab05fa86d37666e2732b43c820dcc54/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

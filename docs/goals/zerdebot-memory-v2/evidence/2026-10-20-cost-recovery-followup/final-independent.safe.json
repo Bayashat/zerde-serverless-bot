@@ -1,0 +1,45 @@
+{
+  "status": "ALIGNED",
+  "at": "2026-10-20T07:32:40.296973+00:00",
+  "source": "fd53b30b2d07704f091e0a407375d254e5705819",
+  "final_sha256": "bda5c2fe1d063c089aa8130479cc4645eabb70817303ebe7c87bf40cfe185d88",
+  "evidence_sha256": {
+    "PLAN.md": "c6f68af95216268d19e811825383ddc50c45c44ca44c32f3c255efe6c3f47408",
+    "binding.safe.json": "357caa1fc06ca844908ac7fffc56b21fe59510b962166f6d47c3846981d1705e",
+    "tool-pre.safe.json": "52c45f4ebc56c365fd5960374fd19803e03a738dda3de2c9be1cc9bc9939ea9e",
+    "maintenance-pre.safe.json": "ea4022b8f8f88eae4ac7d358bb94cc1d6da335b20abcff46185c691815960a78",
+    "raw-anchor.safe.json": "6af22341f0dbc8a61219dda7b271c88f818a38b74204c70c3b26e310e7ccf6db",
+    "raw-start.safe.json": "34ab8703ae0fa5621de750dbd7d333dc58dbe7d743ba39be372c37e0e5bbd07a",
+    "retention-duty.safe.json": "b5e12227a74473585c410f8fe4f1d074c0ec7814fb6d196732e6b7498c635138",
+    "automation-registration.safe.json": "0cb946d484a55361b0a3051383beeaf74a765f1e6052b9306b1d9d7c8b6894d4",
+    "raw-retention.safe.json": "4599dcae6a0eaedef853a04115d9893327a23892a51335ddaa4283c5dcc5e7bf",
+    "ReadProgress20261020A/result.safe.json": "dbf8c951917882fa276af95cee7afd913d70ea376892a7f9817bb08cdbed5f45",
+    "ReadProgressIndependent20261020A/result.safe.json": "08c85c88ed526c4dd3d47af87d88b0736aaa077f278008be2805ca180e69009a",
+    "independent-post.safe.json": "1536ab5ba6cfc255b38c86d28e885e41b1750a7d51ac3e8b7d9ea53b51d08ce8",
+    "interpretation.safe.json": "4411769230aa06340efecd112c949b4f8a858b7c9a60358428e0da3fc34c2818",
+    "final.safe.json": "bda5c2fe1d063c089aa8130479cc4645eabb70817303ebe7c87bf40cfe185d88"
+  },
+  "exact_final_evidence_count": 13,
+  "direct_raw_post_evidence_count": 61,
+  "aws_read_calls": 12,
+  "aws_write_calls": 0,
+  "current_review_cloud_calls": 0,
+  "current_review_private_reads": 0,
+  "frozen_post_unchanged": true,
+  "checks": [
+    "Final thirteen safe bindings exactly match current immutable evidence.",
+    "Main and independent six-call results, sequential timestamps and prior direct twelve-response POST agree; no phase rerun or new cloud read.",
+    "ESTIMATE_VERIFIED/OBSERVED_GROSS_ESTIMATE observed after prod deployment; 39 DAY rows recompute to 38 covered, zero missing, one current short block of 900 seconds.",
+    "Runtime row conditions satisfied at both captured observation timestamps; strict readback remains OBSERVED_PENDING and full five-owner/model permission remains unestablished.",
+    "New Z10 retention responsibility registered before first API, twelve CAPTURED files with exact label/path inventory, deadline exactly seven days after original anchor.",
+    "Original Q snapshot deadline and no-copy boundary preserved; prior private identity/hash review closed through unchanged POST."
+  ],
+  "raw_deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+  "raw_deadline_epoch": 1793085839.115275,
+  "not_a_budget_permit": true,
+  "sequential_not_global_transaction": true,
+  "limitations": [
+    "New retention responsibility is verified from this batch registration evidence; no separate global obligation recount was performed.",
+    "Observation is a historical point in time and is not a fresh or persistent model authorization."
+  ]
+}

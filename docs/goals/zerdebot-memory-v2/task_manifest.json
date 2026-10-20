@@ -284,6 +284,35 @@
       "historical_exact_failure": "UNKNOWN",
       "timestamp_order_cause": "UNKNOWN",
       "publication_tracked_separately": true
+    },
+    "cost_recovery_followup": {
+      "status": "COST_RECOVERY_READBACK_COMPLETED",
+      "runtime_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+      "coverage": {
+        "rows": 39,
+        "counts": {
+          "covered": 38,
+          "missing": 0,
+          "short": 1,
+          "wrong_inventory": 0
+        },
+        "first_gap_epoch": 1792454400,
+        "requested_through": 1792479900
+      },
+      "aws_state": "ESTIMATE_VERIFIED",
+      "reason": "OBSERVED_GROSS_ESTIMATE",
+      "observed_at": 1792480110,
+      "covered_until": 1792479000,
+      "valid_until": 1792490910,
+      "estimate_micro_usd": 5321387,
+      "strict_readback_status": [
+        "OBSERVED_PENDING",
+        "OBSERVED_PENDING"
+      ],
+      "not_a_budget_permit": true,
+      "evidence": "evidence/2026-10-20-cost-recovery-followup/final.safe.json",
+      "evidence_sha256": "bda5c2fe1d063c089aa8130479cc4645eabb70817303ebe7c87bf40cfe185d88",
+      "contract": "COST_RECOVERY_FOLLOWUP.md"
     }
   },
   {
@@ -675,7 +704,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-20",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。",
-    "remaining": "十二项独立UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 H10；Oct24 16:29:48.470834 O51；Oct26 20:29:05.508343 PR277418；Oct26 23:52:42.922982 N36；Oct27 00:10:10.807865 D22；Oct27 01:53:25.893115 E2；Oct27 01:57:25.452039 F5；Oct27 02:26:52.661740本PR280按最终ledger；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原路径/hash/身份/期限保持，原文另scope/PRE/公告/到期删除独审，SYSTEM只读，不能重建。",
+    "remaining": "十三项独立UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 H10；Oct24 16:29:48.470834 O51；Oct26 20:29:05.508343 PR277418；Oct26 23:52:42.922982 N36；Oct27 00:10:10.807865 D22；Oct27 01:53:25.893115 E2；Oct27 01:57:25.452039 F5；Oct27 02:26:52.661740本PR280按最终ledger；Oct27 07:23:59.115275新费用恢复读回12；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原路径/hash/身份/期限保持，原文另scope/PRE/公告/到期删除独审，SYSTEM只读，不能重建。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1203,6 +1232,17 @@
       "not_created": 0,
       "ledger_sha256": "02a9e2bbb65da1dab9f5af28f5cf79022109e439c14e4678cbda5b704a592115",
       "evidence": "evidence/2026-10-20-cost-report-repair/release.safe.json"
+    },
+    "cost_recovery_followup_raw_retention": {
+      "owner": "Z10",
+      "first_capture_at": "2026-10-20T07:23:59.115275+00:00",
+      "deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+      "deadline_epoch": 1793085839.115275,
+      "captured": 12,
+      "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/raw-retention.safe.json",
+      "ledger_sha256": "4599dcae6a0eaedef853a04115d9893327a23892a51335ddaa4283c5dcc5e7bf",
+      "status": "PENDING_EXPIRY_NOT_DELETED",
+      "contract": "COST_RECOVERY_FOLLOWUP.md"
     }
   },
   {
@@ -1617,7 +1657,7 @@
     "status": "september_account_invoice_verified_provider_login_pending_full_cost_unknown",
     "status_as_of": "2026-10-20",
     "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。 10月6日AWS账号九月一张发票摘要及独立原始复算通过：税前38.65＋税6.18＝44.83 USD；并非Zerde独立费用或已付款。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 生产Bot告警已改为连续三个5分钟错误窗口、一小时同类合并及恢复静默；两环境Operations实际包/保护主独及300秒稳定通过。 PR277已完成两环境Groq 413持久未分类审核保护发布与主独实际包/配置稳定核验；供应商限制和真实413人工审核仍未验收。 PR280完整计费终止顺序修复已两环境部署，实际包和配置主独及300秒稳定通过；正常恢复的主独六读时点另记。",
-    "remaining": "按本次recovery_observation核正常定时覆盖与原owner时点；未获新完整预算reader许可不得模型/媒体，不手动Invoke/monitor/扫描/写DAY或许可/清UNKNOWN。时间戳差异原因和历史23:08具体失败仍UNKNOWN。完整实付/付款/FreeTier、Groq/DeepSeek登录后账单与Google项目税付款等原费用缺口保留；413真实人工审核/Quiz恢复/未知成本责任不因本修复关闭。",
+    "remaining": "历史6缺块已补齐，AWS估算时点恢复；当前严格水位短900秒不等于原运行AWS门失败。下一离线重绑当前包完整原owner/reader，未获完整五owner时点检查不得媒体/模型。原UNKNOWN、实付/付款/FreeTier、供应商登录账单和独立业务恢复缺口保持。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1897,6 +1937,35 @@
       "deployed": false,
       "current_budget_permit_restored": false,
       "original_cost_owners_and_limits_unchanged": true
+    },
+    "cost_recovery_followup": {
+      "status": "COST_RECOVERY_READBACK_COMPLETED",
+      "runtime_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+      "coverage": {
+        "rows": 39,
+        "counts": {
+          "covered": 38,
+          "missing": 0,
+          "short": 1,
+          "wrong_inventory": 0
+        },
+        "first_gap_epoch": 1792454400,
+        "requested_through": 1792479900
+      },
+      "aws_state": "ESTIMATE_VERIFIED",
+      "reason": "OBSERVED_GROSS_ESTIMATE",
+      "observed_at": 1792480110,
+      "covered_until": 1792479000,
+      "valid_until": 1792490910,
+      "estimate_micro_usd": 5321387,
+      "strict_readback_status": [
+        "OBSERVED_PENDING",
+        "OBSERVED_PENDING"
+      ],
+      "not_a_budget_permit": true,
+      "evidence": "evidence/2026-10-20-cost-recovery-followup/final.safe.json",
+      "evidence_sha256": "bda5c2fe1d063c089aa8130479cc4645eabb70817303ebe7c87bf40cfe185d88",
+      "contract": "COST_RECOVERY_FOLLOWUP.md"
     }
   },
   {
