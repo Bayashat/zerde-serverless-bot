@@ -1,0 +1,136 @@
+{
+  "status": "ALIGNED_BUDGET_STOP_NO_MEDIA_SENT",
+  "recorded_at": "2026-10-20T00:02:30.957035+00:00",
+  "safe_evidence_sha256": {
+    "onsite-window.safe.json": "effb291018f13ec5941ace659cb9fe7ce48087f1d292d27995aebe341906eb31",
+    "retention-anchor.safe.json": "2e257f99ebb97ea7f9a49e3a1f5f11d5bf02bb94b2e9ae5d92c855a4d4e534a3",
+    "raw-retention.safe.json": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+    "preflight.safe.json": "d3472f91ca3de78c7214c18bdaec5dc4c5f5bba8f5d3842488f3c264dc525d9b",
+    "budget.safe.json": "f0e6c958cfc41c1b0f0b75f4e9f2c48f29f0e7fce15abc1aea779c3c47b3d7c4"
+  },
+  "verified_private_evidence": {
+    "ui-onsite.private.json": {
+      "sha256": "a0137fcc35604a66dfc5507971fbcadc5c34f760bb7004d83f8dbdabc171b34d",
+      "dev": 16777232,
+      "ino": 127082218,
+      "size": 785,
+      "mode": "0600",
+      "no_follow_and_identity_stable": true
+    },
+    "raw/budget-01.private.json": {
+      "sha256": "f5f2969cacdcd86a5c2f996c719eeef402e2176526190fc061218a28c7d31d09",
+      "dev": 16777232,
+      "ino": 127082338,
+      "size": 755,
+      "mode": "0600",
+      "no_follow_and_identity_stable": true
+    },
+    "raw/budget-02.private.json": {
+      "sha256": "eaa6663b498d032ffa378fbaf6348f61c8fda0ec6b558b80bb3455907e47d239",
+      "dev": 16777232,
+      "ino": 127082341,
+      "size": 4450,
+      "mode": "0600",
+      "no_follow_and_identity_stable": true
+    },
+    "raw/budget-03.private.json": {
+      "sha256": "006b70f7c82071087253ba6ff7621d6239b8afc79703ca29b87dcd7ccc20ff67",
+      "dev": 16777232,
+      "ino": 127082344,
+      "size": 832,
+      "mode": "0600",
+      "no_follow_and_identity_stable": true
+    },
+    "raw/budget-04.private.json": {
+      "sha256": "2e8173ac1339d8baf4b7569f43af825002ea002c293adeb48d67b32f3060cf77",
+      "dev": 16777232,
+      "ino": 127082347,
+      "size": 1917,
+      "mode": "0600",
+      "no_follow_and_identity_stable": true
+    }
+  },
+  "raw_identity_boundary": "Fresh lstat/fstat identity/mode stable and original ledger hash/size equal; original ledger has no inode fields, no historical inode claim.",
+  "source_sha256": {
+    "src/bot/services/memory_budget.py": "cafa84db20cb6d17858cedd01ff72e42c4229a56992673ff2a3e1fb7974df9cb",
+    "src/bot/services/memory_v2/_cost_state.py": "5e603965627c64a06a11e83b6c632059712c745dc9683883dc2e84c98c981e69",
+    "src/bot/services/memory_v2/cost_monitor.py": "e238592c2db06b03c97b2c44baa99f0fb396f7557d2c23acbdcd827bb2aa8ea7",
+    "src/bot/services/memory_v2/_cost_reports.py": "9e22f8413ff8698b71a547b8e24147327f786a831a9338089dd80a9d6d0db8bb",
+    "src/bot/services/memory_v2/cost_runtime.py": "2156fc77a25feb453e65823feeb79f6bf58013b021e15e5e263e38c742fc61d9"
+  },
+  "raw_retention": {
+    "file_count": 36,
+    "preflight_raw_count": 31,
+    "budget_raw_count": 4,
+    "primary_ui_raw_count": 1,
+    "started_at_utc": "2026-10-19T23:52:42.922982+00:00",
+    "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+    "deadline_epoch": 1793058762.922982
+  },
+  "actual": {
+    "budget_status": "INCOMPLETE_NO_MODEL_TEST_ALLOWED",
+    "error_type": "MemoryBudgetPaused",
+    "api_counts": {
+      "sts/GetCallerIdentity": 1,
+      "lambda/GetFunctionConfiguration": 1,
+      "dynamodb/GetItem": 2
+    },
+    "four_HTTP200_RetryAttempts0": true,
+    "shared_budget_table": "zerde-serverless-memory-v2-prod",
+    "CONTROL_MODEL_absent": true,
+    "AWS": {
+      "paused": false,
+      "measurement_state": "UNVERIFIED",
+      "reason": "UnverifiedCost",
+      "estimate_micro_usd": 4394416,
+      "stop_micro_usd": 27000000,
+      "covered_until": 0,
+      "valid_until": 1792451308,
+      "observed_at": 1792451308
+    },
+    "threshold_exhausted": false,
+    "no_B_Q_ledger_or_operator_files": true,
+    "no_reader_cloud_write_model_reservation": true,
+    "primary_UI_record_not_independent_UI": true,
+    "preflight_raw_not_reaudited_in_this_report": true
+  },
+  "local_owner_replay": {
+    "status": "PASS_REPRODUCED_MEMORY_BUDGET_PAUSED",
+    "same_guard_methods": true,
+    "captured_local_GetItem_responses_used": 2,
+    "network_calls": 0,
+    "retry_after": 1792454425,
+    "limits": "Recorded UTC month and observed inventory_version supplied; even assuming inventory matches, original coverage/state/freshness gates refuse. No fresh model headroom or independent full inventory claim."
+  },
+  "code_trace": {
+    "memory_budget.py:141-150": "Control then AWS permit; monthly MODEL snapshot not reached.",
+    "memory_budget.py:103-138": "UNVERIFIED, zero coverage and expired validity refuse while paused=false and below stop threshold.",
+    "_cost_state.py:219-251": "UNVERIFIED stores valid_until=now; threshold pause remains separate.",
+    "cost_monitor.py:342-426": "Exception class only is saved; precise UnverifiedCost throw site remains UNKNOWN.",
+    "cost_runtime.py:101-133": "Only prod monitor schedule is the project cost owner; dev uses the shared prod-named table, not an independent wallet."
+  },
+  "boundaries": [
+    "This is a dev acceptance entry reading the shared project budget; not a dev-only wallet.",
+    "Not budget/provider exhaustion, entire Bot outage or a direct current prod user-function test.",
+    "MODEL monthly headroom and exact upstream UnverifiedCost cause UNKNOWN.",
+    "No manual permit, UNKNOWN clearing, scan reservation, monitor invocation or failed-entry retry."
+  ],
+  "next_minimal_readonly_diagnostic": {
+    "status": "PROPOSAL_NOT_EXECUTED",
+    "step": "First compare already captured whitelisted preflight function configurations to the original telemetry resources function gates. If still unknown, separately review a finite exact shared AWS/MONITOR and bounded DAY coverage read contract, with only missing exact metadata needed to distinguish configuration and coverage failure.",
+    "forbidden": "No StartQuery/RunMonitor/Invoke, new reservation, writes, model or successful media verifier."
+  },
+  "harness_failures_preserved_sha256": {
+    "budget-stop-review-harness-failure.safe.json": "2e079e190a1bb809be7c04ffa8a1d72914625f95ec15ab34356cbce6dfa69681",
+    "budget-stop-review-harness-failure-v2.safe.json": "51cfbfc2a9a233ef7a02683c59b127baaedb09857d932b6e81e644156d232606"
+  },
+  "review_actions": {
+    "cloud": 0,
+    "UI": 0,
+    "models": 0,
+    "business_writes": 0,
+    "formal_entrypoints": 0,
+    "distinct_private_files": 5,
+    "new_raw_copies": 0
+  }
+}

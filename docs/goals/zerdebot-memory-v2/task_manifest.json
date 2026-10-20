@@ -27,7 +27,7 @@
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-20",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。",
-    "remaining": "普通文本、ask、修复后mention/清晰Reply及首发学习/遗忘已有原有限证据；当前相册工具已重绑PR277并双审，仅待新的实际独占窗口与完整现场验收。频道/其他原有限缺口及最终整体回归仍按原合同开放；旧失败/UI_STOP与冻结回放不重跑，旧S snapshot不重建。",
+    "remaining": "本次相册现场已在发送前因共享项目AWS费用未验证/失效停止，0发图/提问/模型；先有限查明计量缺口再另新批与窗口，不能重跑原reader或手写许可。普通文本/ask/mention/Reply及首发学习遗忘原有限证据保持；频道/媒体/整体回归与旧UNKNOWN仍开放。",
     "issue_state": "OPEN",
     "runtime_baseline": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
     "deployed_build_source": "341d2e3d7020b4cd1d6730e65456194bf246a0b7",
@@ -204,6 +204,18 @@
       "new_retention_duties": 0,
       "natural_sample_increment": 0,
       "remaining": "工具已按当前包有限重绑并通过双PRE，等待新的真实独占窗口，随后按原完整三输入/两图/静默/Reply/模型链/独立POST合同验收。"
+    },
+    "media_budget_stop": {
+      "status": "STOPPED_BEFORE_SEND",
+      "aws_reads": 35,
+      "media_inputs": 0,
+      "model_calls": 0,
+      "budget_reservations": 0,
+      "shared_project_budget_table": "zerde-serverless-memory-v2-prod",
+      "reason": "AWS_UNVERIFIED_EXPIRED",
+      "evidence": "evidence/2026-10-20-media-budget-stop/media-stop.safe.json",
+      "independent": "evidence/2026-10-20-media-budget-stop/media-independent.safe.json",
+      "window_released": true
     }
   },
   {
@@ -595,7 +607,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-20",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。",
-    "remaining": "剩余7项独立精确UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 PITR10；Oct24 16:29:48.470834观察51；Oct26 20:29:05.508343本批Groq发布418；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。前六原路径/hash/身份/期限不变，SYSTEM原身份只读；原文另新scope/PRE/公告/到期删除/独审，不重建已删snapshot。",
+    "remaining": "剩余9项独立UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 PITR10；Oct24 16:29:48.470834观察51；Oct26 20:29:05.508343 PR277发布418；Oct26 23:52:42.922982现场N36；Oct27 00:10:10.807865诊断D22；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原7项hash/身份/期限保持，两新批按各实际ledger另scope/PRE/公告/到期删除与独审，不合并或重建。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1070,6 +1082,22 @@
       "not_created": 0,
       "ledger_sha256": "eccbecaac4db0bbdc7b9513dbe411f669410c74b75529c2aa936bce9af038318",
       "evidence": "evidence/2026-10-20-groq-413-review/release.safe.json"
+    },
+    "media_stop_raw_retention": {
+      "private_batch": "2026-10-20-z01-media-current",
+      "captured": 36,
+      "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+      "deadline_epoch": 1793058762.922982,
+      "ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+      "status": "PENDING_EXPIRY"
+    },
+    "cost_diagnostic_raw_retention": {
+      "private_batch": "2026-10-20-cost-gate-diagnostic",
+      "captured": 22,
+      "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+      "deadline_epoch": 1793059810.8078651,
+      "ledger_sha256": "95a3e390eefc0bbeb4ad286e9d0b82e65adb95da55522fe1b4b5d54b230f6912",
+      "status": "PENDING_EXPIRY"
     }
   },
   {
@@ -1484,7 +1512,7 @@
     "status": "september_account_invoice_verified_provider_login_pending_full_cost_unknown",
     "status_as_of": "2026-10-20",
     "completed": "九月UTC整月CE固定范围6读及独立复算完成：Zerde标签Usage USD1.4977694507（dev0.5206115692/prod0.9771578815），Estimated=false；Google九月使用日期报表CSV独立复算：dev Gemini服务小计0.605498、prod Zerde项目小计0.438845 USD，PT口径与AWS UTC分列。已有计量/通知修复及Quiz准入恢复证据保持。 10月6日AWS账号九月一张发票摘要及独立原始复算通过：税前38.65＋税6.18＝44.83 USD；并非Zerde独立费用或已付款。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 生产Bot告警已改为连续三个5分钟错误窗口、一小时同类合并及恢复静默；两环境Operations实际包/保护主独及300秒稳定通过。 PR277已完成两环境Groq 413持久未分类审核保护发布与主独实际包/配置稳定核验；供应商限制和真实413人工审核仍未验收。",
-    "remaining": "完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；CE与发票税前差0.0074992985 USD原因未知。Groq/DeepSeek官方页均需用户登录，九月消费UNKNOWN；Google非秘密运行映射/税/付款仍待。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护继续；不因查账关闭Z17。 本次5次Groq垃圾检测HTTP413的具体限制仍UNKNOWN，降噪不等于业务故障修复。",
+    "remaining": "当前共享项目AWS费用UNVERIFIED使dev媒体验收发送前停止；资源元数据门当前全过，DAY从Oct17 00UTC起缺覆盖，原UnverifiedCost具体分支UNKNOWN。继续新有限计量失败诊断，不Invoke/扫描/写许可/清UNKNOWN或推进epoch。 完整产品实付仍UNKNOWN：AWS未标/共享与税/credits不能猜分，付款及九月历史Free Tier未核；CE与发票税前差0.0074992985 USD原因未知。Groq/DeepSeek官方页均需用户登录，九月消费UNKNOWN；Google非秘密运行映射/税/付款仍待。dev空轮询比较、真实故障恢复预算通知和Quiz恢复保护继续；不因查账关闭Z17。 本次5次Groq垃圾检测HTTP413的具体限制仍UNKNOWN，降噪不等于业务故障修复。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1678,6 +1706,19 @@
       "full_passed_before_notice_wording": 2519,
       "deployed": false,
       "provider_numeric_limit": "UNKNOWN"
+    },
+    "media_cost_gate_diagnostic": {
+      "status": "CURRENT_METADATA_PASS_COVERAGE_GAP",
+      "aws_reads": 22,
+      "day_rows": 33,
+      "covered_blocks": 32,
+      "absent_blocks": 5,
+      "short_blocks": 1,
+      "wrong_inventory_blocks": 0,
+      "first_gap_utc": "2026-10-17T00:00:00+00:00",
+      "historical_exception_cause": "UNKNOWN",
+      "model_permit": false,
+      "evidence": "evidence/2026-10-20-media-budget-stop/diagnostic.safe.json"
     }
   },
   {

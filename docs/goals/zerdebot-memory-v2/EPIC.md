@@ -1,6 +1,6 @@
-## 四群已发布；相册验收准备完成，等待新窗口
+## 四群已发布；媒体发送前被共享成本门暂停
 
-[当前媒体准备](Z01_MEDIA_CURRENT_ACCEPTANCE.md)已绑定PR277实际包与104源码，现场尚未执行。413审核保护已部署；自然验收继续发布后观察，[七项副本职责](RETAINED_COPIES.md)保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/393e656960c39f7bbbfd593272f2ff3c91150448/docs/goals/zerdebot-memory-v2/EPIC.md)。
+[实际停止/诊断](MEDIA_BUDGET_STOP.md)：资源门通过，Oct17起成本覆盖缺口；未发图或提问，具体上游原因仍UNKNOWN。自然观察继续，[九项副本职责](RETAINED_COPIES.md)保持。[此前完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/44ff96a6edeb453bdc94dd9ed98c705845430f4e/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
