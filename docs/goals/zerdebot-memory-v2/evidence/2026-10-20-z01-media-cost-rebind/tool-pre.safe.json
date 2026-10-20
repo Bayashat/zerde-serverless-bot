@@ -1,0 +1,62 @@
+{
+  "status": "ALIGNED_OFFLINE_PREPARATION_NOT_LIVE_APPROVAL",
+  "recorded_at": "2026-10-20T08:39:30.173112+00:00",
+  "reviewer": "independent_correctness_dev_release_review",
+  "plan_sha256": "451605e0d69197801fd7503720efdfc548ac046b2f1ea1cbacaad83d5734c06e",
+  "release_binding_sha256": "1418dcd4780dba61c8a03377fdfbde933bf3542862b69f18d6fca40873642cc3",
+  "tools": {
+    "assess_logs.py": "2f2833ae9cab5ea0103b24618e23e1b9ab2542fa8ae19460db55ab8ba9632360",
+    "collector.py": "66991cf755adcae8b0d2c2c2d8eaff6dffb4ac9f13777bde49384e97bd9ee482",
+    "independent_verify.py": "f61c7aa7cae51b81bb7c6f195bd288703fa2a06cd49cc164a8ef90ffc48c2037",
+    "log_collector.py": "00de2e063b2f20b5290c3e8831ec6e60a48ca8f0924136781166daf82812bb04",
+    "read_budget.py": "6b61b4736bd993749aa53ccdcbcef7dd63b5e7112d70057c4627694b041b416d",
+    "release_gate.py": "0236ec0b04c1a8a3639ec82e91fe6a90ef3723cc95104ae7044f8f6861ea1549",
+    "ui_record.py": "59361ccf64f4d0cf3d8ae85abab4477602c7046a8c78c98e485d54f7b84d5e00"
+  },
+  "evidence_sha256": {
+    "PLAN.md": "451605e0d69197801fd7503720efdfc548ac046b2f1ea1cbacaad83d5734c06e",
+    "ORIGINAL_MEDIA_CONTRACT.md": "b9af098b71c7aa5046b4dfe920ce2e43be13dbc52f6dcd5a2edd690634e34f5d",
+    "release-binding.safe.json": "1418dcd4780dba61c8a03377fdfbde933bf3542862b69f18d6fca40873642cc3",
+    "budget-owner-files.safe.json": "11f31a72893f7b25c813c8ea313bc54397fc5191202fda8a0d2fb21b40416de4",
+    "binding-build.safe.json": "68d33ff7b00f9741fd13e8e5ce92305540f931f4eb2cd21929ec1917ae7d8863",
+    "binding-controls.safe.json": "85305c487e1c61e221d2eb687fdb7a5fa9da33833ce5aa074d9848f8194ec95e",
+    "plan-preliminary.safe.json": "7c634314de44a0499592581cd4c1cf3e178e14d5af3df15b3e0edb26b6b4c3e7",
+    "plan-review-count-assumption.safe.json": "46e90d82a6029121afbd77661a08023aa82df77af6cedda8b438a342c55ade69",
+    "startup-rejection-boundary.safe.json": "66d174d8cd9deb04f5112f1767723ca6b9d9b027acb331f55f400408d16cde73",
+    "correctness-v1-finding.safe.json": "05e744d817b1aaa6c6cb52c7954e708f22541dcbd7dfae7e35d69e0fcb3f736f",
+    "independent-snapshot-import-fix.safe.json": "4378ac83e8e25adde863ed2911023d4e2306e338d0f3c3862013f14c5539129b",
+    "independent_verify-v1-preserved.py": "8bf9d3919c0fad3099cc63b04b83899fa66fa356cb6d9d024113d0c9148ec551",
+    "correctness_delta_controls.py": "1bb6b8962bdc881fe6eb5dbcaa2d337370302e8e1798ec3c1274358aadd66ad1",
+    "correctness-delta-controls.safe.json": "2b1e3423698ffe4686d7481e2d19b89ac51596d53ffe869f9a4dc7fd68243928",
+    "correctness_owner_rejection_delta.py": "be0666b000fa8e61b97c9e3710ff01355f9294fad8b29605b883a34ff0402b14",
+    "correctness-owner-rejection-delta.safe.json": "5bfc22281e33a08565beb92a2b3840b7b26a217d7e995cca6a805b464120b9a2"
+  },
+  "offline_checks": {
+    "initial_pass": 54,
+    "initial_total": 55,
+    "narrow_harness_correction_pass": 1,
+    "effective_distinct_controls_passed": 55,
+    "initial_report_preserved": true
+  },
+  "actual_checks": [
+    "Root safe validator verified Q complete release chain, original dependency deadline, 104 current owner source closure, N one/103 and S seven/97 changes, and full12 dev ZIP hashes/member content.",
+    "Independent safe validator independently verified current runtime and complete_artifacts plus original independent snapshot identity metadata; no root collector or scorer import.",
+    "Three semantic tools byte-identical to N; budget source differs only original Q expiry; independent case/run/original/call/check-ledger semantic AST retained.",
+    "Fixed independent snapshot local stat import: synthetic success and independent-file selection pass; incorrect inode/device/size/mode, expired dependency, missing window/started proof and post-read expiry reject.",
+    "New window requires direct human current identity/time; independent new seven-day anchor cannot borrow Q deadline; seven budget API scope preserves shared production cost owner and has no write."
+  ],
+  "frozen_findings": [
+    "V1 missing stat local/global import reproduced from preserved V1; now fixed with local import stat.",
+    "First V1 reproduction loaded concurrently fixed source and expected_missing_stat failed; captured in V1 finding report, then preserved exact V1 reproduced.",
+    "One owner substitution control incorrectly accepted only AssertionError; unchanged code rejected through ZIP KeyError; preserved initial report and separate one-control correction."
+  ],
+  "limits": [
+    "No real private snapshot or raw file read, no cloud/UI/model, no formal live entry, no new raw anchor/deadline or production changes.",
+    "Full business/semantic acceptance still requires current direct-human exclusive window, guarded first-capture ledger, actual three inputs and fresh independent POST.",
+    "Historical S19 closure, Q release evidence and P cost recovery are provenance, not continuing model or budget permission.",
+    "Optimized Python and invalid labels reject before private/SDK action; first O_EXCL claim failure may not create an internal receipt. After a legal new label claims successfully, subsequent PRE/binding/operation failures preserve once/failure evidence.",
+    "Existing thirteen retention duties remain plan constraints; this review creates none and does not execute or reschedule any cleanup."
+  ],
+  "review_scope": "Exact seven-tool correctness PRE; no actual media acceptance",
+  "plan_pre_sha256": "cea5e67caf991c5a1318e544a4abb351a35c8fc1350f5c0fc6f1817c73ec6966"
+}

@@ -1,6 +1,6 @@
-## 四群已发布；费用历史缺块已补齐
+## 四群已发布；PR280媒体绑定已准备
 
-新主独12读确认6缺块→0、AWS估算已核验；严格当前水位仍差900秒，非完整媒体许可。[本批契约](COST_RECOVERY_FOLLOWUP.md)；[十三项副本职责](RETAINED_COPIES.md)。状态不变。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/b82a3a9c6ab05fa86d37666e2732b43c820dcc54/docs/goals/zerdebot-memory-v2/EPIC.md)。
+费用历史缺块已补齐。新媒体工具绑定实际包及104源码，仍待新独占窗口和完整预算检查；未发图。[本批契约](Z01_MEDIA_COST_REBIND.md)；[十三项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/1aebd482a84e9ae05194cdcf2270035acf97ea6f/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
