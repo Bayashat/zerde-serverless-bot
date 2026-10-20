@@ -26,13 +26,13 @@
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-20",
-    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。",
-    "remaining": "引用摘要窄修已本地验证；尚需实际源码CI、两环境新运行包与独立保护、全新媒体工具/原五owner预算检查和人类新独占窗口。原T提问前STOP不重跑；其它媒体/频道/自然质量和历史UNKNOWN保持。",
+    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。",
+    "remaining": "新媒体工具绑定本实际包及主独snapshot原期限，经独审、原完整七API五owner时点检查和人类新15分钟独占才现场。仍需原生Reply父目标、同两图完整Gemini链/43语义/单SENT/lease；不得用新摘要回填原T2424/2425。媒体/频道/自然质量与历史UNKNOWN仍开放。",
     "issue_state": "OPEN",
-    "runtime_baseline": "fd53b30b2d07704f091e0a407375d254e5705819",
-    "deployed_build_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+    "runtime_baseline": "89f4aaeff25a8c666c679fbdd4f961647a1aa56a",
+    "deployed_build_source": "89f4aaeff25a8c666c679fbdd4f961647a1aa56a",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-10-20-cost-report-repair/release.safe.json",
+    "runtime_evidence": "evidence/2026-10-20-media-reference-proof/release.safe.json",
     "explicit_quota_guard": {
       "status": "DEPLOYED_ACTUAL_PACKAGE_VERIFIED",
       "contract": "EXPLICIT_QUOTA_GUARD.md",
@@ -348,6 +348,19 @@
     },
     "remaining_before_media_reference_proof": "当前包需重新有限绑定原预算owner/reader，完整许可通过并有新的Telegram独占窗口才继续媒体；原N发送前预算STOP保持。普通文本/ask/mention/Reply/首发学习遗忘原有限证据保持；媒体/频道/自然质量和旧UNKNOWN仍开放。",
     "media_reference_proof": {
+      "status": "MEDIA_REFERENCE_PROOF_DEPLOYED_BOTH_ENVIRONMENTS_INDEPENDENT_PASS",
+      "runtime_source": "89f4aaeff25a8c666c679fbdd4f961647a1aa56a",
+      "pr": 284,
+      "deployed": true,
+      "evidence": "evidence/2026-10-20-media-reference-proof/release.safe.json",
+      "independent_evidence": "evidence/2026-10-20-media-reference-proof/release-independent.safe.json",
+      "candidate_zip_sha256": "4ecda06e8cacc244243c99b5b21d5931e9d0cc362a8314019baaba24120f98c3",
+      "media_live_acceptance": "NOT_EXECUTED_THIS_BATCH",
+      "old_T_stop_frozen": true,
+      "not_a_budget_permit": true,
+      "publication_tracked_separately": true
+    },
+    "media_reference_proof_local_phase": {
       "status": "LOCAL_SOURCE_REVIEWED_NOT_DEPLOYED",
       "contract": "MEDIA_REFERENCE_PROOF.md",
       "evidence": "evidence/2026-10-20-media-reference-proof/source.safe.json",
@@ -357,6 +370,11 @@
       "natural_sample_increment": 0,
       "new_retention_duties": 0,
       "raw_redaction_unchanged": true
+    },
+    "runtime_before_media_reference_proof": {
+      "runtime_baseline": "fd53b30b2d07704f091e0a407375d254e5705819",
+      "deployed_build_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+      "runtime_evidence": "evidence/2026-10-20-cost-report-repair/release.safe.json"
     }
   },
   {
@@ -748,7 +766,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-20",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。",
-    "remaining": "十四项独立UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 H10；Oct24 16:29:48.470834 O51；Oct26 20:29:05.508343 PR277418；Oct26 23:52:42.922982 N36；Oct27 00:10:10.807865 D22；Oct27 01:53:25.893115 E2；Oct27 01:57:25.452039 F5；Oct27 02:26:52.661740本PR280按最终ledger；Oct27 07:23:59.115275新费用恢复读回12；Oct27 09:30:26.883900媒体现场84；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原路径/hash/身份/期限保持，原文另scope/PRE/公告/到期删除独审，SYSTEM只读，不能重建。",
+    "remaining": "十五项独立UTC责任：Oct20 14:32:29.705948告警341；Oct21 13:10:50.198516首发527；Oct24 16:20:38.287378 H10；Oct24 16:29:48.470834 O51；Oct26 20:29:05.508343 PR277418；Oct26 23:52:42.922982 N36；Oct27 00:10:10.807865 D22；Oct27 01:53:25.893115 E2；Oct27 01:57:25.452039 F5；Oct27 02:26:52.661740本PR280按最终ledger；Oct27 07:23:59.115275新费用恢复读回12；Oct27 09:30:26.883900媒体现场84；Oct27 10:47:02.618740本PR284媒体引用修复436；Nov1 11:46:02.425旧memory SYSTEM；Nov2 08:45:11.254旧stats SYSTEM。原路径/hash/身份/期限保持，原文另scope/PRE/公告/到期删除独审，SYSTEM只读，不能重建。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1298,6 +1316,16 @@
       "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-cost-rebind/raw-retention.safe.json",
       "ledger_sha256": "36b4be29036d4520d13ceac006ea5064cbbe21cfd4d067cc9f76317530ebd4f6",
       "contract": "Z01_MEDIA_COST_REBIND_LIVE.md"
+    },
+    "media_reference_proof_raw_retention": {
+      "status": "CAPTURED_PENDING_EXPIRY",
+      "first_capture_at": "2026-10-20T10:47:02.618740+00:00",
+      "deadline_utc": "2026-10-27T10:47:02.618740+00:00",
+      "deadline_epoch": 1793098022.61874,
+      "captured": 436,
+      "not_created": 0,
+      "ledger_sha256": "31e1573bee2d50dc69aea0c25312cd8aa3a19c370567a6925e98e36593073718",
+      "evidence": "evidence/2026-10-20-media-reference-proof/release.safe.json"
     }
   },
   {

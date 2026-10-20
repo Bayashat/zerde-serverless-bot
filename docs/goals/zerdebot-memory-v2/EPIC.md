@@ -1,6 +1,6 @@
-## 四群已发布；媒体引用核验窄修待部署
+## 四群已发布；媒体引用证据修复已部署
 
-引用摘要源码与2606回归已通过，真实媒体仍待；保留原脱敏和业务策略。[窄修](MEDIA_REFERENCE_PROOF.md)；[十四项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/6b5784291d7fc1778ff8960aecd49edafa3c4059/docs/goals/zerdebot-memory-v2/EPIC.md)。
+PR284两环境主独实包/保护/稳定通过；新多图问答另验，旧STOP保留。[当前契约](MEDIA_REFERENCE_PROOF.md)；[十五项副本职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/89f4aaeff25a8c666c679fbdd4f961647a1aa56a/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
