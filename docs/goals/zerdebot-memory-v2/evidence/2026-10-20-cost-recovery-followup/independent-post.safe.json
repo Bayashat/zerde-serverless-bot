@@ -1,0 +1,168 @@
+{
+  "status": "ALIGNED",
+  "at": "2026-10-20T07:27:31.590289+00:00",
+  "source": "fd53b30b2d07704f091e0a407375d254e5705819",
+  "main_sha256": "dbf8c951917882fa276af95cee7afd913d70ea376892a7f9817bb08cdbed5f45",
+  "independent_sha256": "08c85c88ed526c4dd3d47af87d88b0736aaa077f278008be2805ca180e69009a",
+  "raw_ledger_sha256": "4599dcae6a0eaedef853a04115d9893327a23892a51335ddaa4283c5dcc5e7bf",
+  "anchor_sha256": "6af22341f0dbc8a61219dda7b271c88f818a38b74204c70c3b26e310e7ccf6db",
+  "binding_sha256": "357caa1fc06ca844908ac7fffc56b21fe59510b962166f6d47c3846981d1705e",
+  "evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/binding.safe.json": "357caa1fc06ca844908ac7fffc56b21fe59510b962166f6d47c3846981d1705e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/readback_io.py": "397b3a055f72d2b266c00e287decb172f6087d10a08735746f00c241a03a2699",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/owner_catalog.py": "fa10173174d88bfae5e304f4b9ccaadfacc434f7f77c13c7674d4948a0eded63",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/PLAN.md": "c6f68af95216268d19e811825383ddc50c45c44ca44c32f3c255efe6c3f47408",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/readback.py": "6f689b7a917d335c911b49cbfb81b829eb94f6913f4eb72868953172e6300aa9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/tool-pre.safe.json": "52c45f4ebc56c365fd5960374fd19803e03a738dda3de2c9be1cc9bc9939ea9e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/maintenance-pre.safe.json": "ea4022b8f8f88eae4ac7d358bb94cc1d6da335b20abcff46185c691815960a78",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/final.safe.json": "ea09fecc6ff23e6e86657cfa1a465f1051d3af34b3917922c75d4e5104cb44e0",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/final-independent.safe.json": "a77d57455d86d91596b49721ebfe225ebaa3c66544fac797f4f5a48ee89b17fd",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/docs-release.safe.json": "2717633c79182d0a997defd9f76c4016340864fb8ca2bd584d873c0f1b7a3bfd",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/docs-release-independent.safe.json": "6639cc38ce063a0db89d9e8fdce15772d42b100c38c1ca7dd90d37480be80e41",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/stable-prod/receipt.safe.json": "f0ecb70a6d29ecc7a844d239589b0b2e48cc041b1001cee95cc6b478f04678b3",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/execute-prod/receipt.safe.json": "1843e0ffa85fd6d47ffe237a11610a85bff7aee1efab5a8358af9f9c4a27ee8b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/candidate-prod/receipt.safe.json": "a46f04e586a1a49c6651ed29b3084637437f5087c8fcf776300fd6fbb6d9e016",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/post-independent-prod/independent.safe.json": "eb272ac1fa350389acee64ff8cc5883c2bdb161641c7c7d7336750189739e485",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/post-independent-prod/receipt.safe.json": "3bbf558d63d8ac0c3c74578e68fbdc75951e8f62d1fb1adf1aa80aba70172c80",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/raw-retention.safe.json": "02a9e2bbb65da1dab9f5af28f5cf79022109e439c14e4678cbda5b704a592115",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/raw-anchor.safe.json": "919d55fcbdfc2870bf4e1cc16d2c569806825d53ba6c07c7d84f77c0ed93bff7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/recovery_read.py": "81d5da46b77424a278af55a93036ce39e27a5d29f5d730a3c4fa219dfbcbfa44",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/release_io.py": "62bc55ae09c43df6e562177b35bcfc492ea648f0ccace332a7d22a9dc2efc074",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/recovery_owner_catalog.py": "fa10173174d88bfae5e304f4b9ccaadfacc434f7f77c13c7674d4948a0eded63",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/raw-anchor.safe.json": "6af22341f0dbc8a61219dda7b271c88f818a38b74204c70c3b26e310e7ccf6db",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/raw-retention.safe.json": "4599dcae6a0eaedef853a04115d9893327a23892a51335ddaa4283c5dcc5e7bf",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/raw-start.safe.json": "34ab8703ae0fa5621de750dbd7d333dc58dbe7d743ba39be372c37e0e5bbd07a",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/automation-registration.safe.json": "0cb946d484a55361b0a3051383beeaf74a765f1e6052b9306b1d9d7c8b6894d4",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/retention-duty.safe.json": "b5e12227a74473585c410f8fe4f1d074c0ec7814fb6d196732e6b7498c635138",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/post-independent-prod/snapshot.private.json": "a3322931891b0a6d876b56edefa5f91542ad2d275975d2ab068b129b99ee7021",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/entry-ReadProgress20261020A.once.safe.json": "e8cb02907ec2781c11f26bd8d1ff35ae590787fb825fd548839c4b4978115935",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/entry-ReadProgress20261020A-8c20820d2a7641e09aa0de500b6d0f1f.safe.json": "4b2e5280a23255a22183c4bfafb603d503eca014adbdd18ec3495143e9d942a7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/intent.safe.json": "274a0f4f6493a366f00908cac59b988570d9fd26218fc29b4143ca29e14c769e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/result.safe.json": "dbf8c951917882fa276af95cee7afd913d70ea376892a7f9817bb08cdbed5f45",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-001.intent.safe.json": "fe31c99affbf7dfd4d413d88b6064a11c60dbcf5af2f6b6ee7168598902b8ec0",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-001.private.json": "f9ae495d4cab248244e1f5782a0e6c322738240b58acb18cddf5aa6cd5579f6d",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-002.intent.safe.json": "2a43dc331793f7c11aa2d94ea97e6e6e6fc10803a6b7d0038aad4431d1d7057b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-002.private.json": "6bdb53b7dad14781b657939813285e33522c510e29cb5f47cb6d41023060896b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-003.intent.safe.json": "a3689acd6fec997da9f312838a27f5d5d2ba84974a979b06900aa9e1ddeaa3d7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-003.private.json": "770ad7ef6c6ae68c25466d3c9a28fd4a6b3803302291cd07d627b4338afc9ea0",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-004.intent.safe.json": "c40afacc9e64c2b353d62ef3f230139cd95215c4c27cdee31f4f2ffa542c9833",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-004.private.json": "6f4282ef2e70c15c3b139732c71f7ae92dc6830f3b5bf4a716fa21fd37fab11e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-005.intent.safe.json": "84dd9204fa9c03b1768806ef700e795c1e131c557434d6d11a57c511521ba350",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-005.private.json": "c1eac9c397ee9c76d4b6689e5ea264e6e129a9021ea8961a8cae1f9e9010335a",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-006.intent.safe.json": "0102de111f4d71c304b1695243f7cf6cb0cf1c7dbb0df7897008a79bbc409f88",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgress20261020A/api-006.private.json": "d535c8223a70b7c2956d5e6effd15a8b56fe4bdb27b737d8a1aeba4a83d91a17",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/entry-ReadProgressIndependent20261020A.once.safe.json": "072f2f3d116b46aac891c5efb6a84768fd7cc37ddcafbd5e5d66a00cac71fb08",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/entry-ReadProgressIndependent20261020A-5513731134564c8fa9e0c475c4db622c.safe.json": "c08d1a45fa7256888e85741ea83e7bcac46bb136d24979327b1c7a5e73324149",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/intent.safe.json": "0a7cd861c3cef088363d1d938ff4c179eb9ec5d073c6f7e474af8e173e2e4d55",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/result.safe.json": "08c85c88ed526c4dd3d47af87d88b0736aaa077f278008be2805ca180e69009a",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-001.intent.safe.json": "9126299203ba2e74a0ca0fd5b5eb0d0d88b11a8fb21e9cfeef035af30441baea",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-001.private.json": "880be7556ad14738f39c7b4a49a835d1bb17da13ced3bcba5a8ff63afd58ae54",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-002.intent.safe.json": "fb251b9cf0a44f85593e53ce7ba926da7479b0da51be6fd4d8c729db9c6bb95f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-002.private.json": "af7bce6b6bc5fb16612eee1464b8d00d6b0870cf315e4ca25d0d3b200b02927b",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-003.intent.safe.json": "7ee48b0affbe73c802cb8abfbc3f834a5410460fe1f2b5924b2d2e3599ca13f7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-003.private.json": "4c8ac51d32de5a870f1c1732c8364d468174afb5ef532bd8a628a1884e2d1aef",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-004.intent.safe.json": "08afce5491344dced1467c96935107d37c9405168cf9f58484084effb26f3dc6",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-004.private.json": "ea439c603694d729492d00d70c6f5205b7468f94ec502e1e03263eb1188b0378",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-005.intent.safe.json": "2dad017a2f29d87c14334c637d0eb6428d6b01eceb0c2c81443d6826d55aa4cd",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-005.private.json": "827fc224fe850e362d2916f27b7d82012436b2d725a8b0cddeea970590430d67",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-006.intent.safe.json": "902f2a6c0ad5224b9c46ea248fb70a6a0adeb1a677e0ee0cc94b4c3562077b97",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-recovery-followup/ReadProgressIndependent20261020A/api-006.private.json": "9ea697948e4a4293dc9948cf306bc29b1e64f81205f0e795d27b062ffd28bd91",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/recovery-independent-post.safe.json": "89801656fca997d8d7e3f27f968e0f1165c6772950a76a79a2f24707816be9bc",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-repair/RecoveryIndependent20261020A/result.safe.json": "6f61ab21181436bff5b0459dbf7fdada15d157071bb0a992022ba4a8742d0ed9"
+  },
+  "api_calls_reviewed": 12,
+  "cloud_writes_reviewed": 0,
+  "raw_captured": 12,
+  "new_raw_copies": 0,
+  "current_review_cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "raw_deadline_epoch": 1793085839.115275,
+  "raw_deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+  "original_snapshot_deadline_epoch": 1793068012.66174,
+  "snapshot_original_identity_hash_and_expiry_verified": true,
+  "fixed_api_sequences_and_parameter_hashes_verified": true,
+  "all_http200_retry0_strict_integer": true,
+  "both_ledger_prefix_hashes_verified": true,
+  "both_once_and_no_failure_verified": true,
+  "current_worker_full_configuration_code_and_original_table_identity_verified": true,
+  "independently_recomputed": [
+    {
+      "label": "ReadProgress20261020A",
+      "coverage": {
+        "rows": 39,
+        "counts": {
+          "covered": 38,
+          "missing": 0,
+          "short": 1,
+          "wrong_inventory": 0
+        },
+        "first_gap_epoch": 1792454400,
+        "requested_through": 1792479900
+      },
+      "short_rows": [
+        {
+          "block_start": 1792454400,
+          "covered_until": 1792479000,
+          "requested_until": 1792479900,
+          "short_seconds": 900
+        }
+      ],
+      "observed_at": 1792480110,
+      "covered_until": 1792479000,
+      "valid_until": 1792490910,
+      "estimate_micro_usd": 5321387
+    },
+    {
+      "label": "ReadProgressIndependent20261020A",
+      "coverage": {
+        "rows": 39,
+        "counts": {
+          "covered": 38,
+          "missing": 0,
+          "short": 1,
+          "wrong_inventory": 0
+        },
+        "first_gap_epoch": 1792454400,
+        "requested_through": 1792479900
+      },
+      "short_rows": [
+        {
+          "block_start": 1792454400,
+          "covered_until": 1792479000,
+          "requested_until": 1792479900,
+          "short_seconds": 900
+        }
+      ],
+      "observed_at": 1792480110,
+      "covered_until": 1792479000,
+      "valid_until": 1792490910,
+      "estimate_micro_usd": 5321387
+    }
+  ],
+  "spans": [
+    {
+      "label": "ReadProgress20261020A",
+      "operation_at": 1792481065.46526,
+      "last_response_at": 1792481068.502594,
+      "elapsed_seconds": 3.0373339653015137
+    },
+    {
+      "label": "ReadProgressIndependent20261020A",
+      "operation_at": 1792481087.094938,
+      "last_response_at": 1792481089.874526,
+      "elapsed_seconds": 2.779587984085083
+    }
+  ],
+  "previous_missing_blocks": 6,
+  "current_missing_blocks": 0,
+  "aws_state": "ESTIMATE_VERIFIED",
+  "reason": "OBSERVED_GROSS_ESTIMATE",
+  "observation_status": "OBSERVED_PENDING",
+  "observed_after_prod_execute": true,
+  "remaining_gap_kind": "Current settled metering watermark is 900 seconds behind requested cutoff; no missing historical block in this page.",
+  "not_a_budget_permit": true,
+  "not_complete_five_owner_permission": true,
+  "sequential_not_global_transaction": true,
+  "scope": "Current shared prod AWS cost owner observation only; no provider billing, model permission, natural acceptance or media test."
+}
