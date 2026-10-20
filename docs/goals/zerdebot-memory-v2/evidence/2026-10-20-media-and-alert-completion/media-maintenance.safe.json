@@ -1,0 +1,173 @@
+{
+  "status": "ALIGNED_STOP_AND_RETENTION_BOUNDARY_NOT_BUSINESS_PASS",
+  "at": 1792504764.409606,
+  "reviewer": "purge_wait_maintenance",
+  "live_stop_sha256": "cd94038ab1e0a664d9c9ad91a597841a017753015b9ca55309baab1bbfcbf17e",
+  "ledger_sha256": "e23c33ea60ab94230d11944546f0e7b0345518d521439d3482fdacb0711ab91b",
+  "diagnosis_sha256": "09cb07b96de40836bf0755bc9f0e7b92dbef53819ed323a20a0c1665d182be64",
+  "captured": 95,
+  "pending": 0,
+  "root_prefix_count": 84,
+  "independent_append_count": 11,
+  "root_prefix_ledger_sha256": "ce841c207580b41a731de3e70942d58958709f7a9806e499f48c46fa71d3c39c",
+  "root_prefix_preserved": true,
+  "registered_private_inventory_exact": true,
+  "files0600": 95,
+  "inventory_scope": "95 exact ledger originals are 90 AWS captures plus 5 primary UI records; this is not the entire set of filenames containing private.",
+  "administrative_snapshots": {
+    "automation-before-onsite.private.toml": {
+      "sha256": "b01f6870f7e2f6c67fcd963605d631838ca9ad9fe4bb1e25f9edb73e0168c353",
+      "size": 22109,
+      "mode": "0600",
+      "ledger_member": false
+    },
+    "automation-onsite-update.args.private.json": {
+      "sha256": "f2e7654dc44e7f167b87c89afce52556bea7377540d7cda5c42789ebe9ca02b9",
+      "size": 22814,
+      "mode": "0600",
+      "ledger_member": false
+    },
+    "completion/automation-before-stop.private.toml": {
+      "sha256": "93bb5274a04e53f8d03956ed758d0cd599507cdbee5d68dfe34a1b939a43f0e3",
+      "size": 22825,
+      "mode": "0600",
+      "ledger_member": false
+    },
+    "completion/automation-stop-update.args.private.json": {
+      "sha256": "c3031216cbcb28a9228b9a5c7e87877a4d308ce4d861c0713f84e2c4e245493a",
+      "size": 23904,
+      "mode": "0600",
+      "ledger_member": false
+    }
+  },
+  "administrative_provenance": "Parent identifies the two args JSON and two prior TOML files as O_EXCL 0600 snapshots of the same onsite/stop native automation updates. They are separately inventoried, not added to raw deletion scope by suffix; this report does not claim their text is nonsensitive.",
+  "private_directories0700": 3,
+  "regular_nlink1_no_follow": true,
+  "current_identity_before_after_stable": true,
+  "identity_set_sha256": "86c6e0ddd86c492e6e044ec4f69bacd8908f0a3dd88e15bc04c0d58c9c9a306e",
+  "identity_claim_limit": "The original ledger records hash/size/path but no historical dev/ino. This review proves original bytes/prefix and current lstat/fstat identity before/after, not inode continuity since creation.",
+  "deadline_epoch": 1793107778.22371,
+  "deadline_utc": "2026-10-27T13:29:38.223710+00:00",
+  "active_duties": 16,
+  "api_attempts": 90,
+  "api_http200_retry0": 90,
+  "api_counts": {
+    "sts/GetCallerIdentity": 6,
+    "cloudformation/ListStackResources": 1,
+    "lambda/GetFunctionConfiguration": 12,
+    "dynamodb/DescribeTable": 6,
+    "dynamodb/GetItem": 37,
+    "sqs/GetQueueAttributes": 6,
+    "events/DescribeRule": 3,
+    "events/ListTargetsByRule": 3,
+    "lambda/ListEventSourceMappings": 2,
+    "dynamodb/Query": 9,
+    "logs/FilterLogEvents": 2,
+    "logs/GetLogEvents": 3
+  },
+  "phase_counts": {
+    "preflight": 31,
+    "budget": 7,
+    "B1": 17,
+    "B2": 17,
+    "Blogs1": 7,
+    "independent": 11
+  },
+  "phase_intervals": {
+    "preflight": [
+      1792503282.850235,
+      1792503290.5137122
+    ],
+    "budget": [
+      1792503301.38684,
+      1792503303.113167
+    ],
+    "B1": [
+      1792503411.728535,
+      1792503415.125705
+    ],
+    "B2": [
+      1792503789.2338061,
+      1792503792.393214
+    ],
+    "Blogs1": [
+      1792503808.5094578,
+      1792503811.499609
+    ]
+  },
+  "registered_ui_records": 5,
+  "ui_record_timestamps_do_not_overlap_recorded_aws_intervals": true,
+  "B2_before_quiet_UI_before_log_collection": true,
+  "sequentiality_limit": "Recorded operation intervals and primary UI observations are serial. This is not an independent observation of every physical UI action.",
+  "window_seconds": 900,
+  "window_expired": true,
+  "original_stop_permanent": true,
+  "album_grouped_send_reported": 1,
+  "photo_inputs": 2,
+  "ask_sends": 0,
+  "Q_artifacts_absent": true,
+  "quiet_seconds": 377.26791286468506,
+  "B_main_log_proof_status": "PASS_TWO_AUTHENTICATED_PHOTO_FRAMES",
+  "B_log_proof_claim_origin": "Frozen primary assessment, not rerun here; separate independent local POST applies.",
+  "fresh_post_status": "INCOMPLETE",
+  "fresh_failed_check": "case_record_drift",
+  "fresh_exit_code": 2,
+  "drift_exact_field_paths": [
+    "revision.N"
+  ],
+  "drift_cause": "UNKNOWN",
+  "fresh_stopped_after_subject_before_photo_fresh_reads": true,
+  "full_media_acceptance": false,
+  "Q_gemini_chain_observed": false,
+  "natural_sample_increment": 0,
+  "live_stop_pending_is_historical": true,
+  "automation_readback": {
+    "sha256": "635b4934dc4b2662e35cb7169fe251c84e2af918db8be095d74c5527998930f8",
+    "id": "zerde",
+    "status": "ACTIVE",
+    "rrule": "FREQ=DAILY;BYHOUR=12,13,19;BYMINUTE=20;BYSECOND=0",
+    "sixteenth_original_deadline_present": true
+  },
+  "evidence_sha256": {
+    "live-stop.safe.json": "cd94038ab1e0a664d9c9ad91a597841a017753015b9ca55309baab1bbfcbf17e",
+    "raw-retention.safe.json": "e23c33ea60ab94230d11944546f0e7b0345518d521439d3482fdacb0711ab91b",
+    "retention-anchor.safe.json": "ff1f4ec58705ca6db65d59fbc42fd94ccbb2b6d103f4160bd8684c61602375f7",
+    "UI_STOP.safe.md": "59ddd0dadfec0bb4d992cd9e10a9acb91caf6fdbaabd68d9de7640e75761d101",
+    "fresh-drift-diagnosis.safe.json": "09cb07b96de40836bf0755bc9f0e7b92dbef53819ed323a20a0c1665d182be64",
+    "onsite-window.safe.json": "73fed4b75a2746dedeacbc354e97573c290b00db7085c7e91dadfa3e1d796494",
+    "retention-duty.safe.json": "c43e2a117b8fc62226757f0ef3864cf8e26ac9ec20a2cec103cb6afd4503b1e6",
+    "B.send-registration.safe.json": "d13e5d706ea4bc163db935d5fa934c0f8ce702747e5dd4237229d3acb18713ab",
+    "B1.safe.json": "9d8a01b3fd38514e64099319c6700dd01211fa8438940b7cd96771fd380a4dab",
+    "B2.safe.json": "b27bdea8ea122c403f36aaadeabde33574057305b11d2a9ca50681c9ba626bf6",
+    "B.ready.safe.json": "fafc9304f811a6126b6c84dafdd2c537493e1bee04172dc38e6fa4d1a85e8fb9",
+    "Blogs1.safe.json": "d450218e0fbbe333b38c6beba0b8a2d8a5cad9af8b986b96ba7b3c15013465b1",
+    "Blogs1.assessment.safe.json": "8a7683fc6662f4b5ba0a8f4a1fc5d51d9d2b4df1a7702185a421421d8963928f",
+    "independent-post/input-bindings.safe.json": "8007f0b8bb3a53d783cad9512b6e72676cdff89ff68342ca39cc61608804eccf",
+    "independent-post/fresh-read.safe.json": "ef070a341c1b0c221179af395421808a8e4ececf2a929798c51790758e50de09",
+    "entry-independent.once.safe.json": "3e9d1474ce2c6a7e305b18d2dee6f668af1226b1b1d5b5cc7c3e6eb30549d642",
+    "entry-independent.result.safe.json": "327419e8a9de99ae9581d34a188a7619f9223ca331bed3597357e1ab1c59770b",
+    "independent_verify.py": "213ce5bbdd1ccf9778e3b2ddfdbfce5bae9eec47d671dbb0969d78f43cbfdf28",
+    "tool-pre.safe.json": "5c4da7764ebe08f13553b6e402fa2abe1b40b2a504b186e11f82cf6f0210b5db",
+    "maintenance-tool-pre.safe.json": "8842270f1c9b5410408be15e5f597ddc374b7c677d8c121ad85f9095007c3dc5"
+  },
+  "findings": [],
+  "review_inventory_correction_sha256": "a49540cd9a4705436bc0d446d84083015e08d47d3c5339188ece93b96a5c4ffe",
+  "review_time_schema_correction_sha256": "c96464dc2aac78d742dba63b6b99aa3c9a6cdbe14047515b6e256e241c7a9879",
+  "scope_notes": [
+    "No Q intent, registration, identity, log or UI record exists; no resume, resend or original entry was executed.",
+    "Primary stop records one initial file-picker correction and one unsuccessful native reply-menu action. Those remain primary-reported UI facts, not independently operated UI evidence.",
+    "Both B observation phases contain no per-photo ANSWER_REQUEST/LEASE records per frozen receipts; the later independent fresh comparison stopped at SUBJECT and does not prove unchanged photo rows.",
+    "No new raw derivative was written. Output retains only safe hashes/counts/times/field names; the 95 existing originals retain the one original seven-day deadline.",
+    "Collector raw started_at timestamps the local envelope before ledger reservation; the frozen source reserves before its actual SDK call. Budget/independent timestamp after reservation. Review uses each recorded schema rather than assuming one time order."
+  ],
+  "review_activity": {
+    "actual_registered_private_files_read": 95,
+    "cloud_calls": 0,
+    "ui_calls": 0,
+    "model_calls": 0,
+    "formal_entries": 0,
+    "ledger_writes": 0,
+    "repository_or_tool_mutations": 0,
+    "new_private_derivatives": 0
+  }
+}

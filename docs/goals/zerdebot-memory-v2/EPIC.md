@@ -1,6 +1,6 @@
-## 四群已发布；媒体引用证据修复已部署
+## 四群已发布；媒体有限结果及告警到期收口
 
-PR284两环境主独实包/保护/稳定通过；新多图问答另验，旧STOP保留。[当前契约](MEDIA_REFERENCE_PROOF.md)；[十五项副本职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/89f4aaeff25a8c666c679fbdd4f961647a1aa56a/docs/goals/zerdebot-memory-v2/EPIC.md)。
+新两图引用/静默证据通过本地复核，提问未发且fresh版本差异仍INCOMPLETE。告警341已到期移除并独审。[当前事实](MEDIA_PROOF_LIVE_AND_ALERT_EXPIRY.md)、[十五项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/03dec59aa323fefdd2df818dda4f60304603696e/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
