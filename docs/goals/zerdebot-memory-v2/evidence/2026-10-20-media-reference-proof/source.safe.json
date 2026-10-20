@@ -1,0 +1,45 @@
+{
+  "status": "LOCAL_SOURCE_REVIEWED_NOT_DEPLOYED",
+  "at": 1792491930.165556,
+  "base": "6b5784291d7fc1778ff8960aecd49edafa3c4059",
+  "runtime_source": "fd53b30b2d07704f091e0a407375d254e5705819",
+  "source_files": {
+    "src/bot/services/telegram_media.py": "e988423f6d288016a96d189e597f74ddfadf92f68a54cd95ad38df38accf0ee9",
+    "src/bot/services/handlers/commands.py": "b6b17fb88a2701eff8c5d57cc05f5b6dbd9f7a5a68c4d6b6ab75e1ce3cc29b5e",
+    "tests/test_media_reference_proof.py": "16cb145977c815f68fe7a6d293731351e91f2f02b6244b5c62dd4bf220910595"
+  },
+  "product_members": [
+    "services/telegram_media.py",
+    "services/handlers/commands.py"
+  ],
+  "targeted_tests": 181,
+  "full_tests": 2606,
+  "full_test_warning": "existing google.genai Python3.14 DeprecationWarning",
+  "hooks": "9 PASS / 3 SKIP for exact three files",
+  "evidence_sha256": {
+    "PLAN.md": "f6a86a06e7a0f297254d93528c29e95785759fc5b3ad62d08aa780ca0c13f244",
+    "plan-pre.safe.json": "62ad427c84403f93216b3c3d9131982d6f9606dfcc03352dc294abb24cc5a7a8",
+    "source-review.safe.json": "7c6c73a5619717a60a7d2fe72ea42f9ce09c61a942d49278333715ce1ef9ee49",
+    "source-maintenance.safe.json": "38139cfd8245f3f107ede83dfa4a0b2b46431b232f93beda6338dc5f4318738a",
+    "targeted-v1.log": "09f4c0cfbc2cce35507a0b1320dae2edf190d842018e8ec08cc2d4e82dd7da1e",
+    "full-tests-v1.log": "2449e9a19816d0ef101d8b7504030cd7da71ebc2f76d7434690b06320a323452",
+    "hooks-v1.log": "e5ed50589d238e4bdbf3baa77769907f1fca56522740a1c69bd0814cdd60ae01",
+    "hooks-v2.log": "403cb03ef4432ef90ecaec1601bcf2147b284da8dc6ab7c51ee72f59efa2ece1",
+    "source-validation-progress.safe.json": "6c831fff64bb604967a6f9348f572618f8d5ab6c18f49cf49aa05b7f4e38204e",
+    "source-validation-correction.safe.json": "292fdb8f64762c0b709b85eb81fae7de7ccc162e13e735e6721def3524744765"
+  },
+  "wire_or_persistent_schema_changes": false,
+  "raw_redaction_unchanged": true,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "natural_sample_increment": 0,
+  "new_retention_duties": 0,
+  "prior_live_stop_frozen": true,
+  "remaining": [
+    "source CI",
+    "new bounded runtime release and independent verification",
+    "new media tool and evidence contract",
+    "new direct human Telegram window and actual acceptance"
+  ]
+}

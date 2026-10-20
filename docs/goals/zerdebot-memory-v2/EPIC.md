@@ -1,6 +1,6 @@
-## 四群已发布；媒体现场停于证据缺口
+## 四群已发布；媒体引用核验窄修待部署
 
-两图分组及六分钟静默有据；相册/文件ID日志脱敏使既定证据链不完整，未提问，不称完整通过。窗口已释放。[现场结果](Z01_MEDIA_COST_REBIND_LIVE.md)；[十四项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/e1eab17b26f015fc95bf5ca4577112d831bbc6e2/docs/goals/zerdebot-memory-v2/EPIC.md)。
+引用摘要源码与2606回归已通过，真实媒体仍待；保留原脱敏和业务策略。[窄修](MEDIA_REFERENCE_PROOF.md)；[十四项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/6b5784291d7fc1778ff8960aecd49edafa3c4059/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

@@ -27,7 +27,7 @@
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-20",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。",
-    "remaining": "当前包需重新有限绑定原预算owner/reader，完整许可通过并有新的Telegram独占窗口才继续媒体；原N发送前预算STOP保持。普通文本/ask/mention/Reply/首发学习遗忘原有限证据保持；媒体/频道/自然质量和旧UNKNOWN仍开放。",
+    "remaining": "引用摘要窄修已本地验证；尚需实际源码CI、两环境新运行包与独立保护、全新媒体工具/原五owner预算检查和人类新独占窗口。原T提问前STOP不重跑；其它媒体/频道/自然质量和历史UNKNOWN保持。",
     "issue_state": "OPEN",
     "runtime_baseline": "fd53b30b2d07704f091e0a407375d254e5705819",
     "deployed_build_source": "fd53b30b2d07704f091e0a407375d254e5705819",
@@ -345,6 +345,18 @@
       "natural_sample_increment": 0,
       "full_media_acceptance": false,
       "next": "Preserve redaction and frozen PARTIAL; new evidence contract and fresh human window before any new UI."
+    },
+    "remaining_before_media_reference_proof": "当前包需重新有限绑定原预算owner/reader，完整许可通过并有新的Telegram独占窗口才继续媒体；原N发送前预算STOP保持。普通文本/ask/mention/Reply/首发学习遗忘原有限证据保持；媒体/频道/自然质量和旧UNKNOWN仍开放。",
+    "media_reference_proof": {
+      "status": "LOCAL_SOURCE_REVIEWED_NOT_DEPLOYED",
+      "contract": "MEDIA_REFERENCE_PROOF.md",
+      "evidence": "evidence/2026-10-20-media-reference-proof/source.safe.json",
+      "full_tests": 2606,
+      "targeted_tests": 181,
+      "runtime_deployments": 0,
+      "natural_sample_increment": 0,
+      "new_retention_duties": 0,
+      "raw_redaction_unchanged": true
     }
   },
   {
