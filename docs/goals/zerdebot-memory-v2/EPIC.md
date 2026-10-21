@@ -1,6 +1,6 @@
-## 四群已发布；ask两条有限对照已完成
+## 四群已发布；首周有限观察准备完成
 
-PR286已部署；普通问题澄清、个人历史缺证，A群上下文措辞仍待改善。[本轮边界](ASK_INTENT_CANARY.md)。首发527已清，383文件/7目录保持。[十六项职责](RETAINED_COPIES.md)。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/a09789751569f123f8e9dde4bcf53de79312a9b6/docs/goals/zerdebot-memory-v2/EPIC.md)。
+PR286已部署；ask普通问题澄清、个人缺证，A措辞待改。[对照](ASK_INTENT_CANARY.md)。[首周准备](WEEK_ONE_OBSERVATION.md)最多40+12只读，尚未执行/新原文0。[十六项职责](RETAINED_COPIES.md)保持。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/cb4c5bb9a4fd44825725a4fe90228a5d03217860/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

@@ -1554,6 +1554,18 @@
       "partial_pages": 3,
       "natural_samples_added": 0,
       "evidence": "evidence/2026-10-17-readback/observation.safe.json"
+    },
+    "week_one_observation_preparation": {
+      "status": "LOCAL_PREPARATION_COMPLETE_NOT_EXECUTED",
+      "as_of": "2026-10-21",
+      "contract": "WEEK_ONE_OBSERVATION.md",
+      "evidence": "evidence/2026-10-21-week-one-observation/preparation.safe.json",
+      "main_api_max": 40,
+      "independent_api_max": 12,
+      "runtime_reads": 0,
+      "new_raw": 0,
+      "new_deadlines": 0,
+      "natural_samples_added": 0
     }
   },
   {

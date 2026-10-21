@@ -1,0 +1,50 @@
+{
+  "status": "ALIGNED",
+  "at": 1792599945.99007,
+  "review_role": "independent_maintenance",
+  "tool_sha256": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+  "plan_sha256": "6e7513978024a92053d871a168aa21c64fb767f143321b0caacc394a35504e23",
+  "scope_sha256": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+  "controls_sha256": "8f15c9001c514e30c033837cffa378926bfb8f16c38bff1241bfa3241814605b",
+  "controls_source_sha256": "79e920fd09478f3d2436084121e5c368f1092b9703d8825572cb38da6067e1fb",
+  "independent_control_count": 22,
+  "synthetic_transport_calls": 3,
+  "source_dependency_files_verified": 11,
+  "safe_or_source_evidence_files_verified": 5,
+  "findings": [
+    "Original unexecuted V1 findings remain preserved; current tool confines safe errors to exception type and fixed GateError codes.",
+    "Exact Z10 manifest path/duty and zerDe automation identity, anchor/deadline and actual registration receipt hashes are required before SDK/API; semantics were independently negatively tested.",
+    "Wall date/retention bounds plus monotonic 600 seconds and 30 second API reserve are enforced before API, after response, after capture and at completion. A late synthetic response left INTENT, no raw and no second call.",
+    "Valid claim failures retain PARTIAL and consumed once; ledger hash failure still permits a partial report. Preclaim filesystem/lock/PRE failures remain external rejection rather than a promised internal receipt.",
+    "Independent requires completed main role/label, strict integer 38 or 40 count, exact anchor/deadline, ordered call/ledger prefix and response hashes/identity. Invalid handoff fixtures stopped before transport.",
+    "New news revision 0 is legal. Free repair_note is never copied into safe summary; missing and ABSENT counters remain distinct, and bool counters are rejected.",
+    "Prior module is imported only for pure metadata/table/step validation; no ended entry, prior private snapshot, business writer, model, UI or retry path is invoked.",
+    "Sequential metadata observations do not establish native Telegram visibility, full news manifest, natural sample acceptance, current budget/model permission or global transaction."
+  ],
+  "preserved_test_harness_failures": {
+    "temp_path_alias": "9521e5b70ea429c778fb39bef65f09fb8a76bef11de7ead0f1fb559d4b52ebc7",
+    "fake_sdk_keyword": "c8c71d3fced8e48e3b7f89db86520a26e5df4f819cb1226e7db87630b5f06478"
+  },
+  "test_scope": "22 targeted revised-boundary controls; operation fixtures use TEMP __file__/D/MANIFEST and stub only immutable source/PRE gates; no broad author suite rerun.",
+  "time_contract": {
+    "anchor_not_before_epoch": 1792603500.0,
+    "actual_reads_not_before_epoch": 1792604100.0,
+    "actual_reads_not_after_epoch": 1792626900.0,
+    "role_seconds": 600,
+    "retention_seconds": 604800
+  },
+  "limits": {
+    "main_fixed": 38,
+    "main_max": 40,
+    "independent_fixed": 10,
+    "independent_max": 12,
+    "independent_repeats_coverage_reads": false
+  },
+  "execution_state": "PREPARATION_ONLY_NO_ANCHOR_NO_LIVE_API_NO_NEW_RETENTION_DEADLINE",
+  "actual_AWS_calls": 0,
+  "actual_UI_actions": 0,
+  "actual_model_calls": 0,
+  "actual_private_or_zip_reads": 0,
+  "actual_manifest_or_product_writes": 0,
+  "formal_entry_executed": false
+}
