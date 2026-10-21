@@ -8,8 +8,8 @@ See [current architecture](docs/ARCHITECTURE.md), [implementation status](docs/g
 
 ## Explicit answers and memory
 
-- `/ask`, direct mentions and requested replies to the bot remain available without long-term memory. When context is unavailable, the bot must say so rather than infer that no data exists.
-- Ordinary topics such as `/ask RTX SPARK` belong to general question answering. The selector must establish personal/group-history intent before using memory; missing or unrelated facts are not a reason to answer a public question with a personal-memory refusal.
+- `/ask`, direct mentions and requested replies to the bot remain available without long-term memory. Public questions use general knowledge without requiring prior group discussion. For personal or group-history claims, unavailable evidence means the claim cannot be verified; it does not mean no data exists.
+- Ordinary topics such as `/ask RTX SPARK` belong to general question answering. The selector must establish personal/group-history intent before using memory; missing or unrelated facts are not a reason to answer a public question with a personal-memory refusal. A genuinely uncertain name calls for clarification of that name, without inventing specifications or asking for irrelevant group history.
 - Personal facts come only from the person's explicit self-statements in the same group. Facts have evidence, versions and correction/forget support; profiles are views of valid facts.
 - V2 stores raw messages for 30 days. Extraction and reliable recovery use the independent V2 table and queue. V1 semantic retrieval and rule-based personal-fact fallback are removed.
 - `/memory` exposes the current controls and usage. A refusal to change another person's information is distinct from a temporary database failure or disabled learning.
