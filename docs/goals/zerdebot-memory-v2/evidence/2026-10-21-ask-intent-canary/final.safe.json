@@ -1,0 +1,54 @@
+{
+  "status": "TWO_CASE_UI_BEHAVIOR_PASS_WITH_WORDING_CAVEAT",
+  "at": 1792597251.1212869,
+  "runtime_source": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+  "cases": {
+    "A": {
+      "sent_once": true,
+      "visible_replies": 1,
+      "ordinary_topic_clarification": true,
+      "personal_memory_missing_refusal": false,
+      "product_spec_accuracy": "NOT_EVALUATED",
+      "group_context_absence_claim": "UNSUBSTANTIATED_BY_THIS_SCOPE_WORDING_FOLLOWUP"
+    },
+    "P": {
+      "sent_once": true,
+      "visible_replies": 1,
+      "explicit_no_evidence": true,
+      "personal_fact_assertion": false
+    }
+  },
+  "evidence_origin": "primary_native_UI_records_to_independent_local_review_not_independent_UI",
+  "raw_count": 17,
+  "pending": 0,
+  "aws_readonly": 12,
+  "operator_aws_writes": 0,
+  "runtime_deployments": 0,
+  "natural_samples_added": 0,
+  "application_model_calls": "NORMAL_APPLICATION_POSSIBLE_NOT_COUNTED",
+  "ANSWER_mode_SENT_lease": "NOT_READ_NOT_PROVEN",
+  "deadline_utc": "2026-10-28T15:29:54.370686+00:00",
+  "deadline_epoch": 1793201394.370686,
+  "raw_ledger_sha256": "2e3ba2779d0f5e0020b50211a714db2af24294dab6647b9864ea3f78ac325cb7",
+  "remaining_independent_retention_duties": 16,
+  "independent_status": "ALIGNED",
+  "maintenance_status": "ALIGNED",
+  "window_released": true,
+  "original_pending_report_preserved": true,
+  "corrected_digest_before_first_capture": true,
+  "P_unsent_draft_corrected_before_send": true,
+  "evidence_sha256": {
+    "result.safe.json": "0b0f4c11c4cfc660f95880a4b1fbf30331a46ec6676c36ae036a1eb0ae39ae3a",
+    "independent-post.safe.json": "378d6582059574c8ddc87934605332d83842e0fbde5f99d66eabdb72e0c531dd",
+    "maintenance-post.safe.json": "15fe975e640b18e330fb79068a380acfff5742778ab210f41fbc11537815f448",
+    "onsite-release.safe.json": "989e6752fd852c3691b124d8dea0b3b1b66c1e591cc5769571bc8ef139e6c1a8",
+    "window-digest-correction.safe.json": "4adc80be4f8ef8c9788a2c8e61578c114ef917e659c1b79a58d81abfa8040dc1",
+    "retention-anchor.safe.json": "a8a08e981ea46776db5b7a854a6d34bb352988b80e38bbe211eb142de4784743",
+    "retention-duty.safe.json": "66cf74c03e19ccf7cc95083583e5f3e7f2f928aa45982edcd931218166720b64",
+    "PLAN.md": "78951b658b07c8bf655a8be2c39922fc7e720dee27e8f132476f9e2c7fa850cf",
+    "release-binding.safe.json": "60398e4d78b8d5388032abfc90f08c5ca7eea3a0dc4cf076cb66f6d830183268",
+    "tool-pre.safe.json": "9567e80396e3be6f37ffbc489210a25e70e1549a1b6fd8f80dd55ff5bac4c90d",
+    "maintenance-tool-pre.safe.json": "e20e994acc718f1a68a0fed386f99403271bc344fd69260a6c117952e74ad929"
+  },
+  "publication_status": "PENDING"
+}
