@@ -1,0 +1,172 @@
+{
+  "status": "ALIGNED",
+  "at": 1792604961.051211,
+  "review_role": "independent_maintenance_direct_post",
+  "scope_sha256": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+  "plan_sha256": "6e7513978024a92053d871a168aa21c64fb767f143321b0caacc394a35504e23",
+  "tool_sha256": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+  "raw_anchor_sha256": "7d292a3cae1aff9bbf7c0c8924a8d8c1747ca1e623a798e1395e961f965dddb2",
+  "raw_ledger_sha256": "561bdde56454cec6f1ce38fbf3519da6ab9929a4e2f8563aefdc0a9df0dcc825",
+  "main_sha256": "5d726d307dcd7027213ca021d644c599c11f5a6be55c567ce236f03c69fc85b7",
+  "independent_sha256": "818fb5482daa7e2e21f1fc97d889af9f8b1848ab81fb25b9913a038e8358ad03",
+  "registration_sha256": "99a469c65476fc74245b78671060f097130d4aa9dbd910f53ff798b39b013e97",
+  "automation_registration_sha256": "bf1a6557e5ad6af050affecfa42ee91d3f896f14b3eae72f16b856867aba9638",
+  "registered_manifest_sha256": "2f0c3fc2d9962d1f478520cb942c82f30eb2d451e681afbdb078523b9f07c6a9",
+  "raw_retention": {
+    "first_capture_epoch": 1792604561.712325,
+    "raw_retention_seconds": 604800,
+    "deadline_epoch": 1793209361.712325
+  },
+  "captured": 52,
+  "intent_remaining": 0,
+  "main_api": 40,
+  "independent_fresh_api": 12,
+  "old_main_prefix_sha256": "fbde05263759adc63b7b350c5a975b522949675effae776b37f7fd19c54ea14f",
+  "raw_file_hash_identity_mode_checks": 52,
+  "safe_projection_checks": 52,
+  "http200_retry0": 52,
+  "all_response_directories_0700": true,
+  "all_raw_regular_0600_nlink1": true,
+  "scope_order_and_serial_role_times_verified": true,
+  "coverage": {
+    "main_rows": 28,
+    "independent_fresh_rows": 0,
+    "present_rows": 21,
+    "absent_rows": 7,
+    "present_rows_with_missing_fields": 21,
+    "expired_present_rows": 0,
+    "no_missing_or_absent_to_zero": true,
+    "no_cross_stage_subtraction_or_user_estimate": true,
+    "oct21_partial_day": true
+  },
+  "controls": {
+    "main_points": 4,
+    "independent_fresh_points": 4,
+    "both_all_active": true,
+    "both_all_learning": true,
+    "both_original_activation_epoch_equal": true
+  },
+  "news": {
+    "main": {
+      "status": "PRESENT",
+      "step_count": 4,
+      "states": {
+        "SENT": 4
+      },
+      "confirmed_steps": 4,
+      "all_saved_steps_confirmed": true,
+      "logically_expired": false,
+      "native_telegram_observed": false,
+      "manifest_completeness_verified": false
+    },
+    "independent": {
+      "status": "PRESENT",
+      "step_count": 4,
+      "states": {
+        "SENT": 4
+      },
+      "confirmed_steps": 4,
+      "all_saved_steps_confirmed": true,
+      "logically_expired": false,
+      "native_telegram_observed": false,
+      "manifest_completeness_verified": false
+    }
+  },
+  "quiz": {
+    "each_role_own_done_exec_and_two_linked_rows": true,
+    "each_linked_row_unexpired": true,
+    "native_or_recovery_acceptance": false
+  },
+  "main_independent_projected_record_equality": {
+    "4": true,
+    "5": true,
+    "6": true,
+    "7": true,
+    "36": true,
+    "37": true,
+    "38": true,
+    "39": true
+  },
+  "semantic_limits": [
+    "Sequential point reads are not a global transaction or ongoing health/permit.",
+    "News confirms saved steps only, not complete news manifest or native Telegram visibility/content.",
+    "Quiz three persistent metadata rows are not recovery/concurrency/exactly-once/full question correctness acceptance.",
+    "Coverage missing/absent are not zero, stages cannot be subtracted for backlog/people/model successes; 28 coverage rows were only freshly read by main.",
+    "Leaderboard NOT_COVERED, natural samples added 0, start remains null and production_ready remains false."
+  ],
+  "administrative_files_excluded": [
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-21-week-one-observation/automation-before.private.toml",
+      "classification": "administrative snapshot or native automation arguments, excluded from 52 runtime response ledger",
+      "content_read": false,
+      "deletion_scope_not_inferred": true
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-21-week-one-observation/completion/automation-before.private.toml",
+      "classification": "administrative snapshot or native automation arguments, excluded from 52 runtime response ledger",
+      "content_read": false,
+      "deletion_scope_not_inferred": true
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-21-week-one-observation/completion/automation-register.args.private.json",
+      "classification": "administrative snapshot or native automation arguments, excluded from 52 runtime response ledger",
+      "content_read": false,
+      "deletion_scope_not_inferred": true
+    }
+  ],
+  "raw_scope_note": "52 means exact ledger responses only, not all private-suffixed files or a generalized deletion scope.",
+  "review_actions": {
+    "actual_cloud_calls": 0,
+    "actual_UI_actions": 0,
+    "actual_model_calls": 0,
+    "actual_runtime_raw_files_read": 52,
+    "old_raw_or_snapshot_reads": 0,
+    "raw_copies_created": 0,
+    "manifest_writes": 0,
+    "formal_entry_executed": false
+  },
+  "manifest_sha256": "2f0c3fc2d9962d1f478520cb942c82f30eb2d451e681afbdb078523b9f07c6a9",
+  "script_sha256": "066cdb9b3c9669381550dd6e24ae1c73cfd6c113c09f717cd00f4c19ec9e3e7d",
+  "direct_check_receipt_sha256": "f95edb93c3e5830d6ad1cf5f1261e5fd4f2ad2616c3219e0cb1fdc07d59f10f4",
+  "automation_tool_result_sha256": "51d420462f560f9486e301b93ffaaa5d9db7cd0626962783822978253a44ef9a",
+  "release_plan_sha256": "816a299261c944d92f640dc03837ba540651ffee8ff5330c0d54121c21c6ed50",
+  "original_16_duties_and_other19_manifest_objects_preserved": true,
+  "registration_before_first_api": {
+    "anchor_epoch": 1792604561.712325,
+    "recorded_automation_update_epoch": 1792604577.629,
+    "original_automation_receipt_at": 1792604587.446985,
+    "registered_at": 1792604587.447768,
+    "first_api_intent_at": 1792604587.7930088,
+    "later_tool_result_receipt_written_at": 1792604805.6548429,
+    "chronology_verified": true,
+    "evidence_boundary": "Actual native automation update success is provided by the root task tool-result provenance; reviewer directly verified local recorded identity/prompt hash/update time and both original registration receipts before first API. Reviewer did not call automation tools or independently observe that earlier UI. The later safe receipt is not used as original registration clock."
+  },
+  "startup_history": {
+    "safe_receipt_sha256": "4c409f59d51754e758b84fe1c6e2814356f15b20bc956d40c2ddc551491cc247",
+    "prior_read_only_manifest_dict_assumption_TypeError_preserved": true,
+    "no_actual_role_or_business_failure_inferred": true
+  },
+  "administrative_boundary": "Administrative snapshots/automation arguments are separately retained and content was not read; their sensitivity is not inferred, and the runtime ledger is not widened by private filename suffix.",
+  "evidence_sha256": {
+    "PLAN.md": "6e7513978024a92053d871a168aa21c64fb767f143321b0caacc394a35504e23",
+    "scope.safe.json": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+    "observe_week.py": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+    "plan-pre.safe.json": "8ba21978a21983e2973c58d45cdcd13bf73dd337f8ed6509ddb5816f44a44a7d",
+    "tool-pre.safe.json": "078c34828abf52956ff386d50e314999073e5b7df2a7d3fd4b2fa6f488086620",
+    "maintenance-pre.safe.json": "53d27ace993d58847b6ef4d582245861b31d692c7d552011bc3c7382e77c4afd",
+    "raw-anchor.safe.json": "7d292a3cae1aff9bbf7c0c8924a8d8c1747ca1e623a798e1395e961f965dddb2",
+    "raw-retention.safe.json": "561bdde56454cec6f1ce38fbf3519da6ab9929a4e2f8563aefdc0a9df0dcc825",
+    "retention-registration.safe.json": "99a469c65476fc74245b78671060f097130d4aa9dbd910f53ff798b39b013e97",
+    "automation-registration.safe.json": "bf1a6557e5ad6af050affecfa42ee91d3f896f14b3eae72f16b856867aba9638",
+    "completion/automation-tool-result.safe.json": "51d420462f560f9486e301b93ffaaa5d9db7cd0626962783822978253a44ef9a",
+    "completion/independent-execution-precheck.safe.json": "6893630b3c00fd0c22ffca0ce35f14929dd64b2c9641416b63ab462c7dbce79e",
+    "completion/independent-execution.safe.json": "8d77bb77cddff31461fd9a0f91246509282969758aebde6b62e4b21c632577d9",
+    "completion/startup.safe.json": "4c409f59d51754e758b84fe1c6e2814356f15b20bc956d40c2ddc551491cc247",
+    "StartWeekRetention20261021A.intent.safe.json": "04c4967639dc0c04d822477437b54aeb29fe5ebdf607d3d9ae06e1cd3d426cd3",
+    "StartWeekRetention20261021A.safe.json": "f539fbe2b978699485cf8f3cbcc73cb0aa03d1bb11b72012896257793810ca75",
+    "ObserveWeek20261021A.intent.safe.json": "fc6f025d8fb9d0abd0efed6a6eae1b4f8cb4f665cc71c8ff7c11b00c58b998b8",
+    "ObserveWeek20261021A.safe.json": "5d726d307dcd7027213ca021d644c599c11f5a6be55c567ce236f03c69fc85b7",
+    "ObserveWeekIndependent20261021A.intent.safe.json": "dad6d3243256646592fde258053e6366cc8a7dcedda303bc2009b2bf78727953",
+    "ObserveWeekIndependent20261021A.safe.json": "818fb5482daa7e2e21f1fc97d889af9f8b1848ab81fb25b9913a038e8358ad03"
+  }
+}
