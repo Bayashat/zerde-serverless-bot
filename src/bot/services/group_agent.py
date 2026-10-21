@@ -30,7 +30,12 @@ from services.ai.telegram_html import (
     normalize_llm_output_for_telegram_html,
 )
 from services.bot_identity import is_self_bot_user
-from services.explicit_context import extract_message_text, format_message_reference, normalise_chat_style_profile
+from services.explicit_context import (
+    PLAIN_HISTORY_INSTRUCTIONS,
+    extract_message_text,
+    format_message_reference,
+    normalise_chat_style_profile,
+)
 from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
@@ -819,16 +824,7 @@ def handle_update(
 
 def _plain_reply_instructions(policy: ReplyPolicy) -> str:
     """One prompt owner for runtime answers and the strict evaluation serializer."""
-    return (
-        policy.instructions + " No long-term memory is provided for this request. "
-        "You have no tool to search message history or fetch profiles in this response. "
-        "Missing context does not tell you whether stored information exists or what someone said before. "
-        "Do not claim the database or chat history is empty, that a person never shared something, "
-        "or that their data was erased. Do not promise to search history or retrieve profiles yourself. "
-        "Do not claim to know personal or group facts absent from this explicit request. "
-        "When evidence is missing, say you cannot verify it from the context available for this request "
-        "and invite the user to provide the relevant message or quotation."
-    )
+    return f"{policy.instructions} {PLAIN_HISTORY_INSTRUCTIONS}"
 
 
 def answer_group_question(

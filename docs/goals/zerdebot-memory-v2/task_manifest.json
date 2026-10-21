@@ -26,13 +26,13 @@
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
     "status_as_of": "2026-10-20",
-    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。 PR286普通ask意图提示修复已两环境发布并主独完整包/配置与稳定确认；实际模型语义另待有限dev验收。",
-    "remaining": "普通 /ask 仍需主/备用生成模板修复和真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
+    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。 PR286普通ask意图提示修复已两环境发布并主独完整包/配置与稳定确认；实际模型语义另待有限dev验收。 PR291公共知识生成政策与空上下文修复两环境发布并独审；真实公共问答有用性仍待新现场。",
+    "remaining": "普通 /ask 主/备用生成政策与空上下文修复已发布，仍需真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
     "issue_state": "OPEN",
-    "runtime_baseline": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
-    "deployed_build_source": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+    "runtime_baseline": "9e962c20f71586688736858a962f3199edcd53c8",
+    "deployed_build_source": "9e962c20f71586688736858a962f3199edcd53c8",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-10-20-ask-intent-repair/release.safe.json",
+    "runtime_evidence": "evidence/2026-10-21-ask-public-knowledge-repair/release.safe.json",
     "explicit_quota_guard": {
       "status": "DEPLOYED_ACTUAL_PACKAGE_VERIFIED",
       "contract": "EXPLICIT_QUOTA_GUARD.md",
@@ -427,7 +427,22 @@
       "problem": "普通主题仍以群聊缺上下文代替有效回答；先前selector修复与有限对照不等于完整修复。",
       "next": "修复主/备用普通生成模板并独审；个人历史继续原证据边界。",
       "exact_model_path": "UNKNOWN_NOT_CAPTURED"
-    }
+    },
+    "runtime_before_ask_public_knowledge_repair": {
+      "runtime_baseline": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+      "deployed_build_source": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+      "runtime_evidence": "evidence/2026-10-20-ask-intent-repair/release.safe.json"
+    },
+    "ask_public_knowledge_repair": {
+      "pr": 291,
+      "runtime_source": "9e962c20f71586688736858a962f3199edcd53c8",
+      "status": "DEPLOYED_REAL_SEMANTICS_PENDING",
+      "evidence": "evidence/2026-10-21-ask-public-knowledge-repair/release.safe.json",
+      "independent_evidence": "evidence/2026-10-21-ask-public-knowledge-repair/release-independent.safe.json",
+      "current_product_knowledge": "NOT_PROVEN_BY_DEPLOYMENT",
+      "old_media_stops_preserved": true
+    },
+    "remaining_before_ask_public_knowledge_repair": "普通 /ask 仍需主/备用生成模板修复和真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。"
   },
   {
     "id": "Z02",
@@ -818,7 +833,7 @@
     "status": "online_and_declared_resources_clean_copies_pending",
     "status_as_of": "2026-10-21",
     "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。 Oct20告警341已到期精确移除并独立验证保护文件/目录/链接保持，实际延误UNKNOWN保留。 Oct21首发最终527原文已精确移除并独审，383保护/7目录/1054journal保持，实际延误UNKNOWN详见完成证据。",
-    "remaining": "十七项独立UTC责任见RETAINED_COPIES.md：Oct24两批、Oct26两批、Oct27九批、Oct28两批（ask对照17原文、首周观察52原文）、Nov1/Nov2两SYSTEM原身份只读；所有原期限保持，不合并或重建。首发527已履行。",
+    "remaining": "十八项独立UTC责任：原十七项保持，新增PR291原文408份，原期限2026-10-28T18:47:42.597749+00:00；详见RETAINED_COPIES.md。已履行批次不重跑，后续每批另scope/双PRE。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
@@ -1482,6 +1497,17 @@
       "raw_pending": 0,
       "raw_ledger_sha256": "561bdde56454cec6f1ce38fbf3519da6ab9929a4e2f8563aefdc0a9df0dcc825",
       "status": "CAPTURED_RETENTION_OPEN"
+    },
+    "remaining_before_ask_public_knowledge_repair": "十七项独立UTC责任见RETAINED_COPIES.md：Oct24两批、Oct26两批、Oct27九批、Oct28两批（ask对照17原文、首周观察52原文）、Nov1/Nov2两SYSTEM原身份只读；所有原期限保持，不合并或重建。首发527已履行。",
+    "ask_public_knowledge_retention": {
+      "owner": "Z10",
+      "status": "CAPTURED_NOT_DELETED",
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-21-ask-public-knowledge-repair/raw-retention.safe.json",
+      "sha256": "664c6570cd624cb6dccb89be224daabb00d1b0f5653ae9c5aa85f67d589ef47f",
+      "captured": 408,
+      "first_capture_at": "2026-10-21T18:47:42.597749+00:00",
+      "deadline_epoch": 1793213262.597749,
+      "deadline_utc": "2026-10-28T18:47:42.597749+00:00"
     }
   },
   {

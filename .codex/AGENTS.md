@@ -15,7 +15,7 @@ Old SETTINGS were not an active settings owner: dev0/prod3 retired-flag rows had
 ## Active owners
 
 - `app.py` lazily wires current business/V2 dependencies. Explicit context never requires the old table env.
-- `services/explicit_context.py` is the single pure text/reference/style helper shared with strict evaluation.
+- `services/explicit_context.py` owns pure text/reference/style helpers and the shared public-knowledge/personal-evidence prompt policy. Primary, fallback and strict evaluation use the same owner; it never reads stored knowledge.
 - `services/group_agent.py` retains explicit triggers, answer length and primary/fallback orchestration only.
 - `ExplicitContextRepository` delegates metadata-only temporary albums to V2 EphemeralMediaRepository; no old-store fallback or bot-answer body writes.
 - `memory_v2` owns facts, source edit/deletion/epoch fences, public commands/answers and recovery. Preserve explicit delivery leases, before-attempt and final-send checks.
@@ -30,7 +30,7 @@ Captcha uses generation/revision and durable decisions before Telegram effects; 
 
 Do not log secrets, complete Telegram updates, source/model text or raw media. Preserve shared redaction for exception chains and SDK logs. Production Chinese news stays DISABLED; do not recreate old group-summary schedules.
 
-Keep frozen gold, scorers, model runs, published reports and once-script results unchanged. Current explicit serializers must match the saved pre-cleanup synthetic request baseline, not merely each other. Keep useful mixed tests; retire only tests whose algorithm was removed. Build actual ARM packages and inspect deployed ZIP/source/dependency bytes; source grep or a merged PR alone is insufficient.
+Keep frozen gold, scorers, model runs, published reports and once-script results unchanged. Preserve the saved pre-cleanup synthetic request baseline and historical scores. The user-authorized public-knowledge repair changes only prompt policy and omission of empty context sections; verify current requests at the real transport boundary and retain all non-policy contracts instead of rewriting or rescoring the old baseline. Keep useful mixed tests; retire only tests whose algorithm was removed. Build actual ARM packages and inspect deployed ZIP/source/dependency bytes; source grep or a merged PR alone is insufficient.
 
 Update PLAN/task_manifest/TASKS/HANDOFF/EVIDENCE and relevant GitHub issues after material progress. Distinguish local code, merge, deployment, synthetic/real quality, resource absence and copy expiry. Natural seven-day acceptance starts from actual use; do not invent chat or count empty calendar days. Continue independent cleanup/business/cost work while natural samples are missing.
 
