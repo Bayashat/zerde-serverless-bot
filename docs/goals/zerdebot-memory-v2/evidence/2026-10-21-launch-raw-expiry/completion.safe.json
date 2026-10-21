@@ -1,0 +1,150 @@
+{
+  "status": "EXACT_527_LAUNCH_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+  "recorded_at": 1792588256.0676138,
+  "deadline_epoch": 1792588250.198516,
+  "deadline_utc": "2026-10-21T13:10:50.198516+00:00",
+  "deadline_unchanged": true,
+  "deleted_files": 527,
+  "protected_files": 383,
+  "preserved_directories": 7,
+  "inventory_before": 910,
+  "inventory_after": 383,
+  "journal_records": 1054,
+  "protected_zip_count": 0,
+  "preserved_directory_modes": {
+    "0700": 3,
+    "0755": 4
+  },
+  "first_unlink_utc": "2026-10-21T13:10:50.437699+00:00",
+  "last_unlink_utc": "2026-10-21T13:10:50.594650+00:00",
+  "first_lateness_seconds": 0.2391831874847412,
+  "last_lateness_seconds": 0.3961341381072998,
+  "delay_cause": "UNKNOWN",
+  "strict_unlink_returned_and_absent_both_sides": true,
+  "evidence_sha256": {
+    "PLAN.md": "e92bd6add496bd95c4df3e5da6872d6ad9004beb1f5edcc1dde7a567ce4191e7",
+    "scope.safe.json": "16c76bcdb3a75fa2bbee73bef22b1f21ea52e10a061e945953214df865c79f5d",
+    "expire_raw.py": "2b60b0a1e5697246628dccef06233238fe221f22790b38dba9289d07d2bdb829",
+    "verify_absence.py": "80fefa75922f64986f593860fd5c7f76f3ad7e77dc1d612ead497e166b1e796b",
+    "tool-pre.safe.json": "009d01a4afd053b7ba2bf6780290fec4f76d7e84fd5a2a2c875b33b4e1aedbb6",
+    "maintenance-pre.safe.json": "ab93cf7d672ae995c9c198ae2992904ed9ad21dc23af644892973a847e672fe2",
+    "preparation.safe.json": "72e3f6fa15d578cbd994d6defb3fb368fee7c79db60d855de4b475395ea753f7",
+    "preparation-independent.safe.json": "504d2fee582fae0c64e268feea29f569f5f3e47baeb05fe6e815e05220bd1fc0",
+    "inspect-Due20261021A.safe.json": "3ab8782944c7452ff60902bdfb7e6299a05a8b63ed1b56d9b2259c2cca30e4ed",
+    "inspect-Due20261021A.intent.safe.json": "faf583a528b27adf37dba4c2c651056d84728322e57e7f48675f3a9055b85054",
+    "DELETION_NOTICE.md": "d759ae55e956e9ee61176bc90a36ec7133009d00e1436070688e7ef5fe1ff3a9",
+    "deletion-notice.safe.json": "35a2d6cf51e23def247dbf0e8ad7ff4511152ddf7b8e94495df8ded0e51bde2d",
+    "apply.intent.safe.json": "12bf8c891ab4fdb077fbb961bf5a75694499f2a03808ef5bbe1db777574fa1b5",
+    "apply.safe.json": "6c365ee879a98c37e8a354686b8111cc858789306d777abf2b14d7e8c729abf8",
+    "apply.journal.safe.jsonl": "3e6ef0c3f607b45c0060324cdc01b752c35e7b38abed2af0ad4b696b456f1c51",
+    "independent.intent.safe.json": "31aae4d0fa7a3103d3d10dca553d4a42ebae8b9467e9b0ab57daf33cf6707d10",
+    "independent.safe.json": "d4201763ce4b45ef15b4d54119f1d712b4f9ef4a09ba6a16b8f28c9cb7f28677"
+  },
+  "remaining_numbered_duties": 15,
+  "remaining_duties": [
+    {
+      "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+      "batch": "2026-10-17-pitr-readback",
+      "captured": 10,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+      "batch": "2026-10-17-launch-observation",
+      "captured": 51,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-26T20:29:05.508343+00:00",
+      "batch": "2026-10-20-groq-413-review",
+      "captured": 418,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+      "batch": "2026-10-20-z01-media-current",
+      "captured": 36,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+      "batch": "2026-10-20-cost-gate-diagnostic",
+      "captured": 22,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:53:25.893115+00:00",
+      "batch": "2026-10-20-cost-report-readback",
+      "captured": 2,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:57:25.452039+00:00",
+      "batch": "2026-10-20-cost-metrics-diagnostic",
+      "captured": 5,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T02:26:52.661740+00:00",
+      "batch": "2026-10-20-cost-report-repair",
+      "captured": 446,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+      "batch": "2026-10-20-cost-recovery-followup",
+      "captured": 12,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T09:30:26.883900+00:00",
+      "batch": "2026-10-20-z01-media-cost-rebind",
+      "captured": 84,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T10:47:02.618740+00:00",
+      "batch": "2026-10-20-media-reference-proof",
+      "captured": 436,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T13:29:38.223710+00:00",
+      "batch": "2026-10-20-z01-media-proof-acceptance",
+      "captured": 95,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-10-27T16:31:53.365253+00:00",
+      "batch": "2026-10-20-ask-intent-repair",
+      "captured": 411,
+      "operation": "separate_exact_raw_expiry"
+    },
+    {
+      "deadline_utc": "2026-11-01T11:46:02.425+00:00",
+      "batch": "old-memory-SYSTEM-readonly",
+      "captured": null,
+      "operation": "original_identity_readonly"
+    },
+    {
+      "deadline_utc": "2026-11-02T08:45:11.254+00:00",
+      "batch": "old-stats-SYSTEM-readonly",
+      "captured": null,
+      "operation": "original_identity_readonly"
+    }
+  ],
+  "runtime_release_state": "RELEASED_OBSERVING",
+  "natural_supported": 0,
+  "natural_unknown": 0,
+  "natural_started_at": null,
+  "production_ready": false,
+  "new_runtime_deployment": false,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw_retention_duties": 0,
+  "not_secure_media_erasure": true,
+  "original_failure_and_ledger_preserved": true,
+  "retired_online_objects": 37,
+  "publication": "PENDING_SEPARATE_RECEIPT"
+}

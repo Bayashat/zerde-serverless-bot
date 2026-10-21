@@ -1,6 +1,6 @@
-## 四群已发布；普通ask分流修复
+## 四群已发布；首发527原文已清
 
-PR286已两环境发布并独审，真实语义另验收；旧媒体/告警收口历史保持。[当前事实](ASK_INTENT_REPAIR.md)、[十六项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/23df3413d2a0668ac766b9fc736c494c557e3ce8/docs/goals/zerdebot-memory-v2/EPIC.md)。
+527已删并独审；383文件/7目录保持，原期限不变。[实际证据](evidence/2026-10-21-launch-raw-expiry/completion.safe.json)。[十五项职责](RETAINED_COPIES.md)。PR286普通ask已部署，真实对照待新窗口。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/bb20c2c2b4cdc908c961e0544e1cb46ddbc4eb5e/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

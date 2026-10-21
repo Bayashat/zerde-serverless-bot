@@ -1,3 +1,35 @@
+## Oct21：首发527原文到期责任已履行
+
+原期限2026-10-21 13:10:50.198516UTC保持。527精确目标已逐项移除并独立fresh确认不存在；383保留文件hash/身份、7目录原身份/模式保持，910→383库存、1054条intent/result及apply/journal双侧unlink_returned/absent严格True通过。首末实际unlink 2026-10-21T13:10:50.437699+00:00 / 2026-10-21T13:10:50.594650+00:00，实际晚0.239183187至0.396134138秒，原因UNKNOWN。3个0700与4个0755目录、两行政快照、原ledger/失败/UI_STOP/UNKNOWN及全部安全历史保持。本批无ZIP或链接；41保护历史hash、342仅fresh基线的区别保留。普通unlink非安全擦盘或全部云副本消失，37在线退役数不增。
+
+Due20261021A、Apply20261021A和独立verify均已结束不可重跑；原首发snapshot不得复制、延期或重建。清理0云/UI/模型/新原文/运行部署/自然增量；CI既有OIDC/CDK只读另计。原准备final的PENDING是当时阶段，由后实际独审闭合，不改历史报告。
+
+剩余十五项独立UTC责任见下表与[副本台账](RETAINED_COPIES.md)，最近Oct24 16:20:38.287378 H10及16:29:48.470834 O51，不合并。计划原zerde每日Almaty20:35=15:35UTC唤醒覆盖两时点前60分钟内，实际设置以自动任务回执为准；设备准时性不保证。每次履行后重排下一期限。
+
+普通ask修复PR286已部署并合并，真实两条对照仍未执行，须新的直接人类15分钟Telegram独占；原媒体STOP/未发Q不续跑。四群RELEASED_OBSERVING、自然0/50有据0/20未知/起点null/production_ready=false保持；Oct21首周观察另有限只读合同。20任务14OPEN6CLOSED、EpicOPEN，独立业务/费用缺口保持。文档main不是运行构建；本次不部署。
+
+[实际完成](evidence/2026-10-21-launch-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-21-launch-raw-expiry/completion-independent.safe.json)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/bb20c2c2b4cdc908c961e0544e1cb46ddbc4eb5e/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+| 原UTC期限 | 独立责任 |
+| --- | --- |
+| 2026-10-24T16:20:38.287378+00:00 | 2026-10-17-pitr-readback 10原文 |
+| 2026-10-24T16:29:48.470834+00:00 | 2026-10-17-launch-observation 51原文 |
+| 2026-10-26T20:29:05.508343+00:00 | 2026-10-20-groq-413-review 418原文 |
+| 2026-10-26T23:52:42.922982+00:00 | 2026-10-20-z01-media-current 36原文 |
+| 2026-10-27T00:10:10.807865+00:00 | 2026-10-20-cost-gate-diagnostic 22原文 |
+| 2026-10-27T01:53:25.893115+00:00 | 2026-10-20-cost-report-readback 2原文 |
+| 2026-10-27T01:57:25.452039+00:00 | 2026-10-20-cost-metrics-diagnostic 5原文 |
+| 2026-10-27T02:26:52.661740+00:00 | 2026-10-20-cost-report-repair 446原文 |
+| 2026-10-27T07:23:59.115275+00:00 | 2026-10-20-cost-recovery-followup 12原文 |
+| 2026-10-27T09:30:26.883900+00:00 | 2026-10-20-z01-media-cost-rebind 84原文 |
+| 2026-10-27T10:47:02.618740+00:00 | 2026-10-20-media-reference-proof 436原文 |
+| 2026-10-27T13:29:38.223710+00:00 | 2026-10-20-z01-media-proof-acceptance 95原文 |
+| 2026-10-27T16:31:53.365253+00:00 | 2026-10-20-ask-intent-repair 411原文 |
+| 2026-11-01T11:46:02.425+00:00 | old-memory-SYSTEM-readonly 原身份只读 |
+| 2026-11-02T08:45:11.254+00:00 | old-stats-SYSTEM-readonly 原身份只读 |
+
+## 以下为此前完整冻结历史；旧数量、待删、绑定和窗口不作重跑指令
+
 ## Oct20 PR286：新增第十六项，原十五项原期限保持
 
 新增 `2026-10-20-ask-intent-repair/raw-retention.safe.json`：411 CAPTURED，SHA `2f28b418cc207648b0ef46b5b1b4776afca9d86d28f99ea0f96fa28ecc61b2e6`；首次 `2026-10-20T16:31:53.365253+00:00`，原期限 `2026-10-27T16:31:53.365253+00:00` / epoch `1793118713.3652532`。包括失败dev独立收集14原响应及后续全部API/配置/派生，全部沿原起点；ZIP/源码/安全聚合保留。后续另scope、双PRE、fresh准备及精确到期处理。新canary尚未开始，不增加其假定期限。
