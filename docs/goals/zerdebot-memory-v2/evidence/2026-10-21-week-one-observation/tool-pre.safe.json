@@ -1,0 +1,92 @@
+{
+  "status": "ALIGNED",
+  "at": 1792599817.839842,
+  "review_role": "independent_correctness_PRE",
+  "tool_sha256": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+  "plan_sha256": "6e7513978024a92053d871a168aa21c64fb767f143321b0caacc394a35504e23",
+  "scope_sha256": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+  "evidence_sha256": {
+    "plan-pre.safe.json": "8ba21978a21983e2973c58d45cdcd13bf73dd337f8ed6509ddb5816f44a44a7d",
+    "correctness_controls.py": "ad0bd6e5e281bd376844c8e361612e22f0836cc9102174756f031d1f9748b31a",
+    "correctness-controls-v2.safe.json": "225248f7fb0c9324849246e8b5c31e1cee390cffb5593b9f97b11f24178e2706",
+    "correctness_controls-v1-preserved.py": "774752ec83da0505473d4a171da06a1294b0bd8d744781d4fecee49f84b95610",
+    "correctness-controls-v1.safe.json": "d7ec5c3a2198d8b92d22ca2d347bb27cd94bd21d9a07eec0e5d947f97f6ee4ae",
+    "observe_week-v1-unexecuted.py": "0f5394330250c8ec6120b1260311fd2db5447349f88e1bec16304c284ee096c2",
+    "v1-findings.safe.json": "0c29e6c90e0ba63eb075458b641dfa2baa6ede1e01c51a5ecdbbf8a3b9662692",
+    "author-controls-v2.safe.json": "ba0c5b5be78cb16c3eff6e8fbd6f65b56e93bf9db54b62a384b6206f92d1e159"
+  },
+  "dependency_files_verified": {
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/bot/services/memory_v2/models.py": "f7244962f620b86c4744e4fad0d3b96069d060c560cde5e56257b7bc73d5aa4e",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/bot/services/memory_v2/repository.py": "ea0583a790d10649de6570df805db0e61639e5c4d80ea50ec37c71bffe691f13",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/bot/services/memory_v2/writer.py": "fb7c20e6196bb5cf6d0ddab5922c9f2a88c0ff6b31a2aca37c3bce274fe02e45",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/news/services/delivery_state.py": "767ff8f67c0c3aaa21b22ef52f949d42e7426e81bb2a5858fe3d2c84abf29863",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/news/services/digest.py": "b76cfed1c7688a0a1da7690a4f097b6949ca788b9dbdd3c07df8a7055264905b",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/quiz/services/_publication.py": "77900707616ac2de3333f24a68d0c99956bb9f685424e15430f458fc57d82f20",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/quiz/services/quiz_service.py": "40220f49cdab61f09e308433a07609ac41f841059176888259cec37187ecc947",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/quiz/services/repository.py": "7b3c5eba93b831b99b02df21e1da23a9ff683927919055abf441c89c9a7f9bef",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/src/quiz/services/quiz_sender.py": "c0e7c821d0bc50b9b5c8c4d088a0bbfad1487b9d493c0a2441a0e1a4e72f1daa",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/infra/components/news.py": "9d1c4722c3a36fd5a5d3e7d37d6dde3db34b4a88284ca70b6a91dc87dc558077",
+    "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot/infra/components/quiz.py": "494250ecfb2574f518a9e9e38feaa0e33758b8312578684dabcbf95396bdb318",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/scope.safe.json": "6247ccfeea816dfde043a042e048445eef8a1637acd246da626be45c5dd1b3c7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation/observe.py": "2101a41d01fddbfd5d26acd1a4a2febe6df5641ff838c842cd32dc9bed566ea1",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-ask-intent-repair/final.safe.json": "44e856bafda233a4e32f7087f716ab60886449ce5509b6281503804c568739e4",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-ask-intent-repair/final-independent.safe.json": "4522ba0ab364fd58d7fc4a20213fa29c84d32076718ced52ff8c90c45c7905f6",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-ask-intent-repair/docs-release-independent.safe.json": "567a1cdd1eb637b2100bd6f3de2a789ca292249ead564c15c316723a139f369c"
+  },
+  "independent_controls": {
+    "passed": 27,
+    "total": 27,
+    "report": "correctness-controls-v2.safe.json",
+    "fake_API_calls_success_pair": 52,
+    "real_network": 0,
+    "real_formal_entry": 0,
+    "real_private_read": 0,
+    "UI": 0,
+    "business_write": 0,
+    "model": 0
+  },
+  "checks": {
+    "current_source_and_five_safe_dependencies_actual_hashes_match": true,
+    "exact_scope38fixed_plus2conditional_main40_independent10plus2max12": true,
+    "only_STS_GetCallerIdentity_DynamoDB_DescribeTable_strong_GetItem": true,
+    "exact_endpoints_and_one_SDK_attempt_strict_HTTP200_retry0": true,
+    "fresh_execution_own_poll_id_derived_QUIZ_and_POLL_exact_projection": true,
+    "quiz_three_record_generation_poll_message_identity_and_TTL": true,
+    "no_personal_question_option_or_answer_text_projection": true,
+    "coverage_missing_not_zero_expired_separate_no_epoch_or_backlog_claim": true,
+    "news_revision_zero_valid_empty_steps_not_confirmed": true,
+    "unknown_or_expired_quiz_no_linked_fanout": true,
+    "new_original_anchor_604800_and_actual_manifest_automation_registration_before_API": true,
+    "global_and_batch_locks_role_once_NO_RETRY": true,
+    "per_API_INTENT_before_call_raw_CAPTURED_after_return_0600": true,
+    "monotonic600_and_UTCwindow_original_deadline_30second_reserve_return_postwrite_finish_gates": true,
+    "independent_requires_main_exact_current_binding_anchor_count_sequence_raw_prefix_identity_hash": true,
+    "role_failures_preserve_PARTIAL_UNKNOWN_with_sanitized_gate_error": true,
+    "no_real_anchor_or_raw_or_role_entry_exists_at_review": true
+  },
+  "resolved_findings": [
+    {
+      "finding": "Initial News revision >0 rejected valid revision0 owner rows",
+      "resolution": "Current strict integer >=0; empty steps remain unconfirmed; synthetic control passed."
+    },
+    {
+      "finding": "Initial return path lacked role timeout/UTC window gates before raw capture",
+      "resolution": "Current active_time uses monotonic600, UTC window and original deadline before call with30second reserve, on return, after capture and at finish; late fake return creates no private response."
+    }
+  ],
+  "harness_history": {
+    "v1_preserved": true,
+    "v1_passed": 23,
+    "v1_total": 27,
+    "v1_four_failures": "Fixture Clock lacked newly introduced monotonic; not production failures. V2 added Clock.monotonic and exact TEMP MANIFEST/automation registration schema before all27 controls passed.",
+    "all_synthetic_run_D_BASE_MANIFEST_are_temporary": true
+  },
+  "limitations": [
+    "PRE is offline readiness only; no current cloud observations or business acceptance.",
+    "Actual first raw anchor and seventeenth retention duty must be created and registered in the later authorized time window; no new deadline is created by this review.",
+    "Preclaim invalid role/optimization/PRE/lock/once refusals do not promise a new internal role report; existing evidence is preserved.",
+    "SDK/connect/read timeout and reserve are bounded request safeguards, not a claim that underlying network cancellation is exact to the wall-clock second. Late returns fail closed.",
+    "Metadata-only News/Quiz evidence does not establish native delivery, complete news manifest, content correctness, natural samples or production readiness. Weekly leaderboard is NOT_COVERED.",
+    "Sequential main/independent reads are not a cross-row transaction; drift is reported without retry."
+  ]
+}

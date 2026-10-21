@@ -1,0 +1,47 @@
+{
+  "status": "LOCAL_PREPARATION_COMPLETE_NOT_EXECUTED",
+  "at": 1792599963.909327,
+  "base": "cb4c5bb9a4fd44825725a4fe90228a5d03217860",
+  "runtime_source": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+  "tool_sha256": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+  "plan_sha256": "6e7513978024a92053d871a168aa21c64fb767f143321b0caacc394a35504e23",
+  "scope_sha256": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+  "reviews": {
+    "plan-pre.safe.json": "8ba21978a21983e2973c58d45cdcd13bf73dd337f8ed6509ddb5816f44a44a7d",
+    "tool-pre.safe.json": "078c34828abf52956ff386d50e314999073e5b7df2a7d3fd4b2fa6f488086620",
+    "maintenance-pre.safe.json": "53d27ace993d58847b6ef4d582245861b31d692c7d552011bc3c7382e77c4afd"
+  },
+  "planned_main_api_max": 40,
+  "planned_independent_api_max": 12,
+  "earliest_runtime_read_utc": "2026-10-21T17:35:00+00:00",
+  "latest_runtime_read_utc": "2026-10-21T23:55:00+00:00",
+  "scope": [
+    "4 CONTROL point observations",
+    "28 exact UTC date counters; Oct21 partial; missing not zero",
+    "Oct21 fourth-group saved News steps",
+    "Oct21 fourth-group Quiz exec/record/poll metadata links if DONE"
+  ],
+  "actual_runtime_API": 0,
+  "actual_UI": 0,
+  "actual_models": 0,
+  "actual_raw": 0,
+  "new_retention_deadlines": 0,
+  "natural_samples_added": 0,
+  "existing_copy_duties": 16,
+  "not_accepted": [
+    "natural quality",
+    "native Telegram visibility",
+    "leaderboard",
+    "full News manifest",
+    "recovery failures",
+    "strict exactly-once",
+    "full source/answer semantics"
+  ],
+  "frozen_history_preserved": true,
+  "draft_failures": [
+    "news revision0 guard corrected before use",
+    "strict wall+monotonic/time and registration/partial receipt guards strengthened before use",
+    "independent first harness missed monotonic and registration fixture; preserved",
+    "prior renderer research initially omitted branch URL rebinding; no output written"
+  ]
+}
