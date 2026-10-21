@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "at": 1792608375.4342248,
+  "source": "9e962c20f71586688736858a962f3199edcd53c8",
+  "run_id": 39654122918,
+  "jobs": {
+    "Code Quality Checks": "success",
+    "Development Bot Identity": "success",
+    "Infrastructure Changes Preview": "success"
+  },
+  "conclusion": "success",
+  "workflow_name": "PR Check",
+  "run_url": "https://github.com/Bayashat/zerde-serverless-bot/actions/runs/39654122918",
+  "evidence": "Actual gh run view JSON returned completed/success for exact head and all three named jobs in current turn; safe projection."
+}

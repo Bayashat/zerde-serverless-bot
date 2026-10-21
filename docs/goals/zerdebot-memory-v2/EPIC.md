@@ -1,6 +1,6 @@
-## 四群已发布；首周观察完成
+## 四群已发布；普通ask生成修复
 
-[首周](WEEK_ONE_OBSERVATION.md)52只读：四群ACTIVE；第四群News步骤/Quiz三记录关联通过，非语义或恢复验收。普通ask仍未完整修好，见[Z01](issues/Z01.md)。自然0/50、0/20。[十七项副本](RETAINED_COPIES.md)。[前阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/e5fd1292e867e5159a6a94ab8b05a51c3c47560a/docs/goals/zerdebot-memory-v2/EPIC.md)。
+PR291已两环境发布，真实有用性另验收。[当前事实](ASK_PUBLIC_KNOWLEDGE_REPAIR.md)、[十八项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/9e962c20f71586688736858a962f3199edcd53c8/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
