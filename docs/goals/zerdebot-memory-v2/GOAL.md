@@ -1,3 +1,17 @@
+## Oct21：首发527原文到期责任已履行
+
+原期限2026-10-21 13:10:50.198516UTC保持。527精确目标已逐项移除并独立fresh确认不存在；383保留文件hash/身份、7目录原身份/模式保持，910→383库存、1054条intent/result及apply/journal双侧unlink_returned/absent严格True通过。首末实际unlink 2026-10-21T13:10:50.437699+00:00 / 2026-10-21T13:10:50.594650+00:00，实际晚0.239183187至0.396134138秒，原因UNKNOWN。3个0700与4个0755目录、两行政快照、原ledger/失败/UI_STOP/UNKNOWN及全部安全历史保持。本批无ZIP或链接；41保护历史hash、342仅fresh基线的区别保留。普通unlink非安全擦盘或全部云副本消失，37在线退役数不增。
+
+Due20261021A、Apply20261021A和独立verify均已结束不可重跑；原首发snapshot不得复制、延期或重建。清理0云/UI/模型/新原文/运行部署/自然增量；CI既有OIDC/CDK只读另计。原准备final的PENDING是当时阶段，由后实际独审闭合，不改历史报告。
+
+剩余十五项独立UTC责任见下表与[副本台账](RETAINED_COPIES.md)，最近Oct24 16:20:38.287378 H10及16:29:48.470834 O51，不合并。计划原zerde每日Almaty20:35=15:35UTC唤醒覆盖两时点前60分钟内，实际设置以自动任务回执为准；设备准时性不保证。每次履行后重排下一期限。
+
+普通ask修复PR286已部署并合并，真实两条对照仍未执行，须新的直接人类15分钟Telegram独占；原媒体STOP/未发Q不续跑。四群RELEASED_OBSERVING、自然0/50有据0/20未知/起点null/production_ready=false保持；Oct21首周观察另有限只读合同。20任务14OPEN6CLOSED、EpicOPEN，独立业务/费用缺口保持。文档main不是运行构建；本次不部署。
+
+[实际完成](evidence/2026-10-21-launch-raw-expiry/completion.safe.json)、[独立不存在](evidence/2026-10-21-launch-raw-expiry/completion-independent.safe.json)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/bb20c2c2b4cdc908c961e0544e1cb46ddbc4eb5e/docs/goals/zerdebot-memory-v2/PLAN.md)。
+
+## 以下为此前完整冻结历史；旧数量、待删、绑定和窗口不作重跑指令
+
 ## Oct21 首发527原文清理已准备，尚未删除
 
 原期限 **2026-10-21 13:10:50.198516 UTC** 的最终527项原ledger相对完整路径已完成新工具双审、主唯一inspect Prep20261019A及独立fresh无跟随hash/身份/前后库存核验。全库存910常规文件，383保留、7目录（3个0700、4个0755），没有链接或ZIP。41个保护文件另有精确历史hash，342个仅本次fresh基线；原目录模式保持，目标全部祖先0700。

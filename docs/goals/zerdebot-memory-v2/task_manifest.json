@@ -795,13 +795,13 @@
       "overall_acceptance_complete": false
     },
     "status": "online_and_declared_resources_clean_copies_pending",
-    "status_as_of": "2026-10-20",
-    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。 Oct20告警341已到期精确移除并独立验证保护文件/目录/链接保持，实际延误UNKNOWN保留。",
-    "remaining": "十六项独立UTC责任：原十五项保持，新增PR286原文411份，原期限2026-10-27T16:31:53.365253+00:00；原epoch不变。详见RETAINED_COPIES.md。旧已履行清理不重跑，所有新批需独立scope/PRE。",
+    "status_as_of": "2026-10-21",
+    "completed": "30794行/8259向量在线清零、本地3归档/key移除和本批两旧表/向量资源不存在均有实际证据；未重建旧归档。 最后旧stats在线退役及精确临时AV移除已独审；新USER/SYSTEM副本已登记。 旧stats的唯一USER恢复备份 `zerde-retirement-stats-20260928` 已删除，主检和独立查询均确认精确备份不存在。删除请求实际始于2026-10-05T08:18:54.216996Z，比原期限晚18.264秒；没有提前删除或延长期限。一次DeleteBackup获HTTP200且原身份一致，独立17次只读确认旧表仍不存在、六张现役表身份/PITR配置投影及两份SYSTEM完整元数据保持。 Oct8九份CloudWatch原文已精确移除并独审不存在，41份列明文件hash保持，首次/最后完成分别晚0.117602/0.119938秒；原FAIL保留。 Oct11九月费用9份原文已精确删除并独审不存在，57保留hash/6目录/37未建槽保持，真实晚15523.488909至15523.491811秒，原因UNKNOWN。 Oct12答案247份原文已精确移除并独审不存在，217保留hash/18目录身份保持，首次/末次实际晚0.114821至0.451070秒，原业务PARTIAL保持。 Oct13早次发票3份原文已精确移除并独审不存在，83保留hash/7目录身份保持，实际晚0.081424至0.082635秒，费用结论/UNKNOWN保持。 Oct13晚次迁移失败4份原文已精确移除并独审，12保护/5目录/8journal保持，真实晚0.111736至0.113241秒UNKNOWN，成功同名路径及两ZIP保留。 Oct14公开文本128份原文已移除并独审，68保留/5目录/256journal保持，真实晚0.118670至0.208147秒UNKNOWN。 Oct14配置发布1030份原文已移除并独审，310保留含24ZIP/37目录/2060journal保持，真实晚0.675916至4.583760秒UNKNOWN。 Oct15提及Reply85份原文已移除并独审，103保留/6目录/170journal保持，真实晚0.122957至0.173711秒UNKNOWN。 Oct16 writer1426原文已移除并独审，95425保留含45ZIP/27812目录/2852journal保持，真实晚25.614772至26.167858秒UNKNOWN。 旧 memory 原 PITR 到期职责已按原身份完成主5+独5只读：旧表及PITR入口不存在，SYSTEM仍AVAILABLE，Nov1期限保持；不是全部副本消失或物理擦除。新原文H10和O51同各自原七日期限，剩余6项见台账。历史清理不重跑，45ZIP本次仍明确保留，不表示永久不可删除。 Oct20告警341已到期精确移除并独立验证保护文件/目录/链接保持，实际延误UNKNOWN保留。 Oct21首发最终527原文已精确移除并独审，383保护/7目录/1054journal保持，实际延误UNKNOWN详见完成证据。",
+    "remaining": "十五项独立UTC责任见RETAINED_COPIES.md：Oct24两批、Oct26两批、Oct27九批、Nov1/Nov2两SYSTEM原身份只读；所有原期限保持，不合并或重建。首发527已履行。",
     "issue_state": "OPEN",
     "runtime_baseline": "10019418ca7bb1118213361c3847c5a80387b64c",
     "deployed_build_source": "43561cfcf6ab3a8f8af95ee0cba396cac2dbae8c",
-    "status_evidence": "evidence/2026-10-17-readback/completion.safe.json",
+    "status_evidence": "evidence/2026-10-21-launch-raw-expiry/completion.safe.json",
     "runtime_evidence": "evidence/2026-10-09-shared-quota-writer/release.safe.json",
     "retention_register": "RETAINED_COPIES.md",
     "user_backup_expiry_evidence": "evidence/2026-10-05-user-backup-expiry/independent.safe.json",
@@ -1089,7 +1089,7 @@
     },
     "memory_v2_launch_raw_retention": {
       "owner": "Z10",
-      "status": "CAPTURING_FIXED_DEADLINE",
+      "status": "EXACT_EXPIRY_COMPLETED_INDEPENDENT_PASS",
       "ledger": "2026-10-14-memory-v2-launch/raw-retention.safe.json",
       "first_capture_at": 1791983450.198516,
       "deadline_epoch": 1792588250.198516,
@@ -1261,7 +1261,8 @@
       "independent_evidence": "evidence/2026-10-21-launch-raw-expiry/independent.safe.json",
       "original_deadline_unchanged": true,
       "apply_executed": false,
-      "remaining_numbered_duties": 6
+      "remaining_numbered_duties": 6,
+      "historical_preparation_only": true
     },
     "groq_413_review_raw_retention": {
       "status": "CAPTURED_PENDING_EXPIRY",
@@ -1415,6 +1416,26 @@
       "first_capture_at": "2026-10-20T16:31:53.365253+00:00",
       "deadline_epoch": 1793118713.3652532,
       "deadline_utc": "2026-10-27T16:31:53.365253+00:00"
+    },
+    "remaining_before_oct21_launch_expiry": "十六项独立UTC责任：原十五项保持，新增PR286原文411份，原期限2026-10-27T16:31:53.365253+00:00；原epoch不变。详见RETAINED_COPIES.md。旧已履行清理不重跑，所有新批需独立scope/PRE。",
+    "oct21_launch_raw_expiry_completion": {
+      "status": "EXACT_527_LAUNCH_RAW_EXPIRY_COMPLETE_INDEPENDENT_PASS",
+      "deadline_utc": "2026-10-21T13:10:50.198516+00:00",
+      "deadline_epoch": 1792588250.198516,
+      "deleted_files": 527,
+      "protected_files": 383,
+      "preserved_directories": 7,
+      "inventory_before": 910,
+      "inventory_after": 383,
+      "journal_records": 1054,
+      "first_unlink_utc": "2026-10-21T13:10:50.437699+00:00",
+      "last_unlink_utc": "2026-10-21T13:10:50.594650+00:00",
+      "first_lateness_seconds": 0.2391831874847412,
+      "last_lateness_seconds": 0.3961341381072998,
+      "delay_cause": "UNKNOWN",
+      "evidence": "evidence/2026-10-21-launch-raw-expiry/completion.safe.json",
+      "independent_evidence": "evidence/2026-10-21-launch-raw-expiry/completion-independent.safe.json",
+      "ordinary_unlink_not_secure_erasure": true
     }
   },
   {
