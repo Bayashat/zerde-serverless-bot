@@ -1,0 +1,72 @@
+{
+  "status": "BOUNDED_OBSERVATION_COMPLETE",
+  "at": 1792605176.715002,
+  "base": "e5fd1292e867e5159a6a94ab8b05a51c3c47560a",
+  "runtime_source": "23df3413d2a0668ac766b9fc736c494c557e3ce8",
+  "reviews": {
+    "plan-pre.safe.json": "5fa8c79c61a24c8e0c06f47e6f821a17bba3c10a135de6eaee992bdf906d1a40",
+    "independent-post.safe.json": "6dec6ce344b0ed479b5488a4191334bb87eb4362bc53837bb04cf34f3d514cfd",
+    "maintenance-post.safe.json": "d1bf54fd32c1539dbad1a05d9d8c56467b251a24cfa69aab592bb45538dc9a59"
+  },
+  "scope_sha256": "969e7c7806f8f9a4e619b1f46f0eb1b3e6d084d7933f0e14ee9b2b9e1d83d5f1",
+  "tool_sha256": "e01c0dba0d1961cb93e8362b07a6b059ba10b0b49a2d46ff07410f8ae8035042",
+  "main_sha256": "5d726d307dcd7027213ca021d644c599c11f5a6be55c567ce236f03c69fc85b7",
+  "independent_sha256": "818fb5482daa7e2e21f1fc97d889af9f8b1848ab81fb25b9913a038e8358ad03",
+  "main_AWS_reads": 40,
+  "independent_AWS_reads": 12,
+  "AWS_reads": 52,
+  "AWS_writes": 0,
+  "UI": 0,
+  "operator_models": 0,
+  "runtime_deployments": 0,
+  "natural_samples_added": 0,
+  "raw_captured": 52,
+  "raw_pending": 0,
+  "raw_ledger_sha256": "561bdde56454cec6f1ce38fbf3519da6ab9929a4e2f8563aefdc0a9df0dcc825",
+  "first_capture_epoch": 1792604561.712325,
+  "deadline_epoch": 1793209361.712325,
+  "new_retention_deadlines": 1,
+  "total_open_copy_duties": 17,
+  "four_control_point_state": "ACTIVE_LEARNING_TRUE_ACTIVATION_EPOCH_PRESERVED",
+  "point_revision_observed": 1,
+  "coverage_present": 21,
+  "coverage_absent": 7,
+  "coverage_per_chat": {
+    "-1001244628965": {
+      "PRESENT": 6,
+      "ABSENT": 1
+    },
+    "-1001450935528": {
+      "PRESENT": 6,
+      "ABSENT": 1
+    },
+    "-1002211083217": {
+      "ABSENT": 4,
+      "PRESENT": 3
+    },
+    "-1004490324695": {
+      "ABSENT": 1,
+      "PRESENT": 6
+    }
+  },
+  "coverage_independent_fresh": false,
+  "coverage_direct_independent_local_review": true,
+  "news_saved_steps_confirmed": 4,
+  "news_full_manifest_verified": false,
+  "native_telegram_observed": false,
+  "quiz_three_metadata_linked": true,
+  "leaderboard": "NOT_COVERED",
+  "recovery_accepted": false,
+  "natural_quality_accepted": false,
+  "ask_general_quality": "UNRESOLVED_USER_REPORTED",
+  "ask_exact_model_path": "UNKNOWN_NOT_CAPTURED",
+  "limits": [
+    "28 UTC-day rows main only; missing rows/fields not zero",
+    "Oct21 partial day; different stage/date counters do not measure backlog or unique users",
+    "News saved steps not a full manifest or native Telegram verification",
+    "Quiz linked normal-success metadata does not verify failure recovery",
+    "No source/answer semantic or product-spec validation",
+    "Prior completed once/FAIL/UNKNOWN and original deadlines preserved"
+  ],
+  "documentation_publication": "PENDING"
+}

@@ -1,3 +1,41 @@
+## Oct21：首周有限元数据观察完成，普通 ask 仍待完整修复
+
+主40+独12次实际只读与全部52原响应的独立正确性/维护复核完成。四群CONTROL在两个时点均ACTIVE、learning=true且首发epoch保持，观察revision1；后续合法推进不强写回。Oct15–21共28个固定UTC日行中21存在、7缺席，中文3/4、其余三群各6/1（存在/缺席）。缺席或缺字段不当0，Oct21为部分日，不相减推积压、人数、事实或模型成功。28日行只有主读取，其余指定12项独立fresh。
+
+第四群Oct21 News保存的4步骤均SENT并有回执；Quiz执行、题目记录和投票索引三份元数据按各角色自己的fresh执行记录关联一致。两项均有独立fresh，不代表完整News清单、原生Telegram、内容语义、故障恢复或周榜；这些缺口保持。自然0/50有据、0/20未知、起点null、production_ready=false保持，四群仍RELEASED_OBSERVING。
+
+人类指出普通 `/ask RTX SPARK` 仍用群聊缺上下文代替有效主题回答。PR286已部署的selector提示修复与旧两条对照只提供有限证据，不能称普通问答完整修好；主/备用普通生成模板仍待修复，真实内部mode/模型原因没有捕获。本次元数据观察不关闭该问题。
+
+本轮52操作器AWS只读、0云写/UI/模型/运行部署，自然增量0；CI既有OIDC/CDK只读另计。52份实际原响应同原起点2026-10-21T17:42:41.712325+00:00，期限2026-10-28T17:42:41.712325+00:00；首API前已登记Z10与原zerde。新增第十七项，原十六项保持。主/独/start入口均结束不可重跑；行政快照单独保留，不按private后缀扩大原文范围。
+
+[完成与边界](WEEK_ONE_OBSERVATION.md)、[实际聚合](evidence/2026-10-21-week-one-observation/completion.safe.json)、[独立复核](evidence/2026-10-21-week-one-observation/completion-independent.safe.json)、[维护复核](evidence/2026-10-21-week-one-observation/completion-maintenance.safe.json)、[十七项副本](RETAINED_COPIES.md)。
+
+## 当前十七项独立职责
+
+| 原UTC期限 | 独立责任 |
+| --- | --- |
+| 2026-10-24T16:20:38.287378+00:00 | 2026-10-17-pitr-readback 10原文 |
+| 2026-10-24T16:29:48.470834+00:00 | 2026-10-17-launch-observation 51原文 |
+| 2026-10-26T20:29:05.508343+00:00 | 2026-10-20-groq-413-review 418原文 |
+| 2026-10-26T23:52:42.922982+00:00 | 2026-10-20-z01-media-current 36原文 |
+| 2026-10-27T00:10:10.807865+00:00 | 2026-10-20-cost-gate-diagnostic 22原文 |
+| 2026-10-27T01:53:25.893115+00:00 | 2026-10-20-cost-report-readback 2原文 |
+| 2026-10-27T01:57:25.452039+00:00 | 2026-10-20-cost-metrics-diagnostic 5原文 |
+| 2026-10-27T02:26:52.661740+00:00 | 2026-10-20-cost-report-repair 446原文 |
+| 2026-10-27T07:23:59.115275+00:00 | 2026-10-20-cost-recovery-followup 12原文 |
+| 2026-10-27T09:30:26.883900+00:00 | 2026-10-20-z01-media-cost-rebind 84原文 |
+| 2026-10-27T10:47:02.618740+00:00 | 2026-10-20-media-reference-proof 436原文 |
+| 2026-10-27T13:29:38.223710+00:00 | 2026-10-20-z01-media-proof-acceptance 95原文 |
+| 2026-10-27T16:31:53.365253+00:00 | 2026-10-20-ask-intent-repair 411原文 |
+| 2026-10-28T15:29:54.370686+00:00 | 2026-10-20-ask-intent-canary 17原文 |
+| 2026-10-28T17:42:41.712325+00:00 | 2026-10-21-week-one-observation 52原文 |
+| 2026-11-01T11:46:02.425+00:00 | old-memory-SYSTEM-readonly 原身份只读 |
+| 2026-11-02T08:45:11.254+00:00 | old-stats-SYSTEM-readonly 原身份只读 |
+
+本批52 CAPTURED/0PENDING；原ledger SHA `561bdde56454cec6f1ce38fbf3519da6ab9929a4e2f8563aefdc0a9df0dcc825`，deadline epoch1793209361.712325。原16项逐字保持；到期另新scope/双PRE/fresh准备，不据本表直接删除。用户导出/现役PITR/必要恢复/ZIP/源码/安全聚合保留。
+
+## 以下旧完整副本表为冻结阶段
+
 ## Oct21：普通 ask 与个人历史问题的真实对照已完成
 
 PR286修复已在dev/prod部署；本轮只在Test bots完成两条各一次的真实对照。普通产品问题得到主题澄清，没有套用个人记忆缺证拒答；明确询问个人拥有历史时，回复明确缺证、没有编造个人事实。A附带的群聊上下文缺席断言没有本范围证据，保留措辞改进项；产品知识正确性未验收。
