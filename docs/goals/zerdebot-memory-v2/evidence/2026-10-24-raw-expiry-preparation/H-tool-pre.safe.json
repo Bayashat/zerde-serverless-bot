@@ -1,0 +1,43 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "/root/oct24_correctness",
+  "at": 1792770688.195782,
+  "review_scope": "Current frozen bytes; correctness review and synthetic TEMP controls only.",
+  "controls": [
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-observation-raw-expiry-preparation/tools_correctness_controls.safe.json",
+      "sha256": "08b254e6222cd7c9e4b7ebcf5ad6bbf6a4e1cfdcc61dd0874aa1977413c93c4c",
+      "count": 58
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-observation-raw-expiry-preparation/seal_correctness_controls.safe.json",
+      "sha256": "b3250afb769d24397dbb86aa4f0a1e42f8fa53fe30209908395b3f45fcc53ea6",
+      "count": 20
+    }
+  ],
+  "total_controls": 78,
+  "findings_closed": [
+    "Original mtime is taken from SHA-bound original ledger and checked during inspect, independent fresh and before actual unlink fd step. Scope was not rebuilt."
+  ],
+  "failure_provenance": {
+    "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-observation-raw-expiry-preparation/tools-correctness-harness-v1-failure.safe.json",
+    "sha256": "36ad127160cfc0d45e4d1e5a8e710c5c00454bde11d727b298195e40cd0b0248",
+    "interpretation": "Synthetic hardlink fixture was rejected earlier by safe_file_type, so reviewer expectation corrected; no implementation relaxation."
+  },
+  "actual_target_content_reads": 0,
+  "actual_target_hash_reads": 0,
+  "private_admin_reads": 0,
+  "cloud_ui_model_calls": 0,
+  "formal_operator_entries": 0,
+  "limits": [
+    "No future notice, apply or absence execution is authorized by this review alone.",
+    "Synthetic TEMP deletes are not actual batch deletions.",
+    "Actual preparation needs separate main receipt and independent fresh readback."
+  ],
+  "files": {
+    "PLAN.md": "c9c317340432229f879ee91cf7fdd8051dfca296bf81dde4cc7382e4fc3e5604",
+    "scope.safe.json": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+    "expire_raw.py": "fe18bbb1f58eed494177eabad3b91d039a9b3a2c944e86da4701749ddc39a75f",
+    "verify_absence.py": "30d2b93f5f521fd5547d2cd35cf4b67bba960d170caaafc0696632f66e19832d"
+  }
+}

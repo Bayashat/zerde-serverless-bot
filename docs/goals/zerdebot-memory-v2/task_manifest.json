@@ -1508,6 +1508,59 @@
       "first_capture_at": "2026-10-21T18:47:42.597749+00:00",
       "deadline_epoch": 1793213262.597749,
       "deadline_utc": "2026-10-28T18:47:42.597749+00:00"
+    },
+    "oct24_raw_expiry_preparations": {
+      "status": "TWO_INDEPENDENT_BATCHES_PREPARED_NOT_DELETED",
+      "batches": {
+        "H": {
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback",
+          "ledger_sha256": "5e347d685427f4856c1355ee00be0b30ff4cd8bf0726d1a28cd30140115a03f8",
+          "started_at_utc": "2026-10-17T16:20:38.287378+00:00",
+          "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+          "deadline_epoch": 1792858838.2873778,
+          "target_count": 10,
+          "protected_count": 168,
+          "directory_count": 6,
+          "inventory_count": 178,
+          "protected_zip_count": 0,
+          "protected_symlink_count": 0,
+          "historical_protected_hashes_checked": 84,
+          "fresh_only_protected_hashes": 84,
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-pitr-raw-expiry",
+          "scope_sha256": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+          "preparation_sha256": "0fedc861a08e19599a4302da1fdc5698cbf86c20afb98c1ddf6a80c1419ee5dc",
+          "independent_sha256": "0765e1945e040fbdd62b896f0c548335c4c6e4d1355e1160d155433b3fd4fc10",
+          "directory_modes": {
+            "0700": 5,
+            "0755": 1
+          }
+        },
+        "O": {
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation",
+          "ledger_sha256": "5673146ab0472e42a8313ec6a22f683dbfec3a61b4e1cfa812ef1eb2e6476892",
+          "started_at_utc": "2026-10-17T16:29:48.470834+00:00",
+          "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+          "deadline_epoch": 1792859388.470834,
+          "target_count": 51,
+          "protected_count": 51,
+          "directory_count": 2,
+          "inventory_count": 102,
+          "protected_zip_count": 0,
+          "protected_symlink_count": 0,
+          "historical_protected_hashes_checked": 20,
+          "fresh_only_protected_hashes": 31,
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-observation-raw-expiry",
+          "scope_sha256": "6bbabf015279d92f2cb5838872e97629fc16f78d9d9b310c8a20ff9d84694042",
+          "preparation_sha256": "a28960148186348b1c6a08a200e4417bc4b62e25311f7ad5a64acd24e50f0a51",
+          "independent_sha256": "24246ca0b73875467a03d8f60c32a28fc9d0a96324e33be09c8e7ddc3bb6d644",
+          "directory_modes": {
+            "0700": 1,
+            "0755": 1
+          }
+        }
+      },
+      "evidence": "evidence/2026-10-24-raw-expiry-preparation/final.safe.json",
+      "new_deadlines": 0
     }
   },
   {
