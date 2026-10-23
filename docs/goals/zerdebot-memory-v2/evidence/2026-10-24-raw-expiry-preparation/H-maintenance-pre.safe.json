@@ -1,0 +1,30 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "oct24_maintenance",
+  "at": 1792770510.8361049,
+  "files": {
+    "PLAN.md": "c9c317340432229f879ee91cf7fdd8051dfca296bf81dde4cc7382e4fc3e5604",
+    "scope.safe.json": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+    "expire_raw.py": "fe18bbb1f58eed494177eabad3b91d039a9b3a2c944e86da4701749ddc39a75f",
+    "verify_absence.py": "30d2b93f5f521fd5547d2cd35cf4b67bba960d170caaafc0696632f66e19832d"
+  },
+  "controls_passed": 55,
+  "controls_total": 55,
+  "controls_sha256": "c075954b0850507a5e3386323e31cac274974b26bd8703aaf97d11d4da810590",
+  "control_source_sha256": "d083fabc4a5bcd19496098b7097c4961b930eab58f2ae8efc109eef98fa288f0",
+  "scope_review": [
+    "Original ledger absolute path and original order/owner; H/O deadlines and original float remain separate.",
+    "Original mtime is bound from immutable ledger at gate and verified during read plus immediately before unlink.",
+    "Every target identity/hash/mode, protected tree, nofollow parent fd, real announcement age, unique apply journal and strict booleans remain fail-closed.",
+    "Synthetic TEMP complete inspect/apply/independent chain and invalid chain/path/mode/mtime/hash/notice/once controls passed."
+  ],
+  "limitations": [
+    "No actual target/private content or hashes read by this reviewer. No original inspect/apply/absence invoked.",
+    "This PRE is tool maintenance approval, not actual preparation/deletion or business quality."
+  ],
+  "preserved_failures": [
+    "V2 tool harness negative -O gate intentionally cleared TARGET_MTIMES, then erroneously tested mtime without fresh binding; V3 restores full binding after each negative gate. Source was not changed for that fixture correction."
+  ],
+  "actual_source_mutations": 0,
+  "actual_cloud_ui_model_calls": 0
+}

@@ -1,6 +1,6 @@
-## 四群已发布；普通ask生成修复
+## 四群已发布；Oct24两批待删
 
-PR291已两环境发布，真实有用性另验收。[当前事实](ASK_PUBLIC_KNOWLEDGE_REPAIR.md)、[十八项职责](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/9e962c20f71586688736858a962f3199edcd53c8/docs/goals/zerdebot-memory-v2/EPIC.md)。
+10/51原文独立准备完成，未删；ask修复已发布待真实验收。[当前副本](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/ee10dca2f72a2338c3aa33a6f395ebdc51126b17/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
