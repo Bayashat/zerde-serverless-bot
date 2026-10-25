@@ -1561,6 +1561,137 @@
       },
       "evidence": "evidence/2026-10-24-raw-expiry-preparation/final.safe.json",
       "new_deadlines": 0
+    },
+    "oct24_raw_expiry_completion": {
+      "status": "DELETED_AND_INDEPENDENTLY_VERIFIED_WITH_PROCESS_CAVEATS",
+      "batches": {
+        "H": {
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-pitr-raw-expiry",
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-pitr-readback",
+          "deadline_epoch": 1792858838.2873778,
+          "deadline_utc": "2026-10-24T16:20:38.287378+00:00",
+          "deleted": 10,
+          "protected_files": 168,
+          "directories": 6,
+          "links": 0,
+          "zips": 0,
+          "inventory_before": 178,
+          "inventory_after": 168,
+          "journal_entries": 20,
+          "scope_sha256": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+          "apply_sha256": "611f6e832b334c1d1ebbe8c44e9fb1f1c1961a44bf97fe61cd245b9ab36a908c",
+          "independent_sha256": "920d8671b1c4f00868b1029e2ddc34b87041f688c2a5a209a23136c318b8e385",
+          "first_unlink_epoch": 1792860759.9973938,
+          "last_unlink_epoch": 1792860759.9997911,
+          "first_unlink_utc": "2026-10-24T16:52:39.997394+00:00",
+          "last_unlink_utc": "2026-10-24T16:52:39.999791+00:00",
+          "first_lateness_seconds": 1921.7100160121918,
+          "last_lateness_seconds": 1921.7124133110046,
+          "late_reason": "UNKNOWN",
+          "independent_finished_at": 1792881460.191236,
+          "notice_epoch": 1792860759.755969
+        },
+        "O": {
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-24-observation-raw-expiry",
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-17-launch-observation",
+          "deadline_epoch": 1792859388.470834,
+          "deadline_utc": "2026-10-24T16:29:48.470834+00:00",
+          "deleted": 51,
+          "protected_files": 51,
+          "directories": 2,
+          "links": 0,
+          "zips": 0,
+          "inventory_before": 102,
+          "inventory_after": 51,
+          "journal_entries": 102,
+          "scope_sha256": "6bbabf015279d92f2cb5838872e97629fc16f78d9d9b310c8a20ff9d84694042",
+          "apply_sha256": "d9aaddcf63aeb9300f98775b3567a2da08f462eb7c27c0832708164300c01dc1",
+          "independent_sha256": "f5e848d60a751cc642c7dd7936457b4fc785d23e5a1f5d95e93084a9b08fd94e",
+          "first_unlink_epoch": 1792884114.40413,
+          "last_unlink_epoch": 1792884114.4191842,
+          "first_unlink_utc": "2026-10-24T23:21:54.404130+00:00",
+          "last_unlink_utc": "2026-10-24T23:21:54.419184+00:00",
+          "first_lateness_seconds": 24725.933295965195,
+          "last_lateness_seconds": 24725.948350191116,
+          "late_reason": "UNKNOWN",
+          "independent_finished_at": 1792898766.958237,
+          "notice_epoch": 1792884114.179453
+        }
+      },
+      "remaining_original_duties": 16,
+      "remaining_duties": [
+        [
+          "2026-10-26T20:29:05.508343+00:00",
+          "2026-10-20-groq-413-review 418"
+        ],
+        [
+          "2026-10-26T23:52:42.922982+00:00",
+          "2026-10-20-z01-media-current 36"
+        ],
+        [
+          "2026-10-27T00:10:10.807865+00:00",
+          "2026-10-20-cost-gate-diagnostic 22"
+        ],
+        [
+          "2026-10-27T01:53:25.893115+00:00",
+          "2026-10-20-cost-report-readback 2"
+        ],
+        [
+          "2026-10-27T01:57:25.452039+00:00",
+          "2026-10-20-cost-metrics-diagnostic 5"
+        ],
+        [
+          "2026-10-27T02:26:52.661740+00:00",
+          "2026-10-20-cost-report-repair 446"
+        ],
+        [
+          "2026-10-27T07:23:59.115275+00:00",
+          "2026-10-20-cost-recovery-followup 12"
+        ],
+        [
+          "2026-10-27T09:30:26.883900+00:00",
+          "2026-10-20-z01-media-cost-rebind 84"
+        ],
+        [
+          "2026-10-27T10:47:02.618740+00:00",
+          "2026-10-20-media-reference-proof 436"
+        ],
+        [
+          "2026-10-27T13:29:38.223710+00:00",
+          "2026-10-20-z01-media-proof-acceptance 95"
+        ],
+        [
+          "2026-10-27T16:31:53.365253+00:00",
+          "2026-10-20-ask-intent-repair 411"
+        ],
+        [
+          "2026-10-28T15:29:54.370686+00:00",
+          "2026-10-20-ask-intent-canary 17"
+        ],
+        [
+          "2026-10-28T17:42:41.712325+00:00",
+          "2026-10-21-week-one-observation 52"
+        ],
+        [
+          "2026-10-28T18:47:42.597749+00:00",
+          "2026-10-21-ask-public-knowledge-repair 408"
+        ],
+        [
+          "2026-11-01T11:46:02.425+00:00",
+          "old-memory-SYSTEM-readonly"
+        ],
+        [
+          "2026-11-02T08:45:11.254+00:00",
+          "old-stats-SYSTEM-readonly"
+        ]
+      ],
+      "evidence": "evidence/2026-10-24-raw-expiry-completion/final.safe.json",
+      "new_deadlines": 0,
+      "process_caveats": [
+        "Both original deadlines missed; actual late intervals retained, cause UNKNOWN.",
+        "O other-duty count was 17 at manifest creation, but H independent had finished before O notice, when the correct count was 16. Original notice retained.",
+        "Notice epoch is a local registration time following commentary, not a platform message timestamp independently captured."
+      ]
     }
   },
   {

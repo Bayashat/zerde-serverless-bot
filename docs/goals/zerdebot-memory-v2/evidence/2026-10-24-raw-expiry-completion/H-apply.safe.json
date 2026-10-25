@@ -1,0 +1,78 @@
+{
+  "status": "DELETED_EXACT_10_PENDING_INDEPENDENT",
+  "mode": "apply",
+  "label": "Apply20261024H",
+  "started_at": 1792860759.957818,
+  "deadline_epoch": 1792858838.2873778,
+  "deleted": [
+    {
+      "path": "ReadPitr20261017A-01.private.json",
+      "unlinked_at": 1792860759.9973938,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitr20261017A-02.private.json",
+      "unlinked_at": 1792860759.9977229,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitr20261017A-03.private.json",
+      "unlinked_at": 1792860759.998069,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitr20261017A-04.private.json",
+      "unlinked_at": 1792860759.9983811,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitr20261017A-05.private.json",
+      "unlinked_at": 1792860759.998677,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitrIndependent20261017A-01.private.json",
+      "unlinked_at": 1792860759.998951,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitrIndependent20261017A-02.private.json",
+      "unlinked_at": 1792860759.999163,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitrIndependent20261017A-03.private.json",
+      "unlinked_at": 1792860759.999372,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitrIndependent20261017A-04.private.json",
+      "unlinked_at": 1792860759.999577,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ReadPitrIndependent20261017A-05.private.json",
+      "unlinked_at": 1792860759.9997911,
+      "unlink_returned": true,
+      "absent": true
+    }
+  ],
+  "cloud_calls": 0,
+  "target_count": 10,
+  "protected_count": 168,
+  "directory_count": 6,
+  "scope_sha256": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+  "original_identities_preserved": true,
+  "protected_symlink_count": 0,
+  "finished_at": 1792860760.012073,
+  "finished_utc": "2026-10-24T16:52:40.012073+00:00"
+}

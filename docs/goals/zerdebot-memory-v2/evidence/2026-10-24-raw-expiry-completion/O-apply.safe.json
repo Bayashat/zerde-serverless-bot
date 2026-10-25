@@ -1,0 +1,324 @@
+{
+  "status": "DELETED_EXACT_51_PENDING_INDEPENDENT",
+  "mode": "apply",
+  "label": "Apply20261024O",
+  "started_at": 1792884114.375357,
+  "deadline_epoch": 1792859388.470834,
+  "deleted": [
+    {
+      "path": "Observe20261017A-01.private.json",
+      "unlinked_at": 1792884114.40413,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-02.private.json",
+      "unlinked_at": 1792884114.404453,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-03.private.json",
+      "unlinked_at": 1792884114.404686,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-04.private.json",
+      "unlinked_at": 1792884114.4049869,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-05.private.json",
+      "unlinked_at": 1792884114.406744,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-06.private.json",
+      "unlinked_at": 1792884114.40699,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-07.private.json",
+      "unlinked_at": 1792884114.407291,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-08.private.json",
+      "unlinked_at": 1792884114.407518,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-09.private.json",
+      "unlinked_at": 1792884114.4077408,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-10.private.json",
+      "unlinked_at": 1792884114.407962,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-11.private.json",
+      "unlinked_at": 1792884114.408182,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-12.private.json",
+      "unlinked_at": 1792884114.408396,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-13.private.json",
+      "unlinked_at": 1792884114.408639,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-14.private.json",
+      "unlinked_at": 1792884114.408869,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-15.private.json",
+      "unlinked_at": 1792884114.409112,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-16.private.json",
+      "unlinked_at": 1792884114.4093819,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-17.private.json",
+      "unlinked_at": 1792884114.409615,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-18.private.json",
+      "unlinked_at": 1792884114.409846,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-19.private.json",
+      "unlinked_at": 1792884114.410103,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-20.private.json",
+      "unlinked_at": 1792884114.410343,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-21.private.json",
+      "unlinked_at": 1792884114.410611,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-22.private.json",
+      "unlinked_at": 1792884114.4108522,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-23.private.json",
+      "unlinked_at": 1792884114.4110742,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-24.private.json",
+      "unlinked_at": 1792884114.4113338,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-25.private.json",
+      "unlinked_at": 1792884114.411734,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "Observe20261017A-26.private.json",
+      "unlinked_at": 1792884114.4120672,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-01.private.json",
+      "unlinked_at": 1792884114.41229,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-02.private.json",
+      "unlinked_at": 1792884114.412502,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-03.private.json",
+      "unlinked_at": 1792884114.4128058,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-04.private.json",
+      "unlinked_at": 1792884114.4130461,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-27.private.json",
+      "unlinked_at": 1792884114.4134789,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-28.private.json",
+      "unlinked_at": 1792884114.4137752,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-29.private.json",
+      "unlinked_at": 1792884114.414083,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-30.private.json",
+      "unlinked_at": 1792884114.414748,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-31.private.json",
+      "unlinked_at": 1792884114.415015,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-32.private.json",
+      "unlinked_at": 1792884114.415254,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-33.private.json",
+      "unlinked_at": 1792884114.415479,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-34.private.json",
+      "unlinked_at": 1792884114.415714,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-35.private.json",
+      "unlinked_at": 1792884114.415967,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-36.private.json",
+      "unlinked_at": 1792884114.416235,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveRemainder20261017A-37.private.json",
+      "unlinked_at": 1792884114.416478,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-01.private.json",
+      "unlinked_at": 1792884114.416818,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-02.private.json",
+      "unlinked_at": 1792884114.417229,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-03.private.json",
+      "unlinked_at": 1792884114.4174788,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-04.private.json",
+      "unlinked_at": 1792884114.417707,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-05.private.json",
+      "unlinked_at": 1792884114.4179368,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-06.private.json",
+      "unlinked_at": 1792884114.418176,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-07.private.json",
+      "unlinked_at": 1792884114.4185212,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-08.private.json",
+      "unlinked_at": 1792884114.418742,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-33.private.json",
+      "unlinked_at": 1792884114.4189608,
+      "unlink_returned": true,
+      "absent": true
+    },
+    {
+      "path": "ObserveIndependentRemainder20261017A-36.private.json",
+      "unlinked_at": 1792884114.4191842,
+      "unlink_returned": true,
+      "absent": true
+    }
+  ],
+  "cloud_calls": 0,
+  "target_count": 51,
+  "protected_count": 51,
+  "directory_count": 2,
+  "scope_sha256": "6bbabf015279d92f2cb5838872e97629fc16f78d9d9b310c8a20ff9d84694042",
+  "original_identities_preserved": true,
+  "protected_symlink_count": 0,
+  "finished_at": 1792884114.423004,
+  "finished_utc": "2026-10-24T23:21:54.423004+00:00"
+}

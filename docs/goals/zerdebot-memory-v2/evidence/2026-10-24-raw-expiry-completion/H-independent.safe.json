@@ -1,0 +1,39 @@
+{
+  "status": "ALIGNED_EXACT_10_ABSENT_PROTECTED_UNCHANGED",
+  "started_at": 1792881460.145358,
+  "cloud_calls": 0,
+  "absent": {
+    "ReadPitr20261017A-01.private.json": true,
+    "ReadPitr20261017A-02.private.json": true,
+    "ReadPitr20261017A-03.private.json": true,
+    "ReadPitr20261017A-04.private.json": true,
+    "ReadPitr20261017A-05.private.json": true,
+    "ReadPitrIndependent20261017A-01.private.json": true,
+    "ReadPitrIndependent20261017A-02.private.json": true,
+    "ReadPitrIndependent20261017A-03.private.json": true,
+    "ReadPitrIndependent20261017A-04.private.json": true,
+    "ReadPitrIndependent20261017A-05.private.json": true
+  },
+  "protected_count": 168,
+  "directory_count": 6,
+  "scope_sha256": "8d6ab64164cce53f518a965275085856ee63e8a4b759067b27e1dac0dc5e4965",
+  "apply_sha256": "611f6e832b334c1d1ebbe8c44e9fb1f1c1961a44bf97fe61cd245b9ab36a908c",
+  "apply_intent_sha256": "1413e15ae82994a83ebe9403f96c0c924edb493d548794dcbb4783a437dbd80a",
+  "notice_sha256": "db32bb8e896f6beec6d288d3f78a3f76c98a9dc7e3006fb4a920aea09893a0a7",
+  "journal_sha256": "0d79c991202d300831e046160e7294d30ebd616a16520148c82e3d68be943566",
+  "actual_unlink_times": [
+    1792860759.9973938,
+    1792860759.9977229,
+    1792860759.998069,
+    1792860759.9983811,
+    1792860759.998677,
+    1792860759.998951,
+    1792860759.999163,
+    1792860759.999372,
+    1792860759.999577,
+    1792860759.9997911
+  ],
+  "not_secure_media_erasure": true,
+  "protected_symlink_count": 0,
+  "finished_at": 1792881460.191236
+}
