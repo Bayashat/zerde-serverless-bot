@@ -1,0 +1,25 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "oct24_maintenance",
+  "at": 1792959568.6792362,
+  "actual_target_private_zip_content_reads": 0,
+  "actual_formal_entries": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "source_mutations": 0,
+  "limitations": [
+    "Pure-source and safe metadata review plus synthetic TEMP controls only; not actual inspect/apply/absence proof.",
+    "Original ledger omits mtime; scope target_mtime_ns is a fresh preparation baseline, not historical mtime proof.",
+    "Only target array in original ledger order owns future deletion; all protected files, original directory modes and other deadlines remain."
+  ],
+  "files": {
+    "PLAN.md": "431447c666f5f7885d2717c65c6bd359e480fb108be1b1c19b4c32c57ca5f682",
+    "scope.safe.json": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+    "expire_raw.py": "12cc742a75b8c3f13c4fd4045d339b19404db97724cddf371c47420cc5e15d88",
+    "verify_absence.py": "788e8e4264de562fe77e9f9f7c895413eac1ce8a44f62fce96829693aea1f95f"
+  },
+  "control_sha256": "836bbf942fc400f960092c1d5367b73a477fcd160659613485207a5aa53a58b4",
+  "control_source_sha256": "2da76cab51f8f237ec074b13cc82ecbc08d4b0da3fc1743469ee425337563bc6",
+  "controls_passed": 61,
+  "controls_total": 61
+}

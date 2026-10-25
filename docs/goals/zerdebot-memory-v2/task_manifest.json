@@ -1692,6 +1692,37 @@
         "O other-duty count was 17 at manifest creation, but H independent had finished before O notice, when the correct count was 16. Original notice retained.",
         "Notice epoch is a local registration time following commentary, not a platform message timestamp independently captured."
       ]
+    },
+    "oct26_groq_raw_expiry_preparation": {
+      "status": "GROQ_REVIEW_RAW_PREPARED_NOT_DELETED",
+      "batches": {
+        "B": {
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review",
+          "ledger_sha256": "eccbecaac4db0bbdc7b9513dbe411f669410c74b75529c2aa936bce9af038318",
+          "started_at_utc": "2026-10-19T20:29:05.508343+00:00",
+          "deadline_utc": "2026-10-26T20:29:05.508343+00:00",
+          "deadline_epoch": 1793046545.508343,
+          "target_count": 418,
+          "protected_count": 31569,
+          "directory_count": 8960,
+          "inventory_count": 31987,
+          "protected_zip_count": 39,
+          "protected_symlink_count": 0,
+          "historical_protected_hashes_checked": 563,
+          "fresh_only_protected_hashes": 31006,
+          "target_mtime_origin": "FRESH_PREPARATION_BASELINE_NOT_ORIGINAL_LEDGER",
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry",
+          "scope_sha256": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+          "preparation_sha256": "322b22e61a6a07025bc285f511b526f578122fedc6f643be08e435e6ffd8b534",
+          "independent_sha256": "9f03aec7a617f1e5f211349e8b9e45f8073402a9a39e1bf71dd78a6adfcff218",
+          "directory_modes": {
+            "0700": 5549,
+            "0755": 3411
+          }
+        }
+      },
+      "evidence": "evidence/2026-10-26-groq-review-raw-expiry/final.safe.json",
+      "new_deadlines": 0
     }
   },
   {

@@ -1,0 +1,71 @@
+{
+  "status": "OCT26_GROQ_RAW_PREPARED_INDEPENDENT_PASS_NOT_DELETED",
+  "at": 1792959796.595815,
+  "batches": {
+    "B": {
+      "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review",
+      "ledger_sha256": "eccbecaac4db0bbdc7b9513dbe411f669410c74b75529c2aa936bce9af038318",
+      "started_at_utc": "2026-10-19T20:29:05.508343+00:00",
+      "deadline_utc": "2026-10-26T20:29:05.508343+00:00",
+      "deadline_epoch": 1793046545.508343,
+      "target_count": 418,
+      "protected_count": 31569,
+      "directory_count": 8960,
+      "inventory_count": 31987,
+      "protected_zip_count": 39,
+      "protected_symlink_count": 0,
+      "historical_protected_hashes_checked": 563,
+      "fresh_only_protected_hashes": 31006,
+      "target_mtime_origin": "FRESH_PREPARATION_BASELINE_NOT_ORIGINAL_LEDGER",
+      "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry",
+      "scope_sha256": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+      "preparation_sha256": "322b22e61a6a07025bc285f511b526f578122fedc6f643be08e435e6ffd8b534",
+      "independent_sha256": "9f03aec7a617f1e5f211349e8b9e45f8073402a9a39e1bf71dd78a6adfcff218",
+      "directory_modes": {
+        "0700": 5549,
+        "0755": 3411
+      }
+    }
+  },
+  "evidence_sha256": {
+    "B": {
+      "preparation-correctness-post.safe.json": "49161e6b9a38b498f113f894f83e5645aa738dfce332e5639eae8d93a42ce6e9",
+      "preparation-maintenance-post.safe.json": "f460ed40af92f98427db59b8c555fdfe5800a32d1af424b067fd2ed712de72cb",
+      "PLAN.md": "431447c666f5f7885d2717c65c6bd359e480fb108be1b1c19b4c32c57ca5f682",
+      "scope.safe.json": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+      "protected-provenance.binding.safe.json": "598a9bdbbb68cb4d39424330042168bac23ac69edadd71facf9c34b34da8e9c8",
+      "preparation.safe.json": "322b22e61a6a07025bc285f511b526f578122fedc6f643be08e435e6ffd8b534",
+      "preparation-independent.safe.json": "9f03aec7a617f1e5f211349e8b9e45f8073402a9a39e1bf71dd78a6adfcff218",
+      "tool-pre.safe.json": "20671f43e512557e8e790ae2d80c7554896f84199745ec86b09f8661bb49f196",
+      "maintenance-pre.safe.json": "f62ca78ec7a60c1c1be19071b3ae8f78b681f178f092892e3840c1c8290e6b27",
+      "seal-pre.safe.json": "99c244b47a89b2c51481cff5e43a82e245f670a35787f92be2d9c35f2bc39f25",
+      "seal-maintenance-pre.safe.json": "0d5db06e6b6396e54c06f247084d211397d9dc578d3421d36f70123946c79e7f",
+      "independent-prepare-pre.safe.json": "4e0b32a9868b3931b3390ceca22f4d700ebd4b524e8d267164cd32b048ca1639",
+      "independent-prepare-maintenance-pre.safe.json": "72184224f1d12c1a3b52ebdfa78b4c44101704ea804b2b9a68aac1162aa31dee",
+      "independent-prepare-controls.safe.json": "ba47195de4982ed2533a2813b974424b7946f2f561ba390587ef8a14852b9329",
+      "independent_prepare.py": "d1efc772cc16f4222ab67423bd859608c8308e8bcca7ff01f8ab3ffe2f83dbb5",
+      "make_scope.py": "625520505e11cea2c25b35b1985a02cf18b5a091b3d642d11ef207a7421e800b",
+      "expire_raw.py": "12cc742a75b8c3f13c4fd4045d339b19404db97724cddf371c47420cc5e15d88",
+      "verify_absence.py": "788e8e4264de562fe77e9f9f7c895413eac1ce8a44f62fce96829693aea1f95f",
+      "seal_preparation.py": "169fb53c12f7a4b9bc0a92620cb7083f7b1a5ef11210d615b78dc03ada070dba"
+    }
+  },
+  "remaining_original_duties": 16,
+  "deleted": 0,
+  "cloud_calls": 0,
+  "cloud_writes": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw": 0,
+  "new_retention_duties": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "docs_independent": "PENDING_SEPARATE_RECEIPT",
+  "limitations": [
+    "Preparation only; original deadline fixed.",
+    "Serial no-follow reads and full before/after inventory, not an atomic filesystem snapshot.",
+    "Historical hash provenance is distinct from fresh baseline.",
+    "Original ledger has no mtime; current mtime is a fresh baseline only.",
+    "All prior failures, UNKNOWN and ended once remain frozen."
+  ]
+}
