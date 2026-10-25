@@ -1,6 +1,6 @@
-## 四群已发布；10/51原文已移除
+## 四群已发布；418原文待到期处理
 
-独立核验通过，逾期及公告计数缺陷保留；剩16项。[实际完成](OCT24_RAW_EXPIRY_COMPLETION.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/96d41994a2419107b3558cb3d0ed4465ffabfeee/docs/goals/zerdebot-memory-v2/EPIC.md)。
+418原文独立准备完成，未删；ask修复已发布待真实验收。[当前副本](RETAINED_COPIES.md)。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/0f2ee735274e45409a32d73b9908bbf367860a48/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
