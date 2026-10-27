@@ -1723,6 +1723,110 @@
       },
       "evidence": "evidence/2026-10-26-groq-review-raw-expiry/final.safe.json",
       "new_deadlines": 0
+    },
+    "oct26_groq_raw_expiry_completion": {
+      "status": "GROQ_RAW_DELETED_INDEPENDENTLY_VERIFIED_WITH_LATENESS",
+      "batches": {
+        "B": {
+          "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry",
+          "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review",
+          "deadline_epoch": 1793046545.508343,
+          "deadline_utc": "2026-10-26T20:29:05.508343+00:00",
+          "deleted": 418,
+          "protected_files": 31569,
+          "directories": 8960,
+          "links": 0,
+          "zips": 39,
+          "inventory_before": 31987,
+          "inventory_after": 31569,
+          "journal_entries": 836,
+          "scope_sha256": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+          "apply_sha256": "b9d127f8b0610b2686484a93d93d4084aa76599bfb6a59004898caead0c2f4f7",
+          "independent_sha256": "19e4885346e29ab5bd0b5142e5712ac83450671f481d617b3cc049fc9e1ea363",
+          "first_unlink_epoch": 1793056212.585231,
+          "last_unlink_epoch": 1793056212.743805,
+          "first_unlink_utc": "2026-10-26T23:10:12.585231+00:00",
+          "last_unlink_utc": "2026-10-26T23:10:12.743805+00:00",
+          "first_lateness_seconds": 9667.076888084412,
+          "last_lateness_seconds": 9667.235461950302,
+          "late_reason": "UNKNOWN",
+          "independent_finished_at": 1793082287.443389,
+          "notice_epoch": 1793056116.4783978,
+          "target_mtime_origin": "FRESH_PREPARATION_BASELINE_NOT_ORIGINAL_LEDGER"
+        }
+      },
+      "remaining_original_duties": 15,
+      "remaining_duties": [
+        [
+          "2026-10-26T23:52:42.922982+00:00",
+          "2026-10-20-z01-media-current 36"
+        ],
+        [
+          "2026-10-27T00:10:10.807865+00:00",
+          "2026-10-20-cost-gate-diagnostic 22"
+        ],
+        [
+          "2026-10-27T01:53:25.893115+00:00",
+          "2026-10-20-cost-report-readback 2"
+        ],
+        [
+          "2026-10-27T01:57:25.452039+00:00",
+          "2026-10-20-cost-metrics-diagnostic 5"
+        ],
+        [
+          "2026-10-27T02:26:52.661740+00:00",
+          "2026-10-20-cost-report-repair 446"
+        ],
+        [
+          "2026-10-27T07:23:59.115275+00:00",
+          "2026-10-20-cost-recovery-followup 12"
+        ],
+        [
+          "2026-10-27T09:30:26.883900+00:00",
+          "2026-10-20-z01-media-cost-rebind 84"
+        ],
+        [
+          "2026-10-27T10:47:02.618740+00:00",
+          "2026-10-20-media-reference-proof 436"
+        ],
+        [
+          "2026-10-27T13:29:38.223710+00:00",
+          "2026-10-20-z01-media-proof-acceptance 95"
+        ],
+        [
+          "2026-10-27T16:31:53.365253+00:00",
+          "2026-10-20-ask-intent-repair 411"
+        ],
+        [
+          "2026-10-28T15:29:54.370686+00:00",
+          "2026-10-20-ask-intent-canary 17"
+        ],
+        [
+          "2026-10-28T17:42:41.712325+00:00",
+          "2026-10-21-week-one-observation 52"
+        ],
+        [
+          "2026-10-28T18:47:42.597749+00:00",
+          "2026-10-21-ask-public-knowledge-repair 408"
+        ],
+        [
+          "2026-11-01T11:46:02.425+00:00",
+          "old-memory-SYSTEM-readonly"
+        ],
+        [
+          "2026-11-02T08:45:11.254+00:00",
+          "old-stats-SYSTEM-readonly"
+        ]
+      ],
+      "evidence": "evidence/2026-10-26-groq-review-raw-expiry-completion/final.safe.json",
+      "new_deadlines": 0,
+      "process_caveats": [
+        "Original deadline missed; actual lateness retained and cause UNKNOWN.",
+        "Notice epoch is a local registration after commentary, not an independently captured platform timestamp.",
+        "Original ledger has no mtime/nlink; target mtime is the explicitly labelled fresh preparation baseline.",
+        "Sequential checks are not a global atomic snapshot.",
+        "Unlink is not secure erasure or disappearance of all cloud copies."
+      ]
     }
   },
   {

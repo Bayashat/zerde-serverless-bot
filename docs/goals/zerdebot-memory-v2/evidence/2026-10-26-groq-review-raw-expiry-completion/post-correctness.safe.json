@@ -1,0 +1,68 @@
+{
+  "status": "ALIGNED_WITH_CAVEATS",
+  "reviewer": "groq_completion_correctness independent",
+  "at": 1793088719.3778088,
+  "evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/scope.safe.json": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.safe.json": "b9d127f8b0610b2686484a93d93d4084aa76599bfb6a59004898caead0c2f4f7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/independent.safe.json": "19e4885346e29ab5bd0b5142e5712ac83450671f481d617b3cc049fc9e1ea363",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/deletion-notice.safe.json": "3b08057dc4d374cd38abc48ed5ecd66d861f8eb4a751739c4cbf568285d342e3",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.intent.safe.json": "b68495514433f114977df654e412fce094ba5e52c313764a0ee93b52fa44ab63",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/inspect-Due20261026B.safe.json": "28c240147bb9ba4d276a6cb93f6414ad030777600c7555e4d41f1fe56d2896cb",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/tool-pre.safe.json": "20671f43e512557e8e790ae2d80c7554896f84199745ec86b09f8661bb49f196",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/maintenance-pre.safe.json": "f62ca78ec7a60c1c1be19071b3ae8f78b681f178f092892e3840c1c8290e6b27",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/preparation-correctness-post.safe.json": "49161e6b9a38b498f113f894f83e5645aa738dfce332e5639eae8d93a42ce6e9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/preparation-maintenance-post.safe.json": "f460ed40af92f98427db59b8c555fdfe5800a32d1af424b067fd2ed712de72cb",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/deletion-announcement-Due20261026B.safe.md": "2aab9b1fede7338e7f2a2f270a82cd12e9024eb346ab3c95f4447e6da8c2004f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.journal.safe.jsonl": "8cdb2613dff2318f813dbf1ef2542910e8d8c03919e14557574af39b2474731d",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/remaining-duties.safe.json": "ead061318774a3020c459d3cef5f7a588ccee09315d66ad452be3256650d8d95"
+  },
+  "additional_direct_evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review/raw-retention.safe.json": "eccbecaac4db0bbdc7b9513dbe411f669410c74b75529c2aa936bce9af038318",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/independent.intent.safe.json": "e0ff23fd86ff9aaf6077f1c4c7fe9ce89ccabd0006fc80a831e7325acdf3f799",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/protected-provenance.binding.safe.json": "598a9bdbbb68cb4d39424330042168bac23ac69edadd71facf9c34b34da8e9c8",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/protected-provenance.safe.json": "c500a87ca8d582ea78b102387d9f1e79d13d4c416074f26e82e4d4e8d2a1209a",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/expire_raw.py": "12cc742a75b8c3f13c4fd4045d339b19404db97724cddf371c47420cc5e15d88",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/verify_absence.py": "788e8e4264de562fe77e9f9f7c895413eac1ce8a44f62fce96829693aea1f95f"
+  },
+  "review_source_sha256": "dae289944f2b3b18e850b897f1486c010eadd62ae5fbf1bb0eef583d790cb659",
+  "direct_checks": [
+    "Original SHA-bound ledger identity/order/deadline and absent historical mtime/nlink",
+    "Complete scope partition and 563 historical versus 31006 fresh-only protected baselines; all39 ZIP historical hashes",
+    "Actual Due/apply/independent/intent and strict numeric zero-call receipts; all recorded evidence hashes",
+    "Exact ordered complete announcement target/protected/directory paths and notice binding",
+    "836 ordered intent/result rows, strict True on both result sides, 418 absent-map entries and monotonic actual times",
+    "Original15 residual obligations unchanged; no assumption that elapsed deadlines were covered"
+  ],
+  "observed": {
+    "targets": 418,
+    "protected": 31569,
+    "zips": 39,
+    "directories": 8960,
+    "links": 0,
+    "journal": 836,
+    "deadline_epoch": 1793046545.508343,
+    "first_unlink_epoch": 1793056212.585231,
+    "last_unlink_epoch": 1793056212.743805,
+    "first_lateness_seconds": 9667.076888084412,
+    "last_lateness_seconds": 9667.235461950302,
+    "late_reason": "UNKNOWN",
+    "min_notice_age_seconds": 96.10653018951416,
+    "max_notice_age_seconds": 96.26533722877502
+  },
+  "limitations": [
+    "Original deadline missed; actual lateness retained and cause UNKNOWN.",
+    "Notice epoch is a local registration after commentary, not an independently captured platform timestamp.",
+    "Original ledger has no mtime/nlink; target mtime is the explicitly labelled fresh preparation baseline.",
+    "Sequential checks are not a global atomic snapshot.",
+    "Unlink is not secure erasure or disappearance of all cloud copies.",
+    "Reviewer directly examined safe receipts and verifier source; did not repeat fresh traversal or inspect raw/private/ZIP contents.",
+    "Several subsequent original deadlines have passed; original proposed23:30 scheduling was not completed on time and cause is UNKNOWN."
+  ],
+  "actual_formal_entries": 0,
+  "source_tree_traversals": 0,
+  "raw_private_zip_content_reads": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0
+}

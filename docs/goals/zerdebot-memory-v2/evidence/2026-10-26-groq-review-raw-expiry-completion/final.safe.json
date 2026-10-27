@@ -1,0 +1,130 @@
+{
+  "status": "GROQ_RAW_DELETED_INDEPENDENTLY_VERIFIED_WITH_LATENESS",
+  "at": 1793089181.623401,
+  "batches": {
+    "B": {
+      "batch_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry",
+      "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-groq-413-review",
+      "deadline_epoch": 1793046545.508343,
+      "deadline_utc": "2026-10-26T20:29:05.508343+00:00",
+      "deleted": 418,
+      "protected_files": 31569,
+      "directories": 8960,
+      "links": 0,
+      "zips": 39,
+      "inventory_before": 31987,
+      "inventory_after": 31569,
+      "journal_entries": 836,
+      "scope_sha256": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+      "apply_sha256": "b9d127f8b0610b2686484a93d93d4084aa76599bfb6a59004898caead0c2f4f7",
+      "independent_sha256": "19e4885346e29ab5bd0b5142e5712ac83450671f481d617b3cc049fc9e1ea363",
+      "first_unlink_epoch": 1793056212.585231,
+      "last_unlink_epoch": 1793056212.743805,
+      "first_unlink_utc": "2026-10-26T23:10:12.585231+00:00",
+      "last_unlink_utc": "2026-10-26T23:10:12.743805+00:00",
+      "first_lateness_seconds": 9667.076888084412,
+      "last_lateness_seconds": 9667.235461950302,
+      "late_reason": "UNKNOWN",
+      "independent_finished_at": 1793082287.443389,
+      "notice_epoch": 1793056116.4783978,
+      "target_mtime_origin": "FRESH_PREPARATION_BASELINE_NOT_ORIGINAL_LEDGER"
+    }
+  },
+  "evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/scope.safe.json": "194d626f7a144e1cc80b2269bbadeffdf253dc50633bce3d14fe2652a3ed810f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.safe.json": "b9d127f8b0610b2686484a93d93d4084aa76599bfb6a59004898caead0c2f4f7",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/independent.safe.json": "19e4885346e29ab5bd0b5142e5712ac83450671f481d617b3cc049fc9e1ea363",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/deletion-notice.safe.json": "3b08057dc4d374cd38abc48ed5ecd66d861f8eb4a751739c4cbf568285d342e3",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.intent.safe.json": "b68495514433f114977df654e412fce094ba5e52c313764a0ee93b52fa44ab63",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/inspect-Due20261026B.safe.json": "28c240147bb9ba4d276a6cb93f6414ad030777600c7555e4d41f1fe56d2896cb",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/tool-pre.safe.json": "20671f43e512557e8e790ae2d80c7554896f84199745ec86b09f8661bb49f196",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/maintenance-pre.safe.json": "f62ca78ec7a60c1c1be19071b3ae8f78b681f178f092892e3840c1c8290e6b27",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/preparation-correctness-post.safe.json": "49161e6b9a38b498f113f894f83e5645aa738dfce332e5639eae8d93a42ce6e9",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/preparation-maintenance-post.safe.json": "f460ed40af92f98427db59b8c555fdfe5800a32d1af424b067fd2ed712de72cb",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/deletion-announcement-Due20261026B.safe.md": "2aab9b1fede7338e7f2a2f270a82cd12e9024eb346ab3c95f4447e6da8c2004f",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry/apply.journal.safe.jsonl": "8cdb2613dff2318f813dbf1ef2542910e8d8c03919e14557574af39b2474731d",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/remaining-duties.safe.json": "ead061318774a3020c459d3cef5f7a588ccee09315d66ad452be3256650d8d95",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/post-correctness.safe.json": "b3f06807d8749fe57e22015f1e1f7c25b7f5477cdb8b7f4b243f34c5903665b2",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/post-maintenance.safe.json": "045ab8a4a1907cf7cbb812dc55f5f25fb77e5a5948822b83fe4f6c1add985e70"
+  },
+  "remaining_original_duties": 15,
+  "remaining_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ],
+    [
+      "2026-11-01T11:46:02.425+00:00",
+      "old-memory-SYSTEM-readonly"
+    ],
+    [
+      "2026-11-02T08:45:11.254+00:00",
+      "old-stats-SYSTEM-readonly"
+    ]
+  ],
+  "deleted": 418,
+  "cloud_calls": 0,
+  "cloud_writes": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw": 0,
+  "new_retention_duties": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "docs_independent": "PENDING_SEPARATE_RECEIPT",
+  "limitations": [
+    "Original deadline missed; actual lateness retained and cause UNKNOWN.",
+    "Notice epoch is a local registration after commentary, not an independently captured platform timestamp.",
+    "Original ledger has no mtime/nlink; target mtime is the explicitly labelled fresh preparation baseline.",
+    "Sequential checks are not a global atomic snapshot.",
+    "Unlink is not secure erasure or disappearance of all cloud copies."
+  ]
+}
