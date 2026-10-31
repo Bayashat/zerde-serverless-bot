@@ -1,0 +1,1307 @@
+{
+  "status": "BLOCKED_DEVICE_IDENTITY_CHANGED",
+  "recorded_at": "2026-10-31T09:17:07.800540+00:00",
+  "started_epoch": 1793438227.749388,
+  "finished_epoch": 1793438227.8008,
+  "source_root": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current",
+  "deadline_epoch_unchanged": 1793058762.922982,
+  "deadline_utc_original": "2026-10-26T23:52:42.922982+00:00",
+  "original_ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+  "historical_source_sha256": {
+    "live-stop-maintenance.safe.json": "944973a96e25cb802a708757b9f279af2765a8a03fffb2ba243fe2835a5c51d8",
+    "budget-stop-independent.safe.json": "87275e99c4f09a4885a304b00f3763196fe78241e725b62ae34203c317689e0b"
+  },
+  "original_ledger_missing_fields": [
+    "device",
+    "inode",
+    "mode",
+    "mtime_ns",
+    "nlink"
+  ],
+  "historical_post_recorded_epoch": 1792454353.265397,
+  "historical_post_identity_boundary": "The later original safe maintenance POST supplies identity and mtime for all 36 targets; this is not identity fields in original ledger.",
+  "historical_device_set": [
+    16777232
+  ],
+  "current_device_set": [
+    16777234
+  ],
+  "target_count": 36,
+  "target_metadata_checks": [
+    {
+      "index": 0,
+      "path": "ui-onsite.private.json",
+      "original_ledger_sha256": "a0137fcc35604a66dfc5507971fbcadc5c34f760bb7004d83f8dbdabc171b34d",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082218,
+        "size": 785,
+        "mode": "0o600",
+        "mtime_ns": 1792454105898693075
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082218,
+        "size": 785,
+        "mode": "0o600",
+        "mtime_ns": 1792454105898693075,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 1,
+      "path": "raw/0002.private.json",
+      "original_ledger_sha256": "d71ed6414f007a2dd4cefea2b5c07c03a19fe0894d70ba9919226c95feef8f70",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082233,
+        "size": 778,
+        "mode": "0o600",
+        "mtime_ns": 1792454110241203367
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082233,
+        "size": 778,
+        "mode": "0o600",
+        "mtime_ns": 1792454110241203367,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 2,
+      "path": "raw/0003.private.json",
+      "original_ledger_sha256": "cc52723b9867aea9502b1e8f71efe6aa572ca0680b3bfec8cc6778105f33126d",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082236,
+        "size": 34430,
+        "mode": "0o600",
+        "mtime_ns": 1792454111156231860
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082236,
+        "size": 34430,
+        "mode": "0o600",
+        "mtime_ns": 1792454111156231860,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 3,
+      "path": "raw/0004.private.json",
+      "original_ledger_sha256": "4294890aebe14311f7a1e31c14e0ba73e5d6ac92a4330e4d9ea305af546f93ce",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082239,
+        "size": 4474,
+        "mode": "0o600",
+        "mtime_ns": 1792454111868379551
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082239,
+        "size": 4474,
+        "mode": "0o600",
+        "mtime_ns": 1792454111868379551,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 4,
+      "path": "raw/0005.private.json",
+      "original_ledger_sha256": "622e1da685fa5711759c72e4094241e6d7c2ab9af4e88d1316d3bba647047be6",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082243,
+        "size": 2514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112102658508
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082243,
+        "size": 2514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112102658508,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 5,
+      "path": "raw/0006.private.json",
+      "original_ledger_sha256": "b01133058ea45be403b7982a3214eb7d473e305b4052a05b7966e6494f7515b4",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082246,
+        "size": 2698,
+        "mode": "0o600",
+        "mtime_ns": 1792454112284807723
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082246,
+        "size": 2698,
+        "mode": "0o600",
+        "mtime_ns": 1792454112284807723,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 6,
+      "path": "raw/0007.private.json",
+      "original_ledger_sha256": "086283f4e9c4cc96e8c91168cca499ba3b8bc0a21be3a68db5e9b6ae7c1fd061",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082249,
+        "size": 3584,
+        "mode": "0o600",
+        "mtime_ns": 1792454112466137971
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082249,
+        "size": 3584,
+        "mode": "0o600",
+        "mtime_ns": 1792454112466137971,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 7,
+      "path": "raw/0008.private.json",
+      "original_ledger_sha256": "0bf9d29c521873682987ea7a78b33f1ddea1d2dc01f442b36fe9bcaa531de720",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082252,
+        "size": 3514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112700221070
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082252,
+        "size": 3514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112700221070,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 8,
+      "path": "raw/0009.private.json",
+      "original_ledger_sha256": "74628be34c307ad02d6b99fe04e8500cb7ec80c59eb0712d1cb454a2b1d233b8",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082255,
+        "size": 1863,
+        "mode": "0o600",
+        "mtime_ns": 1792454113154448760
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082255,
+        "size": 1863,
+        "mode": "0o600",
+        "mtime_ns": 1792454113154448760,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 9,
+      "path": "raw/0010.private.json",
+      "original_ledger_sha256": "7b2fe77eb0c1ba0e06530d6781e805d834ff414cab39f6f6e165afc91f65af9b",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082258,
+        "size": 3163,
+        "mode": "0o600",
+        "mtime_ns": 1792454113264327209
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082258,
+        "size": 3163,
+        "mode": "0o600",
+        "mtime_ns": 1792454113264327209,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 10,
+      "path": "raw/0011.private.json",
+      "original_ledger_sha256": "c85b4878c8fc57ee00cd88bf535e942f93f13d9e35f9419f7313185e5df25e20",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082261,
+        "size": 2949,
+        "mode": "0o600",
+        "mtime_ns": 1792454113378665840
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082261,
+        "size": 2949,
+        "mode": "0o600",
+        "mtime_ns": 1792454113378665840,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 11,
+      "path": "raw/0012.private.json",
+      "original_ledger_sha256": "565e6a6537dce41e5d066709a75c5cc3836c334d397b7a204f4b2d95d8791c6f",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082264,
+        "size": 1320,
+        "mode": "0o600",
+        "mtime_ns": 1792454113500411142
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082264,
+        "size": 1320,
+        "mode": "0o600",
+        "mtime_ns": 1792454113500411142,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 12,
+      "path": "raw/0013.private.json",
+      "original_ledger_sha256": "da646a380c17e4487d264ec0b24184f5b615a74826b72413043b7f256b1f8138",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082268,
+        "size": 1389,
+        "mode": "0o600",
+        "mtime_ns": 1792454113673020539
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082268,
+        "size": 1389,
+        "mode": "0o600",
+        "mtime_ns": 1792454113673020539,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 13,
+      "path": "raw/0014.private.json",
+      "original_ledger_sha256": "ddf15a8d080c5984fb28da88f6c89dd4fa1c582a7cfa2bfdd26cf9c046fb7679",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082271,
+        "size": 884,
+        "mode": "0o600",
+        "mtime_ns": 1792454113786824543
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082271,
+        "size": 884,
+        "mode": "0o600",
+        "mtime_ns": 1792454113786824543,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 14,
+      "path": "raw/0015.private.json",
+      "original_ledger_sha256": "0fcd813a862927e88cc2882d74d2c046c2c76155b8b28cf99eb115cb2e2b654a",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082275,
+        "size": 1162,
+        "mode": "0o600",
+        "mtime_ns": 1792454114430392808
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082275,
+        "size": 1162,
+        "mode": "0o600",
+        "mtime_ns": 1792454114430392808,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 15,
+      "path": "raw/0016.private.json",
+      "original_ledger_sha256": "2d5cf66a0a21ceb5d1668afa583178c459677f0d43040158f12180a60a0cf3d6",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082278,
+        "size": 1168,
+        "mode": "0o600",
+        "mtime_ns": 1792454114557269396
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082278,
+        "size": 1168,
+        "mode": "0o600",
+        "mtime_ns": 1792454114557269396,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 16,
+      "path": "raw/0017.private.json",
+      "original_ledger_sha256": "0eff3d502d8afaf808a1f75b69ea8c988bb0558caa9f0d96809099fb3d6d4437",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082281,
+        "size": 1175,
+        "mode": "0o600",
+        "mtime_ns": 1792454114723304714
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082281,
+        "size": 1175,
+        "mode": "0o600",
+        "mtime_ns": 1792454114723304714,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 17,
+      "path": "raw/0018.private.json",
+      "original_ledger_sha256": "7ea59c744f931300b611e09a3967c47624c1a12ee890ea6be7d72b07606b850c",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082284,
+        "size": 1177,
+        "mode": "0o600",
+        "mtime_ns": 1792454114837374522
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082284,
+        "size": 1177,
+        "mode": "0o600",
+        "mtime_ns": 1792454114837374522,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 18,
+      "path": "raw/0019.private.json",
+      "original_ledger_sha256": "b5b288b4c6ae6cebb27ad50ac1d815af273fb93f0fcc11f3bc1f878ae7ef65b1",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082287,
+        "size": 1156,
+        "mode": "0o600",
+        "mtime_ns": 1792454114952323800
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082287,
+        "size": 1156,
+        "mode": "0o600",
+        "mtime_ns": 1792454114952323800,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 19,
+      "path": "raw/0020.private.json",
+      "original_ledger_sha256": "66942353d151cfa0615629dbc03fb26bb7ac962844de2b3d6fcd0a8d13e354c8",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082290,
+        "size": 1160,
+        "mode": "0o600",
+        "mtime_ns": 1792454115060342227
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082290,
+        "size": 1160,
+        "mode": "0o600",
+        "mtime_ns": 1792454115060342227,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 20,
+      "path": "raw/0021.private.json",
+      "original_ledger_sha256": "75edeb38d2db0f79000c4960f88b052a140a7c540817f76d341650b70b35b5b1",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082293,
+        "size": 937,
+        "mode": "0o600",
+        "mtime_ns": 1792454115645913840
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082293,
+        "size": 937,
+        "mode": "0o600",
+        "mtime_ns": 1792454115645913840,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 21,
+      "path": "raw/0022.private.json",
+      "original_ledger_sha256": "7d5c7589f3fa226b6c15d0b2f6f0123398d1d3c1953408a1aef38af54c6b075e",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082296,
+        "size": 1107,
+        "mode": "0o600",
+        "mtime_ns": 1792454115772539843
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082296,
+        "size": 1107,
+        "mode": "0o600",
+        "mtime_ns": 1792454115772539843,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 22,
+      "path": "raw/0023.private.json",
+      "original_ledger_sha256": "532763b958228d4924295dfe1ca0776ad030bb448ddbb9a277308509deb5b61f",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082299,
+        "size": 921,
+        "mode": "0o600",
+        "mtime_ns": 1792454115888140191
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082299,
+        "size": 921,
+        "mode": "0o600",
+        "mtime_ns": 1792454115888140191,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 23,
+      "path": "raw/0024.private.json",
+      "original_ledger_sha256": "b300dea6a7a5e109de672aff1a735c6d22315f1057d368ec5d4325494c54b3f7",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082302,
+        "size": 1128,
+        "mode": "0o600",
+        "mtime_ns": 1792454115999927075
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082302,
+        "size": 1128,
+        "mode": "0o600",
+        "mtime_ns": 1792454115999927075,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 24,
+      "path": "raw/0025.private.json",
+      "original_ledger_sha256": "74c1e4a64e41a21214550364a57c78eeb36fbb8e7edfa160854fe1d0fe137a8a",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082305,
+        "size": 916,
+        "mode": "0o600",
+        "mtime_ns": 1792454116110615159
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082305,
+        "size": 916,
+        "mode": "0o600",
+        "mtime_ns": 1792454116110615159,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 25,
+      "path": "raw/0026.private.json",
+      "original_ledger_sha256": "e9d60496a714fe6d10f73341032567517b9de28fe7d4e203ce157db0bf37ee95",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082308,
+        "size": 1122,
+        "mode": "0o600",
+        "mtime_ns": 1792454116296553570
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082308,
+        "size": 1122,
+        "mode": "0o600",
+        "mtime_ns": 1792454116296553570,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 26,
+      "path": "raw/0027.private.json",
+      "original_ledger_sha256": "6b12d7fce96f921ecdf339a039096f52cfc5cc182f41927674de9c16d760082b",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082311,
+        "size": 1426,
+        "mode": "0o600",
+        "mtime_ns": 1792454116441322976
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082311,
+        "size": 1426,
+        "mode": "0o600",
+        "mtime_ns": 1792454116441322976,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 27,
+      "path": "raw/0028.private.json",
+      "original_ledger_sha256": "c103e1a4adb1c3829b95c753d00aa74b4d00216fc3532add30a6677f64fc1a30",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082314,
+        "size": 1495,
+        "mode": "0o600",
+        "mtime_ns": 1792454116581151901
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082314,
+        "size": 1495,
+        "mode": "0o600",
+        "mtime_ns": 1792454116581151901,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 28,
+      "path": "raw/0029.private.json",
+      "original_ledger_sha256": "cc97d01fd68ea2fe258a6030900de25cf7f8455aaf260f31747f64c1accbd7e5",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082318,
+        "size": 23487,
+        "mode": "0o600",
+        "mtime_ns": 1792454116693007642
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082318,
+        "size": 23487,
+        "mode": "0o600",
+        "mtime_ns": 1792454116693007642,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 29,
+      "path": "raw/0030.private.json",
+      "original_ledger_sha256": "8b3cf1580a1b58d611aa97fb1752fd97538b9fae23739a34958336c707040f82",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082321,
+        "size": 7519,
+        "mode": "0o600",
+        "mtime_ns": 1792454116822221335
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082321,
+        "size": 7519,
+        "mode": "0o600",
+        "mtime_ns": 1792454116822221335,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 30,
+      "path": "raw/0031.private.json",
+      "original_ledger_sha256": "a0866f9c9bc7b75357276f49a3cee9e5b1552e8d7f03ac30fd4b35623ddabf4c",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082324,
+        "size": 1070,
+        "mode": "0o600",
+        "mtime_ns": 1792454116926302135
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082324,
+        "size": 1070,
+        "mode": "0o600",
+        "mtime_ns": 1792454116926302135,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 31,
+      "path": "raw/0032.private.json",
+      "original_ledger_sha256": "06f96c3573665a7bea84b81d3d7af2a74997f3ddb64a3b772838a378ac7c60d3",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082327,
+        "size": 873,
+        "mode": "0o600",
+        "mtime_ns": 1792454117034724434
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082327,
+        "size": 873,
+        "mode": "0o600",
+        "mtime_ns": 1792454117034724434,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 32,
+      "path": "raw/budget-01.private.json",
+      "original_ledger_sha256": "f5f2969cacdcd86a5c2f996c719eeef402e2176526190fc061218a28c7d31d09",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082338,
+        "size": 755,
+        "mode": "0o600",
+        "mtime_ns": 1792454124973976607
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082338,
+        "size": 755,
+        "mode": "0o600",
+        "mtime_ns": 1792454124973976607,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 33,
+      "path": "raw/budget-02.private.json",
+      "original_ledger_sha256": "eaa6663b498d032ffa378fbaf6348f61c8fda0ec6b558b80bb3455907e47d239",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082341,
+        "size": 4450,
+        "mode": "0o600",
+        "mtime_ns": 1792454125393113215
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082341,
+        "size": 4450,
+        "mode": "0o600",
+        "mtime_ns": 1792454125393113215,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 34,
+      "path": "raw/budget-03.private.json",
+      "original_ledger_sha256": "006b70f7c82071087253ba6ff7621d6239b8afc79703ca29b87dcd7ccc20ff67",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082344,
+        "size": 832,
+        "mode": "0o600",
+        "mtime_ns": 1792454125850210798
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082344,
+        "size": 832,
+        "mode": "0o600",
+        "mtime_ns": 1792454125850210798,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    },
+    {
+      "index": 35,
+      "path": "raw/budget-04.private.json",
+      "original_ledger_sha256": "2e8173ac1339d8baf4b7569f43af825002ea002c293adeb48d67b32f3060cf77",
+      "historical_post_identity": {
+        "device": 16777232,
+        "inode": 127082347,
+        "size": 1917,
+        "mode": "0o600",
+        "mtime_ns": 1792454125957853774
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082347,
+        "size": 1917,
+        "mode": "0o600",
+        "mtime_ns": 1792454125957853774,
+        "nlink": 1
+      },
+      "checks": {
+        "original_ledger_hash_matches_historical_post": true,
+        "size_matches_ledger_and_post": true,
+        "device_matches_historical_post": false,
+        "inode_matches_historical_post": true,
+        "mode_matches_historical_post": true,
+        "mtime_ns_matches_historical_post": true,
+        "regular": true,
+        "current_nlink_is_one": true
+      },
+      "raw_content_read": false,
+      "fresh_raw_sha256_verified": false
+    }
+  ],
+  "historical_directory_metadata_checks": [
+    {
+      "path": ".",
+      "historical_post_identity": {
+        "path": ".",
+        "mode": "0o700",
+        "device": 16777232,
+        "inode": 127043780
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127043780,
+        "mode": "0o700"
+      },
+      "checks": {
+        "device_equal": false,
+        "inode_equal": true,
+        "mode_equal": true,
+        "directory": true
+      }
+    },
+    {
+      "path": "raw",
+      "historical_post_identity": {
+        "path": "raw",
+        "mode": "0o700",
+        "device": 16777232,
+        "inode": 127082230
+      },
+      "current_lstat": {
+        "device": 16777234,
+        "inode": 127082230,
+        "mode": "0o700"
+      },
+      "checks": {
+        "device_equal": false,
+        "inode_equal": true,
+        "mode_equal": true,
+        "directory": true
+      }
+    }
+  ],
+  "all_36_device_mismatch": true,
+  "all_other_tested_metadata_equal": true,
+  "raw_read_or_hash_count": 0,
+  "prior_read_only_protected_file_hash_count": 412,
+  "inventory_counts": {
+    "regular": 448,
+    "targets": 36,
+    "protected_regular": 412,
+    "directories_including_root": 28,
+    "links": 0,
+    "zip": 0,
+    "special": 0
+  },
+  "regular_mode_counts": {
+    "0o644": 66,
+    "0o600": 382
+  },
+  "directory_mode_counts": {
+    "0o700": 27,
+    "0o755": 1
+  },
+  "mode_0755_directory_paths": [
+    "publication/__pycache__"
+  ],
+  "non_target_private_retained": [
+    {
+      "path": "publication/automation-before.private.toml",
+      "fresh_hash_from_prior_read_only_protected_file_hashing": "c9ba99bef474b33cb048c53189ec48333164bbc4d2f1e64da302399f1a42b9fd",
+      "historical_safe_source": "publication/automation-before-origin.safe.json",
+      "historical_source_sha256": "5dd1ba822a68f15078b635de1f72d05a22a83af7e74cf478ea870f9359e9d697",
+      "pointer": "/sha256",
+      "historical_hash_equal": true,
+      "purpose_source": "ADMINISTRATIVE_AUTOMATION_SNAPSHOT_ONLY",
+      "parsed_or_copied": false
+    },
+    {
+      "path": "completion/automation-before.private.toml",
+      "fresh_hash_from_prior_read_only_protected_file_hashing": "1157ac57a225cdc6b44237141eb9357b49c1d3d4183679cb704d14ef2c951f88",
+      "historical_safe_source": "completion/automation-final-updated.safe.json",
+      "historical_source_sha256": "0e2592587515f3c92a92caaf32ef149da45b3e5621f8d473290d25b9b900836e",
+      "pointer": "/local_private_administrative_snapshots/0",
+      "historical_hash_available": false,
+      "purpose_source": "administrative snapshot named in original safe receipt; current hash only",
+      "parsed_or_copied": false
+    },
+    {
+      "path": "completion/automation-payload.private.json",
+      "fresh_hash_from_prior_read_only_protected_file_hashing": "6643b338c9506de1c4ba2c3b9f5687ce1d910b0a6c9556dab604b8c812f0d2b2",
+      "historical_safe_source": "completion/automation-final-updated.safe.json",
+      "historical_source_sha256": "0e2592587515f3c92a92caaf32ef149da45b3e5621f8d473290d25b9b900836e",
+      "pointer": "/local_private_administrative_snapshots/1",
+      "historical_hash_available": false,
+      "purpose_source": "administrative snapshot named in original safe receipt; current hash only",
+      "parsed_or_copied": false
+    }
+  ],
+  "protected_history_pointer_exploration": {
+    "candidate_path_and_hash_matches": 140,
+    "additional_administrative_origin_hash_matches": 1,
+    "not_a_final_scope_or_full_independent_provenance_review": true,
+    "primary_sources": [
+      "maintenance-owner-bindings.safe.json /files_read_sha256",
+      "budget-owner-files.safe.json",
+      "preparation.safe.json /tools and /evidence_sha256",
+      "publication/automation-before-origin.safe.json /sha256"
+    ]
+  },
+  "historical_volume_uuid_search": {
+    "safe_files_scanned": 233,
+    "search_pattern": "volume[ _-]?(?:uuid|id)|file[ _-]?system[ _-]?(?:uuid|id)|diskutil",
+    "matching_files": [],
+    "historical_volume_uuid": "UNKNOWN",
+    "scope": "safe json and safe md under source root only; no private data parsed"
+  },
+  "device_change_cause": "UNKNOWN",
+  "do_not_infer_reboot_or_remount": true,
+  "no_source_mutation": true,
+  "no_scope_created": true,
+  "no_old_entry_executed": true,
+  "no_notice_apply_or_absence_verification": true,
+  "required_next_step": "Preserve original device identity and stop deletion. Do not silently substitute a fresh device baseline or lower identity gate; historical volume continuity is not established."
+}

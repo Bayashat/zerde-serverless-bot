@@ -1,0 +1,51 @@
+{
+  "status": "ALIGNED",
+  "phase": "CORRECTNESS_POST_LOCAL_IDENTITY_STOP",
+  "recorded_at": "2026-10-31T09:19:03.469431+00:00",
+  "started_epoch": 1793438343.4667342,
+  "finished_epoch": 1793438343.469551,
+  "input_sha256": {
+    "PLAN.md": "075c0bf4fe509897e5280409a87ac1444cf06a6d6a88fd7836dd1298cdb0e2e3",
+    "identity-main.safe.json": "118bd6da4ff4b31712102bbe88c90ee49b4080d3255af540e31478e90909d347",
+    "identity-independent.safe.json": "f6b5361fcf4490cc68b1b4b753ab0b0bfa86fa882b5cfaec58e1f4215bfb7a76"
+  },
+  "checks": {
+    "three_input_hashes_bound": true,
+    "original_ledger_hash": true,
+    "historical_identity_safe_hash": true,
+    "original_deadline_exact": true,
+    "original_utc_exact": true,
+    "36_original_order": true,
+    "all36_main_independent_historical_and_fresh_metadata_align": true,
+    "all36_device_mismatch_preserved": true,
+    "main_no_content_hash_claim_consistent": true,
+    "independent_protected_hashes_explicitly_distinct": true,
+    "no_deletion_or_preparation_claim": true,
+    "unknown_cause_preserved": true,
+    "source_safe_search_volume_unknown_scoped": true,
+    "plan_protected_hash_boundary_fixed": true,
+    "no_new_runtime_raw_deadline": true
+  },
+  "target_metadata_rows_checked": 36,
+  "decision": "Deletion identity gate is not satisfied. Preserve original device and deadline; do not create a deletion scope or apply based on this stop report.",
+  "plan_review_repair": "Initial PLAN wording could imply every inspection was metadata-only. Main clarified main metadata-only versus prior independent protected hashing; final bound PLAN preserves this distinction.",
+  "proof_limits": [
+    "Review verifies exact persisted reports, safe historical sources, and current lstat metadata; no tracing or replay of main agent process.",
+    "Main current_content_hash_checked=false is consistently represented and no fresh target content hash is claimed. Prior independent 412 protected-file hashes do not establish a fresh target hash scope.",
+    "Original ledger itself lacks device/inode/mode/mtime/nlink; original maintenance POST supplies later historical identity and mtime.",
+    "Matching inode across different device values does not establish original file identity. No reboot or remount cause is inferred.",
+    "Historical volume evidence search was restricted to 233 source safe JSON/MD files; absence of hits does not establish absence everywhere.",
+    "No preparation, deletion, absence verification, business acceptance, or other 14 duties are closed by this report."
+  ],
+  "review_actions": {
+    "raw_content_read": 0,
+    "raw_content_hash": 0,
+    "source_writes": 0,
+    "old_entries_executed": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "safe_report_written": 1
+  },
+  "stdout_label_correction": "One earlier ad-hoc check printed an unsupported all18 legacy-flags phrase; that text is not validation evidence. Actual assertions covered only the 36 target metadata rows and exact report fields recorded above."
+}

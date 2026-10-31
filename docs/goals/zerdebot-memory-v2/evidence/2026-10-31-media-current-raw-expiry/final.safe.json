@@ -1,0 +1,100 @@
+{
+  "status": "BLOCKED_DEVICE_IDENTITY_CHANGED",
+  "at": 1793438447.4359381,
+  "evidence_sha256": {
+    "PLAN.md": "075c0bf4fe509897e5280409a87ac1444cf06a6d6a88fd7836dd1298cdb0e2e3",
+    "identity-main.safe.json": "118bd6da4ff4b31712102bbe88c90ee49b4080d3255af540e31478e90909d347",
+    "identity-independent.safe.json": "f6b5361fcf4490cc68b1b4b753ab0b0bfa86fa882b5cfaec58e1f4215bfb7a76",
+    "correctness.safe.json": "3c18d05b855305e97e8460da1516392bdfa0f448fed6d11e54e9ebe2e2878a38",
+    "maintenance.safe.json": "f453c619b19fd060337af350c22a55f94c6075aa8950c1a45abec6272ce609c5"
+  },
+  "remaining_original_duties": 15,
+  "remaining_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ],
+    [
+      "2026-11-01T11:46:02.425+00:00",
+      "old-memory-SYSTEM-readonly"
+    ],
+    [
+      "2026-11-02T08:45:11.254+00:00",
+      "old-stats-SYSTEM-readonly"
+    ]
+  ],
+  "target_count": 36,
+  "protected_count": 412,
+  "directory_count": 28,
+  "zip_count": 0,
+  "link_count": 0,
+  "deadline_epoch": 1793058762.922982,
+  "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+  "historical_device": 16777232,
+  "current_device": 16777234,
+  "device_change_reason": "UNKNOWN",
+  "deleted": 0,
+  "new_raw": 0,
+  "new_deadlines": 0,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "cloud_runtime_calls": 0,
+  "scope_created": false,
+  "preparation_completed": false,
+  "target_content_hash_checked": false,
+  "independent_protected_file_hashes": 412,
+  "other_12_raw_batches_identity": "NOT_CHECKED_THIS_RUN",
+  "weekly_observation": "NO_NEW_COMPLETION_RECEIPT_THIS_RUN",
+  "docs_independent": "PENDING_SEPARATE_RECEIPT"
+}

@@ -1,6 +1,6 @@
-## 四群已发布；418原文已移除
+## 四群已发布；36原文身份待核
 
-独立核验通过，逾期UNKNOWN保留；余15项。[实际完成](GROQ_RAW_EXPIRY_COMPLETION.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/3d773ce099bb7057f6f81520016ea3a45a40ba34/docs/goals/zerdebot-memory-v2/EPIC.md)。
+设备号差异停止删除，余15项原期限保持。[实际记录](MEDIA_RAW_EXPIRY_IDENTITY_STOP.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/ece7b21cec0c8ef1664912ca21b80f4fa0b8e6c0/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

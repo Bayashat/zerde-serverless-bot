@@ -1,3 +1,13 @@
+## Oct31：36份媒体原文因设备身份差异停止
+
+最早未履行36项的原独立回执device=16777232，当前36项及root/raw目录device=16777234；inode/size/mode/mtime_ns一致，仍不满足完整身份门。主独核对后停止，原因UNKNOWN；不替换历史设备号继续删除。本轮0删除、0新原文/期限、0云运行API/UI/模型/运行部署/自然增量。
+
+当前metadata库存448regular＝36目标＋412保护、28目录、0link/ZIP。36目标未读/hash；独立探索只读hash了412保护文件，3行政private未解析/复制并保留。这不是完整hash scope或准备完成。其余12批原文身份未在本轮核验，不能据此统一判定。原15职责仍在，13批原文均已过原期限，延误原因UNKNOWN。Nov1/2 SYSTEM仍按原身份到期只读。[身份差异与原期限](MEDIA_RAW_EXPIRY_IDENTITY_STOP.md)、[副本表](RETAINED_COPIES.md)。
+
+PR291运行发布与四群RELEASED_OBSERVING保持；ask真实有用性、自然质量及其他业务/费用UNKNOWN未验收。Oct28周观察本轮无新完成回执。无新直接人类Telegram窗口，不重复询问或打开UI。文档状态20任务14OPEN6CLOSED+EpicOPEN保持。
+
+## 以下为此前完整冻结阶段，不作当前数量或重跑指令
+
 ## Oct26 Groq发布原文418份已移除并独立核验
 
 418个原ledger目标已移除，独立fresh确认不存在；31569保护regular含39完整ZIP、8960目录及原模式保持，0link；库存31987→31569。实际首末unlink 2026-10-26T23:10:12.585231+00:00–2026-10-26T23:10:12.743805+00:00，晚9667.076888084412–9667.235461950302秒，原因UNKNOWN，原UTC期限2026-10-26T20:29:05.508343+00:00不改。836条journal与apply双侧unlink_returned/absent严格True。原mtime缺失，本次仅fresh准备基线；notice时间仅公告后本地登记，不称独立平台时间。顺序核验非原子快照，普通unlink非安全擦盘。
