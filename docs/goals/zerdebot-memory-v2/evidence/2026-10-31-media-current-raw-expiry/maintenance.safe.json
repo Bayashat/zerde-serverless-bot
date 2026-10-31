@@ -1,0 +1,154 @@
+{
+  "status": "ALIGNED",
+  "review_type": "INDEPENDENT_MAINTENANCE_PRE_FOR_IDENTITY_STOP_DOCUMENTATION_ONLY",
+  "reviewer": "/root/media_identity_maintenance",
+  "started_epoch": 1793438374.6182458,
+  "finished_epoch": 1793438374.630707,
+  "recorded_at": "2026-10-31T09:19:34.630708+00:00",
+  "evidence_sha256": {
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-31-media-current-raw-expiry/PLAN.md": "075c0bf4fe509897e5280409a87ac1444cf06a6d6a88fd7836dd1298cdb0e2e3",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-31-media-current-raw-expiry/identity-main.safe.json": "118bd6da4ff4b31712102bbe88c90ee49b4080d3255af540e31478e90909d347",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-31-media-current-raw-expiry/identity-independent.safe.json": "f6b5361fcf4490cc68b1b4b753ab0b0bfa86fa882b5cfaec58e1f4215bfb7a76",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current/raw-retention.safe.json": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current/live-stop-maintenance.safe.json": "944973a96e25cb802a708757b9f279af2765a8a03fffb2ba243fe2835a5c51d8",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current/publication/automation-before-origin.safe.json": "5dd1ba822a68f15078b635de1f72d05a22a83af7e74cf478ea870f9359e9d697",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current/completion/automation-final-updated.safe.json": "0e2592587515f3c92a92caaf32ef149da45b3e5621f8d473290d25b9b900836e",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/final.safe.json": "9d4f38015a6671ed5c48e846923021e128931b97cb013e683fa2400045c00e8d",
+    "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-26-groq-review-raw-expiry-completion/NEXT_ACTIONS.safe.md": "d73d811fb910248ce4d4c7536e8212f82af98e9a37d63d858a18e72f424273a3"
+  },
+  "deletion_gate_status": "BLOCKED_DEVICE_IDENTITY_CHANGED",
+  "original_deadline_epoch": 1793058762.922982,
+  "original_deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+  "checks": {
+    "original_order_and_36_exact_targets": true,
+    "historical_hash_and_size_references_equal": true,
+    "all_36_historical_devices_16777232_current_devices_16777234": true,
+    "all_36_other_tested_metadata_equal": true,
+    "fresh_lstat_metadata_matches_both_receipts": true,
+    "source_regular_inventory_matches_main_metadata_inventory": true,
+    "source_directory_inventory_matches_main_metadata_inventory": true,
+    "remaining_15_original_duties_preserved": true,
+    "new_scope_prepare_notice_apply_absence_receipts_absent": true
+  },
+  "inventory_counts": {
+    "regular": 448,
+    "targets": 36,
+    "protected_regular": 412,
+    "directories_including_root": 28,
+    "links": 0,
+    "zip": 0,
+    "special": 0
+  },
+  "regular_mode_counts": {
+    "0o644": 66,
+    "0o600": 382
+  },
+  "directory_mode_counts": {
+    "0o700": 27,
+    "0o755": 1
+  },
+  "non_target_administrative_private_retained": [
+    "completion/automation-before.private.toml",
+    "completion/automation-payload.private.json",
+    "publication/automation-before.private.toml"
+  ],
+  "administrative_provenance_limits": [
+    "publication/automation-before.private.toml has an original safe hash pointer matching the independent receipt; this reviewer did not read or hash its private body.",
+    "completion/automation-before.private.toml and completion/automation-payload.private.json are named in the original safe receipt but lack historical hashes there; reported fresh hashes are not historical continuity."
+  ],
+  "limitations": [
+    "This ALIGNED status approves the accuracy and maintenance boundary of the identity stop record, not deletion or full preparation.",
+    "Main evidence is metadata only. The prior independent exploration reports hashing 412 protected files; 36 target raw files were neither read nor hashed. This is not a complete content hash scope.",
+    "Device identity changed; equal inode across devices cannot prove identity continuity. Historical volume UUID and cause remain UNKNOWN. No device baseline is substituted and no identity gate is lowered.",
+    "The three exact administrative private files are retained without content parsing or copying; no claim that they are non-sensitive.",
+    "This reviewer checked only this 36-target batch. The other 12 raw batches have not had identity verified by this review; neither failure nor success is inferred for them.",
+    "All 15 original duties and deadlines remain unchanged. There are no new runtime raw files or expiry duties. The 13 raw duties are overdue; delay cause remains UNKNOWN.",
+    "SYSTEM duties remain original-identity read-only actions at the original Nov1/Nov2 deadlines; no advance absence claim.",
+    "Inventory and lstat reads are sequential, not an atomic filesystem snapshot.",
+    "Docs diff, publisher, actual automation update, CI, merge, canonical synchronization, and final remote readback have not yet been reviewed by this report.",
+    "The planned UTC11:00 wake precedes Nov1 11:46:02.425UTC by 2762.425 seconds; a schedule is not execution success or timing assurance."
+  ],
+  "harness_notes": [
+    {
+      "status": "FAILED_LOCAL_ASSERTION_CORRECTED_BEFORE_REPORT",
+      "detail": "Initial private-path count matched substring .private. and included two .safe.json entry receipt names. Exact administrative paths and terminal private suffix were then checked against safe source pointers. No raw/private body read, source write, or old entry execution occurred."
+    }
+  ],
+  "remaining_original_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ],
+    [
+      "2026-11-01T11:46:02.425+00:00",
+      "old-memory-SYSTEM-readonly"
+    ],
+    [
+      "2026-11-02T08:45:11.254+00:00",
+      "old-stats-SYSTEM-readonly"
+    ]
+  ],
+  "reviewer_actions": {
+    "raw_content_reads": 0,
+    "private_content_reads": 0,
+    "raw_hashes": 0,
+    "private_hashes": 0,
+    "source_writes": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0,
+    "model_calls": 0,
+    "old_entry_executions": 0,
+    "deletions": 0,
+    "new_runtime_raw": 0,
+    "new_retention_duties": 0,
+    "report_writes": 1
+  }
+}

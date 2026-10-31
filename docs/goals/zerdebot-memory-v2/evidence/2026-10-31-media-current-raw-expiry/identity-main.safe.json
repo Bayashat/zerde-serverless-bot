@@ -1,0 +1,5732 @@
+{
+  "status": "BLOCKED_DEVICE_IDENTITY_CHANGED",
+  "started_at": 1793438207.105761,
+  "finished_at": 1793438207.118494,
+  "source_directory": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-z01-media-current",
+  "ledger_sha256": "d86b16803f66e203bfdffe04175a4cbe38c4d49745148f289c3f40b26619f2d0",
+  "historical_identity_source": "live-stop-maintenance.safe.json",
+  "historical_identity_sha256": "944973a96e25cb802a708757b9f279af2765a8a03fffb2ba243fe2835a5c51d8",
+  "deadline_epoch": 1793058762.922982,
+  "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+  "targets": [
+    {
+      "path": "ui-onsite.private.json",
+      "historical": {
+        "path": "ui-onsite.private.json",
+        "sha256": "a0137fcc35604a66dfc5507971fbcadc5c34f760bb7004d83f8dbdabc171b34d",
+        "size": 785,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082218,
+        "mtime_ns": 1792454105898693075
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082218,
+        "size": 785,
+        "mode": "0o600",
+        "mtime_ns": 1792454105898693075,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0002.private.json",
+      "historical": {
+        "path": "raw/0002.private.json",
+        "sha256": "d71ed6414f007a2dd4cefea2b5c07c03a19fe0894d70ba9919226c95feef8f70",
+        "size": 778,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082233,
+        "mtime_ns": 1792454110241203367
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082233,
+        "size": 778,
+        "mode": "0o600",
+        "mtime_ns": 1792454110241203367,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0003.private.json",
+      "historical": {
+        "path": "raw/0003.private.json",
+        "sha256": "cc52723b9867aea9502b1e8f71efe6aa572ca0680b3bfec8cc6778105f33126d",
+        "size": 34430,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082236,
+        "mtime_ns": 1792454111156231860
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082236,
+        "size": 34430,
+        "mode": "0o600",
+        "mtime_ns": 1792454111156231860,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0004.private.json",
+      "historical": {
+        "path": "raw/0004.private.json",
+        "sha256": "4294890aebe14311f7a1e31c14e0ba73e5d6ac92a4330e4d9ea305af546f93ce",
+        "size": 4474,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082239,
+        "mtime_ns": 1792454111868379551
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082239,
+        "size": 4474,
+        "mode": "0o600",
+        "mtime_ns": 1792454111868379551,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0005.private.json",
+      "historical": {
+        "path": "raw/0005.private.json",
+        "sha256": "622e1da685fa5711759c72e4094241e6d7c2ab9af4e88d1316d3bba647047be6",
+        "size": 2514,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082243,
+        "mtime_ns": 1792454112102658508
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082243,
+        "size": 2514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112102658508,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0006.private.json",
+      "historical": {
+        "path": "raw/0006.private.json",
+        "sha256": "b01133058ea45be403b7982a3214eb7d473e305b4052a05b7966e6494f7515b4",
+        "size": 2698,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082246,
+        "mtime_ns": 1792454112284807723
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082246,
+        "size": 2698,
+        "mode": "0o600",
+        "mtime_ns": 1792454112284807723,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0007.private.json",
+      "historical": {
+        "path": "raw/0007.private.json",
+        "sha256": "086283f4e9c4cc96e8c91168cca499ba3b8bc0a21be3a68db5e9b6ae7c1fd061",
+        "size": 3584,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082249,
+        "mtime_ns": 1792454112466137971
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082249,
+        "size": 3584,
+        "mode": "0o600",
+        "mtime_ns": 1792454112466137971,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0008.private.json",
+      "historical": {
+        "path": "raw/0008.private.json",
+        "sha256": "0bf9d29c521873682987ea7a78b33f1ddea1d2dc01f442b36fe9bcaa531de720",
+        "size": 3514,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082252,
+        "mtime_ns": 1792454112700221070
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082252,
+        "size": 3514,
+        "mode": "0o600",
+        "mtime_ns": 1792454112700221070,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0009.private.json",
+      "historical": {
+        "path": "raw/0009.private.json",
+        "sha256": "74628be34c307ad02d6b99fe04e8500cb7ec80c59eb0712d1cb454a2b1d233b8",
+        "size": 1863,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082255,
+        "mtime_ns": 1792454113154448760
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082255,
+        "size": 1863,
+        "mode": "0o600",
+        "mtime_ns": 1792454113154448760,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0010.private.json",
+      "historical": {
+        "path": "raw/0010.private.json",
+        "sha256": "7b2fe77eb0c1ba0e06530d6781e805d834ff414cab39f6f6e165afc91f65af9b",
+        "size": 3163,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082258,
+        "mtime_ns": 1792454113264327209
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082258,
+        "size": 3163,
+        "mode": "0o600",
+        "mtime_ns": 1792454113264327209,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0011.private.json",
+      "historical": {
+        "path": "raw/0011.private.json",
+        "sha256": "c85b4878c8fc57ee00cd88bf535e942f93f13d9e35f9419f7313185e5df25e20",
+        "size": 2949,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082261,
+        "mtime_ns": 1792454113378665840
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082261,
+        "size": 2949,
+        "mode": "0o600",
+        "mtime_ns": 1792454113378665840,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0012.private.json",
+      "historical": {
+        "path": "raw/0012.private.json",
+        "sha256": "565e6a6537dce41e5d066709a75c5cc3836c334d397b7a204f4b2d95d8791c6f",
+        "size": 1320,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082264,
+        "mtime_ns": 1792454113500411142
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082264,
+        "size": 1320,
+        "mode": "0o600",
+        "mtime_ns": 1792454113500411142,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0013.private.json",
+      "historical": {
+        "path": "raw/0013.private.json",
+        "sha256": "da646a380c17e4487d264ec0b24184f5b615a74826b72413043b7f256b1f8138",
+        "size": 1389,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082268,
+        "mtime_ns": 1792454113673020539
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082268,
+        "size": 1389,
+        "mode": "0o600",
+        "mtime_ns": 1792454113673020539,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0014.private.json",
+      "historical": {
+        "path": "raw/0014.private.json",
+        "sha256": "ddf15a8d080c5984fb28da88f6c89dd4fa1c582a7cfa2bfdd26cf9c046fb7679",
+        "size": 884,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082271,
+        "mtime_ns": 1792454113786824543
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082271,
+        "size": 884,
+        "mode": "0o600",
+        "mtime_ns": 1792454113786824543,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0015.private.json",
+      "historical": {
+        "path": "raw/0015.private.json",
+        "sha256": "0fcd813a862927e88cc2882d74d2c046c2c76155b8b28cf99eb115cb2e2b654a",
+        "size": 1162,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082275,
+        "mtime_ns": 1792454114430392808
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082275,
+        "size": 1162,
+        "mode": "0o600",
+        "mtime_ns": 1792454114430392808,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0016.private.json",
+      "historical": {
+        "path": "raw/0016.private.json",
+        "sha256": "2d5cf66a0a21ceb5d1668afa583178c459677f0d43040158f12180a60a0cf3d6",
+        "size": 1168,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082278,
+        "mtime_ns": 1792454114557269396
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082278,
+        "size": 1168,
+        "mode": "0o600",
+        "mtime_ns": 1792454114557269396,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0017.private.json",
+      "historical": {
+        "path": "raw/0017.private.json",
+        "sha256": "0eff3d502d8afaf808a1f75b69ea8c988bb0558caa9f0d96809099fb3d6d4437",
+        "size": 1175,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082281,
+        "mtime_ns": 1792454114723304714
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082281,
+        "size": 1175,
+        "mode": "0o600",
+        "mtime_ns": 1792454114723304714,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0018.private.json",
+      "historical": {
+        "path": "raw/0018.private.json",
+        "sha256": "7ea59c744f931300b611e09a3967c47624c1a12ee890ea6be7d72b07606b850c",
+        "size": 1177,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082284,
+        "mtime_ns": 1792454114837374522
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082284,
+        "size": 1177,
+        "mode": "0o600",
+        "mtime_ns": 1792454114837374522,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0019.private.json",
+      "historical": {
+        "path": "raw/0019.private.json",
+        "sha256": "b5b288b4c6ae6cebb27ad50ac1d815af273fb93f0fcc11f3bc1f878ae7ef65b1",
+        "size": 1156,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082287,
+        "mtime_ns": 1792454114952323800
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082287,
+        "size": 1156,
+        "mode": "0o600",
+        "mtime_ns": 1792454114952323800,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0020.private.json",
+      "historical": {
+        "path": "raw/0020.private.json",
+        "sha256": "66942353d151cfa0615629dbc03fb26bb7ac962844de2b3d6fcd0a8d13e354c8",
+        "size": 1160,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082290,
+        "mtime_ns": 1792454115060342227
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082290,
+        "size": 1160,
+        "mode": "0o600",
+        "mtime_ns": 1792454115060342227,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0021.private.json",
+      "historical": {
+        "path": "raw/0021.private.json",
+        "sha256": "75edeb38d2db0f79000c4960f88b052a140a7c540817f76d341650b70b35b5b1",
+        "size": 937,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082293,
+        "mtime_ns": 1792454115645913840
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082293,
+        "size": 937,
+        "mode": "0o600",
+        "mtime_ns": 1792454115645913840,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0022.private.json",
+      "historical": {
+        "path": "raw/0022.private.json",
+        "sha256": "7d5c7589f3fa226b6c15d0b2f6f0123398d1d3c1953408a1aef38af54c6b075e",
+        "size": 1107,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082296,
+        "mtime_ns": 1792454115772539843
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082296,
+        "size": 1107,
+        "mode": "0o600",
+        "mtime_ns": 1792454115772539843,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0023.private.json",
+      "historical": {
+        "path": "raw/0023.private.json",
+        "sha256": "532763b958228d4924295dfe1ca0776ad030bb448ddbb9a277308509deb5b61f",
+        "size": 921,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082299,
+        "mtime_ns": 1792454115888140191
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082299,
+        "size": 921,
+        "mode": "0o600",
+        "mtime_ns": 1792454115888140191,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0024.private.json",
+      "historical": {
+        "path": "raw/0024.private.json",
+        "sha256": "b300dea6a7a5e109de672aff1a735c6d22315f1057d368ec5d4325494c54b3f7",
+        "size": 1128,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082302,
+        "mtime_ns": 1792454115999927075
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082302,
+        "size": 1128,
+        "mode": "0o600",
+        "mtime_ns": 1792454115999927075,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0025.private.json",
+      "historical": {
+        "path": "raw/0025.private.json",
+        "sha256": "74c1e4a64e41a21214550364a57c78eeb36fbb8e7edfa160854fe1d0fe137a8a",
+        "size": 916,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082305,
+        "mtime_ns": 1792454116110615159
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082305,
+        "size": 916,
+        "mode": "0o600",
+        "mtime_ns": 1792454116110615159,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0026.private.json",
+      "historical": {
+        "path": "raw/0026.private.json",
+        "sha256": "e9d60496a714fe6d10f73341032567517b9de28fe7d4e203ce157db0bf37ee95",
+        "size": 1122,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082308,
+        "mtime_ns": 1792454116296553570
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082308,
+        "size": 1122,
+        "mode": "0o600",
+        "mtime_ns": 1792454116296553570,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0027.private.json",
+      "historical": {
+        "path": "raw/0027.private.json",
+        "sha256": "6b12d7fce96f921ecdf339a039096f52cfc5cc182f41927674de9c16d760082b",
+        "size": 1426,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082311,
+        "mtime_ns": 1792454116441322976
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082311,
+        "size": 1426,
+        "mode": "0o600",
+        "mtime_ns": 1792454116441322976,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0028.private.json",
+      "historical": {
+        "path": "raw/0028.private.json",
+        "sha256": "c103e1a4adb1c3829b95c753d00aa74b4d00216fc3532add30a6677f64fc1a30",
+        "size": 1495,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082314,
+        "mtime_ns": 1792454116581151901
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082314,
+        "size": 1495,
+        "mode": "0o600",
+        "mtime_ns": 1792454116581151901,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0029.private.json",
+      "historical": {
+        "path": "raw/0029.private.json",
+        "sha256": "cc97d01fd68ea2fe258a6030900de25cf7f8455aaf260f31747f64c1accbd7e5",
+        "size": 23487,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082318,
+        "mtime_ns": 1792454116693007642
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082318,
+        "size": 23487,
+        "mode": "0o600",
+        "mtime_ns": 1792454116693007642,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0030.private.json",
+      "historical": {
+        "path": "raw/0030.private.json",
+        "sha256": "8b3cf1580a1b58d611aa97fb1752fd97538b9fae23739a34958336c707040f82",
+        "size": 7519,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082321,
+        "mtime_ns": 1792454116822221335
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082321,
+        "size": 7519,
+        "mode": "0o600",
+        "mtime_ns": 1792454116822221335,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0031.private.json",
+      "historical": {
+        "path": "raw/0031.private.json",
+        "sha256": "a0866f9c9bc7b75357276f49a3cee9e5b1552e8d7f03ac30fd4b35623ddabf4c",
+        "size": 1070,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082324,
+        "mtime_ns": 1792454116926302135
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082324,
+        "size": 1070,
+        "mode": "0o600",
+        "mtime_ns": 1792454116926302135,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/0032.private.json",
+      "historical": {
+        "path": "raw/0032.private.json",
+        "sha256": "06f96c3573665a7bea84b81d3d7af2a74997f3ddb64a3b772838a378ac7c60d3",
+        "size": 873,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082327,
+        "mtime_ns": 1792454117034724434
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082327,
+        "size": 873,
+        "mode": "0o600",
+        "mtime_ns": 1792454117034724434,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/budget-01.private.json",
+      "historical": {
+        "path": "raw/budget-01.private.json",
+        "sha256": "f5f2969cacdcd86a5c2f996c719eeef402e2176526190fc061218a28c7d31d09",
+        "size": 755,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082338,
+        "mtime_ns": 1792454124973976607
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082338,
+        "size": 755,
+        "mode": "0o600",
+        "mtime_ns": 1792454124973976607,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/budget-02.private.json",
+      "historical": {
+        "path": "raw/budget-02.private.json",
+        "sha256": "eaa6663b498d032ffa378fbaf6348f61c8fda0ec6b558b80bb3455907e47d239",
+        "size": 4450,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082341,
+        "mtime_ns": 1792454125393113215
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082341,
+        "size": 4450,
+        "mode": "0o600",
+        "mtime_ns": 1792454125393113215,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/budget-03.private.json",
+      "historical": {
+        "path": "raw/budget-03.private.json",
+        "sha256": "006b70f7c82071087253ba6ff7621d6239b8afc79703ca29b87dcd7ccc20ff67",
+        "size": 832,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082344,
+        "mtime_ns": 1792454125850210798
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082344,
+        "size": 832,
+        "mode": "0o600",
+        "mtime_ns": 1792454125850210798,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    },
+    {
+      "path": "raw/budget-04.private.json",
+      "historical": {
+        "path": "raw/budget-04.private.json",
+        "sha256": "2e8173ac1339d8baf4b7569f43af825002ea002c293adeb48d67b32f3060cf77",
+        "size": 1917,
+        "mode": "0o600",
+        "device": 16777232,
+        "inode": 127082347,
+        "mtime_ns": 1792454125957853774
+      },
+      "current": {
+        "device": 16777234,
+        "inode": 127082347,
+        "size": 1917,
+        "mode": "0o600",
+        "mtime_ns": 1792454125957853774,
+        "nlink": 1,
+        "regular": true
+      },
+      "matches": {
+        "device": false,
+        "inode": true,
+        "size": true,
+        "mode": true,
+        "mtime_ns": true
+      },
+      "current_content_hash_checked": false
+    }
+  ],
+  "files": [
+    {
+      "path": "correctness-safe-binding-precheck-change.safe.json",
+      "device": 16777234,
+      "inode": 127051764,
+      "size": 382,
+      "mode": "0o644",
+      "mtime_ns": 1792451098969123628,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-stop.safe.json",
+      "device": 16777234,
+      "inode": 127083072,
+      "size": 1847,
+      "mode": "0o600",
+      "mtime_ns": 1792454241918209688,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-owner-bindings.safe.json",
+      "device": 16777234,
+      "inode": 127047153,
+      "size": 32053,
+      "mode": "0o600",
+      "mtime_ns": 1792451006645637507,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-stop-review-harness-failure.safe.json",
+      "device": 16777234,
+      "inode": 127085063,
+      "size": 483,
+      "mode": "0o644",
+      "mtime_ns": 1792454467355938779,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "independent_verify.py",
+      "device": 16777234,
+      "inode": 127045413,
+      "size": 27217,
+      "mode": "0o600",
+      "mtime_ns": 1792451274941899346,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "retention-duty.safe.json",
+      "device": 16777234,
+      "inode": 127082372,
+      "size": 422,
+      "mode": "0o600",
+      "mtime_ns": 1792454144636724314,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-ui-ui-onsite.private.json.once.safe.json",
+      "device": 16777234,
+      "inode": 127082216,
+      "size": 98,
+      "mode": "0o600",
+      "mtime_ns": 1792454105438837937,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-startup-boundary-supplement.safe.json",
+      "device": 16777234,
+      "inode": 127074812,
+      "size": 1559,
+      "mode": "0o600",
+      "mtime_ns": 1792451918490851680,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "local_controls_v2.py",
+      "device": 16777234,
+      "inode": 127061071,
+      "size": 14828,
+      "mode": "0o644",
+      "mtime_ns": 1792451321023180731,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "plan-preliminary.safe.json",
+      "device": 16777234,
+      "inode": 127044971,
+      "size": 5937,
+      "mode": "0o600",
+      "mtime_ns": 1792450672965101827,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-budget.once.safe.json",
+      "device": 16777234,
+      "inode": 127082335,
+      "size": 79,
+      "mode": "0o600",
+      "mtime_ns": 1792454124114343184,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "preflight.safe.json",
+      "device": 16777234,
+      "inode": 127082329,
+      "size": 2180,
+      "mode": "0o600",
+      "mtime_ns": 1792454117037441272,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "local-controls.safe.json",
+      "device": 16777234,
+      "inode": 127046828,
+      "size": 6151,
+      "mode": "0o600",
+      "mtime_ns": 1792450925603729224,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "onsite-window.safe.json",
+      "device": 16777234,
+      "inode": 127081344,
+      "size": 353,
+      "mode": "0o600",
+      "mtime_ns": 1792453962922963585,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "local_controls.py",
+      "device": 16777234,
+      "inode": 127046827,
+      "size": 13371,
+      "mode": "0o644",
+      "mtime_ns": 1792450924790876585,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": ".ledger.lock",
+      "device": 16777234,
+      "inode": 127081342,
+      "size": 0,
+      "mode": "0o600",
+      "mtime_ns": 1792453962504862347,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget.safe.json",
+      "device": 16777234,
+      "inode": 127082349,
+      "size": 1211,
+      "mode": "0o600",
+      "mtime_ns": 1792454125960072824,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-start-retention.result.safe.json",
+      "device": 16777234,
+      "inode": 127081347,
+      "size": 73,
+      "mode": "0o600",
+      "mtime_ns": 1792453962924331425,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner-files.safe.json",
+      "device": 16777234,
+      "inode": 127045406,
+      "size": 11578,
+      "mode": "0o600",
+      "mtime_ns": 1792450712478279670,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "local-controls-v3-delta.safe.json",
+      "device": 16777234,
+      "inode": 127061626,
+      "size": 302,
+      "mode": "0o600",
+      "mtime_ns": 1792451370273839255,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget.intent.safe.json",
+      "device": 16777234,
+      "inode": 127082336,
+      "size": 213,
+      "mode": "0o600",
+      "mtime_ns": 1792454124532342512,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "retention-init.intent.safe.json",
+      "device": 16777234,
+      "inode": 127081343,
+      "size": 212,
+      "mode": "0o600",
+      "mtime_ns": 1792453962922798001,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-tool-pre.safe.json",
+      "device": 16777234,
+      "inode": 127070666,
+      "size": 5219,
+      "mode": "0o600",
+      "mtime_ns": 1792451474833028313,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-release-safe-binding.safe.json",
+      "device": 16777234,
+      "inode": 127059622,
+      "size": 1001,
+      "mode": "0o644",
+      "mtime_ns": 1792451182179656137,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v2-tool-hashes.safe.json",
+      "device": 16777234,
+      "inode": 127060873,
+      "size": 625,
+      "mode": "0o600",
+      "mtime_ns": 1792451292639986534,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "UI_STOP.safe.md",
+      "device": 16777234,
+      "inode": 127083073,
+      "size": 594,
+      "mode": "0o600",
+      "mtime_ns": 1792454241918353147,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-controls-v1.safe.json",
+      "device": 16777234,
+      "inode": 127047181,
+      "size": 1359,
+      "mode": "0o644",
+      "mtime_ns": 1792451019383461961,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-table-projection-v1.safe.json",
+      "device": 16777234,
+      "inode": 127052698,
+      "size": 688,
+      "mode": "0o600",
+      "mtime_ns": 1792451114800431644,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "ui-onsite.private.json",
+      "device": 16777234,
+      "inode": 127082218,
+      "size": 785,
+      "mode": "0o600",
+      "mtime_ns": 1792454105898693075,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "ui_record.py",
+      "device": 16777234,
+      "inode": 127045411,
+      "size": 6613,
+      "mode": "0o600",
+      "mtime_ns": 1792451274941390835,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-controls-v1-harness-failure.safe.json",
+      "device": 16777234,
+      "inode": 127047175,
+      "size": 283,
+      "mode": "0o644",
+      "mtime_ns": 1792451019203979413,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v3-delta-controls.py",
+      "device": 16777234,
+      "inode": 127071273,
+      "size": 16966,
+      "mode": "0o644",
+      "mtime_ns": 1792451553439255701,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-controls-v1b.py",
+      "device": 16777234,
+      "inode": 127047176,
+      "size": 5869,
+      "mode": "0o644",
+      "mtime_ns": 1792451019204112125,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-controls-v1.py",
+      "device": 16777234,
+      "inode": 127047157,
+      "size": 5869,
+      "mode": "0o644",
+      "mtime_ns": 1792451010632450593,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "fixtures-visual-review.safe.json",
+      "device": 16777234,
+      "inode": 127071149,
+      "size": 540,
+      "mode": "0o600",
+      "mtime_ns": 1792451535072010973,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "release-binding.safe.json",
+      "device": 16777234,
+      "inode": 127045408,
+      "size": 7987,
+      "mode": "0o600",
+      "mtime_ns": 1792450712690400556,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "collector.py",
+      "device": 16777234,
+      "inode": 127045409,
+      "size": 38244,
+      "mode": "0o600",
+      "mtime_ns": 1792451328729233971,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "assess_logs.py",
+      "device": 16777234,
+      "inode": 127045412,
+      "size": 10030,
+      "mode": "0o600",
+      "mtime_ns": 1792451046319010230,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "NEXT_ACTIONS.safe.md",
+      "device": 16777234,
+      "inode": 127064274,
+      "size": 4340,
+      "mode": "0o644",
+      "mtime_ns": 1792454465282382301,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "tool-pre-v1.safe.json",
+      "device": 16777234,
+      "inode": 127047317,
+      "size": 5486,
+      "mode": "0o644",
+      "mtime_ns": 1792451056343814352,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-preflight-config-independent.safe.json",
+      "device": 16777234,
+      "inode": 127086513,
+      "size": 5107,
+      "mode": "0o644",
+      "mtime_ns": 1792454636125650586,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-stop-review-harness-failure-v2.safe.json",
+      "device": 16777234,
+      "inode": 127085795,
+      "size": 354,
+      "mode": "0o644",
+      "mtime_ns": 1792454550946930592,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "retention-anchor.safe.json",
+      "device": 16777234,
+      "inode": 127081345,
+      "size": 152,
+      "mode": "0o600",
+      "mtime_ns": 1792453962924029049,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v3-delta-controls.safe.json",
+      "device": 16777234,
+      "inode": 127071321,
+      "size": 4822,
+      "mode": "0o644",
+      "mtime_ns": 1792451557532009810,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "live-stop-maintenance.safe.json",
+      "device": 16777234,
+      "inode": 127083826,
+      "size": 14357,
+      "mode": "0o600",
+      "mtime_ns": 1792454353266045056,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-tool-pre-v1.safe.json",
+      "device": 16777234,
+      "inode": 127047016,
+      "size": 1915,
+      "mode": "0o600",
+      "mtime_ns": 1792450978084494504,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-delta-controls.safe.json",
+      "device": 16777234,
+      "inode": 127062212,
+      "size": 6418,
+      "mode": "0o600",
+      "mtime_ns": 1792451396622744120,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-adapter-delta.safe.json",
+      "device": 16777234,
+      "inode": 127070173,
+      "size": 925,
+      "mode": "0o600",
+      "mtime_ns": 1792451441050103361,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance_adapter_controls.py",
+      "device": 16777234,
+      "inode": 127047305,
+      "size": 7263,
+      "mode": "0o600",
+      "mtime_ns": 1792451055388510350,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-stop-independent.safe.json",
+      "device": 16777234,
+      "inode": 127085796,
+      "size": 6402,
+      "mode": "0o644",
+      "mtime_ns": 1792454550958786952,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-preflight.result.safe.json",
+      "device": 16777234,
+      "inode": 127082330,
+      "size": 73,
+      "mode": "0o600",
+      "mtime_ns": 1792454117037711222,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "stop-automation-prefix.safe.md",
+      "device": 16777234,
+      "inode": 127085023,
+      "size": 1607,
+      "mode": "0o600",
+      "mtime_ns": 1792454465281528715,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "tool-pre.safe.json",
+      "device": 16777234,
+      "inode": 127071632,
+      "size": 4375,
+      "mode": "0o644",
+      "mtime_ns": 1792451603330385930,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "read_budget.py",
+      "device": 16777234,
+      "inode": 127046443,
+      "size": 7785,
+      "mode": "0o644",
+      "mtime_ns": 1792451046319118066,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "PLAN.md",
+      "device": 16777234,
+      "inode": 127043786,
+      "size": 12226,
+      "mode": "0o600",
+      "mtime_ns": 1792450626597849573,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-preflight.once.safe.json",
+      "device": 16777234,
+      "inode": 127082228,
+      "size": 81,
+      "mode": "0o600",
+      "mtime_ns": 1792454109277516554,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "CURRENT.md",
+      "device": 16777234,
+      "inode": 127043787,
+      "size": 3037,
+      "mode": "0o600",
+      "mtime_ns": 1792456603684656935,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "plan-pre.safe.json",
+      "device": 16777234,
+      "inode": 127046941,
+      "size": 2401,
+      "mode": "0o600",
+      "mtime_ns": 1792450963795269896,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "preparation.safe.json",
+      "device": 16777234,
+      "inode": 127072211,
+      "size": 3693,
+      "mode": "0o600",
+      "mtime_ns": 1792451639737956615,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-start-retention.once.safe.json",
+      "device": 16777234,
+      "inode": 127081341,
+      "size": 89,
+      "mode": "0o600",
+      "mtime_ns": 1792453962500983162,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v3-tool-hashes.safe.json",
+      "device": 16777234,
+      "inode": 127061086,
+      "size": 625,
+      "mode": "0o644",
+      "mtime_ns": 1792451328738469006,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-adapter-controls.safe.json",
+      "device": 16777234,
+      "inode": 127047310,
+      "size": 3997,
+      "mode": "0o600",
+      "mtime_ns": 1792451055585471738,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "fixtures.safe.json",
+      "device": 16777234,
+      "inode": 127043782,
+      "size": 937,
+      "mode": "0o600",
+      "mtime_ns": 1792450528481080983,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw-retention.safe.json",
+      "device": 16777234,
+      "inode": 127082348,
+      "size": 9219,
+      "mode": "0o600",
+      "mtime_ns": 1792454125959149379,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "release_gate.py",
+      "device": 16777234,
+      "inode": 127045815,
+      "size": 11852,
+      "mode": "0o644",
+      "mtime_ns": 1792451274941166664,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance_delta_controls.py",
+      "device": 16777234,
+      "inode": 127062196,
+      "size": 9954,
+      "mode": "0o600",
+      "mtime_ns": 1792451396334421278,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "local-controls-v2.safe.json",
+      "device": 16777234,
+      "inode": 127061077,
+      "size": 6543,
+      "mode": "0o600",
+      "mtime_ns": 1792451321768475352,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "startup-rejection-boundary.safe.json",
+      "device": 16777234,
+      "inode": 127070801,
+      "size": 745,
+      "mode": "0o600",
+      "mtime_ns": 1792451481265005043,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "preflight.intent.safe.json",
+      "device": 16777234,
+      "inode": 127082229,
+      "size": 144,
+      "mode": "0o600",
+      "mtime_ns": 1792454109641571004,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-ui-ui-onsite.private.json.result.safe.json",
+      "device": 16777234,
+      "inode": 127082220,
+      "size": 72,
+      "mode": "0o600",
+      "mtime_ns": 1792454105899147172,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "stop-automation-updated.safe.json",
+      "device": 16777234,
+      "inode": 127085121,
+      "size": 517,
+      "mode": "0o600",
+      "mtime_ns": 1792454475421675224,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "log_collector.py",
+      "device": 16777234,
+      "inode": 127045410,
+      "size": 7843,
+      "mode": "0o600",
+      "mtime_ns": 1792451274940889699,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "ORIGINAL_MEDIA_CONTRACT.md",
+      "device": 16777234,
+      "inode": 127043785,
+      "size": 15046,
+      "mode": "0o600",
+      "mtime_ns": 1792450528481934377,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "entry-budget.result.safe.json",
+      "device": 16777234,
+      "inode": 127082350,
+      "size": 72,
+      "mode": "0o600",
+      "mtime_ns": 1792454125960292904,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/independent_verify.py",
+      "device": 16777234,
+      "inode": 127047013,
+      "size": 24146,
+      "mode": "0o600",
+      "mtime_ns": 1792450978083754946,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/ui_record.py",
+      "device": 16777234,
+      "inode": 127047012,
+      "size": 5829,
+      "mode": "0o600",
+      "mtime_ns": 1792450978083301353,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/collector.py",
+      "device": 16777234,
+      "inode": 127047009,
+      "size": 34372,
+      "mode": "0o600",
+      "mtime_ns": 1792450978082523461,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/assess_logs.py",
+      "device": 16777234,
+      "inode": 127047011,
+      "size": 9660,
+      "mode": "0o600",
+      "mtime_ns": 1792450978083068264,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/read_budget.py",
+      "device": 16777234,
+      "inode": 127047015,
+      "size": 6957,
+      "mode": "0o600",
+      "mtime_ns": 1792450978084259165,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/release_gate.py",
+      "device": 16777234,
+      "inode": 127047014,
+      "size": 11177,
+      "mode": "0o600",
+      "mtime_ns": 1792450978084040119,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "maintenance-v1-preserved/log_collector.py",
+      "device": 16777234,
+      "inode": 127047010,
+      "size": 7628,
+      "mode": "0o600",
+      "mtime_ns": 1792450978082836718,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-pre.safe.json",
+      "device": 16777234,
+      "inode": 127075693,
+      "size": 5517,
+      "mode": "0o600",
+      "mtime_ns": 1792452091146800746,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/render.intent.safe.json",
+      "device": 16777234,
+      "inode": 127075076,
+      "size": 123,
+      "mode": "0o600",
+      "mtime_ns": 1792452014910680821,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/verify_publication.py",
+      "device": 16777234,
+      "inode": 127070451,
+      "size": 13711,
+      "mode": "0o644",
+      "mtime_ns": 1792451457919906114,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-candidate.safe.json",
+      "device": 16777234,
+      "inode": 127072692,
+      "size": 2420,
+      "mode": "0o644",
+      "mtime_ns": 1792451683095139010,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/PUBLICATION_PLAN.md",
+      "device": 16777234,
+      "inode": 127064273,
+      "size": 2531,
+      "mode": "0o644",
+      "mtime_ns": 1792451417215698197,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication_draft_correctness_controls.py",
+      "device": 16777234,
+      "inode": 127072668,
+      "size": 10559,
+      "mode": "0o644",
+      "mtime_ns": 1792451678040294209,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final.safe.json",
+      "device": 16777234,
+      "inode": 127072212,
+      "size": 3693,
+      "mode": "0o644",
+      "mtime_ns": 1792451639739976743,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/automation-before.private.toml",
+      "device": 16777234,
+      "inode": 127074600,
+      "size": 37473,
+      "mode": "0o600",
+      "mtime_ns": 1792451863501947921,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-release-independent.safe.json",
+      "device": 16777234,
+      "inode": 127077490,
+      "size": 882,
+      "mode": "0o600",
+      "mtime_ns": 1792452693714488659,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/hooks-output.safe.txt",
+      "device": 16777234,
+      "inode": 127072767,
+      "size": 960,
+      "mode": "0o644",
+      "mtime_ns": 1792451708947530150,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/validate_evidence.py",
+      "device": 16777234,
+      "inode": 127070453,
+      "size": 2997,
+      "mode": "0o644",
+      "mtime_ns": 1792451639726864540,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-draft-correctness-controls.safe.json",
+      "device": 16777234,
+      "inode": 127073874,
+      "size": 2958,
+      "mode": "0o600",
+      "mtime_ns": 1792451799658214733,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/automation-before-origin.safe.json",
+      "device": 16777234,
+      "inode": 127074601,
+      "size": 351,
+      "mode": "0o644",
+      "mtime_ns": 1792451863502172759,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/render.safe.json",
+      "device": 16777234,
+      "inode": 127075086,
+      "size": 172,
+      "mode": "0o600",
+      "mtime_ns": 1792452015930763989,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/automation-prefix.safe.md",
+      "device": 16777234,
+      "inode": 127078135,
+      "size": 5617,
+      "mode": "0o600",
+      "mtime_ns": 1792452769750715367,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/independent-launch-precheck-v1-failure.safe.json",
+      "device": 16777234,
+      "inode": 127077400,
+      "size": 460,
+      "mode": "0o600",
+      "mtime_ns": 1792452681456976945,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/automation-updated.safe.json",
+      "device": 16777234,
+      "inode": 127078340,
+      "size": 626,
+      "mode": "0o600",
+      "mtime_ns": 1792452794517007655,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-source-review-v1.safe.json",
+      "device": 16777234,
+      "inode": 127074264,
+      "size": 3362,
+      "mode": "0o600",
+      "mtime_ns": 1792451831790222440,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-correctness-candidate.safe.json",
+      "device": 16777234,
+      "inode": 127073175,
+      "size": 4922,
+      "mode": "0o644",
+      "mtime_ns": 1792451758261585309,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/render_bodies.py",
+      "device": 16777234,
+      "inode": 127070452,
+      "size": 4802,
+      "mode": "0o644",
+      "mtime_ns": 1792451457920189037,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/maintenance-candidate-harness-v1.safe.json",
+      "device": 16777234,
+      "inode": 127074810,
+      "size": 313,
+      "mode": "0o600",
+      "mtime_ns": 1792451918394758580,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-input.safe.json",
+      "device": 16777234,
+      "inode": 127075109,
+      "size": 2671,
+      "mode": "0o644",
+      "mtime_ns": 1792452036175550665,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-review.safe.json",
+      "device": 16777234,
+      "inode": 127074954,
+      "size": 3276,
+      "mode": "0o644",
+      "mtime_ns": 1792451959438400332,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-maintenance-pre.safe.json",
+      "device": 16777234,
+      "inode": 127075714,
+      "size": 2094,
+      "mode": "0o600",
+      "mtime_ns": 1792452092366819659,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/independent-launch-precheck-v2.safe.json",
+      "device": 16777234,
+      "inode": 127077401,
+      "size": 785,
+      "mode": "0o600",
+      "mtime_ns": 1792452681502236073,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-verifier-maintenance-pre.safe.json",
+      "device": 16777234,
+      "inode": 127077356,
+      "size": 1999,
+      "mode": "0o600",
+      "mtime_ns": 1792452630166097566,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-maintenance-candidate.safe.json",
+      "device": 16777234,
+      "inode": 127074811,
+      "size": 3941,
+      "mode": "0o600",
+      "mtime_ns": 1792451918490581841,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-maintenance-draft.safe.json",
+      "device": 16777234,
+      "inode": 127075016,
+      "size": 2207,
+      "mode": "0o600",
+      "mtime_ns": 1792451980279388912,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/commit-output.safe.txt",
+      "device": 16777234,
+      "inode": 127074926,
+      "size": 1976,
+      "mode": "0o644",
+      "mtime_ns": 1792451939861757341,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-pr-body.md",
+      "device": 16777234,
+      "inode": 127072889,
+      "size": 936,
+      "mode": "0o644",
+      "mtime_ns": 1792451730095644817,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-maintenance-controls.safe.json",
+      "device": 16777234,
+      "inode": 127075015,
+      "size": 1966,
+      "mode": "0o600",
+      "mtime_ns": 1792451980279215783,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/hooks.safe.json",
+      "device": 16777234,
+      "inode": 127072888,
+      "size": 2318,
+      "mode": "0o644",
+      "mtime_ns": 1792451730095541065,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publish_release.py",
+      "device": 16777234,
+      "inode": 127070450,
+      "size": 11518,
+      "mode": "0o644",
+      "mtime_ns": 1792451566173208486,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-maintenance.safe.json",
+      "device": 16777234,
+      "inode": 127075036,
+      "size": 2785,
+      "mode": "0o600",
+      "mtime_ns": 1792451991644763997,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/docs-release.safe.json",
+      "device": 16777234,
+      "inode": 127077290,
+      "size": 613,
+      "mode": "0o600",
+      "mtime_ns": 1792452575031037974,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/commit.safe.json",
+      "device": 16777234,
+      "inode": 127074928,
+      "size": 2342,
+      "mode": "0o644",
+      "mtime_ns": 1792451939891696287,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication-verifier-pre.safe.json",
+      "device": 16777234,
+      "inode": 127077334,
+      "size": 7035,
+      "mode": "0o600",
+      "mtime_ns": 1792452615135807873,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-026.safe.json",
+      "device": 16777234,
+      "inode": 127077270,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452570396144442,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-158-readback.safe.json",
+      "device": 16777234,
+      "inode": 127077286,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792452573602465351,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-007.safe.json",
+      "device": 16777234,
+      "inode": 127077229,
+      "size": 285,
+      "mode": "0o600",
+      "mtime_ns": 1792452552444882278,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-013.safe.json",
+      "device": 16777234,
+      "inode": 127077236,
+      "size": 262,
+      "mode": "0o600",
+      "mtime_ns": 1792452556825327869,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-001.safe.json",
+      "device": 16777234,
+      "inode": 127077219,
+      "size": 265,
+      "mode": "0o600",
+      "mtime_ns": 1792452548252278990,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-015.safe.json",
+      "device": 16777234,
+      "inode": 127077242,
+      "size": 289,
+      "mode": "0o600",
+      "mtime_ns": 1792452558249971237,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-020.safe.json",
+      "device": 16777234,
+      "inode": 127077253,
+      "size": 265,
+      "mode": "0o600",
+      "mtime_ns": 1792452562504258475,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-018.safe.json",
+      "device": 16777234,
+      "inode": 127077246,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452560485612038,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-027.safe.json",
+      "device": 16777234,
+      "inode": 127077279,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452571132118056,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-012.safe.json",
+      "device": 16777234,
+      "inode": 127077235,
+      "size": 315,
+      "mode": "0o600",
+      "mtime_ns": 1792452556231113546,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-006.safe.json",
+      "device": 16777234,
+      "inode": 127077228,
+      "size": 298,
+      "mode": "0o600",
+      "mtime_ns": 1792452551753242656,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-014.safe.json",
+      "device": 16777234,
+      "inode": 127077240,
+      "size": 273,
+      "mode": "0o600",
+      "mtime_ns": 1792452557555802459,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-021.safe.json",
+      "device": 16777234,
+      "inode": 127077259,
+      "size": 272,
+      "mode": "0o600",
+      "mtime_ns": 1792452565552266394,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-019.safe.json",
+      "device": 16777234,
+      "inode": 127077248,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452561454856295,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-005.safe.json",
+      "device": 16777234,
+      "inode": 127077227,
+      "size": 281,
+      "mode": "0o600",
+      "mtime_ns": 1792452550987502683,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-011.safe.json",
+      "device": 16777234,
+      "inode": 127077233,
+      "size": 318,
+      "mode": "0o600",
+      "mtime_ns": 1792452555494158087,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-030.safe.json",
+      "device": 16777234,
+      "inode": 127077288,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792452574272659631,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-024.safe.json",
+      "device": 16777234,
+      "inode": 127077265,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452567861023118,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/intent.safe.json",
+      "device": 16777234,
+      "inode": 127077216,
+      "size": 324,
+      "mode": "0o600",
+      "mtime_ns": 1792452547097744460,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-008.safe.json",
+      "device": 16777234,
+      "inode": 127077230,
+      "size": 313,
+      "mode": "0o600",
+      "mtime_ns": 1792452553278142439,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-029.safe.json",
+      "device": 16777234,
+      "inode": 127077285,
+      "size": 267,
+      "mode": "0o600",
+      "mtime_ns": 1792452573600695038,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-022.safe.json",
+      "device": 16777234,
+      "inode": 127077261,
+      "size": 309,
+      "mode": "0o600",
+      "mtime_ns": 1792452566145626749,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-003.safe.json",
+      "device": 16777234,
+      "inode": 127077224,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792452549733574248,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/merge-result.safe.json",
+      "device": 16777234,
+      "inode": 127077260,
+      "size": 74,
+      "mode": "0o600",
+      "mtime_ns": 1792452565553143488,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-017.safe.json",
+      "device": 16777234,
+      "inode": 127077245,
+      "size": 287,
+      "mode": "0o600",
+      "mtime_ns": 1792452559659527880,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-010.safe.json",
+      "device": 16777234,
+      "inode": 127077232,
+      "size": 314,
+      "mode": "0o600",
+      "mtime_ns": 1792452554721548532,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-004.safe.json",
+      "device": 16777234,
+      "inode": 127077226,
+      "size": 309,
+      "mode": "0o600",
+      "mtime_ns": 1792452550365770362,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-157-intent.safe.json",
+      "device": 16777234,
+      "inode": 127077266,
+      "size": 171,
+      "mode": "0o600",
+      "mtime_ns": 1792452567862889599,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-025.safe.json",
+      "device": 16777234,
+      "inode": 127077269,
+      "size": 268,
+      "mode": "0o600",
+      "mtime_ns": 1792452569630400137,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-031.safe.json",
+      "device": 16777234,
+      "inode": 127077289,
+      "size": 352,
+      "mode": "0o600",
+      "mtime_ns": 1792452575029465872,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/merge-intent.safe.json",
+      "device": 16777234,
+      "inode": 127077254,
+      "size": 372,
+      "mode": "0o600",
+      "mtime_ns": 1792452562505412239,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-158-before.safe.json",
+      "device": 16777234,
+      "inode": 127077249,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792452561455962141,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-009.safe.json",
+      "device": 16777234,
+      "inode": 127077231,
+      "size": 320,
+      "mode": "0o600",
+      "mtime_ns": 1792452554019860039,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-028.safe.json",
+      "device": 16777234,
+      "inode": 127077284,
+      "size": 268,
+      "mode": "0o600",
+      "mtime_ns": 1792452572897717405,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-157-readback.safe.json",
+      "device": 16777234,
+      "inode": 127077271,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792452570397381791,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-023.safe.json",
+      "device": 16777234,
+      "inode": 127077262,
+      "size": 274,
+      "mode": "0o600",
+      "mtime_ns": 1792452566771676706,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-158-intent.safe.json",
+      "device": 16777234,
+      "inode": 127077280,
+      "size": 171,
+      "mode": "0o600",
+      "mtime_ns": 1792452571134156664,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-016.safe.json",
+      "device": 16777234,
+      "inode": 127077244,
+      "size": 275,
+      "mode": "0o600",
+      "mtime_ns": 1792452558936094542,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/api-002.safe.json",
+      "device": 16777234,
+      "inode": 127077221,
+      "size": 274,
+      "mode": "0o600",
+      "mtime_ns": 1792452548883897264,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/publication/issue-157-before.safe.json",
+      "device": 16777234,
+      "inode": 127077247,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792452560487179473,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/github-bodies/manifest.safe.json",
+      "device": 16777234,
+      "inode": 127075085,
+      "size": 1113,
+      "mode": "0o600",
+      "mtime_ns": 1792452015930338063,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/github-bodies/158.md",
+      "device": 16777234,
+      "inode": 127075084,
+      "size": 43194,
+      "mode": "0o600",
+      "mtime_ns": 1792452015929936471,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/github-bodies/157.md",
+      "device": 16777234,
+      "inode": 127075079,
+      "size": 65057,
+      "mode": "0o600",
+      "mtime_ns": 1792452015553899461,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/__pycache__/validate_evidence.cpython-313.pyc",
+      "device": 16777234,
+      "inode": 127072210,
+      "size": 5656,
+      "mode": "0o644",
+      "mtime_ns": 1792451639733585853,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-09.safe.json",
+      "device": 16777234,
+      "inode": 127077487,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792452693043965583,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-10.safe.json",
+      "device": 16777234,
+      "inode": 127077489,
+      "size": 352,
+      "mode": "0o600",
+      "mtime_ns": 1792452693713097851,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-04.safe.json",
+      "device": 16777234,
+      "inode": 127077454,
+      "size": 308,
+      "mode": "0o600",
+      "mtime_ns": 1792452689406359563,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-02.safe.json",
+      "device": 16777234,
+      "inode": 127077441,
+      "size": 264,
+      "mode": "0o600",
+      "mtime_ns": 1792452687980029551,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-08.safe.json",
+      "device": 16777234,
+      "inode": 127077486,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452692448915833,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-05.safe.json",
+      "device": 16777234,
+      "inode": 127077463,
+      "size": 281,
+      "mode": "0o600",
+      "mtime_ns": 1792452690058045912,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-03.safe.json",
+      "device": 16777234,
+      "inode": 127077448,
+      "size": 274,
+      "mode": "0o600",
+      "mtime_ns": 1792452688761421671,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/intent.safe.json",
+      "device": 16777234,
+      "inode": 127077422,
+      "size": 584,
+      "mode": "0o600",
+      "mtime_ns": 1792452686482731559,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-06.safe.json",
+      "device": 16777234,
+      "inode": 127077470,
+      "size": 298,
+      "mode": "0o600",
+      "mtime_ns": 1792452690861005583,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-07.safe.json",
+      "device": 16777234,
+      "inode": 127077475,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792452691631056483,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "publication/final-verification/api-01.safe.json",
+      "device": 16777234,
+      "inode": 127077428,
+      "size": 285,
+      "mode": "0o600",
+      "mtime_ns": 1792452687209377852,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/independent_verify.py",
+      "device": 16777234,
+      "inode": 127047225,
+      "size": 24146,
+      "mode": "0o644",
+      "mtime_ns": 1792451046316649345,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/ui_record.py",
+      "device": 16777234,
+      "inode": 127047223,
+      "size": 5829,
+      "mode": "0o644",
+      "mtime_ns": 1792451046316017498,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/collector.py",
+      "device": 16777234,
+      "inode": 127047221,
+      "size": 34372,
+      "mode": "0o644",
+      "mtime_ns": 1792451046315405527,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/assess_logs.py",
+      "device": 16777234,
+      "inode": 127047224,
+      "size": 9660,
+      "mode": "0o644",
+      "mtime_ns": 1792451046316378131,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/read_budget.py",
+      "device": 16777234,
+      "inode": 127047227,
+      "size": 6957,
+      "mode": "0o644",
+      "mtime_ns": 1792451046317322360,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/release_gate.py",
+      "device": 16777234,
+      "inode": 127047226,
+      "size": 11177,
+      "mode": "0o644",
+      "mtime_ns": 1792451046316992436,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "draft-v1-preserved/log_collector.py",
+      "device": 16777234,
+      "inode": 127047222,
+      "size": 7628,
+      "mode": "0o644",
+      "mtime_ns": 1792451046315715908,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-pre.safe.json",
+      "device": 16777234,
+      "inode": 127096635,
+      "size": 4739,
+      "mode": "0o600",
+      "mtime_ns": 1792455880519897438,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-candidate-controls-v1-preserved.py",
+      "device": 16777234,
+      "inode": 127094800,
+      "size": 8827,
+      "mode": "0o644",
+      "mtime_ns": 1792455668580063721,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/render.intent.safe.json",
+      "device": 16777234,
+      "inode": 127096191,
+      "size": 124,
+      "mode": "0o600",
+      "mtime_ns": 1792455796658058456,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-candidate-controls.py",
+      "device": 16777234,
+      "inode": 127094692,
+      "size": 8821,
+      "mode": "0o644",
+      "mtime_ns": 1792455674873054581,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/verify_publication.py",
+      "device": 16777234,
+      "inode": 127089867,
+      "size": 13809,
+      "mode": "0o644",
+      "mtime_ns": 1792455448308967727,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/PUBLICATION_PLAN.md",
+      "device": 16777234,
+      "inode": 127087876,
+      "size": 3052,
+      "mode": "0o644",
+      "mtime_ns": 1792454845484328370,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final.safe.json",
+      "device": 16777234,
+      "inode": 127093015,
+      "size": 4450,
+      "mode": "0o644",
+      "mtime_ns": 1792455448316489116,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-source-correctness.safe.json",
+      "device": 16777234,
+      "inode": 127093688,
+      "size": 4182,
+      "mode": "0o600",
+      "mtime_ns": 1792455574054300960,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/automation-before.private.toml",
+      "device": 16777234,
+      "inode": 127101343,
+      "size": 46832,
+      "mode": "0o600",
+      "mtime_ns": 1792456603685014310,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/correctness-publication-source-controls.py",
+      "device": 16777234,
+      "inode": 127093678,
+      "size": 8190,
+      "mode": "0o644",
+      "mtime_ns": 1792455573836142631,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/candidate-review-harness-schema-failure.safe.json",
+      "device": 16777234,
+      "inode": 127093672,
+      "size": 470,
+      "mode": "0o600",
+      "mtime_ns": 1792455573081048096,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/automation-expected.safe.json",
+      "device": 16777234,
+      "inode": 127101345,
+      "size": 231,
+      "mode": "0o644",
+      "mtime_ns": 1792456603687592974,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-publication-controls.py",
+      "device": 16777234,
+      "inode": 127095727,
+      "size": 8927,
+      "mode": "0o644",
+      "mtime_ns": 1792455751529399034,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-candidate-controls.safe.json",
+      "device": 16777234,
+      "inode": 127094893,
+      "size": 2466,
+      "mode": "0o600",
+      "mtime_ns": 1792455675261401247,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-release-independent.safe.json",
+      "device": 16777234,
+      "inode": 127101257,
+      "size": 1059,
+      "mode": "0o600",
+      "mtime_ns": 1792456581700027140,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-candidate-correctness-v1.safe.json",
+      "device": 16777234,
+      "inode": 127092166,
+      "size": 3456,
+      "mode": "0o600",
+      "mtime_ns": 1792455300191412054,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/hooks-output.safe.txt",
+      "device": 16777234,
+      "inode": 127093495,
+      "size": 960,
+      "mode": "0o644",
+      "mtime_ns": 1792455549680431147,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/validate_evidence.py",
+      "device": 16777234,
+      "inode": 127093017,
+      "size": 8501,
+      "mode": "0o644",
+      "mtime_ns": 1792455448316796699,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/ci-watch.safe.json",
+      "device": 16777234,
+      "inode": 127100178,
+      "size": 63,
+      "mode": "0o644",
+      "mtime_ns": 1792456400207536618,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/render.safe.json",
+      "device": 16777234,
+      "inode": 127096224,
+      "size": 176,
+      "mode": "0o600",
+      "mtime_ns": 1792455798875682985,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/automation-final-prefix.safe.md",
+      "device": 16777234,
+      "inode": 127101342,
+      "size": 7520,
+      "mode": "0o644",
+      "mtime_ns": 1792456603684766852,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/NEXT_ACTIONS.safe.md",
+      "device": 16777234,
+      "inode": 127101339,
+      "size": 1431,
+      "mode": "0o644",
+      "mtime_ns": 1792456603683970103,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/ci-watch.safe.txt",
+      "device": 16777234,
+      "inode": 127096943,
+      "size": 13728,
+      "mode": "0o644",
+      "mtime_ns": 1792456400193763674,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/render_bodies.py",
+      "device": 16777234,
+      "inode": 127089868,
+      "size": 4871,
+      "mode": "0o644",
+      "mtime_ns": 1792455448311628718,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-candidate-harness-v1.safe.json",
+      "device": 16777234,
+      "inode": 127094801,
+      "size": 503,
+      "mode": "0o600",
+      "mtime_ns": 1792455668580279054,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-input.safe.json",
+      "device": 16777234,
+      "inode": 127096495,
+      "size": 3141,
+      "mode": "0o644",
+      "mtime_ns": 1792455830025875686,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-review.safe.json",
+      "device": 16777234,
+      "inode": 127096276,
+      "size": 3737,
+      "mode": "0o600",
+      "mtime_ns": 1792455802904618194,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-maintenance-pre.safe.json",
+      "device": 16777234,
+      "inode": 127096613,
+      "size": 1546,
+      "mode": "0o600",
+      "mtime_ns": 1792455873827269911,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/automation-payload.private.json",
+      "device": 16777234,
+      "inode": 127101344,
+      "size": 54446,
+      "mode": "0o600",
+      "mtime_ns": 1792456603687262516,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-candidate-correctness-v3.safe.json",
+      "device": 16777234,
+      "inode": 127095878,
+      "size": 7194,
+      "mode": "0o600",
+      "mtime_ns": 1792455762436308718,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-verifier-maintenance-pre.safe.json",
+      "device": 16777234,
+      "inode": 127100861,
+      "size": 1605,
+      "mode": "0o600",
+      "mtime_ns": 1792456535552481916,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/CURRENT.md",
+      "device": 16777234,
+      "inode": 127101340,
+      "size": 7520,
+      "mode": "0o644",
+      "mtime_ns": 1792456603684099311,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/plan-pre.safe.json",
+      "device": 16777234,
+      "inode": 127088624,
+      "size": 3106,
+      "mode": "0o600",
+      "mtime_ns": 1792454914190910713,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-maintenance-candidate.safe.json",
+      "device": 16777234,
+      "inode": 127094894,
+      "size": 6886,
+      "mode": "0o600",
+      "mtime_ns": 1792455675262064703,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-maintenance-draft.safe.json",
+      "device": 16777234,
+      "inode": 127095733,
+      "size": 1188,
+      "mode": "0o600",
+      "mtime_ns": 1792455751823954500,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/commit-output.safe.txt",
+      "device": 16777234,
+      "inode": 127096140,
+      "size": 1977,
+      "mode": "0o644",
+      "mtime_ns": 1792455782046871836,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-pr-body.md",
+      "device": 16777234,
+      "inode": 127093219,
+      "size": 1308,
+      "mode": "0o644",
+      "mtime_ns": 1792455489329002964,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/maintenance-publication-controls.safe.json",
+      "device": 16777234,
+      "inode": 127095732,
+      "size": 1470,
+      "mode": "0o600",
+      "mtime_ns": 1792455751822787796,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/hooks.safe.json",
+      "device": 16777234,
+      "inode": 127093496,
+      "size": 1471,
+      "mode": "0o644",
+      "mtime_ns": 1792455549680661021,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publish_release.py",
+      "device": 16777234,
+      "inode": 127089866,
+      "size": 11550,
+      "mode": "0o644",
+      "mtime_ns": 1792455448306313404,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/automation-final-updated.safe.json",
+      "device": 16777234,
+      "inode": 127101396,
+      "size": 523,
+      "mode": "0o600",
+      "mtime_ns": 1792456620521362055,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-maintenance.safe.json",
+      "device": 16777234,
+      "inode": 127096274,
+      "size": 3354,
+      "mode": "0o600",
+      "mtime_ns": 1792455802635338844,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-release.safe.json",
+      "device": 16777234,
+      "inode": 127100404,
+      "size": 630,
+      "mode": "0o600",
+      "mtime_ns": 1792456473467450249,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/docs-candidate-correctness-v2.safe.json",
+      "device": 16777234,
+      "inode": 127094412,
+      "size": 4385,
+      "mode": "0o600",
+      "mtime_ns": 1792455620516921679,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication-verifier-pre.safe.json",
+      "device": 16777234,
+      "inode": 127100732,
+      "size": 8527,
+      "mode": "0o600",
+      "mtime_ns": 1792456519342685914,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-032.safe.json",
+      "device": 16777234,
+      "inode": 127100368,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456466392868061,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-026.safe.json",
+      "device": 16777234,
+      "inode": 127100294,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456459451277656,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-158-readback.safe.json",
+      "device": 16777234,
+      "inode": 127100361,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792456465704603173,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-007.safe.json",
+      "device": 16777234,
+      "inode": 127100255,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792456443344028174,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-013.safe.json",
+      "device": 16777234,
+      "inode": 127100264,
+      "size": 261,
+      "mode": "0o600",
+      "mtime_ns": 1792456447666283767,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-001.safe.json",
+      "device": 16777234,
+      "inode": 127100230,
+      "size": 265,
+      "mode": "0o600",
+      "mtime_ns": 1792456438954586399,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-015.safe.json",
+      "device": 16777234,
+      "inode": 127100267,
+      "size": 289,
+      "mode": "0o600",
+      "mtime_ns": 1792456448917612337,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-034.safe.json",
+      "device": 16777234,
+      "inode": 127100375,
+      "size": 267,
+      "mode": "0o600",
+      "mtime_ns": 1792456468875688637,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-020.safe.json",
+      "device": 16777234,
+      "inode": 127100274,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456452642398616,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-018.safe.json",
+      "device": 16777234,
+      "inode": 127100270,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456451058093466,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-039.safe.json",
+      "device": 16777234,
+      "inode": 127100403,
+      "size": 352,
+      "mode": "0o600",
+      "mtime_ns": 1792456473466053292,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-027.safe.json",
+      "device": 16777234,
+      "inode": 127100324,
+      "size": 268,
+      "mode": "0o600",
+      "mtime_ns": 1792456461558430319,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-033.safe.json",
+      "device": 16777234,
+      "inode": 127100373,
+      "size": 269,
+      "mode": "0o600",
+      "mtime_ns": 1792456468104179541,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-012.safe.json",
+      "device": 16777234,
+      "inode": 127100262,
+      "size": 315,
+      "mode": "0o600",
+      "mtime_ns": 1792456447042463147,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-006.safe.json",
+      "device": 16777234,
+      "inode": 127100252,
+      "size": 297,
+      "mode": "0o600",
+      "mtime_ns": 1792456442801091848,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-174-intent.safe.json",
+      "device": 16777234,
+      "inode": 127100379,
+      "size": 171,
+      "mode": "0o600",
+      "mtime_ns": 1792456469579935134,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-014.safe.json",
+      "device": 16777234,
+      "inode": 127100266,
+      "size": 273,
+      "mode": "0o600",
+      "mtime_ns": 1792456448316037152,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-021.safe.json",
+      "device": 16777234,
+      "inode": 127100276,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456453540416417,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-035.safe.json",
+      "device": 16777234,
+      "inode": 127100378,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456469577385595,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-174-before.safe.json",
+      "device": 16777234,
+      "inode": 127100277,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792456453541800749,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-019.safe.json",
+      "device": 16777234,
+      "inode": 127100272,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456451825937899,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-038.safe.json",
+      "device": 16777234,
+      "inode": 127100401,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792456472714637676,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-005.safe.json",
+      "device": 16777234,
+      "inode": 127100241,
+      "size": 280,
+      "mode": "0o600",
+      "mtime_ns": 1792456442030009585,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-011.safe.json",
+      "device": 16777234,
+      "inode": 127100260,
+      "size": 317,
+      "mode": "0o600",
+      "mtime_ns": 1792456446328722493,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-030.safe.json",
+      "device": 16777234,
+      "inode": 127100353,
+      "size": 269,
+      "mode": "0o600",
+      "mtime_ns": 1792456464862501899,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-024.safe.json",
+      "device": 16777234,
+      "inode": 127100286,
+      "size": 308,
+      "mode": "0o600",
+      "mtime_ns": 1792456458122185873,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/intent.safe.json",
+      "device": 16777234,
+      "inode": 127100227,
+      "size": 324,
+      "mode": "0o600",
+      "mtime_ns": 1792456437774898383,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-008.safe.json",
+      "device": 16777234,
+      "inode": 127100256,
+      "size": 313,
+      "mode": "0o600",
+      "mtime_ns": 1792456444101686367,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-167-before.safe.json",
+      "device": 16777234,
+      "inode": 127100275,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792456452644414864,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-029.safe.json",
+      "device": 16777234,
+      "inode": 127100327,
+      "size": 267,
+      "mode": "0o600",
+      "mtime_ns": 1792456463166612736,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-036.safe.json",
+      "device": 16777234,
+      "inode": 127100398,
+      "size": 268,
+      "mode": "0o600",
+      "mtime_ns": 1792456471364955998,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-022.safe.json",
+      "device": 16777234,
+      "inode": 127100278,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456454589543899,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-167-intent.safe.json",
+      "device": 16777234,
+      "inode": 127100369,
+      "size": 171,
+      "mode": "0o600",
+      "mtime_ns": 1792456466394699101,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-003.safe.json",
+      "device": 16777234,
+      "inode": 127100237,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792456440645363567,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/merge-result.safe.json",
+      "device": 16777234,
+      "inode": 127100285,
+      "size": 74,
+      "mode": "0o600",
+      "mtime_ns": 1792456457517603234,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-017.safe.json",
+      "device": 16777234,
+      "inode": 127100269,
+      "size": 287,
+      "mode": "0o600",
+      "mtime_ns": 1792456450293528572,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-010.safe.json",
+      "device": 16777234,
+      "inode": 127100259,
+      "size": 316,
+      "mode": "0o600",
+      "mtime_ns": 1792456445581792581,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-167-readback.safe.json",
+      "device": 16777234,
+      "inode": 127100376,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792456468877374552,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-004.safe.json",
+      "device": 16777234,
+      "inode": 127100240,
+      "size": 309,
+      "mode": "0o600",
+      "mtime_ns": 1792456441320472802,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-157-intent.safe.json",
+      "device": 16777234,
+      "inode": 127100295,
+      "size": 171,
+      "mode": "0o600",
+      "mtime_ns": 1792456459452816446,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-025.safe.json",
+      "device": 16777234,
+      "inode": 127100292,
+      "size": 274,
+      "mode": "0o600",
+      "mtime_ns": 1792456458785623620,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-031.safe.json",
+      "device": 16777234,
+      "inode": 127100360,
+      "size": 267,
+      "mode": "0o600",
+      "mtime_ns": 1792456465703782132,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/merge-intent.safe.json",
+      "device": 16777234,
+      "inode": 127100279,
+      "size": 373,
+      "mode": "0o600",
+      "mtime_ns": 1792456454591503939,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-158-before.safe.json",
+      "device": 16777234,
+      "inode": 127100273,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792456451827374356,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-009.safe.json",
+      "device": 16777234,
+      "inode": 127100258,
+      "size": 319,
+      "mode": "0o600",
+      "mtime_ns": 1792456444821741848,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-028.safe.json",
+      "device": 16777234,
+      "inode": 127100325,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456462455777204,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-157-readback.safe.json",
+      "device": 16777234,
+      "inode": 127100326,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792456462457239203,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-023.safe.json",
+      "device": 16777234,
+      "inode": 127100284,
+      "size": 271,
+      "mode": "0o600",
+      "mtime_ns": 1792456457517265817,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-037.safe.json",
+      "device": 16777234,
+      "inode": 127100399,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456472076899487,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-158-intent.safe.json",
+      "device": 16777234,
+      "inode": 127100328,
+      "size": 172,
+      "mode": "0o600",
+      "mtime_ns": 1792456463168812026,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-016.safe.json",
+      "device": 16777234,
+      "inode": 127100268,
+      "size": 276,
+      "mode": "0o600",
+      "mtime_ns": 1792456449533707506,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/api-002.safe.json",
+      "device": 16777234,
+      "inode": 127100232,
+      "size": 275,
+      "mode": "0o600",
+      "mtime_ns": 1792456439573962482,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-174-readback.safe.json",
+      "device": 16777234,
+      "inode": 127100400,
+      "size": 130,
+      "mode": "0o600",
+      "mtime_ns": 1792456472078259694,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/publication/issue-157-before.safe.json",
+      "device": 16777234,
+      "inode": 127100271,
+      "size": 147,
+      "mode": "0o600",
+      "mtime_ns": 1792456451059971256,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/github-bodies/174.md",
+      "device": 16777234,
+      "inode": 127096222,
+      "size": 45531,
+      "mode": "0o600",
+      "mtime_ns": 1792455798874889071,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/github-bodies/manifest.safe.json",
+      "device": 16777234,
+      "inode": 127096223,
+      "size": 1987,
+      "mode": "0o600",
+      "mtime_ns": 1792455798875449694,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/github-bodies/158.md",
+      "device": 16777234,
+      "inode": 127096208,
+      "size": 46416,
+      "mode": "0o600",
+      "mtime_ns": 1792455797868778494,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/github-bodies/157.md",
+      "device": 16777234,
+      "inode": 127096202,
+      "size": 65045,
+      "mode": "0o600",
+      "mtime_ns": 1792455797432669295,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/github-bodies/167.md",
+      "device": 16777234,
+      "inode": 127096219,
+      "size": 65503,
+      "mode": "0o600",
+      "mtime_ns": 1792455798466101272,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-09.safe.json",
+      "device": 16777234,
+      "inode": 127101247,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456579463728107,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-10.safe.json",
+      "device": 16777234,
+      "inode": 127101254,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456580180460133,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-04.safe.json",
+      "device": 16777234,
+      "inode": 127101223,
+      "size": 308,
+      "mode": "0o600",
+      "mtime_ns": 1792456575548162979,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-02.safe.json",
+      "device": 16777234,
+      "inode": 127101210,
+      "size": 265,
+      "mode": "0o600",
+      "mtime_ns": 1792456574216641823,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-08.safe.json",
+      "device": 16777234,
+      "inode": 127101235,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456578637548192,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-05.safe.json",
+      "device": 16777234,
+      "inode": 127101224,
+      "size": 281,
+      "mode": "0o600",
+      "mtime_ns": 1792456576224987128,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-11.safe.json",
+      "device": 16777234,
+      "inode": 127101255,
+      "size": 284,
+      "mode": "0o600",
+      "mtime_ns": 1792456580945687777,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-03.safe.json",
+      "device": 16777234,
+      "inode": 127101220,
+      "size": 274,
+      "mode": "0o600",
+      "mtime_ns": 1792456574832353326,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/intent.safe.json",
+      "device": 16777234,
+      "inode": 127101202,
+      "size": 584,
+      "mode": "0o600",
+      "mtime_ns": 1792456572589777925,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-12.safe.json",
+      "device": 16777234,
+      "inode": 127101256,
+      "size": 352,
+      "mode": "0o600",
+      "mtime_ns": 1792456581696915310,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-06.safe.json",
+      "device": 16777234,
+      "inode": 127101226,
+      "size": 298,
+      "mode": "0o600",
+      "mtime_ns": 1792456576986543859,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-07.safe.json",
+      "device": 16777234,
+      "inode": 127101229,
+      "size": 266,
+      "mode": "0o600",
+      "mtime_ns": 1792456577888167324,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "completion/final-verification/api-01.safe.json",
+      "device": 16777234,
+      "inode": 127101203,
+      "size": 285,
+      "mode": "0o600",
+      "mtime_ns": 1792456573277001314,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/independent_verify.py",
+      "device": 16777234,
+      "inode": 127046960,
+      "size": 24146,
+      "mode": "0o600",
+      "mtime_ns": 1792450971796542713,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/ui_record.py",
+      "device": 16777234,
+      "inode": 127046958,
+      "size": 5829,
+      "mode": "0o600",
+      "mtime_ns": 1792450971795920450,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/release-binding.safe.json",
+      "device": 16777234,
+      "inode": 127046964,
+      "size": 7987,
+      "mode": "0o600",
+      "mtime_ns": 1792450971797369440,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/collector.py",
+      "device": 16777234,
+      "inode": 127046956,
+      "size": 34372,
+      "mode": "0o600",
+      "mtime_ns": 1792450971795303395,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/assess_logs.py",
+      "device": 16777234,
+      "inode": 127046959,
+      "size": 9660,
+      "mode": "0o600",
+      "mtime_ns": 1792450971796313750,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/manifest.safe.json",
+      "device": 16777234,
+      "inode": 127046965,
+      "size": 935,
+      "mode": "0o600",
+      "mtime_ns": 1792450971797741989,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/read_budget.py",
+      "device": 16777234,
+      "inode": 127046962,
+      "size": 6957,
+      "mode": "0o600",
+      "mtime_ns": 1792450971797133309,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/PLAN.md",
+      "device": 16777234,
+      "inode": 127046963,
+      "size": 12226,
+      "mode": "0o600",
+      "mtime_ns": 1792450971797248187,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/release_gate.py",
+      "device": 16777234,
+      "inode": 127046961,
+      "size": 11177,
+      "mode": "0o600",
+      "mtime_ns": 1792450971796925680,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "correctness-v1-preserved/log_collector.py",
+      "device": 16777234,
+      "inode": 127046957,
+      "size": 7628,
+      "mode": "0o600",
+      "mtime_ns": 1792450971795631235,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "fixtures/card-a.png",
+      "device": 16777234,
+      "inode": 127043783,
+      "size": 4967,
+      "mode": "0o600",
+      "mtime_ns": 1792450528481371198,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "fixtures/card-b.png",
+      "device": 16777234,
+      "inode": 127043784,
+      "size": 10435,
+      "mode": "0o600",
+      "mtime_ns": 1792450528481627995,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/config.py",
+      "device": 16777234,
+      "inode": 127045395,
+      "size": 1209,
+      "mode": "0o600",
+      "mtime_ns": 1792450712439173482,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/groq_chat.py",
+      "device": 16777234,
+      "inode": 127045396,
+      "size": 1416,
+      "mode": "0o600",
+      "mtime_ns": 1792450712448419934,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/ai_errors.py",
+      "device": 16777234,
+      "inode": 127045393,
+      "size": 997,
+      "mode": "0o600",
+      "mtime_ns": 1792450712420879499,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/__init__.py",
+      "device": 16777234,
+      "inode": 127045392,
+      "size": 932,
+      "mode": "0o600",
+      "mtime_ns": 1792450712412378522,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/logger.py",
+      "device": 16777234,
+      "inode": 127045401,
+      "size": 2942,
+      "mode": "0o600",
+      "mtime_ns": 1792450712460410613,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/secrets.py",
+      "device": 16777234,
+      "inode": 127045405,
+      "size": 1820,
+      "mode": "0o600",
+      "mtime_ns": 1792450712477981122,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/async_http.py",
+      "device": 16777234,
+      "inode": 127045394,
+      "size": 6790,
+      "mode": "0o600",
+      "mtime_ns": 1792450712430612587,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common/logging_utils.py",
+      "device": 16777234,
+      "inode": 127045402,
+      "size": 7907,
+      "mode": "0o600",
+      "mtime_ns": 1792450712469813527,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/memory_worker_main.py",
+      "device": 16777234,
+      "inode": 127045267,
+      "size": 4866,
+      "mode": "0o600",
+      "mtime_ns": 1792450711629806961,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/requirements.txt",
+      "device": 16777234,
+      "inode": 127045268,
+      "size": 7601,
+      "mode": "0o600",
+      "mtime_ns": 1792450711640118062,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/webhook.py",
+      "device": 16777234,
+      "inode": 127045388,
+      "size": 11938,
+      "mode": "0o600",
+      "mtime_ns": 1792450712402392595,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/__init__.py",
+      "device": 16777234,
+      "inode": 127045256,
+      "size": 26,
+      "mode": "0o600",
+      "mtime_ns": 1792450711548046758,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/app.py",
+      "device": 16777234,
+      "inode": 127045257,
+      "size": 3306,
+      "mode": "0o600",
+      "mtime_ns": 1792450711557128498,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/main.py",
+      "device": 16777234,
+      "inode": 127045266,
+      "size": 2257,
+      "mode": "0o600",
+      "mtime_ns": 1792450711620396006,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/dispatcher.py",
+      "device": 16777234,
+      "inode": 127045262,
+      "size": 9742,
+      "mode": "0o600",
+      "mtime_ns": 1792450711586112881,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/config.py",
+      "device": 16777234,
+      "inode": 127045261,
+      "size": 10993,
+      "mode": "0o600",
+      "mtime_ns": 1792450711576699717,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/translations.py",
+      "device": 16777234,
+      "inode": 127045264,
+      "size": 59947,
+      "mode": "0o600",
+      "mtime_ns": 1792450711603254173,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/__init__.py",
+      "device": 16777234,
+      "inode": 127045260,
+      "size": 76,
+      "mode": "0o600",
+      "mtime_ns": 1792450711566633539,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/logger.py",
+      "device": 16777234,
+      "inode": 127045263,
+      "size": 448,
+      "mode": "0o600",
+      "mtime_ns": 1792450711594491689,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/core/utils.py",
+      "device": 16777234,
+      "inode": 127045265,
+      "size": 1120,
+      "mode": "0o600",
+      "mtime_ns": 1792450711611555354,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/quiz_answers.py",
+      "device": 16777234,
+      "inode": 127045359,
+      "size": 2776,
+      "mode": "0o600",
+      "mtime_ns": 1792450712172074354,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/group_agent.py",
+      "device": 16777234,
+      "inode": 127045279,
+      "size": 34627,
+      "mode": "0o600",
+      "mtime_ns": 1792450711714954489,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/telegram_media.py",
+      "device": 16777234,
+      "inode": 127045387,
+      "size": 34022,
+      "mode": "0o600",
+      "mtime_ns": 1792450712394228792,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/explicit_context.py",
+      "device": 16777234,
+      "inode": 127045278,
+      "size": 4075,
+      "mode": "0o600",
+      "mtime_ns": 1792450711706692016,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/telegram.py",
+      "device": 16777234,
+      "inode": 127045385,
+      "size": 15734,
+      "mode": "0o600",
+      "mtime_ns": 1792450712376135146,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/__init__.py",
+      "device": 16777234,
+      "inode": 127045270,
+      "size": 81,
+      "mode": "0o600",
+      "mtime_ns": 1792450711648092194,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/captcha_image.py",
+      "device": 16777234,
+      "inode": 127045277,
+      "size": 5191,
+      "mode": "0o600",
+      "mtime_ns": 1792450711697846282,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_budget.py",
+      "device": 16777234,
+      "inode": 127045288,
+      "size": 19991,
+      "mode": "0o600",
+      "mtime_ns": 1792450711783047727,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_cutover.py",
+      "device": 16777234,
+      "inode": 127045301,
+      "size": 1224,
+      "mode": "0o600",
+      "mtime_ns": 1792450711793172823,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/sqs_task_router.py",
+      "device": 16777234,
+      "inode": 127045384,
+      "size": 5042,
+      "mode": "0o600",
+      "mtime_ns": 1792450712367434498,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/bot_identity.py",
+      "device": 16777234,
+      "inode": 127045276,
+      "size": 1663,
+      "mode": "0o600",
+      "mtime_ns": 1792450711689499349,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_safety.py",
+      "device": 16777234,
+      "inode": 127045312,
+      "size": 8141,
+      "mode": "0o600",
+      "mtime_ns": 1792450711805029582,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/telegram_actor.py",
+      "device": 16777234,
+      "inode": 127045386,
+      "size": 2602,
+      "mode": "0o600",
+      "mtime_ns": 1792450712384664791,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/rule_filter.py",
+      "device": 16777234,
+      "inode": 127045382,
+      "size": 5336,
+      "mode": "0o600",
+      "mtime_ns": 1792450712348455916,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/chat_member.py",
+      "device": 16777234,
+      "inode": 127045376,
+      "size": 1287,
+      "mode": "0o600",
+      "mtime_ns": 1792450712303070799,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/enforcer.py",
+      "device": 16777234,
+      "inode": 127045377,
+      "size": 7801,
+      "mode": "0o600",
+      "mtime_ns": 1792450712312850805,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/screening_service.py",
+      "device": 16777234,
+      "inode": 127045383,
+      "size": 6034,
+      "mode": "0o600",
+      "mtime_ns": 1792450712358107794,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/__init__.py",
+      "device": 16777234,
+      "inode": 127045374,
+      "size": 484,
+      "mode": "0o600",
+      "mtime_ns": 1792450712284367182,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/channel_post.py",
+      "device": 16777234,
+      "inode": 127045375,
+      "size": 703,
+      "mode": "0o600",
+      "mtime_ns": 1792450712294380401,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/processor.py",
+      "device": 16777234,
+      "inode": 127045381,
+      "size": 17185,
+      "mode": "0o600",
+      "mtime_ns": 1792450712338902624,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/groq_detector.py",
+      "device": 16777234,
+      "inode": 127045379,
+      "size": 15180,
+      "mode": "0o600",
+      "mtime_ns": 1792450712321544453,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam/message_text.py",
+      "device": 16777234,
+      "inode": 127045380,
+      "size": 8200,
+      "mode": "0o600",
+      "mtime_ns": 1792450712330526399,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/answer_rendering.py",
+      "device": 16777234,
+      "inode": 127045321,
+      "size": 10378,
+      "mode": "0o600",
+      "mtime_ns": 1792450711865630948,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/worker.py",
+      "device": 16777234,
+      "inode": 127045357,
+      "size": 8902,
+      "mode": "0o600",
+      "mtime_ns": 1792450712154415593,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/leases.py",
+      "device": 16777234,
+      "inode": 127045342,
+      "size": 22702,
+      "mode": "0o600",
+      "mtime_ns": 1792450712018014112,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/telegram_api.py",
+      "device": 16777234,
+      "inode": 127045352,
+      "size": 4714,
+      "mode": "0o600",
+      "mtime_ns": 1792450712108086663,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/ingestion.py",
+      "device": 16777234,
+      "inode": 127045341,
+      "size": 7050,
+      "mode": "0o600",
+      "mtime_ns": 1792450712010032020,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/trend_runtime.py",
+      "device": 16777234,
+      "inode": 127045354,
+      "size": 1832,
+      "mode": "0o600",
+      "mtime_ns": 1792450712127505004,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/recovery.py",
+      "device": 16777234,
+      "inode": 127045348,
+      "size": 4311,
+      "mode": "0o600",
+      "mtime_ns": 1792450712074707226,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/_cost_catalog.py",
+      "device": 16777234,
+      "inode": 127045316,
+      "size": 9873,
+      "mode": "0o600",
+      "mtime_ns": 1792450711824607468,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/models.py",
+      "device": 16777234,
+      "inode": 127045345,
+      "size": 9159,
+      "mode": "0o600",
+      "mtime_ns": 1792450712042846029,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/answer_prompt.py",
+      "device": 16777234,
+      "inode": 127045320,
+      "size": 11093,
+      "mode": "0o600",
+      "mtime_ns": 1792450711854366994,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/__init__.py",
+      "device": 16777234,
+      "inode": 127045314,
+      "size": 80,
+      "mode": "0o600",
+      "mtime_ns": 1792450711814170282,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/explicit_request_gate.py",
+      "device": 16777234,
+      "inode": 127045334,
+      "size": 3305,
+      "mode": "0o600",
+      "mtime_ns": 1792450711968355193,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/answer_selector.py",
+      "device": 16777234,
+      "inode": 127045323,
+      "size": 4845,
+      "mode": "0o600",
+      "mtime_ns": 1792450711886910788,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/trend_service.py",
+      "device": 16777234,
+      "inode": 127045355,
+      "size": 15895,
+      "mode": "0o600",
+      "mtime_ns": 1792450712136070233,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/extractor.py",
+      "device": 16777234,
+      "inode": 127045338,
+      "size": 12945,
+      "mode": "0o600",
+      "mtime_ns": 1792450711985401857,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/cost_meter.py",
+      "device": 16777234,
+      "inode": 127045327,
+      "size": 17912,
+      "mode": "0o600",
+      "mtime_ns": 1792450711924354690,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/runtime.py",
+      "device": 16777234,
+      "inode": 127045350,
+      "size": 1121,
+      "mode": "0o600",
+      "mtime_ns": 1792450712091513801,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/command_receipts.py",
+      "device": 16777234,
+      "inode": 127045325,
+      "size": 15044,
+      "mode": "0o600",
+      "mtime_ns": 1792450711905498986,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/answers.py",
+      "device": 16777234,
+      "inode": 127045324,
+      "size": 9816,
+      "mode": "0o600",
+      "mtime_ns": 1792450711896008404,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/answer_scope.py",
+      "device": 16777234,
+      "inode": 127045322,
+      "size": 3302,
+      "mode": "0o600",
+      "mtime_ns": 1792450711876789025,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/public_answers.py",
+      "device": 16777234,
+      "inode": 127045346,
+      "size": 6940,
+      "mode": "0o600",
+      "mtime_ns": 1792450712052189484,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/public_commands.py",
+      "device": 16777234,
+      "inode": 127045347,
+      "size": 13372,
+      "mode": "0o600",
+      "mtime_ns": 1792450712066135122,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/media_ephemeral.py",
+      "device": 16777234,
+      "inode": 127045344,
+      "size": 8882,
+      "mode": "0o600",
+      "mtime_ns": 1792450712034868938,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/_cost_reports.py",
+      "device": 16777234,
+      "inode": 127045318,
+      "size": 11526,
+      "mode": "0o600",
+      "mtime_ns": 1792450711835292910,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/lifecycle.py",
+      "device": 16777234,
+      "inode": 127045343,
+      "size": 21331,
+      "mode": "0o600",
+      "mtime_ns": 1792450712026592924,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/extraction_prompt.py",
+      "device": 16777234,
+      "inode": 127045336,
+      "size": 10088,
+      "mode": "0o600",
+      "mtime_ns": 1792450711976749252,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/cost_monitor.py",
+      "device": 16777234,
+      "inode": 127045329,
+      "size": 23105,
+      "mode": "0o600",
+      "mtime_ns": 1792450711934125403,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/writer.py",
+      "device": 16777234,
+      "inode": 127045358,
+      "size": 16128,
+      "mode": "0o600",
+      "mtime_ns": 1792450712163036239,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/trends.py",
+      "device": 16777234,
+      "inode": 127045356,
+      "size": 4233,
+      "mode": "0o600",
+      "mtime_ns": 1792450712145483689,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/safety.py",
+      "device": 16777234,
+      "inode": 127045351,
+      "size": 5813,
+      "mode": "0o600",
+      "mtime_ns": 1792450712099822191,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/_cost_state.py",
+      "device": 16777234,
+      "inode": 127045319,
+      "size": 20528,
+      "mode": "0o600",
+      "mtime_ns": 1792450711845487175,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/repository.py",
+      "device": 16777234,
+      "inode": 127045349,
+      "size": 41498,
+      "mode": "0o600",
+      "mtime_ns": 1792450712083294580,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/explicit_delivery.py",
+      "device": 16777234,
+      "inode": 127045333,
+      "size": 5728,
+      "mode": "0o600",
+      "mtime_ns": 1792450711959800631,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/identity.py",
+      "device": 16777234,
+      "inode": 127045340,
+      "size": 7774,
+      "mode": "0o600",
+      "mtime_ns": 1792450712001976636,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/evidence.py",
+      "device": 16777234,
+      "inode": 127045332,
+      "size": 801,
+      "mode": "0o600",
+      "mtime_ns": 1792450711951614286,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/cost_runtime.py",
+      "device": 16777234,
+      "inode": 127045330,
+      "size": 4956,
+      "mode": "0o600",
+      "mtime_ns": 1792450711943039348,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/commands.py",
+      "device": 16777234,
+      "inode": 127045326,
+      "size": 7623,
+      "mode": "0o600",
+      "mtime_ns": 1792450711915659625,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/telegram_ingestion.py",
+      "device": 16777234,
+      "inode": 127045353,
+      "size": 5739,
+      "mode": "0o600",
+      "mtime_ns": 1792450712116544848,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2/gemini_extraction.py",
+      "device": 16777234,
+      "inode": 127045339,
+      "size": 2787,
+      "mode": "0o600",
+      "mtime_ns": 1792450711993773415,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/spam.py",
+      "device": 16777234,
+      "inode": 127045369,
+      "size": 10703,
+      "mode": "0o600",
+      "mtime_ns": 1792450712250277771,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/quiz.py",
+      "device": 16777234,
+      "inode": 127045367,
+      "size": 2877,
+      "mode": "0o600",
+      "mtime_ns": 1792450712232794639,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/sqs.py",
+      "device": 16777234,
+      "inode": 127045370,
+      "size": 7685,
+      "mode": "0o600",
+      "mtime_ns": 1792450712258917335,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/lambda_invoker.py",
+      "device": 16777234,
+      "inode": 127045366,
+      "size": 1930,
+      "mode": "0o600",
+      "mtime_ns": 1792450712224094532,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/_common.py",
+      "device": 16777234,
+      "inode": 127045362,
+      "size": 449,
+      "mode": "0o600",
+      "mtime_ns": 1792450712189837075,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/__init__.py",
+      "device": 16777234,
+      "inode": 127045361,
+      "size": 764,
+      "mode": "0o600",
+      "mtime_ns": 1792450712180942464,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/votes.py",
+      "device": 16777234,
+      "inode": 127045372,
+      "size": 14556,
+      "mode": "0o600",
+      "mtime_ns": 1792450712275037853,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/captcha.py",
+      "device": 16777234,
+      "inode": 127045364,
+      "size": 8397,
+      "mode": "0o600",
+      "mtime_ns": 1792450712207484669,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/stats.py",
+      "device": 16777234,
+      "inode": 127045371,
+      "size": 2868,
+      "mode": "0o600",
+      "mtime_ns": 1792450712267191265,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/_quiz_answers.py",
+      "device": 16777234,
+      "inode": 127045363,
+      "size": 16752,
+      "mode": "0o600",
+      "mtime_ns": 1792450712198635059,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/rate_limit.py",
+      "device": 16777234,
+      "inode": 127045368,
+      "size": 6812,
+      "mode": "0o600",
+      "mtime_ns": 1792450712241967714,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories/explicit_context_repository.py",
+      "device": 16777234,
+      "inode": 127045365,
+      "size": 1432,
+      "mode": "0o600",
+      "mtime_ns": 1792450712215992438,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/ai/__init__.py",
+      "device": 16777234,
+      "inode": 127045272,
+      "size": 0,
+      "mode": "0o600",
+      "mtime_ns": 1792450711656252664,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/ai/group_chat_reply_fallback.py",
+      "device": 16777234,
+      "inode": 127045274,
+      "size": 14861,
+      "mode": "0o600",
+      "mtime_ns": 1792450711673228535,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/ai/telegram_html.py",
+      "device": 16777234,
+      "inode": 127045275,
+      "size": 1972,
+      "mode": "0o600",
+      "mtime_ns": 1792450711681096207,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/ai/gemini_client.py",
+      "device": 16777234,
+      "inode": 127045273,
+      "size": 20321,
+      "mode": "0o600",
+      "mtime_ns": 1792450711665000522,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/voteban.py",
+      "device": 16777234,
+      "inode": 127045287,
+      "size": 12385,
+      "mode": "0o600",
+      "mtime_ns": 1792450711774763629,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/quiz.py",
+      "device": 16777234,
+      "inode": 127045284,
+      "size": 4767,
+      "mode": "0o600",
+      "mtime_ns": 1792450711749447326,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/quiz_reconcile.py",
+      "device": 16777234,
+      "inode": 127045285,
+      "size": 2060,
+      "mode": "0o600",
+      "mtime_ns": 1792450711758112474,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/__init__.py",
+      "device": 16777234,
+      "inode": 127045281,
+      "size": 2734,
+      "mode": "0o600",
+      "mtime_ns": 1792450711723286629,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/spam_review.py",
+      "device": 16777234,
+      "inode": 127045286,
+      "size": 7160,
+      "mode": "0o600",
+      "mtime_ns": 1792450711766616993,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/captcha.py",
+      "device": 16777234,
+      "inode": 127045282,
+      "size": 15164,
+      "mode": "0o600",
+      "mtime_ns": 1792450711731855941,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers/commands.py",
+      "device": 16777234,
+      "inode": 127045283,
+      "size": 18292,
+      "mode": "0o600",
+      "mtime_ns": 1792450711740167540,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0029.private.json",
+      "device": 16777234,
+      "inode": 127082318,
+      "size": 23487,
+      "mode": "0o600",
+      "mtime_ns": 1792454116693007642,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/budget-01.private.json",
+      "device": 16777234,
+      "inode": 127082338,
+      "size": 755,
+      "mode": "0o600",
+      "mtime_ns": 1792454124973976607,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0018.private.json",
+      "device": 16777234,
+      "inode": 127082284,
+      "size": 1177,
+      "mode": "0o600",
+      "mtime_ns": 1792454114837374522,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0028.private.json",
+      "device": 16777234,
+      "inode": 127082314,
+      "size": 1495,
+      "mode": "0o600",
+      "mtime_ns": 1792454116581151901,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0019.private.json",
+      "device": 16777234,
+      "inode": 127082287,
+      "size": 1156,
+      "mode": "0o600",
+      "mtime_ns": 1792454114952323800,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0006.private.json",
+      "device": 16777234,
+      "inode": 127082246,
+      "size": 2698,
+      "mode": "0o600",
+      "mtime_ns": 1792454112284807723,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0014.private.json",
+      "device": 16777234,
+      "inode": 127082271,
+      "size": 884,
+      "mode": "0o600",
+      "mtime_ns": 1792454113786824543,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0013.private.json",
+      "device": 16777234,
+      "inode": 127082268,
+      "size": 1389,
+      "mode": "0o600",
+      "mtime_ns": 1792454113673020539,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0025.private.json",
+      "device": 16777234,
+      "inode": 127082305,
+      "size": 916,
+      "mode": "0o600",
+      "mtime_ns": 1792454116110615159,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0022.private.json",
+      "device": 16777234,
+      "inode": 127082296,
+      "size": 1107,
+      "mode": "0o600",
+      "mtime_ns": 1792454115772539843,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0030.private.json",
+      "device": 16777234,
+      "inode": 127082321,
+      "size": 7519,
+      "mode": "0o600",
+      "mtime_ns": 1792454116822221335,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0012.private.json",
+      "device": 16777234,
+      "inode": 127082264,
+      "size": 1320,
+      "mode": "0o600",
+      "mtime_ns": 1792454113500411142,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0015.private.json",
+      "device": 16777234,
+      "inode": 127082275,
+      "size": 1162,
+      "mode": "0o600",
+      "mtime_ns": 1792454114430392808,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0007.private.json",
+      "device": 16777234,
+      "inode": 127082249,
+      "size": 3584,
+      "mode": "0o600",
+      "mtime_ns": 1792454112466137971,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0031.private.json",
+      "device": 16777234,
+      "inode": 127082324,
+      "size": 1070,
+      "mode": "0o600",
+      "mtime_ns": 1792454116926302135,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0023.private.json",
+      "device": 16777234,
+      "inode": 127082299,
+      "size": 921,
+      "mode": "0o600",
+      "mtime_ns": 1792454115888140191,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0024.private.json",
+      "device": 16777234,
+      "inode": 127082302,
+      "size": 1128,
+      "mode": "0o600",
+      "mtime_ns": 1792454115999927075,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0017.private.json",
+      "device": 16777234,
+      "inode": 127082281,
+      "size": 1175,
+      "mode": "0o600",
+      "mtime_ns": 1792454114723304714,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0010.private.json",
+      "device": 16777234,
+      "inode": 127082258,
+      "size": 3163,
+      "mode": "0o600",
+      "mtime_ns": 1792454113264327209,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0005.private.json",
+      "device": 16777234,
+      "inode": 127082243,
+      "size": 2514,
+      "mode": "0o600",
+      "mtime_ns": 1792454112102658508,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0002.private.json",
+      "device": 16777234,
+      "inode": 127082233,
+      "size": 778,
+      "mode": "0o600",
+      "mtime_ns": 1792454110241203367,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0026.private.json",
+      "device": 16777234,
+      "inode": 127082308,
+      "size": 1122,
+      "mode": "0o600",
+      "mtime_ns": 1792454116296553570,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0021.private.json",
+      "device": 16777234,
+      "inode": 127082293,
+      "size": 937,
+      "mode": "0o600",
+      "mtime_ns": 1792454115645913840,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0003.private.json",
+      "device": 16777234,
+      "inode": 127082236,
+      "size": 34430,
+      "mode": "0o600",
+      "mtime_ns": 1792454111156231860,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0004.private.json",
+      "device": 16777234,
+      "inode": 127082239,
+      "size": 4474,
+      "mode": "0o600",
+      "mtime_ns": 1792454111868379551,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0011.private.json",
+      "device": 16777234,
+      "inode": 127082261,
+      "size": 2949,
+      "mode": "0o600",
+      "mtime_ns": 1792454113378665840,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0016.private.json",
+      "device": 16777234,
+      "inode": 127082278,
+      "size": 1168,
+      "mode": "0o600",
+      "mtime_ns": 1792454114557269396,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0020.private.json",
+      "device": 16777234,
+      "inode": 127082290,
+      "size": 1160,
+      "mode": "0o600",
+      "mtime_ns": 1792454115060342227,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0027.private.json",
+      "device": 16777234,
+      "inode": 127082311,
+      "size": 1426,
+      "mode": "0o600",
+      "mtime_ns": 1792454116441322976,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0032.private.json",
+      "device": 16777234,
+      "inode": 127082327,
+      "size": 873,
+      "mode": "0o600",
+      "mtime_ns": 1792454117034724434,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0009.private.json",
+      "device": 16777234,
+      "inode": 127082255,
+      "size": 1863,
+      "mode": "0o600",
+      "mtime_ns": 1792454113154448760,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/budget-02.private.json",
+      "device": 16777234,
+      "inode": 127082341,
+      "size": 4450,
+      "mode": "0o600",
+      "mtime_ns": 1792454125393113215,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/0008.private.json",
+      "device": 16777234,
+      "inode": 127082252,
+      "size": 3514,
+      "mode": "0o600",
+      "mtime_ns": 1792454112700221070,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/budget-04.private.json",
+      "device": 16777234,
+      "inode": 127082347,
+      "size": 1917,
+      "mode": "0o600",
+      "mtime_ns": 1792454125957853774,
+      "nlink": 1,
+      "regular": true
+    },
+    {
+      "path": "raw/budget-03.private.json",
+      "device": 16777234,
+      "inode": 127082344,
+      "size": 832,
+      "mode": "0o600",
+      "mtime_ns": 1792454125850210798,
+      "nlink": 1,
+      "regular": true
+    }
+  ],
+  "directories": [
+    {
+      "path": ".",
+      "device": 16777234,
+      "inode": 127043780,
+      "mode": "0o700"
+    },
+    {
+      "path": "maintenance-v1-preserved",
+      "device": 16777234,
+      "inode": 127047008,
+      "mode": "0o700"
+    },
+    {
+      "path": "publication",
+      "device": 16777234,
+      "inode": 127064272,
+      "mode": "0o700"
+    },
+    {
+      "path": "publication/publication",
+      "device": 16777234,
+      "inode": 127077215,
+      "mode": "0o700"
+    },
+    {
+      "path": "publication/github-bodies",
+      "device": 16777234,
+      "inode": 127075078,
+      "mode": "0o700"
+    },
+    {
+      "path": "publication/__pycache__",
+      "device": 16777234,
+      "inode": 127072209,
+      "mode": "0o755"
+    },
+    {
+      "path": "publication/final-verification",
+      "device": 16777234,
+      "inode": 127077421,
+      "mode": "0o700"
+    },
+    {
+      "path": "draft-v1-preserved",
+      "device": 16777234,
+      "inode": 127047220,
+      "mode": "0o700"
+    },
+    {
+      "path": "completion",
+      "device": 16777234,
+      "inode": 127087875,
+      "mode": "0o700"
+    },
+    {
+      "path": "completion/publication",
+      "device": 16777234,
+      "inode": 127100226,
+      "mode": "0o700"
+    },
+    {
+      "path": "completion/github-bodies",
+      "device": 16777234,
+      "inode": 127096193,
+      "mode": "0o700"
+    },
+    {
+      "path": "completion/final-verification",
+      "device": 16777234,
+      "inode": 127101201,
+      "mode": "0o700"
+    },
+    {
+      "path": "correctness-v1-preserved",
+      "device": 16777234,
+      "inode": 127046955,
+      "mode": "0o700"
+    },
+    {
+      "path": "fixtures",
+      "device": 16777234,
+      "inode": 127043781,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner",
+      "device": 16777234,
+      "inode": 127045253,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src",
+      "device": 16777234,
+      "inode": 127045254,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/shared",
+      "device": 16777234,
+      "inode": 127045389,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/shared/python",
+      "device": 16777234,
+      "inode": 127045390,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/shared/python/zerde_common",
+      "device": 16777234,
+      "inode": 127045391,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot",
+      "device": 16777234,
+      "inode": 127045255,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/core",
+      "device": 16777234,
+      "inode": 127045259,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services",
+      "device": 16777234,
+      "inode": 127045269,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services/spam",
+      "device": 16777234,
+      "inode": 127045373,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services/memory_v2",
+      "device": 16777234,
+      "inode": 127045313,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services/repositories",
+      "device": 16777234,
+      "inode": 127045360,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services/ai",
+      "device": 16777234,
+      "inode": 127045271,
+      "mode": "0o700"
+    },
+    {
+      "path": "budget-owner/src/bot/services/handlers",
+      "device": 16777234,
+      "inode": 127045280,
+      "mode": "0o700"
+    },
+    {
+      "path": "raw",
+      "device": 16777234,
+      "inode": 127082230,
+      "mode": "0o700"
+    }
+  ],
+  "links": [],
+  "target_count": 36,
+  "protected_count": 412,
+  "directory_count": 28,
+  "zip_count": 0,
+  "historical_devices": [
+    16777232
+  ],
+  "current_devices": [
+    16777234
+  ],
+  "reason": "UNKNOWN",
+  "no_historical_volume_uuid_binding_available": true,
+  "current_content_hash_checked": false,
+  "scope_created": false,
+  "preparation_completed": false,
+  "apply_executed": false,
+  "deleted": 0,
+  "cloud_runtime_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "new_raw": 0,
+  "new_deadlines": 0
+}
