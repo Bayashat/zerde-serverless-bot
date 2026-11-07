@@ -1,0 +1,84 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "/root/cost22_identity_review",
+  "review_kind": "INDEPENDENT_MAINTENANCE_POST_LOCAL_SAFE_RECEIPTS_ONLY",
+  "reviewed_at": 1794078374.3275268,
+  "evidence_sha256": {
+    "scope.safe.json": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+    "tool-pre.safe.json": "c5ca5b7ccf686090f8e72cfc2c7e52292e42618694ed9b9bf02db86ca947f9dc",
+    "maintenance-pre.safe.json": "d39b15e1b7c05bda9cddd63912f88e76bca28b7f9ae33dedc22652c5a01b9c50",
+    "main.safe.json": "1589c7767db3581ece700219749d92ee12419f9cf9285389ca90c8b3ae7cba5d",
+    "independent.safe.json": "7f0427386fefe6f2b905a0072abc546192a42f0e73254571683a92a834ce500e",
+    "cost22-main.safe.json": "86a76376b8d0e4ccf518b168f22d81e51e4cd03ae6635c01822ede275d68af40",
+    "cost22-independent.safe.json": "7bc18bcb937eb4461b4955b9b987435a775f23870b45ca24d66d8e03b296c08c"
+  },
+  "reader_bindings": {
+    "scope_sha256": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+    "plan_sha256": "eac6e1873586e74eb602a30ae6d7d7f19403ca3ab6ea07b065b7223f851c2c2e",
+    "tool_sha256": "111af5d5b8bedd300f2d6b2f5cd19a2acec52601264ae038b6cfd5a2baf2e214"
+  },
+  "additional_call_receipts_sha256": {
+    "main-call-01.safe.json": "fad531618d03f7330561fbfceef1f31c78f4ac2dea51d28c673b5b2402aeaf37",
+    "main-call-02.safe.json": "cfbb84c5d639b694f1e1e1e5f000e5e8ea64f08b6bcf194d53335b14cf1abcbc",
+    "main-call-03.safe.json": "14a45a4b6aa40fa668697e8b0cadc19b7451f9d12ab900b26638aa563bdcc51a",
+    "independent-call-01.safe.json": "955e34398332d7d479d16aece63a66985491bf1d70355278307469d41373d8da",
+    "independent-call-02.safe.json": "8a724fd3b96679186a3b0b1ee3de08af5524365757ffecfa1c13279af6c44cbf",
+    "independent-call-03.safe.json": "fe905b3369589b9f6399c8cd2773af0da8b31be1a2f8e2871c81a0033331f8a1"
+  },
+  "verified": {
+    "main_and_independent_complete": true,
+    "independent_fresh_after_main": true,
+    "exact_original_two_SYSTEM_ARNS": true,
+    "exact_BackupNotFoundException_HTTP400_retry_int_zero": true,
+    "original_deadlines_unchanged": true,
+    "actual_disappearance_time_UNKNOWN": true,
+    "delay_reason_UNKNOWN": true,
+    "logical_calls_total": 6,
+    "before_send_events_total": 6,
+    "observed_service_responses_total": 6,
+    "cloud_writes_total": 0,
+    "persisted_runtime_raw_total": 0,
+    "new_raw_deadlines": 0,
+    "main_and_independent_safe_projection_only": true,
+    "runtime_deployments": 0,
+    "model_calls": 0,
+    "ui_actions": 0,
+    "no_failed_reader_receipts": true,
+    "cost22_raw_hash_read_count": 0,
+    "cost22_identity_stop_preserved": true,
+    "old36_stop_not_reexecuted": true,
+    "remaining11_raw_identity_not_checked": true,
+    "no_raw_deletion_authority_or_preparation": true,
+    "online_retired_objects_unchanged": 37
+  },
+  "system_read_intervals": {
+    "main": [
+      [
+        1794078235.813731,
+        1794078236.250614
+      ],
+      [
+        1794078236.2571871,
+        1794078236.668763
+      ]
+    ],
+    "independent": [
+      [
+        1794078291.441972,
+        1794078291.811658
+      ],
+      [
+        1794078291.8184588,
+        1794078292.234987
+      ]
+    ]
+  },
+  "scope_of_conclusion": "Only two exact SYSTEM readonly responsibilities can close based on both fresh absent observations;13 original raw duties remain. No actual expiry-time disappearance or all copies gone inference.",
+  "sequential_not_atomic": true,
+  "all_cloud_copies_gone": false,
+  "physical_erasure_verified": false,
+  "reviewer_aws_calls": 0,
+  "reviewer_raw_reads_or_hashes": 0,
+  "source_mutations": 0,
+  "unresolved_maintenance_findings": []
+}

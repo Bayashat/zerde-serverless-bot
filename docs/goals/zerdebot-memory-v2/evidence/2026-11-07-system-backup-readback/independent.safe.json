@@ -1,0 +1,91 @@
+{
+  "status": "READBACK_COMPLETE",
+  "role": "independent",
+  "scope_sha256": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+  "plan_sha256": "eac6e1873586e74eb602a30ae6d7d7f19403ca3ab6ea07b065b7223f851c2c2e",
+  "tool_sha256": "111af5d5b8bedd300f2d6b2f5cd19a2acec52601264ae038b6cfd5a2baf2e214",
+  "main_sha256": "1589c7767db3581ece700219749d92ee12419f9cf9285389ca90c8b3ae7cba5d",
+  "started_at": 1794078290.967346,
+  "finished_at": 1794078292.2377129,
+  "calls": [
+    {
+      "operation": "sts/get_caller_identity",
+      "request_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "intent_at": 1794078291.1126888,
+      "before_send_events": 1,
+      "finished_at": 1794078291.424801,
+      "response_sha256": "9318046a3f65ffaff9a6eefebb3d09452096ba42a791a05da5237b87be6ce125",
+      "http_status": 200,
+      "retry_attempts": 0,
+      "request_id": "bccbe1e9-f056-4e46-b0f1-5d5d97d585af",
+      "error_code": null
+    },
+    {
+      "operation": "dynamodb/describe_backup",
+      "request_sha256": "d342024e15e213823db44a445564fca7ff9bab3fba5ee08b405f5c18bff184a7",
+      "intent_at": 1794078291.441972,
+      "before_send_events": 1,
+      "finished_at": 1794078291.811658,
+      "response_sha256": "09634ca84d08c0d398c788b704decd0be3cefd33e6f4b121b8dd282abb040319",
+      "http_status": 400,
+      "retry_attempts": 0,
+      "request_id": "OESU1N636SL097KF6IKJVGKFIVVV4KQNSO5AEMVJF66Q9ASUAAJG",
+      "error_code": "BackupNotFoundException"
+    },
+    {
+      "operation": "dynamodb/describe_backup",
+      "request_sha256": "fc7e2af933bd35c87fe37d583e8a98a56bd726c4631358f8bf83a56d55cdda36",
+      "intent_at": 1794078291.8184588,
+      "before_send_events": 1,
+      "finished_at": 1794078292.234987,
+      "response_sha256": "9a7176670bcdf3b4f7d0bbaecfeef06a83e6ad9e15b678ed56d527b78301f00f",
+      "http_status": 400,
+      "retry_attempts": 0,
+      "request_id": "NS6KG0JLU67PD46O2V2AEEVV67VV4KQNSO5AEMVJF66Q9ASUAAJG",
+      "error_code": "BackupNotFoundException"
+    }
+  ],
+  "results": [
+    {
+      "id": "old-memory-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "3ccf091020f730f5a88e128a82c07c781e2b51eae027e37eca53924e6fd3a614",
+      "original_deadline_epoch": 1793533562.425,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078291.441972,
+        1794078291.811658
+      ],
+      "lateness_seconds_at_intent": 544729.016972065
+    },
+    {
+      "id": "old-stats-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "be225c94e8f9916b9f1eb97dc28220336656d0528981f8b8ecc6cc36b89bf764",
+      "original_deadline_epoch": 1793609111.254,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078291.8184588,
+        1794078292.234987
+      ],
+      "lateness_seconds_at_intent": 469180.56445884705
+    }
+  ],
+  "logical_calls": 3,
+  "before_send_events": 3,
+  "observed_service_responses": 3,
+  "credential_provider": "shared-credentials-file",
+  "cloud_writes": 0,
+  "raw_files_created": 0,
+  "new_deadlines": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "all_cloud_copies_gone": false,
+  "physical_erasure_verified": false,
+  "sequential_not_atomic": true
+}

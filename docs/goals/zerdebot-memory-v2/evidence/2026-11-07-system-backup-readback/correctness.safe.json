@@ -1,0 +1,54 @@
+{
+  "status": "ALIGNED",
+  "role": "independent_correctness_POST",
+  "reviewer": "/root/system_scope_review",
+  "reviewed_at": "2026-11-07T19:06:12.590394+00:00",
+  "evidence_sha256": {
+    "scope.safe.json": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+    "tool-pre.safe.json": "c5ca5b7ccf686090f8e72cfc2c7e52292e42618694ed9b9bf02db86ca947f9dc",
+    "maintenance-pre.safe.json": "d39b15e1b7c05bda9cddd63912f88e76bca28b7f9ae33dedc22652c5a01b9c50",
+    "main.safe.json": "1589c7767db3581ece700219749d92ee12419f9cf9285389ca90c8b3ae7cba5d",
+    "independent.safe.json": "7f0427386fefe6f2b905a0072abc546192a42f0e73254571683a92a834ce500e",
+    "cost22-main.safe.json": "86a76376b8d0e4ccf518b168f22d81e51e4cd03ae6635c01822ede275d68af40",
+    "cost22-independent.safe.json": "7bc18bcb937eb4461b4955b9b987435a775f23870b45ca24d66d8e03b296c08c"
+  },
+  "reader_bindings": {
+    "scope_sha256": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+    "plan_sha256": "eac6e1873586e74eb602a30ae6d7d7f19403ca3ab6ea07b065b7223f851c2c2e",
+    "tool_sha256": "111af5d5b8bedd300f2d6b2f5cd19a2acec52601264ae038b6cfd5a2baf2e214"
+  },
+  "findings": [
+    "Both original SYSTEM ARNs independently returned BackupNotFoundException with HTTP400 and strict integer RetryAttempts0 after their original deadlines.",
+    "Main and independent each performed exactly STS GetCallerIdentity plus two exact DescribeBackup calls: 3 logical calls, 3 before-send hooks, 3 observed service responses; independent began after main finished.",
+    "Original memory scope and stats canonical SYSTEM ARN/TableId hash bindings validated; original expiry floats unchanged; USER restore backup hash excluded.",
+    "All per-call persisted safe receipts agree with role reports and ordered timing; no failure/startup-failure markers.",
+    "Cost22 main and independent metadata receipts agree with original ledger array and historical POST mtime: all22 devices16777232 to16777234; inode/size/mode/mtime equal; full51regular+2directories metadata agrees.",
+    "Cost22 remains BLOCKED, with zero target content reads/hash and no deletion scope/preparation/notice/apply/absence execution; original36 STOP remains separate.",
+    "No original raw contents were read, copied, reconstructed or deleted by this review; only safe source evidence and receipt metadata read."
+  ],
+  "system_result": "BOTH_EXACT_SYSTEM_ENDPOINTS_ABSENT_AT_TWO_OBSERVED_READ_INTERVALS",
+  "system_independent_logical_calls": 3,
+  "system_total_logical_calls": 6,
+  "system_total_before_send_events": 6,
+  "system_total_observed_service_responses": 6,
+  "cost22_result": "BLOCKED_DEVICE_IDENTITY_CHANGED",
+  "cost22_target_count": 22,
+  "cost22_regular_count": 51,
+  "cost22_directory_count": 2,
+  "raw_content_reads": 0,
+  "raw_hash_reads": 0,
+  "deleted": 0,
+  "cloud_writes": 0,
+  "raw_files_created": 0,
+  "new_deadlines": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "runtime_deployments": 0,
+  "limitations": [
+    "Exact endpoint absence now does not identify actual service disappearance time or prove absence at original deadline.",
+    "before-send counts are SDK events, not universal wire-transmission proof.",
+    "Full service responses were parsed transiently; only safe projections and canonical response hashes persisted.",
+    "This POST validates actual saved cost22 independent metadata exploration; it does not perform another target inventory or hash scan.",
+    "All cloud copies gone, secure erasure, natural business acceptance and a change to37 online retirements are not established."
+  ]
+}
