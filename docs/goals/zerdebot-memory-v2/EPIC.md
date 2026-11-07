@@ -1,6 +1,6 @@
-## 四群已发布；36原文身份待核
+## 四群已发布；余13项原文责任
 
-设备号差异停止删除，余15项原期限保持。[实际记录](MEDIA_RAW_EXPIRY_IDENTITY_STOP.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/ece7b21cec0c8ef1664912ca21b80f4fa0b8e6c0/docs/goals/zerdebot-memory-v2/EPIC.md)。
+两项SYSTEM当前不存在；36/22原文身份待核。[实际记录](SYSTEM_BACKUP_READBACK_NOV7.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/413c5db9f59f437b5b4bcccb0af9911381aaef26/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 

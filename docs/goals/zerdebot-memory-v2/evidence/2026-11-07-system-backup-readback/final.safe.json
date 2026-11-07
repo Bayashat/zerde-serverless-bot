@@ -1,0 +1,172 @@
+{
+  "status": "SYSTEM_ABSENT_COST22_IDENTITY_STOP",
+  "at": 1794078612.242571,
+  "evidence_sha256": {
+    "scope.safe.json": "72952bd872d687fad3a65ee0b094d373e7ad5607a356672cd1bf704de4e9cffe",
+    "tool-pre.safe.json": "c5ca5b7ccf686090f8e72cfc2c7e52292e42618694ed9b9bf02db86ca947f9dc",
+    "maintenance-pre.safe.json": "d39b15e1b7c05bda9cddd63912f88e76bca28b7f9ae33dedc22652c5a01b9c50",
+    "main.safe.json": "1589c7767db3581ece700219749d92ee12419f9cf9285389ca90c8b3ae7cba5d",
+    "independent.safe.json": "7f0427386fefe6f2b905a0072abc546192a42f0e73254571683a92a834ce500e",
+    "cost22-main.safe.json": "86a76376b8d0e4ccf518b168f22d81e51e4cd03ae6635c01822ede275d68af40",
+    "cost22-independent.safe.json": "7bc18bcb937eb4461b4955b9b987435a775f23870b45ca24d66d8e03b296c08c",
+    "correctness.safe.json": "bdbbf5937630c06d9d729c9bff8452d9c4e6594790d439166860b0ec0d277b48",
+    "maintenance.safe.json": "df6ea3b8f6bd7d54d49fa56d27247e1613b3aa89161bb43370c0d2f0e9b475fc"
+  },
+  "remaining_original_duties": 13,
+  "remaining_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ]
+  ],
+  "closed_system_duties": [
+    [
+      "2026-11-01T11:46:02.425+00:00",
+      "old-memory-SYSTEM-readonly"
+    ],
+    [
+      "2026-11-02T08:45:11.254+00:00",
+      "old-stats-SYSTEM-readonly"
+    ]
+  ],
+  "system_main": [
+    {
+      "id": "old-memory-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "3ccf091020f730f5a88e128a82c07c781e2b51eae027e37eca53924e6fd3a614",
+      "original_deadline_epoch": 1793533562.425,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078235.813731,
+        1794078236.250614
+      ],
+      "lateness_seconds_at_intent": 544673.3887310028
+    },
+    {
+      "id": "old-stats-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "be225c94e8f9916b9f1eb97dc28220336656d0528981f8b8ecc6cc36b89bf764",
+      "original_deadline_epoch": 1793609111.254,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078236.2571871,
+        1794078236.668763
+      ],
+      "lateness_seconds_at_intent": 469125.00318717957
+    }
+  ],
+  "system_independent": [
+    {
+      "id": "old-memory-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "3ccf091020f730f5a88e128a82c07c781e2b51eae027e37eca53924e6fd3a614",
+      "original_deadline_epoch": 1793533562.425,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078291.441972,
+        1794078291.811658
+      ],
+      "lateness_seconds_at_intent": 544729.016972065
+    },
+    {
+      "id": "old-stats-SYSTEM-readonly",
+      "state": "ABSENT",
+      "error_code": "BackupNotFoundException",
+      "requested_backup_arn_sha256": "be225c94e8f9916b9f1eb97dc28220336656d0528981f8b8ecc6cc36b89bf764",
+      "original_deadline_epoch": 1793609111.254,
+      "actual_disappearance_time": "UNKNOWN",
+      "late_reason": "UNKNOWN",
+      "read_interval": [
+        1794078291.8184588,
+        1794078292.234987
+      ],
+      "lateness_seconds_at_intent": 469180.56445884705
+    }
+  ],
+  "late_reason": "UNKNOWN",
+  "target_count": 22,
+  "protected_count": 29,
+  "directory_count": 2,
+  "zip_count": 0,
+  "link_count": 0,
+  "cost22_deadline_epoch": 1793059810.8078651,
+  "historical_device": 16777232,
+  "current_device": 16777234,
+  "cost22_device_change_reason": "UNKNOWN",
+  "deleted": 0,
+  "new_raw": 0,
+  "new_deadlines": 0,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "cloud_runtime_calls": 6,
+  "before_send_events": 6,
+  "observed_service_responses": 6,
+  "raw_deletion_scope_created": false,
+  "raw_preparation_completed": false,
+  "target_content_hash_checked": false,
+  "prior36_identity_stop": "PRESERVED_NOT_REEXECUTED",
+  "other_11_raw_batches_identity": "NOT_CHECKED_THIS_RUN",
+  "weekly_observation": "NO_NEW_COMPLETION_RECEIPT_THIS_RUN",
+  "sequential_not_atomic": true,
+  "all_cloud_copies_gone": false,
+  "physical_erasure_verified": false,
+  "online_retired_objects_unchanged": 37,
+  "docs_independent": "PENDING_SEPARATE_RECEIPT"
+}

@@ -1,3 +1,13 @@
+## Nov7：两项 SYSTEM 原身份只读责任闭合，22份原文身份停止
+
+原 Nov1 old-memory 与 Nov2 old-stats SYSTEM 备份经主、独立 fresh 精确 DescribeBackup，均返回 BackupNotFoundException／HTTP400／RetryAttempts整数0。两角色各1次STS及2次精确备份只读，共6次逻辑调用、6次before-send事件、6份服务响应；无云写。只证明两次实际读取时精确ARN不存在，实际消失时间UNKNOWN，不能证明原期限时已消失。两原期限固定，检查迟延原因UNKNOWN，37在线退役数不增。
+
+另22份cost-gate原文逐项身份核验：device16777232→16777234，inode/size/mode及原POST mtime保持；原因UNKNOWN，完整身份门失败。本批0目标字节读取/hash，51regular＝22目标＋29保护、2目录、0link/ZIP；没有原文删除scope、准备、公告、apply或absence验证。先前36份身份阻断保留，其余11原文批本轮未验身份，不推广结论。仍有13项原文责任，均逾期且各原期限不变。[实际记录](SYSTEM_BACKUP_READBACK_NOV7.md)、[完整副本表](RETAINED_COPIES.md)。
+
+本轮0删除、新持久raw、新期限、UI、model、预算、运行部署、自然增量；完整AWS响应只在内存解析，保留安全投影与canonical hash。普通unlink非安全擦盘，精确SYSTEM不存在不等于所有云副本消失。PR291运行与四群RELEASED_OBSERVING保持；ask真实有用性、自然质量、其他业务/费用UNKNOWN及周观察无新完成回执。无新直接人类Telegram窗口，不重复询问或打开UI。20任务14OPEN6CLOSED＋EpicOPEN保持。
+
+## 以下为此前完整冻结阶段，不作当前数量或重跑指令
+
 ## Oct31：36份媒体原文因设备身份差异停止
 
 最早未履行36项的原独立回执device=16777232，当前36项及root/raw目录device=16777234；inode/size/mode/mtime_ns一致，仍不满足完整身份门。主独核对后停止，原因UNKNOWN；不替换历史设备号继续删除。本轮0删除、0新原文/期限、0云运行API/UI/模型/运行部署/自然增量。
