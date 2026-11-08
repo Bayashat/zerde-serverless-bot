@@ -1,6 +1,6 @@
 ## 四群已发布；余13项原文责任
 
-两项SYSTEM当前不存在；36/22原文身份待核。[实际记录](SYSTEM_BACKUP_READBACK_NOV7.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/413c5db9f59f437b5b4bcccb0af9911381aaef26/docs/goals/zerdebot-memory-v2/EPIC.md)。
+36/22/2原文身份待核。[实际记录](COST_REPORT_RAW_IDENTITY_STOP_NOV8.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/3020c545bf7d8d67bae6016221e11fc0d674b399/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
