@@ -1,0 +1,103 @@
+{
+  "status": "COST2_ORIGINAL_IDENTITY_STOP",
+  "at": 1794147120.219179,
+  "evidence_sha256": {
+    "PLAN.md": "8b7080148a0370b504b3c826e2eed705ccb3841956ec36d4f2db846323a89285",
+    "identity-scope.safe.json": "4397bcdfd80047743bb0bfdc721770efeaf87de03aff40084e90fc64527a673f",
+    "identity_probe.py": "ff1e3a6b6427e954e36bac44ae14f66fbffd69505097de1cffd59931f58c607e",
+    "tool-pre.safe.json": "247db10ccb9fbb02e87509ee367b13228f60101a45afa69e8f66637b680043d5",
+    "maintenance-pre.safe.json": "69af328503d440682d06845f6b473aa755d7a45eb132b94d96f8e0349664b44f",
+    "identity-main.safe.json": "47ff943d215f34e04857735bcf22e29c33be503529116336137691245fca8abc",
+    "identity-independent.safe.json": "beb460e4bc5502578c993417ef30542c28f2bd7a94d4deaf1c2d5b408cd40c9d",
+    "correctness.safe.json": "d60773380945ec9803357f39975567fdd4c2c743d8363adbf68c421472840246",
+    "maintenance.safe.json": "f68b349162ae22f642cb97c215330bab0b7bc8c10cdc3dda05c98999d092bf06"
+  },
+  "remaining_original_duties": 13,
+  "remaining_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ]
+  ],
+  "ledger_sha256": "a7a82e5bddc6b66605b7e62708c8927bc2845de0683213ecc4531652bcf07bfb",
+  "deadline_epoch": 1793066005.8931148,
+  "late_reason": "UNKNOWN",
+  "identity_change_reason": "UNKNOWN",
+  "historical_device": 16777232,
+  "current_device": 16777234,
+  "original_mtime": "NOT_RECORDED_IN_LEDGER_OR_POST",
+  "deleted": 0,
+  "new_raw": 0,
+  "new_deadlines": 0,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "cloud_runtime_calls": 0,
+  "raw_deletion_scope_created": false,
+  "raw_preparation_completed": false,
+  "target_content_hash_checked": false,
+  "prior36_and22_identity_stop": "PRESERVED_NOT_REEXECUTED",
+  "other_10_raw_batches_identity": "NOT_CHECKED_THIS_RUN",
+  "weekly_observation": "NO_NEW_COMPLETION_RECEIPT_THIS_RUN",
+  "sequential_not_atomic": true,
+  "all_cloud_copies_gone": false,
+  "physical_erasure_verified": false,
+  "online_retired_objects_unchanged": 37,
+  "docs_independent": "PENDING_SEPARATE_RECEIPT",
+  "target_count": 2,
+  "regular_count": 28,
+  "protected_count": 26,
+  "directory_count": 2,
+  "zip_count": 0,
+  "link_count": 0
+}

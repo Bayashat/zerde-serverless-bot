@@ -1,0 +1,362 @@
+{
+  "status": "BLOCKED_ORIGINAL_IDENTITY_MISMATCH",
+  "role": "independent",
+  "started_at": 1794146123.6864152,
+  "finished_at": 1794146123.687708,
+  "ledger_sha256": "a7a82e5bddc6b66605b7e62708c8927bc2845de0683213ecc4531652bcf07bfb",
+  "post_sha256": "b96cbc1c6468b6ed70d0f373266640cfef5208de577612b3a2c49418a0ab639c",
+  "deadline_epoch": 1793066005.8931148,
+  "anchor_epoch": 1792461205.8931148,
+  "target_count": 2,
+  "regular_count": 28,
+  "protected_count": 26,
+  "directory_count": 2,
+  "link_count": 0,
+  "zip_count": 0,
+  "targets": [
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-readback/raw/001.private.json",
+      "original": {
+        "dev": 16777232,
+        "ino": 127120683,
+        "size": 777,
+        "mode": 384,
+        "sha256": "177405962ee00587e424ffc5699e1672215a68039f06f36797a9770d00c81421"
+      },
+      "current": {
+        "dev": 16777234,
+        "ino": 127120683,
+        "size": 777,
+        "mode": 384,
+        "mtime_ns": 1792461206338835403,
+        "nlink": 1,
+        "kind": "regular"
+      },
+      "matches": {
+        "dev": false,
+        "ino": true,
+        "size": true,
+        "mode": true
+      },
+      "original_mtime": "NOT_RECORDED",
+      "content_read": false,
+      "content_hash_checked": false
+    },
+    {
+      "path": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-10-20-cost-report-readback/raw/002.private.json",
+      "original": {
+        "dev": 16777232,
+        "ino": 127120689,
+        "size": 739,
+        "mode": 384,
+        "sha256": "75c2d9f282381f05ac5060efb256c4f36df1a4df88b4ed6d9c85527d3a1e612a"
+      },
+      "current": {
+        "dev": 16777234,
+        "ino": 127120689,
+        "size": 739,
+        "mode": 384,
+        "mtime_ns": 1792461206774347848,
+        "nlink": 1,
+        "kind": "regular"
+      },
+      "matches": {
+        "dev": false,
+        "ino": true,
+        "size": true,
+        "mode": true
+      },
+      "original_mtime": "NOT_RECORDED",
+      "content_read": false,
+      "content_hash_checked": false
+    }
+  ],
+  "inventory": {
+    ".": {
+      "dev": 16777234,
+      "ino": 127119253,
+      "size": 928,
+      "mode": 448,
+      "mtime_ns": 1792461322154551620,
+      "nlink": 29,
+      "kind": "directory"
+    },
+    "CURRENT.md": {
+      "dev": 16777234,
+      "ino": 127120322,
+      "size": 312,
+      "mode": 384,
+      "mtime_ns": 1792461130758519634,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "PLAN.md": {
+      "dev": 16777234,
+      "ino": 127119254,
+      "size": 4242,
+      "mode": 384,
+      "mtime_ns": 1792460998427895508,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "author-controls-v2.safe.json": {
+      "dev": 16777234,
+      "ino": 127120090,
+      "size": 590,
+      "mode": 384,
+      "mtime_ns": 1792461042298320877,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "author-controls.safe.json": {
+      "dev": 16777234,
+      "ino": 127119476,
+      "size": 660,
+      "mode": 384,
+      "mtime_ns": 1792460931431401693,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-controls-v2.py": {
+      "dev": 16777234,
+      "ino": 127120374,
+      "size": 11390,
+      "mode": 384,
+      "mtime_ns": 1792461142004640969,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-controls.py": {
+      "dev": 16777234,
+      "ino": 127120315,
+      "size": 11373,
+      "mode": 420,
+      "mtime_ns": 1792461130641925103,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-controls.safe.json": {
+      "dev": 16777234,
+      "ino": 127120534,
+      "size": 2612,
+      "mode": 384,
+      "mtime_ns": 1792461142193284142,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-draft-v1.safe.json": {
+      "dev": 16777234,
+      "ino": 127119600,
+      "size": 1358,
+      "mode": 384,
+      "mtime_ns": 1792460985597095894,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-harness-v1-failure.safe.json": {
+      "dev": 16777234,
+      "ino": 127120373,
+      "size": 408,
+      "mode": 384,
+      "mtime_ns": 1792461142004449969,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "correctness-reviewed-v1.py": {
+      "dev": 16777234,
+      "ino": 127119599,
+      "size": 11685,
+      "mode": 384,
+      "mtime_ns": 1792460985594631053,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "independent-post.safe.json": {
+      "dev": 16777234,
+      "ino": 127120868,
+      "size": 3160,
+      "mode": 384,
+      "mtime_ns": 1792461322154688954,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "intent.safe.json": {
+      "dev": 16777234,
+      "ino": 127120678,
+      "size": 193,
+      "mode": 384,
+      "mtime_ns": 1792461205763443479,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "maintenance-delta-controls.py": {
+      "dev": 16777234,
+      "ino": 127120359,
+      "size": 9399,
+      "mode": 420,
+      "mtime_ns": 1792461140365142884,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "maintenance-delta-controls.safe.json": {
+      "dev": 16777234,
+      "ino": 127120364,
+      "size": 1801,
+      "mode": 384,
+      "mtime_ns": 1792461140594785769,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "maintenance-pre-v1.safe.json": {
+      "dev": 16777234,
+      "ino": 127119589,
+      "size": 1898,
+      "mode": 384,
+      "mtime_ns": 1792460981760008588,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "maintenance-pre.safe.json": {
+      "dev": 16777234,
+      "ino": 127120565,
+      "size": 2085,
+      "mode": 384,
+      "mtime_ns": 1792461167382383621,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "plan-pre-aligned-v1-preserved.safe.json": {
+      "dev": 16777234,
+      "ino": 127120174,
+      "size": 3197,
+      "mode": 384,
+      "mtime_ns": 1792461056289703257,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "plan-pre-v1.safe.json": {
+      "dev": 16777234,
+      "ino": 127119378,
+      "size": 2880,
+      "mode": 384,
+      "mtime_ns": 1792460873353361580,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "plan-pre-v2.safe.json": {
+      "dev": 16777234,
+      "ino": 127120175,
+      "size": 4189,
+      "mode": 384,
+      "mtime_ns": 1792461056289873174,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "plan-pre.safe.json": {
+      "dev": 16777234,
+      "ino": 127120176,
+      "size": 4189,
+      "mode": 384,
+      "mtime_ns": 1792461056290023591,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "raw": {
+      "dev": 16777234,
+      "ino": 127120679,
+      "size": 128,
+      "mode": 448,
+      "mtime_ns": 1792461206773854055,
+      "nlink": 4,
+      "kind": "directory"
+    },
+    "raw/001.private.json": {
+      "dev": 16777234,
+      "ino": 127120683,
+      "size": 777,
+      "mode": 384,
+      "mtime_ns": 1792461206338835403,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "raw/002.private.json": {
+      "dev": 16777234,
+      "ino": 127120689,
+      "size": 739,
+      "mode": 384,
+      "mtime_ns": 1792461206774347848,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "raw-anchor.safe.json": {
+      "dev": 16777234,
+      "ino": 127120680,
+      "size": 202,
+      "mode": 384,
+      "mtime_ns": 1792461205893510594,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "raw-retention.safe.json": {
+      "dev": 16777234,
+      "ino": 127120690,
+      "size": 766,
+      "mode": 384,
+      "mtime_ns": 1792461206777045690,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "read_existing-v1-unexecuted.py": {
+      "dev": 16777234,
+      "ino": 127119624,
+      "size": 11685,
+      "mode": 384,
+      "mtime_ns": 1792460998427335590,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "read_existing.py": {
+      "dev": 16777234,
+      "ino": 127119363,
+      "size": 12614,
+      "mode": 384,
+      "mtime_ns": 1792461048879704376,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "result.safe.json": {
+      "dev": 16777234,
+      "ino": 127120691,
+      "size": 602,
+      "mode": 384,
+      "mtime_ns": 1792461206778316861,
+      "nlink": 1,
+      "kind": "regular"
+    },
+    "tool-pre.safe.json": {
+      "dev": 16777234,
+      "ino": 127120650,
+      "size": 3151,
+      "mode": 384,
+      "mtime_ns": 1792461183456060136,
+      "nlink": 1,
+      "kind": "regular"
+    }
+  },
+  "inventory_before_after_equal": true,
+  "raw_content_reads": 0,
+  "raw_hash_reads": 0,
+  "source_writes": 0,
+  "deletions": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "original_mtime": "NOT_RECORDED_IN_LEDGER_OR_POST",
+  "fresh_mtime_not_historical": true,
+  "identity_change_reason": "UNKNOWN",
+  "deletion_scope_created": false,
+  "preparation_completed": false,
+  "notice_created": false,
+  "apply_executed": false,
+  "sequential_not_atomic": true,
+  "main_sha256": "47ff943d215f34e04857735bcf22e29c33be503529116336137691245fca8abc"
+}

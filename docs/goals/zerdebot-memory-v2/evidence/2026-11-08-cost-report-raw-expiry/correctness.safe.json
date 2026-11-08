@@ -1,0 +1,72 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "/root/system_scope_review",
+  "review_kind": "INDEPENDENT_CORRECTNESS_POST_METADATA_ONLY",
+  "at": 1794146847.512537,
+  "evidence_sha256": {
+    "PLAN.md": "8b7080148a0370b504b3c826e2eed705ccb3841956ec36d4f2db846323a89285",
+    "identity-scope.safe.json": "4397bcdfd80047743bb0bfdc721770efeaf87de03aff40084e90fc64527a673f",
+    "identity_probe.py": "ff1e3a6b6427e954e36bac44ae14f66fbffd69505097de1cffd59931f58c607e",
+    "tool-pre.safe.json": "247db10ccb9fbb02e87509ee367b13228f60101a45afa69e8f66637b680043d5",
+    "maintenance-pre.safe.json": "69af328503d440682d06845f6b473aa755d7a45eb132b94d96f8e0349664b44f",
+    "identity-main.safe.json": "47ff943d215f34e04857735bcf22e29c33be503529116336137691245fca8abc",
+    "identity-independent.safe.json": "beb460e4bc5502578c993417ef30542c28f2bd7a94d4deaf1c2d5b408cd40c9d"
+  },
+  "source_evidence_sha256": {
+    "raw-retention.safe.json": "a7a82e5bddc6b66605b7e62708c8927bc2845de0683213ecc4531652bcf07bfb",
+    "independent-post.safe.json": "b96cbc1c6468b6ed70d0f373266640cfef5208de577612b3a2c49418a0ab639c"
+  },
+  "identity_intent_sha256": {
+    "main": "52eea40f721c1853dc02bcba3b5032cabc9cdccafedfbf24805a76961ef1b452",
+    "independent": "c5eb72a719692104995697f4a6b377bbfa3f92dc5e2655aaa723bdd66e7a0852"
+  },
+  "result": "BLOCKED_ORIGINAL_IDENTITY_MISMATCH",
+  "target_count": 2,
+  "regular_count": 28,
+  "protected_count": 26,
+  "directory_count": 2,
+  "link_count": 0,
+  "zip_count": 0,
+  "anchor_epoch": 1792461205.8931148,
+  "deadline_epoch": 1793066005.8931148,
+  "historical_device": 16777232,
+  "current_device": 16777234,
+  "other_historical_identity_fields_match": [
+    "ino",
+    "size",
+    "mode"
+  ],
+  "original_mtime": "NOT_RECORDED_IN_LEDGER_OR_POST",
+  "fresh_mtime_not_historical": true,
+  "main_and_independent_inventory_equal": true,
+  "independent_after_main": true,
+  "identity_change_reason": "UNKNOWN",
+  "late_reason": "UNKNOWN",
+  "formal_main_executions_by_reviewer": 0,
+  "formal_independent_executions_by_reviewer": 1,
+  "target_content_reads": 0,
+  "target_content_hashes": 0,
+  "source_writes": 0,
+  "deletions": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "raw_deletion_scope_created": false,
+  "raw_preparation_completed": false,
+  "notice_created": false,
+  "apply_executed": false,
+  "sequential_not_atomic": true,
+  "checks": [
+    "Both exact original safe-source hashes and original float epochs verified without ISO roundtrip.",
+    "Both role results pass the frozen full metadata validator and have bound intent PREs, ordered times, no failure marker; independent receipt binds actual main SHA.",
+    "Original target array order preserved; both targets differ only in known historical dev among compared fields; raw bytes/hash not accessed.",
+    "Complete fresh metadata inventories match main vs independent:28regular=2targets+26protected,2directories,0links,0ZIP; each role binds direct target samples to both inventory passes.",
+    "No original mtime appears in ledger or original independentPOST; fresh values do not prove historical invariance.",
+    "Metadata-only identity scope is not deletion authorization; original36/22stop and other10 batches remain outside this inspection."
+  ],
+  "limitations": [
+    "Device change reason remains UNKNOWN; no reboot/remount/migration conclusion or replacement of historical device baseline.",
+    "Raw content hash was not recomputed; no claim that original contents have remained identical.",
+    "Original retention obligation is still unresolved; this stop does not extend the original deadline.",
+    "Sequential metadata reads are not an atomic snapshot; no cloud/UI/model/budget operation occurred."
+  ]
+}
