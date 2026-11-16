@@ -1,3 +1,7 @@
+## 2026-11-17 本地：产品验收优先准备
+
+主目录main已从2f3abe7快进至f237e40，工作区干净；实际同步回执位于新本地入口main-sync.safe.json。104源码核对一致，未运行现场或部署。新计划、单一TODO及执行工具已通过独立正确性/维护PRE，主9＋独立37＋维护22项离线检查通过；[实际准备回执](evidence/2026-11-17-ask-acceptance-preparation/preparation.safe.json)。真实窗口、现场与独立语义验收仍待。探索误读过期模板3次已停止并排除其派生结论，旧失败保全。见[本轮合同](ASK_ACCEPTANCE_PRIORITY.md)和[TODO](TASKS.md)。下方冻结历史不改。
+
 ## Nov16：5份费用指标诊断原文在原设备身份门停止
 
 本批5份cost-metrics-diagnostic原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。两个原ledger与两个原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存60regular＝5目标＋55保护、4目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。

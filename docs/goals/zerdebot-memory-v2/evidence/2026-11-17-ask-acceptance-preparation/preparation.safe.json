@@ -1,0 +1,58 @@
+{
+  "status": "LOCAL_PREPARATION_ALIGNED_WAITING_NEW_EXPLICIT_HUMAN_WINDOW",
+  "at": 1794857313.7946181,
+  "runtime_source": "9e962c20f71586688736858a962f3199edcd53c8",
+  "owner_files": 104,
+  "tools": {
+    "collector.py": "4bd389aacc69673b499225142a254128c8265863a28ad9b871d426fbb9b05b32",
+    "read_budget.py": "1840cfec7ae12164d01fb800988368d477336f830d96e908803f90f786554800",
+    "ui_record.py": "80c57f21a2ee6245663ea8c69980b70a81530cb8e3479f878d2503cb6add5405",
+    "verify_actual_canary.py": "f33cc4fe3e3b3fe2c042c2e88ba481d269a629575b76b9aa1a97d0e07fb80d30"
+  },
+  "evidence_sha256": {
+    "PLAN.md": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22",
+    "POST_PLAN.md": "5481381404761576ef69d6b1b44fa0313e03a8131f764288ec3cc7f909b33079",
+    "prior-duties.safe.json": "d4699831058501d8573593e569fe8b7655ee5b7426e3674448ef7c85eaa3962f",
+    "config-contract.safe.json": "b3eefb8aac14d79066b079c263409ea2a526542dd854aa578af72ce28eba0d07",
+    "historical-control.safe.json": "eb8a5a1fd8549b300c38bf56a3f6b0d513c5e71af3418e788c2fbb7e8269b29e",
+    "release-binding.safe.json": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+    "external-reads.safe.json": "bc0bf4b185686607926bfe757596b010fc9e9a3f2a9c2a887ac463c8bdb71ef6",
+    "budget-owner-files.safe.json": "328d21a244431291f14b15355b8a7d29901fee8181f7debc11d2f867b3db3b1e",
+    "plan-pre.safe.json": "2b2ccf2d5f5bdf4206a0118abe637954fc7b6efde632a9d372a48807bbe5e30d",
+    "maintenance-plan-pre-v2.safe.json": "d0f9d3bad3cc655833ab65be2999f78e19081643390d27e67ef15f84e19bbc18",
+    "tool-pre.safe.json": "3822316188ba6975cd93e9016e2ff340d9c91f734e2fa3f72f4d9d1884179c29",
+    "maintenance-tool-pre.safe.json": "4bada547bbac5a93b91b833581301e2466351dde36a67f611f67bd1196f9e7b0",
+    "actual-post-tool-pre.safe.json": "db3571aa7884240166ee5d38039693ee821cec11f99b831cb318c13f5d4162c1",
+    "actual-post-tool-maintenance-pre.safe.json": "e164e9a7604cf3a222d497f588a953d9714bc59018cf2c7361c796eb17da3e9e",
+    "local-test-initial.safe.json": "f011ddae204cfaec8fc209ff29c351e40bbcb10ccda89e8607811b9f454d9290",
+    "local-test-final.safe.json": "4476b2ed4af5c70082b4edbe432e63c19de39928db3aa0de529d2f76504b7b99",
+    "historical-control-exploration.safe.json": "95513f63c6850144344309fcb3d7f97987a0a4e259545d09374b6bf1d6eba35d",
+    "main-sync.safe.json": "f59f7d437fbe53b603796a0d8e7aaf78b6ce9ddc4a9e52297596ef456d6ff04f",
+    "NEXT_ACTIONS.safe.md": "2c6ef216fed706d07320d13b01559868f757a21ae75bf3b246e2f83be4926980"
+  },
+  "main_local_tests": 9,
+  "independent_correctness_controls": 37,
+  "independent_maintenance_controls": 22,
+  "live_started": false,
+  "new_runtime_raw": 0,
+  "new_deadlines": 0,
+  "cloud_runtime_calls": 0,
+  "ui_actions": 0,
+  "model_calls": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "remaining_original_duties": 13,
+  "independent_scope_error_old_expired_template_parses": 3,
+  "scope_error_preserved": true,
+  "old_target_hashes_copies_writes": 0,
+  "old_private_snapshot_reused": false,
+  "composition_harness_failures_preserved": [
+    "First composition attempted from repository cwd; collector import failed before any evidence creation; dependent evidence copy then failed. Corrected by using Q cwd; no runtime entry executed."
+  ],
+  "constraints": [
+    "Fresh window/identity/budget/configuration are still required.",
+    "No real A/B/P response or usefulness acceptance yet.",
+    "Historical full config continuity is not reconstructed; static safe/source contract plus two fresh projections.",
+    "Publication and automation readback are separate and pending."
+  ]
+}

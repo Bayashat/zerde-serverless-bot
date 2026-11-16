@@ -1,0 +1,10 @@
+{
+  "status": "ALIGNED",
+  "plan_sha256": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22",
+  "release_binding_sha256": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+  "tools": {
+    "collector.py": "4bd389aacc69673b499225142a254128c8265863a28ad9b871d426fbb9b05b32",
+    "read_budget.py": "1840cfec7ae12164d01fb800988368d477336f830d96e908803f90f786554800",
+    "ui_record.py": "80c57f21a2ee6245663ea8c69980b70a81530cb8e3479f878d2503cb6add5405"
+  }
+}
