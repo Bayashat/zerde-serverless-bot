@@ -1,3 +1,13 @@
+## Nov16：5份费用指标诊断原文在原设备身份门停止
+
+本批5份cost-metrics-diagnostic原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。两个原ledger与两个原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存60regular＝5目标＋55保护、4目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。
+
+原deadline数值1793066245.452039（2026-10-27T01:57:25.452039+00:00）固定，检查迟延原因UNKNOWN。原36/22/2身份阻断保留不重跑；其余9批本轮未核身份，不推广结论。13项原文责任仍全部开放且已逾期。Nov7两项SYSTEM只读责任已履行，本轮不重读；不证明原到期时已消失或所有云副本消失。[实际记录](COST_METRICS_RAW_IDENTITY_STOP_NOV16.md)、[完整副本表](RETAINED_COPIES.md)。
+
+本轮0删除、新raw、新期限、云运行API、UI、model、预算、运行部署、自然增量；37在线退役数不增。PR291运行与四群RELEASED_OBSERVING保持；ask真实有用性、自然质量、其他业务/费用UNKNOWN及周观察无新完成回执。无新直接人类Telegram窗口，不重复询问或打开UI。20任务14OPEN6CLOSED＋EpicOPEN保持。
+
+## 以下为此前完整冻结阶段，不作当前数量或重跑指令
+
 ## Nov8：2份费用读回原文在原设备身份门停止
 
 本批2份cost-report-readback原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。原ledger与原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存28regular＝2目标＋26保护、2目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。

@@ -1,0 +1,58 @@
+{
+  "status": "ALIGNED",
+  "review_role": "INDEPENDENT_CORRECTNESS_POST",
+  "reviewed_at": 1794828628.578586,
+  "evidence_sha256": {
+    "PLAN.md": "0465484a77186ee778baaba2b56d6ca510f691a621b1256d5f7cfcba40d5a873",
+    "identity-scope.safe.json": "b5f347d4a935e64d87c06bf07250f20199572d8b4b7f61f5730d00a5fc8c0575",
+    "identity_probe.py": "dc27aa272791363a376e8c9de19c55f49cee01bdfe810225049dd642d1dfb363",
+    "tool-pre.safe.json": "5c13b34d1bc170f57a69cbfa5d806520a3b49559dbbe56d1a8779f3edb17723f",
+    "maintenance-pre.safe.json": "86695f80d57069461b8dabb962b5e408c810ee21c8ff7e62db049a74eed682a1",
+    "identity-main.safe.json": "216f90a2d4fd467c5aaab6083d242f210e4f9071af0a2d01c8e6eb4b7360edde",
+    "identity-independent.safe.json": "5c641a296e40a1a49cae6aed2ce8cf4434d723206403b2aac406fd0013d4ae14"
+  },
+  "source_sha256": {
+    "raw-retention.safe.json": "0a98c397304afbd854641c70edf9721645b850743b6cb30b1ccfc14dce456a66",
+    "independent-post.safe.json": "1638d88c54177a19cc3b06e480b23c400dc4019c9111c2c466efc7c2c399a791",
+    "query-continuation/raw-retention.safe.json": "89f700a8ae3156a4601b474c335a2ade292fc3e6a2e544022b524bc8cee1aec9",
+    "query-continuation/independent-post.safe.json": "c9a52542376c2ac38b3c49e8df612490bc30fdc182befd778ed8ae88c5738a39"
+  },
+  "findings": [],
+  "result": "BLOCKED_ORIGINAL_IDENTITY_MISMATCH",
+  "counts": {
+    "targets": 5,
+    "regular": 60,
+    "protected_regular": 55,
+    "directories": 4,
+    "links": 0,
+    "zip": 0
+  },
+  "original_device": 16777232,
+  "observed_device": 16777234,
+  "same_ino_size_mode": true,
+  "original_anchor_epoch": 1792461445.452039,
+  "original_deadline_epoch": 1793066245.452039,
+  "original_mtime": "NOT_RECORDED_IN_LEDGER_OR_POST",
+  "fresh_mtime_only": true,
+  "main_independent_metadata_equal": true,
+  "independent_fresh_formal_runs": 1,
+  "identity_change_reason": "UNKNOWN",
+  "deletion_permitted": false,
+  "deletion_completed": false,
+  "source_content_read_boundary": "Only four pinned original safe JSON sources; no raw/private content read or hash",
+  "limitations": [
+    "Metadata-only STOP does not fulfil original raw expiry duty",
+    "Sequential inventories are not an atomic transaction; transient ancestor substitutions cannot be excluded",
+    "Fresh mtime equality across the two probes is not historical mtime continuity",
+    "Other batches and prior STOP results were not re-executed or generalized"
+  ],
+  "side_effects": {
+    "target_content_reads": 0,
+    "target_hash_reads": 0,
+    "source_writes": 0,
+    "deletions": 0,
+    "cloud_calls": 0,
+    "ui_actions": 0
+  },
+  "review_script_sha256": "705b1b1c99be81d4ced270866e07296f6f1f389497fdc7bda76534af69201322"
+}
