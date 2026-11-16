@@ -1,0 +1,15 @@
+{
+  "status": "RELEASED_AFTER_A_FACTUAL_ERROR",
+  "at": 1794859320.5376189,
+  "last_actual_native_ui_epoch": 1794859252.059,
+  "no_further_UI_authorized_from_this_window": true,
+  "messages_sent": 1,
+  "A_sent_once": true,
+  "B_sent": false,
+  "P_sent": false,
+  "last_observed_composer_empty": true,
+  "native_completion_summary_recorded": true,
+  "user_release_notification_delivered": true,
+  "window_expires_at_epoch": 1794859756,
+  "reason": "A product misidentification; remaining cases stopped under original contract. No further UI after final observation."
+}

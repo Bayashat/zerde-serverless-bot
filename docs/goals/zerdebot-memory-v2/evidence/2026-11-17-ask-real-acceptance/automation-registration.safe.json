@@ -1,0 +1,8 @@
+{
+  "status": "READBACK_ALIGNED",
+  "automation_id": "zerde",
+  "total_independent_duties": 14,
+  "deadline_epoch": 1795463695.509188,
+  "at": 1794858976.393999,
+  "actual_tool_readback_sha256": "986bbcdd82f03dba8f6f45b18429bfa6d4afeb9af21ccd0fac4ddc47d6d5b1fe"
+}

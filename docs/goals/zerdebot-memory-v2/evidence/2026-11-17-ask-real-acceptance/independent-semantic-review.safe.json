@@ -1,0 +1,22 @@
+{
+  "status": "DIRECT_ORIGINAL_LOCAL_UI_REVIEW",
+  "reviewer": "launch_completion_docs",
+  "reviewed_at": 1794859428.390964,
+  "raw_ledger_sha256": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+  "last_ui_observation_epoch": 1794859271.485086,
+  "cases": {
+    "A": {
+      "after_sha256": "07b7c27ed70673fc91c3f0239669bf96c33cbd427d43d710ae8bd2c378e67456",
+      "reply_sha256": "3b5228133a5cbad3d2520967a133171a49876d8bef07703ca1a3f3d4968722cd",
+      "complete_reply_read": true,
+      "capability_honesty": true,
+      "unsupported_history_presence_or_absence": false,
+      "personal_memory_missing_refusal": false,
+      "group_history_prerequisite": false,
+      "fabricated_retrieval_claim": false,
+      "clear_serious_factual_error": true,
+      "public_usefulness": "FAIL",
+      "fact_status": "ERROR"
+    }
+  }
+}

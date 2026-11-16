@@ -1,0 +1,65 @@
+{
+  "status": "SEMANTIC_FAIL_WITH_PRESERVED_PROCEDURAL_DEVIATION",
+  "reviewer": "launch_completion_docs",
+  "reviewed_at": 1794859428.390964,
+  "semantic_fact_review": {
+    "scope": "Independent full-text reading of registered primary native UI record, not an independent Telegram session.",
+    "official_reference": {
+      "url": "https://www.nvidia.com/en-us/products/rtx-spark/",
+      "title": "Slim Laptops & Small Desktops | NVIDIA RTX Spark",
+      "retrieved_at_utc": "2026-11-16T20:01:40+00:00",
+      "finding": "NVIDIA presents RTX Spark as Windows PCs in slim laptop and compact desktop forms, for local AI development/agents, content creation and gaming."
+    },
+    "A_classification": "FAIL / ERROR / clear_serious_factual_error",
+    "reason": "The reply interprets the requested product as third-party graphics-card branding or overclocking marketing and supplies an unsupported vendor example. The complete explanation misidentifies an official NVIDIA Windows PC product and gives no valid definition or principal uses.",
+    "precision_limit": "The narrow opening claim that it is not a graphics-card series is not alone the error: RTX Spark is a PC platform. The unsupported third-party-brand/marketing explanation of the full answer is the decisive misidentification.",
+    "capability_honesty_scope": "No live-retrieval or personal/group-history evidence capability was claimed; this true flag does not excuse false product facts.",
+    "B": "NOT_EXECUTED_AFTER_A_STOP",
+    "P": "NOT_EXECUTED_AFTER_A_STOP",
+    "personal_boundary_acceptance": "NOT_TESTED"
+  },
+  "timestamp_boundary": {
+    "actual_last_native_UI_epoch": 1794859252.059,
+    "recorded_after_observation_epoch": 1794859271.485086,
+    "annotation_uses_recorded_field_for_frozen_verifier_exact_binding": true,
+    "strict_independent_POST_deadline_epoch": 1794862852.059,
+    "frozen_verifier_computed_deadline_epoch": 1794862871.485086,
+    "difference_does_not_extend_permission": true,
+    "execute_before_and_after_checks_use_earlier_actual_native_deadline": true
+  },
+  "entry_correction_review": {
+    "failed_filename": "ui-A-intent.private.json",
+    "failed_once": "entry-ui-ui-A-intent.private.json.once.safe.json",
+    "failed_once_sha256": "8d8de65c958e8edda6395825706535fa9d39494b77a5a195fc4ae26b88c71b93",
+    "failed_marker_sha256": "9bbebc090e38ee36120fbe871be7ca535bb7862da313ea1565abac4b866de6e4",
+    "primary_deviation_sha256": "7fbba097024ec114694ab92f6689b3dfb513224513d379bc3ef21a4e3bea0740",
+    "declared_successful_once_sha256": "179aaa829393d2f06079a1b383f0c5218feed8fc636bf64d6679f3b71518f468",
+    "declared_successful_result_sha256": "d1f1e27f59b7cbf11b9187f69771f7e61e5e61250d5645e941603004e9c40eaa",
+    "recorded_intent_sha256": "c86b946e51cc5ed599aa283f1a2d6834f85da5771d3fcd366d94b810cf6ee2c5",
+    "source_allowlist_rejects_undeclared_name_before_raw_reservation": true,
+    "no_undeclared_filename_in_raw_ledger": true,
+    "different_once_labels_not_same_failed_entry_rerun": true,
+    "recorded_new_A_sends": 1,
+    "no_extra_B_P_records": true,
+    "finding": "The correction did not expand the declared A text, API count, or recorded send count, but PLAN required a stop/partial and a new narrow continuation after a tool failure. No prior independent narrow-continuation review is present. Continuing is a preserved procedural deviation, not retrospective approval or full protocol alignment.",
+    "frozen_verifier_limit": "Its entry-failure scan enumerates labels corresponding to captured raw files and therefore does not include the failed undeclared filename. An empty entry_failures_preserved list must not be interpreted as no entry failure."
+  },
+  "full_protocol_alignment": false,
+  "formal_POST_not_yet_executed": true,
+  "raw_ledger_sha256": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+  "primary_result_sha256": "6b2c19afd71f28ded6622e64aeab3ef59b5910d73343548275e978a1865f65f9",
+  "onsite_release_sha256": "894ccfbdcdbcbaec331abee4275f858e85633cd4cdbf1e0a0dc945adc21d4d17",
+  "operations": {
+    "UI_actions": 0,
+    "AWS_calls": 0,
+    "model_calls": 0,
+    "old_raw_reads": 0,
+    "raw_copies": 0,
+    "tool_modifications": 0
+  },
+  "limits": [
+    "No selector-mode, model attribution, database exactly-once, production-wide or natural-quality claim.",
+    "Originals and failed entry remain unchanged.",
+    "Mechanical verifier alignment is a bounded evidence result and does not override this procedural finding."
+  ]
+}

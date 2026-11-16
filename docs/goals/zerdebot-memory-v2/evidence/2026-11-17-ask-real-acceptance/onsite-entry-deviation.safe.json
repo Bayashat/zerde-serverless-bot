@@ -1,0 +1,10 @@
+{
+  "status": "PRESERVED_FAILED_ARGUMENT_ENTRY_AND_SEPARATE_ALLOWED_ENTRY",
+  "at": 1794859320.5376189,
+  "failed_entry": "entry-ui-ui-A-intent.private.json.failure.safe.json",
+  "failed_entry_sha256": "9bbebc090e38ee36120fbe871be7ca535bb7862da313ea1565abac4b866de6e4",
+  "reason": "Operator used undeclared ui-A-intent.private.json; allowlist assertion stopped before raw registration or send. Failed once remains. Separate declared A.ui-intent.private.json entry was then executed once with fresh native context before one send. No tool code/hash/PLAN changed. Independent review pending.",
+  "declared_intent_sha256": "c86b946e51cc5ed599aa283f1a2d6834f85da5771d3fcd366d94b810cf6ee2c5",
+  "failed_entry_rerun": false,
+  "duplicate_send": false
+}

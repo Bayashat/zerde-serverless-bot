@@ -1,0 +1,64 @@
+{
+  "started_at_utc": "2026-11-16T19:54:55.509188+00:00",
+  "deadline_utc": "2026-11-23T19:54:55.509188+00:00",
+  "deadline_epoch": 1795463695.509188,
+  "owner": "Z10",
+  "anchor_sha256": "03d5edc7529e58fe788d73cc0126cd30ea4b926dabdfce9b1f856c3420aa39f9",
+  "original_existing_duties": 13,
+  "prior_independent_duties": [
+    {
+      "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+      "responsibility": "2026-10-20-z01-media-current 36"
+    },
+    {
+      "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+      "responsibility": "2026-10-20-cost-gate-diagnostic 22"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:53:25.893115+00:00",
+      "responsibility": "2026-10-20-cost-report-readback 2"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:57:25.452039+00:00",
+      "responsibility": "2026-10-20-cost-metrics-diagnostic 5"
+    },
+    {
+      "deadline_utc": "2026-10-27T02:26:52.661740+00:00",
+      "responsibility": "2026-10-20-cost-report-repair 446"
+    },
+    {
+      "deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+      "responsibility": "2026-10-20-cost-recovery-followup 12"
+    },
+    {
+      "deadline_utc": "2026-10-27T09:30:26.883900+00:00",
+      "responsibility": "2026-10-20-z01-media-cost-rebind 84"
+    },
+    {
+      "deadline_utc": "2026-10-27T10:47:02.618740+00:00",
+      "responsibility": "2026-10-20-media-reference-proof 436"
+    },
+    {
+      "deadline_utc": "2026-10-27T13:29:38.223710+00:00",
+      "responsibility": "2026-10-20-z01-media-proof-acceptance 95"
+    },
+    {
+      "deadline_utc": "2026-10-27T16:31:53.365253+00:00",
+      "responsibility": "2026-10-20-ask-intent-repair 411"
+    },
+    {
+      "deadline_utc": "2026-10-28T15:29:54.370686+00:00",
+      "responsibility": "2026-10-20-ask-intent-canary 17"
+    },
+    {
+      "deadline_utc": "2026-10-28T17:42:41.712325+00:00",
+      "responsibility": "2026-10-21-week-one-observation 52"
+    },
+    {
+      "deadline_utc": "2026-10-28T18:47:42.597749+00:00",
+      "responsibility": "2026-10-21-ask-public-knowledge-repair 408"
+    }
+  ],
+  "ledger": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-17-ask-public-knowledge-acceptance/raw-retention.safe.json",
+  "registered_at": 1794858944.4611661
+}

@@ -1,0 +1,130 @@
+{
+  "status": "ALIGNED",
+  "outcome": "FAIL_OR_UNVERIFIED_SEMANTIC_BOUNDARY",
+  "semantic_outcome": "FAIL_OR_UNVERIFIED_SEMANTIC_BOUNDARY",
+  "at": 1794859453.6211772,
+  "runtime_source": "9e962c20f71586688736858a962f3199edcd53c8",
+  "raw_ledger_sha256": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+  "release_binding_sha256": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+  "primary_result_sha256": "6b2c19afd71f28ded6622e64aeab3ef59b5910d73343548275e978a1865f65f9",
+  "semantic_review_sha256": "80eb888aea1fd5e21866c4503450f6b290b9a1457b401ff2d54e988211f5161b",
+  "raw_files_verified": 15,
+  "api_responses_verified": 12,
+  "ui_records_verified": 3,
+  "deadline_epoch": 1795463695.509188,
+  "post_review_deadline_epoch": 1794862871.485086,
+  "cases": {
+    "A": {
+      "after_sha256": "07b7c27ed70673fc91c3f0239669bf96c33cbd427d43d710ae8bd2c378e67456",
+      "reply_sha256": "3b5228133a5cbad3d2520967a133171a49876d8bef07703ca1a3f3d4968722cd",
+      "complete_unique_visible_reply": true,
+      "independent_classification": "FAIL"
+    }
+  },
+  "entry_failures_preserved": [],
+  "semantic_stop_respected": true,
+  "budget_original_clock_intervals": [
+    {
+      "raw_path": "raw/budget-04.private.json",
+      "call_before_integer_interval": [
+        1794859197,
+        1794859197
+      ],
+      "compatible_integer_interval": [
+        1794859197,
+        1794859197
+      ],
+      "conditions_hold_for_entire_interval": true,
+      "exact_original_now_not_recorded": true
+    },
+    {
+      "raw_path": "raw/budget-06.private.json",
+      "call_before_integer_interval": [
+        1794859197,
+        1794859197
+      ],
+      "compatible_integer_interval": [
+        1794859197,
+        1794859197
+      ],
+      "conditions_hold_for_entire_interval": true,
+      "exact_original_now_not_recorded": true
+    }
+  ],
+  "evidence_sha256": {
+    "verify_actual_canary.py": "f33cc4fe3e3b3fe2c042c2e88ba481d269a629575b76b9aa1a97d0e07fb80d30",
+    "PLAN.md": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22",
+    "prior-duties.safe.json": "d4699831058501d8573593e569fe8b7655ee5b7426e3674448ef7c85eaa3962f",
+    "historical-control.safe.json": "eb8a5a1fd8549b300c38bf56a3f6b0d513c5e71af3418e788c2fbb7e8269b29e",
+    "POST_PLAN.md": "5481381404761576ef69d6b1b44fa0313e03a8131f764288ec3cc7f909b33079",
+    "config-contract.safe.json": "b3eefb8aac14d79066b079c263409ea2a526542dd854aa578af72ce28eba0d07",
+    "release-binding.safe.json": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+    "actual-post-tool-pre.safe.json": "db3571aa7884240166ee5d38039693ee821cec11f99b831cb318c13f5d4162c1",
+    "actual-post-tool-maintenance-pre.safe.json": "e164e9a7604cf3a222d497f588a953d9714bc59018cf2c7361c796eb17da3e9e",
+    "independent-semantic-review.safe.json": "80eb888aea1fd5e21866c4503450f6b290b9a1457b401ff2d54e988211f5161b",
+    "onsite-window.safe.json": "21b926feef68b13faf3327ced8bee0e53f7e1fe6253d9add3f787c4770c2e99b",
+    "retention-anchor.safe.json": "03d5edc7529e58fe788d73cc0126cd30ea4b926dabdfce9b1f856c3420aa39f9",
+    "raw-retention.safe.json": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+    "retention-registration.safe.json": "b6223edb8249088827aab22416e49184526356d80e8a8def957576582a12faf8",
+    "retention-duty.safe.json": "f19b3b395a90257554419a27dd726de863dd05a54067655f7964cbc0a42f2d27",
+    "automation-registration.safe.json": "0658db627670b4e411a45d6a0a673f6d2d667409ccad4cd51822006d7740152e",
+    "automation-readback.safe.json": "986bbcdd82f03dba8f6f45b18429bfa6d4afeb9af21ccd0fac4ddc47d6d5b1fe",
+    "collector.py": "4bd389aacc69673b499225142a254128c8265863a28ad9b871d426fbb9b05b32",
+    "read_budget.py": "1840cfec7ae12164d01fb800988368d477336f830d96e908803f90f786554800",
+    "ui_record.py": "80c57f21a2ee6245663ea8c69980b70a81530cb8e3479f878d2503cb6add5405",
+    "tool-pre.safe.json": "3822316188ba6975cd93e9016e2ff340d9c91f734e2fa3f72f4d9d1884179c29",
+    "maintenance-tool-pre.safe.json": "4bada547bbac5a93b91b833581301e2466351dde36a67f611f67bd1196f9e7b0",
+    "ui-onsite.private.json": "5a0931f4e4d82742b1624a1c59f75275e0235b3abadd739a6d42b8cc494d5a38",
+    "raw/preflight-01.private.json": "c8cbd87834a96d8b66c57d0b2a486cc4842e422e6bbde786ebcced6d7ced6130",
+    "raw/preflight-02.private.json": "8b8ca988bd31b5127c4c0f9d0a21cce4790b42e98ca4f1ef936643f0fe1e5ebd",
+    "raw/preflight-03.private.json": "a5e999a22b53d6ad82fe72adfe1b59c19f3adbaa883514263722832b72b2b87a",
+    "raw/preflight-04.private.json": "534dbdee2947cf7d70285196bf0fff2d7232c78e03004306a01dc3f87a1427a4",
+    "raw/preflight-05.private.json": "d52ff24c049e6f6f66fb7a589c10b7daffebba276f573d0861e5d98c0021fa42",
+    "raw/budget-01.private.json": "4163b42d629e3a6e779665fb63b63894903a9ddc7c19bae71ec66bae30c09ac6",
+    "raw/budget-02.private.json": "83fa65d648808b4df5f09b2c2a80e1ac908f8322ed1f0f8fd6346be7a2bceb30",
+    "raw/budget-03.private.json": "29802733bf044a236d7c289d24e0b7bff84a5582e9e3ac092e7d21af046541ab",
+    "raw/budget-04.private.json": "c333f22b43e965624888ae044573895aa3cb3c8b5c91217ec48b05db01c46e9b",
+    "raw/budget-05.private.json": "8692cbb7fd84c1624439f68ceee943cd548ff6b3a05ba7947959e322c50cdae6",
+    "raw/budget-06.private.json": "90996c51c3513487c5e757080e67679e57920c720e5e0d69587a1dd0ec3db6f2",
+    "raw/budget-07.private.json": "a1a897ce64b4ce26d25e5220ec89d239cf5893969a096100307d8c28fb5a9ae0",
+    "A.ui-intent.private.json": "c86b946e51cc5ed599aa283f1a2d6834f85da5771d3fcd366d94b810cf6ee2c5",
+    "A.ui-after.private.json": "07b7c27ed70673fc91c3f0239669bf96c33cbd427d43d710ae8bd2c378e67456",
+    "budget-owner-files.safe.json": "328d21a244431291f14b15355b8a7d29901fee8181f7debc11d2f867b3db3b1e",
+    "budget-owner/src/bot/services/memory_v2/_cost_catalog.py": "fa10173174d88bfae5e304f4b9ccaadfacc434f7f77c13c7674d4948a0eded63",
+    "preflight.safe.json": "e6db96c4db1bdbeb3944c0a2427a407913f4e964a98b0612e4dd2572effdd858",
+    "budget.safe.json": "ecc46f0ae6a54e50e8962cfb35540a95ffb2c56bf1f9acfb50a1a82e4a41e858",
+    "entry-start.once.safe.json": "be863677d7afb8d5a3ae93053c78ab55a7f02372662ff40d6893e1f5a91510e2",
+    "entry-start.result.safe.json": "dfe3b421d9e5f21224705d9e0de928f78caf48504743d6768edb5c457afb9fbc",
+    "entry-ui-ui-onsite.private.json.once.safe.json": "32d634234ba6d25cbe5267ce589805a87c45922077986e88709d01164c2a1751",
+    "entry-ui-ui-onsite.private.json.result.safe.json": "f2471a6a481ab0914ecc648d43ce8eacb298efbfa3713f978edfffc53e9b4518",
+    "entry-preflight.once.safe.json": "5cdf451ca208eec1c5832fb379b17e4c4e902079a1d0da87f44a7ca381bc71cf",
+    "entry-preflight.result.safe.json": "f3440b62b64845700543db3059c370c78e4a18f20f0e195bbf396569f3c748d8",
+    "entry-budget.once.safe.json": "4c78f5336638ff7271a2b7b59504e59a94a181c88c6fd2cc33498a71571428a4",
+    "entry-budget.result.safe.json": "738686b8d5f827ca2c583401782e70b9e163be2b444b6e20182f575a85f478c6",
+    "entry-ui-A.ui-intent.private.json.once.safe.json": "179aaa829393d2f06079a1b383f0c5218feed8fc636bf64d6679f3b71518f468",
+    "entry-ui-A.ui-intent.private.json.result.safe.json": "d1f1e27f59b7cbf11b9187f69771f7e61e5e61250d5645e941603004e9c40eaa",
+    "entry-ui-A.ui-after.private.json.once.safe.json": "c4b58df472841ff81110bb0399b9eb58e0db0319f0902b9dc9a62afa3fd2111c",
+    "entry-ui-A.ui-after.private.json.result.safe.json": "8c027a3aa4d5d16b6d97fa282733ca0e1a7de3bff6643ffa676df30805cbf3b4",
+    "result.safe.json": "6b2c19afd71f28ded6622e64aeab3ef59b5910d73343548275e978a1865f65f9",
+    "onsite-release.safe.json": "894ccfbdcdbcbaec331abee4275f858e85633cd4cdbf1e0a0dc945adc21d4d17"
+  },
+  "natural_sample_increment": 0,
+  "operations": {
+    "new_cloud_calls": 0,
+    "cloud_writes": 0,
+    "UI_actions": 0,
+    "model_calls": 0,
+    "release_private_snapshot_reads": 0,
+    "ZIP_reads": 0,
+    "raw_copies": 0
+  },
+  "limits": [
+    "Independent local review of primary native UI records, not independent UI or continuous exclusivity proof.",
+    "Full configuration is compared between two fresh observations against static source constraints; historical CONTROL epoch/start uses retained safe proof. No expired snapshot read or claim of full historical configuration continuity.",
+    "The exact 13 prior obligation pairs are verified against the frozen current-duty binding; new duty is number 14.",
+    "No selector-mode, ANSWER SENT/lease, database exactly-once, natural-quality or production-wide claim.",
+    "A safe but unhelpful PARTIAL is not erased by useful B. Product fact scope is definition and main uses only.",
+    "Original owner reads are sequential observations, not a transaction or durable sending permission. Its exact pre-GetItem int(now) was not logged: this report proves interval consistency and preserves boundary uncertainty, not an invented exact clock.",
+    "Primary result and all old stopped entries remain unchanged."
+  ]
+}

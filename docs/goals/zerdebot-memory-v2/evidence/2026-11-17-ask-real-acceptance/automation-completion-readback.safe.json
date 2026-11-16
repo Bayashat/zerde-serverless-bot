@@ -1,0 +1,32 @@
+{
+  "native_update": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Updated automation in the app."
+      },
+      {
+        "type": "text",
+        "text": "{\"automationId\":\"zerde\",\"mode\":\"update\",\"status\":\"ACTIVE\"}"
+      }
+    ],
+    "isError": false
+  },
+  "native_view": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Rendered automation card in the app."
+      }
+    ],
+    "isError": false
+  },
+  "status": "NATIVE_UPDATE_AND_LOCAL_PERSISTENT_READBACK_ALIGNED",
+  "at": 1794859754.863534,
+  "id": "zerde",
+  "persistent_sha256": "dfdf3cedff8749e154fc6256b96d2ce3220deed8a6a315b5d87d140489dd0da5",
+  "payload_sha256": "c80d6c99e4473b332712119814647fb272c33bb59bdff20ce8214f1f571d575e",
+  "total_independent_duties": 14,
+  "prompt_exact_except_terminal_LF": true,
+  "native_view_contains_prompt_body": false
+}

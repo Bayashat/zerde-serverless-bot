@@ -1,0 +1,34 @@
+{
+  "status": "STOP_A_SERIOUS_FACTUAL_ERROR_PENDING_INDEPENDENT_REVIEW",
+  "at": 1794859320.5376189,
+  "runtime_source": "9e962c20f71586688736858a962f3199edcd53c8",
+  "raw_ledger_sha256": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+  "raw_count": 15,
+  "deadline_epoch": 1795463695.509188,
+  "deadline_utc": "2026-11-23T19:54:55.509188+00:00",
+  "original_independent_duties": 13,
+  "total_independent_duties": 14,
+  "api_responses": 12,
+  "cloud_writes": 0,
+  "operator_model_calls": 0,
+  "UI_records": 3,
+  "messages_sent": 1,
+  "cases": {
+    "A": "FAIL_PUBLIC_PRODUCT_MISIDENTIFICATION",
+    "B": "NOT_EXECUTED_A_STOP",
+    "P": "NOT_EXECUTED_A_STOP"
+  },
+  "preflight_sha256": "e6db96c4db1bdbeb3944c0a2427a407913f4e964a98b0612e4dd2572effdd858",
+  "budget_sha256": "ecc46f0ae6a54e50e8962cfb35540a95ffb2c56bf1f9acfb50a1a82e4a41e858",
+  "A_after_sha256": "07b7c27ed70673fc91c3f0239669bf96c33cbd427d43d710ae8bd2c378e67456",
+  "onsite_release_sha256": "894ccfbdcdbcbaec331abee4275f858e85633cd4cdbf1e0a0dc945adc21d4d17",
+  "entry_deviation_sha256": "7fbba097024ec114694ab92f6689b3dfb513224513d379bc3ef21a4e3bea0740",
+  "natural_sample_increment": 0,
+  "limits": [
+    "Primary native UI observation, not independent UI or database exactly once.",
+    "Historical preparation reports remain frozen.",
+    "New actual semantic failure does not erase old failures or establish production-wide behavior.",
+    "Budget reads are point-in-time only; normal bot response may invoke models/persist state.",
+    "Current turn did not read expired historical raw; prior preparation exploration deviation remains."
+  ]
+}
