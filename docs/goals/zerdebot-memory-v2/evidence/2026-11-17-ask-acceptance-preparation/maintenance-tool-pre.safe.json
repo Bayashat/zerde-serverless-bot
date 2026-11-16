@@ -1,0 +1,96 @@
+{
+  "status": "ALIGNED",
+  "reviewer_role": "independent_maintenance",
+  "reviewed_at_utc": "2026-11-16T19:27:09.965104+00:00",
+  "scope": "Offline source and safe-contract review plus synthetic controls only; no official Q entry, live acceptance, registration, publication or execution permission.",
+  "controls": {
+    "status": "PASS",
+    "count": 22,
+    "checks": [
+      "valid_13_plus_1_registration",
+      "0700_capture_accepted",
+      "0755_raw_parent_rejected_before_write",
+      "0755_root_rejected_before_write",
+      "parent_path_escape_rejected",
+      "private_path_escape_rejected_before_target_open",
+      "unlisted_external_path_rejected",
+      "stale_total_13_rejected",
+      "changed_prior_deadline_rejected",
+      "expired_window_rejected",
+      "expired_Q_retention_rejected",
+      "empty_after_draft_allows_prior",
+      "residual_draft_blocks_next_case",
+      "semantic_bounded_success",
+      "A_partial_preserved",
+      "public_group_history_blocked",
+      "personal_unsupported_positive_blocked",
+      "personal_unsupported_absence_blocked",
+      "budget_decimal_normalized",
+      "budget_bool_rejected",
+      "budget_fraction_rejected",
+      "budget_nan_rejected"
+    ],
+    "path": "/private/var/folders/dl/0vfd2gnn5yg3rgf1yn9fzyr00000gn/T/ask-maintenance-v2-synthetic-dxx22mj5/maintenance-controls.safe.json",
+    "sha256": "17deab976ddf8dc369e53ad3d2e1d4f166946eb4a1800f71d376e500a3fdcab6"
+  },
+  "resolved_findings": [
+    "0755 Q root or raw parent now fails before new original writes; 0700 descriptor traversal and after-operation checks are present.",
+    "Private reader and parent traversal explicitly reject .. paths; external reads require exact frozen whitelist membership and matching hash.",
+    "Preparation requires both POST tool PREs with exact seven-file SELF before formal start or capture.",
+    "After-record draft_empty_after_send is strict bool; residual drafts prevent subsequent case intents and complete independent acceptance.",
+    "Intent and observation clocks freshly recheck native-context age, remaining-window margin, budget validity and after-response elapsed time.",
+    "NEXT uses current worktree TODO until verified merge/main synchronization, then the primary TODO; old M 446 priority cannot override ask."
+  ],
+  "preserved_prior_findings": {
+    "original_collector_sha256": "a520b80af0668326326459579c4ffa4ec2d1d4e9c42d380435dd5e3aaf857d5f",
+    "original_0755_counterexample": "ACCEPTED_IN_SYNTHETIC_TEMP; fixed source now rejects.",
+    "first_test_harness_issue": "macOS /var alias was a symlink and was rejected; the corrected /private/var synthetic fixture reproduced the original permissions defect. No old evidence was used or deleted.",
+    "initial_pure_function_controls": 11,
+    "initial_pure_function_controls_status": "PASS; superseded by current 22-case controls, not removed."
+  },
+  "maintenance_contract": {
+    "prior_duties": 13,
+    "new_registered_total": 14,
+    "old_deadlines_unchanged": true,
+    "old_36_22_2_5_stops_frozen": true,
+    "other_9_identity_not_inferred": true,
+    "new_raw_before_actual_registration_forbidden": true,
+    "original_budget_owner_preserved": true,
+    "maximum_operator_API_reads": 12,
+    "maximum_registered_originals": 19,
+    "local_owner_files_fresh_hash_and_modes_verified": 104,
+    "external_whitelist_paths": 25,
+    "runtime_code_publication_required_by_this_pre": false
+  },
+  "evidence_sha256": {
+    "external-reads.safe.json": "bc0bf4b185686607926bfe757596b010fc9e9a3f2a9c2a887ac463c8bdb71ef6",
+    "NEXT_ACTIONS.safe.md": "2c6ef216fed706d07320d13b01559868f757a21ae75bf3b246e2f83be4926980"
+  },
+  "limits": [
+    "Checks are sequential and are not a global filesystem or cloud transaction.",
+    "This review independently verified the new local contracts and 104 source members; it does not claim fresh cloud configuration, live budget, native UI, historical raw contents or runtime acceptance.",
+    "Retained safe provenance and full ZIP comparison are separately recorded by the preparation work; no historical private/ledger target was read by this reviewer.",
+    "Actual new duty, Z10 and same-automation registration need real durable readbacks before first capture. Templates and this PRE cannot satisfy that gate.",
+    "A direct new explicit Telegram window is still absent. Expiry, partial captures, consumed entries and failed attempts must remain visible, never rerun or relabeled PASS.",
+    "If any bound source, contract or prerequisite changes, these exact-hash PREs must not be used for the changed implementation.",
+    "Only this reviewer operations are zero old-raw/cloud/UI/model; the broader task separately preserves other reviewers historical read incidents."
+  ],
+  "this_reviewer_operations": {
+    "official_Q_entries": 0,
+    "cloud_calls": 0,
+    "UI_actions": 0,
+    "model_calls": 0,
+    "old_private_or_raw_reads": 0,
+    "runtime_deployments": 0,
+    "deletions": 0,
+    "new_runtime_raw": 0,
+    "new_retention_deadlines": 0
+  },
+  "plan_sha256": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22",
+  "release_binding_sha256": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+  "tools": {
+    "collector.py": "4bd389aacc69673b499225142a254128c8265863a28ad9b871d426fbb9b05b32",
+    "read_budget.py": "1840cfec7ae12164d01fb800988368d477336f830d96e908803f90f786554800",
+    "ui_record.py": "80c57f21a2ee6245663ea8c69980b70a81530cb8e3479f878d2503cb6add5405"
+  }
+}

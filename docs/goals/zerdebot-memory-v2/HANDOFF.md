@@ -1,3 +1,7 @@
+## 当前执行入口：普通 /ask 真实验收优先
+
+用户2026-11-17本地指示已将优先级恢复为产品验收。[唯一执行TODO](TASKS.md)覆盖全部14个OPEN对象及13原副本责任；[本轮准备与窗口合同](ASK_ACCEPTANCE_PRIORITY.md)。下方阶段原文冻结，不覆盖此顺序，不据旧摘要重跑入口。
+
 ## Nov16：5份费用指标诊断原文在原设备身份门停止
 
 本批5份cost-metrics-diagnostic原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。两个原ledger与两个原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存60regular＝5目标＋55保护、4目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。

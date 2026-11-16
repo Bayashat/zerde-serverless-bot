@@ -1,0 +1,12 @@
+{
+  "status": "ALIGNED",
+  "files": {
+    "PLAN.md": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22",
+    "release-binding.safe.json": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+    "prior-duties.safe.json": "d4699831058501d8573593e569fe8b7655ee5b7426e3674448ef7c85eaa3962f",
+    "config-contract.safe.json": "b3eefb8aac14d79066b079c263409ea2a526542dd854aa578af72ce28eba0d07",
+    "POST_PLAN.md": "5481381404761576ef69d6b1b44fa0313e03a8131f764288ec3cc7f909b33079",
+    "verify_actual_canary.py": "f33cc4fe3e3b3fe2c042c2e88ba481d269a629575b76b9aa1a97d0e07fb80d30",
+    "historical-control.safe.json": "eb8a5a1fd8549b300c38bf56a3f6b0d513c5e71af3418e788c2fbb7e8269b29e"
+  }
+}

@@ -442,7 +442,22 @@
       "current_product_knowledge": "NOT_PROVEN_BY_DEPLOYMENT",
       "old_media_stops_preserved": true
     },
-    "remaining_before_ask_public_knowledge_repair": "普通 /ask 仍需主/备用生成模板修复和真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。"
+    "remaining_before_ask_public_knowledge_repair": "普通 /ask 仍需主/备用生成模板修复和真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
+    "ask_acceptance_priority": {
+      "status": "PREPARED_WAITING_NEW_EXPLICIT_HUMAN_WINDOW",
+      "as_of_local": "2026-11-17",
+      "contract": "ASK_ACCEPTANCE_PRIORITY.md",
+      "todo_owner": "TASKS.md",
+      "local_entry": "/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-17-ask-public-knowledge-acceptance",
+      "runtime_source": "9e962c20f71586688736858a962f3199edcd53c8",
+      "live_started": false,
+      "new_raw": 0,
+      "new_retention_duties": 0,
+      "natural_increment": 0,
+      "old_followup_next_historical_only": true,
+      "preparation_evidence": "evidence/2026-11-17-ask-acceptance-preparation/preparation.safe.json",
+      "preparation_sha256": "25e46c444b74daf9517e339eab33d3284adfffa150b5793656f0be1e34f39b36"
+    }
   },
   {
     "id": "Z02",
