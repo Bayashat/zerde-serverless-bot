@@ -1,0 +1,63 @@
+{
+  "status": "ALIGNED",
+  "review_role": "INDEPENDENT_MAINTENANCE_POST",
+  "reviewed_at": 1794828645.371066,
+  "evidence_sha256": {
+    "PLAN.md": "0465484a77186ee778baaba2b56d6ca510f691a621b1256d5f7cfcba40d5a873",
+    "identity-scope.safe.json": "b5f347d4a935e64d87c06bf07250f20199572d8b4b7f61f5730d00a5fc8c0575",
+    "identity_probe.py": "dc27aa272791363a376e8c9de19c55f49cee01bdfe810225049dd642d1dfb363",
+    "tool-pre.safe.json": "5c13b34d1bc170f57a69cbfa5d806520a3b49559dbbe56d1a8779f3edb17723f",
+    "maintenance-pre.safe.json": "86695f80d57069461b8dabb962b5e408c810ee21c8ff7e62db049a74eed682a1",
+    "identity-main.safe.json": "216f90a2d4fd467c5aaab6083d242f210e4f9071af0a2d01c8e6eb4b7360edde",
+    "identity-independent.safe.json": "5c641a296e40a1a49cae6aed2ce8cf4434d723206403b2aac406fd0013d4ae14"
+  },
+  "findings": [],
+  "observed_identity_status": "BLOCKED_ORIGINAL_IDENTITY_MISMATCH",
+  "source_hashes": {
+    "raw-retention.safe.json": "0a98c397304afbd854641c70edf9721645b850743b6cb30b1ccfc14dce456a66",
+    "independent-post.safe.json": "1638d88c54177a19cc3b06e480b23c400dc4019c9111c2c466efc7c2c399a791",
+    "query-continuation/raw-retention.safe.json": "89f700a8ae3156a4601b474c335a2ade292fc3e6a2e544022b524bc8cee1aec9",
+    "query-continuation/independent-post.safe.json": "c9a52542376c2ac38b3c49e8df612490bc30fdc182befd778ed8ae88c5738a39"
+  },
+  "checks": {
+    "exact_three_file_pre_bindings": true,
+    "both_roles_fresh_and_sequential": true,
+    "immutable_root_three_then_continuation_two": true,
+    "four_original_safe_source_hashes_match": true,
+    "original_anchor_and_deadline_numeric_values_unchanged": true,
+    "both_role_inventories_and_target_metadata_equal": true,
+    "device_mismatch_preserved": true,
+    "original_ino_size_mode_equal": true,
+    "historical_mtime_not_claimed": true,
+    "no_failure_or_retry_marker": true,
+    "metadata_scope_not_deletion_authority": true,
+    "reports_and_pre_bindings_stable_during_review": true
+  },
+  "counts": {
+    "targets": 5,
+    "regular": 60,
+    "protected_regular": 55,
+    "directories": 4,
+    "links": 0,
+    "zips": 0
+  },
+  "original_anchor_epoch": 1792461445.452039,
+  "original_deadline_epoch": 1793066245.452039,
+  "original_device": 16777232,
+  "current_device": 16777234,
+  "identity_change_reason": "UNKNOWN",
+  "actual_reviewer_target_content_reads": 0,
+  "actual_reviewer_target_hash_reads": 0,
+  "actual_reviewer_source_writes": 0,
+  "formal_probe_reruns": 0,
+  "cloud_calls": 0,
+  "ui_actions": 0,
+  "acceptance_boundary": "ALIGNED means implementation and its STOP evidence align with the plan; raw expiry duty is not completed.",
+  "residual_risks": [
+    "Historical device continuity remains unproven; current VolumeUUID cannot replace the missing historical mapping.",
+    "Current mtime is fresh only; no original mtime is recorded in the reviewed safe sources.",
+    "Sequential inventory and fresh role observations are not an atomic transaction or continuous identity proof.",
+    "No deletion scope, preparation, notice, apply or verify_absence was authorized or produced by this probe.",
+    "The other nine unreviewed raw batches retain unknown identity state; previous 36/22/2 STOP and all completed once work remain frozen."
+  ]
+}

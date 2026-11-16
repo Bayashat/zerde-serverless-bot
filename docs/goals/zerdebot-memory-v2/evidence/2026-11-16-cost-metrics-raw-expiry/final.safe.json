@@ -1,0 +1,109 @@
+{
+  "status": "COST5_ORIGINAL_IDENTITY_STOP",
+  "at": 1794828881.236398,
+  "evidence_sha256": {
+    "PLAN.md": "0465484a77186ee778baaba2b56d6ca510f691a621b1256d5f7cfcba40d5a873",
+    "identity-scope.safe.json": "b5f347d4a935e64d87c06bf07250f20199572d8b4b7f61f5730d00a5fc8c0575",
+    "identity_probe.py": "dc27aa272791363a376e8c9de19c55f49cee01bdfe810225049dd642d1dfb363",
+    "tool-pre.safe.json": "5c13b34d1bc170f57a69cbfa5d806520a3b49559dbbe56d1a8779f3edb17723f",
+    "maintenance-pre.safe.json": "86695f80d57069461b8dabb962b5e408c810ee21c8ff7e62db049a74eed682a1",
+    "identity-main.safe.json": "216f90a2d4fd467c5aaab6083d242f210e4f9071af0a2d01c8e6eb4b7360edde",
+    "identity-independent.safe.json": "5c641a296e40a1a49cae6aed2ce8cf4434d723206403b2aac406fd0013d4ae14",
+    "correctness.safe.json": "0628f4ece8cc776e752fec8c93cf7d00183079433b5b2782ac788e35369c2db3",
+    "maintenance.safe.json": "2b6cdaa217923154027082c52f6b19946197489c117dd0bfbdd0bff4e11bcd68"
+  },
+  "remaining_original_duties": 13,
+  "remaining_duties": [
+    [
+      "2026-10-26T23:52:42.922982+00:00",
+      "2026-10-20-z01-media-current 36"
+    ],
+    [
+      "2026-10-27T00:10:10.807865+00:00",
+      "2026-10-20-cost-gate-diagnostic 22"
+    ],
+    [
+      "2026-10-27T01:53:25.893115+00:00",
+      "2026-10-20-cost-report-readback 2"
+    ],
+    [
+      "2026-10-27T01:57:25.452039+00:00",
+      "2026-10-20-cost-metrics-diagnostic 5"
+    ],
+    [
+      "2026-10-27T02:26:52.661740+00:00",
+      "2026-10-20-cost-report-repair 446"
+    ],
+    [
+      "2026-10-27T07:23:59.115275+00:00",
+      "2026-10-20-cost-recovery-followup 12"
+    ],
+    [
+      "2026-10-27T09:30:26.883900+00:00",
+      "2026-10-20-z01-media-cost-rebind 84"
+    ],
+    [
+      "2026-10-27T10:47:02.618740+00:00",
+      "2026-10-20-media-reference-proof 436"
+    ],
+    [
+      "2026-10-27T13:29:38.223710+00:00",
+      "2026-10-20-z01-media-proof-acceptance 95"
+    ],
+    [
+      "2026-10-27T16:31:53.365253+00:00",
+      "2026-10-20-ask-intent-repair 411"
+    ],
+    [
+      "2026-10-28T15:29:54.370686+00:00",
+      "2026-10-20-ask-intent-canary 17"
+    ],
+    [
+      "2026-10-28T17:42:41.712325+00:00",
+      "2026-10-21-week-one-observation 52"
+    ],
+    [
+      "2026-10-28T18:47:42.597749+00:00",
+      "2026-10-21-ask-public-knowledge-repair 408"
+    ]
+  ],
+  "source_hashes": {
+    "raw-retention.safe.json": "0a98c397304afbd854641c70edf9721645b850743b6cb30b1ccfc14dce456a66",
+    "independent-post.safe.json": "1638d88c54177a19cc3b06e480b23c400dc4019c9111c2c466efc7c2c399a791",
+    "query-continuation/raw-retention.safe.json": "89f700a8ae3156a4601b474c335a2ade292fc3e6a2e544022b524bc8cee1aec9",
+    "query-continuation/independent-post.safe.json": "c9a52542376c2ac38b3c49e8df612490bc30fdc182befd778ed8ae88c5738a39"
+  },
+  "ledger_sha256": "0a98c397304afbd854641c70edf9721645b850743b6cb30b1ccfc14dce456a66",
+  "deadline_epoch": 1793066245.452039,
+  "late_reason": "UNKNOWN",
+  "identity_change_reason": "UNKNOWN",
+  "historical_device": 16777232,
+  "current_device": 16777234,
+  "original_mtime": "NOT_RECORDED_IN_LEDGER_OR_POST",
+  "deleted": 0,
+  "new_raw": 0,
+  "new_deadlines": 0,
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "ui_actions": 0,
+  "runtime_deployments": 0,
+  "natural_increment": 0,
+  "cloud_runtime_calls": 0,
+  "raw_deletion_scope_created": false,
+  "raw_preparation_completed": false,
+  "target_content_hash_checked": false,
+  "prior36_22_2_identity_stop": "PRESERVED_NOT_REEXECUTED",
+  "other_9_raw_batches_identity": "NOT_CHECKED_THIS_RUN",
+  "weekly_observation": "NO_NEW_COMPLETION_RECEIPT_THIS_RUN",
+  "sequential_not_atomic": true,
+  "all_cloud_copies_gone": false,
+  "physical_erasure_verified": false,
+  "online_retired_objects_unchanged": 37,
+  "docs_independent": "PENDING_SEPARATE_RECEIPT",
+  "target_count": 5,
+  "regular_count": 60,
+  "protected_count": 55,
+  "directory_count": 4,
+  "zip_count": 0,
+  "link_count": 0
+}

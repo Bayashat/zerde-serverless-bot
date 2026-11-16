@@ -1,6 +1,6 @@
 ## 四群已发布；余13项原文责任
 
-36/22/2原文身份待核。[实际记录](COST_REPORT_RAW_IDENTITY_STOP_NOV8.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/3020c545bf7d8d67bae6016221e11fc0d674b399/docs/goals/zerdebot-memory-v2/EPIC.md)。
+36/22/2/5原文身份待核。[实际记录](COST_METRICS_RAW_IDENTITY_STOP_NOV16.md)。ask真实有用性待验收。[上一完整阶段](https://github.com/Bayashat/zerde-serverless-bot/blob/91ea7cbea2aef5b668928441618bc63dc23bf3e8/docs/goals/zerdebot-memory-v2/EPIC.md)。
 
 ## 以下为此前冻结阶段，不作当前绑定、数量或重跑指令
 
