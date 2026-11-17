@@ -18,6 +18,7 @@ from core.logger import LoggerAdapter, get_logger
 from services.explicit_context import (
     CONTEXT_EVIDENCE_INSTRUCTIONS,
     EXPLICIT_ANSWER_POLICY,
+    PUBLIC_SOURCE_INSTRUCTIONS,
     format_explicit_context_sections,
 )
 from urllib3.exceptions import HTTPError
@@ -48,6 +49,7 @@ class GroupChatReplyProvider(Protocol):
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
+        public_source_context: str = "",
         before_attempt: Callable[[], None] | None = None,
     ) -> str:
         """Return plain answer text or raise a provider error."""
@@ -73,6 +75,7 @@ def _build_group_chat_reply_prompts(
     reply_instructions: str,
     lang: str,
     text_only_media_context: str,
+    public_source_context: str = "",
 ) -> tuple[str, str]:
     media_instructions = (
         "The user attached media, but this fallback provider receives text only. "
@@ -90,10 +93,9 @@ def _build_group_chat_reply_prompts(
         recent_context=recent_context,
     )
     system_prompt = (
-        "You are ZerdeBot, a Telegram group chat member for an IT community. "
-        "Answer like a helpful, socially aware participant, not a corporate assistant. "
         f"{_language_instruction(lang)} "
         f"{EXPLICIT_ANSWER_POLICY}"
+        f"{PUBLIC_SOURCE_INSTRUCTIONS if public_source_context else ''}"
         f"{CONTEXT_EVIDENCE_INSTRUCTIONS if context_prompt_section else ''}"
         f"{media_instructions}"
         "Decide the answer style from the user's wording and the replied-to context. "
@@ -116,6 +118,7 @@ def _build_group_chat_reply_prompts(
         f"{current_label}\n"
         f"{user_message}\n\n"
         "Reply to the current message."
+        f"{public_source_context}"
     )
     return system_prompt, user_prompt
 
@@ -148,6 +151,7 @@ class OpenAICompatibleGroupChatReplyProvider:
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
+        public_source_context: str = "",
         before_attempt: Callable[[], None] | None = None,
     ) -> str:
         system_prompt, user_prompt = _build_group_chat_reply_prompts(
@@ -160,6 +164,7 @@ class OpenAICompatibleGroupChatReplyProvider:
             reply_instructions=reply_instructions,
             lang=lang,
             text_only_media_context=text_only_media_context,
+            **({"public_source_context": public_source_context} if public_source_context else {}),
         )
         payload: dict[str, Any] = {
             "model": self._model,
@@ -206,31 +211,50 @@ class OpenAICompatibleGroupChatReplyProvider:
                 retries=False,
             )
         except (HTTPError, OSError) as exc:
-            raise ProviderTransportError(f"{self.provider_name} transport error: {exc}") from exc
+            raise ProviderTransportError(f"{self.provider_name} transport {type(exc).__name__}") from None
 
-        if resp.status >= 400:
-            body = resp.data.decode("utf-8", errors="replace")
+        if resp.status != 200:
             logger.warning(
                 "Group chat reply fallback provider API error",
-                extra={"provider": self.provider_name, "status": resp.status, "body": body[:500]},
+                extra={
+                    "provider": self.provider_name,
+                    "status": resp.status,
+                },
             )
             raise map_http_status_to_provider_error(
                 resp.status,
-                f"{self.provider_name} API {resp.status}: {body[:200]}",
+                f"{self.provider_name} API status {resp.status}",
             )
 
         try:
             data = json.loads(resp.data.decode("utf-8"))
-            content = data["choices"][0]["message"]["content"]
-        except json.JSONDecodeError as exc:
-            raise ProviderResponseError(f"{self.provider_name} response was not valid JSON: {exc}") from exc
-        except (KeyError, IndexError, TypeError) as exc:
-            raise ProviderResponseError(f"{self.provider_name} response schema invalid: {exc}") from exc
+            choices = data.get("choices") if isinstance(data, dict) else None
+            if not isinstance(choices, list) or len(choices) != 1:
+                raise ProviderResponseError("Expected one complete response choice")
+            choice = choices[0]
+            if not isinstance(choice, dict) or choice.get("finish_reason") != "stop":
+                raise ProviderResponseError("Provider response did not finish normally")
+            message = choice.get("message")
+            if (
+                not isinstance(message, dict)
+                or message.get("role") != "assistant"
+                or message.get("tool_calls") not in (None, [])
+                or message.get("function_call") is not None
+                or message.get("refusal") not in (None, "")
+            ):
+                raise ProviderResponseError("Provider response is not a final assistant message")
+            content = message.get("content")
+        except (UnicodeError, json.JSONDecodeError):
+            raise ProviderResponseError("Provider response was not valid JSON") from None
         if not isinstance(content, str) or not content.strip():
             raise ProviderResponseError(f"{self.provider_name} returned empty group chat reply content")
         logger.info(
             "Group chat reply fallback provider response parsed",
-            extra={"provider": self.provider_name, "model": self._model, "response_chars": len(content)},
+            extra={
+                "provider": self.provider_name,
+                "model": self._model,
+                "response_chars": len(content),
+            },
         )
         return content.strip()
 
@@ -254,6 +278,7 @@ class FallbackGroupChatReplyProvider:
         max_output_tokens: int = 320,
         lang: str = "kk",
         text_only_media_context: str = "",
+        public_source_context: str = "",
         before_attempt: Callable[[], None] | None = None,
     ) -> tuple[str, str]:
         last_error: ZerdeProviderError | None = None
@@ -272,6 +297,7 @@ class FallbackGroupChatReplyProvider:
                     max_output_tokens=max_output_tokens,
                     lang=lang,
                     text_only_media_context=text_only_media_context,
+                    **({"public_source_context": public_source_context} if public_source_context else {}),
                     **({"before_attempt": before_attempt} if before_attempt is not None else {}),
                 )
                 logger.info(
@@ -283,7 +309,10 @@ class FallbackGroupChatReplyProvider:
                 last_error = exc
                 logger.warning(
                     "Group chat reply fallback provider failed, trying next provider",
-                    extra={"provider": provider.provider_name, "error_type": exc.__class__.__name__},
+                    extra={
+                        "provider": provider.provider_name,
+                        "error_type": exc.__class__.__name__,
+                    },
                 )
         if last_error:
             raise last_error

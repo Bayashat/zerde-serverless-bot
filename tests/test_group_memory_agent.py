@@ -947,7 +947,13 @@ def test_group_chat_reply_prompt_resists_third_party_profile_poisoning(monkeypat
                 data=json.dumps(
                     {
                         "candidates": [
-                            {"content": {"parts": [{"text": "Баяшат чаттағы талқылауларды қозғап жүретін қатысушы."}]}}
+                            {
+                                "finishReason": "STOP",
+                                "content": {
+                                    "role": "model",
+                                    "parts": [{"text": "Баяшат чаттағы талқылауларды қозғап жүретін қатысушы."}],
+                                },
+                            }
                         ]
                     }
                 ).encode("utf-8"),
@@ -1014,7 +1020,13 @@ def test_group_chat_reply_text_only_keeps_single_text_part(monkeypatch):
             self.body = body
             return MagicMock(
                 status=200,
-                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "plain answer"}]}}]}).encode("utf-8"),
+                data=json.dumps(
+                    {
+                        "candidates": [
+                            {"finishReason": "STOP", "content": {"role": "model", "parts": [{"text": "plain answer"}]}}
+                        ]
+                    }
+                ).encode("utf-8"),
             )
 
     fake_http = FakeHttp()
@@ -1045,9 +1057,16 @@ def test_group_chat_reply_prompt_enforces_configured_language_over_user_message(
             self.body = body
             return MagicMock(
                 status=200,
-                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "Ответ на русском"}]}}]}).encode(
-                    "utf-8"
-                ),
+                data=json.dumps(
+                    {
+                        "candidates": [
+                            {
+                                "finishReason": "STOP",
+                                "content": {"role": "model", "parts": [{"text": "Ответ на русском"}]},
+                            }
+                        ]
+                    }
+                ).encode("utf-8"),
             )
 
     fake_http = FakeHttp()
@@ -1085,7 +1104,13 @@ def test_group_chat_reply_multimodal_includes_inline_data_part(monkeypatch, capl
             self.body = body
             return MagicMock(
                 status=200,
-                data=json.dumps({"candidates": [{"content": {"parts": [{"text": "image answer"}]}}]}).encode("utf-8"),
+                data=json.dumps(
+                    {
+                        "candidates": [
+                            {"finishReason": "STOP", "content": {"role": "model", "parts": [{"text": "image answer"}]}}
+                        ]
+                    }
+                ).encode("utf-8"),
             )
 
     fake_http = FakeHttp()
@@ -1148,7 +1173,7 @@ def test_group_chat_reply_raises_nonretryable_empty_response(monkeypatch):
         )
 
     assert exc_info.value.retryable is False
-    assert "prompt_block_reason=SAFETY" in str(exc_info.value)
+    assert str(exc_info.value) == "Gemini response unusable: missing_or_multiple_candidates"
 
 
 def test_answer_group_question_excludes_all_legacy_context(monkeypatch):
@@ -1564,6 +1589,7 @@ def test_handle_ask_enqueues_group_context_answer():
         current_user_message="what happened yesterday?",
         source_message_context="",
         parent_bot_message_id=None,
+        public_lookup_allowed=True,
         media_refs=None,
     )
     ctx.react.assert_called_once_with("👀")

@@ -293,6 +293,7 @@ def handle_ask(ctx: Context) -> None:
             current_user_message=question_context.current_user_message,
             source_message_context=question_context.source_message_context,
             parent_bot_message_id=question_context.parent_bot_message_id,
+            public_lookup_allowed=question_context.public_lookup_allowed,
             media_refs=[media_ref.to_dict() for media_ref in media_refs] or None,
         )
     except Exception:
@@ -423,6 +424,7 @@ def _process_group_ask_task(
         current_user_message=str(body.get("current_user_message") or "") or None,
         source_message_context=str(body.get("source_message_context") or "") or None,
         parent_bot_message_id=body.get("parent_bot_message_id"),
+        public_lookup_allowed=body.get("public_lookup_allowed") is True,
         media_parts=media_parts,
         media_context=media_context,
         media_metadata=media_metadata,

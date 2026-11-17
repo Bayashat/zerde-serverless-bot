@@ -18,11 +18,22 @@ def ready(env, monkeypatch):
     values = fences.setup(env, monkeypatch, media=False)
     http, providers = values[-2:]
     http.request.return_value = Mock(
-        status=200, data=json.dumps({"candidates": [{"content": {"parts": [{"text": "Synthetic answer"}]}}]}).encode()
+        status=200,
+        data=json.dumps(
+            {
+                "candidates": [
+                    {"finishReason": "STOP", "content": {"role": "model", "parts": [{"text": "Synthetic answer"}]}}
+                ]
+            }
+        ).encode(),
     )
     for provider in providers:
         provider._http.request.return_value = Mock(
-            status=200, data=b'{"choices":[{"message":{"content":"Synthetic fallback"}}]}'
+            status=200,
+            data=(
+                b'{"choices":[{"finish_reason":"stop","message":'
+                b'{"role":"assistant","content":"Synthetic fallback"}}]}'
+            ),
         )
     return values
 

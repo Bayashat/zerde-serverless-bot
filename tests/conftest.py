@@ -96,3 +96,14 @@ def mock_quiz_repo():
     repo.get_user_score.return_value = None
     repo.get_leaderboard.return_value = []
     return repo
+
+
+@pytest.fixture(autouse=True)
+def prevent_live_public_source_http(monkeypatch):
+    """Offline tests must deliberately provide a source transport or result."""
+    from services import public_sources
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Unexpected live public source HTTP in offline test")
+
+    monkeypatch.setattr(public_sources, "bounded_async_client", forbidden)

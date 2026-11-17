@@ -80,7 +80,9 @@ def test_paused_or_forgotten_memory_executes_public_delivery_without_passing_fac
         async def generate(self, request):
             validate_plain_request(request)
             plain_requests.append(request)
-            return {"candidates": [{"finishReason": "STOP", "content": {"parts": [{"text": refusal}]}}]}
+            return {
+                "candidates": [{"finishReason": "STOP", "content": {"role": "model", "parts": [{"text": refusal}]}}]
+            }
 
     class Audit:
         missing = []
@@ -185,7 +187,9 @@ def test_plain_provider_failure_uses_production_retry_and_unavailable_delivery(m
                 return {"ok": False, "reason": "provider_unknown"}
             return {
                 "ok": True,
-                "payload": {"candidates": [{"finishReason": "STOP", "content": {"parts": [{"text": refusal}]}}]},
+                "payload": {
+                    "candidates": [{"finishReason": "STOP", "content": {"role": "model", "parts": [{"text": refusal}]}}]
+                },
             }
 
     class Audit:
