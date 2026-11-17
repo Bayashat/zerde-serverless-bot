@@ -1,0 +1,14 @@
+{
+  "status": "COMPLETED_WITHIN_STRICT_ACTUAL_NATIVE_UI_DEADLINE",
+  "started_at": 1794859453.559395,
+  "finished_at": 1794859453.626893,
+  "strict_actual_native_ui_deadline_epoch": 1794862852.059,
+  "semantic_sha256": "80eb888aea1fd5e21866c4503450f6b290b9a1457b401ff2d54e988211f5161b",
+  "formal_entry_invocations": 1,
+  "exit_code": 0,
+  "both_before_and_after_strict_deadline": true,
+  "stdout": "{\"status\": \"ALIGNED\", \"outcome\": \"FAIL_OR_UNVERIFIED_SEMANTIC_BOUNDARY\", \"raw_files_verified\": 15, \"sha256\": \"0ec0eaf03f4457049e4799f6f9636a112256f275d174729943ef67c3e78a9c8d\"}\n",
+  "stderr": "",
+  "full_protocol_alignment": false,
+  "procedural_deviation_sidecar_sha256": "41e159070552703105da7e378e7a97320d12212b15a2e03257e82b21f5934c2e"
+}

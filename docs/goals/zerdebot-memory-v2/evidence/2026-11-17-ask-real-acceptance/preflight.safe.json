@@ -1,0 +1,8 @@
+{
+  "status": "PREFLIGHT_PASS_NOT_SEND_PERMIT",
+  "started_at": 1794859185.308827,
+  "cloud_writes": 0,
+  "finished_at": 1794859188.111422,
+  "api_responses": 5,
+  "release_binding_sha256": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03"
+}

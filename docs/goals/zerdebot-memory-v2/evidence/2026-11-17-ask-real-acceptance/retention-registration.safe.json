@@ -1,0 +1,12 @@
+{
+  "status": "REGISTERED",
+  "owner_issue": 167,
+  "anchor_sha256": "03d5edc7529e58fe788d73cc0126cd30ea4b926dabdfce9b1f856c3420aa39f9",
+  "local_duty_sha256": "f19b3b395a90257554419a27dd726de863dd05a54067655f7964cbc0a42f2d27",
+  "automation_registration_sha256": "0658db627670b4e411a45d6a0a673f6d2d667409ccad4cd51822006d7740152e",
+  "total_independent_duties": 14,
+  "registered_before_first_capture": true,
+  "at": 1794858976.394363,
+  "remote_issue167_actual_write_and_fresh_exact_readback": true,
+  "main_and_worktree_local_retention_register_written": true
+}

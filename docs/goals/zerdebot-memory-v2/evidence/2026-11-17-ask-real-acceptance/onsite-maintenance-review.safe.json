@@ -1,0 +1,211 @@
+{
+  "status": "REVIEW_COMPLETE_PRODUCT_FAILED_PROCEDURAL_DEVIATIONS_PRESERVED",
+  "reviewer_role": "independent_maintenance",
+  "reviewed_at_utc": "2026-11-16T20:09:30.026069+00:00",
+  "scope": "Read-only Q safe reports, new-Q ledger metadata and current local pure source. No actual original UI/API bodies, historical raw, expired snapshots, AWS, UI or model calls were read/run. No repository code was edited.",
+  "evidence_sha256": {
+    "onsite-entry-deviation.safe.json": "7fbba097024ec114694ab92f6689b3dfb513224513d379bc3ef21a4e3bea0740",
+    "result.safe.json": "6b2c19afd71f28ded6622e64aeab3ef59b5910d73343548275e978a1865f65f9",
+    "onsite-release.safe.json": "894ccfbdcdbcbaec331abee4275f858e85633cd4cdbf1e0a0dc945adc21d4d17",
+    "retention-anchor.safe.json": "03d5edc7529e58fe788d73cc0126cd30ea4b926dabdfce9b1f856c3420aa39f9",
+    "retention-duty.safe.json": "f19b3b395a90257554419a27dd726de863dd05a54067655f7964cbc0a42f2d27",
+    "retention-registration.safe.json": "b6223edb8249088827aab22416e49184526356d80e8a8def957576582a12faf8",
+    "automation-registration.safe.json": "0658db627670b4e411a45d6a0a673f6d2d667409ccad4cd51822006d7740152e",
+    "automation-readback.safe.json": "986bbcdd82f03dba8f6f45b18429bfa6d4afeb9af21ccd0fac4ddc47d6d5b1fe",
+    "raw-retention.safe.json": "c7724fc0e8f4673501dae7f0519375ac888f018bc5deef5199f76f9e874d3c0a",
+    "prior-duties.safe.json": "d4699831058501d8573593e569fe8b7655ee5b7426e3674448ef7c85eaa3962f",
+    "onsite-window.safe.json": "21b926feef68b13faf3327ced8bee0e53f7e1fe6253d9add3f787c4770c2e99b",
+    "preflight.safe.json": "e6db96c4db1bdbeb3944c0a2427a407913f4e964a98b0612e4dd2572effdd858",
+    "budget.safe.json": "ecc46f0ae6a54e50e8962cfb35540a95ffb2c56bf1f9acfb50a1a82e4a41e858",
+    "entry-ui-ui-A-intent.private.json.once.safe.json": "8d8de65c958e8edda6395825706535fa9d39494b77a5a195fc4ae26b88c71b93",
+    "entry-ui-ui-A-intent.private.json.failure.safe.json": "9bbebc090e38ee36120fbe871be7ca535bb7862da313ea1565abac4b866de6e4",
+    "entry-ui-A.ui-intent.private.json.once.safe.json": "179aaa829393d2f06079a1b383f0c5218feed8fc636bf64d6679f3b71518f468",
+    "entry-ui-A.ui-intent.private.json.result.safe.json": "d1f1e27f59b7cbf11b9187f69771f7e61e5e61250d5645e941603004e9c40eaa",
+    "independent-post.safe.json": "0ec0eaf03f4457049e4799f6f9636a112256f275d174729943ef67c3e78a9c8d",
+    "independent-semantic-review.safe.json": "80eb888aea1fd5e21866c4503450f6b290b9a1457b401ff2d54e988211f5161b",
+    "PLAN.md": "725939d4c15e8d966ff60d087bdfe6f5e69a19b7262789d99bda5ceffd4acf22"
+  },
+  "source_repository": "/Users/bayashat/.codex/worktrees/zerde-retirement-finish/ZerdeBot",
+  "source_head": "6332b4c2f4b78f282b9f41b3c73e1d5911dbab62",
+  "source_sha256": {
+    "src/bot/services/explicit_context.py": "f0d19aefe15e1fafdefeb7c26b6f192f365a45cdb2e2b62ac92c01003208607b",
+    "src/bot/services/group_agent.py": "6e984761b1a50de786df64c7fa03914b349df5bb74ed2249cdbfdd0bcd5eba3a",
+    "src/bot/services/ai/gemini_client.py": "8f157b344dc2e320ade4e11813b300e30da142fcf8d7e9b8a9aa40e21d62fa69",
+    "src/bot/services/ai/group_chat_reply_fallback.py": "780ba8c461f27bbae3cea359987256456c040891eb2e79468415d430a7fccd19",
+    "src/bot/services/memory_v2/public_answers.py": "0159c336134f017ad7f2171a493b23a461cf38adf488fb973fba953093e185f3",
+    "tests/test_ask_public_knowledge_payload.py": "cb4ce18249efd06ce265a623b62d90534eda6108b1a187446bdc3faa99b83ac0"
+  },
+  "product_outcome": {
+    "status": "FAIL_PUBLIC_PRODUCT_MISIDENTIFICATION",
+    "basis": "Primary result plus independent-post/semantic safe reports; this maintenance reviewer did not independently reread the full UI original.",
+    "A": "FAIL",
+    "B": "NOT_EXECUTED_A_STOP",
+    "P": "NOT_EXECUTED_A_STOP",
+    "normal_UI_send_reported": 1,
+    "independent_semantics_reports_error": true,
+    "user_window_released": true,
+    "natural_sample_increment": 0,
+    "selector_mode": "UNKNOWN_NOT_CAPTURED",
+    "actual_provider": "UNKNOWN_NOT_CAPTURED",
+    "actual_model": "UNKNOWN_NOT_CAPTURED",
+    "no_production_wide_or_database_exactly_once_claim": true
+  },
+  "retention_checks": {
+    "registered_before_first_ledger_capture": true,
+    "registered_at": 1794858976.394363,
+    "first_capture_intent": 1794859184.559787,
+    "actual_metadata_rows": 15,
+    "API_rows": 12,
+    "UI_rows": 3,
+    "all_rows_captured_no_pending": true,
+    "prior_13_exactly_preserved": true,
+    "new_total": 14,
+    "owner": "Z10",
+    "anchor_sha256": "03d5edc7529e58fe788d73cc0126cd30ea4b926dabdfce9b1f856c3420aa39f9",
+    "deadline_epoch": 1795463695.509188,
+    "deadline_utc": "2026-11-23T19:54:55.509188+00:00",
+    "exact_seven_days": true,
+    "new_deadline_not_applied_to_old_duties": true,
+    "remote_issue167_and_current_automation14_proof": "Primary registration assertions and bound safe tool receipts only; this reviewer did not perform remote or persisted-current-TOML readback in this scope."
+  },
+  "procedural_findings": [
+    {
+      "id": "ENTRY_ARGUMENT_DEVIATION",
+      "status": "PRESERVED_NOT_FULL_PROTOCOL_PASS",
+      "facts": "An undeclared ui-A-intent filename consumed a failed once entry. A separate declared A.ui-intent once later succeeded. Both safe entries and the failure are preserved; no duplicate expected ledger path exists.",
+      "boundary": "Different entry labels alone do not prove the PLAN requirement for a separately reviewed narrow continuation after tool failure was satisfied. No such intervening narrow-continuation/PRE evidence is in the reviewed safe set.",
+      "closure_requirement": "Keep this deviation beside the product FAIL; do not describe the full execution procedure as PASS and do not rerun either consumed entry."
+    },
+    {
+      "id": "POST_ENTRY_FAILURE_ENUMERATION",
+      "status": "KNOWN_SCOPE_LIMIT",
+      "facts": "independent-post.entry_failures_preserved is empty because the verifier enumerates expected ledger roles; the malformed argument entry never entered that ledger.",
+      "closure_requirement": "Final closure must independently link onsite-entry-deviation and the malformed-entry once/failure. The empty list is not evidence of no entry failures."
+    },
+    {
+      "id": "NATIVE_UI_VERSUS_RECORDER_CLOCK",
+      "status": "DERIVED_BOUNDARY_CORRECTION_REQUIRED_NO_ACTUAL_REVIEW_TIMEOUT",
+      "last_native_UI_epoch": 1794859252.059,
+      "last_recorder_observation_epoch": 1794859271.485086,
+      "actual_native_UI_plus_3600": 1794862852.059,
+      "frozen_POST_derived_deadline": 1794862871.485086,
+      "difference_seconds": 19.426085948944092,
+      "independent_semantic_review_within_earlier_boundary": true,
+      "independent_POST_within_earlier_boundary": true,
+      "closure_requirement": "Report the earlier actual-native-UI deadline while retaining the original recorder-derived value. Do not rewrite or rerun the frozen POST; correct the tool contract only for a later new batch."
+    },
+    {
+      "id": "AUTOMATION14_SAFE_READBACK_LIMIT",
+      "status": "PRIMARY_PERSISTENCE_ASSERTION_NOT_INDEPENDENT_FULL_PROMPT_READBACK",
+      "facts": "automation-readback contains native update id/status and a rendered-card response, plus primary persistent_sha256/exact-prompt assertions; it does not contain the actual 14-duty prompt. The earlier automation-independent report covers the prior 13-duty prompt, not this later registration.",
+      "closure_requirement": "Distinguish the primary actual persistence check from this safe-only independent scope. Do not claim this reviewer read the current persistent fourteen-duty configuration."
+    }
+  ],
+  "static_prompt_path": [
+    {
+      "file": "src/bot/services/memory_v2/public_answers.py",
+      "lines": [
+        80,
+        123,
+        125
+      ],
+      "finding": "GENERAL or selection-unavailable permits plain explicit QA; the actual A selection state is not established by this source audit."
+    },
+    {
+      "file": "src/bot/services/group_agent.py",
+      "lines": [
+        780,
+        794,
+        825,
+        868,
+        908
+      ],
+      "finding": "After memory handling declines, answer_group_question calls the plain generator with empty stored-context fields and shared plain-history/style instructions; returned text is length-fitted and HTML-normalized then sent."
+    },
+    {
+      "file": "src/bot/services/ai/gemini_client.py",
+      "lines": [
+        326,
+        330,
+        374,
+        401,
+        413
+      ],
+      "finding": "Primary Gemini systemInstruction includes shared EXPLICIT_ANSWER_POLICY. The payload has systemInstruction/contents/generationConfig and no browsing/search tool. A parsed text response is returned without product-identity validation."
+    },
+    {
+      "file": "src/bot/services/ai/group_chat_reply_fallback.py",
+      "lines": [
+        65,
+        96,
+        153,
+        164
+      ],
+      "finding": "DeepSeek/Groq text fallback uses the same shared policy in its system message and no public retrieval tool."
+    },
+    {
+      "file": "src/bot/services/explicit_context.py",
+      "lines": [
+        14,
+        19,
+        21,
+        23
+      ],
+      "finding": "Existing policy already requires reliable identification, possible-versus-confirmed distinction, and no invented products/specifications/sources/search claims. Restating these synonyms is not evidence of a fix."
+    },
+    {
+      "file": "tests/test_ask_public_knowledge_payload.py",
+      "lines": [
+        1,
+        16,
+        39,
+        78,
+        130
+      ],
+      "finding": "Existing tests capture outgoing requests and deliberately stop at the HTTP seam; they prove payload composition and routing contracts, not factual model behavior."
+    }
+  ],
+  "failure_mechanism_assessment": {
+    "confirmed_static_limit": "The allowed generation path relies on model knowledge and policy compliance; it has no external factual grounding or reliable whole-entity recognition check. Nonempty, well-formed text can be sent even when its product identity is fabricated.",
+    "plausible_not_proven_for_this_request": "The model may extrapolate a whole product identity from familiar name fragments and pressure to provide a concise explanation. The exact provider/model/prompt branch and internal cause remain unobserved.",
+    "not_a_finding": "No evidence here proves that selector, a particular provider/model, the budget gate or provider settings caused A. Reviewer official-page comparison is not a tool the bot had."
+  },
+  "minimal_general_repair_advice": [
+    "First create a separate finite exact-request trace task; do not spend an unplanned thirteenth API read inside this frozen canary or infer the incident path from source alone.",
+    "A small shared-policy candidate may address the narrower missing behavior: familiar fragments do not establish the full named entity; failure to recognize a name cannot justify claims that it is unofficial, nonexistent, an OEM/rebrand or marketing label; identity accuracy overrides sentence-count/style requirements. This is a hypothesis to validate, not a completed factual repair.",
+    "When identity cannot be supported, state that uncertainty and request one specific identifying source or manufacturer. Do not invent a list of plausible product lines or claim browsing. Honest unknown is safer but remains PARTIAL for the original useful-answer acceptance.",
+    "If reliable useful answers to newer named entities require factual retrieval, plan a separate bounded public-source capability with explicit owner, provenance, timeout/size/domain rules, source-injection handling and existing budget integration. Do not silently add retrieval, change selector/model/provider settings or create a new wallet in this repair."
+  ],
+  "separate_next_tasks": [
+    {
+      "id": "P0_EXACT_REQUEST_TRACE",
+      "entry_gate": "A new bounded read-only contract and independent PRE; exact A chat/message/update/request correlation must come from still-authorized evidence, never invented or obtained by reopening expired data.",
+      "suggested_scope": "Predeclare account, one dev function/log group, a <=120-second A interval and finite limits. At most identity check plus one exact chat/message log query and one exact correlated request/stream query; no pagination expansion, scans, queue reads, Invoke, model calls or UI. Stop if correlation is missing/ambiguous.",
+      "evidence": "Existing request/provider/model log fields can prove only what was actually logged. Counts or current source cannot reconstruct a historical full prompt. Preserve UNKNOWN where records are absent.",
+      "retention": "Register any new trace originals before collection under a separate scope; do not append to the frozen 15-row canary, copy/rebuild its originals or extend its existing deadline. If trace contains derived A content, cap its retention at the original Q deadline."
+    },
+    {
+      "id": "P0_RELIABILITY_REPAIR_AND_ACCEPTANCE",
+      "entry_gate": "Use the trace or explicitly retained UNKNOWN to select the smallest shared-owner change; preserve selector/model/provider/budget and original request/retention gates.",
+      "evidence": "Source diff and local payload regressions are separate from semantic acceptance; require a fresh reviewed bounded model/UI batch and new direct window before real tests. Do not immediately request another window while repair remains unreviewed."
+    }
+  ],
+  "test_requirements": [
+    "Inspect actual HTTP payloads for Gemini and both existing fallback providers using synthetic transports: shared identity boundary present, original question preserved, no invented web tools/sources, unchanged provider/model/options/budget hooks.",
+    "Use a general matrix: known public concept; unfamiliar synthetic entity; ambiguous brand-like short name; user-supplied manufacturer/official excerpt; personal ownership and mixed public/personal question; quoted third-party/instruction-injection text; existing languages and empty/nonempty context.",
+    "Production policy must not contain RTX/NVIDIA-specific definitions, fixed answers or keyword-based routing. A named regression input may remain a test case, not an answer lookup.",
+    "Preserve useful known-public answers and personal evidence boundaries. Unknown-name cases must not assert nonexistent/nonofficial/rebrand/marketing facts without support; a concise honest unknown does not satisfy the useful-answer PASS gate.",
+    "Do not treat substring prompt assertions, fabricated model responses or local mock passes as hallucination resistance. A later bounded real output review must assess full replies against actual permitted sources and preserve FAIL/PARTIAL without prompting until a desired answer appears."
+  ],
+  "no_actions_performed": {
+    "repository_edits": 0,
+    "official_entry_reruns": 0,
+    "cloud_calls": 0,
+    "UI_actions": 0,
+    "model_calls": 0,
+    "historical_raw_reads_or_hashes": 0,
+    "new_Q_original_body_reads_or_hashes": 0,
+    "deletions": 0,
+    "runtime_deployments": 0
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "status": "PASS_POINT_IN_TIME_NOT_A_PERMIT",
+  "started_at": 1794859195.6774452,
+  "reader_sha256": "1840cfec7ae12164d01fb800988368d477336f830d96e908803f90f786554800",
+  "release_binding_sha256": "9aa90f99b937e5ada16d0b6b358b692718062d44203e2169b65a838ec025fd03",
+  "preflight_sha256": "e6db96c4db1bdbeb3944c0a2427a407913f4e964a98b0612e4dd2572effdd858",
+  "cloud_writes": 0,
+  "model_calls": 0,
+  "budget_reservations": 0,
+  "utc_month": "2026-11",
+  "aws": {
+    "paused": false,
+    "measurement_state": "ESTIMATE_VERIFIED",
+    "observed_at": 1794856110,
+    "covered_until": 1794855000,
+    "valid_until": 1794866910,
+    "estimate_micro_usd": 5109045
+  },
+  "model": {
+    "charged_micro_usd": "116049",
+    "settled_micro_usd": "116049",
+    "paused": null
+  },
+  "finished_at": 1794859197.586601,
+  "api_counts": {
+    "sts/GetCallerIdentity": 1,
+    "lambda/GetFunctionConfiguration": 1,
+    "dynamodb/GetItem": 5
+  },
+  "raw_paths": [
+    "raw/budget-01.private.json",
+    "raw/budget-02.private.json",
+    "raw/budget-03.private.json",
+    "raw/budget-04.private.json",
+    "raw/budget-05.private.json",
+    "raw/budget-06.private.json",
+    "raw/budget-07.private.json"
+  ],
+  "raw_hashes": {
+    "raw/budget-01.private.json": "4163b42d629e3a6e779665fb63b63894903a9ddc7c19bae71ec66bae30c09ac6",
+    "raw/budget-02.private.json": "83fa65d648808b4df5f09b2c2a80e1ac908f8322ed1f0f8fd6346be7a2bceb30",
+    "raw/budget-03.private.json": "29802733bf044a236d7c289d24e0b7bff84a5582e9e3ac092e7d21af046541ab",
+    "raw/budget-04.private.json": "c333f22b43e965624888ae044573895aa3cb3c8b5c91217ec48b05db01c46e9b",
+    "raw/budget-05.private.json": "8692cbb7fd84c1624439f68ceee943cd548ff6b3a05ba7947959e322c50cdae6",
+    "raw/budget-06.private.json": "90996c51c3513487c5e757080e67679e57920c720e5e0d69587a1dd0ec3db6f2",
+    "raw/budget-07.private.json": "a1a897ce64b4ce26d25e5220ec89d239cf5893969a096100307d8c28fb5a9ae0"
+  }
+}

@@ -1,3 +1,9 @@
+## 当前新增责任：普通ask真实验收
+
+原13项期限与状态保持，新增第14项：`/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-17-ask-public-knowledge-acceptance`。ledger=`raw-retention.safe.json`；原起点`2026-11-16T19:54:55.509188+00:00`，原期限`2026-11-23T19:54:55.509188+00:00`，epoch=1795463695.509188。首采前已登记并实际读回；现为15 CAPTURED/0 PENDING＝12 API响应＋3 UI记录（onsite、A intent、A after），A后停止、B/P未发，原期限不变。后续新scope/双PRE/精确公告/到期处理/独立不存在；不延期或重建。
+
+以下原13项完整历史保留：
+
 ## Nov16：5份费用指标诊断原文在原设备身份门停止
 
 本批5份cost-metrics-diagnostic原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。两个原ledger与两个原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存60regular＝5目标＋55保护、4目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。
