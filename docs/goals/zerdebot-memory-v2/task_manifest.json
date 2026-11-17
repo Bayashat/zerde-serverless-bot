@@ -25,14 +25,14 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
-    "status_as_of": "2026-10-20",
-    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。 PR286普通ask意图提示修复已两环境发布并主独完整包/配置与稳定确认；实际模型语义另待有限dev验收。 PR291公共知识生成政策与空上下文修复两环境发布并独审；真实公共问答有用性仍待新现场。",
-    "remaining": "普通 /ask 真实A已出现产品事实错误，验收未通过；B/P按危险门停止未发。先定位实际生成路径和事实来源可靠性、修复后新现场复验。普通 /ask 主/备用生成政策与空上下文修复已发布，仍需真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
+    "status_as_of": "2026-11-17",
+    "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。 PR286普通ask意图提示修复已两环境发布并主独完整包/配置与稳定确认；实际模型语义另待有限dev验收。 PR291公共知识生成政策与空上下文修复两环境发布并独审；真实公共问答有用性仍待新现场。 PR302通用事实修复已两环境实际部署并主独完整包/配置/权限和稳定核验；有限公共来源与完整响应门不代替真实有用性验收。",
+    "remaining": "通用事实修复已两环境部署并主独核验；下一新的直接15分钟窗口复验A/B/P，有限检索MISS诚实未知仍PARTIAL，旧真实FAIL保持。个人/混合历史证据边界仍需真实验证。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
     "issue_state": "OPEN",
-    "runtime_baseline": "9e962c20f71586688736858a962f3199edcd53c8",
-    "deployed_build_source": "9e962c20f71586688736858a962f3199edcd53c8",
+    "runtime_baseline": "174a84998563e3e1bfeb3f9dc60370252b173503",
+    "deployed_build_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-10-21-ask-public-knowledge-repair/release.safe.json",
+    "runtime_evidence": "evidence/2026-11-17-ask-factuality-repair/final.safe.json",
     "explicit_quota_guard": {
       "status": "DEPLOYED_ACTUAL_PACKAGE_VERIFIED",
       "contract": "EXPLICIT_QUOTA_GUARD.md",
@@ -479,7 +479,20 @@
       "preparation_evidence": "evidence/2026-11-17-ask-acceptance-preparation/preparation.safe.json",
       "preparation_sha256": "25e46c444b74daf9517e339eab33d3284adfffa150b5793656f0be1e34f39b36"
     },
-    "remaining_before_ask_real_acceptance": "普通 /ask 主/备用生成政策与空上下文修复已发布，仍需真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。"
+    "remaining_before_ask_real_acceptance": "普通 /ask 主/备用生成政策与空上下文修复已发布，仍需真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
+    "ask_factuality_release": {
+      "as_of": "2026-11-17",
+      "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+      "pr": 302,
+      "status": "RUNTIME_DEPLOYMENT_VERIFIED_REAL_ASK_PENDING",
+      "runtime_evidence": "evidence/2026-11-17-ask-factuality-repair/final.safe.json",
+      "retest_preparation_evidence": "evidence/2026-11-17-ask-factuality-repair/retest/preparation.safe.json",
+      "real_usefulness_pass": false,
+      "new_telegram_window_required": true,
+      "specific_product_answer": false,
+      "previous_runtime_baseline": "9e962c20f71586688736858a962f3199edcd53c8",
+      "previous_remaining": "普通 /ask 真实A已出现产品事实错误，验收未通过；B/P按危险门停止未发。先定位实际生成路径和事实来源可靠性、修复后新现场复验。普通 /ask 主/备用生成政策与空上下文修复已发布，仍需真实有效主题回答验证；个人/混合历史证据边界保持。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。"
+    }
   },
   {
     "id": "Z02",
@@ -2150,6 +2163,12 @@
       "ledger_evidence": "evidence/2026-11-17-ask-real-acceptance/raw-retention.safe.json",
       "prior_duties_unchanged": 13,
       "total_duties": 14
+    },
+    "ask_factuality_repair_copy_boundary": {
+      "new_runtime_raw": 0,
+      "new_deadlines": 0,
+      "remaining_original_duties": 14,
+      "evidence": "evidence/2026-11-17-ask-factuality-repair/final.safe.json"
     }
   },
   {

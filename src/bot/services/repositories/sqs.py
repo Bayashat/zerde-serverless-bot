@@ -100,6 +100,7 @@ class SQSClient:
         request_sent_at: int | None = None,
         source_message_context: str | None = None,
         parent_bot_message_id: int | str | None = None,
+        public_lookup_allowed: bool = False,
         media_ref: dict[str, object] | None = None,
         media_refs: list[dict[str, object]] | None = None,
     ) -> None:
@@ -130,6 +131,8 @@ class SQSClient:
             payload["current_user_message"] = current_user_message
         if source_message_context:
             payload["source_message_context"] = source_message_context
+        if public_lookup_allowed is True:
+            payload["public_lookup_allowed"] = True
         if parent_bot_message_id is not None:
             payload["parent_bot_message_id"] = parent_bot_message_id
         if media_refs:

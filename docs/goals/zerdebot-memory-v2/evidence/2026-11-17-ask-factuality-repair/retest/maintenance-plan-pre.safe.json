@@ -1,0 +1,52 @@
+{
+  "status": "ALIGNED",
+  "reviewer_role": "independent_maintenance",
+  "reviewed_at_utc": "2026-11-17T10:13:27.333983+00:00",
+  "plan_sha256": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+  "post_plan_sha256": "6778172c75266e87b6531764dc2324eeca2253080c0c685f6c7b96d2a0dad73e",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "scope": "Plan-level maintenance PRE only for the new factuality retest preparation. This report does not sign collector/budget/UI/POST tool hashes or certify final runtime bindings, final prod deployment closure, a current Telegram window, registration or execution.",
+  "draft_review_sha256": "499def31aa744201aee8169b0c5f875ee7ccb98756aed0ab560e5329c00823bb",
+  "prior_duties_sha256": "bf9b010ed155cf944a35e8877e512b6ad9728229b9bf8b37f1bcb86d77b2a2d9",
+  "owner_manifest_sha256": "99e28ee47cae43f9a96e118aeafd4516c5e3aff00cf7d52ab1368d18720ec1af",
+  "checks": {
+    "single_T_for_new_acceptance_old_Q_once_FAIL_and_deviations_frozen": true,
+    "runtime_source_bound_to_actual_dev_prod_main_independent_packages_and_stable_not_main_commit": true,
+    "105_exact_source_owner_files_and_current_package_matching_required": true,
+    "historical_CONTROL_epoch_start_and_revision_floor_preserved_without_old_private_reads": true,
+    "new_direct_human_window_required_no_current_window_assumed": true,
+    "fixed_dev_identity_and_existing_draft_STOP_no_unrequested_clearing": true,
+    "fixed_five_preflight_plus_seven_budget_reads_no_extra_call_or_reservation": true,
+    "A_B_P_once_order_risk_stop_PARTIAL_and_personal_evidence_gates_explicit": true,
+    "each_send_budget_window_native_intent_and_10second_dispatch_bound": true,
+    "180second_actual_send_observation_and_final_native_start_30second_freshness": true,
+    "strict_input_before_once_and_any_failure_nonzero_unclosed_once_blocks_next": true,
+    "all_entry_markers_in_POST_including_orphan_failures": true,
+    "raw_POST_cutoff_window_start_plus_3600_before_first_original_read": true,
+    "release_and_semantic_review_not_before_last_native_finish": true,
+    "new_seven_day_anchor_actual_registration_readback_before_capture": true,
+    "maximum_19_originals_0600_0700_exclusive_identity_hash_mtime_nlink": true,
+    "existing_14_duties_not_extended_new_15_only_after_actual_start_registration": true,
+    "operator_zero_model_cloud_writes_and_reservations_distinguished_from_bot_response_cost": true,
+    "local_synthetic_deployed_runtime_and_semantic_acceptance_distinguished": true,
+    "other_business_natural_cost_and_retention_obligations_preserved": true
+  },
+  "findings": {
+    "blocking": []
+  },
+  "limits": [
+    "Final prod stable evidence and exact runtime-binding/config/historical/external-read files must be completed before formal tool and POST PRE; no such PRE is signed here.",
+    "The reviewer implemented only the isolated test file; the main agent implemented PLAN and runtime tools. Independent correctness draft review separately ran the 12 new tests and five mutation controls. This plan report is not self-certification of those tests or final tools.",
+    "Complete preparation tests and final-bound positive/negative controls remain required; the independent draft report explicitly does not cover a full synthetic A/B/P plus 12-API POST fixture.",
+    "Local CUA dispatch time comparison must actually run before sending in the future human window; a local permit alone is neither Telegram server receipt time nor exactly-once proof.",
+    "No current anchor, raw capture, new retention deadline, Telegram window or semantic PASS is created by plan approval."
+  ],
+  "external_calls": 0,
+  "AWS_calls": 0,
+  "UI_calls": 0,
+  "model_calls": 0,
+  "original_or_expired_raw_reads": 0,
+  "formal_entries_run": 0,
+  "tool_PRE_signed": false,
+  "POST_tool_PRE_signed": false
+}

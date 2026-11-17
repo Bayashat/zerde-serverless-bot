@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "created_at_utc": "2026-11-17T09:18:34.432382+00:00",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "pr": 302,
+  "base": "5928ae9a34806a0ba6a22cfff16ba900aed68c43",
+  "files": {
+    "release_safe.py": "6f0af13c9aa7d04e33be4bc12a1205c073da051d61b6f68397a50ce6e00f9d04",
+    "build_safe.py": "c517cde14c4aaa692d7cc12c7715f2106109635b9e59f6e6efc2355ee5f20329",
+    "package_probe.py": "c31bb117204c9274a784b40aaae56f77622ed5754f9d7d4d383ecb9ab8e98ecc",
+    "RELEASE_PLAN.md": "e43c005b3addd81d916e1ca2a0fc62f67863e9a199f32b14b47e7e92980d2021",
+    "runtime-source-binding.safe.json": "251756548215d57f55223be3eea1bb4ac552fe0616e8be4cdc16fbadeb4bfff2",
+    "source-ci.safe.json": "176060e0e6059374d6c1a4adc0d5bc32020ce0adc046e60f9bfde385f20d29da",
+    "source-post.safe.json": "e76f767312df6336aeb9f49cb1f959743a669db617476bbfb9717420d69f4a11",
+    "source-maintenance-post.safe.json": "78b6ae454e13c5ec3315f39a9a8685e1e7cb36f3f9bec4099a0b2b51307ec258"
+  },
+  "scope": "Independent offline release-tool PRE for exact eight frozen files. Required maintenance tool PRE, per-environment fresh runtime baseline, independent candidate and changeset reviews, once/locks, dev completion and stable evidence before prod remain mandatory. This is not a report of actual AWS release execution.",
+  "checks": [
+    {
+      "name": "exact_binding_and_source",
+      "status": "PASS",
+      "observed": "Exact eight-file PRE set enforced; missing entry or changed hash stops. Clean exact source commit, source correctness/maintenance POST, source CI mapping and unchanged BASE/SOURCE lock blobs are required. Real operator also freshly checks exact bound CI run/head/three completed jobs and workflow occupancy."
+    },
+    {
+      "name": "protected_runtime_and_control",
+      "status": "PASS",
+      "observed": "Exact function/account/region inventory, five full function ZIPs and shared layer, complete stable configuration/top-level hashes, alarms, rules/targets, table identity and CONTROL epoch/start/state protected. CONTROL revision floor includes build, prepare, independent prepare, execute and both post roles before stable."
+    },
+    {
+      "name": "bounded_code_only_cutover",
+      "status": "PASS",
+      "observed": "Only six existing plus one added source member may differ in Bot/Memory; other package bytes retained from fresh artifacts. ARM verifier and strict 16-check payload probe required. Immutable content-addressed uploads, exact two Code-only modifications, full GetTemplate of exact changeset, preserved parameters/tags/role/capabilities and one ExecuteChangeSet required."
+    },
+    {
+      "name": "change_and_operation_identity",
+      "status": "PASS",
+      "observed": "Changeset stable digest excludes ResponseMetadata only. Fresh exact template verifies content and Code bucket/key. LastOperations is a bounded typed projection, with CREATE_CHANGESET allowed after prepare and UPDATE_STACK additionally after execution; foreign rollback/delete/new type stops. This log projection alone is expressly not causal attribution; exact template/config/changeset and foreign-pending gates remain."
+    },
+    {
+      "name": "transport_accounting_and_retention",
+      "status": "PASS",
+      "observed": "Strict retries/call budgets and no SDK retry; confirmed write acknowledged before later deadline validation, attempts/unknowns retained. Fresh signed artifact URLs use no-proxy/no-redirect/no-retry shared cancellable async DNS/TLS/header/body transport with 64MiB/240-second network limit and full hash/size verification. No raw runtime config/template/error bodies or signed URLs persist. Complete source ZIP artifacts remain separately classified; original 14 retention duties unchanged."
+    },
+    {
+      "name": "completion_order_and_once",
+      "status": "PASS",
+      "observed": "Exclusive stage directories and nonblocking batch/release locks; paired stack/changeset completion check, independent prepare before execute, full main/independent package post checks and >=300-second stable metadata before prod. No automatic second execute, rollback, raw capture, model/UI/invoke or queue operation."
+    }
+  ],
+  "validation": {
+    "final_tool_offline_control_assertions": 74,
+    "failed": 0,
+    "groups": [
+      {
+        "assertions": 22,
+        "coverage": "Exact Code-only changeset, metadata-stable digest, wrong resource/property/replacement/pagination/status rejection; RetryAttempts bool/1/missing rejection; safe failure text; unlisted calls and ZIP path/link rejection. Repeated on final frozen version."
+      },
+      {
+        "assertions": 29,
+        "coverage": "CONTROL monotonic/protected/inventory floors; acknowledged/late/unknown write accounting; exact changeset template and environment drift rejection; actual async ZIP DNS/header/body cancellation and digest/size controls."
+      },
+      {
+        "assertions": 23,
+        "coverage": "Exact required eight-file PRE set and lock drift; fake fresh CI head/jobs/status/occupancy failures; LastOperations stage transitions and rollback/delete rejection."
+      }
+    ],
+    "package_probe_host_source_checks": 16,
+    "host_probe_status": "PASS",
+    "host_probe_limit": "Executed using current source imports with socket/DNS blocked and synthetic clients. This is not an ARM candidate package result; actual retained package plus five-handler ARM tests and independent package review remain required.",
+    "network_runtime_seams": "Mock clients/transports/backends only; socket connect/connect_ex/create_connection/getaddrinfo blocked for host smoke and async transport controls. No formal release main entry was executed."
+  },
+  "source_ci_evidence": {
+    "local_safe_receipt_status": "SUCCESS",
+    "run_id": 44052650433,
+    "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+    "three_jobs_success": true,
+    "limit": "This offline review binds and validates the local receipt. It did not perform an additional live GitHub API replay; the frozen operator requires fresh exact run/head/jobs validation before critical stages."
+  },
+  "findings": {
+    "blocking": [],
+    "limits": [
+      "Actual AWS/service protocol behavior and current resource state are unobserved by this PRE. Any actual STOP preserves evidence and requires a separately reviewed continuation; do not rerun an old once.",
+      "Stage logical-call counter tracks SDK calls; GitHub response trace is separately recorded, and artifact downloads are separately bounded. Do not present the SDK count as total network requests.",
+      "Source integrity and complete response parsing do not establish actual model factuality or Telegram semantic PASS. Prior A FAIL and procedural deviation remain."
+    ]
+  },
+  "official_reference": "https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_OperationEntry.html",
+  "execution_boundary": {
+    "aws_calls": 0,
+    "telegram_ui_calls": 0,
+    "model_calls": 0,
+    "github_api_calls": 0,
+    "runtime_public_api_calls": 0,
+    "remote_writes": 0,
+    "formal_release_entries": 0,
+    "old_private_raw_reads": 0,
+    "implementation_or_tool_edits_by_reviewer": 0,
+    "note": "Official AWS documentation browsing only, separate from runtime/API calls."
+  }
+}

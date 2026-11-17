@@ -34,12 +34,15 @@ from services.explicit_context import (
     PLAIN_HISTORY_INSTRUCTIONS,
     extract_message_text,
     format_message_reference,
+    format_public_source,
     normalise_chat_style_profile,
+    public_source_attribution,
 )
 from services.memory_safety import (
     looks_like_future_answer_directive,
     looks_like_subjective_person_ranking_question,
 )
+from services.public_sources import lookup_public_source, unavailable_public_topic
 from services.repositories.explicit_context_repository import ExplicitContextRepository
 from services.repositories.sqs import SQSClient
 from services.telegram import TelegramClient
@@ -79,6 +82,7 @@ class ExplicitQuestionContext:
     retrieval_query: str
     source_message_context: str = ""
     parent_bot_message_id: int | None = None
+    public_lookup_allowed: bool = False
 
 
 def _get_gemini() -> GeminiClient | None:
@@ -161,6 +165,7 @@ def _try_gemini_group_chat_reply(
     media_context: str,
     chat_id: int,
     reply_to_message_id: int,
+    public_source_context: str = "",
     before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str] | None:
     gemini = _get_gemini()
@@ -189,6 +194,7 @@ def _try_gemini_group_chat_reply(
                 lang=lang,
                 media_parts=media_parts,
                 media_context=media_context,
+                **({"public_source_context": public_source_context} if public_source_context else {}),
                 **({"before_attempt": before_attempt} if before_attempt is not None else {}),
             )
             if not answer.strip():
@@ -197,7 +203,11 @@ def _try_gemini_group_chat_reply(
         except GeminiRPDExhaustedError as exc:
             logger.warning(
                 "Gemini group chat reply hit RPD limit; trying text-only fallback",
-                extra={"chat_id": chat_id, "reply_to_message_id": reply_to_message_id, "attempt": attempt},
+                extra={
+                    "chat_id": chat_id,
+                    "reply_to_message_id": reply_to_message_id,
+                    "attempt": attempt,
+                },
             )
             last_error = exc
             break
@@ -257,6 +267,7 @@ def _fallback_group_chat_reply(
     lang: str,
     media_parts: list[dict[str, Any]] | None,
     media_context: str,
+    public_source_context: str = "",
     before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str]:
     fallback = _get_group_chat_reply_fallback()
@@ -277,6 +288,7 @@ def _fallback_group_chat_reply(
         max_output_tokens=max_output_tokens,
         lang=lang,
         text_only_media_context=text_only_media_context,
+        **({"public_source_context": public_source_context} if public_source_context else {}),
         **({"before_attempt": before_attempt} if before_attempt is not None else {}),
     )
     if not answer.strip():
@@ -299,6 +311,7 @@ def _generate_group_chat_reply(
     media_context: str,
     chat_id: int,
     reply_to_message_id: int,
+    public_source_context: str = "",
     before_attempt: Callable[[], None] | None = None,
 ) -> tuple[str, str]:
     answer_provider = _try_gemini_group_chat_reply(
@@ -313,6 +326,7 @@ def _generate_group_chat_reply(
         lang=lang,
         media_parts=media_parts,
         media_context=media_context,
+        **({"public_source_context": public_source_context} if public_source_context else {}),
         chat_id=chat_id,
         reply_to_message_id=reply_to_message_id,
         **({"before_attempt": before_attempt} if before_attempt is not None else {}),
@@ -331,6 +345,7 @@ def _generate_group_chat_reply(
         lang=lang,
         media_parts=media_parts,
         media_context=media_context,
+        **({"public_source_context": public_source_context} if public_source_context else {}),
         **({"before_attempt": before_attempt} if before_attempt is not None else {}),
     )
 
@@ -356,6 +371,10 @@ def build_explicit_question_context(
 ) -> ExplicitQuestionContext:
     text = (current_text if current_text is not None else extract_message_text(message)).strip()
     reply = message.get("reply_to_message")
+    if "reply_to_message" not in message:
+        return ExplicitQuestionContext(
+            user_text=text, current_user_message=text, retrieval_query=text, public_lookup_allowed=True
+        )
     if not isinstance(reply, dict):
         return ExplicitQuestionContext(user_text=text, current_user_message=text, retrieval_query=text)
 
@@ -727,6 +746,7 @@ def handle_update(
                 current_user_message=question_context.current_user_message,
                 source_message_context=question_context.source_message_context,
                 parent_bot_message_id=question_context.parent_bot_message_id,
+                public_lookup_allowed=question_context.public_lookup_allowed,
                 media_refs=[media_ref.to_dict() for media_ref in media_refs],
             )
         except Exception:
@@ -754,7 +774,7 @@ def handle_update(
                 "media_source": (
                     "media_group"
                     if len(media_refs) > 1
-                    else "current_message" if media_refs[0].source_message_id == message_id else "reply_to_message"
+                    else ("current_message" if media_refs[0].source_message_id == message_id else "reply_to_message")
                 ),
                 **media_log,
             },
@@ -777,19 +797,31 @@ def handle_update(
         )
         return True
 
-    from services.memory_v2.public_answers import MemoryPublicRetryRequiredError, try_memory_answer
+    from services.memory_v2.public_answers import (
+        MemoryPublicRetryRequiredError,
+        try_memory_answer,
+    )
 
     if try_memory_answer(message, question=extract_message_text(message), lang=get_chat_lang(chat_id)):
         return True
     question_context = build_explicit_question_context(repo, chat_id, message)
     from services.memory_v2.explicit_delivery import configured_delivery
     from services.memory_v2.explicit_request_gate import capture_configured
-    from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
+    from services.memory_v2.models import (
+        MemoryConflict,
+        MemoryInputError,
+        MemoryUnavailable,
+    )
 
     actor = (message.get("from") or {}).get("id")
     try:
         gate = capture_configured(chat_id, actor, message_id, message.get("date"))
-        body = {"chat_id": chat_id, "requester_user_id": actor, "reply_to_message_id": message_id, "request_gate": gate}
+        body = {
+            "chat_id": chat_id,
+            "requester_user_id": actor,
+            "reply_to_message_id": message_id,
+            "request_gate": gate,
+        }
         with configured_delivery(repo, bot, body) as (delivery, _):
             handled = answer_group_question(
                 repo=repo,
@@ -805,6 +837,7 @@ def handle_update(
                 current_user_message=question_context.current_user_message,
                 source_message_context=question_context.source_message_context,
                 parent_bot_message_id=question_context.parent_bot_message_id,
+                public_lookup_allowed=question_context.public_lookup_allowed,
             )
     except (MemoryConflict, MemoryInputError, MemoryUnavailable):
         return True
@@ -842,6 +875,7 @@ def answer_group_question(
     current_user_message: str | None = None,
     source_message_context: str | None = None,
     parent_bot_message_id: int | str | None = None,
+    public_lookup_allowed: bool = False,
     media_parts: list[dict[str, Any]] | None = None,
     media_context: str = "",
     media_metadata: dict[str, Any] | None = None,
@@ -864,6 +898,40 @@ def answer_group_question(
         style_profile=style_profile,
     )
 
+    source = None
+    if (
+        public_lookup_allowed is True
+        and not source_message_context
+        and parent_bot_message_id is None
+        and not media_parts
+        and not media_context
+        and not media_metadata
+        and current_user_message == user_text
+    ):
+        lookup = lookup_public_source(current_user_message, before_attempt=before_attempt)
+        source = lookup.source
+        if lookup.applicable and source is None:
+            bot.send_message(
+                chat_id,
+                normalize_llm_output_for_telegram_html(unavailable_public_topic(lang)),
+                reply_to_message_id=reply_to_message_id,
+            )
+            return True
+    source_context = (
+        format_public_source(
+            {
+                "title": source.title,
+                "extract": source.extract,
+                "url": source.url,
+                "language": source.language,
+                "page_id": source.page_id,
+                "fetched_at": source.fetched_at,
+            }
+        )
+        if source
+        else ""
+    )
+
     try:
         answer, provider_name = _generate_group_chat_reply(
             user_message=user_text,
@@ -877,6 +945,7 @@ def answer_group_question(
             lang=lang,
             media_parts=media_parts,
             media_context=media_context,
+            **({"public_source_context": source_context} if source_context else {}),
             chat_id=chat_id,
             reply_to_message_id=reply_to_message_id,
             **({"before_attempt": before_attempt} if before_attempt is not None else {}),
@@ -905,8 +974,17 @@ def answer_group_question(
             raise
         return False
 
-    answer_text = fit_llm_output(answer, max_chars=reply_policy.max_chars)
-    answer_html = normalize_llm_output_for_telegram_html(answer_text)
+    attribution, attribution_length = (
+        public_source_attribution(
+            title=source.title,
+            url=source.url,
+            lang=lang,
+        )
+        if source
+        else ("", 0)
+    )
+    answer_text = fit_llm_output(answer, max_chars=max(1, reply_policy.max_chars - attribution_length))
+    answer_html = normalize_llm_output_for_telegram_html(answer_text) + attribution
     bot.send_message(chat_id, answer_html, reply_to_message_id=reply_to_message_id)
     logger.info(
         "Group agent explicit reply generated",

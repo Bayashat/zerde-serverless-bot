@@ -1,0 +1,117 @@
+{
+  "status": "RUNTIME_DEPLOYMENT_VERIFIED_REAL_ASK_PENDING",
+  "at": 1794910829.25914,
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "pr": 302,
+  "environments": {
+    "dev": {
+      "status": "DEPLOYED_MAIN_INDEPENDENT_STABLE",
+      "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+      "artifacts": {
+        "bot": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+        "memory-v2-worker": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+        "news": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+        "operations": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+        "quiz": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+        "shared-layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+      },
+      "stable_seconds": 313.484943151474,
+      "execute_completed_at": 1794907960.693152,
+      "changeset": "arn:aws:cloudformation:eu-central-1:469511944682:changeSet/zerde-ask-factuality-dev-20261117a/1bc9fcbe-c5f4-42a1-9c6a-e721829a60fa"
+    },
+    "prod": {
+      "status": "DEPLOYED_MAIN_INDEPENDENT_STABLE",
+      "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+      "artifacts": {
+        "bot": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+        "memory-v2-worker": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+        "news": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+        "operations": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+        "quiz": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+        "shared-layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+      },
+      "stable_seconds": 322.7033460140228,
+      "execute_completed_at": 1794910486.565034,
+      "changeset": "arn:aws:cloudformation:eu-central-1:469511944682:changeSet/zerde-ask-factuality-prod-20261117a/1f46a020-e59c-4aef-ac0f-c97338318420"
+    }
+  },
+  "source_ci": {
+    "status": "SUCCESS",
+    "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+    "run_id": 44052650433,
+    "jobs": {
+      "Development Bot Identity": "success",
+      "Code Quality Checks": "success",
+      "Infrastructure Changes Preview": "success"
+    },
+    "response_sha256": "a5fc1d2c0efc090a1c514c26e04f098656a9ba3738cf9651c44f397ac90fda32",
+    "read_at": 1794907018.035077
+  },
+  "local_full_tests_before_equivalent_lint": 2797,
+  "final_source_focused_tests": 151,
+  "actual_arm_handlers_per_env": 5,
+  "actual_offline_package_checks_per_env": 16,
+  "release_stage_aws_logical_calls": 526,
+  "release_stage_confirmed_writes": 8,
+  "release_stage_write_unknown": 0,
+  "write_intents": [
+    "execute-prod/call-046.intent.safe.json",
+    "prepare-prod/call-034.intent.safe.json",
+    "prepare-prod/call-035.intent.safe.json",
+    "prepare-prod/call-033.intent.safe.json",
+    "prepare-dev/call-018.intent.safe.json",
+    "prepare-dev/call-017.intent.safe.json",
+    "prepare-dev/call-016.intent.safe.json",
+    "execute-dev/call-018.intent.safe.json"
+  ],
+  "release_source_guard_GH_GET": 90,
+  "earlier_finite_generation_metadata_AWS_reads": 15,
+  "evidence": {
+    "baseline-dev/receipt.safe.json": "c1a51727678105343a951074bf267e297e739e574afd19d7d9147382b331e70b",
+    "candidate-dev/receipt.safe.json": "4817157cde44913f9c6fc9d507bebf840c9b5fce067439d7260850e838cc616f",
+    "prepare-dev/receipt.safe.json": "b122bdeb849474949f4e71c4b172d90c9e7f5b9adf40331e0e02d3b0c42e8f03",
+    "verify-prepare-dev/receipt.safe.json": "9440b9ede13b3069a68a266df70732c421a74a7696aed39795417cae091891e2",
+    "execute-dev/receipt.safe.json": "29d19f1c6c02666ca0e257edc1ed134944476c9599d9d45b436273a5e354915a",
+    "post-main-dev/receipt.safe.json": "d3cb16c925a0c5ff4185631175ed64ce9b617e1eaf8a6be43f0aa7c665805807",
+    "post-independent-dev/receipt.safe.json": "aedb905ec9d75b3b58984388581f2c78a4c3c54d6ea26fca92d8fbd661fe23d5",
+    "stable-dev/receipt.safe.json": "7da9250fac370d0bb943f80923596423ce28c942ffaec55b9122aa43d58ccd43",
+    "baseline-prod/receipt.safe.json": "c3bde6e45b9a8dc3b1d1c939315a9f58d30edc057ea2c68b6a617a04f17a4b6d",
+    "candidate-prod/receipt.safe.json": "9d7d34cb63271ef06a33bcee3567ddd660f19239c81cfc347c06d2ec8ec1c80f",
+    "prepare-prod/receipt.safe.json": "e3c66c23bf0e3226b9cc50d352ce51242bae8d3b7bb4a019eda69e80388b764e",
+    "verify-prepare-prod/receipt.safe.json": "cb165acc0ee106d678cf49aaeff89163f380a8789f4dea8c827e16bf960cbeae",
+    "execute-prod/receipt.safe.json": "53dac46238c4eae081bb2a4fe089dc92551de5473f69e662301b4f60d3089997",
+    "post-main-prod/receipt.safe.json": "d7925c4f4bfcfed3fffb1c447f3691f1bd8a02a2d9ebbee3b9918df7c0558539",
+    "post-independent-prod/receipt.safe.json": "582cb799ef3de2d180c4dcc8b1d5f74b0732828944e02bc4ea50077e46f5e1ed",
+    "stable-prod/receipt.safe.json": "a1caf00c719d7961689d41f4b13672e8dc48b753c6366cb7ddba5dffbcea7df0",
+    "source-ci.safe.json": "176060e0e6059374d6c1a4adc0d5bc32020ce0adc046e60f9bfde385f20d29da",
+    "local-validation.safe.json": "1f8bea012b11b11b4eb7ff15596372debf895ea38126706f5faa2af90b56df5d",
+    "source-post.safe.json": "e76f767312df6336aeb9f49cb1f959743a669db617476bbfb9717420d69f4a11",
+    "source-maintenance-post.safe.json": "78b6ae454e13c5ec3315f39a9a8685e1e7cb36f3f9bec4099a0b2b51307ec258",
+    "release-tool-pre.safe.json": "2f622828c83dd64ddb0738ac7d325e1b224538195bfff5b82c76102b141d8611",
+    "release-maintenance-pre.safe.json": "0bf47a3e5738c3a8cbeaa6f2b9b3deebf12b53bd3cc49814b9dedf3e9dc7b973",
+    "candidate-dev/failure.safe.json": "7282d75cfd392ac45cb118a1ec681ac7418d094f0db22ca020b0ad2f5ad76a51",
+    "candidate-dev-arm-continuation/receipt.safe.json": "4817157cde44913f9c6fc9d507bebf840c9b5fce067439d7260850e838cc616f",
+    "prepare-prod/failure.safe.json": "53262b3646dc38b4b228925b32b043a9179e9cb7ca50d5b6f88543be81e93b99",
+    "prepare-continuation-prod/receipt.safe.json": "e3c66c23bf0e3226b9cc50d352ce51242bae8d3b7bb4a019eda69e80388b764e",
+    "prod-policy-tool-pre.safe.json": "ac914a438570c0bdb2318bbf2753e3dcbb14c4cc1ebcae237a3f5c6c6983d2b5",
+    "prod-policy-maintenance-pre.safe.json": "01db1f4f5c696da67c10232be1493240bc275366b9afab01da0406eb00c13bf3",
+    "prod-policy-diagnostic/failure.safe.json": "3d9b2db63f033633a9b94dfbdc99a2ff25a2cedf9f4f6fc6a38cf97d04fb11e0"
+  },
+  "persistent_runtime_raw": 0,
+  "new_retention_duties": 0,
+  "retained_duties": 14,
+  "telegram_ui": 0,
+  "operator_model_calls": 0,
+  "natural_samples_added": 0,
+  "runtime_permission_delta": false,
+  "prod_cfn_resources_updated": 3,
+  "dev_cfn_resources_updated": 2,
+  "limits": [
+    "Actual A/B/P usefulness and personal-evidence acceptance remain pending a new human window.",
+    "Wikipedia finite lookup can MISS; honest unknown is PARTIAL, not useful PASS.",
+    "Original dev Docker/ARM failure and narrow continuation preserved; failed intermediate CONTROL revision evidence incomplete.",
+    "Original prod extra-IAM STOP and truncated-signature parser failure preserved; IAM cause UNKNOWN.",
+    "Prod CFN may rewrite one inline policy with exactly unchanged complete permission JSON; not a two-resource-only release.",
+    "Sequential readback is not an atomic global transaction; operator counts exclude AWS service-internal effects, CI OIDC/CDK, PR/CI polling."
+  ]
+}

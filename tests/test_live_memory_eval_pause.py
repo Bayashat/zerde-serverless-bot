@@ -81,6 +81,7 @@ def test_single_shot_public_audit_resumes_past_only_its_cached_rate_limit(tmp_pa
         payload = gemini_payload({"classification": "refusal", "refusal_quote": refusal, "claim_quotes": []})
         if kind == "plain_answer":
             payload["candidates"][0]["content"]["parts"] = [{"text": refusal}]
+            payload["candidates"][0]["content"]["role"] = "model"
         return payload, {"http_status": 200}
 
     with ThreadPoolExecutor(max_workers=1) as executor:

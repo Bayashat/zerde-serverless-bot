@@ -1,0 +1,19 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "at": 1794910404.315569,
+  "plan_sha256": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+  "scope": [
+    "New T only; exact SOURCE174a849; final dev/prod main+independent complete-package/stable binding required before runtime preparation is sealed.",
+    "Fixed 5+7 read budget, at most seven native UI originals; A/B/P each once with safe PARTIAL/unsafe STOP and independent personal-evidence boundary.",
+    "New direct human window only; register new duty15 before capture; preserve all original14 identity/deadline pairs.",
+    "Strict CLI/JSON before once; nonzero/failure/unclosed entries stop; actual native intervals, dispatch10s and190/180/30 gates; conservative POST window-start+3600 plus original retention/600s.",
+    "Current dev safe receipt hashes independently matched config protected hash and CONTROL revision floor25; historical epoch/start remain read-only invariants."
+  ],
+  "limits": [
+    "Plan PRE only. No runtime tool or independent POST PRE is signed by this receipt.",
+    "Final prod deployment closure and complete release/external-read/config bindings must be reviewed before those separate PREs.",
+    "No current Telegram window, anchor, new raw registration, real acceptance or semantic PASS is established.",
+    "No AWS/UI/model calls, old raw access, old once rerun or source edits were performed."
+  ]
+}

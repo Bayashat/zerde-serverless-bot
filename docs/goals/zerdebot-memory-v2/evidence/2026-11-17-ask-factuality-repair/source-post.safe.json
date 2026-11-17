@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "created_at_utc": "2026-11-17T09:09:12.073586+00:00",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "tree": "3ac24d0c9c549daeb67548561e8c271ed43334b9",
+  "base": "5928ae9a34806a0ba6a22cfff16ba900aed68c43",
+  "worktree_clean": true,
+  "scope": "Independent source commit POST only, preserving original implementation review. Not source CI, release tool PRE, package/changeset/deployment proof or semantic acceptance.",
+  "prior_implementation_sha256": "32c1331a08ac42513d26b2ae58f16df9812b58d6b29661ff6e0cfbbccd6c19dd",
+  "plan_sha256": "d65647a5fde4791c0bd21cf72852093d0497ab79c026436d0873fae1b6e13ff7",
+  "files": {
+    "src/bot/services/ai/gemini_client.py": "7fdc09cdca0370cca86acd46e63740b189168001de2a0118e64dfab48fc4f9aa",
+    "src/bot/services/ai/group_chat_reply_fallback.py": "17acd975f02f027c563856ab991a680c97aea07044c9bad7f090bbf93c4163d7",
+    "src/bot/services/explicit_context.py": "3c20e583a8ffa092ebc6a4b632948467676157e40daca4fbbfc7d998b98c5e5a",
+    "src/bot/services/group_agent.py": "e8d3efeb0518a10ed0e55d7a6dac91ecc929a3a49f4966e3efc99649d270d2ea",
+    "src/bot/services/handlers/commands.py": "e7e5d223460ab7df36718bf753ecc79be8b41a2429f495b910e13c569b976765",
+    "src/bot/services/public_sources.py": "2947bd11b487d82defb154230e9decfade2eddc132ce5716f6a9b2870e28a483",
+    "src/bot/services/repositories/sqs.py": "ec6599cc2518d0852b5d539da0ac92b7398d49cceb642571a92b1e1098080cc8",
+    "tests/conftest.py": "9411bde474b5fc913e0169c6d9294ef1bc6f0f3ac00e082633f3f86e64515b1f",
+    "tests/test_explicit_delivery.py": "09f7c6f2bd8fa5f617649ab37e1573fe14ea5cdb2ebd6f4bb1ab17704a852722",
+    "tests/test_explicit_provider_fences.py": "329f38cc7eaf418a2607058069e2f1fdeba828dc2317877ad3c01aa0371e1779",
+    "tests/test_explicit_quota_guard.py": "f5e9fc526bbf6dc885e4a0c805165eeb9bac4e5ad09681954fa63a86c78bdd93",
+    "tests/test_explicit_request_gate.py": "cac3ce59a92dba9d30189bbce03bad8c3525e991d8358419823369dc416c27c6",
+    "tests/test_explicit_response_integrity.py": "27623e4e7caa3879dbe57bd3371082b24ffa4da5af80c9251cf7f8dd838f8d07",
+    "tests/test_group_memory_agent.py": "5587b185cd5350bd34ec4a55b3edceeb5e9d8bb2acffe8e6bc6e9c3f13196c9f",
+    "tests/test_live_memory_eval_pause.py": "09d6d30d47ba778b29188c8e8bc95dda6a5f980bfe8efcf37e6368ba5fa2aec3",
+    "tests/test_public_memory_eval.py": "33c1a8826c15b4c9db791a0342c67f706caec05e8eb2c3a3b12a99ad7efa6732",
+    "tests/test_public_sources.py": "762f56cbb6fdd940c22d529f51ac0d66700133cd92f7dee491119154e7bf2436"
+  },
+  "committed_files": {
+    ".codex/AGENTS.md": "41f9a11ab73894201c43863ec55a2d22ae2e027c37cac9fa067dd536daa8cfc1",
+    ".codex/skills/zerdebot-development/SKILL.md": "bc0033e6fd88a7bdf1527de8700e574477f3f62862d61c568b0fd37fa7a12625",
+    "docs/ARCHITECTURE.md": "b9e5392fda4a83f973e3a8e488494a5466f0b76473ee510c5e7a7a1058ec1789",
+    "docs/goals/zerdebot-ask-factuality/GOAL.md": "668a09608f60949a0bee804fd45ebb5e8e07697e1fcef63d37b4aff178abc1e0",
+    "docs/goals/zerdebot-ask-factuality/IMPLEMENTATION.md": "d65647a5fde4791c0bd21cf72852093d0497ab79c026436d0873fae1b6e13ff7",
+    "docs/goals/zerdebot-ask-factuality/PLAN.md": "25bf1f25ddcd991870414e240dd2b4e1155b49b2e83f083a36ef6a0bc37aa387",
+    "src/bot/services/ai/gemini_client.py": "7fdc09cdca0370cca86acd46e63740b189168001de2a0118e64dfab48fc4f9aa",
+    "src/bot/services/ai/group_chat_reply_fallback.py": "17acd975f02f027c563856ab991a680c97aea07044c9bad7f090bbf93c4163d7",
+    "src/bot/services/explicit_context.py": "3c20e583a8ffa092ebc6a4b632948467676157e40daca4fbbfc7d998b98c5e5a",
+    "src/bot/services/group_agent.py": "e8d3efeb0518a10ed0e55d7a6dac91ecc929a3a49f4966e3efc99649d270d2ea",
+    "src/bot/services/handlers/commands.py": "e7e5d223460ab7df36718bf753ecc79be8b41a2429f495b910e13c569b976765",
+    "src/bot/services/public_sources.py": "2947bd11b487d82defb154230e9decfade2eddc132ce5716f6a9b2870e28a483",
+    "src/bot/services/repositories/sqs.py": "ec6599cc2518d0852b5d539da0ac92b7398d49cceb642571a92b1e1098080cc8",
+    "tests/conftest.py": "9411bde474b5fc913e0169c6d9294ef1bc6f0f3ac00e082633f3f86e64515b1f",
+    "tests/test_explicit_quota_guard.py": "f5e9fc526bbf6dc885e4a0c805165eeb9bac4e5ad09681954fa63a86c78bdd93",
+    "tests/test_explicit_response_integrity.py": "27623e4e7caa3879dbe57bd3371082b24ffa4da5af80c9251cf7f8dd838f8d07",
+    "tests/test_group_memory_agent.py": "5587b185cd5350bd34ec4a55b3edceeb5e9d8bb2acffe8e6bc6e9c3f13196c9f",
+    "tests/test_live_memory_eval_pause.py": "09d6d30d47ba778b29188c8e8bc95dda6a5f980bfe8efcf37e6368ba5fa2aec3",
+    "tests/test_public_memory_eval.py": "33c1a8826c15b4c9db791a0342c67f706caec05e8eb2c3a3b12a99ad7efa6732",
+    "tests/test_public_sources.py": "762f56cbb6fdd940c22d529f51ac0d66700133cd92f7dee491119154e7bf2436"
+  },
+  "lint_delta": {
+    "changed_files": [
+      "src/bot/services/public_sources.py",
+      "tests/test_explicit_quota_guard.py"
+    ],
+    "exact_old_hash_reconstruction": "PASS: joined only three split multilingual literals and restored redundant TimeoutError/UnicodeError exception names; resulting public_sources bytes hash equals prior signed d3b78bf8. Joined only adjacent quota fixture byte literals; resulting bytes hash equals prior signed af69437a. No other source difference.",
+    "exception_equivalence": "Verified TimeoutError is an OSError subclass and UnicodeError is a ValueError subclass; removed duplicate catch entries preserve coverage.",
+    "all_17_current_files_equal_source_blobs": true
+  },
+  "checks": [
+    "Seven runtime members and ten related test/fixture files remain bound to exact reviewed behavior.",
+    "All 20 committed changed files are hash-bound, including owner documentation, plan and goal.",
+    "Original evidence and implementation review are not overwritten. Source blob comparison does not stand in for deployment or real model evidence."
+  ],
+  "validation": {
+    "prior_independent_passed": 284,
+    "delta_independent_passed": 151,
+    "delta_pytest_files": [
+      "tests/test_public_sources.py",
+      "tests/test_explicit_response_integrity.py",
+      "tests/test_explicit_quota_guard.py"
+    ],
+    "delta_reported_seconds": 2.55,
+    "network": "socket connect/connect_ex/create_connection/getaddrinfo blocked; AWS test credentials and metadata disabled",
+    "main_reported_2797_full_suite_not_independently_rerun": true
+  },
+  "findings": {
+    "blocking": [],
+    "limits": [
+      "Source CI remains separately required.",
+      "Runtime A semantic failure and full_protocol_alignment=false from prior window remain unchanged.",
+      "No current Telegram window, actual model quality, or runtime deployment is certified."
+    ]
+  },
+  "execution_boundary": {
+    "runtime_api_calls": 0,
+    "aws_calls": 0,
+    "telegram_ui_calls": 0,
+    "model_calls": 0,
+    "remote_writes": 0,
+    "implementation_edits": 0,
+    "old_private_raw_reads": 0,
+    "formal_acceptance_reruns": 0
+  }
+}

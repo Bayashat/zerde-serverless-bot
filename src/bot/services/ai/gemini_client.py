@@ -18,6 +18,7 @@ from core.logger import LoggerAdapter, get_logger
 from services.explicit_context import (
     CONTEXT_EVIDENCE_INSTRUCTIONS,
     EXPLICIT_ANSWER_POLICY,
+    PUBLIC_SOURCE_INSTRUCTIONS,
     format_explicit_context_sections,
 )
 from services.repositories.rate_limit import RateLimitRepository
@@ -54,7 +55,10 @@ def _record_transient_failure() -> None:
         _circuit_open_until = time.monotonic() + _CIRCUIT_OPEN_SECONDS
         logger.warning(
             "Gemini circuit opened",
-            extra={"open_seconds": _CIRCUIT_OPEN_SECONDS, "failures": _circuit_failures},
+            extra={
+                "open_seconds": _CIRCUIT_OPEN_SECONDS,
+                "failures": _circuit_failures,
+            },
         )
 
 
@@ -97,44 +101,60 @@ def _elapsed_ms(started_at: float) -> int:
     return int((time.monotonic() - started_at) * 1000)
 
 
-def _redact(text: str, api_key: str) -> str:
-    if api_key:
-        text = text.replace(api_key, "[REDACTED]")
-    return text[:500]
-
-
-def _decode_preview(data: bytes, *, limit: int = 300) -> str:
-    return data.decode("utf-8", errors="replace")[:limit]
-
-
 def _extract_gemini_text(data: dict[str, Any], *, operation: str, model: str) -> str:
-    """Extract the first text part from a Gemini response with useful empty-shape logging."""
+    """Accept only a complete final text response; never expose thinking/tool parts."""
     candidates = data.get("candidates")
-    if not isinstance(candidates, list) or not candidates:
-        _raise_empty_response(data, operation=operation, model=model, empty_reason="missing_candidates")
-
+    if not isinstance(candidates, list) or len(candidates) != 1:
+        _raise_empty_response(
+            data,
+            operation=operation,
+            model=model,
+            empty_reason="missing_or_multiple_candidates",
+        )
     candidate = candidates[0]
-    if not isinstance(candidate, dict):
-        raise TypeError("candidate is not an object")
-
+    if not isinstance(candidate, dict) or candidate.get("finishReason") != "STOP":
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="incomplete_candidate")
+    feedback = data.get("promptFeedback", {})
+    if not isinstance(feedback, dict) or feedback.get("blockReason") not in (
+        None,
+        "",
+        "BLOCK_REASON_UNSPECIFIED",
+    ):
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="blocked_prompt")
+    candidate_ratings = candidate.get("safetyRatings", [])
+    prompt_ratings = feedback.get("safetyRatings", [])
+    if not isinstance(candidate_ratings, list) or not isinstance(prompt_ratings, list):
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="invalid_safety_ratings")
+    ratings = candidate_ratings + prompt_ratings
+    if not isinstance(ratings, list) or any(
+        not isinstance(rating, dict)
+        or ("blocked" in rating and type(rating["blocked"]) is not bool)
+        or rating.get("blocked") is True
+        for rating in ratings
+    ):
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="blocked_candidate")
     content = candidate.get("content")
-    parts = content.get("parts") if isinstance(content, dict) else None
-    if isinstance(parts, list):
-        for part in parts:
-            if isinstance(part, dict):
-                text = part.get("text")
-                if isinstance(text, str) and text.strip():
-                    return text.strip()
-
-    _raise_empty_response(
-        data,
-        operation=operation,
-        model=model,
-        empty_reason="missing_text",
-        finish_reason=str(candidate.get("finishReason") or ""),
-        candidate_safety_count=len(candidate.get("safetyRatings") or []),
-    )
-    raise AssertionError("_raise_empty_response should always raise")
+    if not isinstance(content, dict) or content.get("role") != "model":
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="invalid_content")
+    parts = content.get("parts")
+    if not isinstance(parts, list) or not parts:
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="missing_text")
+    texts = []
+    for part in parts:
+        if (
+            not isinstance(part, dict)
+            or set(part) - {"text", "thought", "thoughtSignature"}
+            or not isinstance(part.get("text"), str)
+            or ("thought" in part and type(part["thought"]) is not bool)
+            or ("thoughtSignature" in part and not isinstance(part["thoughtSignature"], str))
+        ):
+            _raise_empty_response(data, operation=operation, model=model, empty_reason="unsupported_part")
+        if part.get("thought") is not True:
+            texts.append(part["text"])
+    text = "".join(texts).strip()
+    if not text:
+        _raise_empty_response(data, operation=operation, model=model, empty_reason="missing_final_text")
+    return text
 
 
 def _raise_empty_response(
@@ -143,37 +163,14 @@ def _raise_empty_response(
     operation: str,
     model: str,
     empty_reason: str,
-    finish_reason: str = "",
-    candidate_safety_count: int = 0,
 ) -> None:
-    prompt_feedback = data.get("promptFeedback")
-    prompt_feedback = prompt_feedback if isinstance(prompt_feedback, dict) else {}
-    prompt_safety = prompt_feedback.get("safetyRatings")
-    candidates = data.get("candidates")
-    candidates_count = len(candidates) if isinstance(candidates, list) else 0
-    prompt_block_reason = str(prompt_feedback.get("blockReason") or "")
-    prompt_block_message = str(prompt_feedback.get("blockReasonMessage") or "")
+    # Only fixed local failure codes and configured model metadata are logged.
+    # Provider block messages, keys and opaque fields can contain user content.
     logger.warning(
-        "Gemini response had no candidate text",
-        extra={
-            "operation": operation,
-            "model": model,
-            "empty_reason": empty_reason,
-            "response_keys": ",".join(sorted(str(key) for key in data.keys())),
-            "candidates_count": candidates_count,
-            "finish_reason": finish_reason,
-            "prompt_block_reason": prompt_block_reason,
-            "prompt_block_message": prompt_block_message[:300],
-            "prompt_safety_ratings_count": len(prompt_safety) if isinstance(prompt_safety, list) else 0,
-            "candidate_safety_ratings_count": candidate_safety_count,
-        },
+        "Gemini response had no complete final text",
+        extra={"operation": operation, "model": model, "empty_reason": empty_reason},
     )
-    details = [empty_reason]
-    if prompt_block_reason:
-        details.append(f"prompt_block_reason={prompt_block_reason}")
-    if finish_reason:
-        details.append(f"finish_reason={finish_reason}")
-    raise GeminiEmptyResponseError("Gemini response had no candidate text: " + "; ".join(details))
+    raise GeminiEmptyResponseError("Gemini response unusable: " + empty_reason)
 
 
 class GeminiClient:
@@ -208,7 +205,6 @@ class GeminiClient:
             resp = _http.request("POST", url, body=body, headers=headers, retries=False)
         except (HTTPError, OSError) as exc:
             _record_transient_failure()
-            error_message = _redact(str(exc), self._api_key)
             logger.warning(
                 "Gemini request transport failed",
                 extra={
@@ -216,16 +212,14 @@ class GeminiClient:
                     "model": self._model,
                     "latency_ms": _elapsed_ms(started_at),
                     "error_type": exc.__class__.__name__,
-                    "error_message": error_message,
                 },
             )
-            raise GeminiUnavailableError(f"Gemini transport {exc.__class__.__name__}: {error_message}") from exc
+            raise GeminiUnavailableError(f"Gemini transport {exc.__class__.__name__}") from None
 
         latency_ms = _elapsed_ms(started_at)
         response_chars = len(resp.data or b"")
         if resp.status == 429 or resp.status >= 500:
             _record_transient_failure()
-            preview = _redact(_decode_preview(resp.data or b""), self._api_key)
             logger.warning(
                 "Gemini request failed",
                 extra={
@@ -235,12 +229,10 @@ class GeminiClient:
                     "status_code": resp.status,
                     "latency_ms": latency_ms,
                     "response_chars": response_chars,
-                    "response_preview": preview,
                 },
             )
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {preview}")
-        if resp.status >= 400:
-            preview = _redact(_decode_preview(resp.data or b""), self._api_key)
+            raise GeminiUnavailableError(f"Gemini API status {resp.status}")
+        if resp.status != 200:
             logger.warning(
                 "Gemini request rejected",
                 extra={
@@ -250,10 +242,9 @@ class GeminiClient:
                     "status_code": resp.status,
                     "latency_ms": latency_ms,
                     "response_chars": response_chars,
-                    "response_preview": preview,
                 },
             )
-            raise GeminiUnavailableError(f"Gemini API {resp.status}: {preview}")
+            raise GeminiUnavailableError(f"Gemini API status {resp.status}")
 
         logger.info(
             "Gemini request completed",
@@ -281,11 +272,15 @@ class GeminiClient:
         lang: str = "kk",
         media_parts: list[dict[str, Any]] | None = None,
         media_context: str = "",
+        public_source_context: str = "",
         before_attempt: Callable[[], None] | None = None,
     ) -> tuple[str, int]:
         """Generate a context-aware reply for an explicitly bot-directed group message."""
         if _circuit_is_open():
-            logger.warning("Gemini circuit open, skipping group agent request", extra={"model": self._model})
+            logger.warning(
+                "Gemini circuit open, skipping group agent request",
+                extra={"model": self._model},
+            )
             raise GeminiUnavailableError("Gemini circuit open")
 
         admission = self._rate_repo.increment_and_check()
@@ -296,7 +291,10 @@ class GeminiClient:
         if type(count) is not int or count < 1 or type(within_limit) is not bool:
             raise GeminiQuotaUnavailableError("Gemini quota admission unavailable")
         if not within_limit:
-            logger.warning("Gemini RPD limit reached (group agent)", extra={"count": count, "limit": self.rpd_limit})
+            logger.warning(
+                "Gemini RPD limit reached (group agent)",
+                extra={"count": count, "limit": self.rpd_limit},
+            )
             raise GeminiRPDExhaustedError(f"RPD limit reached: {count}/{self.rpd_limit}")
 
         media_instructions = (
@@ -324,10 +322,9 @@ class GeminiClient:
             recent_context=recent_context,
         )
         system_prompt = (
-            "You are ZerdeBot, a Telegram group chat member for an IT community. "
-            "Answer like a helpful, socially aware participant, not a corporate assistant. "
             f"{language_instructions}"
             f"{EXPLICIT_ANSWER_POLICY}"
+            f"{PUBLIC_SOURCE_INSTRUCTIONS if public_source_context else ''}"
             f"{CONTEXT_EVIDENCE_INSTRUCTIONS if context_prompt_section else ''}"
             f"{media_instructions}"
             "Decide the answer style from the user's wording and the replied-to context: "
@@ -367,6 +364,7 @@ class GeminiClient:
             f"{current_label}\n"
             f"{user_message}\n\n"
             "Reply to the current message."
+            f"{public_source_context}"
         )
         content_parts: list[dict[str, Any]] = [{"text": prompt}]
         if media_parts:
@@ -415,14 +413,13 @@ class GeminiClient:
             return text, count
         except GeminiEmptyResponseError:
             raise
-        except (KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
+        except (KeyError, IndexError, UnicodeError, json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 "Gemini group agent response parse failed",
                 extra={
                     "operation": "group_chat_reply",
                     "model": self._model,
                     "error_type": exc.__class__.__name__,
-                    "error_message": str(exc)[:300],
                 },
             )
-            raise GeminiUnavailableError(f"Bad Gemini response: {exc}") from exc
+            raise GeminiUnavailableError("Bad Gemini response encoding or shape") from None

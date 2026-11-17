@@ -1,0 +1,64 @@
+{
+  "status": "ALIGNED",
+  "reviewer_role": "independent_maintenance",
+  "reviewed_at_utc": "2026-11-17T10:22:59.422044+00:00",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "plan_sha256": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+  "release_binding_sha256": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+  "draft_correctness_review_sha256": "499def31aa744201aee8169b0c5f875ee7ccb98756aed0ab560e5329c00823bb",
+  "test_file_sha256": "4807999a6c71e15a89a0fda6019da07d2bf01d2972c9a6e05f68bfa449afbcd9",
+  "actual_deployment_final_sha256": "cce3a66d62d01036371ec256c345f05c9b7808a44766b033c27bf49b76f34e62",
+  "validation_evidence": {
+    "final_local_release_validator": "PASS; fixed 12 deployment/source receipts, exact 36 permitted external paths, all 24 current post ZIPs and 105 owner files checked without network.",
+    "tools_and_POST_exactly_equal_independently_reviewed_draft": true,
+    "independent_correctness_tests": "draft-review.safe.json: 12 isolated controls PASS and all five targeted mutations rejected; test author is this maintenance reviewer, independent rerun/mutations were performed by the correctness reviewer.",
+    "main_reported_complete_preparation_tests": "21 PASS/0.661 seconds; not independently rerun for this final unchanged-byte sealing.",
+    "dev_stable_seconds": 313.484943151474,
+    "prod_stable_seconds": 322.7033460140228,
+    "dev_CONTROL": "Historical epoch/start reconstructed as the protected CONTROL field hash and matched main/independent/stable; revision floor 25 equals all three.",
+    "prod_IAM": "Execute/main/independent/stable safe projections retain exactly the same full permission hash and nine resource identities."
+  },
+  "limits": [
+    "No present human Telegram window, retention anchor, raw ledger, new deadline or formal entry exists or is created by these PREs.",
+    "Actual start still requires a fresh direct human window, completed registration/readback as duty 15 while preserving all original 14 deadlines, and fresh identity/config/CONTROL/subject/captcha/budget gates.",
+    "Local dispatch must compare the current clock before the actual send; a local permit is not server receipt time, atomic delivery or exactly-once proof.",
+    "Real A/B/P usefulness and personal-history acceptance remain pending. Honest source miss is PARTIAL, not useful PASS.",
+    "The tools are independently reviewed root implementations. This reviewer authored only isolated tests; their independent correctness review is explicitly attributed.",
+    "No new full A/B/P plus 12-API synthetic POST fixture was added during final sealing; existing static path review, isolated controls, semantic controls and independent mutation evidence retain their stated coverage."
+  ],
+  "external_calls": 0,
+  "AWS_calls": 0,
+  "UI_calls": 0,
+  "model_calls": 0,
+  "old_private_or_expired_raw_reads": 0,
+  "formal_entries_run": 0,
+  "scope": "Final independent-POST tool maintenance PRE only; does not execute the POST or certify a future semantic outcome.",
+  "files": {
+    "verify_actual_canary.py": "58081b5952e0840dc3f7b45bc22715e045b519ea4c6efdde5c06bce68d92c15f",
+    "PLAN.md": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+    "POST_PLAN.md": "6778172c75266e87b6531764dc2324eeca2253080c0c685f6c7b96d2a0dad73e",
+    "release-binding.safe.json": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+    "config-contract.safe.json": "10cd18f5fc07cdb46c9067bcb6b0abe32aef2327342bf951b4a1690592a31024",
+    "historical-control.safe.json": "c16a457157742fd8ed8bf7389c9df897bf244708ba92ea79e35758d751c49a2c",
+    "prior-duties.safe.json": "bf9b010ed155cf944a35e8877e512b6ad9728229b9bf8b37f1bcb86d77b2a2d9"
+  },
+  "checks": {
+    "exact_SELF_seven_files_and_root_three_tool_PRE_reverified": true,
+    "no_collector_AWS_UI_or_model_entry_import_and_no_external_original_reads": true,
+    "fixed_T_registered_originals_only_and_0600_0700_descriptor_identity_guards": true,
+    "strict_JSON_types_duplicate_keys_and_finite_timestamps": true,
+    "window_start_plus_3600_before_first_original_read_and_original_retention_600second_cap": true,
+    "all_native_intervals_dispatch_permit_and_180second_after_closure": true,
+    "release_and_semantic_review_not_before_last_native_finish": true,
+    "enumerate_all_entry_markers_orphan_failures_cannot_be_hidden_by_success": true,
+    "complete_independent_annotations_bound_to_actual_reply_and_original_hashes": true,
+    "mechanical_semantic_and_final_acceptance_separate": true,
+    "A_PARTIAL_not_erased_by_B_and_personal_claims_require_reviewable_evidence": true,
+    "original_owner_clock_is_bounded_interval_not_fabricated_exact_time": true,
+    "14_existing_duties_exact_and_new15_registration_bound": true,
+    "single_POST_once_and_preserved_failure_final_evidence_freeze": true
+  },
+  "findings": {
+    "blocking": []
+  }
+}
