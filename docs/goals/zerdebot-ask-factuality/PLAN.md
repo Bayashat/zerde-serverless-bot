@@ -1,3 +1,11 @@
+# 当前结果（Nov17）
+
+普通实体问答已加入有限公共来源核对、无匹配时诚实未知、主/备用模型完整响应检查及无Reply资格传递；没有产品专用答案。SOURCE174a849已实际部署dev/prod，两环境主独各完整6ZIP、配置/CONTROL/原保护及至少300秒稳定通过。prod额外IAM Policy更新经新双审续接确认完整14条权限严格不变；旧STOP、解析错误和UNKNOWN保留。全量2797项测试通过（等价lint后151项定向及最终源码CI三job通过）；实际每环境5ARM handler及16项禁网包内检查通过。
+
+新复验T离线21项与计划/主工具/独立POST双PRE完成，当前没有窗口/anchor/新原文；等新的直接人类15分钟回复再进行A/B/P。有限Wikipedia检索可能MISS，诚实未知仍属PARTIAL，真实有用性与个人边界未验收，旧A事实错误FAIL不改。原14副本职责、全部20任务14OPEN6CLOSED＋EpicOPEN、四群RELEASED_OBSERVING和其他业务/自然/费用UNKNOWN保持。 [发布证据](../zerdebot-memory-v2/ASK_FACTUALITY_REPAIR_NOV17.md)。
+
+以下计划与阶段完整保留。
+
 # 当前执行入口（Nov17）
 
 固定metadata主独续接已完成；实际错误回复关联Gemini，原因没有从日志中被证明。实现合同为 [IMPLEMENTATION](IMPLEMENTATION.md) v3及其双PRE：有限公共来源、严格完整响应、日志脱敏、无Reply资格传递。源码测试/独审和dev/prod精确运行发布进行中；当前尚未部署、尚无新Telegram窗口，不宣称真实有用性PASS。历史诊断计划如下保留，不再执行旧once。

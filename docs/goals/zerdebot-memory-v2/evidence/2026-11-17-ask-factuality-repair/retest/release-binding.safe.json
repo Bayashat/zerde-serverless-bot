@@ -1,0 +1,47 @@
+{
+  "status": "ACTUAL_CURRENT_DEPLOYMENT_SAFE_BINDING",
+  "runtime_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "release_directory": "2026-11-17-ask-factuality-repair",
+  "private_snapshot_execution_dependency": false,
+  "no_private_snapshot_read": true,
+  "safe_evidence": {
+    "execute-dev/receipt.safe.json": "29d19f1c6c02666ca0e257edc1ed134944476c9599d9d45b436273a5e354915a",
+    "execute-prod/receipt.safe.json": "53dac46238c4eae081bb2a4fe089dc92551de5473f69e662301b4f60d3089997",
+    "post-independent-dev/receipt.safe.json": "aedb905ec9d75b3b58984388581f2c78a4c3c54d6ea26fca92d8fbd661fe23d5",
+    "post-independent-prod/receipt.safe.json": "582cb799ef3de2d180c4dcc8b1d5f74b0732828944e02bc4ea50077e46f5e1ed",
+    "post-main-dev/receipt.safe.json": "d3cb16c925a0c5ff4185631175ed64ce9b617e1eaf8a6be43f0aa7c665805807",
+    "post-main-prod/receipt.safe.json": "d7925c4f4bfcfed3fffb1c447f3691f1bd8a02a2d9ebbee3b9918df7c0558539",
+    "runtime-source-binding.safe.json": "251756548215d57f55223be3eea1bb4ac552fe0616e8be4cdc16fbadeb4bfff2",
+    "source-ci.safe.json": "176060e0e6059374d6c1a4adc0d5bc32020ce0adc046e60f9bfde385f20d29da",
+    "source-maintenance-post.safe.json": "78b6ae454e13c5ec3315f39a9a8685e1e7cb36f3f9bec4099a0b2b51307ec258",
+    "source-post.safe.json": "e76f767312df6336aeb9f49cb1f959743a669db617476bbfb9717420d69f4a11",
+    "stable-dev/receipt.safe.json": "7da9250fac370d0bb943f80923596423ce28c942ffaec55b9122aa43d58ccd43",
+    "stable-prod/receipt.safe.json": "a1caf00c719d7961689d41f4b13672e8dc48b753c6366cb7ddba5dffbcea7df0"
+  },
+  "deployed_artifacts": {
+    "dev": {
+      "bot": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+      "memory-v2-worker": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+      "news": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+      "operations": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+      "quiz": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+      "shared-layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+    },
+    "prod": {
+      "bot": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+      "memory-v2-worker": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+      "news": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+      "operations": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+      "quiz": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+      "shared-layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+    }
+  },
+  "owner_manifest_sha256": "99e28ee47cae43f9a96e118aeafd4516c5e3aff00cf7d52ab1368d18720ec1af",
+  "config_contract_sha256": "10cd18f5fc07cdb46c9067bcb6b0abe32aef2327342bf951b4a1690592a31024",
+  "historical_control_sha256": "c16a457157742fd8ed8bf7389c9df897bf244708ba92ea79e35758d751c49a2c",
+  "prior_duties_sha256": "bf9b010ed155cf944a35e8877e512b6ad9728229b9bf8b37f1bcb86d77b2a2d9",
+  "external_reads_sha256": "538e7d2ea8fba121704a8daf13c2fa28338b1183cce41449d9ff1255cf96b44e",
+  "real_quality_pass": false,
+  "new_human_window_required": true,
+  "new_raw_deadline_created": false
+}

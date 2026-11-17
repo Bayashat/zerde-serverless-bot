@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "tests": 21,
+  "seconds": 0.661,
+  "command": "W/.venv/bin/python -B -m unittest test_preparation -v",
+  "at": 1794910845.30973,
+  "files": {
+    "collector.py": "72b1a4b223c243d01b28484d47d9c7d52100d203489664125b2c93b68a590ec1",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "verify_actual_canary.py": "58081b5952e0840dc3f7b45bc22715e045b519ea4c6efdde5c06bce68d92c15f",
+    "test_preparation.py": "4807999a6c71e15a89a0fda6019da07d2bf01d2972c9a6e05f68bfa449afbcd9",
+    "release-binding.safe.json": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+    "config-contract.safe.json": "10cd18f5fc07cdb46c9067bcb6b0abe32aef2327342bf951b4a1690592a31024",
+    "historical-control.safe.json": "c16a457157742fd8ed8bf7389c9df897bf244708ba92ea79e35758d751c49a2c"
+  },
+  "aws": 0,
+  "ui": 0,
+  "model": 0,
+  "original_raw_reads": 0,
+  "test_data": "isolated TEMP synthetic only; safe deployment receipts and complete build ZIPs read"
+}

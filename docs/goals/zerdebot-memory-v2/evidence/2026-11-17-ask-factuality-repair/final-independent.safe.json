@@ -1,0 +1,89 @@
+{
+  "status": "ALIGNED",
+  "role": "independent_runtime_final_verifier",
+  "at": 1794910996.638031,
+  "final_sha256": "cce3a66d62d01036371ec256c345f05c9b7808a44766b033c27bf49b76f34e62",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "scope": "Offline independent aggregation audit plus prior separately authorized fresh runtime independent stages; no new cloud calls for this final audit.",
+  "journal_audit": {
+    "release_stage_AWS_logical_calls": 526,
+    "paired_successful_service_responses": 526,
+    "HTTP200_strict_integer_retry0": true,
+    "write_operations": {
+      "cloudformation.ExecuteChangeSet": 2,
+      "s3.PutObject": 4,
+      "cloudformation.CreateChangeSet": 2
+    },
+    "confirmed_writes": 8,
+    "unknown_writes": 0,
+    "source_guard_GH_GET": 90,
+    "earlier_generation_metadata_AWS_reads": 15,
+    "distinct_release_stage_journal_directories": 22
+  },
+  "environments": {
+    "dev": {
+      "main_independent_complete_packages": 6,
+      "local_baseline_main_independent_zip_hash_checks": 18,
+      "stable_seconds": 313.484943151474,
+      "source_and_candidate_bound": true,
+      "control_protection_and_revision_floor": "PASS",
+      "configuration_layer_table_alarms_rules": "PASS",
+      "actual_arm_handlers": 5,
+      "actual_offline_package_checks": 16,
+      "cfn_resource_scope": 2
+    },
+    "prod": {
+      "main_independent_complete_packages": 6,
+      "local_baseline_main_independent_zip_hash_checks": 18,
+      "stable_seconds": 322.7033460140228,
+      "source_and_candidate_bound": true,
+      "control_protection_and_revision_floor": "PASS",
+      "configuration_layer_table_alarms_rules": "PASS",
+      "actual_arm_handlers": 5,
+      "actual_offline_package_checks": 16,
+      "cfn_resource_scope": 3
+    }
+  },
+  "fresh_artifact_local_hash_checks": 36,
+  "candidate_zip_sha256": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+  "prod_IAM": {
+    "canonical_sha256": "0b0d491892daab12b9d74cc5cf1c6218ae700bdb24a1596864d0bdc5727b636c",
+    "full_JSON_equality_through_prepare_independent_execute_main_post_independent_post_stable": true,
+    "physical_resource_identities_per_snapshot": 9,
+    "changeset_scope": "2 Lambda Code changes plus 1 exact IAM PolicyDocument update with unchanged complete permission JSON",
+    "why_CloudFormation_reported_IAM_Modify": "UNKNOWN",
+    "first_fresh_IAM_baseline": "after original failed prepare"
+  },
+  "evidence": {
+    "final.safe.json": "cce3a66d62d01036371ec256c345f05c9b7808a44766b033c27bf49b76f34e62",
+    "candidate-correctness-dev.safe.json": "9ac8b384a987f154d5857e7aa6640d1660678ce8ea2c06306be1591d7eff6071",
+    "candidate-correctness-prod.safe.json": "09455bf1529bb384477969268e9ca3229a8e99f17474d585be48e8460bfe2724",
+    "verify-prepare-dev/receipt.safe.json": "9440b9ede13b3069a68a266df70732c421a74a7696aed39795417cae091891e2",
+    "verify-prepare-prod/receipt.safe.json": "cb165acc0ee106d678cf49aaeff89163f380a8789f4dea8c827e16bf960cbeae",
+    "post-independent-dev/receipt.safe.json": "aedb905ec9d75b3b58984388581f2c78a4c3c54d6ea26fca92d8fbd661fe23d5",
+    "post-independent-prod/receipt.safe.json": "582cb799ef3de2d180c4dcc8b1d5f74b0732828944e02bc4ea50077e46f5e1ed",
+    "stable-dev/receipt.safe.json": "7da9250fac370d0bb943f80923596423ce28c942ffaec55b9122aa43d58ccd43",
+    "stable-prod/receipt.safe.json": "a1caf00c719d7961689d41f4b13672e8dc48b753c6366cb7ddba5dffbcea7df0",
+    "prod-policy-live-main/receipt.safe.json": "bbd2ed9e74a3c335ad41e831ebfbca4ef25319a17d9813de5b53eaaba1eaaf7d",
+    "prod-policy-tool-pre.safe.json": "ac914a438570c0bdb2318bbf2753e3dcbb14c4cc1ebcae237a3f5c6c6983d2b5",
+    "prod-policy-maintenance-pre.safe.json": "01db1f4f5c696da67c10232be1493240bc275366b9afab01da0406eb00c13bf3",
+    "candidate-dev/failure.safe.json": "7282d75cfd392ac45cb118a1ec681ac7418d094f0db22ca020b0ad2f5ad76a51",
+    "prepare-prod/failure.safe.json": "53262b3646dc38b4b228925b32b043a9179e9cb7ca50d5b6f88543be81e93b99",
+    "prod-policy-diagnostic/failure.safe.json": "3d9b2db63f033633a9b94dfbdc99a2ff25a2cedf9f4f6fc6a38cf97d04fb11e0",
+    "metadata-main.safe.json": "7607feab26db63901852c79e1fa5d8650365c37cf79748aafb0490cc80a7b56e",
+    "metadata-continuation-main.safe.json": "47ef014780799d3355472e78d39764f90491f14d65b0482bb4ea973b51f5aa87",
+    "metadata-continuation-independent.safe.json": "06ad85dffcb91fa71f0515a1af0552e7c7c8869a5198f233310b14cb97012af0"
+  },
+  "limits": [
+    "Actual A/B/P usefulness and personal-evidence boundary acceptance are still pending a new human Telegram window; synthetic payload and package tests do not replace it.",
+    "2797 full tests predate equivalent lint normalization; the final source affected independent subset is 151.",
+    "Original dev Docker STOP, original prod three-resource STOP and nested truncated-signature diagnostic parse failure remain preserved; failed-stage CONTROL continuity is incomplete.",
+    "Permission equality proves the observed complete inline policy stayed equal across captured stages; it does not identify why CloudFormation classified Modify or prove an atomic global transaction.",
+    "Operator logical-call counts exclude AWS service-internal effects, CI OIDC/CDK, PR/CI polling and earlier separately counted metadata reads.",
+    "Retained-duty total14 is preserved from signed source/plan ownership; this runtime final audit does not re-run historical retention obligations."
+  ],
+  "final_audit_cloud_calls": 0,
+  "final_audit_UI_calls": 0,
+  "final_audit_model_calls": 0,
+  "final_audit_old_private_raw_reads": 0
+}

@@ -1,0 +1,87 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "at": 1794910266.122831,
+  "files": {
+    "prod_policy_continuation.py": "b030510ff5638441670438429580424921414c4436d399a4498eaa48fdc71e8b",
+    "PROD_POLICY_CONTINUATION_PLAN.md": "d00147c1cc1ce368397de73cb0d2ef31bee27e337f365c88d4a8e0798b17fb20",
+    "prod-policy-live-main/receipt.safe.json": "bbd2ed9e74a3c335ad41e831ebfbca4ef25319a17d9813de5b53eaaba1eaaf7d",
+    "prod-changeset-diagnostic/receipt.safe.json": "e44e45eed845301845110c22a3447f0eee9021b504c14aa08c5fe66b18df2456",
+    "prepare-prod/created.safe.json": "d9b15f0533d3c225a40768c536aa2e25afe980040e9480192a7dc31c9e0112a5",
+    "prepare-prod/failure.safe.json": "53262b3646dc38b4b228925b32b043a9179e9cb7ca50d5b6f88543be81e93b99"
+  },
+  "checks": [
+    {
+      "name": "exact_original_changeset_and_frozen_evidence",
+      "result": "PASS",
+      "scope": "Same diagnosed original prod CS; fixed original STOP/created evidence; no adapter PutObject or CreateChangeSet; original failure and once retained."
+    },
+    {
+      "name": "strict_policy_offline_controls",
+      "total": 48,
+      "positive": 4,
+      "expected_rejections": 44,
+      "unexpected_failures": 0,
+      "network_methods_forbidden": true,
+      "fake_policy_gate_reads": 11,
+      "actual_cloud_calls": 0
+    },
+    {
+      "name": "complete_policy_resolution",
+      "result": "PASS",
+      "statements": 14,
+      "canonical_sha256": "0b0d491892daab12b9d74cc5cf1c6218ae700bdb24a1596864d0bdc5727b636c",
+      "scope": "Exact safe permission projection resolved by fixed synthetic declarations/ARN map; live resource identity still requires future fresh calls."
+    },
+    {
+      "name": "identity_and_drift_negatives",
+      "result": "PASS",
+      "coverage": [
+        "Bot Role/state/protected configuration",
+        "CodeSha256 and RevisionId full configuration consistency",
+        "logical/type/physical/stack/resource-state identity",
+        "policy role/name/document type",
+        "permission addition, condition, statement ordering, string-list, version and Sid changes",
+        "unknown Ref, mixed Ref, unknown GetAtt/attribute/intrinsic, malformed Join",
+        "exact three resource inventory, original CS id, IAM detail/scope/replacement/context, Lambda Code-only, pagination and execution status"
+      ]
+    },
+    {
+      "name": "stage_flow_static_review",
+      "result": "PASS",
+      "scope": "New exact SELF6 and old SELF8 PRE gates; prod-only collect adapter adds IAM gate to prepare/independent prepare/execute/post-main/post-independent/stable; original source CI, protection, CONTROL floors, immutable candidate, full template/CS and full package/stable checks remain."
+    },
+    {
+      "name": "immutable_upload_evidence_boundary",
+      "result": "ACCEPTED_WITH_ORIGINAL_CONTRACT",
+      "scope": "Original frozen prepare reached changeset_resources only after both successful PutObject checksum checks and CreateChangeSet. Candidate key/source/complete ZIP and exact CS target remain bound. New upload is unnecessary; no independent fresh S3 read performed in this review; actual deployed ZIP equality remains a mandatory postcondition."
+    },
+    {
+      "name": "source_freeze",
+      "result": "PASS",
+      "original_release_safe_sha256": "6f0af13c9aa7d04e33be4bc12a1205c073da051d61b6f68397a50ce6e00f9d04",
+      "six_file_hashes_unchanged_through_review": true
+    }
+  ],
+  "findings": [],
+  "review_execution_notes": [
+    "Initial offline harness stopped because the reviewer expected additional_full_config_consistency instead of the actual additional_all_config_consistency failure code. The tool correctly rejected code drift. Only the test expectation was corrected; the definitive 48-control run passed without tool changes."
+  ],
+  "limits": [
+    "This is tool PRE, not actual production prepare, execution, IAM readback or deployment success.",
+    "IAM equivalence baseline was first captured after the failed prepare; why CloudFormation reports PolicyDocument Modify remains UNKNOWN. Truncated context signatures are not treated as complete policy documents.",
+    "Exactly two Lambda Code changes plus the one bound IAM policy update with unchanged full canonical permission content are allowed; this is not a two-resource cloud change claim.",
+    "Original failed prepare did not seal a complete snapshot; CONTROL revision continuity through that unprojected interval remains UNKNOWN.",
+    "All future stage once markers remain exclusive. Failures preserve evidence and do not authorize retry, rollback, raw persistence or additional resources."
+  ],
+  "operations": {
+    "AWS_calls": 0,
+    "UI_calls": 0,
+    "model_calls": 0,
+    "external_calls": 0,
+    "old_raw_reads": 0,
+    "formal_release_entries": 0,
+    "runtime_source_edits": 0,
+    "safe_review_receipts_written": 1
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PREPARED_WAITING_NEW_HUMAN_WINDOW",
+  "at": 1794911008.480242,
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "evidence": {
+    "plan-pre.safe.json": "00a7aebb670085fa50755abca5f0c48c19a32ed2086d2e2b08f6586e89de08f3",
+    "maintenance-plan-pre.safe.json": "e3378f122a3cc31fc41f095250b9641bfd649feeaf84dfddde62e589b62bf997",
+    "tool-pre.safe.json": "d3dc9557dd171cc9a3f2dc61f964d0ae3d3a1db1ddc74b49cd6258711df19604",
+    "maintenance-tool-pre.safe.json": "70323272827bbd44263fd5b10647295f8dd57baa64a9b4f7312421b989437da6",
+    "actual-post-tool-pre.safe.json": "28bf296a566ebe251357f4a20be90a5877036313f4b899986c9c7b2c072d53e4",
+    "actual-post-tool-maintenance-pre.safe.json": "f3206806f418290d491b7de3c5509a73afaeafa536252a5db1f4022e7c45d70d",
+    "offline-validation.safe.json": "bc123acc7fa623e9d143285049353b9eff911c22a13977b9eb2fd82e8f4a508a",
+    "release-binding.safe.json": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34"
+  },
+  "offline_tests": 21,
+  "source_owner_files": 105,
+  "complete_current_deployment_zips": 24,
+  "existing_retention_duties": 14,
+  "new_deadline": null,
+  "new_window": false,
+  "aws": 0,
+  "ui": 0,
+  "model": 0,
+  "raw": 0,
+  "limitations": [
+    "Real useful A/B/P outcome pending.",
+    "Wikipedia MISS honest unknown remains PARTIAL.",
+    "New first capture must register duty15 while preserving14 original duties."
+  ]
+}

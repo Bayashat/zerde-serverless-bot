@@ -1,0 +1,57 @@
+{
+  "status": "ALIGNED",
+  "reviewer_role": "independent_maintenance",
+  "reviewed_at_utc": "2026-11-17T10:22:59.422044+00:00",
+  "source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "plan_sha256": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+  "release_binding_sha256": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+  "draft_correctness_review_sha256": "499def31aa744201aee8169b0c5f875ee7ccb98756aed0ab560e5329c00823bb",
+  "test_file_sha256": "4807999a6c71e15a89a0fda6019da07d2bf01d2972c9a6e05f68bfa449afbcd9",
+  "actual_deployment_final_sha256": "cce3a66d62d01036371ec256c345f05c9b7808a44766b033c27bf49b76f34e62",
+  "validation_evidence": {
+    "final_local_release_validator": "PASS; fixed 12 deployment/source receipts, exact 36 permitted external paths, all 24 current post ZIPs and 105 owner files checked without network.",
+    "tools_and_POST_exactly_equal_independently_reviewed_draft": true,
+    "independent_correctness_tests": "draft-review.safe.json: 12 isolated controls PASS and all five targeted mutations rejected; test author is this maintenance reviewer, independent rerun/mutations were performed by the correctness reviewer.",
+    "main_reported_complete_preparation_tests": "21 PASS/0.661 seconds; not independently rerun for this final unchanged-byte sealing.",
+    "dev_stable_seconds": 313.484943151474,
+    "prod_stable_seconds": 322.7033460140228,
+    "dev_CONTROL": "Historical epoch/start reconstructed as the protected CONTROL field hash and matched main/independent/stable; revision floor 25 equals all three.",
+    "prod_IAM": "Execute/main/independent/stable safe projections retain exactly the same full permission hash and nine resource identities."
+  },
+  "limits": [
+    "No present human Telegram window, retention anchor, raw ledger, new deadline or formal entry exists or is created by these PREs.",
+    "Actual start still requires a fresh direct human window, completed registration/readback as duty 15 while preserving all original 14 deadlines, and fresh identity/config/CONTROL/subject/captcha/budget gates.",
+    "Local dispatch must compare the current clock before the actual send; a local permit is not server receipt time, atomic delivery or exactly-once proof.",
+    "Real A/B/P usefulness and personal-history acceptance remain pending. Honest source miss is PARTIAL, not useful PASS.",
+    "The tools are independently reviewed root implementations. This reviewer authored only isolated tests; their independent correctness review is explicitly attributed.",
+    "No new full A/B/P plus 12-API synthetic POST fixture was added during final sealing; existing static path review, isolated controls, semantic controls and independent mutation evidence retain their stated coverage."
+  ],
+  "external_calls": 0,
+  "AWS_calls": 0,
+  "UI_calls": 0,
+  "model_calls": 0,
+  "old_private_or_expired_raw_reads": 0,
+  "formal_entries_run": 0,
+  "scope": "Final maintenance PRE for the three root-implemented runtime retest support tools, exact frozen plan and final deployed-source binding.",
+  "tools": {
+    "collector.py": "72b1a4b223c243d01b28484d47d9c7d52100d203489664125b2c93b68a590ec1",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b"
+  },
+  "checks": {
+    "exact_plan_tool_and_POST_PRE_closure_before_runtime_entry": true,
+    "strict_CLI_JSON_before_once_and_prior_failure_nonzero_orphan_once_stop": true,
+    "only_5_preflight_plus_7_budget_requests_no_retry_cloud_write_or_model_reservation": true,
+    "105_owner_source_and_actual_package_bytes_match": true,
+    "config_identity_environment_layer_full_protection_and_CONTROL_history_gates": true,
+    "registration_14_to_15_before_original_capture_and_19_original_limit": true,
+    "0700_parent_descriptors_0600_exclusive_nofollow_original_identity_hash_mtime_nlink": true,
+    "A_B_P_order_and_risk_stop_partial_usefulness_rules": true,
+    "native_interval_30second_freshness_and_local_send_minimum_bound": true,
+    "actual_send_interval_180second_observation_and_no_expired_UI_cleanup": true,
+    "original_once_failure_and_no_old_private_dependencies_preserved": true
+  },
+  "findings": {
+    "blocking": []
+  }
+}
