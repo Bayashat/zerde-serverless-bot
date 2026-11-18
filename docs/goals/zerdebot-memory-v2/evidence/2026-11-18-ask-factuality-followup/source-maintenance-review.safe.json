@@ -1,0 +1,72 @@
+{
+  "status": "ALIGNED",
+  "at": 1795023278.382845,
+  "review_scope": "Independent maintenance source review of final two runtime owners and two test files; no deployment or real-answer acceptance claim",
+  "base_commit": "d7f4fcf62888a1a57f0ffa5c3ac9de713e37967c",
+  "files": {
+    "src/bot/services/public_sources.py": "1727d9765baf8d17c2f9a9a991f845d7522ac120b39bc9c765dc1df192fc1944",
+    "src/bot/services/memory_v2/telegram_api.py": "0c6bf4fbabc7702a4a2e0635ab97fd0b256690afd0522be12dd1ba50a77f186c",
+    "tests/test_public_sources.py": "873d1bfbf8b64b979e84c900162069da7f42c05d3d9da89c3eb87a22693c41f8",
+    "tests/test_memory_telegram_api.py": "c821eb2d93c12576205d947970567b73726e51691e51c763901a945c36cf62ac"
+  },
+  "plan_sha256": "31eab380c003a2f83323828b72a74d6217c2037f121e1a11c4108904541adab1",
+  "plan_maintenance_pre_sha256": "3a2b8f1598601089638ad161fbedb8fefcaa50906943d87e70c1fc65caaa3ea7",
+  "checks": {
+    "only_two_runtime_owners_modified": true,
+    "shared_transport_layer_dependencies_config_provider_model_budget_and_delivery_owners_unchanged": true,
+    "public_privacy_and_explicit_before_attempt_fences_preserved": true,
+    "generator_search_max3_pages_total50_aliases_two_HTTP_only": true,
+    "canonical_alias_full_normalized_identity_no_product_hardcode_or_fuzzy_guess": true,
+    "strict_namespace_positive_nonbool_pageid_title_fragment_shape_validation": true,
+    "duplicate_candidate_or_alias_ids_and_alias_candidate_intersection_reject": true,
+    "entire_returned_name_owner_map_rejects_cross_page_conflict_even_unrelated_to_topic": true,
+    "canonical_priority_does_not_override_known_conflict": true,
+    "alias_only_requires_batchcomplete_and_no_property_continuation": true,
+    "no_full_site_uniqueness_claim_or_continuation_follow": true,
+    "summary_identity_complete_extract_and_honest_unknown_unchanged": true,
+    "readonly_payload_deep_snapshot_preserves_same_serialized_second_request": true,
+    "readonly_only_two_attempts_total20_seconds_each8_and_delay025": true,
+    "specified_transport_family_and500_502_503_504_only_local_recovery": true,
+    "permissions429_malformed_identity_and_unsupported_local_protocol_no_local_retry": true,
+    "sendMessage_single_external_attempt_UNKNOWN_and_original_SQS_recovery_preserved": true,
+    "cancellation_propagates_and_context_resets": true,
+    "actual_shared_HTTPCore_folded_failure_recovery_test_passes": true,
+    "public_and_Telegram_HTTP_log_filters_independent_and_restore_outside_context": true,
+    "fixed_code_counts_timings_logs_no_query_source_token_URL_body_or_exception_chain": true
+  },
+  "independent_validation": {
+    "command": "Python -B pytest.main -q -p no:cacheprovider tests/test_public_sources.py tests/test_memory_telegram_api.py; all socket/connect/DNS entry points blocked",
+    "passed": 137,
+    "pytest_seconds": 0.86,
+    "exit_code": 0,
+    "four_file_hashes_same_before_after": true,
+    "network_guard": "socket.create_connection/getaddrinfo/socket.connect/connect_ex raise before any external request",
+    "earlier_reproductions": [
+      "Duplicate alias pageid accepted before fix; now rejected by regression.",
+      "Cross-page unrelated normalized alias conflict accepted before fix; now rejected by regression.",
+      "Alias ID equal to another canonical candidate accepted before fix; now rejected by regression.",
+      "Caller mutation changed second serialized authorization payload before fix; now immutable snapshot regression passes."
+    ],
+    "additional_pure_check": "Public and Telegram ContextVar filters independently suppress only their own active context and restore outside it."
+  },
+  "resolved_findings": [
+    "All three candidate/alias identity consistency counterexamples fixed with complete returned-batch ID/name checks.",
+    "Readonly retry payload now deep-copied before first await, fixing differing second-request payload."
+  ],
+  "blocking_findings": [],
+  "limits": [
+    "Two attempts and20 seconds are per Telegram API lookup, not a global bound across separate start/send-time authorization checks or original SQS redelivery.",
+    "Returned candidate uniqueness and alias coverage remain bounded; the public metadata probe and synthetic tests do not prove actual Lambda source availability or useful A/B replies.",
+    "This reviewer independently ran137 final-byte tests; broader full-suite, hooks, source CI, actual deployment and real-model acceptance are separate gates and are not inferred here.",
+    "The current diagnostic cannot identify the lower-level failure or attribute it to N B; resilience changes do not convert that UNKNOWN into a root-cause proof."
+  ],
+  "reviewer_actions": {
+    "cloud_API": 0,
+    "UI": 0,
+    "model": 0,
+    "Wikipedia_or_other_network": 0,
+    "runtime_private_or_raw_reads": 0,
+    "repository_edits": 0,
+    "old_once_runs": 0
+  }
+}

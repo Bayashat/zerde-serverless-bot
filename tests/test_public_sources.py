@@ -73,7 +73,14 @@ def test_private_or_unsupported_text_never_reaches_external_transport(question):
 
 def responses(*, title="Transmission Control Protocol", page_id=12, alias="TCP", extract="A transport protocol."):
     return [
-        {"query": {"search": [{"title": title, "pageid": page_id, "ns": 0, "redirecttitle": alias}]}},
+        {
+            "batchcomplete": True,
+            "query": {
+                "pages": [
+                    {"title": title, "pageid": page_id, "ns": 0, "redirects": [{"title": alias, "pageid": 99, "ns": 0}]}
+                ]
+            },
+        },
         {"title": title, "pageid": page_id, "type": "standard", "extract": extract},
     ]
 
@@ -87,11 +94,125 @@ def test_verified_redirect_and_page_identity_use_two_reads_and_four_fences():
     assert fence.call_count == 4 and request.call_count == 2
     first, second = request.call_args_list
     assert first.args == ("en.wikipedia.org", "/w/api.php")
-    assert first.kwargs["params"]["srsearch"] == "TCP"
-    assert first.kwargs["params"]["srnamespace"] == 0
-    assert first.kwargs["params"]["srlimit"] == 3
-    assert first.kwargs["params"]["srprop"] == "redirecttitle"
+    assert first.kwargs["params"]["gsrsearch"] == "TCP"
+    assert first.kwargs["params"]["gsrnamespace"] == 0
+    assert first.kwargs["params"]["gsrlimit"] == 3
+    assert first.kwargs["params"]["prop"] == "redirects"
+    assert first.kwargs["params"]["rdlimit"] == 50
+    assert first.kwargs["params"]["rdshow"] == "!fragment"
     assert second.args == ("en.wikipedia.org", "/api/rest_v1/page/summary/Transmission_Control_Protocol")
+
+
+@pytest.mark.parametrize(
+    "topic,title", [("TCP", "Transmission Control Protocol"), ("JVM", "Java virtual machine"), ("Tbilisi", "Tiflis")]
+)
+def test_explicit_inbound_aliases_are_not_limited_to_the_search_matching_alias(topic, title):
+    search, summary = responses(title=title, alias=topic)
+    search["continue"] = {"continue": "-||", "gsroffset": 3}
+    request = Mock(side_effect=[search, summary])
+    result = lookup_public_source(f"What is {topic}?", request=request)
+    assert result.source.title == title and request.call_count == 2
+
+
+def test_canonical_title_ignores_only_unrelated_alias_pagination():
+    search, summary = responses(title="SQLAlchemy", alias="SA")
+    search.pop("batchcomplete")
+    search["continue"] = {"continue": "||", "rdcontinue": "99|next"}
+    search["query"]["pages"].append({"ns": 0, "pageid": 23, "title": "Other topic"})
+    request = Mock(side_effect=[search, summary])
+    assert lookup_public_source("SQLAlchemy", request=request).source.page_id == 12
+    assert request.call_count == 2
+
+
+@pytest.mark.parametrize("kind", ["alias", "canonical"])
+def test_canonical_priority_never_overrides_a_known_other_identity(kind):
+    search, summary = responses(title="AX", alias="Ax")
+    search.pop("batchcomplete")
+    search["continue"] = {"rdcontinue": "23|next", "continue": "||"}
+    second = {"ns": 0, "pageid": 23, "title": "Ax" if kind == "canonical" else "Other entity"}
+    if kind == "alias":
+        second["redirects"] = [{"ns": 0, "pageid": 24, "title": "ax"}]
+    search["query"]["pages"].append(second)
+    request = Mock(side_effect=[search, summary])
+    assert lookup_public_source("AX", request=request).source is None
+    assert request.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "missing_batch",
+        "false_batch",
+        "string_batch",
+        "property_cursor",
+        "fragment",
+        "alias_namespace",
+        "alias_bool_id",
+        "page_bool_id",
+        "duplicate_page",
+        "too_many_aliases",
+        "bad_cursor",
+        "bad_aliases",
+    ],
+)
+def test_incomplete_or_malformed_alias_identity_is_not_grounding(change):
+    search, summary = responses()
+    row = search["query"]["pages"][0]
+    alias = row["redirects"][0]
+    if change == "missing_batch":
+        search.pop("batchcomplete")
+    elif change == "false_batch":
+        search["batchcomplete"] = False
+    elif change == "string_batch":
+        search["batchcomplete"] = ""
+    elif change == "property_cursor":
+        search["continue"] = {"continue": "||", "rdcontinue": "next"}
+    elif change == "fragment":
+        alias["fragment"] = "Section"
+    elif change == "alias_namespace":
+        alias["ns"] = 1
+    elif change == "alias_bool_id":
+        alias["pageid"] = True
+    elif change == "page_bool_id":
+        row["pageid"] = True
+    elif change == "duplicate_page":
+        search["query"]["pages"].append(dict(row))
+    elif change == "too_many_aliases":
+        row["redirects"] *= 51
+    elif change == "bad_cursor":
+        search["continue"] = {"gsroffset": True}
+    else:
+        row["redirects"] = None
+    request = Mock(side_effect=[search, summary])
+    assert lookup_public_source("TCP", request=request).source is None
+    assert request.call_count == 1
+
+
+def test_same_page_canonical_and_alias_is_one_identity_and_logs_no_source(caplog):
+    import logging
+
+    request = Mock(side_effect=responses(title="SQLAlchemy", alias="sqlalchemy", extract="private excerpt marker"))
+    with caplog.at_level(logging.INFO):
+        assert lookup_public_source("SQLAlchemy", request=request).source is not None
+    record = next(r for r in caplog.records if hasattr(r, "source_outcome"))
+    assert record.source_outcome == "MATCHED" and record.source_requests == 2
+    assert "SQLAlchemy" not in str(record.__dict__) and "excerpt marker" not in str(record.__dict__)
+
+
+@pytest.mark.parametrize("bad_identity", ["duplicate_alias_id", "unrelated_alias_conflict", "alias_is_canonical"])
+def test_all_returned_identities_are_validated_before_canonical_selection(bad_identity):
+    search, summary = responses(title="SQLAlchemy", alias="SA")
+    row = search["query"]["pages"][0]
+    if bad_identity == "duplicate_alias_id":
+        row["redirects"].append({"ns": 0, "title": "Other alias", "pageid": 99})
+    else:
+        other = {"ns": 0, "title": "Other topic", "pageid": 99 if bad_identity == "alias_is_canonical" else 23}
+        if bad_identity == "unrelated_alias_conflict":
+            other["redirects"] = [{"ns": 0, "title": "SA", "pageid": 24}]
+        search["query"]["pages"].append(other)
+    request = Mock(side_effect=[search, summary])
+    assert lookup_public_source("SQLAlchemy", request=request).source is None
+    assert request.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -100,13 +221,13 @@ def test_verified_redirect_and_page_identity_use_two_reads_and_four_fences():
 )
 def test_unmatched_or_unusable_source_cannot_become_grounding(change):
     search, summary = responses()
-    row = search["query"]["search"][0]
+    row = search["query"]["pages"][0]
     if change == "different_title":
-        row.update(title="TCP-like unrelated product", redirecttitle="")
+        row.update(title="TCP-like unrelated product", redirects=[])
     elif change == "different_alias":
-        row["redirecttitle"] = "TCPX"
+        row["redirects"][0]["title"] = "TCPX"
     elif change == "multiple":
-        search["query"]["search"].append(dict(row))
+        search["query"]["pages"].append(dict(row))
     elif change == "wrong_page":
         summary["pageid"] = 13
     elif change == "disambiguation":

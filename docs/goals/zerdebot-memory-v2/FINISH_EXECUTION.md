@@ -1,3 +1,13 @@
+## Nov18：真实复验仍未通过，通用来源覆盖与只读恢复修复已完成本地验证
+
+正确账户下 N 已完成 A/B 各一次并释放窗口：A 完整诚实未知但无用，B 在实际166.135秒观察内未见完整回复，P 未发；不能称完整180秒或之后未回复。主独 POST 对齐证据，不是业务 PASS。17原件（12API＋5UI）原期限1795626160.299967 / Nov25 17:02:40.299967UTC；原14项保持，现15项。旧T账户STOP及零原件闭合、旧A事实错误FAIL均保留。
+
+新E只修改 public_sources 与 memory_v2/telegram_api 两个既有owner：来源明确的别名/页身份映射、已返回身份冲突拒绝；只读身份查询在原20秒总限内最多2次且冻结请求，发送仍一次。无产品硬编码、不改模型/预算/个人证据与投递门。最终源码2842项全量测试及独立正确性/维护审查通过；新CI、实际dev/prod部署与下一现场复验尚待，不把测试当部署或真实质量。有限错误日志为单页PARTIAL，调用栈涉及授权查询，底层原因及B关联UNKNOWN。
+
+当前P0顺序：源CI和新发布工具双PRE→dev完整包/ARM/主独稳定→prod同等核验→另备新A/B/P并取得新的直接人类窗口。无删除；其他业务、自然质量、费用UNKNOWN与20任务14OPEN6CLOSED＋EpicOPEN保持。[本次证据与待办](ASK_FACTUALITY_FOLLOWUP_NOV18.md)。
+
+以下完整旧阶段仅供历史，不作当前状态、窗口或重跑指令。
+
 ## Nov16：5份费用指标诊断原文在原设备身份门停止
 
 本批5份cost-metrics-diagnostic原文主、独立fresh metadata核验：device16777232→16777234，inode/size/mode保持，完整身份门失败，原因UNKNOWN。两个原ledger与两个原独立POST均未记录mtime；本次mtime仅fresh记录，不能证明历史不变。完整库存60regular＝5目标＋55保护、4目录、0link/ZIP，顺序核验非原子事务。目标内容0读取/hash，未建立删除scope、preparation、notice、apply或absence验证；metadata身份范围不是删除许可。

@@ -1,0 +1,107 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "reviewed_at_utc": "2026-11-18T17:34:24.387735+00:00",
+  "scope": "Independent correctness review of the two runtime owners and related offline tests; uncommitted source bytes, not final documentation, CI, deployment or real Telegram acceptance.",
+  "reviewed_base_commit": "d7f4fcf62888a1a57f0ffa5c3ac9de713e37967c",
+  "source_commit": null,
+  "plan_sha256": "31eab380c003a2f83323828b72a74d6217c2037f121e1a11c4108904541adab1",
+  "plan_pre_sha256": "05083508c51411166261ecb0a6b61e9d3cd6d99d74add974e162a8f8087d57dd",
+  "files": {
+    "src/bot/services/public_sources.py": "1727d9765baf8d17c2f9a9a991f845d7522ac120b39bc9c765dc1df192fc1944",
+    "src/bot/services/memory_v2/telegram_api.py": "0c6bf4fbabc7702a4a2e0635ab97fd0b256690afd0522be12dd1ba50a77f186c",
+    "tests/test_public_sources.py": "873d1bfbf8b64b979e84c900162069da7f42c05d3d9da89c3eb87a22693c41f8",
+    "tests/test_memory_telegram_api.py": "c821eb2d93c12576205d947970567b73726e51691e51c763901a945c36cf62ac"
+  },
+  "unchanged_supporting_files": {
+    "src/shared/python/zerde_common/async_http.py": "9f638624c202a27cd566e45269507e069c5027d78896bb63c2cc55d57c05c059",
+    "src/bot/services/memory_v2/explicit_delivery.py": "119fa0f970e68cb49d0ab44e10f0bad633df085a81ef0113c87ee06d59b27848",
+    "tests/test_explicit_delivery.py": "09f7c6f2bd8fa5f617649ab37e1573fe14ea5cdb2ebd6f4bb1ab17704a852722",
+    "tests/test_explicit_request_gate.py": "cac3ce59a92dba9d30189bbce03bad8c3525e991d8358419823369dc416c27c6",
+    "tests/test_explicit_quota_guard.py": "f5e9fc526bbf6dc885e4a0c805165eeb9bac4e5ad09681954fa63a86c78bdd93"
+  },
+  "changed_runtime_files": [
+    "src/bot/services/memory_v2/telegram_api.py",
+    "src/bot/services/public_sources.py"
+  ],
+  "checks": [
+    "Only eligible verbatim public topic/language reaches the existing fixed public endpoints; personal/reply/media/unknown-queue eligibility and source fences remain unchanged.",
+    "Search generator has at most three candidates and fifty inbound aliases; no pagination or broad query generation; at most search plus summary HTTP, six-second cancellable network bound and 64 KiB per response remain.",
+    "All returned candidate and alias objects are validated before selection, including non-bool positive IDs, namespace, title, fragments, duplicate alias/candidate IDs, ID intersections and normalized name ownership across different target page IDs.",
+    "Canonical exact match may tolerate valid incomplete unrelated alias properties only after known conflicts are rejected. Alias-only matching requires batchcomplete strictly true and no rdcontinue; this is bounded matching, not proof of site-wide uniqueness.",
+    "Summary type, strict page ID, title and extract gates remain. Missing or unusable source gives honest uncertainty; no unsupported model retry or product-specific identity exception.",
+    "Only getChatMember/getMe have at most two HTTP attempts. Read payload is deep-copied before asynchronous mutation; total twenty-second timeout covers attempts and delay, each read attempt has eight seconds, retry delay is 0.25 seconds.",
+    "Folded TransportError/TimeoutError and HTTP 500/502/503/504 are bounded recovery candidates. Recognizable UnsupportedProtocol/LocalProtocolError, 429, permanent HTTP status, malformed result and identity mismatch do not receive a local retry.",
+    "CancelledError propagates; network DNS/headers/body cancellation leaves no second send. sendMessage remains one attempt, with existing unknown-send and lease/request/CONTROL/source/budget fences unchanged.",
+    "HTTPX INFO and HTTPCore DEBUG logs were captured through the actual shared transport with synthetic credentials: no credential in records or exception chains; context-local suppression is restored for unrelated callers. Fixed outcome/operation/attempt/elapsed fields contain no request, source, response or model text.",
+    "Shared transport mapping, dependencies, layer, provider/model, runtime configuration, delivery owners and other runtime files are unchanged."
+  ],
+  "validation": {
+    "final_focused_pytest": {
+      "passed": 173,
+      "failed": 0,
+      "seconds": 6.03,
+      "files": [
+        "tests/test_public_sources.py",
+        "tests/test_memory_telegram_api.py",
+        "tests/test_explicit_delivery.py",
+        "tests/test_explicit_request_gate.py",
+        "tests/test_explicit_quota_guard.py"
+      ],
+      "outbound_attempts": 0,
+      "source_and_changed_test_hashes_equal_before_after": true
+    },
+    "independent_controls": {
+      "passed": 19,
+      "failed": 0,
+      "controls": [
+        "real_shared_success_no_sdk_token",
+        "real_shared_protocol_then_success",
+        "real_shared_protocol_twice_stop",
+        "real_shared_send_single_attempt",
+        "real_shared_dns_cancel",
+        "real_shared_headers_cancel",
+        "real_shared_body_cancel",
+        "sdk_logging_context_restored",
+        "duplicate_alias_id_stop",
+        "alias_candidate_id_intersection_stop",
+        "unrelated_alias_cross_target_stop",
+        "same_aliasid_cross_target_stop",
+        "query_alias_conflict_stop",
+        "malformed_cursor_stop",
+        "canonical_paginated_match",
+        "alias_paginated_stop",
+        "alias_complete_generator_continues_match",
+        "malformed_other_row_stop",
+        "wrong_summary_pageid_type_stop"
+      ],
+      "transport": "Actual zerde_common async HTTP adapter and HTTPCore with synthetic resolver/network streams; all real socket connections/DNS blocked.",
+      "outbound_attempts": 0,
+      "temporary_harness_sha256": "532f8aaf5884d1658431b64bbac41bbf23084822258503c81bf156710b3156cc"
+    },
+    "earlier_run": {
+      "focused_passed": 169,
+      "seconds": 6.15,
+      "outbound_attempts": 0,
+      "scope": "Before the three alias-structure tests and one immutable-read-payload test were added."
+    },
+    "fixture_correction": "The first independent harness incorrectly applied a 25ms deadline to successful real-adapter TLS/client setup and failed its expected-success assertion. The harness was corrected to use normal 8s/20s success deadlines and shortened deadlines only for deliberate cancellation; all nineteen controls then passed on final source. This was not counted as an implementation failure or hidden as a first-pass success."
+  },
+  "blocking_findings": [],
+  "limits": [
+    "The main full-suite run, hosted CI and packaging/deployment are not independently asserted by this report. Source commit binding requires a later fresh commit readback.",
+    "No AWS, Telegram UI, model, real public API, old raw, runtime raw or frozen formal entry was called/read by this review.",
+    "The prior single-page diagnostic cannot prove the cause or ownership of B timeout; underlying cause remains UNKNOWN. B usefulness and new A/B/P acceptance remain pending a separately authorized fresh window.",
+    "Lexical public-topic restrictions and bounded matching do not prove all names public or all generated facts true. Successful recovery does not prove every TransportError transient.",
+    "Documentation changes are outside this source review. Original fifteen retention duties and frozen evidence are not altered."
+  ],
+  "operations": {
+    "real_network_calls": 0,
+    "aws_calls": 0,
+    "ui_calls": 0,
+    "model_calls": 0,
+    "runtime_or_repository_edits": 0,
+    "raw_reads_or_copies": 0,
+    "exclusive_safe_report_writes": 1
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "status": "ALIGNED",
+  "at": 1795022505.6992068,
+  "review_scope": "Maintenance POST over safe actual diagnostic receipts and frozen source only; no new cloud reads or runtime-original access",
+  "files": {
+    "PLAN.md": "120d5bba38b6a3585b1a19613aff5590ce47dc5f6d5b3325b90314b922f25eac",
+    "scope.safe.json": "e73e687bc57154fc793379bb2428fcda31893d63137c817f3b4716d3c01a44cd",
+    "diagnose.py": "dcd8cb4942f1b8c5b56b730b159c1be424fa3c9a863a8743968d6a9cd3d83c64",
+    "diagnostic-tool-pre.safe.json": "0ce688999a87beb7bc5384f37cf8f59ef1abc71972f2d1939345d16db50616db",
+    "diagnostic-maintenance-pre.safe.json": "726b9a25638bd9020c38729c6c364646850d06eb6324d8f413b8981a8f357a51",
+    "diagnostic.once.safe.json": "1538670eb669d176330de016d193ebe5b22f6230ec73a21488508e4cc9163c72",
+    "diagnostic.safe.json": "f4ad912e04b5b998367986de598567434b9e786c484192b38fae69d0ba76b511"
+  },
+  "source_files": {
+    "src/bot/services/memory_v2/cost_runtime.py": "2156fc77a25feb453e65823feeb79f6bf58013b021e15e5e263e38c742fc61d9",
+    "src/bot/main.py": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+    "src/bot/services/sqs_task_router.py": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+    "src/bot/services/handlers/commands.py": "e7e5d223460ab7df36718bf753ecc79be8b41a2429f495b910e13c569b976765",
+    "src/bot/services/memory_v2/explicit_delivery.py": "119fa0f970e68cb49d0ab44e10f0bad633df085a81ef0113c87ee06d59b27848",
+    "src/bot/services/memory_v2/telegram_api.py": "1d93e9cd6352c26c9c853b59fa0c4f24340236d953a46a100a0f59364f0ab958"
+  },
+  "execution": {
+    "status": "PARTIAL_SINGLE_PAGE",
+    "logical_API_calls": 2,
+    "before_send_events": 2,
+    "HTTP200_responses": 2,
+    "SDK_retry_attempts": [
+      0,
+      0
+    ],
+    "event_count": 2,
+    "next_token_present": true,
+    "expected_exit_code_from_frozen_script": 2,
+    "actual_process_exit_code_source": "primary agent reported exit2; no separate persisted process-exit receipt was supplied",
+    "elapsed_seconds": 2.011544942855835,
+    "cloud_writes": 0,
+    "persistent_runtime_raw": 0,
+    "new_retention_deadline": null,
+    "UI": 0,
+    "model": 0
+  },
+  "checks": {
+    "dual_PRE_and_once_exact3file_hashes": true,
+    "unique_STS_then_fixed_logs_page": true,
+    "all_event_timestamps_inside_fixed_4minute_window": true,
+    "allowed_frame_paths_functions_match_runtime_source174a849": true,
+    "no_request_identifier_stream_or_message_body_in_safe_projection": true,
+    "canonical_hashes_not_wire_hashes": true,
+    "token_truncation_preserved_no_next_page": true,
+    "current_directory_has_no_raw_private_or_retention_slots": true,
+    "old_N_result_deadline_and15duties_not_changed": true
+  },
+  "diagnostic_limits": [
+    "The partial page does not prove completeness of the four-minute interval.",
+    "The displayed source chain reaches the generic readonly-authorization failure exit; catch-all wrapping means the lower exception and whether it was transient remain UNKNOWN.",
+    "No request identifier or user message was available in this safe projection, so it does not establish ownership by N B.",
+    "Empty exception_classes means no allowlisted class token was projected, not absence of an exception.",
+    "A safe receipt confirms the recorded bounded execution; the reviewer did not independently re-fetch AWS responses."
+  ],
+  "readonly_retry_assessment": {
+    "assessment": "Conditionally reasonable generic resilience change; not a proven fix of B and not implementation approval",
+    "owner": "Existing MemoryTelegramAPI.call for getChatMember/getMe only",
+    "limits": [
+      "Single lookup overall cancellable deadline20 seconds; at most2 HTTP attempts; same immutable method and payload.",
+      "Explicit allowlist of transient transport or specified HTTP conditions; permission denial, malformed response, response-size violation and identity mismatch must not become accepted authorization.",
+      "No retry of sendMessage, configured_delivery, worker task, model call, lease transition or whole request as part of this change.",
+      "Preserve current post-read source/CONTROL/actor and before-send lease checks; late success cannot resurrect an invalidated request.",
+      "Keep original SQS redelivery and the separate start/send-time authorization checks explicit: per-lookup two attempts is not a global two-call guarantee.",
+      "Send timeout or uncertain response still yields UNKNOWN and one external send attempt; no safe-read retry policy may reach the sending branch.",
+      "Preserve redacted errors with no token-bearing URL, payload, response text or original exception chain.",
+      "Use existing cancellable transport; retries and optional delay share the20-second total, with no detached continuation."
+    ],
+    "required_tests": [
+      "Transient read failure then success: exact same payload and2 attempts, no third.",
+      "Two transient failures exhaust safely; invalid membership or identity cannot authorize generation or delivery.",
+      "Permanent rejection, malformed/oversized response and disallowed method do not enter broad retries.",
+      "Actual transport cancellation for timeout during connection/header/body; total bound spans all attempts and any delay.",
+      "Send failure/timeout remains one attempt with UNKNOWN/lease cleanup and no second send.",
+      "CONTROL/source/actor invalidation during lookup or retry blocks subsequent generation/send through existing owners.",
+      "Traceback/log tests exclude token, request body and upstream exception text."
+    ],
+    "next_gate": "Separate implementation PLAN with correctness and maintenance PRE before source changes or deployment."
+  },
+  "reviewer_actions": {
+    "AWS": 0,
+    "UI": 0,
+    "model": 0,
+    "formal_entry_execution": 0,
+    "runtime_raw_reads": 0,
+    "runtime_raw_hashes": 0,
+    "repository_edits": 0
+  }
+}

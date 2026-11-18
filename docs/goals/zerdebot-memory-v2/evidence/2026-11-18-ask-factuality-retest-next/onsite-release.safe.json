@@ -1,0 +1,13 @@
+{
+  "status": "RELEASED_AFTER_B_INCOMPLETE",
+  "at": 1795021817.539179,
+  "last_native_ui_started_at": 1795021763.387,
+  "last_native_ui_finished_at": 1795021763.568,
+  "messages_sent": 2,
+  "draft_empty_observed": true,
+  "no_reply_target_observed": true,
+  "no_selection_observed": true,
+  "no_further_UI_authorized_from_this_window": true,
+  "P_sent": false,
+  "reason": "A honest unknown, B no complete response observed; no useful B permits P."
+}

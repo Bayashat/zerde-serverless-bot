@@ -1,0 +1,149 @@
+{
+  "status": "ALIGNED",
+  "outcome": "PARTIAL_NOT_FULL_ACCEPTANCE",
+  "semantic_outcome": "PARTIAL_NOT_FULL_ACCEPTANCE",
+  "at": 1795021967.546984,
+  "runtime_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "raw_ledger_sha256": "d29065efddf8cbb493d4824069b7b754c091d90066b971144d7059f83e0aea8b",
+  "release_binding_sha256": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+  "primary_result_sha256": "52d2d06a17b6dbbd3d99230a49d56c39ed5327e0e8ee71047d6b4a4443a27ddd",
+  "semantic_review_sha256": "40cd47403434e69c3812c1aa772af91e9c104a0eee540016b36461f2bdba095e",
+  "raw_files_verified": 17,
+  "api_responses_verified": 12,
+  "ui_records_verified": 5,
+  "deadline_epoch": 1795626160.299967,
+  "post_review_deadline_epoch": 1795024933.0,
+  "cases": {
+    "A": {
+      "after_sha256": "89f8bc8bfe7b46985cfc5b772551fae908c4cfc11f7f28f14597748ec32c2d0f",
+      "reply_sha256": "1775b3da997461ce644ffe6a90bb268ce1b6b1440d4fc9372f09813cf7bff5ef",
+      "complete_unique_visible_reply": true,
+      "independent_classification": "PARTIAL_HONEST_UNKNOWN"
+    },
+    "B": {
+      "after_sha256": "009ba24b70488757e4655d1c27701d148996e51d3a728f6259a6b57c09f86b2c",
+      "reply_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "complete_unique_visible_reply": false,
+      "independent_classification": "UNVERIFIED"
+    }
+  },
+  "full_protocol_alignment": true,
+  "entry_failures_preserved": [],
+  "semantic_stop_respected": true,
+  "budget_original_clock_intervals": [
+    {
+      "raw_path": "raw/budget-04.private.json",
+      "call_before_integer_interval": [
+        1795021499,
+        1795021499
+      ],
+      "compatible_integer_interval": [
+        1795021499,
+        1795021499
+      ],
+      "conditions_hold_for_entire_interval": true,
+      "exact_original_now_not_recorded": true
+    },
+    {
+      "raw_path": "raw/budget-06.private.json",
+      "call_before_integer_interval": [
+        1795021499,
+        1795021499
+      ],
+      "compatible_integer_interval": [
+        1795021499,
+        1795021499
+      ],
+      "conditions_hold_for_entire_interval": true,
+      "exact_original_now_not_recorded": true
+    }
+  ],
+  "evidence_sha256": {
+    "config-contract.safe.json": "10cd18f5fc07cdb46c9067bcb6b0abe32aef2327342bf951b4a1690592a31024",
+    "verify_actual_canary.py": "58081b5952e0840dc3f7b45bc22715e045b519ea4c6efdde5c06bce68d92c15f",
+    "POST_PLAN.md": "c85709801ead973deb01ff42d3d59dd56714d5912916ac14a61747ef51e84f2a",
+    "PLAN.md": "44f69b38622d78bdbb6020c2c5184ce0abc0d4b95f846df5e53a0ae8c77ea8d9",
+    "historical-control.safe.json": "c16a457157742fd8ed8bf7389c9df897bf244708ba92ea79e35758d751c49a2c",
+    "release-binding.safe.json": "5c50e5a97f8ab5d2f373ef51dd36f91944acb4a0a1fe986a13d4b3150674dc34",
+    "prior-duties.safe.json": "bf9b010ed155cf944a35e8877e512b6ad9728229b9bf8b37f1bcb86d77b2a2d9",
+    "actual-post-tool-pre.safe.json": "6902ec01c25ceee39d6655f375586832bb62717d7bfe8d425e009d0a7fb56a8e",
+    "actual-post-tool-maintenance-pre.safe.json": "82fb1e794a9ac76ca9c52528686596b6a2c3484a45cec5ac3a264bf55e517adc",
+    "independent-semantic-review.safe.json": "40cd47403434e69c3812c1aa772af91e9c104a0eee540016b36461f2bdba095e",
+    "onsite-window.safe.json": "9773f0713f22b7da234722010d1c07fc59263b25729a16d6ea347d0c6d802291",
+    "retention-anchor.safe.json": "2eef2f739bec83c7327126236e378fe2517d2f980e72e5087004bd8297bee715",
+    "raw-retention.safe.json": "d29065efddf8cbb493d4824069b7b754c091d90066b971144d7059f83e0aea8b",
+    "retention-registration.safe.json": "85d1b0d2546c28b5ef03d6b64543230ffdbd9e361bf4e49e1e51967e2bf3ee7f",
+    "retention-duty.safe.json": "f87d10c1b2a17fd2fca245a2498502416f76eb69c8fc8aab9a47ca2d102c9f05",
+    "automation-registration.safe.json": "1a757a59eca3dd545d99216d54c4d2620e066d79caa9a4f4a62c9324a24d4ebc",
+    "automation-readback.safe.json": "df3a353ea40c39f587d78da0cb4eb953444336a0c19a875f6116e4bb137a66d4",
+    "collector.py": "72b1a4b223c243d01b28484d47d9c7d52100d203489664125b2c93b68a590ec1",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b",
+    "tool-pre.safe.json": "be661b9cf144ae59a45f219c07adb77a7edc5ce95f6eae2955d8620a6e0cc5f7",
+    "maintenance-tool-pre.safe.json": "653ad20f598a4684a7ee89a15af198f4e82eaa9b2c70616b79345057ec4b70fe",
+    "ui-onsite.private.json": "90b1e454320901e848c0a0d33d9d620055b568faaa74a4a84a6a213dfc13fcf4",
+    "raw/preflight-01.private.json": "44938d2295a63962a17d3b60e60878a09d293321d3e86c11620b86cac5d5514e",
+    "raw/preflight-02.private.json": "a1e7a9f9b4b66aa77990b5e8e27de8f59fb66431cccd32897b42c188a9528c19",
+    "raw/preflight-03.private.json": "26651b9af98516a498c8fdd6956646c43d44571ebce1919f5b828a754f85ef66",
+    "raw/preflight-04.private.json": "cd5097eaaafa35d842208ea841ca37673f4b56e9ca40dc449711f834993104f9",
+    "raw/preflight-05.private.json": "3e436fd750fc4e6dad087e0ddc1cd4cbbf8f48e4f2fda41cd7ab96497328d985",
+    "raw/budget-01.private.json": "b957dd41f3fdafb56692d83626c79a2ebd673ad3551c4c82f88f139d2e7a047d",
+    "raw/budget-02.private.json": "56b3b0acfe5e12adc695fe8163f852179d642f42f78b28d591c45ca63e6fb761",
+    "raw/budget-03.private.json": "ad46373640c8174ca2a69af49882caaf810588a61bce6e1dedfdb1c48ad0fd6f",
+    "raw/budget-04.private.json": "192fb26f4d71ad167d1ec3b55399fe47ebb22968a02137600be820c568998b26",
+    "raw/budget-05.private.json": "e28af8992d4397e5f5b4f2640ad8168672f752caf8d5c20124b1a01153bb8b65",
+    "raw/budget-06.private.json": "02aea99ef6abce8431a084a3a0046dc1d65d796d83c0830fc48c45463dfbe506",
+    "raw/budget-07.private.json": "c7927ff1bea2d7ad525361a286c736d4052e438b3f79cfeb70d7d7ddc2b7881d",
+    "A.ui-intent.private.json": "6cbf47322976bff805751ea343e0d257cc54446cce37d79dd0ad146bdbb06990",
+    "A.ui-after.private.json": "89f8bc8bfe7b46985cfc5b772551fae908c4cfc11f7f28f14597748ec32c2d0f",
+    "B.ui-intent.private.json": "b84adec33a7859dace2919369cbd849c6c276e8b955dc01310f7eb871b88d6bc",
+    "B.ui-after.private.json": "009ba24b70488757e4655d1c27701d148996e51d3a728f6259a6b57c09f86b2c",
+    "budget-owner-files.safe.json": "99e28ee47cae43f9a96e118aeafd4516c5e3aff00cf7d52ab1368d18720ec1af",
+    "budget-owner/src/bot/services/memory_v2/_cost_catalog.py": "fa10173174d88bfae5e304f4b9ccaadfacc434f7f77c13c7674d4948a0eded63",
+    "preflight.safe.json": "cf1700b2511c1f11c97208c238596b4e08d22ebd9ddc33037469b5d00deeacaa",
+    "budget.safe.json": "518ab0fb015c7d065581681f9ed5bcee52561362108008c5abcf3743054e679d",
+    "A.send-permit.safe.json": "0e3533b9d81314fc67183b277c915b388dc554688ffae76f5f28a5fc068996c9",
+    "B.send-permit.safe.json": "f02e03c61930bc1654099db1bd9ea458a105a4e1b5173d5699f649994a592afc",
+    "entry-budget.once.safe.json": "94b2e00f0bdbdceaebdc7b21947c2c33533cfcec4fe52ceaf69337c1e78ca0f9",
+    "entry-budget.result.safe.json": "631d6b38da5e8bef1f391bf07bfdb2847e7a0ca20b10ebb465cf5d6f5c2df5f6",
+    "entry-preflight.once.safe.json": "628557de0adfba75e9a1947de19215b5d41475764cc34580c929955facef84f5",
+    "entry-preflight.result.safe.json": "8205ea79843b3a64673a84596abefff6ab20d53f3788395d8c3f948970ea87e9",
+    "entry-send-A.once.safe.json": "e23ac4114cb6a9c381c043ef59754b32a88400201a617ba890b3a25a1c737261",
+    "entry-send-A.result.safe.json": "240f6eba448d1f3b0a76a79a2e72b349817fa739bb5eb70e5edf87f6307249fe",
+    "entry-send-B.once.safe.json": "e3a1c9a3ca8c20100092954b6224181ae5a5026e8177663f814f4173314af6c7",
+    "entry-send-B.result.safe.json": "bfd434c85396bac2dc9be2de7d63aaea45557e3bbe33ab859e3ac358ff955b94",
+    "entry-start.once.safe.json": "b549ec29b5461fb431fccf2010433dfc8a13a2fe944c98a27352f0a2e971f39e",
+    "entry-start.result.safe.json": "d835aae52b74a5c609a10856b9f619eefb952910933cf82b5a6c213fa76fcf97",
+    "entry-ui-A.ui-after.private.json.once.safe.json": "232b83e419913ecf0b8d2e840249f2e53acdbe782b1dbe8b296067427a973dec",
+    "entry-ui-A.ui-after.private.json.result.safe.json": "2c13a5cd3d5454f65c7f7edd8433519a6b82d820c19beb054d80bb7701d31b6b",
+    "entry-ui-A.ui-intent.private.json.once.safe.json": "aaee803da76ee68107ba7163e0f46dfff024976e09260557ff71de6cd28c5ed1",
+    "entry-ui-A.ui-intent.private.json.result.safe.json": "97a58cab887895558fa3515d644416ccac801a0a40d39654333bffc6ec260da0",
+    "entry-ui-B.ui-after.private.json.once.safe.json": "cf04df4c3b8819b5b3b70d53c0877f549dc9c690f0d7d255593115d0a15b8185",
+    "entry-ui-B.ui-after.private.json.result.safe.json": "c49d1bf7fcb32c371c444a2b9009cd1265f3ad7e4156c32a6b1f25118b13e715",
+    "entry-ui-B.ui-intent.private.json.once.safe.json": "dc3a91c8f6a9cc878fdd6f5ef8d00c03a9bd993bfefaee687e01e012d6266b20",
+    "entry-ui-B.ui-intent.private.json.result.safe.json": "33f8ba12c79ecc0adfb3a80d37b251650bf3dc5f363f61c1042c1d6511a21659",
+    "entry-ui-ui-onsite.private.json.once.safe.json": "5e6068e24476dddaa2c7df276c4eb1d6b62a6e75e6a8c5a9893dfbcd6519e5f9",
+    "entry-ui-ui-onsite.private.json.result.safe.json": "19d13180e6d5fbaccd2857d162ab206b8a397b26cc6b449cbced3ce92c76a5ea",
+    "result.safe.json": "52d2d06a17b6dbbd3d99230a49d56c39ed5327e0e8ee71047d6b4a4443a27ddd",
+    "onsite-release.safe.json": "6cc71e56f7b899229f3879d9e52ec629beee24893ba83087a92f0d09e2a831d7"
+  },
+  "natural_sample_increment": 0,
+  "operations": {
+    "new_cloud_calls": 0,
+    "cloud_writes": 0,
+    "UI_actions": 0,
+    "model_calls": 0,
+    "release_private_snapshot_reads": 0,
+    "ZIP_reads": 0,
+    "raw_copies": 0
+  },
+  "limits": [
+    "Independent local review of primary native UI records, not independent UI or continuous exclusivity proof.",
+    "Full configuration is compared between two fresh observations against static source constraints; historical CONTROL epoch/start uses retained safe proof. No expired snapshot read or claim of full historical configuration continuity.",
+    "The exact 14 prior obligation pairs are verified against the frozen current-duty binding; new duty is number 15.",
+    "No selector-mode, ANSWER SENT/lease, database exactly-once, natural-quality or production-wide claim.",
+    "A safe but unhelpful PARTIAL is not erased by useful B. Product fact scope is definition and main uses only.",
+    "Original owner reads are sequential observations, not a transaction or durable sending permission. Its exact pre-GetItem int(now) was not logged: this report proves interval consistency and preserves boundary uncertainty, not an invented exact clock.",
+    "Primary result and all old stopped entries remain unchanged."
+  ]
+}
