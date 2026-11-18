@@ -1,0 +1,19 @@
+{
+  "status": "READBACK_ALIGNED",
+  "at": 1795019712.369112,
+  "automation_id": "zerde",
+  "name": "Zerde 验收推进与备份到期清理",
+  "status_readback": "ACTIVE",
+  "rrule": "FREQ=DAILY;BYHOUR=0;BYMINUTE=15;BYSECOND=0",
+  "target_thread_id": "01a08bea-663d-77b2-8fcf-b56f7cbf0f9f",
+  "kind": "heartbeat",
+  "prompt_sha256": "1df04bdbcf8352b969f9c9ca46893289733651b9e77a4e076f9e964ffc6d313f",
+  "actual_toml_sha256": "3f6bd181fa6591d1eb16a87155ce1d67a46e68bc3a430e914f460cd064be9d0b",
+  "payload_sha256": "e57374aee29d5dccfd853c3ade3715ae558f0c52fb39d2eecad1c95be1cac36d",
+  "remaining_prior_duties": 14,
+  "original_new_empty_anchor_preserved": true,
+  "window_released": true,
+  "last_scope": "runtime closure complete; docs release pending",
+  "native_update_success_observed": true,
+  "native_view_success_observed": true
+}

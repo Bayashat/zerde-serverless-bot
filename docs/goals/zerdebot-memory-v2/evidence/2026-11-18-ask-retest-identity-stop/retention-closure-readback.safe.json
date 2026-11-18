@@ -1,0 +1,17 @@
+{
+  "status": "LOCAL_AND_REMOTE_COUNT_READBACK_ALIGNED",
+  "at": 1795019745.6869,
+  "closed_duty_status": "CLOSED_ZERO_REGISTERED_RUNTIME_RAW",
+  "remaining_prior_duties": 14,
+  "original_registration_count": 15,
+  "original_deadline_epoch": 1795623930.874333,
+  "owner_issue": 167,
+  "owner_issue_state": "open",
+  "owner_issue_body_sha256": "6737ed6e9b4dee36f0646e34ee1f7ad93ea876621b507fa5729ae4ee0ea25203",
+  "owner_issue_updated_at": "2026-11-18T16:35:22Z",
+  "automation_readback_sha256": "3ab67accfd18314ece220ec66fd2e11179c670b4ec7277f821697f701e257149",
+  "empty_retention_closure_sha256": "57f230e824f203ba629d8e68d12ac1d21d1784b09455d0362bd9452996392711",
+  "native_issue_update_and_fresh_readback_exact": true,
+  "native_automation_update_view_and_persisted_readback_exact": true,
+  "no_files_deleted": true
+}

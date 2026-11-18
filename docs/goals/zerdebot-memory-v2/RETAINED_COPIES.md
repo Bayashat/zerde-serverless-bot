@@ -1,3 +1,13 @@
+## Nov18：本T零登记运行原件职责闭合，原14项保持
+
+本T原start/anchor及采集前第15项登记真实发生，原期限1795623930.874333保留。身份不符后只读UI停止，未发送、未采集API或落盘UI原件；独立确认ledger空、raw目录空及STOP生效，仅关闭本T受控UI/API原文职责，未删除文件。原14责任逐项保持；行政private文件、工具会话/外部副本不在此零采集结论内。原ledger的ACTIVE与登记15是冻结时点历史，由新闭合回执说明，不改旧字节。[闭合证据](evidence/2026-11-18-ask-retest-identity-stop/empty-retention-closure.safe.json)。
+
+以下为此前登记时点及完整历史。
+
+## Nov18：普通ask复验新增第15项原文责任（现场进行中）
+
+T `/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-17-ask-factuality-retest`，唯一原起点 `2026-11-18T16:25:30.874333+00:00`、原期限 `2026-11-25T16:25:30.874333+00:00`／epoch `1795623930.874333`，最多19原件，实际数以 `raw-retention.safe.json` CAPTURED为准。原14职责逐项保持。采集前登记，准备不是完成；实际现场/释放/独立POST以T回执为准，不复制延期。
+
 ## 当前新增责任：普通ask真实验收
 
 原13项期限与状态保持，新增第14项：`/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-17-ask-public-knowledge-acceptance`。ledger=`raw-retention.safe.json`；原起点`2026-11-16T19:54:55.509188+00:00`，原期限`2026-11-23T19:54:55.509188+00:00`，epoch=1795463695.509188。首采前已登记并实际读回；现为15 CAPTURED/0 PENDING＝12 API响应＋3 UI记录（onsite、A intent、A after），A后停止、B/P未发，原期限不变。后续新scope/双PRE/精确公告/到期处理/独立不存在；不延期或重建。
