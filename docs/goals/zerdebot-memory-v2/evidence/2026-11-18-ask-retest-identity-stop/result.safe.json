@@ -1,0 +1,37 @@
+{
+  "status": "STOP_NATIVE_ACCOUNT_MISMATCH_BEFORE_ONSITE_RECORD",
+  "at": 1795019400.412796,
+  "runtime_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "raw_ledger_sha256": "71bd7b1bb2dd8514e505cec0c7ca22a43f6dde94be35ecdf746a50af7c4e1575",
+  "raw_count": 0,
+  "deadline_epoch": 1795623930.874333,
+  "observed_account_display_name": "$ake",
+  "required_account_display_name": "Баяшат",
+  "target_chat_opened": false,
+  "messages_sent": 0,
+  "text_input_actions": 0,
+  "account_switch_actions": 0,
+  "cloud_calls": 0,
+  "model_calls": 0,
+  "budget_reservations": 0,
+  "cases": {
+    "A": "NOT_SENT",
+    "B": "NOT_SENT",
+    "P": "NOT_SENT"
+  },
+  "UI_readonly_observation_occurred": true,
+  "raw_file_capture_occurred": false,
+  "last_native_ui_started_at": null,
+  "native_UI_precise_interval": "NOT_RECORDED; no fabricated exact timestamps",
+  "observation_evidence_origin": "primary CUA tool output; account appears in native window title; not independent UI",
+  "formal_entries_completed": [
+    "start"
+  ],
+  "formal_onsite_record_preflight_budget_not_run": true,
+  "frozen_post_verifier_not_run": "requires at least one registered UI original with matching identity; inapplicable to empty-ledger pre-onsite stop",
+  "retention_registration_at_start": 15,
+  "remaining_count_pending_independent_empty_ledger_review": true,
+  "acceptance": "NOT_EXECUTED_THIS_WINDOW; prior factuality FAIL not overwritten",
+  "cause_of_native_account_context_change": "UNKNOWN",
+  "no_unrelated_chat_content_copied_to_local_artifact": true
+}

@@ -1,0 +1,10 @@
+{
+  "status": "STOP",
+  "at": 1795019400.412796,
+  "result_sha256": "0c0a3f1d6495c8fd20c4af12184d76c93016612f093a337ec92c87e4d81b8508",
+  "release_sha256": "abbdd8ea6700028a533fe40cd4dad76fa7a7201519271058de5dac0dfd0796d3",
+  "ledger_sha256": "71bd7b1bb2dd8514e505cec0c7ca22a43f6dde94be35ecdf746a50af7c4e1575",
+  "anchor_sha256": "7e9cc08a3889db81a1ca39582cc530cd640ce9b442bc5ffc096025b8213dd7b9",
+  "reason": "Observed active native account display differs from the exact allowed account; no account switching or test sending performed.",
+  "no_reuse_of_completed_start_or_window": true
+}

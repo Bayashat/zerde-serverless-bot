@@ -1,0 +1,12 @@
+{
+  "status": "RELEASED_AFTER_IDENTITY_STOP",
+  "at": 1795019400.412796,
+  "no_further_UI_authorized_from_this_window": true,
+  "messages_sent": 0,
+  "draft_created_by_agent": false,
+  "existing_composer_modified": false,
+  "last_native_ui_started_at": null,
+  "native_UI_precise_interval": "NOT_RECORDED",
+  "completion_summary_observed": true,
+  "limits": "Read-only app observation; no identity claim for numeric actor, no accepted onsite record, no send, no model acceptance."
+}

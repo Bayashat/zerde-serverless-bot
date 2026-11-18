@@ -1,0 +1,77 @@
+{
+  "status": "CLOSED_ZERO_REGISTERED_RUNTIME_RAW",
+  "at": 1795019598.335916,
+  "scope": "This T controlled UI/API original-file duty only; not administrative private files, CUA session history or external copies",
+  "runtime_raw_registered": 0,
+  "runtime_raw_deleted": 0,
+  "original_deadline_epoch": 1795623930.874333,
+  "original_started_at_utc": "2026-11-18T16:25:30.874333+00:00",
+  "original_deadline_utc": "2026-11-25T16:25:30.874333+00:00",
+  "original_anchor_sha256": "7e9cc08a3889db81a1ca39582cc530cd640ce9b442bc5ffc096025b8213dd7b9",
+  "original_empty_ledger_sha256": "71bd7b1bb2dd8514e505cec0c7ca22a43f6dde94be35ecdf746a50af7c4e1575",
+  "independent_sha256": "cfe2886b0947378fca9454737a3a346080763d3f68b7ec1fcd759e17ffbb3459",
+  "prior_independent_duties": [
+    {
+      "deadline_utc": "2026-10-26T23:52:42.922982+00:00",
+      "responsibility": "2026-10-20-z01-media-current 36"
+    },
+    {
+      "deadline_utc": "2026-10-27T00:10:10.807865+00:00",
+      "responsibility": "2026-10-20-cost-gate-diagnostic 22"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:53:25.893115+00:00",
+      "responsibility": "2026-10-20-cost-report-readback 2"
+    },
+    {
+      "deadline_utc": "2026-10-27T01:57:25.452039+00:00",
+      "responsibility": "2026-10-20-cost-metrics-diagnostic 5"
+    },
+    {
+      "deadline_utc": "2026-10-27T02:26:52.661740+00:00",
+      "responsibility": "2026-10-20-cost-report-repair 446"
+    },
+    {
+      "deadline_utc": "2026-10-27T07:23:59.115275+00:00",
+      "responsibility": "2026-10-20-cost-recovery-followup 12"
+    },
+    {
+      "deadline_utc": "2026-10-27T09:30:26.883900+00:00",
+      "responsibility": "2026-10-20-z01-media-cost-rebind 84"
+    },
+    {
+      "deadline_utc": "2026-10-27T10:47:02.618740+00:00",
+      "responsibility": "2026-10-20-media-reference-proof 436"
+    },
+    {
+      "deadline_utc": "2026-10-27T13:29:38.223710+00:00",
+      "responsibility": "2026-10-20-z01-media-proof-acceptance 95"
+    },
+    {
+      "deadline_utc": "2026-10-27T16:31:53.365253+00:00",
+      "responsibility": "2026-10-20-ask-intent-repair 411"
+    },
+    {
+      "deadline_utc": "2026-10-28T15:29:54.370686+00:00",
+      "responsibility": "2026-10-20-ask-intent-canary 17"
+    },
+    {
+      "deadline_utc": "2026-10-28T17:42:41.712325+00:00",
+      "responsibility": "2026-10-21-week-one-observation 52"
+    },
+    {
+      "deadline_utc": "2026-10-28T18:47:42.597749+00:00",
+      "responsibility": "2026-10-21-ask-public-knowledge-repair 408"
+    },
+    {
+      "deadline_utc": "2026-11-23T19:54:55.509188+00:00",
+      "deadline_epoch": 1795463695.509188,
+      "responsibility": "2026-11-17-ask-public-knowledge-acceptance 15"
+    }
+  ],
+  "remaining_prior_duties": 14,
+  "remote_count_sync": "PENDING_ACTUAL_READBACK",
+  "original_registration_count": 15,
+  "original_anchor_ledger_entries_and_stop_unchanged": true,
+  "files_deleted": 0
+}

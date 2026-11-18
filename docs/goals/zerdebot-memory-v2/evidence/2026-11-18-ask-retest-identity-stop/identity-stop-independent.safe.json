@@ -1,0 +1,90 @@
+{
+  "status": "ALIGNED_ZERO_REGISTERED_CAPTURE_IDENTITY_STOP",
+  "reviewer": "ask_prepare_correctness",
+  "at": 1795019570.75101,
+  "runtime_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "scope": "Independent local safe-metadata and contract audit of this new T identity stop; not the frozen registered-original POST.",
+  "evidence_sha256": {
+    "onsite-window.safe.json": "884710146f9d3d5f6202e25ea6be4a510a5d766a7c4198ee0135d496d7f9e063",
+    "retention-anchor.safe.json": "7e9cc08a3889db81a1ca39582cc530cd640ce9b442bc5ffc096025b8213dd7b9",
+    "raw-retention.safe.json": "71bd7b1bb2dd8514e505cec0c7ca22a43f6dde94be35ecdf746a50af7c4e1575",
+    "retention-duty.safe.json": "18cfe1d42fe099e2541e9d744a42b576c626f59afc9032da81eeb79ade47939d",
+    "retention-registration.safe.json": "6ed1ab7017a7cb483da5e0a023a2c07b60f6cc5957e0bcbaf0aebcc961c00a61",
+    "automation-registration.safe.json": "4f824e645d48d4753dccd909655cee2f9a0e96c3b5535142a66b65a83c9cdf36",
+    "automation-readback.safe.json": "f029205d28becc66d6dcc80e4387724f774ce49ecaf2d5edc3b19d73cb1d7037",
+    "prior-duties.safe.json": "bf9b010ed155cf944a35e8877e512b6ad9728229b9bf8b37f1bcb86d77b2a2d9",
+    "entry-start.once.safe.json": "5d4af55a00eb06b657be240200241741a7f8cdbe7982d336e3c75acc8cabd641",
+    "entry-start.result.safe.json": "39a7d3fef9588038060a6821cba64b66c1e30206afc1e6155e96b3f366d05a6d",
+    "result.safe.json": "0c0a3f1d6495c8fd20c4af12184d76c93016612f093a337ec92c87e4d81b8508",
+    "onsite-release.safe.json": "abbdd8ea6700028a533fe40cd4dad76fa7a7201519271058de5dac0dfd0796d3",
+    "identity-stop.safe.json": "427644a14671b74b2c6fdd0752cfdcd3a7a733282600c418566c1b325fb12415",
+    "UI_STOP.safe.md": "dd26311a654d68d09dc5fe96028a4882c26ad2648107fa419373f2b490572714",
+    "collector.py": "72b1a4b223c243d01b28484d47d9c7d52100d203489664125b2c93b68a590ec1",
+    "verify_actual_canary.py": "58081b5952e0840dc3f7b45bc22715e045b519ea4c6efdde5c06bce68d92c15f",
+    "PLAN.md": "6acbec69ffdbf0e1e4ecf4c8274fa1e725b8e9c4f31d991d68635d1bb7f1bfff",
+    "POST_PLAN.md": "6778172c75266e87b6531764dc2324eeca2253080c0c685f6c7b96d2a0dad73e"
+  },
+  "independently_verified_local": {
+    "registered_runtime_originals": 0,
+    "raw_directory_empty": true,
+    "seven_allowed_UI_original_paths_absent": true,
+    "formal_entries": [
+      "start"
+    ],
+    "start_exit_code": 0,
+    "preflight_budget_send_permits_absent": true,
+    "frozen_POST_and_semantic_annotation_absent": true,
+    "UI_STOP_marker_present_and_frozen_collector_gate_blocks": true,
+    "original_anchor_epoch": 1795019130.874333,
+    "original_deadline_epoch": 1795623930.874333,
+    "registered_duties_before_stop": 15,
+    "original14_pairs_preserved": true,
+    "safe_registration_chain_hashes_match": true
+  },
+  "primary_UI_report": {
+    "origin": "Main agent CUA observation as recorded by main safe result; no independent native UI observation was made.",
+    "reported_account_display_mismatch": true,
+    "reported_target_chat_not_opened": true,
+    "reported_read_only_observation": true,
+    "reported_input_send_account_switch_AWS_model_calls": 0,
+    "exact_native_interval": "NOT_RECORDED; null retained without fabricated timing.",
+    "numeric_actor_identity_verified": false
+  },
+  "retention_closure": {
+    "local_zero_file_duty_closure_supported": true,
+    "recommended_status": "CLOSED_ZERO_REGISTERED_RUNTIME_RAW",
+    "scope": "Only this T controlled UI/API-original retention duty. No targets exist in its registered ledger or controlled raw/UI paths.",
+    "alternative_label": "CLOSED_NO_RUNTIME_RAW_CREATED is supportable only if explicitly qualified to this controlled local scope.",
+    "preserve_original_anchor_deadline_ledger_start_stop_files": true,
+    "delete_or_extend_any_file": false,
+    "remaining_original_duties_after_administrative_close": 14,
+    "administrative_remote_close_or_count_readback_performed_by_this_reviewer": false
+  },
+  "administrative_file_boundary": {
+    "name_seen_by_metadata_only": "automation-payload.private.json",
+    "content_opened_or_hashed": false,
+    "classified_by_scope": "Outside the fixed19 UI/API-original capture paths; content not independently inspected.",
+    "no_claim_that_directory_contains_no_private_named_files": true
+  },
+  "acceptance": "NOT_EXECUTED_THIS_WINDOW; all A/B/P not sent according to main report; no new semantic PASS and prior factuality FAIL unchanged.",
+  "limits": [
+    "Identity mismatch and zero external actions are primary-observer claims; local empty ledger and absence of formal stage records independently corroborate zero controlled capture, not every external side effect.",
+    "No assertion that tool conversations, administrative artifacts or all external locations never contained data.",
+    "Automation/issue registration evidence was checked locally; no fresh remote verification or administrative closure write performed.",
+    "Frozen verify_actual_canary.py requires a nonempty registered prefix and is inapplicable here; it was not run or edited, and no synthetic UI original or semantic annotation was created.",
+    "The used window and completed start may not be reused; future attempt needs a new reviewed preparation/window path."
+  ],
+  "audit_deadline_epoch": 1795022684.0,
+  "operations": {
+    "UI_calls": 0,
+    "AWS_calls": 0,
+    "model_calls": 0,
+    "external_calls": 0,
+    "private_original_content_reads": 0,
+    "private_file_hashes": 0,
+    "old_Q_or_J_reads": 0,
+    "formal_POST_executions": 0,
+    "original_file_edits_or_deletions": 0,
+    "exclusive_safe_report_writes": 1
+  }
+}
