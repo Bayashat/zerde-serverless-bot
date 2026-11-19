@@ -1,14 +1,23 @@
 {
   "issue": 305,
-  "status": "dev_deployed_user_acceptance_pending",
+  "status": "merged_production_deployed",
   "development": "deployed_source_verified",
-  "telegram_acceptance": "user_pending",
-  "production": "pending_user_dev_acceptance",
+  "telegram_acceptance": "user_confirmed_dev_2026-11-19",
+  "production": "deployed_source_verified",
   "source": "0aa67e318218cd163955bf349b51821bf708a08b",
   "pull_request": 306,
   "ci_run": 44501433224,
   "ci_checks": 2845,
-  "code_only_cloudformation": true,
   "release_operator_sha256": "55d9d1c5fce135a829183fc40f22f4b102bdae41f62a1d570b71d88f45d19b06",
-  "readback_operator_sha256": "7844b63b653da36009482f6a2b83c23444d267bf001f1328db59e803097ab26a"
+  "readback_operator_sha256": "7844b63b653da36009482f6a2b83c23444d267bf001f1328db59e803097ab26a",
+  "merge": "1d5e08972b3c983d5bc2bd5a797d6717e1f46278",
+  "production_release_method": "UpdateFunctionCode_with_RevisionId",
+  "production_cloudformation_template": "unchanged_prior_code_pointers_known_tracking_drift",
+  "production_evidence": "prod/deployment.safe.json",
+  "production_independent_evidence": "prod/independent.safe.json",
+  "production_operator_sha256": "0e55351b083f121599794852346d298a41cf2d90c027988d04a06b3fd4d2ffca",
+  "production_readback_sha256": "a0da60db90d18e29b406a744eb42ddbfccfeebf3e8314fcc40f49627418861fd",
+  "development_code_only_cloudformation": true,
+  "production_code_only_cloudformation": false,
+  "production_independent_verification": "PASS"
 }

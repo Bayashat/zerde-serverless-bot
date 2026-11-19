@@ -1,0 +1,7 @@
+{
+  "id": "arn:aws:cloudformation:eu-central-1:469511944682:changeSet/restore-wtf-prod-81a67405d77d/53df37cc-43b7-42b4-8097-3fbf9107aef4",
+  "candidate_template_sha256": "c793e0b83f7fb075824a53359ddd56dd9089f7d12d5e77978581a2860a9c0ec7",
+  "package_sha256": "487276781ddb4ada719bb6a6c5c46cd09f8e919fe0ec7866ccef279515658a63",
+  "status": "NOT_EXECUTED_REJECTED_SCOPE",
+  "reason": "IncludePropertyValues response includes IAM truncated signature and Quiz description changes; strict two-Code gate stopped."
+}

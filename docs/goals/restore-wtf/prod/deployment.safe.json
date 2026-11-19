@@ -1,0 +1,95 @@
+{
+  "checked_at": "2026-11-19T10:31:41.417393+00:00",
+  "source": "0aa67e318218cd163955bf349b51821bf708a08b",
+  "merge": "1d5e08972b3c983d5bc2bd5a797d6717e1f46278",
+  "package_sha256": "487276781ddb4ada719bb6a6c5c46cd09f8e919fe0ec7866ccef279515658a63",
+  "functions": {
+    "zerde-serverless-bot-dev": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_sha256": "034c15c36ebe6ce08a31769ef415addf33fde00c6e0e6d93a6ce8b30798b0d0d",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-memory-v2-worker-dev": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_sha256": "8e5a4c8d13f173ab7d171b7e2d10ee9d59543b8d2b173bea7f0e68d24544b97a",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-news-dev": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_sha256": "7de4ec2abe2a0ef8febf30d9a4bedbc375c191a607f4433a27a54f4b7c6a349a",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-quiz-dev": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_sha256": "4380d50e4b366ff15f76af7e6186e7f40ce959066782bc1ef949d45945f708c6",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-operations-dev": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_sha256": "16f603bb9b7598adc0acf40cd83a80c98d1aa21660262e640b9810a11d691a61",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-bot-prod": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_sha256": "60751f6fc0ef0a50f4e18ca4ba6253b1fc925ea7656b7457f1f75184c6538946",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "source_files_exact": 96
+    },
+    "zerde-serverless-memory-v2-worker-prod": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_sha256": "95875f0f0f43dd32f182f81b44b2d750c87c3c78416a12491ae8bed16b7c0c9f",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "source_files_exact": 96
+    },
+    "zerde-serverless-news-prod": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_sha256": "58222b1b534be59b9e44a53bef1fac5df02d547b71f96ab33e92145ea4839d78",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-quiz-prod": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_sha256": "6199f081f1eb0a29b8d3ad718283d91a821a27aacd5a3bfcfdf20dd70302575a",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    },
+    "zerde-serverless-operations-prod": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_sha256": "c145644100f75a3bf5e6b4284dfd17a426167c7a1def4d3d4cbc27e108b222f8",
+      "configuration_unchanged": true,
+      "state": "Active",
+      "update_status": "Successful",
+      "code_unchanged": true
+    }
+  },
+  "cloudformation_template_preserved": true,
+  "cloudformation_code_pointers": "prior artifact; runtime deployed via guarded UpdateFunctionCode",
+  "template_sha256": "35e077edb2de1069ebc7e8f6198ece588ff1f9b71e5f12cc51611358546f5254",
+  "stack_status": "UPDATE_COMPLETE",
+  "prod_bot_username": "@zerde_kz_bot",
+  "telegram_calls": 0,
+  "model_calls": 0
+}
