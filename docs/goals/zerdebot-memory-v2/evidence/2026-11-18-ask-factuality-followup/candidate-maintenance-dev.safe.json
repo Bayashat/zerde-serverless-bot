@@ -1,0 +1,85 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "environment": "dev",
+  "at": 1795042530.4780521,
+  "candidate_sha256": "91d14ca2097f8d2b23fc040794ebdf6f7093b0d8212d0f50633c17f01157dfba",
+  "candidate_zip_sha256": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+  "baseline_receipt_sha256": "807be096cfc51924e47de2a0b1c5507a54f8d97285d7adf43696b1deab48c5e9",
+  "files": {
+    "baseline-recovery-dev/receipt.safe.json": "807be096cfc51924e47de2a0b1c5507a54f8d97285d7adf43696b1deab48c5e9",
+    "baseline-recovery-dev/once.safe.json": "81b41df97805e983320233509276cc970296fc90e8f6957192c7d8341281b3f5",
+    "candidate-dev/receipt.safe.json": "91d14ca2097f8d2b23fc040794ebdf6f7093b0d8212d0f50633c17f01157dfba",
+    "candidate-dev/once.safe.json": "6b4ae4f00b02bbb9e4768f02929fe18cf16e1b75f585a656524ae5a49d85af1e",
+    "candidate-dev/arm.safe.json": "1fe76fefaed4f7eae3c69bea661b52d6bee6cc58dddc814bbf3d0bd212f55fc0",
+    "candidate-dev/payload.safe.json": "dee894ce34127e092781936d640dd3aa15c1fb0effa069cb1c29e1644d2e2be5",
+    "candidate-dev/requirements.safe.json": "dc9634267a35eab6b41bfda88e961f0f2313663f20361920a5414e078faeedf5",
+    "candidate-dev/assembly/safe.template.json": "9d90246e7e22d8116685ec63272a86b59285dae0d429b77aac5523976e63f141",
+    "release-recovery-tool-pre.safe.json": "c6554e61397ed2e724325b04b6782f1753d598538ff0b2a211e3bcfaa78b52a0",
+    "release-recovery-maintenance-pre.safe.json": "21e206bae1173ecb0f2b0f2ccce9c36f67dc1e574130d463c59d6123e85a8f9e"
+  },
+  "baseline_artifact_sha256": {
+    "bot": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+    "news": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+    "quiz": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+    "operations": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+    "memory-v2-worker": "e036010af142e57a98fbca18e05dee8c8df7cfbece67e06c96601068e94df066",
+    "shared-layer": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+  },
+  "dependency_lock_sha256": {
+    "pyproject.toml": "9f911a426a8c7e4c13e7f6d03706940647e4e3da4da4418d9e464f825be8f757",
+    "uv.lock": "814747f74b20c29effcd4fa77dbc67cf70f39ce0b143d03eedcb2c54b8442ddb",
+    "infra/requirements.txt": "b0ff773f2d1fbbee87cdc96182d76447753ab4c95d38a5df8ffdd8d0fd080a2c",
+    "src/bot/requirements.txt": "1a6da96e5d35b249617eac8b51ea58b51434c80f38613248f9f879c8449e1701",
+    "src/news/requirements.txt": "a9d5e88ddd7e8311a36b404046d0430e921b0a327f27d4b21bebfcd086ac828a",
+    "src/quiz/requirements.txt": "53423ee09618df56c5f7c98b9adfbb86be8c52dc0d27628e4bdb41966741b2ac",
+    "src/operations/requirements.txt": "8d991e47d63aa2c90828175962fc31b81631dc62138937ddb0d223dfc73a08e0"
+  },
+  "checks": {
+    "fresh_recovery_baseline15_and_candidate14_paired_successful_readonly_metadata": true,
+    "original_baseline_failure_ZIP_not_read_or_reused": true,
+    "actual_candidate_hash_size_codeSHA_and_immutable_keys": true,
+    "full_member_inventory_order_comment_metadata_preserved": true,
+    "exact_two_changed_members_zero_added": true,
+    "all_other_member_bytes_including_dependencies_identical": true,
+    "all_firstparty_python_matches_frozen_source_except_two_prior_baseline_owned_files": true,
+    "no_firstparty_bytecode_or_unexpected_modules": true,
+    "full_six_assembly_inventory_file_types_permissions_and_every_file_bytes": true,
+    "assembly_template_exact_synthetic_metadata": true,
+    "protected_baseline_build_snapshots_equal_and_CONTROL_floor_preserved": true,
+    "actual_five_ARM_receipt_and23_package_probe_hash_bound": true,
+    "requirements_check_actual_receipt_and_seven_lock_files_unchanged": true
+  },
+  "counts": {
+    "candidate_zip_members": 3249,
+    "firstparty_python_by_kind": {
+      "bot": 96,
+      "news": 13,
+      "quiz": 14,
+      "operations": 3,
+      "memory-v2-worker": 96,
+      "shared-layer": 8
+    },
+    "assembly_files_by_kind": {
+      "bot": 3249,
+      "news": 5036,
+      "quiz": 4653,
+      "operations": 2311,
+      "memory-v2-worker": 3249,
+      "shared-layer": 8
+    },
+    "assembly_files_verified": 18506,
+    "actual_ARM_handlers": 5,
+    "actual_package_probes": 23
+  },
+  "reviewer_external_calls": 0,
+  "reviewer_build_or_ARM_reruns": 0,
+  "old_private_raw_or_failed_baseline_ZIP_reads": 0,
+  "limits": [
+    "Candidate engineering audit only; upload/changeset/execute/post/stable and useful real Telegram acceptance remain separate.",
+    "ARM/probe checks are verification of actual persisted tool receipts and their package/assembly bindings; this reviewer did not rerun Docker.",
+    "Existing dependency bytes are unchanged and lock-derived exports passed; this does not reconstruct historical installed dependencies solely from current lock files.",
+    "Earlier baseline timeout cause remains UNKNOWN; original failure and once are preserved."
+  ]
+}

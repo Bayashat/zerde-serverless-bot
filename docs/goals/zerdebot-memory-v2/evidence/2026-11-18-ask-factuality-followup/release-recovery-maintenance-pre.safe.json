@@ -1,0 +1,59 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "at": 1795042217.432138,
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "files": {
+    "RELEASE_PLAN.md": "67770fc698416f0030c789a1756c8123349a026a484d3a93093fc6198bd86f26",
+    "build_safe.py": "ad35f4073cc597e52d6b868d6020fe2aa090fa4065551abcdc834654d16ec06d",
+    "package_probe.py": "a69bdc76a4aab6ccdcb7929c6ea56d1cd7231834d0dd223e1b9827621b0fc5f4",
+    "policy_protection.py": "f81aefd3cc2f2fa89fa1acffc1ee97b118291d944672668ba697b713f5528f01",
+    "release_safe.py": "2d8b93da09c8314f25ddc08569cc9ceb068e09008f7c8cf20cb44574237fc2e6",
+    "runtime-source-binding.safe.json": "644cc106d0f86c98851b22b2e5f44d7b022bf83d8f2ca7360d5c1087df1b5829",
+    "source-ci.safe.json": "0ba3f58f6d8de40dd2909c94ec10581b959921b1457fab55806ce5e26c09f866",
+    "source-maintenance-post.safe.json": "f14dcaa174ed9d283232bafdd6289439d87798d3867f6cb45cb05148a0701c76",
+    "source-post.safe.json": "63da87b6ae87cd094af52ed1dcfb56ecea365e2d784b562d2fb0c5a62ebf659a"
+  },
+  "prior_review_sha256": "462ad814da981131f604cb6d4f41ff39b9e3e06796f69a825159d88e33682227",
+  "original_failure_sha256": "74397b2dd23744b0e7325bcd2caa779c588aceb010431439c6b7828cf694ae89",
+  "scope": "Narrow recovery delta only: preserve failed baseline-dev and resolve all dev baseline producers/consumers to exclusive baseline-recovery-dev; prod remains baseline-prod.",
+  "checks": {
+    "prior_source_backups_match_original_review": true,
+    "unchanged_six_other_release_inputs": true,
+    "only_resolver_original_failure_gate_and_new_PRE_names_changed_in_tools": true,
+    "original_6_successful_read_intent_result_pairs_and10_GH_lines_verified": true,
+    "original_failure_no_attempted_confirmed_unknown_writes": true,
+    "new_stage_0700_exclusive_once_and_existing_global_batch_locks_unchanged": true,
+    "no_timeout_retry_budget_identity_config_policy_gate_relaxation": true,
+    "full_six_fresh_package_baseline_no_partial_artifact_reuse": true,
+    "downstream_build_and_all_release_comparison_paths_use_same_resolver": true,
+    "source_ci_source_posts_and_clean_worktree_unchanged": true,
+    "no_raw_or_new_retention_duty": true
+  },
+  "offline_controls": {
+    "actual_function_synthetic_cases_passed": 8,
+    "details": [
+      "new_pre_and_fixed_failure_positive: pass",
+      "old_failure_hash_drift: rejected",
+      "old_write_unknown: rejected",
+      "old_bool_zero_rejected: rejected",
+      "old_wrong_failure_class: rejected",
+      "new_pre_hash_drift: rejected",
+      "new_pre_incomplete_inventory: rejected",
+      "source_ci_wrong_source: rejected"
+    ],
+    "resolver_assertions_per_case": [
+      "dev -> baseline-recovery-dev",
+      "prod -> baseline-prod"
+    ],
+    "limitations": "Functions executed against synthetic in-memory read/hash/git adapters only; no formal main or real runtime clients."
+  },
+  "external_calls": 0,
+  "formal_entry_runs": 0,
+  "old_private_raw_or_zip_reads": 0,
+  "limits": [
+    "Original timeout cause remains UNKNOWN; a new successful baseline is not presumed.",
+    "Prior release PRE controls remain applicable only to byte-identical unaffected logic; this review covers the changed resolver and gates.",
+    "Aggregate recovery PRE is separate and was not granted by this report."
+  ]
+}

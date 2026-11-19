@@ -1,0 +1,53 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_generation_explorer",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at_utc": "2026-11-19T07:31:08.009507+00:00",
+  "plan_sha256": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+  "release_binding_sha256": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75",
+  "main_offline_validation_sha256": "516fcfab21875e03efadd5fd3a2d21efb7a27b6687c0ae18d7461feadbcf4902",
+  "main_offline_tests": 21,
+  "limitations": [
+    "Static and local offline correctness review; no new direct human window or现场 permission granted.",
+    "No start/preflight/budget/UI/send/independent-POST formal entry, AWS/API/UI/model call, runtime raw read/copy or historical ZIP read occurred.",
+    "Current E complete build ZIPs were read in place as source/dependency artifacts; this is distinct from runtime raw.",
+    "Main21-test suite evidence was read and hash-bound, not rerun by this reviewer.",
+    "Old N PARTIAL and every previous failed or closed entry remain unchanged; engineering and preparation success do not establish real answer usefulness."
+  ],
+  "phase": "INDEPENDENT_POST_TOOL_PRE_CORRECTNESS",
+  "files": {
+    "verify_actual_canary.py": "36f2f0165b51a9efa8d785cb37c65f43c4ff0706aacc4b7c529e271f054b5ba4",
+    "PLAN.md": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+    "POST_PLAN.md": "42414b006cb98d7567bd458d4ab1a3704e70517b027f7cde35b56c2dadb8124f",
+    "release-binding.safe.json": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75",
+    "config-contract.safe.json": "9defddcd188a46facff766273b38bc06a9ba9ff8479deb2a701a1c400449028e",
+    "historical-control.safe.json": "a242dbdd7b1fa8e9978c9b9dd8ddc6a0a79ee3e7d55442d0afe431c03da5be4a",
+    "prior-duties.safe.json": "3a9e012b7f6f3c9bcd71965da82c9a63edcb7fa2f93dfcaf5dd252209dbfaedd"
+  },
+  "independent_semantic_controls": {
+    "status": "PASS",
+    "count": 5,
+    "checks": [
+      "useful_honest_AB_and_personal_boundary_can_pass",
+      "unknown_A_not_erased_by_B",
+      "fabricated_search_fails",
+      "unreviewable_personal_fact_fails",
+      "unsupported_history_absence_fails"
+    ]
+  },
+  "checks": [
+    "Independent verifier imports neither collector nor AWS/UI client and reads only newU registered originals with fullhash/identity and exact capture prefix.",
+    "Actual native send/observation intervals, fresh budget bounds, all entry markers including orphan failures and released-window limits are checked without extending original POST time.",
+    "Mechanical ALIGNED, semantic outcome and full acceptance remain separate; incomplete A/B/P or uncertain original budget clock cannot become fullPASS.",
+    "Independent complete reply annotations bind exact after/reply hashes; public knowledge cannot supply personal history or justify unsupported history presence/absence.",
+    "Original15 duty pairs equal frozen prior file; new16 registration must precede every capture intent; no old private/raw execution dependency.",
+    "Current BOT_SHA equals actual E artifact and config/freshsecondread checks remain mandatory; no selector/SENTlease/exactlyonce/naturalproduction claim."
+  ],
+  "operations": {
+    "formal_post_runs": 0,
+    "runtime_raw_reads": 0,
+    "AWS": 0,
+    "UI": 0,
+    "model": 0
+  }
+}

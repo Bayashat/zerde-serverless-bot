@@ -1,0 +1,25 @@
+{
+  "status": "ALIGNED_TEXT_CORRECTION",
+  "at": "2026-11-18T22:58:08.091882+00:00",
+  "reviewer": "ask_prepare_correctness",
+  "corrects_report_sha256": "6ca198fa48d44541d705800a7aa6c01f37add50c9767c12c18fe450d2564ad35",
+  "candidate_sha256": "91d14ca2097f8d2b23fc040794ebdf6f7093b0d8212d0f50633c17f01157dfba",
+  "correction": "The report and parent notification said fourteen ZipInfo metadata fields. The actual independent audit and frozen build contract compare the twelve explicitly listed fields below. This is a counting-word typo, not a missing check or changed validation gate. Original report remains unchanged.",
+  "actual_metadata_field_count": 12,
+  "actual_metadata_fields": [
+    "filename",
+    "date_time",
+    "compress_type",
+    "comment",
+    "extra",
+    "create_system",
+    "create_version",
+    "extract_version",
+    "internal_attr",
+    "external_attr",
+    "flag_bits",
+    "volume"
+  ],
+  "unchanged_conclusion": "ALIGNED; actual source/member/order/comment/dependency/assembly and safe receipt checks passed. CRC/file/compressed sizes may necessarily differ for changed member bodies and are not part of the preserved metadata tuple.",
+  "additional_tests_or_cloud_calls": 0
+}

@@ -1,0 +1,231 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "final_sha256": "9929f7b7e3bd69a62a9542d190b38d59163808f3fc6780a35ae934776f98b0dd",
+  "reviewed_at": 1795073127.773365,
+  "scope": "Independent local final release evidence and24 complete successful POST ZIPs; no formal entry rerun or external call.",
+  "checks": [
+    "All53 final evidence hashes and1179 safe local audit input hashes match actual current files;10 release/continuation/aggregate PREs bind current frozen tool bytes.",
+    "Exact16 successful stage routes/status/source/once identities and paired journals validated;490 successful logical AWS calls include482 reads plus8 confirmed writes,zero unknown writes.",
+    "Source CI exact3SUCCESS bound to SOURCE; actual full2842 test receipt four code hashes match committed Git objects; source dual POST and both candidate reviews bind exact source/receipts.",
+    "All24 successful main/independent POST ZIPs freshly hashed locally,exact6 kinds perrole/env; all equal corresponding receipts and both Bot/Memory artifacts equal candidate across dev/prod.",
+    "All config/source/layer/alarms/newsquiz/table/IAM protected hashes compare to baseline; complete CONTROL epoch/start hash and completed-stage revision floors preserved.",
+    "Dev exact2 Lambda and prod exact2 Lambda plus unchanged semantic IAM policy resources; prepare/independent verify/execute changeset/resource projections match.",
+    "Both ARM5 and package23 actual receipt hashes match; independent review did not repeat their execution.",
+    "Failed old dev, two candidate and old prod POST segments preserved and separately counted using only safe journals. No failed ZIP accessed.",
+    "Main and independent stable configs agree and actual stable timestamps meet original execute plus300 seconds; these are point-in-time intervals only.",
+    "Original15 retention duties and N real acceptance PARTIAL remain; runtime engineering outcome does not establish useful A/B/P acceptance."
+  ],
+  "successful_stage_counts": {
+    "baseline-recovery-dev": {
+      "AWS": 15,
+      "GH_GET": 10,
+      "writes": 0
+    },
+    "candidate-dev": {
+      "AWS": 14,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "prepare-dev": {
+      "AWS": 23,
+      "GH_GET": 10,
+      "writes": 3
+    },
+    "verify-prepare-dev": {
+      "AWS": 17,
+      "GH_GET": 10,
+      "writes": 0
+    },
+    "execute-dev": {
+      "AWS": 22,
+      "GH_GET": 10,
+      "writes": 1
+    },
+    "post-main-dev": {
+      "AWS": 14,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "post-independent-dev": {
+      "AWS": 14,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "stable-dev": {
+      "AWS": 14,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "baseline-prod": {
+      "AWS": 43,
+      "GH_GET": 10,
+      "writes": 0
+    },
+    "candidate-prod-fresh": {
+      "AWS": 42,
+      "GH_GET": 10,
+      "writes": 0
+    },
+    "prepare-prod": {
+      "AWS": 51,
+      "GH_GET": 10,
+      "writes": 3
+    },
+    "verify-prepare-prod": {
+      "AWS": 45,
+      "GH_GET": 10,
+      "writes": 0
+    },
+    "execute-prod": {
+      "AWS": 50,
+      "GH_GET": 10,
+      "writes": 1
+    },
+    "post-main-prod-recovery": {
+      "AWS": 42,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "post-independent-prod": {
+      "AWS": 42,
+      "GH_GET": 0,
+      "writes": 0
+    },
+    "stable-prod": {
+      "AWS": 42,
+      "GH_GET": 0,
+      "writes": 0
+    }
+  },
+  "successful_totals": {
+    "AWS_calls": 490,
+    "AWS_reads": 482,
+    "confirmed_writes": 8,
+    "write_unknown": 0,
+    "GH_GET": 90
+  },
+  "preserved_failed_segments": {
+    "baseline-dev": {
+      "AWS_read_attempts": 6,
+      "service_responses": 6,
+      "failed_read_calls": 0,
+      "GH_GET": 10,
+      "failure_sha256": "74397b2dd23744b0e7325bcd2caa779c588aceb010431439c6b7828cf694ae89"
+    },
+    "candidate-prod": {
+      "AWS_read_attempts": 33,
+      "service_responses": 32,
+      "failed_read_calls": 1,
+      "GH_GET": 0,
+      "failure_sha256": "62acbdb84f286e0200aa68aabfd82e6c8193782f921f04455c8d1f5d460db494"
+    },
+    "candidate-prod-recovery": {
+      "AWS_read_attempts": 33,
+      "service_responses": 32,
+      "failed_read_calls": 1,
+      "GH_GET": 10,
+      "failure_sha256": "0cab85be85b31c22d906a4ee8d5642d0bda6696382dd87e2108150083e6c021e"
+    },
+    "post-main-prod": {
+      "AWS_read_attempts": 7,
+      "service_responses": 7,
+      "failed_read_calls": 0,
+      "GH_GET": 0,
+      "failure_sha256": "8c2a60fd23ed0a02ae9c5b83e5846e3f35041365aaa006298fe9aa8f70e83a5d"
+    }
+  },
+  "combined_release_accounting": {
+    "AWS_logical_attempts_including_preserved_failures": 569,
+    "AWS_success_responses": 567,
+    "AWS_failed_read_calls": 2,
+    "confirmed_cloud_writes": 8,
+    "GH_GET_including_preserved_segments": 110,
+    "excludes_separate_diagnostic_AWS_reads": 2,
+    "other_exclusions": "N12AWS+5UI,public metadata research,PR/CI reads,CI OIDC/CDK activity and ordinary service business; ZIP HTTP transfers are separate from AWS SDK logical calls."
+  },
+  "complete_POST_ZIP_sha256": {
+    "post-main-dev/bot.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-main-dev/memory-v2-worker.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-main-dev/news.zip": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+    "post-main-dev/operations.zip": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+    "post-main-dev/quiz.zip": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+    "post-main-dev/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-independent-dev/bot.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-independent-dev/memory-v2-worker.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-independent-dev/news.zip": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+    "post-independent-dev/operations.zip": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+    "post-independent-dev/quiz.zip": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+    "post-independent-dev/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-main-prod-recovery/bot.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-main-prod-recovery/memory-v2-worker.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-main-prod-recovery/news.zip": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+    "post-main-prod-recovery/operations.zip": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+    "post-main-prod-recovery/quiz.zip": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+    "post-main-prod-recovery/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f",
+    "post-independent-prod/bot.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-independent-prod/memory-v2-worker.zip": "fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d",
+    "post-independent-prod/news.zip": "6bf59f9e118c44cf76b003c155c2a72528450c15bd83e0befef4693a9eabad7c",
+    "post-independent-prod/operations.zip": "8ee19b2c8af59faa9d322d5aa6b7468e088bcf32313a44cf4fa901201130affa",
+    "post-independent-prod/quiz.zip": "c15b0449396bfd12f63ff181649b550695c2786c1eeea48b79d0672d290de889",
+    "post-independent-prod/shared-layer.zip": "f63a6074f28ce5a55cd5d68cc064744654ef8393df6c18372db3c45f67b6a58f"
+  },
+  "resource_changes": {
+    "dev": [
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "ZerdeServerlessBotZerdeServerlessBotLambdaA4D02A14",
+        "Replacement": "False",
+        "ResourceType": "AWS::Lambda::Function"
+      },
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "ZerdeServerlessMemoryWorker8330350C",
+        "Replacement": "False",
+        "ResourceType": "AWS::Lambda::Function"
+      }
+    ],
+    "prod": [
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "ZerdeServerlessBotZerdeServerlessBotLambdaA4D02A14",
+        "Replacement": "False",
+        "ResourceType": "AWS::Lambda::Function"
+      },
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "ZerdeServerlessBotZerdeServerlessBotLambdaServiceRoleDefaultPolicyDF029EC2",
+        "Replacement": "False",
+        "ResourceType": "AWS::IAM::Policy"
+      },
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "ZerdeServerlessMemoryWorker8330350C",
+        "Replacement": "False",
+        "ResourceType": "AWS::Lambda::Function"
+      }
+    ]
+  },
+  "stable_seconds": {
+    "dev": 357.5310559272766,
+    "prod": 28410.73693394661
+  },
+  "stable_evidence_meaning": "Elapsed wall-clock timestamp interval between recorded Execute completion and fresh stable observation; not continuous service health or continuous protection evidence. Clock/environment discontinuity cause not inferred.",
+  "blocking_findings": [],
+  "limitations": [
+    "Readbacks are sequential,not one globally atomic snapshot. Both failed candidate intermediate CONTROL revisions remain UNKNOWN_NOT_PROJECTED.",
+    "ConnectionClosedError/TimeoutException root cause and failed-call service reachability remain UNKNOWN; successful fresh transport does not prove the earlier cause.",
+    "This reviewer independently ran prior new verify-prepare and post-independent phases, but current final review makes0 external requests and reruns no stage or aggregate entry.",
+    "No model/UI/old private raw/failed ZIP read. Actual real N A was honest unknown but unhelpful,B remained incomplete,P not sent; new real acceptance still required.",
+    "Stable prod large elapsed interval must not be represented as continuous uptime/health."
+  ],
+  "operations_this_review": {
+    "external_calls": 0,
+    "formal_entry_reruns": 0,
+    "failed_ZIP_reads": 0,
+    "private_raw_reads": 0,
+    "successful_POST_complete_ZIPs_hashed": 24
+  },
+  "audit_harness_sha256": "24fb7bf790593f33330062a5992016819a20fa1dce747bb730338cee803321bf"
+}

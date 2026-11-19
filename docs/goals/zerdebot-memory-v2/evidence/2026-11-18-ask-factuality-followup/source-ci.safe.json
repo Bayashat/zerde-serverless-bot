@@ -1,0 +1,13 @@
+{
+  "status": "SUCCESS",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "run_id": 44362201261,
+  "jobs": {
+    "Code Quality Checks": "success",
+    "Development Bot Identity": "success",
+    "Infrastructure Changes Preview": "success"
+  },
+  "response_sha256": "8c424ca9cf546fc598c1b1331aa022a7e03d1f002ba0ec1e3a7ba30a7ad61fbb",
+  "read_at": 1795024615.0334258,
+  "watch_logical_GH_GET_calls": 4
+}

@@ -25,14 +25,14 @@
       "deployed_source": "5ce82d1bbe09176b8eeecaddbffa95b3afa6a4ef"
     },
     "status": "retired_source_and_stack_resources_verified_final_behavior_pending",
-    "status_as_of": "2026-11-18",
+    "status_as_of": "2026-11-19",
     "completed": "旧知识与自动社交算法已从两环境实际包移除；PR226专属资源与旧配置已退役，混合主队列旧schema拒绝协议保留。 PR248显式Gemini准入结果门禁已发布两环境并完成实际包/配置独审和17例本地禁网实包验证；此项不代替真实业务或完整费用验收。 PR251 development用户名配置已单次发布并通过两环境实际包/层/配置主独读回与300秒稳定；所有运行字节仍PR248。 PR251修复后的本批新mention与清晰原生Reply各一次，完整正确回答、SENT单回答/lease释放、两完整授权请求和独立读回有限通过。 PR257共享Gemini原writer写前坏值校验与有限确定冲突CAS已发布两环境，实际包/保护主独及28例本地禁网实包验证完成；非线上坏行或自然验收。 PR277 Groq 413持久未分类审核保护已发布两环境，实际包/配置主独与稳定核验完成；真实413与人工审核验收仍待。 PR280计费事件终止顺序修复已两环境发布并主独实包/稳定确认；费用恢复时点另记，不等于媒体验收。 PR284媒体引用摘要窄修已两环境部署并主独完整包/配置与300秒稳定确认；原T现场停止保持。 PR286普通ask意图提示修复已两环境发布并主独完整包/配置与稳定确认；实际模型语义另待有限dev验收。 PR291公共知识生成政策与空上下文修复两环境发布并独审；真实公共问答有用性仍待新现场。 PR302通用事实修复已两环境实际部署并主独完整包/配置/权限和稳定核验；有限公共来源与完整响应门不代替真实有用性验收。",
-    "remaining": "当前N复验A诚实未知但无用、B166.135秒未见完整回复、P未发，真实验收仍未通过；新E通用来源与只读恢复修复2842测试和代码双审通过，待源CI、dev/prod实际部署及新窗口复验。 以下旧阶段仅历史：Nov18新窗口在原生账户显示不符时停止，A/B/P均未发送。先确认正确客户端/Баяшат账户的Test bots群，另备新入口/双审与新直接窗口；原T/start/window冻结。通用事实修复已两环境部署并主独核验；下一新的直接15分钟窗口复验A/B/P，有限检索MISS诚实未知仍PARTIAL，旧真实FAIL保持。个人/混合历史证据边界仍需真实验证。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
+    "remaining": "当前E通用别名来源与只读恢复修复已两环境实际部署；新U离线准备完成，下一新直接人类15分钟窗口复验A/B/P。N诚实未知无用/B166.135秒观察内未见完整回复仍PARTIAL；下述旧阶段完整保留。 当前N复验A诚实未知但无用、B166.135秒未见完整回复、P未发，真实验收仍未通过；新E通用来源与只读恢复修复2842测试和代码双审通过，待源CI、dev/prod实际部署及新窗口复验。 以下旧阶段仅历史：Nov18新窗口在原生账户显示不符时停止，A/B/P均未发送。先确认正确客户端/Баяшат账户的Test bots群，另备新入口/双审与新直接窗口；原T/start/window冻结。通用事实修复已两环境部署并主独核验；下一新的直接15分钟窗口复验A/B/P，有限检索MISS诚实未知仍PARTIAL，旧真实FAIL保持。个人/混合历史证据边界仍需真实验证。A两图引用/静默有限证据已复核；原窗口结束无Q，fresh因SUBJECT revision差异INCOMPLETE。另新窄合同/独审/有效预算绑定及新直接人类窗口才继续；原生Reply父目标、两图完整Gemini链/43语义/单SENT/lease仍待，不能重跑旧once或回填旧评分。媒体/频道/自然质量及旧UNKNOWN开放。",
     "issue_state": "OPEN",
-    "runtime_baseline": "174a84998563e3e1bfeb3f9dc60370252b173503",
-    "deployed_build_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+    "runtime_baseline": "b9be5119118555aac897d14f8686be294646a6fa",
+    "deployed_build_source": "b9be5119118555aac897d14f8686be294646a6fa",
     "status_evidence": "evidence/2026-09-27-retirement/resource-release.safe.json",
-    "runtime_evidence": "evidence/2026-11-17-ask-factuality-repair/final.safe.json",
+    "runtime_evidence": "evidence/2026-11-18-ask-factuality-followup/final.safe.json",
     "explicit_quota_guard": {
       "status": "DEPLOYED_ACTUAL_PACKAGE_VERIFIED",
       "contract": "EXPLICIT_QUOTA_GUARD.md",
@@ -506,18 +506,34 @@
       "evidence": "evidence/2026-11-18-ask-retest-identity-stop/result.safe.json"
     },
     "ask_factuality_followup": {
-      "as_of": "2026-11-18",
-      "status": "LOCAL_TESTS_AND_REVIEWS_PASSED_RUNTIME_PENDING",
-      "real_retest": "PARTIAL_NOT_FULL_ACCEPTANCE",
-      "A": "PARTIAL_HONEST_UNKNOWN_NOT_USEFUL",
-      "B": "UNVERIFIED_OBSERVED_166_135_SECONDS",
-      "P": "NOT_SENT",
-      "messages_sent": 2,
-      "window_released": true,
+      "as_of": "2026-11-19",
+      "source": "b9be5119118555aac897d14f8686be294646a6fa",
+      "pr": 304,
+      "status": "RUNTIME_DEPLOYMENT_VERIFIED_REAL_ASK_PENDING",
+      "previous_stage": {
+        "as_of": "2026-11-18",
+        "status": "LOCAL_TESTS_AND_REVIEWS_PASSED_RUNTIME_PENDING",
+        "real_retest": "PARTIAL_NOT_FULL_ACCEPTANCE",
+        "A": "PARTIAL_HONEST_UNKNOWN_NOT_USEFUL",
+        "B": "UNVERIFIED_OBSERVED_166_135_SECONDS",
+        "P": "NOT_SENT",
+        "messages_sent": 2,
+        "window_released": true,
+        "full_tests_passed": 2842,
+        "runtime_still": "174a84998563e3e1bfeb3f9dc60370252b173503",
+        "new_deployment_verified": false,
+        "evidence": "ASK_FACTUALITY_FOLLOWUP_NOV18.md"
+      },
       "full_tests_passed": 2842,
-      "runtime_still": "174a84998563e3e1bfeb3f9dc60370252b173503",
-      "new_deployment_verified": false,
-      "evidence": "ASK_FACTUALITY_FOLLOWUP_NOV18.md"
+      "runtime_deployed_environments": [
+        "dev",
+        "prod"
+      ],
+      "new_deployment_verified": true,
+      "real_usefulness_pass": false,
+      "new_human_window_required": true,
+      "runtime_evidence": "evidence/2026-11-18-ask-factuality-followup/final.safe.json",
+      "retest_preparation": "evidence/2026-11-18-ask-factuality-followup/retest/preparation.safe.json"
     }
   },
   {
@@ -2217,6 +2233,12 @@
       "new_followup_diagnostic_persistent_raw": 0,
       "new_followup_deadlines": 0,
       "evidence": "evidence/2026-11-18-ask-factuality-retest-next/result.safe.json"
+    },
+    "ask_factuality_followup_copy_boundary": {
+      "retained_original_duties": 15,
+      "new_runtime_raw": 0,
+      "new_deadlines": 0,
+      "evidence": "evidence/2026-11-18-ask-factuality-followup/final.safe.json"
     }
   },
   {

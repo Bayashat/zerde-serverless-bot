@@ -1,0 +1,56 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "at": 1795044120.674496,
+  "files": {
+    "fresh_cf_transport.py": "66f3ed4a7973d24c35e39508f1a0d1a3e3318f5c3bd63a1b5487e1f99855864a",
+    "complete_candidate_prod_fresh.py": "ff38bc5af47543e1c16b67547db3b138d2e366d22fb3a7ed5aa6511de58889c0",
+    "release_prod_fresh.py": "099d261fe6ce173f704719a774229d61ea2b8342d75f74233638ab2f0aae5a8e",
+    "PROD_FRESH_PLAN.md": "9f57ba730c2dc4a5c8da6acbce1ac57c61f07a48e9a21fefe94d122a98fbfffa"
+  },
+  "prior_continuation_maintenance_sha256": "fc924ac7273f6c9ccab2443cecd4626b25e77abd618df2cf2a9f6a1a35079c4f",
+  "checks": {
+    "fresh_CF_pool_closed_removed_before_each_new_logical_call": true,
+    "other_service_clients_unchanged": true,
+    "original_Api_call_used_unmodified_exact_parameters_single_SDK_attempt": true,
+    "timeouts_call_deadline_limits_intent_result_unknown_write_gates_preserved": true,
+    "no_failed_call_automatic_retry_and_close_error_stops_before_new_intent": true,
+    "both_failed_segments_frozen_second33pairs_PIN_complete_copies_verified": true,
+    "new_candidate_prod_fresh_once_and_transport_hash_no_rebuild_or_ARM_replay": true,
+    "only_prod_six_stage_router_and_same_frozen_perform": true,
+    "original9_and3_plus_new4_dual_PRE_dependencies": true,
+    "full_fresh_prod_identity_policy_config_CONTROL_checks_unchanged": true,
+    "root_cause_and_two_intermediate_CONTROL_histories_unknown": true,
+    "fifteen_duties_no_runtime_raw_deadline_or_window_created": true
+  },
+  "offline_controls": {
+    "passed": 15,
+    "details": [
+      "actual_second_failed33_strict_journal_pins_and_complete_copies: pass",
+      "fresh_each_cf: pass",
+      "non_cf_reuse: pass",
+      "call_failure: pass",
+      "close_failure: pass",
+      "unlisted_gate: pass",
+      "expired_gate: pass",
+      "limit_gate: pass",
+      "write_once: pass",
+      "router_positive: pass",
+      "router_forbid_dev: rejected",
+      "router_exact4PRE: rejected",
+      "router_transport_hash_drift: rejected",
+      "router_candidate_hash_drift: rejected",
+      "router_candidate_PRE_receipt_mismatch: rejected"
+    ],
+    "method": "Actual FreshApi delegates into original Api.call with Fake SDK clients and temporary journals; actual verify_second reads permitted current E source artifacts/safe journals; router functions use in-memory fixtures. Network connect disabled."
+  },
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "build_ARM_or_probe_reruns": 0,
+  "runtime_raw_or_initial_failed_baseline_ZIP_reads": 0,
+  "limits": [
+    "Fresh connection pooling is a bounded mitigation hypothesis, not a confirmed diagnosis of either ConnectionClosedError.",
+    "A new complete protected snapshot, candidate independent reviews, exact changeset, execution, full POST and stability remain necessary.",
+    "Each logical CF write still has one attempt; automatic retry and unknown-write clearing are not authorized."
+  ]
+}

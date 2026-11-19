@@ -1,0 +1,71 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_generation_explorer",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at_utc": "2026-11-19T07:31:08.009507+00:00",
+  "plan_sha256": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+  "release_binding_sha256": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75",
+  "main_offline_validation_sha256": "516fcfab21875e03efadd5fd3a2d21efb7a27b6687c0ae18d7461feadbcf4902",
+  "main_offline_tests": 21,
+  "limitations": [
+    "Static and local offline correctness review; no new direct human window or现场 permission granted.",
+    "No start/preflight/budget/UI/send/independent-POST formal entry, AWS/API/UI/model call, runtime raw read/copy or historical ZIP read occurred.",
+    "Current E complete build ZIPs were read in place as source/dependency artifacts; this is distinct from runtime raw.",
+    "Main21-test suite evidence was read and hash-bound, not rerun by this reviewer.",
+    "Old N PARTIAL and every previous failed or closed entry remain unchanged; engineering and preparation success do not establish real answer usefulness."
+  ],
+  "phase": "TOOL_PRE_CORRECTNESS",
+  "tools": {
+    "collector.py": "4bb0798d2eb9514b186dd8324be1aaa61001c1b95e7ef635aa19c890da826c26",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b"
+  },
+  "independent_controls": {
+    "status": "PASS",
+    "count": 18,
+    "current_binding_positive": 1,
+    "release_chain_negative_cases": 12,
+    "semantic_controls": 5,
+    "checks": [
+      "actual_current_binding_24_ZIPs_105_owner_files",
+      "stale_independent_final_sha",
+      "stale_maintenance_final_sha",
+      "stage_receipt_not_in_reviewed_final",
+      "final_prod_artifact_splice",
+      "binding_prod_artifact_splice",
+      "missing_final_review_proof",
+      "frozen_failed_prod_POST_path",
+      "prod_independent_POST_wrong_source",
+      "prod_independent_POST_wrong_environment",
+      "prod_independent_artifacts_disagree",
+      "stable_less_than300",
+      "stale_current_config_source",
+      "useful_honest_AB_and_personal_boundary_can_pass",
+      "unknown_A_not_erased_by_B",
+      "fabricated_search_fails",
+      "unreviewable_personal_fact_fails",
+      "unsupported_history_absence_fails"
+    ],
+    "method": "Called only local validate_release_evidence and semantics helpers; negative variants used in-memory mock JSON projections without changing files. Network socket constructors were blocked. No formal main or once entry called.",
+    "actual_current_ZIP_paths_verified": 24,
+    "actual_owner_files_verified": 105
+  },
+  "checks": [
+    "Final hash reviews and every source/stage receipt link to final.evidence; both environment artifact sets agree with final and both complete post roles.",
+    "Only post-main-prod-recovery serves prod main receipt and six ZIPs; old failed partial package path is excluded.",
+    "Full24 artifact hashes and105 current-source members verified; actual new Bot/Memory hash/config/currentSOURCE and original CONTROL epoch/start plus nondecreasing floor remain mandatory.",
+    "Strict CLI and JSON validation precede once consumption; failed/orphan/nonzero entries prevent later main entries; source write owner does not operate Telegram.",
+    "Identity/nofollow/nlink/hash/time inventory and registered-before-capture rules retain all15 prior duties, with strictly bounded19 actual originals and12 logical API attempts.",
+    "Seven budget reads are existing check_available→_aws_permit→snapshot logic and point-in-time availability, not fabricated permission or ongoing durable authorization."
+  ],
+  "operations": {
+    "formal_entries": 0,
+    "AWS": 0,
+    "UI": 0,
+    "model": 0,
+    "runtime_raw_reads": 0,
+    "historical_ZIP_reads": 0,
+    "current_build_ZIP_paths_read": 24,
+    "repository_edits": 0
+  }
+}

@@ -1,3 +1,19 @@
+## Nov18 后续修复：通用别名来源与只读恢复已实际部署，等待新的现场复验
+
+SOURCE b9be511 已实际部署 dev/prod。公共来源使用来源明确的别名映射并拒绝已见身份冲突，仍最多两次 HTTP；getMe/getChatMember 冻结只读请求，在20秒总限内最多两次，sendMessage 每次调用仍单次。没有产品硬编码，个人证据、模型/预算、投递门与生产权限不变。最终2842项全量测试、源CI三job、每环境5个ARM handler及23项禁网包内检查通过；两环境主独各完整6ZIP及配置/CONTROL、间隔至少300秒的稳定核验通过。
+
+N此前真实复验仍为PARTIAL：A诚实未知但无用，B实际166.135秒观察内未见完整回复，P未发；窗口已释放，不推断之后无回复。新U复验工具及独立POST双PRE、离线验证完成，尚无新窗口/anchor/raw。下一必须新的直接人类15分钟窗口执行A/B/P，工程发布不能替代真实有用性。原15副本责任、20任务14OPEN6CLOSED＋EpicOPEN、四群RELEASED_OBSERVING及其他业务/自然/费用UNKNOWN保持。
+
+完整Bot/Memory ZIP `fa00a9786b8e7124d15b392b9112a3a146be6bedb18e4480327bd42dc9021b7d`；Execute完成至stable观测的记录时点间隔：dev 357.531秒，prod 28410.737秒。该间隔不是连续服务健康证明，时间或环境跳变原因不推断。实际资源数量dev 2 /prod 3；prod第三个资源是IAM Policy，前后完整权限语义核验相等、权限增量0；出现该变更的具体原因仍UNKNOWN。
+
+成功发布阶段AWS 490逻辑调用，8确认写=4Put+2Create+2Execute，未知写0，发布source guard GH GET 90。先前失败基线6AWS只读/10GH、prod两失败段各33只读尝试（各32服务响应/1失败）、第二段10GH GET、失败prod主POST7AWS只读另计，有限诊断2AWS只读另计，公共来源本地证明/PR及CI读取/CI已有OIDC和正常业务另计。0操作器UI/model/持久runtime raw/新期限/自然增量。
+
+原baseline-dev下载News时TimeoutException，0云写；原once/失败/完整Bot与部分News保全，原因UNKNOWN。唯一新baseline-recovery-dev重新完整fresh闭合，未放宽超时或重试门。prod原候选及首次保护续接均在第33只读CF调用ConnectionClosedError，各32成功服务响应/1失败；两段中间CONTROL revision未投影的UNKNOWN保留。独立受审新入口按每个CF逻辑调用建立新连接，仍单次无重试，fresh全保护闭合后发布，未重建ZIP或重跑ARM，具体连接故障原因仍UNKNOWN。prod首次主POST又在Operations下载中TimeoutException，7个只读元数据响应且0写；新post-main-prod-recovery重新全量fresh六包，不复用旧部分ZIP，不重Execute。dev候选正确性旧报告metadata数量写14，原实际META为12，独立更正sidecar保留而不改原报告。工具草稿、合成夹具错误及旧T/N结果均保留，不称首次无问题。顺序读回非全局事务，B根因仍UNKNOWN。
+
+新U入口 `/Users/bayashat/.local/share/zerde-memory-v2-acceptance/2026-11-18-ask-factuality-followup-retest`。离线工具准备不是现场许可；没有新窗口/采集期限，首次新采集前必须登记当时实际第16责任（如旧15未变）。[最终运行回执](evidence/2026-11-18-ask-factuality-followup/final.safe.json) SHA `9929f7b7e3bd69a62a9542d190b38d59163808f3fc6780a35ae934776f98b0dd`；[准备回执](evidence/2026-11-18-ask-factuality-followup/retest/preparation.safe.json)；[唯一TODO](TASKS.md)。
+
+以下完整此前阶段保留。
+
 # Nov18 普通 /ask 复验与通用修复
 
 ## 实际复验

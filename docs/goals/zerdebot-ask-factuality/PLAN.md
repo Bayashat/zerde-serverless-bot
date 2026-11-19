@@ -1,3 +1,11 @@
+# 当前结果（Nov19本地日期）
+
+SOURCE b9be511 已实际部署 dev/prod。公共来源使用来源明确的别名映射并拒绝已见身份冲突，仍最多两次 HTTP；getMe/getChatMember 冻结只读请求，在20秒总限内最多两次，sendMessage 每次调用仍单次。没有产品硬编码，个人证据、模型/预算、投递门与生产权限不变。最终2842项全量测试、源CI三job、每环境5个ARM handler及23项禁网包内检查通过；两环境主独各完整6ZIP及配置/CONTROL、间隔至少300秒的稳定核验通过。
+
+N此前真实复验仍为PARTIAL：A诚实未知但无用，B实际166.135秒观察内未见完整回复，P未发；窗口已释放，不推断之后无回复。新U复验工具及独立POST双PRE、离线验证完成，尚无新窗口/anchor/raw。下一必须新的直接人类15分钟窗口执行A/B/P，工程发布不能替代真实有用性。原15副本责任、20任务14OPEN6CLOSED＋EpicOPEN、四群RELEASED_OBSERVING及其他业务/自然/费用UNKNOWN保持。 [发布证据](../zerdebot-memory-v2/ASK_FACTUALITY_FOLLOWUP_NOV18.md)。
+
+以下阶段完整保留。
+
 # 当前结果（Nov17）
 
 普通实体问答已加入有限公共来源核对、无匹配时诚实未知、主/备用模型完整响应检查及无Reply资格传递；没有产品专用答案。SOURCE174a849已实际部署dev/prod，两环境主独各完整6ZIP、配置/CONTROL/原保护及至少300秒稳定通过。prod额外IAM Policy更新经新双审续接确认完整14条权限严格不变；旧STOP、解析错误和UNKNOWN保留。全量2797项测试通过（等价lint后151项定向及最终源码CI三job通过）；实际每环境5ARM handler及16项禁网包内检查通过。

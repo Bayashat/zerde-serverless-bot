@@ -1,0 +1,62 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "at": 1795043566.2312052,
+  "files": {
+    "complete_candidate_prod.py": "5df543e8f8da399a3d58972cd49f838e91c848af5a829b4b4966f43d051d1fcb",
+    "release_prod_continuation.py": "046486b46dc26817df6ae6d828c48422bbefcf68e504731301a85d44af4ed5f0",
+    "PROD_CONTINUATION_PLAN.md": "550a48508c6f9d45ad15a33a3c411c90a66053ce57f6ad3a12109fcf22472637"
+  },
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "frozen_dependencies": {
+    "release_safe.py": "2d8b93da09c8314f25ddc08569cc9ceb068e09008f7c8cf20cb44574237fc2e6",
+    "build_safe.py": "ad35f4073cc597e52d6b868d6020fe2aa090fa4065551abcdc834654d16ec06d",
+    "release-recovery-maintenance-pre.safe.json": "21e206bae1173ecb0f2b0f2ccce9c36f67dc1e574130d463c59d6123e85a8f9e"
+  },
+  "checks": {
+    "six_original_pins_match_actual_once_failure_zip_offline_receipts": true,
+    "original_33_strict_pairs_32_success_one_failed_readonly": true,
+    "complete_actual_prod_source_zip_member_order_metadata_delta2_no_added": true,
+    "all_six_baseline_source_and_every_original_assembly_member_bytes_reverified": true,
+    "actual_ARM5_probe23_requirements_success_bound_without_rerun": true,
+    "copy_only_complete_pinned_zip_and_three_safe_outputs_no_rebuild": true,
+    "fresh_source_guard_full_prod_collect_original_compare_no_timeout_retry_relaxation": true,
+    "prod_adapter_only_six_new_stages_original_perform_unmodified": true,
+    "frozen_nine_file_gate_and_new_three_file_dual_PRE": true,
+    "new_candidate_receipt_and_both_independent_candidate_reviews_required": true,
+    "global_batch_locks_exclusive_new_once_original_and_adapter_hashes": true,
+    "original_33_attempts_separate_and_unknown_intermediate_CONTROL_not_fabricated": true,
+    "new_full_control_floor_continues_through_prepare_and_all_post": true,
+    "same_unknown_write_and_error_preservation": true,
+    "fifteen_original_duties_no_new_raw_or_deadline": true
+  },
+  "offline_controls": {
+    "adapter_gate_cases_passed": 12,
+    "details": [
+      "frozen_gates_and_recovery_candidate_positive: pass",
+      "frozen_release_drift: rejected",
+      "frozen_build_drift: rejected",
+      "dev_not_stable: rejected",
+      "three_file_PRE_inventory: rejected",
+      "three_file_PRE_hash: rejected",
+      "dev_candidate_forbidden: rejected",
+      "wrong_candidate_source: rejected",
+      "wrong_candidate_environment: rejected",
+      "candidate_zip_drift: rejected",
+      "independent_candidate_STOP: rejected",
+      "maintenance_candidate_wrong_receipt: rejected"
+    ],
+    "actual_existing_artifact_prefix_passed": true,
+    "actual_firstparty_bot_python_count": 96,
+    "method": "Actual complete function prefix ended before copy/API; actual gates/candidate functions used synthetic in-memory adapters; network connect disabled."
+  },
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "build_ARM_or_probe_reruns": 0,
+  "runtime_raw_or_initial_failed_baseline_ZIP_reads": 0,
+  "limits": [
+    "New candidate continuation fresh protection collect remains required; earlier 33rd call did not complete.",
+    "Original interrupted intermediate CONTROL projection was not persisted, so its revision continuity is UNKNOWN; no reconstruction from hashes.",
+    "Actual successful prod candidate package PRE and all prod runtime stages remain separate gates."
+  ]
+}

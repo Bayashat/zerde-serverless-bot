@@ -1,0 +1,50 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at": 1795044118.972206,
+  "files": {
+    "release_prod_fresh.py": "099d261fe6ce173f704719a774229d61ea2b8342d75f74233638ab2f0aae5a8e",
+    "PROD_FRESH_PLAN.md": "9f57ba730c2dc4a5c8da6acbce1ac57c61f07a48e9a21fefe94d122a98fbfffa",
+    "fresh_cf_transport.py": "66f3ed4a7973d24c35e39508f1a0d1a3e3318f5c3bd63a1b5487e1f99855864a",
+    "complete_candidate_prod_fresh.py": "ff38bc5af47543e1c16b67547db3b138d2e366d22fb3a7ed5aa6511de58889c0"
+  },
+  "checks": [
+    "Four-file exact dual PRE extends frozen original nine-file and three-file gates; old tools/once/failures unchanged.",
+    "FreshApi closes/removes only a preceding CloudFormation client and delegates once to original Api.call; original parameter allowlist, per-call SDK attempts1/connect5/read20, stage deadline/call cap, numbered intent/result, write acknowledgement/unknown handling retained. Other service clients unchanged.",
+    "Second failure original pinned once/failure/GH journal and complete source artifacts verified locally; exact33 paired readonly intents/results,32 HTTP200 retry0 responses plus one ConnectionClosedError failed read,zero writes.",
+    "New candidate-prod-fresh delegates original finish: preserves complete source/archive/assembly/ARM5/probe23 checks and fresh source_guard/full protection; no build or ARM replay.",
+    "Prod-only fresh router requires new exact candidate dual review and original perform, exclusive stage once binds frozen release/router/transport; shared and batch locks retained.",
+    "Both failed intermediate CONTROL revision histories remain UNKNOWN; baseline identity/epoch/start and completed snapshot floors remain enforced."
+  ],
+  "offline_controls": {
+    "passed": 32,
+    "harness_sha256": "0e95f4c11d945c9f93ebfc280295754590c64706f55d07da33ad1026f21b02fc",
+    "coverage": [
+      "Fresh CF creation/close per logical call and unchanged non-CF reuse",
+      "Original deadline/call cap/parameters/counters and no retry after failure",
+      "Close failure stops before new request",
+      "Actual second pinned safe journal and authorized complete source artifact validation",
+      "12 malformed second-segment pairing/type/inventory/status/write/tool controls",
+      "Exact dual PRE/transport drift/missing PRE/new route/no old fallback",
+      "Prod once binds3 hashes and invokes unchanged perform with FreshApi; duplicate stage stops",
+      "Both executable entry points reject optimized mode"
+    ],
+    "real_external_calls": 0,
+    "formal_E_entry_runs": 0,
+    "fixture_limit": "Known pins substituted only on TEMP malformed copies to reach deeper schema checks. Actual second-segment pinned data also verified without substitution."
+  },
+  "evidence_sha256": {
+    "prod-continuation-tool-pre.safe.json": "c5bae50a0941c49c3ebd2745d4760bfdd77838479960028b7c9dc7f253e4f22c",
+    "prod-continuation-maintenance-pre.safe.json": "fc924ac7273f6c9ccab2443cecd4626b25e77abd618df2cf2a9f6a1a35079c4f",
+    "candidate-prod-recovery/once.safe.json": "1aaa2a7fb77c4fc68d7a1fe0929b3fa20b6cd573af890d92ef6eb86ed7c2357e",
+    "candidate-prod-recovery/failure.safe.json": "0cab85be85b31c22d906a4ee8d5642d0bda6696382dd87e2108150083e6c021e",
+    "candidate-prod-recovery/github.safe.jsonl": "1c698d9d8276283ac4895e47adc8fc7f10c0ee3ea8b6bb13228a376aafd84d31"
+  },
+  "limitations": [
+    "Connection-pool reuse is a hypothesis; root cause and failed-call service reachability remain UNKNOWN. No claim this transport change resolves the actual failure.",
+    "This PRE authorizes only the reviewed contract; fresh runtime candidate, independent stage readbacks and stable proof are still required.",
+    "Logical operator calls are not a claim about network wire attempts. No Telegram/model/old private raw reads or cloud calls occurred in this review.",
+    "Original15 retention duties and real A/B/P quality limitations remain unchanged; aggregation is separately reviewed."
+  ]
+}

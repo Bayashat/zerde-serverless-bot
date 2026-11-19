@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "test_bad_start_and_UI_JSON_never_enter_or_create_markers (__main__.EntryControls.test_bad_start_and_UI_JSON_never_enter_or_create_markers) ... ok\ntest_closed_success_allows_next_but_prior_nonzero_result_does_not (__main__.EntryControls.test_closed_success_allows_next_but_prior_nonzero_result_does_not) ... ok\ntest_invalid_CLI_does_not_consume_any_entry (__main__.EntryControls.test_invalid_CLI_does_not_consume_any_entry) ... ok\ntest_nonzero_result_preserves_failure_and_blocks_next_operation (__main__.EntryControls.test_nonzero_result_preserves_failure_and_blocks_next_operation) ... ok\ntest_orphan_once_blocks_before_new_once (__main__.EntryControls.test_orphan_once_blocks_before_new_once) ... ok\ntest_POST_conservative_start_cutoff_prevents_any_original_read (__main__.PostTimeControls.test_POST_conservative_start_cutoff_prevents_any_original_read) ... ok\ntest_orphan_failed_entry_is_included_even_without_an_original (__main__.PostTimeControls.test_orphan_failed_entry_is_included_even_without_an_original) ... ok\ntest_review_and_release_cannot_precede_last_native_finish (__main__.PostTimeControls.test_review_and_release_cannot_precede_last_native_finish) ... ok\ntest_control_preserves_historical_epoch_and_start_with_revision_advancement (__main__.Preparation.test_control_preserves_historical_epoch_and_start_with_revision_advancement) ... ok\ntest_legal_current_binding_and_105_source_files (__main__.Preparation.test_legal_current_binding_and_105_source_files) ... ok\ntest_new_deadline_uses_only_real_Q_anchor_without_extending_old_J (__main__.Preparation.test_new_deadline_uses_only_real_Q_anchor_without_extending_old_J) ... ok\ntest_post_rejects_malformed_or_nonfinite_json (__main__.Preparation.test_post_rejects_malformed_or_nonfinite_json) ... ok\ntest_post_semantics_B_cannot_erase_safe_partial_A (__main__.Preparation.test_post_semantics_B_cannot_erase_safe_partial_A) ... ok\ntest_safe_symlink_rejected (__main__.Preparation.test_safe_symlink_rejected) ... ok\ntest_static_config_rejects_code_layer_environment_and_account_drift (__main__.Preparation.test_static_config_rejects_code_layer_environment_and_account_drift) ... ok\ntest_unlisted_historical_file_not_opened (__main__.Preparation.test_unlisted_historical_file_not_opened) ... ok\ntest_window_requires_explicit_current_human_and_finite_bounds (__main__.Preparation.test_window_requires_explicit_current_human_and_finite_bounds) ... ok\ntest_after_allows_180_seconds_but_rejects_later_or_expired_dispatch (__main__.UITimeControls.test_after_allows_180_seconds_but_rejects_later_or_expired_dispatch) ... ok\ntest_expired_send_bounds_and_stale_budget_never_write_permit (__main__.UITimeControls.test_expired_send_bounds_and_stale_budget_never_write_permit) ... ok\ntest_final_write_rechecks_native_start_not_only_native_end (__main__.UITimeControls.test_final_write_rechecks_native_start_not_only_native_end) ... ok\ntest_send_permit_uses_earliest_of_all_four_bounds (__main__.UITimeControls.test_send_permit_uses_earliest_of_all_four_bounds) ... ok\n\n----------------------------------------------------------------------\nRan 21 tests in 0.775s\n\nOK\n",
+  "started_at": 1795073296.751314,
+  "finished_at": 1795073297.7511418,
+  "files_before": {
+    "test_preparation.py": "61ba0765876bcc8dc77272e1fe683628bd998858a95e21b6c09c7d7276b779e5",
+    "collector.py": "4bb0798d2eb9514b186dd8324be1aaa61001c1b95e7ef635aa19c890da826c26",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b",
+    "verify_actual_canary.py": "36f2f0165b51a9efa8d785cb37c65f43c4ff0706aacc4b7c529e271f054b5ba4",
+    "PLAN.md": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+    "POST_PLAN.md": "42414b006cb98d7567bd458d4ab1a3704e70517b027f7cde35b56c2dadb8124f",
+    "release-binding.safe.json": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75"
+  },
+  "files_after": {
+    "test_preparation.py": "61ba0765876bcc8dc77272e1fe683628bd998858a95e21b6c09c7d7276b779e5",
+    "collector.py": "4bb0798d2eb9514b186dd8324be1aaa61001c1b95e7ef635aa19c890da826c26",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b",
+    "verify_actual_canary.py": "36f2f0165b51a9efa8d785cb37c65f43c4ff0706aacc4b7c529e271f054b5ba4",
+    "PLAN.md": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+    "POST_PLAN.md": "42414b006cb98d7567bd458d4ab1a3704e70517b027f7cde35b56c2dadb8124f",
+    "release-binding.safe.json": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75"
+  },
+  "scope": "offline synthetic controls; no cloud/UI/model/raw"
+}
