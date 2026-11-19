@@ -37,6 +37,7 @@ from services.explicit_context import (
     format_public_source,
     normalise_chat_style_profile,
     public_source_attribution,
+    wtf_reply_instructions,
 )
 from services.memory_safety import (
     looks_like_future_answer_directive,
@@ -880,10 +881,13 @@ def answer_group_question(
     media_context: str = "",
     media_metadata: dict[str, Any] | None = None,
     raise_on_unavailable: bool = False,
+    answer_style: str | None = None,
 ) -> bool:
     """Generate and send a group-context reply for an explicit question."""
     from services.memory_v2.explicit_delivery import ExplicitDelivery
 
+    if answer_style not in (None, "wtf"):
+        raise ValueError("Unsupported explicit answer style")
     before_attempt = bot.check if isinstance(bot, ExplicitDelivery) else None
     current_user_message = user_text if current_user_message is None else current_user_message
     guarded_answer = _guardrail_reply(user_text, lang)
@@ -893,14 +897,16 @@ def answer_group_question(
         return True
 
     style_profile = normalise_chat_style_profile(None)
-    reply_policy = _reply_policy(
-        user_text,
-        style_profile=style_profile,
+    reply_policy = (
+        ReplyPolicy(instructions=wtf_reply_instructions(lang), max_output_tokens=600, max_chars=1800)
+        if answer_style == "wtf"
+        else _reply_policy(user_text, style_profile=style_profile)
     )
 
     source = None
     if (
-        public_lookup_allowed is True
+        answer_style is None
+        and public_lookup_allowed is True
         and not source_message_context
         and parent_bot_message_id is None
         and not media_parts

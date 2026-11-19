@@ -22,6 +22,7 @@ from services.handlers.commands import (
     handle_start,
     handle_stats,
     handle_support,
+    handle_wtf,
     process_group_ask_task,
 )
 from services.handlers.quiz import handle_poll_answer, handle_quizstats
@@ -67,6 +68,7 @@ def register_handlers(dp: Dispatcher) -> None:
     dp.command("memory")(handle_memory)
     dp.command("agent")(handle_agent)
     dp.command("ask")(handle_ask)
+    dp.command("wtf")(handle_wtf)
     dp.command("voteban")(handle_voteban_command)
     dp.on_poll_answer(handle_poll_answer)
     dp.command("quizstats")(handle_quizstats)

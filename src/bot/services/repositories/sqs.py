@@ -101,10 +101,13 @@ class SQSClient:
         source_message_context: str | None = None,
         parent_bot_message_id: int | str | None = None,
         public_lookup_allowed: bool = False,
+        answer_style: str | None = None,
         media_ref: dict[str, object] | None = None,
         media_refs: list[dict[str, object]] | None = None,
     ) -> None:
         """Enqueue an explicit agent request for async group-agent answering."""
+        if answer_style not in (None, "wtf"):
+            raise ValueError("Unsupported explicit answer style")
         payload: dict[str, object] = {
             "task_type": "PROCESS_GROUP_ASK",
             "context_version": EXPLICIT_CONTEXT_VERSION,
@@ -133,6 +136,8 @@ class SQSClient:
             payload["source_message_context"] = source_message_context
         if public_lookup_allowed is True:
             payload["public_lookup_allowed"] = True
+        if answer_style is not None:
+            payload["answer_style"] = answer_style
         if parent_bot_message_id is not None:
             payload["parent_bot_message_id"] = parent_bot_message_id
         if media_refs:

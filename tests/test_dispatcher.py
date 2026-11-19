@@ -36,7 +36,7 @@ def test_command_routing(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_rep
 
 
 def test_registered_public_command_surface(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo):
-    """Agentic command surface should expose consolidated commands only."""
+    """Expose current explicit commands including the restored sarcastic explainer."""
     dp = Dispatcher(mock_bot, mock_stats_repo, mock_sqs_repo, mock_vote_repo)
 
     register_handlers(dp)
@@ -45,7 +45,7 @@ def test_registered_public_command_surface(mock_bot, mock_stats_repo, mock_sqs_r
     assert "/agent" in dp.command_handlers
     assert "/ask" in dp.command_handlers
     assert "/contest" not in dp.command_handlers
-    assert "/wtf" not in dp.command_handlers
+    assert "/wtf" in dp.command_handlers
     assert "/explain" not in dp.command_handlers
     assert "/memory_on" not in dp.command_handlers
     assert "/agent_on" not in dp.command_handlers

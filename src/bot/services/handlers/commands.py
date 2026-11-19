@@ -214,6 +214,15 @@ def handle_agent(ctx: Context) -> None:
 
 
 def handle_ask(ctx: Context) -> None:
+    _handle_explicit_ask(ctx)
+
+
+def handle_wtf(ctx: Context) -> None:
+    """Restore the historical sarcastic explainer through current explicit delivery."""
+    _handle_explicit_ask(ctx, answer_style="wtf")
+
+
+def _handle_explicit_ask(ctx: Context, *, answer_style: str | None = None) -> None:
     if not _require_memory_repo(ctx):
         return
     if not ctx.sqs_repo:
@@ -252,7 +261,7 @@ def handle_ask(ctx: Context) -> None:
         ctx.reply(get_translated_text("ask_media_unsupported", ctx.lang_code), ctx.message_id)
         return
     effective_question = question or (default_question_for_media_refs(media_refs) if media_refs else "")
-    if not media_refs and effective_question:
+    if answer_style is None and not media_refs and effective_question:
         from services.memory_v2.public_answers import try_memory_answer
 
         if try_memory_answer(ctx.message, question=effective_question, lang=ctx.lang_code):
@@ -266,7 +275,9 @@ def handle_ask(ctx: Context) -> None:
         current_text=effective_question,
     )
     if not question_context.user_text:
-        ctx.reply(get_translated_text("ask_usage", ctx.lang_code), ctx.message_id)
+        ctx.reply(
+            get_translated_text("wtf_usage" if answer_style == "wtf" else "ask_usage", ctx.lang_code), ctx.message_id
+        )
         return
     retrieval_query = question_context.retrieval_query
     if media_refs:
@@ -293,8 +304,9 @@ def handle_ask(ctx: Context) -> None:
             current_user_message=question_context.current_user_message,
             source_message_context=question_context.source_message_context,
             parent_bot_message_id=question_context.parent_bot_message_id,
-            public_lookup_allowed=question_context.public_lookup_allowed,
+            public_lookup_allowed=question_context.public_lookup_allowed and answer_style is None,
             media_refs=[media_ref.to_dict() for media_ref in media_refs] or None,
+            **({"answer_style": answer_style} if answer_style is not None else {}),
         )
     except Exception:
         logger.exception("Failed to enqueue /ask task", extra={"chat_id": ctx.chat_id, "message_id": ctx.message_id})
@@ -307,6 +319,8 @@ def process_group_ask_task(*, repo, bot, body):
     from services.memory_v2.models import MemoryConflict, MemoryInputError, MemoryUnavailable
 
     if not is_current_explicit_task(body):
+        return
+    if body.get("answer_style") not in (None, "wtf"):
         return
     try:
         with configured_delivery(repo, bot, body) as (guarded_bot, current):
@@ -429,6 +443,7 @@ def _process_group_ask_task(
         media_context=media_context,
         media_metadata=media_metadata,
         raise_on_unavailable=True,
+        **({"answer_style": body["answer_style"]} if body.get("answer_style") is not None else {}),
     )
     if not handled:
         bot.send_message(

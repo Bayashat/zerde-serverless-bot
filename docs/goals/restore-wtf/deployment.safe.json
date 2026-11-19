@@ -1,0 +1,112 @@
+{
+  "captured_at": "2026-11-19T10:15:55.315119+00:00",
+  "functions": {
+    "zerde-serverless-bot-dev": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_unchanged": true,
+      "code_changed": true,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ],
+      "source_files_exact": 96
+    },
+    "zerde-serverless-memory-v2-worker-dev": {
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "config_unchanged": true,
+      "code_changed": true,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ],
+      "source_files_exact": 96
+    },
+    "zerde-serverless-news-dev": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-quiz-dev": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-operations-dev": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-bot-prod": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-memory-v2-worker-prod": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-news-prod": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-quiz-prod": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    },
+    "zerde-serverless-operations-prod": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_unchanged": true,
+      "code_changed": false,
+      "state": "Active",
+      "update": "Successful",
+      "architecture": [
+        "arm64"
+      ]
+    }
+  },
+  "production_unchanged": true,
+  "cloudformation_template_exact": true,
+  "stack_status": "UPDATE_COMPLETE",
+  "dev_bot_username": "@zerde_dev_bot",
+  "no_telegram_or_model_calls": true
+}

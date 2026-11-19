@@ -1,0 +1,65 @@
+{
+  "captured_at": "2026-11-19T09:59:26.509526+00:00",
+  "functions": {
+    "zerde-serverless-bot-dev": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_sha256": "f19c5e84d85fab819803245da661213efc3bf197e41de48ee26ade7212a2d25b",
+      "revision": "1cbb8cb4-8be7-445b-91f8-56c4d96d1a1b",
+      "last_modified": "2026-11-18T23:00:31.000+0000"
+    },
+    "zerde-serverless-memory-v2-worker-dev": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_sha256": "f43f020c4fbcc66d997979c316c0ea1057e93a9a417ed37971d1c67624fc844f",
+      "revision": "283414fb-449a-4ca9-ba03-28d36101323b",
+      "last_modified": "2026-11-18T23:00:31.000+0000"
+    },
+    "zerde-serverless-news-dev": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_sha256": "cd948a9edb3ffc70bf8ee5e962ddec3c2a567edadda803fb16a88017245a5f39",
+      "revision": "186fc61b-1173-4071-bace-37d3c74621bd",
+      "last_modified": "2026-09-26T19:58:58.000+0000"
+    },
+    "zerde-serverless-quiz-dev": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_sha256": "fdbde5e90dd3ab5d1c1644390ab7f96a8a6fdf8b07373250081490c0d056b515",
+      "revision": "b7eebe9e-59ed-46fc-b171-682c4d096f07",
+      "last_modified": "2026-09-30T13:57:35.000+0000"
+    },
+    "zerde-serverless-operations-dev": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_sha256": "04bb0b27fe6ddf5e0df45e0129481bf157efbe4d9d7f8ff1c75cff74b5a6cbda",
+      "revision": "0853a836-7152-4b79-9a5f-441557666379",
+      "last_modified": "2026-10-13T15:46:08.000+0000"
+    },
+    "zerde-serverless-bot-prod": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_sha256": "62ec902a7f9ff89a3f45a7a115dceb877ec76116685e39f4166c63ccbc8b3907",
+      "revision": "e2e1c79c-3e51-46d1-86b1-d1772e37a752",
+      "last_modified": "2026-11-18T23:27:35.000+0000"
+    },
+    "zerde-serverless-memory-v2-worker-prod": {
+      "code_sha256": "+gCpeGuOcSTRWzkrkRKjoUa+a+2xjkSAMnvULckCG30=",
+      "config_sha256": "fa039a14ae6e5e288b3613a3133fce4e66c5f50248927773c89706b3c9982f18",
+      "revision": "66aa61b9-d88a-4064-b0b9-4ad56b4ce3d6",
+      "last_modified": "2026-11-18T23:27:35.000+0000"
+    },
+    "zerde-serverless-news-prod": {
+      "code_sha256": "a/WfnhGMRM92sAPBVcKnJShFDBW9g+C+/vRpOp6rrXw=",
+      "config_sha256": "bf8bec553aa78a042359aad367ec1f8293f30a55b01e885e6d9127b76430ac03",
+      "revision": "b9ad770c-66a0-48e7-bea8-50b7457a8578",
+      "last_modified": "2026-09-26T20:27:53.000+0000"
+    },
+    "zerde-serverless-quiz-prod": {
+      "code_sha256": "wVsESTlr/RL2P/GBZJtVBpXCeGwe7qSLedBnLSkN6Ik=",
+      "config_sha256": "0bc97d8734b0e6de97e482df2b8afdb27b204343fe6c49641d415ebfe704c5df",
+      "revision": "6cd3ba0a-c55f-4860-ab7c-fcc99b8f9ddb",
+      "last_modified": "2026-09-30T14:13:07.000+0000"
+    },
+    "zerde-serverless-operations-prod": {
+      "code_sha256": "juGbLIr1n6qdMi1aprdGjgiLzzIxOkTPT6kBIBEwr/o=",
+      "config_sha256": "299755cd170dd4e35743ec862b2868ad16a0628ed822d97d601b4c8a0a1eb256",
+      "revision": "61aa3c09-d874-4213-8213-40b37beff525",
+      "last_modified": "2026-10-13T17:07:37.000+0000"
+    }
+  }
+}
