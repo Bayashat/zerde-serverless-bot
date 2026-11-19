@@ -1,0 +1,30 @@
+{
+  "status": "PARTIAL_NOT_FULL_ACCEPTANCE",
+  "at": 1795021817.539179,
+  "runtime_source": "174a84998563e3e1bfeb3f9dc60370252b173503",
+  "raw_ledger_sha256": "d29065efddf8cbb493d4824069b7b754c091d90066b971144d7059f83e0aea8b",
+  "raw_count": 17,
+  "deadline_epoch": 1795626160.299967,
+  "last_native_ui_started_at": 1795021763.387,
+  "last_native_ui_finished_at": 1795021763.568,
+  "messages_sent": 2,
+  "A": "PARTIAL_HONEST_UNKNOWN",
+  "B": "UNVERIFIED_NO_REPLY_OBSERVED_166_135_SECONDS",
+  "P": "NOT_SENT_B_NOT_USEFUL_COMPLETE",
+  "cloud_api_read_calls": 12,
+  "cloud_writes": 0,
+  "operator_model_calls": 0,
+  "natural_sample_increment": 0,
+  "new_retention_duties": 1,
+  "total_independent_duties": 15,
+  "local_deletions": 0,
+  "observed_dev_error_alarm": true,
+  "alarm_relation_to_B": "UNKNOWN",
+  "limitations": [
+    "166.135-second observation is not a claim of180 seconds or no later reply.",
+    "A application safe fallback is not useful public knowledge acceptance.",
+    "Primary native observations plus existing numeric binding are not independent UI or server delivery clocks.",
+    "Earlier bundle-id ambiguity was resolved by explicit installed app path before any action, without changing tools.",
+    "No P and no resend; all original once/results retained."
+  ]
+}

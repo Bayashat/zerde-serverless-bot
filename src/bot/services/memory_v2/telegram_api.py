@@ -1,10 +1,48 @@
-"""One cancellable Telegram attempt for V2 authorization and leased delivery."""
+"""Bounded live authorization reads and one attempt for leased delivery."""
 
 import asyncio
+import contextvars
+import copy
 import json
+import logging
 import re
+import time
+
+import httpx
 
 from .models import MemoryInputError, MemoryUnavailable, chat_key, positive_id
+
+_LOOKUP_DEADLINE = 20
+_READ_ATTEMPT_DEADLINE = 8
+_READ_RETRY_DELAY = 0.25
+_TELEGRAM_HTTP = contextvars.ContextVar("memory_telegram_http", default=False)
+logger = logging.getLogger(__name__)
+
+
+class _TelegramRequestFilter(logging.Filter):
+    def filter(self, record):
+        return not _TELEGRAM_HTTP.get()
+
+
+# These are HTTPX/HTTPCore's request/connection trace owners. Suppress only this
+# async context: even a successful HTTPX INFO request contains the bot credential.
+for _logger_name in (
+    "httpx",
+    "httpcore",
+    "httpcore.connection",
+    "httpcore.http11",
+    "httpcore.http2",
+    "httpcore.proxy",
+    "httpcore.socks",
+    "httpcore.connection_pool",
+):
+    logging.getLogger(_logger_name).addFilter(_TelegramRequestFilter())
+
+
+class _TelegramFailure(Exception):
+    def __init__(self, reason, retryable=False):
+        self.reason, self.retryable = reason, retryable
+        super().__init__(reason, retryable)
 
 
 class TelegramReadRetryRequired(RuntimeError):
@@ -20,39 +58,82 @@ class MemoryTelegramAPI:
     async def call(self, method, payload):
         if method not in {"getChatMember", "getMe", "sendMessage"}:
             raise MemoryInputError("Unsupported memory Telegram operation")
+        readonly = method in {"getChatMember", "getMe"}
+        if readonly:
+            payload = copy.deepcopy(payload)
+        attempts, reason, result = 0, "LOOKUP_DEADLINE", None
+        started = time.monotonic()
+        token = _TELEGRAM_HTTP.set(True)
         try:
-            async with asyncio.timeout(20):
-                if self._client is not None:
-                    return await self._request(self._client, method, payload)
-                from zerde_common.async_http import bounded_async_client
-
-                async with bounded_async_client(timeout=20, connect_timeout=3, max_connections=1) as client:
-                    return await self._request(client, method, payload)
+            # The outer deadline includes both attempts, delay, client teardown
+            # and streamed body. It never restarts when the first attempt fails.
+            async with asyncio.timeout(_LOOKUP_DEADLINE):
+                for attempt in range(2 if readonly else 1):
+                    attempts += 1
+                    retryable = False
+                    try:
+                        async with asyncio.timeout(_READ_ATTEMPT_DEADLINE if readonly else _LOOKUP_DEADLINE):
+                            result = await self._attempt(method, payload)
+                        break
+                    except _TelegramFailure as exc:
+                        reason, retryable = exc.reason, exc.retryable
+                    except (httpx.UnsupportedProtocol, httpx.LocalProtocolError):
+                        reason = "UNSUPPORTED_TRANSPORT"
+                    except (httpx.TransportError, TimeoutError):
+                        # The current shared adapter intentionally folds network
+                        # and protocol failures into TransportError. One bounded
+                        # READ retry is safe; this does not classify their cause.
+                        reason, retryable = "TRANSPORT_UNAVAILABLE", True
+                    if not readonly or not retryable or attempt == 1:
+                        break
+                    await asyncio.sleep(_READ_RETRY_DELAY)
+        except TimeoutError:
+            reason = "LOOKUP_DEADLINE"
         except Exception:
-            pass
+            reason = "INVALID_RESPONSE"
+        finally:
+            _TELEGRAM_HTTP.reset(token)
+        metadata = {
+            "telegram_operation": method,
+            "attempts": attempts,
+            "elapsed_ms": int((time.monotonic() - started) * 1000),
+        }
+        if result is not None:
+            if attempts > 1:
+                logger.info("Telegram authorization read recovered", extra=metadata)
+            return result
+        logger.warning("Telegram operation unavailable", extra={**metadata, "reason": reason})
         # Neither the token-bearing URL nor the original exception chain escapes.
         if method != "sendMessage":
             raise TelegramReadRetryRequired("Telegram authorization lookup requires retry")
         raise MemoryUnavailable("Telegram memory operation was not confirmed")
+
+    async def _attempt(self, method, payload):
+        if self._client is not None:
+            return await self._request(self._client, method, payload)
+        from zerde_common.async_http import bounded_async_client
+
+        async with bounded_async_client(timeout=20, connect_timeout=3, max_connections=1) as client:
+            return await self._request(client, method, payload)
 
     async def _request(self, client, method, payload):
         async with client.stream(
             "POST", f"https://api.telegram.org/bot{self._token}/{method}", json=payload, follow_redirects=False
         ) as response:
             if response.status_code != 200:
-                raise MemoryUnavailable("Telegram rejected the memory operation")
+                raise _TelegramFailure("HTTP_REJECTED", retryable=response.status_code in {500, 502, 503, 504})
             raw = bytearray()
             async for chunk in response.aiter_bytes():
                 raw.extend(chunk)
                 if len(raw) > 100000:
-                    raise MemoryUnavailable("Telegram response exceeds its bound")
+                    raise _TelegramFailure("RESPONSE_TOO_LARGE")
             result = json.loads(raw)
             if (
                 not isinstance(result, dict)
                 or result.get("ok") is not True
                 or not isinstance(result.get("result"), dict)
             ):
-                raise MemoryUnavailable("Telegram response cannot confirm the operation")
+                raise _TelegramFailure("INVALID_RESPONSE")
             return result["result"]
 
     async def member(self, chat_id, user_id):

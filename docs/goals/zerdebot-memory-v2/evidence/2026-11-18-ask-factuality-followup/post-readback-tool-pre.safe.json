@@ -1,0 +1,49 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at": 1795072601.8349519,
+  "files": {
+    "POST_READBACK_CONTINUATION_PLAN.md": "d23b7adb024bac4ae2215ef0c4dc3af9afc785b22b12a31549b3164801d44ccd",
+    "post_readback_continuation.py": "c0b1f68ad3416a6c47011e727bde92bbc135b8599154f9b58f7507126a08b691"
+  },
+  "checks": [
+    "Original release/fresh adapter gates retained with exact new two-file dual PRE; original7-call failed post once/failure pinned and strict readonly paired journals validated without opening any failed ZIP.",
+    "New main path post-main-prod-recovery; no old receipt fallback or old-stage reentry. Independent/stable use new main path; locks, exclusive once and original release/post helper/transport hashes retained.",
+    "Fresh ReadApi delegates frozen transport/Api with writes rejected; original collect packages=True for both POST roles, fresh six complete ZIPs, HTTPS/digest/size/240s bounds and no retry retained.",
+    "Original compare baseline/candidate and execute CONTROL floor used. Independent all_stable and main revision floors retained; stable requires both POSTs, original Execute plus300seconds, full metadata and both POST revision floors.",
+    "No runtime source, deployed configuration or permission contract modified. Root cause, failed download service reachability and continuous health are not inferred."
+  ],
+  "offline_controls": {
+    "passed": 33,
+    "harness_sha256": "48e399e9e469cb9989bf8cb7a01c202006b570d80b60c919a10f28653161d08c",
+    "coverage": [
+      "Actual failed7 safe journal/hash validation",
+      "10 malformed failure type/pair/inventory/write/metadata controls",
+      "3 write-operation rejection controls",
+      "3 valid stage paths with original compare/control_floor",
+      "IAM/CONTROL identity/revision and independent stable-config negative controls",
+      "Stable too early/missing independent/no old main fallback",
+      "Dev and deployment stage rejection",
+      "Exact PRE/upstream gates/tool drift/missing PRE",
+      "New main once3hash/exclusive reentry/-O rejection"
+    ],
+    "external_calls": 0,
+    "formal_E_entry_runs": 0,
+    "failed_ZIP_reads": 0,
+    "fixture_limit": "Known failed pins substituted only for malformed TEMP copies to exercise deep checks; actual safe pins also validated without substitution."
+  },
+  "evidence_sha256": {
+    "post-main-prod/once.safe.json": "28df72bd2a425cca47ec7af6ae67b0eeeeff4275907989a6472c07616216041c",
+    "post-main-prod/failure.safe.json": "8c2a60fd23ed0a02ae9c5b83e5846e3f35041365aaa006298fe9aa8f70e83a5d",
+    "execute-prod/receipt.safe.json": "d170aac72228d86d519c7409d46a70b9337df093af5de71b524e6c9bc6cbf5f3",
+    "prod-fresh-tool-pre.safe.json": "e65c7cc9c6154ec6ae54c03d096d7fcbb35f7c8324b08d839dd417af07fbc349",
+    "prod-fresh-maintenance-pre.safe.json": "d6cd3a7060d5bd5a146771527b727458c6b42bb9bf9fc211add52d7daccf9e4f"
+  },
+  "limitations": [
+    "Actual new main/independent/stable readbacks remain required; this PRE does not claim completed POST or real product quality.",
+    "Failed original post-main complete/partial ZIPs were not read or reused. No API/UI/model calls or formal E entry occurred.",
+    "Both earlier prod candidate intermediate CONTROL histories remain UNKNOWN; original15 retention duties unchanged.",
+    "New aggregation and acceptance binding must independently select the new main path and separately account7 original successful readonly metadata calls."
+  ]
+}

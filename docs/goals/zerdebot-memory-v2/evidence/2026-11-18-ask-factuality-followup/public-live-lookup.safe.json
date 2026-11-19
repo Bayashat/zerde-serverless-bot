@@ -1,0 +1,65 @@
+{
+  "status": "ACTUAL_LOCAL_PUBLIC_SOURCE_LOOKUP",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at": 1795024236.56262,
+  "results": [
+    {
+      "case": "A",
+      "applicable": true,
+      "source_found": true,
+      "title": "Nvidia RTX Spark",
+      "pageid": 82949513,
+      "extract_length": 392,
+      "calls": [
+        {
+          "operation": "search",
+          "started_at": 1795024233.652767,
+          "finished_at": 1795024234.543221,
+          "returned_dict": true,
+          "body_canonical_sha256": "0c2cb1c852cca3c529705c476a605349da7ddc4ca73aebcbf9e07286abd86612"
+        },
+        {
+          "operation": "summary",
+          "started_at": 1795024234.5433002,
+          "finished_at": 1795024235.1380968,
+          "returned_dict": true,
+          "body_canonical_sha256": "c96e05995733b29b73fa7ddc1315b013412a6c2dfbe2aef0cc3657052e4313b9"
+        }
+      ],
+      "seconds": 1.4867277145385742
+    },
+    {
+      "case": "B",
+      "applicable": true,
+      "source_found": true,
+      "title": "Nvidia RTX Spark",
+      "pageid": 82949513,
+      "extract_length": 392,
+      "calls": [
+        {
+          "operation": "search",
+          "started_at": 1795024235.140373,
+          "finished_at": 1795024236.029206,
+          "returned_dict": true,
+          "body_canonical_sha256": "5398bf3d49f4c6fadb57b36d26cda9cee2fcfc12c9dcc8f97c318be30e102709"
+        },
+        {
+          "operation": "summary",
+          "started_at": 1795024236.029421,
+          "finished_at": 1795024236.5625532,
+          "returned_dict": true,
+          "body_canonical_sha256": "c96e05995733b29b73fa7ddc1315b013412a6c2dfbe2aef0cc3657052e4313b9"
+        }
+      ],
+      "seconds": 1.4243578910827637
+    }
+  ],
+  "persistent_full_responses": 0,
+  "aws_calls": 0,
+  "model_calls": 0,
+  "telegram_calls": 0,
+  "limits": [
+    "Actual local network through current runtime public lookup, not Lambda deployment or real model quality.",
+    "Only public source safety projection persisted; no full response or extract copied."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "at": 1795072759.4686248,
+  "files": {
+    "compose_release_result.py": "38c3ab560aa4906fddf40f3900c0d30fac04c86e5e7d76325660f9a4d4d96a1e"
+  },
+  "checks": [
+    "New prod main receipt and six full ZIP hashes resolve only post-main-prod-recovery; independent/stable remain exact new unused stage paths.",
+    "Prod POST/stable once now binds exact post helper plus frozen release and fresh transport. New post two-file dual PRE and failed-post gate invoked; existing release/candidate/fresh gates retained.",
+    "Old post-main-prod safe evidence is pinned and strictly7 paired readonly successful metadata calls,zero writes,TimeoutException download failure. No failed old ZIP is read or reused; seven calls separately counted.",
+    "Existing complete16-stage chain/24 fresh POST ZIP hashes/exact8writes/actual2or3 prod resources/sourceCI/2842fulltests/ARM5/probe23/15duties retained.",
+    "Earlier failed baseline and both failed candidate segments remain separately accounted with original unknown intermediate CONTROL limitations; no real quality PASS inferred."
+  ],
+  "offline_controls": {
+    "passed": 38,
+    "positive": 2,
+    "negative": 36,
+    "harness_sha256": "4876f72b554a9be4520823543ecb50fbe846d19fdb1a5cebf86ba8de6396a5d6",
+    "delta_controls": 11,
+    "delta_coverage": [
+      "Wrong post helper in each3 prod stages",
+      "Missing post PRE or new main receipt",
+      "Illicit old main receipt",
+      "Failed post journal missing/unpaired/HTTP failure/write mutation",
+      "New main ZIP drift"
+    ],
+    "external_calls": 0,
+    "formal_E_entry_runs": 0,
+    "failed_post_ZIP_reads": 0,
+    "limits": "Successful release chains are synthetic TEMP fixtures. Actual permitted failed safe files copied verbatim; N fixed safe hashes substituted only for synthetic fixture data. Actual source artifacts previously independently hashed; no failed POST ZIP access."
+  },
+  "limitations": [
+    "This PRE does not assert completed actual prod POST/stable or real answer quality. Actual final composition must wait for all matching stage receipts.",
+    "Old7 metadata responses are not proof of a complete failed download or target service response. Failure root cause remains UNKNOWN.",
+    "Logical counts exclude separate documented N,diagnostic,public research,CI and ordinary service activity; original retention duties unchanged."
+  ]
+}

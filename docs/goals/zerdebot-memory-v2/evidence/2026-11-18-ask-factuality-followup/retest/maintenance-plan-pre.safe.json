@@ -1,0 +1,45 @@
+{
+  "reviewer": "independent-maintenance",
+  "at": 1795073436.169675,
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "offline_validation_sha256": "516fcfab21875e03efadd5fd3a2d21efb7a27b6687c0ae18d7461feadbcf4902",
+  "offline_test_attribution": "Primary executed21 synthetic tests with unchanged eight inputs; this reviewer did not rerun the suite.",
+  "independent_local_check": "Pure validate_release_evidence passed:39 exact external paths,15 safe deployment proofs,24 new E full package hashes and105 owner files. No formal main/start/preflight/budget/UI/POST execution.",
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "old_runtime_raw_reads": 0,
+  "current_window": false,
+  "new_retention_deadline_created": false,
+  "status": "ALIGNED",
+  "plan_sha256": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+  "scope": {
+    "directory": "2026-11-18-ask-factuality-followup-retest",
+    "source": "b9be5119118555aac897d14f8686be294646a6fa",
+    "chat": "-1003765868758",
+    "actor": "920706887",
+    "bot": "8157502831/@zerde_dev_bot",
+    "client": "/Applications/Telegram.app",
+    "account_display": "Баяшат",
+    "human_window_max_seconds": 900,
+    "preflight_API_calls": 5,
+    "budget_API_calls": 7,
+    "max_UI_originals": 7,
+    "max_originals": 19,
+    "preserved_prior_duties": 15,
+    "new_duty_only_before_first_capture": 16
+  },
+  "checks": {
+    "ordinary_ask_real_usefulness_P0_no_engineering_PASS_substitution": true,
+    "A_danger_stops_A_partial_not_erased_by_B_P_only_after_useful_B": true,
+    "new_direct_window_only_no_heartbeat_or_old_once_reuse": true,
+    "empty_draft_identity_reply_selection_gates_no_cleanup_after_expiry": true,
+    "fixed_five_owners_budget_SOURCE_and_full_config_control_floors": true,
+    "new_anchor_registration_before_any_capture_old_deadlines_unchanged": true,
+    "strict900_window_190_send_10dispatch_180observe_and_conservative_POST": true,
+    "no_unlisted_cloud_model_calls_or_persistent_memory_writes": true
+  },
+  "limits": [
+    "Plan PRE is offline preparation only; no current user window or capture permission.",
+    "Old Q failure and N partial/unverified outcomes remain unchanged; meaningful real usefulness still pending."
+  ]
+}

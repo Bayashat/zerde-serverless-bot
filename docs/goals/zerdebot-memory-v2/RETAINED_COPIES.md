@@ -1,3 +1,5 @@
+当前15项：Nov18新N普通 /ask复验采集前登记，原deadline1795626160.299967/Nov25 17:02:40.299967UTC；原14逐项保持，旧T零原件闭合及原登记历史保留。
+
 ## Nov18：本T零登记运行原件职责闭合，原14项保持
 
 本T原start/anchor及采集前第15项登记真实发生，原期限1795623930.874333保留。身份不符后只读UI停止，未发送、未采集API或落盘UI原件；独立确认ledger空、raw目录空及STOP生效，仅关闭本T受控UI/API原文职责，未删除文件。原14责任逐项保持；行政private文件、工具会话/外部副本不在此零采集结论内。原ledger的ACTIVE与登记15是冻结时点历史，由新闭合回执说明，不改旧字节。[闭合证据](evidence/2026-11-18-ask-retest-identity-stop/empty-retention-closure.safe.json)。

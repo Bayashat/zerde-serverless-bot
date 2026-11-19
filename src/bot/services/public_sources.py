@@ -21,6 +21,7 @@ from zerde_common.async_http import bounded_async_client
 _MAX_BYTES = 65536
 _HTTP_DEADLINE = 6
 _SOURCE_HTTP = contextvars.ContextVar("public_source_http", default=False)
+logger = logging.getLogger(__name__)
 
 
 class _SourceRequestFilter(logging.Filter):
@@ -29,7 +30,17 @@ class _SourceRequestFilter(logging.Filter):
 
 
 # HTTPX emits request URLs at INFO; suppress only this context, not other callers.
-logging.getLogger("httpx").addFilter(_SourceRequestFilter())
+for _logger_name in (
+    "httpx",
+    "httpcore",
+    "httpcore.connection",
+    "httpcore.http11",
+    "httpcore.http2",
+    "httpcore.proxy",
+    "httpcore.socks",
+    "httpcore.connection_pool",
+):
+    logging.getLogger(_logger_name).addFilter(_SourceRequestFilter())
 _USER_AGENT = "ZerdeBot/1.0 (https://github.com/Bayashat/zerde-serverless-bot)"
 _PERSONAL = re.compile(
     r"\b(i|me|my|mine|you|your|yours|we|our|ours|us|he|his|she|her|hers|they|their|theirs|"
@@ -162,11 +173,15 @@ async def _fetch_json(host: str, path: str, params: dict | None) -> dict | None:
                     or response.headers.get("content-encoding", "identity") != "identity"
                     or "application/json" not in response.headers.get("content-type", "")
                 ):
+                    logger.info("Public source HTTP unavailable", extra={"source_http_reason": "RESPONSE_REJECTED"})
                     return None
                 raw = bytearray()
                 async for chunk in response.aiter_raw():
                     raw.extend(chunk)
                     if len(raw) > _MAX_BYTES:
+                        logger.info(
+                            "Public source HTTP unavailable", extra={"source_http_reason": "RESPONSE_TOO_LARGE"}
+                        )
                         return None
     value = json.loads(raw)
     return value if isinstance(value, dict) else None
@@ -181,14 +196,31 @@ def _json_request(host: str, path: str, *, params: dict | None = None) -> dict |
     token = _SOURCE_HTTP.set(True)
     try:
         return asyncio.run(_fetch_json(host, path, params))
-    except (httpx.HTTPError, OSError, ValueError):
+    except (httpx.HTTPError, OSError):
+        logger.info("Public source HTTP unavailable", extra={"source_http_reason": "TRANSPORT_UNAVAILABLE"})
+        return None
+    except ValueError:
+        logger.info("Public source HTTP unavailable", extra={"source_http_reason": "INVALID_JSON"})
         return None
     finally:
         _SOURCE_HTTP.reset(token)
 
 
+def _title_key(title: str) -> str:
+    return " ".join(title.replace("_", " ").split()).casefold()
+
+
 def _same_title(left: str, right: str) -> bool:
-    return " ".join(left.replace("_", " ").split()).casefold() == " ".join(right.split()).casefold()
+    return _title_key(left) == _title_key(right)
+
+
+def _valid_title(title: object) -> bool:
+    return (
+        isinstance(title, str)
+        and bool(title.strip())
+        and 1 <= len(title) <= 200
+        and not any(unicodedata.category(c)[0] == "C" for c in title)
+    )
 
 
 def _short_extract(text: str) -> str:
@@ -210,10 +242,25 @@ def lookup_public_source(
     topic, language = selected
     request = request or _json_request
     host = f"{language}.wikipedia.org"
+    started = time.monotonic()
+    requests = 0
+
+    def outcome(reason, source=None):
+        logger.info(
+            "Public source lookup completed",
+            extra={
+                "source_outcome": reason,
+                "source_requests": requests,
+                "elapsed_ms": int((time.monotonic() - started) * 1000),
+            },
+        )
+        return PublicLookup(True, source)
 
     def read(path, **kwargs):
+        nonlocal requests
         if before_attempt is not None:
             before_attempt()  # Control failures must never become source misses.
+        requests += 1
         result = request(host, path, **kwargs)
         if before_attempt is not None:
             before_attempt()
@@ -223,42 +270,100 @@ def lookup_public_source(
         "/w/api.php",
         params={
             "action": "query",
-            "list": "search",
-            "srsearch": topic,
-            "srnamespace": 0,
-            "srlimit": 3,
-            "srprop": "redirecttitle",
-            "srinfo": "",
+            "generator": "search",
+            "gsrsearch": topic,
+            "gsrnamespace": 0,
+            "gsrlimit": 3,
+            "prop": "redirects",
+            "rdprop": "pageid|title|fragment",
+            "rdnamespace": 0,
+            "rdshow": "!fragment",
+            "rdlimit": 50,
             "format": "json",
             "formatversion": 2,
         },
     )
     if not isinstance(search, dict) or "error" in search or "warnings" in search:
-        return PublicLookup(True)
-    rows = search.get("query", {}).get("search") if isinstance(search.get("query"), dict) else None
+        return outcome("SEARCH_UNAVAILABLE")
+    continuation = search.get("continue", {})
+    if (
+        not isinstance(continuation, dict)
+        or set(continuation) - {"continue", "gsroffset", "rdcontinue"}
+        or any(
+            not isinstance(continuation[k], str) or not 1 <= len(continuation[k]) <= 512
+            for k in ("continue", "rdcontinue")
+            if k in continuation
+        )
+        or (
+            "gsroffset" in continuation
+            and (type(continuation["gsroffset"]) is not int or continuation["gsroffset"] < 0)
+        )
+        or ("batchcomplete" in search and search["batchcomplete"] is not True)
+    ):
+        return outcome("SEARCH_INVALID")
+    rows = search.get("query", {}).get("pages") if isinstance(search.get("query"), dict) else None
     if not isinstance(rows, list) or len(rows) > 3:
-        return PublicLookup(True)
-    matches = []
+        return outcome("SEARCH_INVALID")
+    canonical_matches, alias_matches, seen_ids = {}, {}, set()
+    alias_ids, name_owners = set(), {}
+    alias_count = 0
     for row in rows:
         if not isinstance(row, dict) or type(row.get("ns")) is not int or row["ns"] != 0:
-            return PublicLookup(True)
-        title, alias, page_id = (
-            row.get("title"),
-            row.get("redirecttitle", ""),
-            row.get("pageid"),
-        )
-        if not isinstance(title, str) or not isinstance(alias, str) or type(page_id) is not int or page_id <= 0:
-            return PublicLookup(True)
-        if _same_title(title, topic) or _same_title(alias, topic):
-            matches.append((title, page_id))
+            return outcome("SEARCH_INVALID")
+        title, page_id, aliases = row.get("title"), row.get("pageid"), row.get("redirects", [])
+        if (
+            not _valid_title(title)
+            or type(page_id) is not int
+            or page_id <= 0
+            or page_id in seen_ids
+            or not isinstance(aliases, list)
+        ):
+            return outcome("SEARCH_INVALID")
+        seen_ids.add(page_id)
+        key = _title_key(title)
+        if key in name_owners and name_owners[key] != page_id:
+            return outcome("AMBIGUOUS")
+        name_owners[key] = page_id
+        alias_count += len(aliases)
+        if alias_count > 50:
+            return outcome("SEARCH_INVALID")
+        if _same_title(title, topic):
+            canonical_matches[page_id] = title
+        for alias in aliases:
+            if (
+                not isinstance(alias, dict)
+                or type(alias.get("ns")) is not int
+                or alias["ns"] != 0
+                or type(alias.get("pageid")) is not int
+                or alias["pageid"] <= 0
+                or not _valid_title(alias.get("title"))
+                or "fragment" in alias
+            ):
+                return outcome("SEARCH_INVALID")
+            if alias["pageid"] in alias_ids:
+                return outcome("SEARCH_INVALID")
+            alias_ids.add(alias["pageid"])
+            key = _title_key(alias["title"])
+            if key in name_owners and name_owners[key] != page_id:
+                return outcome("AMBIGUOUS")
+            name_owners[key] = page_id
+            if _same_title(alias["title"], topic):
+                alias_matches[page_id] = title
+    if seen_ids & alias_ids:
+        return outcome("SEARCH_INVALID")
+    matches = canonical_matches | alias_matches
+    if len(matches) > 1:
+        return outcome("AMBIGUOUS")
+    # A full canonical title takes priority over unreturned aliases. This is a
+    # bounded selection policy, not proof that every site-wide alias was read.
+    if not canonical_matches and (search.get("batchcomplete") is not True or "rdcontinue" in continuation):
+        return outcome("SOURCE_INCOMPLETE")
     if len(matches) != 1:
-        return PublicLookup(True)
-    title, page_id = matches[0]
-    if not 1 <= len(title) <= 200 or any(unicodedata.category(c)[0] == "C" for c in title):
-        return PublicLookup(True)
+        return outcome("NO_IDENTITY_MATCH")
+    page_id, title = next(iter(matches.items()))
     summary = read("/api/rest_v1/page/summary/" + quote(title.replace(" ", "_"), safe=""))
     if not isinstance(summary, dict):
-        return PublicLookup(True)
+        return outcome("SUMMARY_UNAVAILABLE")
     extract = summary.get("extract")
     if (
         summary.get("type") != "standard"
@@ -270,12 +375,12 @@ def lookup_public_source(
         or not extract.strip()
         or len(extract) > 6000
     ):
-        return PublicLookup(True)
+        return outcome("SUMMARY_INVALID")
     extract = _short_extract(extract.strip())
     if not extract:
-        return PublicLookup(True)
-    return PublicLookup(
-        True,
+        return outcome("EMPTY_EXTRACT")
+    return outcome(
+        "MATCHED",
         PublicSource(
             title,
             extract,

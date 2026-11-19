@@ -1,0 +1,62 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "at": 1795072545.455752,
+  "files": {
+    "post_readback_continuation.py": "c0b1f68ad3416a6c47011e727bde92bbc135b8599154f9b58f7507126a08b691",
+    "POST_READBACK_CONTINUATION_PLAN.md": "d23b7adb024bac4ae2215ef0c4dc3af9afc785b22b12a31549b3164801d44ccd"
+  },
+  "frozen_dependencies": {
+    "release_safe.py": "2d8b93da09c8314f25ddc08569cc9ceb068e09008f7c8cf20cb44574237fc2e6",
+    "fresh_cf_transport.py": "66f3ed4a7973d24c35e39508f1a0d1a3e3318f5c3bd63a1b5487e1f99855864a",
+    "release_prod_fresh.py": "099d261fe6ce173f704719a774229d61ea2b8342d75f74233638ab2f0aae5a8e",
+    "prod-fresh-maintenance-pre.safe.json": "d6cd3a7060d5bd5a146771527b727458c6b42bb9bf9fc211add52d7daccf9e4f"
+  },
+  "checks": {
+    "old7_readonly_successful_metadata_pairs_and_PIN_timeout_zero_writes": true,
+    "old_partial_post_ZIP_not_read_or_reused": true,
+    "only_new_prod_POST_three_stages_new_main_recovery_folder": true,
+    "global_batch_locks_exclusive_once_original_post_transport_hashes": true,
+    "same_frozen_collect_compare_full6ZIP240seconds_no_retry": true,
+    "main_and_independent_complete_packages_then_stable_metadata_only": true,
+    "independent_all_stable_and_CONTROL_floor_against_new_main": true,
+    "stable_both_new_POSTs_at_least300seconds_and_both_CONTROL_floors": true,
+    "execute_snapshot_current_candidate_protection_gates_preserved": true,
+    "ReadApi_blocks_three_release_mutation_operations_and_frozen_collect_only_reads": true,
+    "failed_calls_and_partial_results_preserved_no_reentry": true,
+    "no_runtime_raw_deadline_UI_or_model_added": true
+  },
+  "offline_controls": {
+    "passed": 19,
+    "details": [
+      "actual_old7_readonly_pairs_pin_timeout_and_no_receipt: pass",
+      "post-main_success_packages_and_routes: pass",
+      "post-independent_success_packages_and_routes: pass",
+      "stable_success_packages_and_routes: pass",
+      "scope_no_dev: rejected",
+      "scope_no_execute: rejected",
+      "execute_not_complete: rejected",
+      "main_CONTROL_below_execute: rejected",
+      "independent_CONTROL_below_main: rejected",
+      "independent_config_drift: rejected",
+      "stable_below300: rejected",
+      "stable_main_not_verified: rejected",
+      "stable_independent_not_verified: rejected",
+      "stable_CONTROL_below_independent: rejected",
+      "protected_CONTROL_drift: rejected",
+      "block_PutObject: rejected",
+      "block_CreateChangeSet: rejected",
+      "block_ExecuteChangeSet: rejected",
+      "read_delegates_unchanged: pass"
+    ],
+    "method": "Actual new folder/perform/ReadApi code with synthetic collector/metadata; original control_floor implementation exercised. Actual failed_gate reads only safe metadata/PIN files. Network disabled, no formal main."
+  },
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "old_failed_POST_ZIP_or_runtime_raw_reads": 0,
+  "limits": [
+    "This is a new readback PRE, not completed POST or continuous service-health proof.",
+    "Initial POST timeout cause remains UNKNOWN; Execute success does not imply later download completion.",
+    "Original download budgets and all current identity/config/IAM/CONTROL gates remain mandatory."
+  ]
+}

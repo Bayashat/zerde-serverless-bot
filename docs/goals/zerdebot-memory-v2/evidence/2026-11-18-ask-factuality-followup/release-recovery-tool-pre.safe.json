@@ -1,0 +1,65 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "ask_prepare_correctness",
+  "reviewed_at_utc": "2026-11-18T22:51:39.663827+00:00",
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "files": {
+    "RELEASE_PLAN.md": "67770fc698416f0030c789a1756c8123349a026a484d3a93093fc6198bd86f26",
+    "release_safe.py": "2d8b93da09c8314f25ddc08569cc9ceb068e09008f7c8cf20cb44574237fc2e6",
+    "build_safe.py": "ad35f4073cc597e52d6b868d6020fe2aa090fa4065551abcdc834654d16ec06d",
+    "policy_protection.py": "f81aefd3cc2f2fa89fa1acffc1ee97b118291d944672668ba697b713f5528f01",
+    "package_probe.py": "a69bdc76a4aab6ccdcb7929c6ea56d1cd7231834d0dd223e1b9827621b0fc5f4",
+    "runtime-source-binding.safe.json": "644cc106d0f86c98851b22b2e5f44d7b022bf83d8f2ca7360d5c1087df1b5829",
+    "source-ci.safe.json": "0ba3f58f6d8de40dd2909c94ec10581b959921b1457fab55806ce5e26c09f866",
+    "source-post.safe.json": "63da87b6ae87cd094af52ed1dcfb56ecea365e2d784b562d2fb0c5a62ebf659a",
+    "source-maintenance-post.safe.json": "f14dcaa174ed9d283232bafdd6289439d87798d3867f6cb45cb05148a0701c76"
+  },
+  "scope": "Narrow preserved-failure recovery routing review; fresh dev baseline is a distinct exclusive stage, not a retry of the old once.",
+  "previous_review_sha256": "653fd58c99c3174702e268d8bc1e6a784e420656449988434b94ea3e14caed45",
+  "preserved_failure_sha256": "74397b2dd23744b0e7325bcd2caa779c588aceb010431439c6b7828cf694ae89",
+  "preserved_failure": {
+    "at": 1795025346.195503,
+    "calls": 6,
+    "code": "TimeoutException",
+    "status": "STOP",
+    "write_attempts": 0,
+    "write_unknown": 0,
+    "writes_confirmed": 0
+  },
+  "checks": [
+    "Old release/build/plan bytes are preserved verbatim and match their prior approved hashes. The reviewed diff only adds pinned read-only failure checks, selects new recovery PRE names and routes the dev baseline resolver/output; prod routing remains baseline-prod.",
+    "Failed baseline-dev has exact pinned STOP TimeoutException safe receipt and zero attempted/confirmed/unknown cloud writes. Original once and complete/partial downloads are not reused as the new baseline.",
+    "CLI baseline output, every downstream release-stage baseline read and candidate build use baseline_folder: dev -> baseline-recovery-dev, prod -> baseline-prod. Fresh baseline still invokes fresh source guard, pending-change guard and packages=True full collection.",
+    "All deadline/retry/account/identity/configuration/CONTROL/policy/source/changeset/package/write gates remain as previously reviewed. New stage mkdir and exclusive once retain one-shot behavior.",
+    "Exact original nine-file set binds new routing/plan and unchanged source/CI/both source POSTs/policy/package probe. Old PRE filenames do not satisfy the new recovery gate."
+  ],
+  "validation": {
+    "new_bounded_Fake_controls_passed": 12,
+    "controls": [
+      "current pinned failure plus recovery PRE accepted",
+      "dev resolver",
+      "dev full fresh collection",
+      "all six dev downstream release routes",
+      "dev build route",
+      "prod resolver unchanged",
+      "prod full fresh collection unchanged",
+      "all six prod downstream release routes",
+      "prod build route unchanged",
+      "CLI output route",
+      "changed original failure rejected before action",
+      "missing recovery PRE rejected despite prior PRE history"
+    ],
+    "real_network_calls": 0,
+    "formal_E_entries": 0,
+    "old_raw_or_ZIP_reads": 0,
+    "reuse_of_prior_validation": "Prior 54 Fake controls, 6 resource projection controls and 23 host-probe checks apply to unchanged execution logic; they were not rerun or mislabeled as actual ARM/deployment."
+  },
+  "blocking_findings": [],
+  "limits": [
+    "The original download timeout and reported environment time discontinuity have UNKNOWN cause; this PRE does not attribute them.",
+    "This review does not execute fresh baseline or any cloud/API/UI/model call and does not inspect or hash original complete/partial ZIPs.",
+    "Current source CI receipt remains bound; actual stages must freshly check exact PR/source/main/CI/workflow occupancy as implemented.",
+    "The aggregate recovery adapter has separate review/PRE, including original six AWS reads and ten GH reads kept outside successful-stage counters.",
+    "Original fifteen retention duties/deadlines, prior failure artifacts and previous PREs remain unchanged. Actual dev/prod package/stable and useful A/B/P acceptance remain pending."
+  ]
+}

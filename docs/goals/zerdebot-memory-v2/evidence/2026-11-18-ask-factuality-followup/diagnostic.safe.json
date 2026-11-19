@@ -1,0 +1,114 @@
+{
+  "status": "PARTIAL_SINGLE_PAGE",
+  "started_at": 1795022320.274352,
+  "calls": [
+    {
+      "service": "sts",
+      "operation": "GetCallerIdentity",
+      "started_at": 1795022320.484938,
+      "finished_at": 1795022321.264203,
+      "canonical_parsed_response_sha256": "1e89a5bd180e072e92f6b591211bb6a2857ad8d6f334b06f39b8f532ee253143",
+      "http_status": 200,
+      "retry_attempts": 0,
+      "expected_account_match": true
+    },
+    {
+      "service": "logs",
+      "operation": "FilterLogEvents",
+      "started_at": 1795022321.2752042,
+      "finished_at": 1795022322.277429,
+      "canonical_parsed_response_sha256": "a4329a706548d03bf2e081ea5c26a0dedeb11cfcfea54da5bc637b473b2d590c",
+      "http_status": 200,
+      "retry_attempts": 0
+    }
+  ],
+  "before_send_events": [
+    {
+      "service": "sts",
+      "operation": "GetCallerIdentity",
+      "at": 1795022320.485924
+    },
+    {
+      "service": "logs",
+      "operation": "FilterLogEvents",
+      "at": 1795022321.27585
+    }
+  ],
+  "persistent_runtime_raw": 0,
+  "cloud_writes": 0,
+  "UI": 0,
+  "model": 0,
+  "next_token_present": true,
+  "events": [
+    {
+      "timestamp": 1795021602730,
+      "message_sha256": "6b2d45e2a4187fd3cfdfe0f18b92c95b29d93db59cacd18569c43a71a0444813",
+      "exception_classes": [],
+      "task_timeout": false,
+      "frames": [],
+      "has_request_identifier": true
+    },
+    {
+      "timestamp": 1795021602742,
+      "message_sha256": "a1d140dcefe7d65d3e2122175816d34296f939980831a27a71dec960027c2795",
+      "exception_classes": [],
+      "task_timeout": false,
+      "frames": [
+        {
+          "file": "services/memory_v2/cost_runtime.py",
+          "line": 89,
+          "function": "run"
+        },
+        {
+          "file": "main.py",
+          "line": 39,
+          "function": "lambda_handler"
+        },
+        {
+          "file": "services/sqs_task_router.py",
+          "line": 114,
+          "function": "process_sqs_event"
+        },
+        {
+          "file": "services/handlers/commands.py",
+          "line": 312,
+          "function": "process_group_ask_task"
+        },
+        {
+          "file": "services/memory_v2/explicit_delivery.py",
+          "line": 127,
+          "function": "configured_delivery"
+        },
+        {
+          "file": "services/memory_v2/explicit_delivery.py",
+          "line": 57,
+          "function": "start"
+        },
+        {
+          "file": "services/memory_v2/telegram_api.py",
+          "line": 69,
+          "function": "authorize"
+        },
+        {
+          "file": "services/memory_v2/telegram_api.py",
+          "line": 63,
+          "function": "member"
+        },
+        {
+          "file": "services/memory_v2/telegram_api.py",
+          "line": 35,
+          "function": "call"
+        }
+      ],
+      "has_request_identifier": false
+    }
+  ],
+  "event_count": 2,
+  "finished_at": 1795022322.285897,
+  "limitations": [
+    "One exact time window and page only; no pagination.",
+    "Timestamp correlation does not establish association with B.",
+    "Parsed-response canonical hash is not raw wire bytes.",
+    "Before-send events do not prove a request reached the service."
+  ]
+}

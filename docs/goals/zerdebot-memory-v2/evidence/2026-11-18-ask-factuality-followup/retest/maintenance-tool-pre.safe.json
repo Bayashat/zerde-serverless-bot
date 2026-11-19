@@ -1,0 +1,38 @@
+{
+  "reviewer": "independent-maintenance",
+  "at": 1795073436.169675,
+  "source": "b9be5119118555aac897d14f8686be294646a6fa",
+  "offline_validation_sha256": "516fcfab21875e03efadd5fd3a2d21efb7a27b6687c0ae18d7461feadbcf4902",
+  "offline_test_attribution": "Primary executed21 synthetic tests with unchanged eight inputs; this reviewer did not rerun the suite.",
+  "independent_local_check": "Pure validate_release_evidence passed:39 exact external paths,15 safe deployment proofs,24 new E full package hashes and105 owner files. No formal main/start/preflight/budget/UI/POST execution.",
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "old_runtime_raw_reads": 0,
+  "current_window": false,
+  "new_retention_deadline_created": false,
+  "status": "ALIGNED",
+  "plan_sha256": "c00875f31c5bfee85129ad2f1101122ca1e67a1e03caebeed9fa8c65ace12401",
+  "release_binding_sha256": "338bb45ca9d635f7aed9d2d4d67d7805e33babc19458dd3b943af2c8aa87ef75",
+  "tools": {
+    "collector.py": "4bb0798d2eb9514b186dd8324be1aaa61001c1b95e7ef635aa19c890da826c26",
+    "read_budget.py": "594d86022c091d251416371433833509892e04e4b0cc1e36d512b3a486e9049e",
+    "ui_record.py": "ebc3e5834c2a840e7b70202b66b6bb043035c60ed87692177b335005775f452b"
+  },
+  "checks": {
+    "current_E_final_dual_POST_and_new_prod_main_path_bound": true,
+    "all24_current_packages_105_pure_owners_sourcehash_match": true,
+    "external_allowlist_exact39_no_old_private_or_failed_partial_ZIP": true,
+    "same_original_budget_owner_read_flow_and_five_owners": true,
+    "strictCLI_JSON_before_once_entry_failure_blocks_following_entries": true,
+    "descriptor_based0700_paths_regular0600_single_link_and_hash_identity_guards": true,
+    "capture_requires_anchor_exact15prior_and16th_registered_duty_readback": true,
+    "UI_send_deadline_min10_190_validuntil_native30_and_after180": true,
+    "release_no_draft_and_no_UI_after_window_expiry": true,
+    "readonly_finite12API_no_retry_and_no_model_or_cloudwrite": true,
+    "plan_and_binding_selfhash_exact_double_PRE": true
+  },
+  "limits": [
+    "validate_preparation needs both review roles and POST PREs; main will seal actual preparation after all required reports exist.",
+    "Fresh preflight/config/budget checks are future onsite requirements and were not run by this reviewer."
+  ]
+}

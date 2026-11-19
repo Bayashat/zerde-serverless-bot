@@ -1,0 +1,116 @@
+{
+  "status": "ALIGNED",
+  "outcome": "PARTIAL_SINGLE_PAGE_PRESERVED",
+  "reviewer": "ask_prepare_correctness",
+  "reviewed_at_utc": "2026-11-18T17:22:23.225310+00:00",
+  "scope": "Independent local POST of the actual safe receipt and frozen diagnostic/source contract; no repeat query or original response inspection.",
+  "evidence_sha256": {
+    "PLAN.md": "120d5bba38b6a3585b1a19613aff5590ce47dc5f6d5b3325b90314b922f25eac",
+    "scope.safe.json": "e73e687bc57154fc793379bb2428fcda31893d63137c817f3b4716d3c01a44cd",
+    "diagnose.py": "dcd8cb4942f1b8c5b56b730b159c1be424fa3c9a863a8743968d6a9cd3d83c64",
+    "diagnostic-tool-pre.safe.json": "0ce688999a87beb7bc5384f37cf8f59ef1abc71972f2d1939345d16db50616db",
+    "diagnostic-maintenance-pre.safe.json": "726b9a25638bd9020c38729c6c364646850d06eb6324d8f413b8981a8f357a51",
+    "diagnostic.once.safe.json": "1538670eb669d176330de016d193ebe5b22f6230ec73a21488508e4cc9163c72",
+    "diagnostic.safe.json": "f4ad912e04b5b998367986de598567434b9e786c484192b38fae69d0ba76b511"
+  },
+  "source_files_sha256": {
+    "src/bot/services/memory_v2/cost_runtime.py": "2156fc77a25feb453e65823feeb79f6bf58013b021e15e5e263e38c742fc61d9",
+    "src/bot/main.py": "1f7cf63e308e8aa0663d7e06d08d9d2ea011fc5410f53acc62820716149f68c6",
+    "src/bot/services/sqs_task_router.py": "88ea4e0d895b23d7129213d9d253f341b76d73b0b392b7e637077e1435dd18ba",
+    "src/bot/services/handlers/commands.py": "e7e5d223460ab7df36718bf753ecc79be8b41a2429f495b910e13c569b976765",
+    "src/bot/services/memory_v2/explicit_delivery.py": "119fa0f970e68cb49d0ab44e10f0bad633df085a81ef0113c87ee06d59b27848",
+    "src/bot/services/memory_v2/telegram_api.py": "1d93e9cd6352c26c9c853b59fa0c4f24340236d953a46a100a0f59364f0ab958",
+    "src/shared/python/zerde_common/async_http.py": "9f638624c202a27cd566e45269507e069c5027d78896bb63c2cc55d57c05c059",
+    "tests/test_memory_telegram_api.py": "9a7829b0137901f7008d7127d88796957f120e0efa86dfda56c1a4f307968ba3",
+    "tests/test_explicit_delivery.py": "09f7c6f2bd8fa5f617649ab37e1573fe14ea5cdb2ebd6f4bb1ab17704a852722"
+  },
+  "observed_safe_evidence": {
+    "logical_calls": 2,
+    "services_operations": [
+      "sts/GetCallerIdentity",
+      "logs/FilterLogEvents"
+    ],
+    "HTTP200_no_reported_retries": true,
+    "before_send_events": 2,
+    "scope_UTC": "2026-11-18T17:06:00Z/2026-11-18T17:10:00Z",
+    "event_count": 2,
+    "next_token_present": true,
+    "frozen_code_exit_for_status": 2,
+    "diagnostic_elapsed_seconds": 2.011544942855835,
+    "report_contains_no_log_text_eventid_logstream_or_error_detail": true,
+    "operator_cloud_writes": 0,
+    "persisted_runtime_raw_reported": 0,
+    "new_retention_deadline": null
+  },
+  "interpretation": {
+    "complete_window": "NOT_ESTABLISHED",
+    "B_request_ownership": "UNKNOWN",
+    "original_failure_cause": "UNKNOWN",
+    "observed_whitelisted_exception_class": "NONE; this means no allowlisted class token was captured, not absence of an exception.",
+    "source_inference": "Second projected event is consistent with configured_delivery.start failing during membership authorization before lease acquisition. Its final call:35 frame is the sanitized wrapper for many error causes; no specific HTTP status, network category or B ownership can be recovered from this projection.",
+    "N_prior_result": "Unchanged PARTIAL, A honest unknown, B unverified and P unsent; this diagnostic does not revise onsite acceptance."
+  },
+  "candidate_repair_review": {
+    "status": "CONDITIONALLY_ACCEPTABLE_PENDING_CONCRETE_PLAN_AND_CODE_REVIEW",
+    "max_total_read_HTTP_attempts": 2,
+    "max_retries": 1,
+    "shared_deadline_seconds": 20,
+    "methods": [
+      "getChatMember",
+      "getMe"
+    ],
+    "sendMessage_max_attempts": 1,
+    "retryable_HTTP_statuses": [
+      500,
+      502,
+      503,
+      504
+    ],
+    "HTTP429": "No new retry in this scope; preserve existing outer recovery behavior.",
+    "nonretryable": [
+      "400/401/403 and other unlisted status",
+      "invalid or oversized response",
+      "wrong actor or destination identity",
+      "unconfigured group",
+      "permission or member/admin denial"
+    ],
+    "transport_classification_condition": "The production bounded_async_client currently collapses network/protocol/proxy failures into httpx.TransportError and timeout categories into TimeoutException. A narrow Connect/Read/RemoteProtocol retry policy needs safe detailed adapter mapping plus a test through that real adapter; do not treat all generic TransportError as the approved categories.",
+    "required_preservation": [
+      "One outer cancellation deadline covers DNS, connect, headers, body, backoff and all attempts; it is never reset per attempt.",
+      "Do not retry configured_delivery, model generation, request handling or the entire answer. Retry only the explicitly allowlisted read HTTP method.",
+      "Preserve exact group/actor/member/admin checks and fresh authorization before send.",
+      "Preserve request/source revalidation, lease acquisition/binding/prepare/SENDING/UNKNOWN/SENT order, budget owners and model/source boundaries.",
+      "Keep token-bearing URLs and exception chains out of errors/logs; only fixed safe failure categories or status numbers may escape."
+    ],
+    "meaningful_tests": [
+      "Transient first failure then success produces at most2 reads and one send.",
+      "Second failure or total deadline/cancellation stops without a third read.",
+      "429/permanent status/invalid response/wrong identity produce no inner retry.",
+      "Cancellation during DNS/headers/body/backoff releases transport under shared20-second deadline.",
+      "Transient failure before initial authorization creates no lease/model work; source/request invalidation before subsequent protected action prevents send.",
+      "Send transport failure/429/5xx/unknown receipt still makes exactly one send and preserves UNKNOWN behavior.",
+      "Production bounded_async_client exception mapping is exercised, not only httpx.MockTransport injected directly."
+    ]
+  },
+  "limits": [
+    "Only safe local projection was independently reviewed; original CloudWatch responses were intentionally not persisted and their content hashes cannot be independently recomputed now.",
+    "The receipt and reviewed code support the bounded execution shape; this is not a second independent AWS observation or proof of all external side effects.",
+    "A nextToken requires this partial stop. No pagination or broader diagnosis was performed or authorized by this receipt.",
+    "The projected frame list is a source-allowlisted textual match, not authenticated trace ownership. Timestamp proximity alone cannot attribute it to B.",
+    "The proposed retries are general robustness work, not a proven fix for this B incident; no implementation or deployment is approved by this POST."
+  ],
+  "official_reference": {
+    "url": "https://core.telegram.org/bots/api#responseparameters",
+    "limited_use": "Telegram defines retry_after as an optional integer wait for flood control. This proposal keeps429 outside the new retry path."
+  },
+  "operations": {
+    "new_AWS_calls": 0,
+    "UI_calls": 0,
+    "model_calls": 0,
+    "runtime_raw_or_old_private_reads": 0,
+    "diagnostic_reruns": 0,
+    "repo_edits": 0,
+    "exclusive_safe_POST_write": 1,
+    "public_documentation_only_browsing": true
+  }
+}

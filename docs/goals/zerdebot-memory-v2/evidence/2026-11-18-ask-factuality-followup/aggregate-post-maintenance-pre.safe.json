@@ -1,0 +1,43 @@
+{
+  "status": "ALIGNED",
+  "reviewer": "independent-maintenance",
+  "at": 1795072691.046396,
+  "files": {
+    "compose_release_result.py": "38c3ab560aa4906fddf40f3900c0d30fac04c86e5e7d76325660f9a4d4d96a1e"
+  },
+  "prior_aggregate_maintenance_sha256": "0ddf28eed1888b3a6dcf64d02db3b34a08dd4fd38cd8d88bf3f2bab1a0052907",
+  "post_readback_maintenance_sha256": "43288daef3945010e87ea19eeae2c5ae5eb9f94190ae555f054209feff5eeb6c",
+  "checks": {
+    "all16_routes_only_prod_main_replaced": true,
+    "all24_full_POST_ZIP_paths_use_same_resolver": true,
+    "prod_POST_once_binds_original_post_helper_fresh_transport": true,
+    "earlier_prod_prepare_execute_router_binding_preserved": true,
+    "new_post_dual_PRE_and_failed7_strict_gate_required": true,
+    "old7_metadata_reads_separate_no_failed_ZIP_read_or_inference": true,
+    "prior_successful_counts_eight_writes_control_stability_and_two_failed33segments_preserved": true,
+    "fifteen_duties_and_real_acceptance_pending_preserved": true
+  },
+  "offline_controls": {
+    "passed": 10,
+    "details": [
+      "all16_stage_routes: pass",
+      "prod_post-main_positive: pass",
+      "prod_post-independent_positive: pass",
+      "prod_stable_positive: pass",
+      "prod_execute_positive: pass",
+      "dev_no_post_adapter_required: pass",
+      "prod_wrong_post_helper: rejected",
+      "prod_missing_post_helper: rejected",
+      "prod_missing_transport: rejected",
+      "prod_wrong_original_tool: rejected"
+    ],
+    "method": "Actual resolver and once gate sections only, synthetic data. Actual old7 failure gate was independently exercised for the linked POST maintenance PRE."
+  },
+  "reviewer_external_calls": 0,
+  "formal_entry_runs": 0,
+  "old_failed_POST_ZIP_or_runtime_raw_reads": 0,
+  "limits": [
+    "Successful new POSTs and stable remain required before formal aggregation.",
+    "No assertion of continuous health or identified timeout root cause."
+  ]
+}
