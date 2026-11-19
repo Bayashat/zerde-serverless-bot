@@ -1,0 +1,7 @@
+{
+  "issue": 305,
+  "status": "reviewed_pr_ci_pending",
+  "development": "pending",
+  "telegram_acceptance": "user_pending",
+  "production": "pending_user_dev_acceptance"
+}

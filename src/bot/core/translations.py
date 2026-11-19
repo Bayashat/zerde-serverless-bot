@@ -38,6 +38,7 @@ TRANSLATIONS = {
             "• /memory on|off|status|forget me|forget group — Manage group memory.\n"
             "• /agent — Explain retired automatic participation.\n"
             "• /ask — Ask the agent, or reply to a message with /ask.\n"
+            "• /wtf — A sarcastic, cheeky explanation; also works when replying to a message.\n"
             "• /voteban — Start vote-ban by replying to a user's message.\n"
             "• /quizstats — Show your quiz stats in DM.\n"
             "• /genquiz — Generate quiz on demand.\n"
@@ -135,6 +136,7 @@ TRANSLATIONS = {
         "status_on": "on",
         "status_off": "off",
         "bot_owner_only": "❌ Only the bot owner can do that.",
+        "wtf_usage": "😏 Usage: <code>/wtf topic</code>, or reply to a message/media with <code>/wtf</code>.",
         "ask_usage": ("💬 Usage: <code>/ask question</code> or reply to a message/media with <code>/ask</code>."),
         "ask_agent_unavailable": "😵 The AI agent is not available right now.",
         "ask_multimodal_unavailable": "😵 Media understanding is not available right now.",
@@ -227,6 +229,7 @@ TRANSLATIONS = {
             "• /memory on|off|status|forget me|forget group — Топ жадын басқару.\n"
             "• /agent — Автоматты қатысудың тоқтатылғаны туралы ақпарат.\n"
             "• /ask — Agent-тен сұрау немесе хабарламаға reply жасап сұрау.\n"
+            "• /wtf — Мысқыл аралас өткір түсіндірме; хабарламаға reply жасап та сұрауға болады.\n"
             "• /voteban — Reply арқылы бұғаттауға дауыс ашу.\n"
             "• /quizstats — Quiz статистикасын жеке чатта көрсету.\n"
             "• /genquiz — Сұраныс бойынша quiz жасау.\n"
@@ -330,6 +333,10 @@ TRANSLATIONS = {
         "status_on": "қосулы",
         "status_off": "өшірулі",
         "bot_owner_only": "❌ Мұны тек bot owner істей алады.",
+        "wtf_usage": (
+            "😏 Қолданылуы: <code>/wtf тақырып</code> немесе хабарлама/медиаға reply жасап "
+            "<code>/wtf</code> жіберіңіз."
+        ),
         "ask_usage": (
             "💬 Қолданылуы: <code>/ask сұрақ</code> немесе хабарлама/медиаға reply жасап "
             "<code>/ask</code> жіберіңіз."
@@ -424,6 +431,7 @@ TRANSLATIONS = {
             "• /memory on|off|status|forget me|forget group — 管理群记忆。\n"
             "• /agent — 查看自动互动退役说明。\n"
             "• /ask — 向 agent 提问，也可回复消息提问。\n"
+            "• /wtf — 嘴毒调侃式解释，也可回复消息调用。\n"
             "• /voteban — 回复某条消息发起封禁投票。\n"
             "• /quizstats — 在私聊查看你的 Quiz 统计。\n"
             "• /genquiz — 按需生成 Quiz。\n"
@@ -511,6 +519,7 @@ TRANSLATIONS = {
         "status_on": "开启",
         "status_off": "关闭",
         "bot_owner_only": "❌ 只有 bot owner 可以这样做。",
+        "wtf_usage": "😏 用法：<code>/wtf 话题</code>，或回复消息/媒体并发送 <code>/wtf</code>，来点嘴毒调侃。",
         "ask_usage": "💬 用法：<code>/ask 问题</code>，或回复消息/媒体并发送 <code>/ask</code>。",
         "ask_agent_unavailable": "😵 AI agent 现在不可用，请稍后重试。",
         "ask_multimodal_unavailable": "😵 媒体理解功能现在不可用。",
@@ -598,6 +607,7 @@ TRANSLATIONS = {
             "• /memory on|off|status|forget me|forget group — управление памятью группы.\n"
             "• /agent — Информация об отключённом автоматическом участии.\n"
             "• /ask — задать вопрос agent-у или спросить ответом на сообщение.\n"
+            "• /wtf — объяснение с сарказмом и подколами; можно ответить на сообщение.\n"
             "• /voteban — начать голосование за бан ответом на сообщение.\n"
             "• /quizstats — показать вашу Quiz-статистику в личке.\n"
             "• /genquiz — сгенерировать Quiz по запросу.\n"
@@ -698,6 +708,9 @@ TRANSLATIONS = {
         "status_on": "включено",
         "status_off": "выключено",
         "bot_owner_only": "❌ Это может делать только bot owner.",
+        "wtf_usage": (
+            "😏 Использование: <code>/wtf тема</code> или ответьте на сообщение/медиа командой " "<code>/wtf</code>."
+        ),
         "ask_usage": (
             "💬 Использование: <code>/ask вопрос</code> или ответьте на сообщение/медиа командой " "<code>/ask</code>."
         ),
