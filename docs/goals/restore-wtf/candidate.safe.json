@@ -1,0 +1,15 @@
+{
+  "source": "0aa67e318218cd163955bf349b51821bf708a08b",
+  "template_sha256": "02900c6a0d026667b2f7b09e61fc750fe169fd6491015b0e379bc542b16937c0",
+  "package_sha256": "487276781ddb4ada719bb6a6c5c46cd09f8e919fe0ec7866ccef279515658a63",
+  "changed_source_files": [
+    "core/translations.py",
+    "services/explicit_context.py",
+    "services/group_agent.py",
+    "services/handlers/__init__.py",
+    "services/handlers/commands.py",
+    "services/repositories/sqs.py"
+  ],
+  "arm_handlers_passed": 2,
+  "shared_layer_sha256": "9jpgdPKM5aVc1daMwGR0RlTvg5PfbBg3LbPEX2e2pY8="
+}
