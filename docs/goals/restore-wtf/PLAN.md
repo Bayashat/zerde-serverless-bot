@@ -13,3 +13,5 @@ Issue: https://github.com/Bayashat/zerde-serverless-bot/issues/305
 独立计划审查：通过，要求完整替换默认风格、producer/consumer限定wtf、禁lookup、保持旧bot答案上下文屏障。实现后再独立审查。
 
 执行结果：源CI及独审通过；默认整栈存在无关dev配置漂移，改用live-template代码专用changeset。dev已发布并完成主独实际包/配置读回；用户Telegram测试与prod仍待。精确证据见EVIDENCE及安全回执。
+
+2026-11-19 用户确认 dev 效果可用并明确要求合并/生产发布。PR306已合并为1d5e089。prod复用完全相同ZIP，不重建/重测功能；CF预览含无关IAM/Quiz变更被拒绝未执行，改为严格RevisionId条件UpdateFunctionCode，仅两份代码。主读回通过，独立结果见prod/independent.safe.json。CF原模板与保护flag保持，代码指针仍旧包这一tracking drift明确记录，不作CF同步完成。

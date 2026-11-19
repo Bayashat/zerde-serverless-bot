@@ -1,0 +1,19 @@
+{
+  "status": "UPDATED_READBACK_PENDING",
+  "revision_ids": {
+    "zerde-serverless-bot-prod": "e2e1c79c-3e51-46d1-86b1-d1772e37a752",
+    "zerde-serverless-memory-v2-worker-prod": "66aa61b9-d88a-4064-b0b9-4ad56b4ce3d6"
+  },
+  "completed": [
+    {
+      "function": "zerde-serverless-bot-prod",
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "request_id": "c6a607b8-9c31-49bc-90b0-99ba390cd376"
+    },
+    {
+      "function": "zerde-serverless-memory-v2-worker-prod",
+      "code_sha256": "SHJ2eB3bStpxm7amxcRs0J+OkZ/g7HhmzO8nlRVlimM=",
+      "request_id": "aa8c8683-2ffa-4148-9642-5cee484aa4d9"
+    }
+  ]
+}
